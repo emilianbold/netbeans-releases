@@ -1157,7 +1157,7 @@ cp_mixin_call_args
     :
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  (CP_DOTS ws?)?
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  (CP_DOTS ws?)? SEMI?
     ;
 
 cp_mixin_call_arg

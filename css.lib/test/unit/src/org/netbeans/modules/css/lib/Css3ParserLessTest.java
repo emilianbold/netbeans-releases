@@ -939,4 +939,10 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "    content: @@var;\n"
                 + "}");
     }
+    
+    public void testMixinArgsWithSemicolonAtTheEnd() {
+        assertParses(".classA {\n"
+                + "     .transitions(300ms border linear, transform 300ms linear;);\n"
+                + "}");
+    }
 }
