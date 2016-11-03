@@ -110,13 +110,25 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         this.ignoreExcludes = ignoreExcludes;
     }
 
+    protected final ClassPath getClassPath() {
+        return this.cp;
+    }
+
     // FileManager implementation ----------------------------------------------
     
     @Override
     public Iterable<JavaFileObject> list( Location l, String packageName, Set<JavaFileObject.Kind> kinds, boolean recursive ) {
+        return listImpl(this.cp.entries(), packageName, kinds, recursive);
+    }
+
+    protected final Iterable<JavaFileObject> listImpl(
+            final List<? extends ClassPath.Entry> roots,
+            final String packageName,
+            final Set<JavaFileObject.Kind> kinds,
+            final boolean recursive) {
         String folderName = FileObjects.convertPackage2Folder( packageName );
         List<Iterable<JavaFileObject>> idxs = new LinkedList<Iterable<JavaFileObject>>();
-        for(ClassPath.Entry entry : this.cp.entries()) {
+        for(ClassPath.Entry entry : roots) {
             try {
                 Archive archive = provider.getArchive( entry.getURL(), cacheFile );
                 if (archive != null) {
@@ -128,8 +140,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
                             urls.append(jfo.toUri().toString());
                             urls.append(", ");  //NOI18N
                         }
-                        LOG.finest(String.format("cache for %s (%s) package: %s type: %s files: [%s]",   //NOI18N
-                                l.toString(),
+                        LOG.finest(String.format("cache for %s package: %s type: %s files: [%s]",   //NOI18N
                                 entry.getURL().toExternalForm(),
                                 packageName,
                                 kinds.toString(),

@@ -887,7 +887,8 @@ public final class ProxyFileManager implements JavaFileManager {
                             srcCached,
                             this.aptSrcCached,
                             siblings.getProvider(),
-                            fmTx);
+                            fmTx,
+                            createModuleSrcFileManager());
                     }
                 } else {
                     outFm = null;

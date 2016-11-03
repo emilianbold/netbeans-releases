@@ -49,15 +49,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -80,11 +86,13 @@ public class OutputFileManager extends CachingFileManager {
     public class InvalidSourcePath extends IllegalStateException {
     }
 
-    private ClassPath scp;
-    private ClassPath apt;
-    private  Pair<URI,File> cachedClassFolder;
+    private final ClassPath scp;
+    private final ClassPath apt;
     private final SiblingProvider siblings;
     private final FileManagerTransaction tx;
+    private final JavaFileManager moduleSourceFileManager;
+    private Pair<URI,File> cachedClassFolder;
+    private Iterable<Set<Location>> cachedModuleLocations;
 
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(
@@ -93,7 +101,8 @@ public class OutputFileManager extends CachingFileManager {
             @NonNull final ClassPath sourcePath,
             @NonNull final ClassPath aptPath,
             @NonNull final SiblingProvider siblings,
-            @NonNull final FileManagerTransaction tx) {
+            @NonNull final FileManagerTransaction tx,
+            @NullAllowed final JavaFileManager moduleSFileManager) {
         super (provider, outputClassPath, false, true);
         assert outputClassPath != null;
         assert sourcePath != null;
@@ -103,11 +112,24 @@ public class OutputFileManager extends CachingFileManager {
         this.apt = aptPath;
         this.siblings = siblings;
         this.tx = tx;
+        this.moduleSourceFileManager = moduleSFileManager;
     }
 
     @Override
     public Iterable<JavaFileObject> list(Location l, String packageName, Set<Kind> kinds, boolean recursive) {
-        final Iterable<JavaFileObject> sr =  super.list(l, packageName, kinds, recursive);
+        final Iterable<JavaFileObject> sr;
+        if (!ModuleLocation.isInstance(l)) {
+            //List output
+            sr =  super.list(l, packageName, kinds, recursive);
+        } else {
+            //List module
+            final ModuleLocation ml = ModuleLocation.cast(l);
+            final Set<URL> moduleCacheRoots = new HashSet<>(ml.getModuleRoots());
+            final List<ClassPath.Entry> moduleCpEntries = getClassPath().entries().stream()
+                    .filter((e) -> moduleCacheRoots.contains(e.getURL()))
+                    .collect(Collectors.toList());
+            sr = listImpl(moduleCpEntries, packageName, kinds, recursive);
+        }
         return tx.filter(l, packageName, sr);
     }
 
@@ -204,6 +226,68 @@ public class OutputFileManager extends CachingFileManager {
     public boolean hasLocation(Location location) {
         return location == StandardLocation.CLASS_OUTPUT;
     }
+
+    @Override
+    public Iterable<Set<Location>> listModuleLocations(Location location) throws IOException {
+        if (location != StandardLocation.CLASS_OUTPUT) {
+            throw new IllegalStateException(String.format("Unsupported location: %s", location));
+        }
+        if (cachedModuleLocations == null) {
+            if (moduleSourceFileManager != null) {
+                cachedModuleLocations = StreamSupport.stream(
+                        moduleSourceFileManager.listModuleLocations(StandardLocation.MODULE_SOURCE_PATH).spliterator(),
+                        false)
+                        .map((e) -> {
+                            final ModuleLocation ml = ModuleLocation.cast(e.iterator().next());
+                            Location oml = ModuleLocation.create(
+                                    StandardLocation.CLASS_OUTPUT,
+                                    ml.getModuleRoots().stream()
+                                            .map((src) -> {
+                                                try {
+                                                    return BaseUtilities.toURI(JavaIndex.getClassFolder(src, false, false)).toURL();
+                                                } catch (IOException ioe) {
+                                                    Exceptions.printStackTrace(ioe);
+                                                    return null;
+                                                }
+                                            })
+                                            .filter((cache) -> cache != null)
+                                            .collect(Collectors.toSet()),
+                                    ml.getModuleName());
+                            return Collections.singleton(oml);
+                        })
+                        .collect(Collectors.toList());
+            } else {
+                cachedModuleLocations = Collections.emptySet();
+            }
+        }
+        return cachedModuleLocations;
+    }
+
+    @Override
+    public String inferModuleName(Location location) throws IOException {
+        final ModuleLocation ml = ModuleLocation.cast(location);
+        return ml.getModuleName();
+    }
+
+    @Override
+    public Location getModuleLocation(Location location, String moduleName) throws IOException {
+        return StreamSupport.stream(
+                listModuleLocations(StandardLocation.CLASS_OUTPUT).spliterator(),
+                false)
+                .flatMap((c) -> c.stream())
+                .filter((l) -> moduleName.equals(ModuleLocation.cast(l).getModuleName()))
+                .findAny()
+                .orElse(null);
+    }
+
+    @Override
+    public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
+        //Todo:
+        return null;
+    }
+
+    
+    
 
     private File getClassFolderForSource (final javax.tools.FileObject sibling, final String baseName) throws IOException {
         return sibling == null ? getClassFolderForSourceImpl(baseName) : getClassFolderForSourceImpl(sibling.toUri().toURL());

@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import javax.tools.JavaFileManager.Location;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 
@@ -78,7 +79,7 @@ class ModuleLocation implements Location {
 
     @Override
     public boolean isOutputLocation() {
-        return false;
+        return base == StandardLocation.CLASS_OUTPUT;
     }
 
     @Override
@@ -99,6 +100,18 @@ class ModuleLocation implements Location {
     @NonNull
     Location getBaseLocation() {
         return base;
+    }
+
+    @NonNull
+    static ModuleLocation cast(@NonNull final Location l) {
+        if (!isInstance(l)) {
+            throw new IllegalArgumentException (String.valueOf(l));
+        }
+        return (ModuleLocation) l;
+    }
+
+    static boolean isInstance(final Location l) {
+        return l instanceof ModuleLocation;
     }
 
     @NonNull
