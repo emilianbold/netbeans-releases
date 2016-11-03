@@ -1136,17 +1136,19 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         fixLineSyntaxState = new FixLineSyntaxState(chng);
         chng.addEdit(fixLineSyntaxState.createBeforeLineUndo());
     }
-
-    protected @Override void removeUpdate(DefaultDocumentEvent chng) {
-        super.removeUpdate(chng);
-
+    
+    void firePreRemoveUpdate(DefaultDocumentEvent chng) {
         // Notify the remove update listeners - before the actual remove happens
         // so that it adheres to removeUpdate() logic; also the listeners can check
         // positions' offsets before the actual removal happens.
         for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
             listener.removeUpdate(chng);
         }
+    }
 
+    protected @Override void removeUpdate(DefaultDocumentEvent chng) {
+        super.removeUpdate(chng);
+        firePreRemoveUpdate(chng);
         // Remember the line changes here but add them to chng during postRemoveUpdate()
         // in order to satisfy the legacy syntax update mechanism
         removeUpdateLineUndo = lineRootElement.legacyRemoveUpdate(chng);

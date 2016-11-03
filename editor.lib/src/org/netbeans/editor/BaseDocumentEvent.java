@@ -284,6 +284,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
             if (getType() == DocumentEvent.EventType.REMOVE) {
                 doc.fireInsertUpdate(this);
             } else if (getType() == DocumentEvent.EventType.INSERT) {
+                doc.firePreRemoveUpdate(this);
                 doc.fireRemoveUpdate(this);
             } else {
                 doc.fireChangedUpdate(this);
@@ -299,7 +300,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         // End super of undo()
 
     }
-
+    
     public @Override void redo() throws CannotRedoException {
         BaseDocument doc = (BaseDocument)getDocument();
         
