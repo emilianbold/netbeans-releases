@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -64,27 +63,21 @@ import org.openide.util.NbBundle;
 
 public final class GCCErrorParser extends ErrorParser {
 
-    private final List<Pattern> GCC_ERROR_SCANNER = new ArrayList<Pattern>();
-    private final List<Pattern> patterns = new ArrayList<Pattern>();
+    private final List<Pattern> GCC_ERROR_SCANNER = new ArrayList<>();
+    private final List<Pattern> patterns = new ArrayList<>();
     private Pattern GCC_DIRECTORY_ENTER;
     private Pattern GCC_DIRECTORY_LEAVE;
     private Pattern GCC_DIRECTORY_CD;
     private Pattern GCC_DIRECTORY_MAKE_ALL;
-    private List<Pattern> GCC_STACK_HEADER = new ArrayList<Pattern>();
-    private List<Pattern> GCC_STACK_NEXT = new ArrayList<Pattern>();
+    private final List<Pattern> GCC_STACK_HEADER = new ArrayList<>();
+    private final List<Pattern> GCC_STACK_NEXT = new ArrayList<>();
 
-    private Stack<FileObject> relativesTo = new Stack<FileObject>();
-    private Stack<Integer> relativesLevel = new Stack<Integer>();
-    private ArrayList<StackIncludeItem> errorInludes = new ArrayList<StackIncludeItem>();
-    private boolean isEntered;
+    private final ArrayList<StackIncludeItem> errorInludes = new ArrayList<>();
     private OutputListenerRegistry listenerRegistry;
 
     public GCCErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(project, execEnv, relativeTo);
-        this.relativesTo.push(relativeTo);
-        this.relativesLevel.push(0);
-        this.isEntered = false;
-	init(flavor);
+    	init(flavor);
     }
 
     private void init(CompilerFlavor flavor) {
@@ -125,20 +118,6 @@ public final class GCCErrorParser extends ErrorParser {
     @Override
     public void setOutputListenerRegistry(OutputListenerRegistry regestry) {
         listenerRegistry = regestry;
-    }
-
-    // FIXUP IZ#115960 and all other about EmptyStackException
-    // - make Stack.pop() and peek() safe.
-    private void popPath() {
-        if (relativesTo.size() > 1) {
-            relativesTo.pop();
-        }
-    }
-
-    private void popLevel() {
-        if (relativesLevel.size() > 1) {
-            relativesLevel.pop();
-        }
     }
 
     private String getNoEscapeLine(String line) {
@@ -202,65 +181,53 @@ public final class GCCErrorParser extends ErrorParser {
     private Result handleLine(String line, Matcher m) {
         if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
             String levelString = m.group(1);
-            int level = levelString == null ? 0 : Integer.parseInt(levelString);
-            int baseLavel = relativesLevel.peek();
             String directory = m.group(2);
-            if (level > baseLavel) {
-                isEntered = true;
-                relativesLevel.push(level);
-                isEntered = true;
-            } else if (level == baseLavel) {
-                isEntered = !this.isEntered;
+            int level = levelString == null ? 0 : Integer.parseInt(levelString);
+            if (m.pattern() == GCC_DIRECTORY_LEAVE) {
+                getMakeContext().pop(level);
             } else {
-                isEntered = false;
-                popLevel();
-            }
-            if (isEntered) {
                 if (!CndPathUtilities.isAbsolute(directory)) {
-                    if (relativeTo != null) {
-                        if (relativeTo.isFolder()) {
-                            directory = relativeTo.toURL().getPath() + File.separator + directory;
+                    FileObject lastContext = getMakeContext().getLastContext();
+                    if (lastContext != null) {
+                        if (lastContext.isFolder()) {
+                            directory = lastContext.toURL().getPath() + File.separator + directory;
                         }
                     }
                 }
-                FileObject relativeDir = resolveFile(directory);
+                FileObject relativeDir = resolveFile(directory, true);
                 if (relativeDir != null && relativeDir.isValid()) {
-                    relativesTo.push(relativeDir);
+                    getMakeContext().push(level, relativeDir);
                 }
-                return ErrorParserProvider.NO_RESULT;
-            } else {
-                popPath();
-                return ErrorParserProvider.NO_RESULT;
-            }
-        }
-        if (m.pattern() == GCC_DIRECTORY_CD) {
-            String directory = trimQuotes(m.group(1));
-            if (!CndPathUtilities.isAbsolute(directory)) {
-                if (relativeTo != null) {
-                    if (relativeTo.isFolder()) {
-                        directory = relativeTo.toURL().getPath() + File.separator + directory;
-                    }
-                }
-            }
-            FileObject relativeDir = resolveFile(directory);
-            if (relativeDir != null && relativeDir.isValid()) {
-                relativesTo.push(relativeDir);
             }
             return ErrorParserProvider.NO_RESULT;
-        }
-        if (m.pattern() == GCC_DIRECTORY_MAKE_ALL) {
-            FileObject relativeDir = relativesTo.peek();
-            String directory = m.group(1);
+        } else if (m.pattern() == GCC_DIRECTORY_CD) {
+            String directory = trimQuotes(m.group(1));
             if (!CndPathUtilities.isAbsolute(directory)) {
-                if (relativeDir != null) {
-                    if (relativeDir.isFolder()) {
-                        directory = relativeDir.toURL().getPath() + File.separator + directory;
+                FileObject lastContext = getMakeContext().getLastContext();
+                if (lastContext != null) {
+                    if (lastContext.isFolder()) {
+                        directory = lastContext.toURL().getPath() + File.separator + directory;
                     }
                 }
             }
-            relativeDir = resolveFile(directory);
+            FileObject relativeDir = resolveFile(directory, true);
             if (relativeDir != null && relativeDir.isValid()) {
-                relativesTo.push(relativeDir);
+                getMakeContext().push(-1, relativeDir);
+            }
+            return ErrorParserProvider.NO_RESULT;
+        } else if (m.pattern() == GCC_DIRECTORY_MAKE_ALL) {
+            String directory = m.group(1);
+            if (!CndPathUtilities.isAbsolute(directory)) {
+                FileObject lastContext = getMakeContext().getLastContext();
+                if (lastContext != null) {
+                    if (lastContext.isFolder()) {
+                        directory = lastContext.toURL().getPath() + File.separator + directory;
+                    }
+                }
+            }
+            FileObject relativeDir = resolveFile(directory, true);
+            if (relativeDir != null && relativeDir.isValid()) {
+                getMakeContext().push(-1, relativeDir);
             }
             return ErrorParserProvider.NO_RESULT;
         }
@@ -269,7 +236,7 @@ public final class GCCErrorParser extends ErrorParser {
                 String file = m.group(1);
                 if (m.groupCount() >= 2){
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject relativeDir = relativesTo.peek();
+                    FileObject relativeDir = getMakeContext().getTopContext();
                     if (relativeDir != null) {
                         FileObject fo = resolveRelativePath(relativeDir, file);
                         if (fo != null && fo.isValid()) {
@@ -302,7 +269,7 @@ public final class GCCErrorParser extends ErrorParser {
                     lineNumber = Integer.valueOf(m.group(2));
                     description = m.group(1);
                 }
-                FileObject relativeDir = relativesTo.peek();
+                FileObject relativeDir = getMakeContext().getTopContext();
                 if (relativeDir != null) {
                     //FileObject fo = relativeDir.getFileObject(file);
                     FileObject fo = resolveRelativePath(relativeDir, file);
@@ -383,7 +350,7 @@ public final class GCCErrorParser extends ErrorParser {
         }
         
         private String getMessage() {
-            if (line.indexOf("instantiation of") >= 0 || line.indexOf("instantiated from") >=0 ) { //NOI18N
+            if (line.contains("instantiation of") || line.contains("instantiated from") ) { //NOI18N
                 //TODO move to scanner
                 return NbBundle.getMessage(GCCErrorParser.class, "HINT_InstantiatedFrom"); //NOI18N
             }

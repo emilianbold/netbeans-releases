@@ -59,10 +59,10 @@ import org.openide.filesystems.FileObject;
 
 public final class SUNErrorParser extends ErrorParser {
 
-    private final List<Pattern> errorScuners = new ArrayList<Pattern>();
-    private final List<Pattern> patterns = new ArrayList<Pattern>();
-    private final List<String> severity = new ArrayList<String>();
-    private final List<Pattern> SunStudioOutputFilters = new ArrayList<Pattern>();
+    private final List<Pattern> errorScuners = new ArrayList<>();
+    private final List<Pattern> patterns = new ArrayList<>();
+    private final List<String> severity = new ArrayList<>();
+    private final List<Pattern> SunStudioOutputFilters = new ArrayList<>();
     private Pattern SUN_DIRECTORY_ENTER;
     private OutputListenerRegistry listenerRegistry;
 
@@ -122,9 +122,9 @@ public final class SUNErrorParser extends ErrorParser {
 
     private Result handleLine(String line, Matcher m) {
         if (m.pattern() == SUN_DIRECTORY_ENTER) {
-            FileObject myObj = resolveFile(m.group(1));
+            FileObject myObj = resolveFile(m.group(1), true);
             if (myObj != null) {
-                relativeTo = myObj;
+                getMakeContext().push(-1, myObj);
             }
             return ErrorParserProvider.NO_RESULT;
         }
@@ -147,11 +147,13 @@ public final class SUNErrorParser extends ErrorParser {
                     lineNumber = Integer.valueOf(m.group(2));
                     description = m.group(1);
                 }
-                //FileObject fo = relativeTo.getFileObject(file);
-                FileObject fo = resolveRelativePath(relativeTo, file);
-                boolean important = severity.get(i).equals("error"); // NOI18N
-                if (fo != null && fo.isValid()) {
-                    return new Results(line, listenerRegistry.register(fo, lineNumber - 1, important, description));
+                FileObject relativeTo = getMakeContext().getTopContext();
+                if (relativeTo != null && relativeTo.isValid()) {
+                    FileObject fo = resolveRelativePath(relativeTo, file);
+                    boolean important = severity.get(i).equals("error"); // NOI18N
+                    if (fo != null && fo.isValid()) {
+                        return new Results(line, listenerRegistry.register(fo, lineNumber - 1, important, description));
+                    }
                 }
             } catch (NumberFormatException e) {
             }
