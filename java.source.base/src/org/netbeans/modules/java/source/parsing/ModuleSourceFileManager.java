@@ -240,10 +240,12 @@ final class ModuleSourceFileManager implements JavaFileManager {
     @CheckForNull
     public Location getModuleLocation(Location location, JavaFileObject jfo, String pkgName) throws IOException {
         final FileObject fo = URLMapper.findFileObject(jfo.toUri().toURL());
-        for (ModuleLocation.SourceModuleLocation moduleLocation : sourceModuleLocations(location)) {
-            for (ClassPath.Entry moduleEntry : moduleLocation.getModuleEntries()) {
-                if (FileUtil.isParentOf(moduleEntry.getRoot(), fo)) {
-                    return moduleLocation;
+        if (fo != null) {
+            for (ModuleLocation.SourceModuleLocation moduleLocation : sourceModuleLocations(location)) {
+                for (ClassPath.Entry moduleEntry : moduleLocation.getModuleEntries()) {
+                    if (FileUtil.isParentOf(moduleEntry.getRoot(), fo)) {
+                        return moduleLocation;
+                    }
                 }
             }
         }
