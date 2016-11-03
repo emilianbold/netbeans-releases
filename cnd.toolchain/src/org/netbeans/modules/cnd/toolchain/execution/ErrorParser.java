@@ -259,7 +259,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
 
         @Override
         public String toString() {
-            return "["+level+"] "+path.getPath();
+            return "["+level+"] "+path.getPath(); //NOI18N
         }
     }
 
