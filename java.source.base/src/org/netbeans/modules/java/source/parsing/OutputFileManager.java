@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -123,12 +124,8 @@ public class OutputFileManager extends CachingFileManager {
             sr =  super.list(l, packageName, kinds, recursive);
         } else {
             //List module
-            final ModuleLocation ml = ModuleLocation.cast(l);
-            final Set<URL> moduleCacheRoots = new HashSet<>(ml.getModuleRoots());
-            final List<ClassPath.Entry> moduleCpEntries = getClassPath().entries().stream()
-                    .filter((e) -> moduleCacheRoots.contains(e.getURL()))
-                    .collect(Collectors.toList());
-            sr = listImpl(moduleCpEntries, packageName, kinds, recursive);
+            final ModuleLocation.WithExcludes ml = ModuleLocation.WithExcludes.cast(l);
+            sr = listImpl(ml.getModuleEntries(), packageName, kinds, recursive);
         }
         return tx.filter(l, packageName, sr);
     }
@@ -139,9 +136,9 @@ public class OutputFileManager extends CachingFileManager {
             throw new IllegalArgumentException ();
         } else {
             String baseName = FileObjects.convertPackage2Folder(className);     //Todo: Use File.separatorChar and remove below baseName = ...
-            File activeRoot = getClassFolderForSource(sibling, baseName);
+            File activeRoot = getClassFolderForSource(l, sibling, baseName);
             if (activeRoot == null) {
-                activeRoot = getClassFolderForApt(sibling, baseName);
+                activeRoot = getClassFolderForApt(l, sibling, baseName);
                 if (activeRoot == null) {
                     //Deleted project
                     if (this.scp.getRoots().length > 0) {
@@ -157,6 +154,7 @@ public class OutputFileManager extends CachingFileManager {
                     throw new InvalidSourcePath ();
                 }
             }
+            assertValidRoot(activeRoot, l);
             baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;
             final File f = new File (activeRoot, nameStr);
@@ -191,6 +189,7 @@ public class OutputFileManager extends CachingFileManager {
                 throw new InvalidSourcePath ();
             }
         }
+        assertValidRoot(activeRoot, l);
         final String path = FileObjects.resolveRelativePath(pkgName, relativeName);
         final File file = FileUtil.normalizeFile(new File (activeRoot,path.replace(FileObjects.NBFS_SEPARATOR_CHAR, File.separatorChar)));
         return tx.createFileObject(l, file, activeRoot,null,null);
@@ -286,11 +285,13 @@ public class OutputFileManager extends CachingFileManager {
         return null;
     }
 
-    
-    
-
-    private File getClassFolderForSource (final javax.tools.FileObject sibling, final String baseName) throws IOException {
-        return sibling == null ? getClassFolderForSourceImpl(baseName) : getClassFolderForSourceImpl(sibling.toUri().toURL());
+    private File getClassFolderForSource (
+            final Location l,
+            final javax.tools.FileObject sibling,
+            final String baseName) throws IOException {
+        return sibling == null ?
+                getClassFolderForSourceImpl(l, baseName) :
+                getClassFolderForSourceImpl(sibling.toUri().toURL());
     }
 
     private File getClassFolderForSourceImpl (final URL sibling) throws IOException {
@@ -317,7 +318,9 @@ public class OutputFileManager extends CachingFileManager {
         return null;
     }
 
-    private File getClassFolderForSourceImpl (String baseName) throws IOException {
+    private File getClassFolderForSourceImpl (
+            final Location l,
+            final String baseName) throws IOException {
         List<ClassPath.Entry> entries = this.scp.entries();
         int eSize = entries.size();
         if (eSize == 1) {
@@ -327,13 +330,17 @@ public class OutputFileManager extends CachingFileManager {
             return null;
         }
         final String[] parentName = splitParentName(baseName);
+        final Collection<? extends URL> roots = getLocationRoots(l);
         for (ClassPath.Entry entry : entries) {
             FileObject root = entry.getRoot();
             if (root != null) {
                 FileObject parentFile = root.getFileObject(parentName[0]);
                 if (parentFile != null) {
                     if (parentFile.getFileObject(parentName[1], FileObjects.JAVA) != null) {
-                        return getClassFolder(entry.getURL());
+                        final File cacheFolder = getClassFolder(entry.getURL());
+                        if (roots.contains(BaseUtilities.toURI(cacheFolder).toURL())) {
+                            return cacheFolder;
+                        }
                     }
                 }
             }
@@ -341,8 +348,13 @@ public class OutputFileManager extends CachingFileManager {
 	return null;
     }
         
-    private File getClassFolderForApt(final javax.tools.FileObject sibling, final String baseName) throws IOException {
-        return sibling == null ? getClassFolderForApt(baseName) : getClassFolderForApt(sibling.toUri().toURL());
+    private File getClassFolderForApt(
+            final Location l,
+            final javax.tools.FileObject sibling,
+            final String baseName) throws IOException {
+        return sibling == null ?
+                getClassFolderForApt(l, baseName) :
+                getClassFolderForApt(sibling.toUri().toURL());
     }
 
     private File getClassFolderForApt(final @NonNull URL surl) {
@@ -361,8 +373,11 @@ public class OutputFileManager extends CachingFileManager {
         return null;
     }
 
-    private File getClassFolderForApt(final String baseName) {
+    private File getClassFolderForApt(
+            final Location l,
+            final String baseName) {
         String[] parentName = splitParentName(baseName);
+        final Collection<? extends URL> roots = getLocationRoots(l);
         for (ClassPath.Entry entry : this.apt.entries()) {
             FileObject root = entry.getRoot();
             if (root != null) {
@@ -370,7 +385,7 @@ public class OutputFileManager extends CachingFileManager {
                 if (parentFile != null) {
                     if (parentFile.getFileObject(parentName[1], FileObjects.JAVA) != null) {
                         final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
-                        if (classFolder != null) {
+                        if (classFolder != null && roots.contains(classFolder)) {
                             try {
                                 return BaseUtilities.toFile(classFolder.toURI());
                             } catch (URISyntaxException ex) {
@@ -424,5 +439,28 @@ public class OutputFileManager extends CachingFileManager {
                 result);
         }
         return result;
+    }
+
+    private Collection<? extends URL> getLocationRoots(final Location l) {
+        if (!ModuleLocation.isInstance(l)) {
+            return getClassPath().entries().stream()
+                    .map((e) -> e.getURL())
+                    .collect(Collectors.toSet());
+        } else {
+            return ModuleLocation.cast(l).getModuleRoots();
+        }
+    }
+
+    private void assertValidRoot(
+            final File activeRoot,
+            final Location l) throws IOException {
+        final Collection<? extends URL> roots = getLocationRoots(l);
+        if (!roots.contains(BaseUtilities.toURI(activeRoot).toURL())) {
+            throw new IOException(String.format(
+                    "Wrong cache folder: %s, allowed: %s, location: %s",    //NOI18N
+                    activeRoot,
+                    roots,
+                    l));
+        }
     }
 }

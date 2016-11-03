@@ -124,30 +124,42 @@ class ModuleLocation implements Location {
                 moduleName,
                 moduleRoots);
     }
-    
-    @NonNull
-    static SourceModuleLocation createSource(
-            @NonNull final Location base,
-            @NonNull final Collection<? extends ClassPath.Entry> moduleEntries,
-            @NonNull final String moduleName) {
-        return new SourceModuleLocation(
-                base,
-                moduleName,
-                moduleEntries);
-    }
-    
-    static final class SourceModuleLocation extends ModuleLocation {
+
+    static final class WithExcludes extends ModuleLocation {
 
         private final Collection<? extends ClassPath.Entry> moduleEntries;
-        
-        private SourceModuleLocation(Location base, String moduleName, Collection<? extends ClassPath.Entry> moduleEntries) {
+
+        private WithExcludes(Location base, String moduleName, Collection<? extends ClassPath.Entry> moduleEntries) {
             super(base, moduleName, moduleEntries.stream().map(entry -> entry.getURL()).collect(Collectors.toSet()));
             this.moduleEntries = moduleEntries;
         }
-        
+
         @NonNull
         Collection<? extends ClassPath.Entry> getModuleEntries() {
             return moduleEntries;
+        }
+
+        @NonNull
+        static WithExcludes cast(@NonNull final Location l) {
+            if (!isInstance(l)) {
+                throw new IllegalArgumentException (String.valueOf(l));
+            }
+            return (WithExcludes) l;
+        }
+
+        static boolean isInstance(final Location l) {
+            return l instanceof WithExcludes;
+        }
+
+        @NonNull
+        static WithExcludes createExcludes(
+                @NonNull final Location base,
+                @NonNull final Collection<? extends ClassPath.Entry> moduleEntries,
+                @NonNull final String moduleName) {
+            return new WithExcludes(
+                    base,
+                    moduleName,
+                    moduleEntries);
         }
     }
 }

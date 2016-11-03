@@ -75,7 +75,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
     private final boolean ignoreExcludes;
     private final ClassPath srcPath;
     private final ClassPath moduleSrcPath;
-    private Set<ModuleLocation.SourceModuleLocation> sourceModuleLocations;
+    private Set<ModuleLocation.WithExcludes> sourceModuleLocations;
 
     public ModuleSourceFileManager(
             @NonNull final ClassPath srcPath,
@@ -101,7 +101,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
         if (folderName.length() > 0) {
             folderName += FileObjects.NBFS_SEPARATOR_CHAR;
         }
-        final ModuleLocation.SourceModuleLocation ml = asSourceModuleLocation(l);
+        final ModuleLocation.WithExcludes ml = asSourceModuleLocation(l);
         for (ClassPath.Entry entry : ml.getModuleEntries()) {
             if (ignoreExcludes || entry.includes(folderName)) {
                 FileObject root = entry.getRoot();
@@ -142,7 +142,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
             @NonNull final JavaFileObject.Kind kind) {
         final String[] namePair = FileObjects.getParentRelativePathAndName (className);
         final String ext = kind == JavaFileObject.Kind.CLASS ? FileObjects.SIG : kind.extension.substring(1);   //tzezula: Clearly wrong in compile on save, but "class" is also wrong
-        final ModuleLocation.SourceModuleLocation ml = asSourceModuleLocation(l);
+        final ModuleLocation.WithExcludes ml = asSourceModuleLocation(l);
         for (ClassPath.Entry entry : ml.getModuleEntries()) {
             FileObject root = entry.getRoot();
             if (root != null) {
@@ -241,7 +241,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
     public Location getModuleLocation(Location location, JavaFileObject jfo, String pkgName) throws IOException {
         final FileObject fo = URLMapper.findFileObject(jfo.toUri().toURL());
         if (fo != null) {
-            for (ModuleLocation.SourceModuleLocation moduleLocation : sourceModuleLocations(location)) {
+            for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocations(location)) {
                 for (ClassPath.Entry moduleEntry : moduleLocation.getModuleEntries()) {
                     if (FileUtil.isParentOf(moduleEntry.getRoot(), fo)) {
                         return moduleLocation;
@@ -255,7 +255,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
     @Override
     @CheckForNull
     public Location getModuleLocation(Location location, String moduleName) throws IOException {
-        for (ModuleLocation.SourceModuleLocation moduleLocation : sourceModuleLocations(location)) {
+        for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocations(location)) {
             if (Objects.equals(moduleName, moduleLocation.getModuleName())) {
                 return moduleLocation;
             }            
@@ -263,7 +263,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
         return null;
     }
 
-    private FileObject[] findFile (final ModuleLocation.SourceModuleLocation location, final String relativePath) {
+    private FileObject[] findFile (final ModuleLocation.WithExcludes location, final String relativePath) {
         for (ClassPath.Entry entry : location.getModuleEntries()) {
             if (ignoreExcludes || entry.includes(relativePath)) {
                 FileObject root = entry.getRoot();
@@ -279,7 +279,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
     }
 
     @NonNull
-    private Set<ModuleLocation.SourceModuleLocation> sourceModuleLocations(Location location) {
+    private Set<ModuleLocation.WithExcludes> sourceModuleLocations(Location location) {
         if (sourceModuleLocations == null) {
             final Map<String, List<ClassPath.Entry>> moduleRoots = new HashMap<>();
             final Set<URL> seen = new HashSet<>();
@@ -309,17 +309,17 @@ final class ModuleSourceFileManager implements JavaFileManager {
                 }
             });
             sourceModuleLocations = moduleRoots.entrySet().stream().map(
-                    moduleRoot -> ModuleLocation.createSource(location, moduleRoot.getValue(), moduleRoot.getKey())
+                    moduleRoot -> ModuleLocation.WithExcludes.createExcludes(location, moduleRoot.getValue(), moduleRoot.getKey())
             ).collect(Collectors.toSet());
         }
         return sourceModuleLocations;
     }
 
     @NonNull
-    private static ModuleLocation.SourceModuleLocation asSourceModuleLocation (@NonNull final Location l) {
-        if (l.getClass() != ModuleLocation.SourceModuleLocation.class) {
+    private static ModuleLocation.WithExcludes asSourceModuleLocation (@NonNull final Location l) {
+        if (l.getClass() != ModuleLocation.WithExcludes.class) {
             throw new IllegalArgumentException (String.valueOf(l));
         }
-        return (ModuleLocation.SourceModuleLocation) l;
+        return (ModuleLocation.WithExcludes) l;
     }    
 }

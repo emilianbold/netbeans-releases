@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -122,12 +123,12 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     }
 
     protected final Iterable<JavaFileObject> listImpl(
-            final List<? extends ClassPath.Entry> roots,
+            final Collection<? extends ClassPath.Entry> roots,
             final String packageName,
             final Set<JavaFileObject.Kind> kinds,
             final boolean recursive) {
         String folderName = FileObjects.convertPackage2Folder( packageName );
-        List<Iterable<JavaFileObject>> idxs = new LinkedList<Iterable<JavaFileObject>>();
+        List<Iterable<JavaFileObject>> idxs = new LinkedList<>();
         for(ClassPath.Entry entry : roots) {
             try {
                 Archive archive = provider.getArchive( entry.getURL(), cacheFile );
