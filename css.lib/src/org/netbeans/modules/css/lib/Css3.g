@@ -756,6 +756,7 @@ elementSubsequent
     (
         {isScssSource()}? sass_extend_only_selector
         | {isCssPreprocessorSource()}? LESS_AND (IDENT | NUMBER)*
+        | {isLessSource()}? LESS_AND less_selector_interpolation_exp
     	| cssId
     	| cssClass
         | slAttribute

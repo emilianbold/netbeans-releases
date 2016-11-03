@@ -945,4 +945,13 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "     .transitions(300ms border linear, transform 300ms linear;);\n"
                 + "}");
     }
+    
+    public void testUnderscoreInNameWithInterpolation() {
+        assertParses(".classname {\n"
+                + "   &__@{classname_in_variable} { \n"
+                + "       height:0;\n"
+                + "   }\n"
+                + "}"
+        );
+    }
 }
