@@ -617,7 +617,7 @@ public final class XMLSyntaxSupport {
                 ts.movePrevious();
                 token = ts.token();
                 id = token.id();
-                if (id == XMLTokenId.TAG || id == XMLTokenId.PI_START)
+                if (id == XMLTokenId.TAG || id == XMLTokenId.PI_START || id == XMLTokenId.DECLARATION)
                     break;
             } //while
         } //if
@@ -655,6 +655,22 @@ public final class XMLSyntaxSupport {
             }
 
             case DECLARATION: {
+                Token<XMLTokenId> t = token;
+                do {
+                    if (t.id() == XMLTokenId.DECLARATION) {
+                        if (t.length() == 1 && t.text().charAt(0) == '>') {
+                            // we have the end of the declaration
+                            end = ts.offset() + t.length();
+                            break;
+                        }
+                    } else if (t.id() != XMLTokenId.VALUE) {
+                        // premature end of declaration
+                        end = ts.offset();
+                        break;
+                    }
+                    end = ts.offset() + t.length();
+                    t  = ts.token();
+                } while (ts.moveNext());
                 return new DocumentType(this, token, start, end);
             }
 
@@ -670,7 +686,8 @@ public final class XMLSyntaxSupport {
             case TEXT: {
                 end = ts.offset() + token.length();
                 Token<XMLTokenId> tukac = token;
-                while (token.id() == XMLTokenId.CHARACTER || token.id() == XMLTokenId.TEXT) {
+                while (tukac.id() == XMLTokenId.CHARACTER || tukac.id() == XMLTokenId.TEXT) {
+                    end = ts.offset() + tukac.length();
                     if (!ts.moveNext()) {
                         break;
                     }
