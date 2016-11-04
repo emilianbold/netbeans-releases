@@ -54,6 +54,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="mavenarchetypes">
+          <api name="templates"/>
+          <summary>Maven Archetypes</summary>
+          <version major="1" minor="8"/>
+          <date year="2016" month="11" day="1"/>
+          <author login="jtulach"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"/>
+          <description>
+              One can now create project wizards that create new projects
+              from Maven archetypes. See the
+              <a href="@TOP@overview-summary.html#html-and-maven">how-to</a>
+              for more details.
+          </description>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <issue number="268677"/>
+      </change>
       <change id="composition">
           <api name="templates"/>
           <summary>Support for composition</summary>
@@ -81,9 +97,9 @@ made subject to such option by the copyright holder.
               <p>
                   The <a onclick="target='_blank'" href="http://bits.netbeans.org/html+java/">
                       HTML UI API for Java
-                  </a> 
+                  </a>
                   revision 1.1 supports technolgy identifiers. Now they can
-                  be used via <code>TemplateRegistration</code> 
+                  be used via <code>TemplateRegistration</code>
                   annotation as well.
               </p>
           </description>
@@ -96,7 +112,7 @@ made subject to such option by the copyright holder.
           <version major="1" minor="3"/>
           <date day="5" month="2" year="2015"/>
           <author login="jtulach"/>
-          <compatibility addition="yes" deletion="no" binary="compatible" 
+          <compatibility addition="yes" deletion="no" binary="compatible"
                          source="compatible" deprecation="yes"/>
           <description>
               One can use <a href="@TOP@/overview-summary.html#javaTargetChooser">targetChooser:java</a>
@@ -110,12 +126,12 @@ made subject to such option by the copyright holder.
           <version major="1" minor="2"/>
           <date day="19" month="12" year="2014"/>
           <author login="jtulach"/>
-          <compatibility addition="yes" deletion="no" binary="compatible" 
+          <compatibility addition="yes" deletion="no" binary="compatible"
                          source="compatible" deprecation="yes"/>
           <description>
-              One new attribute 
+              One new attribute
               <a href="@org-netbeans-api-templates@/org/netbeans/api/templates/TemplateRegistration.html#page--">
-page()</a> 
+page()</a>
               to allow usage of HTML based UI driven by Java or JavaScript.
           </description>
       </change>
@@ -125,12 +141,12 @@ page()</a>
           <version major="1" minor="0"/>
           <date day="14" month="10" year="2014"/>
           <author login="sdedic"/>
-          <compatibility addition="no" deletion="no" binary="compatible" 
+          <compatibility addition="no" deletion="no" binary="compatible"
                          source="incompatible" deprecation="yes"/>
           <description>
               Template handling need not depend on Data System APIs, should be available
               for clients that only know FileSystems. Relevant interfaces moved to
-              <code>openide.filesystems.templates</code> module; see javadoc for 
+              <code>openide.filesystems.templates</code> module; see javadoc for
               <a href="@org-netbeans-api-templates@/org/netbeans/api/templates/FileBuilder.html">
                   FileBuilder</a> for details.
           </description>
