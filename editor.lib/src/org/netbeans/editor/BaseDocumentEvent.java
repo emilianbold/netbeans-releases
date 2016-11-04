@@ -282,6 +282,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
 
             // fire a DocumentEvent to notify the view(s)
             if (getType() == DocumentEvent.EventType.REMOVE) {
+                doc.firePreInsertUpdate(this);
                 doc.fireInsertUpdate(this);
             } else if (getType() == DocumentEvent.EventType.INSERT) {
                 doc.firePreRemoveUpdate(this);

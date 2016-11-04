@@ -1127,9 +1127,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
         fixLineSyntaxState = null;
 
-        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
-            listener.insertUpdate(chng);
-        }
+        firePreInsertUpdate(chng);
     }
 
     protected void preInsertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
@@ -1143,6 +1141,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // positions' offsets before the actual removal happens.
         for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
             listener.removeUpdate(chng);
+        }
+    }
+
+    void firePreInsertUpdate(DefaultDocumentEvent chng) {
+        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
+            listener.insertUpdate(chng);
         }
     }
 
