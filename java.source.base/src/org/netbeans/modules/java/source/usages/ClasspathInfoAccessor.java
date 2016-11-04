@@ -91,14 +91,15 @@ public abstract class ClasspathInfoAccessor {
     
     public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);
         
-    public abstract ClasspathInfo create (ClassPath bootPath,
-            ClassPath moduleBootPath,
-            ClassPath compilePath,
-            ClassPath moduleCompilePath,
-            ClassPath moduleClassPath,
-            ClassPath sourcePath,
-            ClassPath moduleSourcePath,
-            JavaFileFilterImplementation filter,
+    public abstract ClasspathInfo create (
+            @NonNull final ClassPath bootPath,
+            @NonNull final ClassPath moduleBootPath,
+            @NonNull final ClassPath compilePath,
+            @NonNull final ClassPath moduleCompilePath,
+            @NonNull ClassPath moduleClassPath,
+            @NullAllowed ClassPath sourcePath,
+            @NullAllowed ClassPath moduleSourcePath,
+            @NullAllowed JavaFileFilterImplementation filter,
             boolean backgroundCompilation,
             boolean ignoreExcludes,
             boolean hasMemoryFileManager,

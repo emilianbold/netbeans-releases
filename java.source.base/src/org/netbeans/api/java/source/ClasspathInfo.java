@@ -691,14 +691,15 @@ public final class ClasspathInfo {
         }
 
         @Override
-        public ClasspathInfo create (final ClassPath bootPath,
-                final ClassPath moduleBootPath,
-                final ClassPath classPath,
-                final ClassPath moduleCompilePath,
-                final ClassPath moduleClassPath,
-                final ClassPath sourcePath,
-                final ClassPath moduleSourcePath,
-                final JavaFileFilterImplementation filter,
+        public ClasspathInfo create (
+                @NonNull final ClassPath bootPath,
+                @NonNull final ClassPath moduleBootPath,
+                @NonNull final ClassPath classPath,
+                @NonNull final ClassPath moduleCompilePath,
+                @NonNull final ClassPath moduleClassPath,
+                @NullAllowed final ClassPath sourcePath,
+                @NullAllowed final ClassPath moduleSourcePath,
+                @NullAllowed final JavaFileFilterImplementation filter,
                 final boolean backgroundCompilation,
                 final boolean ignoreExcludes,
                 final boolean hasMemoryFileManager,
