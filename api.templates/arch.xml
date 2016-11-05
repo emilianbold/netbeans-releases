@@ -400,6 +400,7 @@ I feel ${wizard.msg}.
 </p>
     </usecase>
     <usecase id="target-chooser" name="Selecting target location with HTML UI">
+        <a name="targetchooser"></a>
         <p>
         It is very common that the HTML file creation wizards (either 
         controled by <a href="#html-and-js">JavaScript</a> or by
@@ -442,7 +443,7 @@ I feel ${wizard.msg}.
         <p>
             The definition of the UI is the same as in 
             <a href="#html-and-js">previous</a>
-            <a href="#html-and-java">cases</a>, just as a <a href="name">target chooser</a>
+            <a href="#html-and-java">cases</a>, just as a <a href="#targetchooser">target chooser</a>
             one can also use dedicated <b>Maven</b> one - just use
             <code>'targetChooser:archetype'</code> to get a panel 
             with options to select directory, <code>archetypeId</code>,
