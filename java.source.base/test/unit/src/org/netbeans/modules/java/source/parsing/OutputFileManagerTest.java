@@ -92,7 +92,8 @@ public class OutputFileManagerTest extends NbTestCase {
                 srcCp,
                 ClassPath.EMPTY,
                 sibling.getProvider(),
-                wbTx);
+                wbTx,
+                null);
     }
 
     public void testValidClassName() throws IOException {

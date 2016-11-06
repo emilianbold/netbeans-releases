@@ -51,8 +51,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -205,7 +207,16 @@ public class OutputFileManager extends CachingFileManager {
         if (fo != null) {
             return fo;
         }
-        return super.getFileForInput(l, pkgName, relativeName);
+        if (!ModuleLocation.isInstance(l)) {
+            //File in output
+            return super.getFileForInput(l, pkgName, relativeName);
+        } else {
+            //File in module
+            return getFileForInputImpl(
+                    ModuleLocation.WithExcludes.cast(l).getModuleEntries(),
+                    pkgName,
+                    relativeName);
+        }
     }
 
     @Override
@@ -218,7 +229,17 @@ public class OutputFileManager extends CachingFileManager {
                 return (JavaFileObject)fo;
             }
         }
-        return super.getJavaFileForInput(l, className, kind);
+        if (!ModuleLocation.isInstance(l)) {
+            //File in output
+            return super.getJavaFileForInput(l, className, kind);
+        } else {
+            //File in module
+            return getJavaFileForInputImpl(
+                    ModuleLocation.WithExcludes.cast(l).getModuleEntries(),
+                    className,
+                    kind
+            );
+        }
     }
 
     @Override
@@ -233,23 +254,32 @@ public class OutputFileManager extends CachingFileManager {
         }
         if (cachedModuleLocations == null) {
             if (moduleSourceFileManager != null) {
+                final Map<URL,ClassPath.Entry> entriesByUrl = new HashMap<>();
+                getClassPath().entries().forEach((e) -> entriesByUrl.put(e.getURL(), e));
                 cachedModuleLocations = StreamSupport.stream(
                         moduleSourceFileManager.listModuleLocations(StandardLocation.MODULE_SOURCE_PATH).spliterator(),
                         false)
                         .map((e) -> {
                             final ModuleLocation ml = ModuleLocation.cast(e.iterator().next());
-                            Location oml = ModuleLocation.create(
+                            Location oml = ModuleLocation.WithExcludes.createExcludes(
                                     StandardLocation.CLASS_OUTPUT,
                                     ml.getModuleRoots().stream()
                                             .map((src) -> {
                                                 try {
-                                                    return BaseUtilities.toURI(JavaIndex.getClassFolder(src, false, false)).toURL();
+                                                    final URL cacheRoot = BaseUtilities.toURI(JavaIndex.getClassFolder(src, false, false)).toURL();
+                                                    final ClassPath.Entry cacheEntry = entriesByUrl.get(cacheRoot);
+                                                    assert cacheEntry != null : String.format(
+                                                            "No cache entry for cache root: %s (src root: %s), known entries: %s",  //NOI18N
+                                                            cacheRoot,
+                                                            src,
+                                                            entriesByUrl.keySet());
+                                                    return cacheEntry;
                                                 } catch (IOException ioe) {
                                                     Exceptions.printStackTrace(ioe);
                                                     return null;
                                                 }
                                             })
-                                            .filter((cache) -> cache != null)
+                                            .filter((cacheEntry) -> cacheEntry != null)
                                             .collect(Collectors.toSet()),
                                     ml.getModuleName());
                             return Collections.singleton(oml);

@@ -111,10 +111,6 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         this.ignoreExcludes = ignoreExcludes;
     }
 
-    protected final ClassPath getClassPath() {
-        return this.cp;
-    }
-
     // FileManager implementation ----------------------------------------------
     
     @Override
@@ -122,68 +118,14 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         return listImpl(this.cp.entries(), packageName, kinds, recursive);
     }
 
-    protected final Iterable<JavaFileObject> listImpl(
-            final Collection<? extends ClassPath.Entry> roots,
-            final String packageName,
-            final Set<JavaFileObject.Kind> kinds,
-            final boolean recursive) {
-        String folderName = FileObjects.convertPackage2Folder( packageName );
-        List<Iterable<JavaFileObject>> idxs = new LinkedList<>();
-        for(ClassPath.Entry entry : roots) {
-            try {
-                Archive archive = provider.getArchive( entry.getURL(), cacheFile );
-                if (archive != null) {
-                    Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, kinds, filter, recursive);
-                    idxs.add(entries);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        final StringBuilder urls = new StringBuilder ();
-                        for (JavaFileObject jfo : entries) {
-                            urls.append(jfo.toUri().toString());
-                            urls.append(", ");  //NOI18N
-                        }
-                        LOG.finest(String.format("cache for %s package: %s type: %s files: [%s]",   //NOI18N
-                                entry.getURL().toExternalForm(),
-                                packageName,
-                                kinds.toString(),
-                                urls.toString()));
-                    }
-                }
-                else if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.finest(String.format("no cache for: %s", entry.getURL().toExternalForm()));           //NOI18N
-                }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return Iterators.chained(idxs);
-    }
-
     @Override
     public javax.tools.FileObject getFileForInput( Location l, String pkgName, String relativeName ) {
-        return findFile(pkgName, relativeName);
+        return getFileForInputImpl(this.cp.entries(), pkgName, relativeName);
     }
 
     @Override
     public JavaFileObject getJavaFileForInput (Location l, String className, JavaFileObject.Kind kind) {
-        final String[] namePair = FileObjects.getParentRelativePathAndName(className);
-        for( ClassPath.Entry root : this.cp.entries()) {
-            try {
-                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
-                if (archive != null) {
-                    Iterable<JavaFileObject> files = archive.getFiles(namePair[0], ignoreExcludes?null:root, null, filter, false);
-                    for (JavaFileObject e : files) {
-                        final String ename = e.getName();
-                        if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
-                            kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
-                            return e;
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return null;
+        return getJavaFileForInputImpl(this.cp.entries(), className, kind);
     }
 
 
@@ -193,7 +135,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         if (!allowOutput) {
             throw new UnsupportedOperationException("Output is unsupported.");  //NOI18N
         }
-        javax.tools.JavaFileObject file = findFile (pkgName, relativeName);
+        javax.tools.JavaFileObject file = getFileForInputImpl(this.cp.entries(), pkgName, relativeName);
         if (file == null) {
             final List<ClassPath.Entry> entries = this.cp.entries();
             if (!entries.isEmpty()) {
@@ -272,12 +214,81 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         }
     }
 
-    private javax.tools.JavaFileObject findFile(final String pkgName, String relativeName) {
+    //Protected impl methods for subclasses
+
+    protected final ClassPath getClassPath() {
+        return this.cp;
+    }
+
+    protected final Iterable<JavaFileObject> listImpl(
+            final Collection<? extends ClassPath.Entry> roots,
+            final String packageName,
+            final Set<JavaFileObject.Kind> kinds,
+            final boolean recursive) {
+        String folderName = FileObjects.convertPackage2Folder( packageName );
+        List<Iterable<JavaFileObject>> idxs = new LinkedList<>();
+        for(ClassPath.Entry entry : roots) {
+            try {
+                Archive archive = provider.getArchive( entry.getURL(), cacheFile );
+                if (archive != null) {
+                    Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, kinds, filter, recursive);
+                    idxs.add(entries);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        final StringBuilder urls = new StringBuilder ();
+                        for (JavaFileObject jfo : entries) {
+                            urls.append(jfo.toUri().toString());
+                            urls.append(", ");  //NOI18N
+                        }
+                        LOG.finest(String.format("cache for %s package: %s type: %s files: [%s]",   //NOI18N
+                                entry.getURL().toExternalForm(),
+                                packageName,
+                                kinds.toString(),
+                                urls.toString()));
+                    }
+                }
+                else if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest(String.format("no cache for: %s", entry.getURL().toExternalForm()));           //NOI18N
+                }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return Iterators.chained(idxs);
+    }
+
+    protected final JavaFileObject getJavaFileForInputImpl(
+            final Collection<? extends ClassPath.Entry> roots,
+            final String className,
+            final JavaFileObject.Kind kind) {
+        final String[] namePair = FileObjects.getParentRelativePathAndName(className);
+        for( ClassPath.Entry root : roots) {
+            try {
+                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
+                if (archive != null) {
+                    Iterable<JavaFileObject> files = archive.getFiles(namePair[0], ignoreExcludes?null:root, null, filter, false);
+                    for (JavaFileObject e : files) {
+                        final String ename = e.getName();
+                        if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
+                            kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
+                            return e;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return null;
+    }
+
+    protected final javax.tools.JavaFileObject getFileForInputImpl(
+            final Collection<? extends ClassPath.Entry> roots,
+            final String pkgName,
+            String relativeName) {
         assert pkgName != null;
         assert relativeName != null;
         final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
-
-        for( ClassPath.Entry root : this.cp.entries()) {
+        for( ClassPath.Entry root : roots) {
             try {
                 final Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 if (archive != null) {
