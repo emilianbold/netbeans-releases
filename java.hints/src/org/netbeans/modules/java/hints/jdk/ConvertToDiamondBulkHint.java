@@ -56,15 +56,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.JComponent;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint.CustomizerProviderImpl;
-import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
-import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -132,15 +138,73 @@ public class ConvertToDiamondBulkHint {
                             continue OUTER;
                         } else {
                             break FOUND;
-                        }
+                        } 
                     }
                 }
+            }
+            
+            // check that the resolved symbol has no overloads, which would
+            // take parametrized supertypes of the arguments
+            if (checkAmbiguousOverload(ctx.getInfo(), ctx.getPath())) {
+                return null;
             }
 
             return ErrorDescriptionFactory.forTree(ctx, clazz.getParentPath(), d.getMessage(null), new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
         }
 
         return null;
+    }
+    
+    /**
+     * Checks whether an ambiguous overload exists. Javacs prior to JDK9 use imperfect
+     * inference for type parameters, which causes more overloads to match the invocation,
+     * therefore causing an error during compilation. If the diamond hint was applied
+     * in such a case, the result would not be error-highlighted in editor, but would
+     * fail to compile using JDK &lt; 9.
+     * <p/>
+     * The check is very rough, so it should not be used to generate errors as older
+     * javacs do.
+     * <p/>
+     * See defect #248162
+     */
+    private static boolean checkAmbiguousOverload(CompilationInfo info, TreePath newPath) {
+        if (info.getSourceVersion().compareTo(SourceVersion.RELEASE_8) > 0) {
+            return false;
+        }
+        Element el = info.getTrees().getElement(newPath);
+        if (el == null || el.getKind() != ElementKind.CONSTRUCTOR) {
+            return false;
+        }
+        ExecutableElement ctor = (ExecutableElement)el;
+        DeclaredType resolvedType = (DeclaredType)info.getTrees().getTypeMirror(newPath);
+        ExecutableType ctorType = (ExecutableType)info.getTypes().asMemberOf(resolvedType, el);
+        for (ExecutableElement ee : ElementFilter.constructorsIn(el.getEnclosingElement().getEnclosedElements())) {
+            if (ee == el) {
+                continue;
+            }
+            if (ee.getParameters().size() != ctor.getParameters().size()) {
+                continue;
+            }
+            TypeMirror t = info.getTypes().asMemberOf(resolvedType, ee);
+            if (!Utilities.isValidType(t) || t.getKind() != TypeKind.EXECUTABLE) {
+                continue;
+            }
+            ExecutableType et = (ExecutableType)t;
+            for (int i = 0; i < ee.getParameters().size(); i++) {
+                TypeMirror earg = et.getParameterTypes().get(i);
+                TypeMirror carg = ctorType.getParameterTypes().get(i);
+                if (!earg.getKind().isPrimitive() && !carg.getKind().isPrimitive()) {
+                    TypeMirror erasedC = info.getTypes().erasure(carg);
+                    TypeMirror erasedE = info.getTypes().erasure(earg);
+                    if (info.getTypes().isAssignable(erasedC, earg) && 
+                        !info.getTypes().isSameType(erasedC, erasedE)) {
+                        // invalid hint here!
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     static final String KEY = "enabledVariants";
