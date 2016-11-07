@@ -293,15 +293,9 @@ public class OutputFileManager extends CachingFileManager {
     }
 
     @Override
-    public String inferModuleName(Location location) throws IOException {
-        final ModuleLocation ml = ModuleLocation.cast(location);
-        return ml.getModuleName();
-    }
-
-    @Override
     public Location getModuleLocation(Location location, String moduleName) throws IOException {
         return StreamSupport.stream(
-                listModuleLocations(StandardLocation.CLASS_OUTPUT).spliterator(),
+                listModuleLocations(location).spliterator(),
                 false)
                 .flatMap((c) -> c.stream())
                 .filter((l) -> moduleName.equals(ModuleLocation.cast(l).getModuleName()))
@@ -311,8 +305,24 @@ public class OutputFileManager extends CachingFileManager {
 
     @Override
     public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
-        //Todo:
+        final URL foUrl = fo.toUri().toURL();
+        for (Set<Location> s :  listModuleLocations(location)) {
+            for (Location l : s) {
+                ModuleLocation ml = ModuleLocation.cast(l);
+                for (URL root : ml.getModuleRoots()) {
+                    if (FileObjects.isParentOf(root, foUrl)) {
+                        return l;
+                    }
+                }
+            }
+        }
         return null;
+    }
+
+    @Override
+    public String inferModuleName(Location location) throws IOException {
+        final ModuleLocation ml = ModuleLocation.cast(location);
+        return ml.getModuleName();
     }
 
     private File getClassFolderForSource (
