@@ -334,9 +334,16 @@ public final class ProxyFileManager implements JavaFileManager {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
-            return jfms.length == 0 ?
-                    null :
-                    jfms[0].getModuleLocation(location, moduleName);
+            switch(jfms.length) {
+                case 0:
+                    return null;
+                case 1:
+                    return jfms[0].getModuleLocation(location, moduleName);
+                default:
+                    throw new IllegalStateException(String.format(
+                            "Expected single JavaFileManager for module location: %s",    //NOI18N
+                            location));
+            }
         } finally {
             clearOwnerThread();
         }
@@ -348,9 +355,16 @@ public final class ProxyFileManager implements JavaFileManager {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
-            return jfms.length == 0 ?
-                    null :
-                    jfms[0].getModuleLocation(location, fo, pkgName);
+            switch(jfms.length) {
+                case 0:
+                    return null;
+                case 1:
+                    return jfms[0].getModuleLocation(location, fo, pkgName);
+                default:
+                    throw new IllegalStateException(String.format(
+                            "Expected single JavaFileManager for module location: %s",    //NOI18N
+                            location));
+            }
         } finally {
             clearOwnerThread();
         }
@@ -362,9 +376,16 @@ public final class ProxyFileManager implements JavaFileManager {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
-            return jfms.length == 0 ?
-                    null :
-                    jfms[0].inferModuleName(location);
+            switch(jfms.length) {
+                case 0:
+                    return null;
+                case 1:
+                    return jfms[0].inferModuleName(location);
+                default:
+                    throw new IllegalStateException(String.format(
+                            "Expected single JavaFileManager for module name inference: %s",    //NOI18N
+                            location));
+            }
         } finally {
             clearOwnerThread();
         }
@@ -376,9 +397,16 @@ public final class ProxyFileManager implements JavaFileManager {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
-            return jfms.length == 0 ?
-                    Collections.<Set<Location>>emptySet() :
-                    jfms[0].listModuleLocations(location);
+            switch(jfms.length) {
+                case 0:
+                    return Collections.<Set<Location>>emptySet();
+                case 1:
+                    return jfms[0].listModuleLocations(location);
+                default:
+                    throw new IllegalStateException(String.format(
+                            "Expected single JavaFileManager for list of module locations: %s",    //NOI18N
+                            location));
+            }
         } finally {
             clearOwnerThread();
         }
@@ -783,7 +811,9 @@ public final class ProxyFileManager implements JavaFileManager {
             m.put(StandardLocation.PLATFORM_CLASS_PATH, new Entry(() -> new JavaFileManager[] {createBootFileManager()}));
             m.put(StandardLocation.CLASS_PATH, new Entry(() -> {
                     final JavaFileManager compile = createCompileFileManager();
-                    final JavaFileManager output = createOutputFileManager();
+                    final JavaFileManager output = createModuleSrcFileManager() == null ?
+                            createOutputFileManager() :
+                            null;
                     return output == null ?
                         new JavaFileManager[] {compile}:
                         new JavaFileManager[] {output, compile};
