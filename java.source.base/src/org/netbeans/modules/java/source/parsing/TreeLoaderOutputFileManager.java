@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -53,9 +54,12 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -87,10 +91,14 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
 
     @Override
     public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+        final Pair<Location,URL> p = baseLocation(location);
+        location = p.first();
         if (!hasLocation(location)) {
             throw new IllegalArgumentException(String.valueOf(location));
         }
         final File root = new File (outputRoot);
+        assert p.second() == null || p.second().equals(BaseUtilities.toURI(root).toURL()) :
+                String.format("Expected: %s, Current %s", p.second(), root);
         final String nameStr = FileObjects.convertPackage2Folder(className, File.separatorChar)  + '.' + FileObjects.SIG;
         final File file = new File (root, nameStr);
         if (FileObjects.isValidFileName(className)) {
@@ -109,6 +117,8 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
 
     @Override
     public JavaFileObject getJavaFileForInput(Location location, String className, JavaFileObject.Kind kind) throws IOException {
+        final Pair<Location,URL> p = baseLocation(location);
+        location = p.first();
         if (!hasLocation(location)) {
             throw new IllegalArgumentException(String.valueOf(location));
         }
@@ -122,6 +132,8 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
         names[1] = names[1] + kind.extension;
         try {
             final File root = new File (outputRoot);
+            assert p.second() == null || p.second().equals(BaseUtilities.toURI(root).toURL()) :
+                String.format("Expected: %s, Current %s", p.second(), root);
             Archive  archive = provider.getArchive (BaseUtilities.toURI(root).toURL(), false);
             if (archive != null) {
                 Iterable<JavaFileObject> files = archive.getFiles(names[0], null, null, null, false);
@@ -139,10 +151,14 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
 
     @Override
     public FileObject getFileForOutput(Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
+        final Pair<Location,URL> p = baseLocation(location);
+        location = p.first();
         if (!hasLocation(location)) {
             throw new IllegalArgumentException(String.valueOf(location));
         }
         final File root = new File(outputRoot);
+        assert p.second() == null || p.second().equals(BaseUtilities.toURI(root).toURL()) :
+                String.format("Expected: %s, Current %s", p.second(), root);
         final File file = FileUtil.normalizeFile(new File (
             root,
             FileObjects.resolveRelativePath(packageName, relativeName).replace(FileObjects.NBFS_SEPARATOR_CHAR, File.separatorChar)));  //NOI18N
@@ -151,10 +167,14 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
 
     @Override
     public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
+        final Pair<Location,URL> p = baseLocation(location);
+        location = p.first();
         if (!hasLocation(location)) {
             throw new IllegalArgumentException(String.valueOf(location));
         }
         final File root = new File(outputRoot);
+        assert p.second() == null || p.second().equals(BaseUtilities.toURI(root).toURL()) :
+                String.format("Expected: %s, Current %s", p.second(), root);
         final String path = FileObjects.resolveRelativePath(packageName, relativeName);
         final String[] names = FileObjects.getFolderAndBaseName(path, FileObjects.NBFS_SEPARATOR_CHAR);
         final javax.tools.FileObject jfo = tx.readFileObject(location, names[0], names[1]);
@@ -216,5 +236,36 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
 
     @Override
     public void close() throws IOException {
+    }
+
+    //Modules
+    @Override
+    public Location getModuleLocation(Location location, String moduleName) throws IOException {
+        if (!hasLocation(location)) {
+            throw new IllegalArgumentException(String.valueOf(location));
+        }
+        final URL cacheRoot = BaseUtilities.toURI(new File(outputRoot)).toURL();
+        final URL origRoot = JavaIndex.getSourceRootForClassFolder(cacheRoot);
+        if (origRoot == null) {
+            return null;
+        }
+        final String expectedModuleName = SourceUtils.getModuleName(origRoot);
+        return moduleName.equals(expectedModuleName) ?
+            ModuleLocation.create(
+                    StandardLocation.CLASS_OUTPUT,
+                    Collections.singleton(cacheRoot),
+                    moduleName):
+            null;
+    }
+
+    //Implementation methods
+    @NonNull
+    private static Pair<Location,URL> baseLocation(@NonNull final Location loc) {
+        if (ModuleLocation.isInstance(loc)) {
+            final ModuleLocation ml = ModuleLocation.cast(loc);
+            return Pair.of(ml.getBaseLocation(), ml.getModuleRoots().iterator().next());
+        } else {
+            return Pair.of(loc,null);
+        }
     }
 }
