@@ -891,7 +891,8 @@ public final class ProxyFileManager implements JavaFileManager {
         @CheckForNull
         private JavaFileManager createSrcFileManager() {
             if (emitted[SRC] == null) {
-                final boolean hasSources = this.moduleSrcCached == ClassPath.EMPTY && this.srcCached != ClassPath.EMPTY;
+                final boolean hasModules = this.srcCached != null && !this.srcCached.entries().isEmpty() && this.moduleSrcCached != ClassPath.EMPTY;
+                final boolean hasSources = !hasModules && this.srcCached != ClassPath.EMPTY;
                 emitted[SRC] = hasSources ?
                         (!useModifiedFiles ?
                                 new CachingFileManager (cap, srcCached, filter, false, ignoreExcludes) :
@@ -983,7 +984,7 @@ public final class ProxyFileManager implements JavaFileManager {
         @CheckForNull
         private JavaFileManager createModuleSrcFileManager() {
             if (emitted[SRC_MODULES] == null) {
-                final boolean hasModules = this.moduleSrcCached != ClassPath.EMPTY;
+                final boolean hasModules = this.srcCached != null && !this.srcCached.entries().isEmpty() && this.moduleSrcCached != ClassPath.EMPTY;
                 emitted[SRC_MODULES] = hasModules ?
                         new ModuleSourceFileManager(
                                 srcCached,
