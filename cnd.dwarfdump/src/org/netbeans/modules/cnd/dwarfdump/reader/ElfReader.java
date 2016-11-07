@@ -577,14 +577,14 @@ public class ElfReader extends ByteStreamReader {
     private SectionHeader readSectionHeader() throws IOException {
         SectionHeader h = new SectionHeader();
         
-        h.sh_name      = 0xFFFFFFFFL & readInt();
-        h.sh_type      = 0xFFFFFFFFL & readInt();
+        h.sh_name      = intToLong(readInt());
+        h.sh_type      = intToLong(readInt());
         h.sh_flags     = read3264();
         h.sh_addr      = read3264();
         h.sh_offset    = read3264()+shiftIvArchive;
         h.sh_size      = read3264();
-        h.sh_link      = 0xFFFFFFFFL & readInt();
-        h.sh_info      = 0xFFFFFFFFL & readInt();
+        h.sh_link      = intToLong(readInt());
+        h.sh_info      = intToLong(readInt());
         h.sh_addralign = read3264();
         h.sh_entsize   = read3264();
         
@@ -652,8 +652,8 @@ public class ElfReader extends ByteStreamReader {
     }
 
     public static final class SharedLibraries {
-        private List<String> dlls = new ArrayList<String>();
-        private List<String> searchPaths = new ArrayList<String>();
+        private final List<String> dlls = new ArrayList<String>();
+        private final List<String> searchPaths = new ArrayList<String>();
         public void addDll(String dll) {
             dlls.add(dll);
         }
