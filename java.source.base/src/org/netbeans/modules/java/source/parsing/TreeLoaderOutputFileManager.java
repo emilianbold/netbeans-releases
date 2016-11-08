@@ -92,9 +92,8 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
     @Override
     public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
         final Pair<Location,URL> p = baseLocation(location);
-        location = p.first();
-        if (!hasLocation(location)) {
-            throw new IllegalArgumentException(String.valueOf(location));
+        if (!hasLocation(p.first())) {
+            throw new IllegalArgumentException(String.valueOf(p.first()));
         }
         final File root = new File (outputRoot);
         assert p.second() == null || p.second().equals(BaseUtilities.toURI(root).toURL()) :
@@ -118,9 +117,8 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
     @Override
     public JavaFileObject getJavaFileForInput(Location location, String className, JavaFileObject.Kind kind) throws IOException {
         final Pair<Location,URL> p = baseLocation(location);
-        location = p.first();
-        if (!hasLocation(location)) {
-            throw new IllegalArgumentException(String.valueOf(location));
+        if (!hasLocation(p.first())) {
+            throw new IllegalArgumentException(String.valueOf(p.first()));
         }
         final String [] names = FileObjects.getParentRelativePathAndName(className);
         if (kind == JavaFileObject.Kind.CLASS) {
@@ -152,9 +150,8 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
     @Override
     public FileObject getFileForOutput(Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
         final Pair<Location,URL> p = baseLocation(location);
-        location = p.first();
-        if (!hasLocation(location)) {
-            throw new IllegalArgumentException(String.valueOf(location));
+        if (!hasLocation(p.first())) {
+            throw new IllegalArgumentException(String.valueOf(p.first()));
         }
         final File root = new File(outputRoot);
         assert p.second() == null || p.second().equals(BaseUtilities.toURI(root).toURL()) :
@@ -168,9 +165,8 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
     @Override
     public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
         final Pair<Location,URL> p = baseLocation(location);
-        location = p.first();
-        if (!hasLocation(location)) {
-            throw new IllegalArgumentException(String.valueOf(location));
+        if (!hasLocation(p.first())) {
+            throw new IllegalArgumentException(String.valueOf(p.first()));
         }
         final File root = new File(outputRoot);
         assert p.second() == null || p.second().equals(BaseUtilities.toURI(root).toURL()) :
