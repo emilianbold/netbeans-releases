@@ -47,14 +47,18 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import org.netbeans.modules.cnd.debugger.common2.ProcessListAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 /**
  *
  * @author ak119685
  */
 public final class ProcessList {
+    
+    static {
+        ProcessListAccessor.setDefault(new ProcessListAccessorImpl());
+    }
 
     private final HashMap<Integer, ProcessInfo> data;
     private final ExecutionEnvironment execEnv;
@@ -94,37 +98,22 @@ public final class ProcessList {
 //        return result;
 //    }
     
-//    public Collection<Integer> getPIDs(String filter) {
-//        ArrayList<Integer> result = new ArrayList<Integer>();
-//        if (filter == null || filter.isEmpty()) {
-//            return result;
-//        }
-//        for (Integer pid : getPIDs()) {
-//            ProcessInfo info = getInfo(pid);
-//
-//            if (info.matches(filter)) {
-//                result.add(pid);
-//            }
-//        }
-//
-//        return result;
-//    }
-    
-//    public Collection<Integer> getPIDs(String descriptor_id, String filter) {
-//        ArrayList<Integer> result = new ArrayList<Integer>();
-//        if (filter == null || filter.isEmpty()) {
-//            return result;
-//        }
-//        for (Integer pid : getPIDs()) {
-//            ProcessInfo info = getInfo(pid);
-//
-//            if (info.matches(descriptor_id, filter)) {
-//                result.add(pid);
-//            }
-//        }
-//
-//        return result;
-//    }    
+    public Collection<Integer> getPIDs(String filter) {
+        ArrayList<Integer> result = new ArrayList<Integer>();
+        if (filter == null || filter.isEmpty()) {
+            return getPIDs();
+        }
+        for (Integer pid : getPIDs()) {
+            ProcessInfo info = getInfo(pid);
+
+            if (info.matches(filter)) {
+                result.add(pid);
+            }
+        }
+
+        return result;
+    }
+      
 
     public Collection<Integer> getPIDs(Integer ppid) {
         ArrayList<Integer> result = new ArrayList<Integer>();
@@ -136,5 +125,14 @@ public final class ProcessList {
 
         return result;
     }
+    
+    private static class ProcessListAccessorImpl extends ProcessListAccessor {
+
+        @Override
+        public ProcessList create(Collection<ProcessInfo> info, ExecutionEnvironment execEnv) {
+            return new ProcessList(info, execEnv);
+        }
+        
+    } 
 }
 

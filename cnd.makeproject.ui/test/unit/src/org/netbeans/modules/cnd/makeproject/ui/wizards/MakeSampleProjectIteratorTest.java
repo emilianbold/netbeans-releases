@@ -72,8 +72,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -364,6 +366,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         Tool C = set.findTool(PredefinedToolKind.CCompiler);
         Tool CPP = set.findTool(PredefinedToolKind.CCCompiler);
         Tool MAKE = set.findTool(PredefinedToolKind.MakeTool);
+        if (build_rc.intValue() == -1) {
+            CndUtils.threadsDump();
+        }
         assertTrue("build failed - rc = " + build_rc.intValue()+
                 "\nBuildLog:\n"+buf.toString()+
                 "\nTool Collection:"+set.getName()+

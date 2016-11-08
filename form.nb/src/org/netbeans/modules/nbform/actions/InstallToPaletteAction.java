@@ -94,6 +94,9 @@ public class InstallToPaletteAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 0) {
+            return false;
+        }
         for (Node n: activatedNodes) {
             FileObject fobj = n.getLookup().lookup(FileObject.class);
             if (fobj == null || JavaSource.forFileObject(fobj) == null) {
