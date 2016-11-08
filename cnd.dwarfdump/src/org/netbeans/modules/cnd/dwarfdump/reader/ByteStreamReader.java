@@ -366,10 +366,19 @@ public class ByteStreamReader implements DataInput {
     }
     
     public long read3264() throws IOException {
-        return (fileClass == ElfConstants.ELFCLASS32) ? intToLong(readInt()) : readLong();
+        return (fileClass == ElfConstants.ELFCLASS32) ? ByteStreamReader.uintToLong(readInt()) : readLong();
     }
     
-    public static long intToLong(int value) {
+    public static int ubyteToInt(byte value) {
+        return 0xFF & value;
+    }
+
+    public static int ushortToInt(short value) {
+        return 0xFFFF & value;
+    }
+
+    public static long uintToLong(int value) {
         return 0xFFFFFFFFL & value;
     }
+
 }
