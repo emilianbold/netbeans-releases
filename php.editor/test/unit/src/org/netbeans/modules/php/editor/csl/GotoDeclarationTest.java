@@ -505,6 +505,35 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "ConstantInterface::INTERFACE_CONSTANT1[GLOBAL_CON^STANT1[1]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
     }
 
+    // constant array access with namespace
+    public void testIssue268712_01() throws Exception {
+        checkDeclaration(getTestPath(), "const TEST3 = \\TES^T1[0];", "    const ^TEST1 = [0, 1];");
+    }
+
+    public void testIssue268712_02() throws Exception {
+        checkDeclaration(getTestPath(), "\\Issue268712_A\\TEST^2[0][1];", "    const ^TEST2 = [[0, 1], 1];");
+    }
+
+    public void testIssue268712_03() throws Exception {
+        checkDeclaration(getTestPath(), "$const1 = \\TE^ST1[$test];", "    const ^TEST1 = [0, 1];");
+    }
+
+    public void testIssue268712_04() throws Exception {
+        checkDeclaration(getTestPath(), "$const2 = \\Issue268712_A\\TEST2^[1];", "    const ^TEST2 = [[0, 1], 1];");
+    }
+
+    public void testIssue268712_05() throws Exception {
+        checkDeclaration(getTestPath(), "echo \\Issue268712_B\\TES^T6[\"test\"] . PHP_EOL;", "    const ^TEST6 = [\"test\" => \"test\"];");
+    }
+
+    public void testIssue268712_06() throws Exception {
+        checkDeclaration(getTestPath(), "echo Sub\\S^UB[\"sub\"] . PHP_EOL;", "    const ^SUB = [\"sub\" => \"sub\"];");
+    }
+
+    public void testIssue268712_07() throws Exception {
+        checkDeclaration(getTestPath(), "echo namespace\\TEST^6[\"test\"] . PHP_EOL;", "    const ^TEST6 = [\"test\" => \"test\"];");
+    }
+
     public void testStaticMethodInvocation_First() throws Exception {
         checkDeclaration(getTestPath(), "echo Mammal::$co^unt;", "public static $^count = 0, $animal;");
     }
