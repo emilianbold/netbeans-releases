@@ -1055,6 +1055,30 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/groupUseFunction_03.php");
     }
 
+    public void testIssue268621_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue268621_01.php");
+    }
+
+    public void testIssue268621_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue268621_02.php");
+    }
+
+    public void testIssue268621_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue268621_03.php");
+    }
+
+    public void testIssue268621_04() throws Exception {
+        testIndentInFile("testfiles/indent/issue268621_04.php");
+    }
+
+    public void testIssue268621_05() throws Exception {
+        testIndentInFile("testfiles/indent/issue268621_05.php");
+    }
+
+    public void testIssue268621_06() throws Exception {
+        testIndentInFile("testfiles/indent/issue268621_06.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;

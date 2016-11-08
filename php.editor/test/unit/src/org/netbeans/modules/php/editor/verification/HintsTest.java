@@ -610,6 +610,10 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_55), "testIssue267563Fix02.php", "class Fo^o implements FooInterface", "Implement");
     }
 
+    public void testIssue268557() throws Exception {
+        checkHints(new FieldRedeclarationHintError(), "testIssue268557.php");
+    }
+
     //~ Inner classes
 
     private static final class ImplementAbstractMethodsHintErrorStub extends ImplementAbstractMethodsHintError {
