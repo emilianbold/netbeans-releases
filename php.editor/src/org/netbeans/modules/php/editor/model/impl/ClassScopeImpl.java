@@ -240,6 +240,12 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         sb.append(ifacesBuffer);
     }
 
+    /**
+     * This method returns declared fields. <b>Note:</b>Contains annotation
+     * fileds. e.g. @property int $a, @param string $b.
+     *
+     * @return declared fields
+     */
     @Override
     public Collection<? extends FieldElement> getDeclaredFields() {
         if (ModelUtils.getFileScope(this) == null) {

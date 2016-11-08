@@ -120,15 +120,20 @@ public class FieldRedeclarationHintError extends HintErrorRule {
             if (CancelSupport.getDefault().isCancelled()) {
                 return Collections.emptySet();
             }
-            String fieldName = declaredField.getName();
-            FieldElement firstDeclaredField = firstDeclaredFields.get(fieldName);
-            if (firstDeclaredField == null) {
-                firstDeclaredFields.put(fieldName, declaredField);
-            } else if (firstDeclaredField.getOffset() > declaredField.getOffset()) {
-                FieldElement oldField = firstDeclaredFields.replace(fieldName, declaredField);
-                redeclaredFields.add(oldField);
-            } else {
-                redeclaredFields.add(declaredField);
+            // if property type-hints are added in future, FiledElement should be improved
+            // e.g. check whether a field is an annotation, then add the field for it
+            Collection<? extends String> defaultTypeNames = declaredField.getDefaultTypeNames();
+            if (defaultTypeNames.isEmpty()) {
+                String fieldName = declaredField.getName();
+                FieldElement firstDeclaredField = firstDeclaredFields.get(fieldName);
+                if (firstDeclaredField == null) {
+                    firstDeclaredFields.put(fieldName, declaredField);
+                } else if (firstDeclaredField.getOffset() > declaredField.getOffset()) {
+                    FieldElement oldField = firstDeclaredFields.replace(fieldName, declaredField);
+                    redeclaredFields.add(oldField);
+                } else {
+                    redeclaredFields.add(declaredField);
+                }
             }
         }
         return redeclaredFields;
