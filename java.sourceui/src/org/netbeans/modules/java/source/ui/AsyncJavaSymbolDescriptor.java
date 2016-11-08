@@ -72,6 +72,7 @@ import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
@@ -322,17 +323,16 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         JavacTaskImpl javac;
         Reference<JavacTaskImpl> ref = javacRef;
         if (ref == null || (javac = ref.get()) == null) {
-            javac = (JavacTaskImpl)JavacTool.create().getTask(
-                    null,
-                    new RootChange(),
+            final RootChange rc = new RootChange();
+            rc.setRoot(root);
+            javac = (JavacTaskImpl)JavacTool.create().getTask(null,
+                    rc,
                     new Listener(),
                     Collections.<String>emptySet(),
                     Collections.<String>emptySet(),
                     Collections.<JavaFileObject>emptySet());
             javacRef = new WeakReference<>(javac);
         }
-        final RootChange rc = (RootChange) javac.getContext().get(JavaFileManager.class);
-        rc.setRoot(root);
         return javac;
     }
 
@@ -393,7 +393,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
 
         @Override
         public boolean hasLocation(Location location) {
-            return delegate.hasLocation(location);
+            return location == StandardLocation.CLASS_PATH || location == StandardLocation.PLATFORM_CLASS_PATH;
         }
 
         @Override
@@ -429,6 +429,11 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         @Override
         public int isSupportedOption(String option) {
             return delegate.isSupportedOption(option);
+        }
+
+        @Override
+        public Iterable<Set<Location>> listModuleLocations(Location location) throws IOException {
+            return Collections.emptyList();
         }
     }
 
