@@ -532,8 +532,7 @@ public class JavaActionsTest extends TestBase {
             "        </nbjpdastart>\n" +
             "        <java classpath=\"${cp}\" fork=\"true\">\n" +
             "            <stuff/>\n" +
-            "            <jvmarg value=\"-Xdebug\"/>\n" +
-            "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
+            "            <jvmarg value=\"-agentlib:jdwp=transport=dt_socket,address=${jpda.address}\"/>\n" +
             "        </java>\n" +
             "        <task2/>\n" +
             "    </target>\n" +
@@ -558,8 +557,7 @@ public class JavaActionsTest extends TestBase {
             "        <!---->\n" +
             "        <java classname=\"some.main.Class\" fork=\"true\">\n" +
             "            <classpath refid=\"cp\"/>\n" +
-            "            <jvmarg value=\"-Xdebug\"/>\n" +
-            "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
+            "            <jvmarg value=\"-agentlib:jdwp=transport=dt_socket,address=${jpda.address}\"/>\n" +
             "        </java>\n" +
             "    </target>\n" +
             "</project>\n";
@@ -669,8 +667,7 @@ public class JavaActionsTest extends TestBase {
             "        </nbjpdastart>\n" +
             "        <java classname=\"${test.class}\" fork=\"true\">\n" +
             "            <classpath refid=\"cp\"/>\n" +
-            "            <jvmarg value=\"-Xdebug\"/>\n" +
-            "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
+            "            <jvmarg value=\"-agentlib:jdwp=transport=dt_socket,address=${jpda.address}\"/>\n" +
             "        </java>\n" +
             "    </target>\n" +
             "</project>\n";

@@ -97,12 +97,12 @@ public final class AntLoggerUtils {
                     if (ts.getName().equals("jvmarg")) {                //NOI18N
                         String a;
                         if ((a = ts.getAttribute("value")) != null) {   //NOI18N
-                            if (event.evaluate(a).equals("-Xdebug")) {  //NOI18N
+                            if (isDebugArg(event.evaluate(a))) {
                                 return TestSession.SessionType.DEBUG;
                             }
                         } else if ((a = ts.getAttribute("line")) != null) {//NOI18N
                             for (String part : parseCmdLine(event.evaluate(a))) {
-                                if (part.equals("-Xdebug")) {           //NOI18N
+                                if (isDebugArg(part)) {
                                     return TestSession.SessionType.DEBUG;
                                 }
                             }
@@ -115,6 +115,11 @@ public final class AntLoggerUtils {
         }
         assert false : "Unhandled task name";                           //NOI18N
         return null;
+    }
+
+    private static boolean isDebugArg(String arg) {
+        return arg.equals("-Xdebug") || arg.equals("-agentlib:jdwp") || //NOI18N
+               arg.startsWith("-agentlib:jdwp=");                       //NOI18N
     }
 
     /**

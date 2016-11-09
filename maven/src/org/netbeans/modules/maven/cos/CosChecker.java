@@ -476,6 +476,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if (arg.startsWith("-Xrunjdwp")) { //NOI18N
                 continue;
             }
+            if (arg.equals("-agentlib:jdwp")) { //NOI18N
+                continue;
+            }
+            if (arg.startsWith("-agentlib:jdwp=")) { //NOI18N
+                continue;
+            }
             if (arg.trim().length() == 0) {
                 continue;
             }

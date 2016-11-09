@@ -316,8 +316,7 @@ public final class WLStartServer extends StartServer {
         if (javaOptsBuilder.length() > 0) {
             javaOptsBuilder.append(" ");// NOI18N
         }
-        javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none "); // NOI18N
-        javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="); // NOI18N
+        javaOptsBuilder.append("-agentlib:jdwp=server=y,suspend=n,transport=dt_socket,address="); // NOI18N
         javaOptsBuilder.append(debugPort);
         for (StartupExtender args : StartupExtender.getExtenders(
                 Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.DEBUG)) {
