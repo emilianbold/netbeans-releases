@@ -55,7 +55,7 @@ import java.util.List;
 public final class ProcessInfo implements Comparable<ProcessInfo> {
 
     private final List<Object> info;
-    //private final String executable;
+    private final String executable;
     private final Integer pid;
     private final Integer ppid;
     /*package*/// final ProcessInfoProvider provider;
@@ -65,7 +65,7 @@ public final class ProcessInfo implements Comparable<ProcessInfo> {
            // ProcessInfoProvider provider,
             List<ProcessInfoDescriptor> descriptors,
             Integer pid, Integer ppid, 
-            //String executable, 
+            String executable, 
             List<Object> info) {
         this.info = new ArrayList(info);
         this.descriptors = descriptors;
@@ -73,17 +73,20 @@ public final class ProcessInfo implements Comparable<ProcessInfo> {
         this.pid = pid;
         this.ppid = ppid;
         //and change values to Integer fo PId and PPID
+        String command = null;
         for (int i = 0; i < descriptors.size(); i++) {
             if (descriptors.get(i).id.equals(ProcessInfoDescriptor.PID_COLUMN_ID)) {
                 this.info.set(i, pid);
             } else if (descriptors.get(i).id.equals(ProcessInfoDescriptor.PPID_COLUMN_ID)) {
                 this.info.set(i, ppid);
+            } else if (descriptors.get(i).id.equals(ProcessInfoDescriptor.COMMAND_COLUMN_ID)) {
+                command = info.get(i) + "";
             }
         }
-//        this.executable = executable;
+        this.executable = executable == null ?  command :executable;
     }
     
-    public static ProcessInfo create(List<ProcessInfoDescriptor> descriptors, List<Object> info) {
+    public static ProcessInfo create(List<ProcessInfoDescriptor> descriptors, List<Object> info, String executable) {
         int pid = -1;
         int ppid = -1;
         int idx = 0;
@@ -99,7 +102,7 @@ public final class ProcessInfo implements Comparable<ProcessInfo> {
         }catch (NumberFormatException ex) {
             throw new IllegalArgumentException("incorrect data passed to create process info. pid  or ppid are not parsed as integer"); //NOI18N
         }
-        return new ProcessInfo(descriptors, pid, ppid, info);
+        return new ProcessInfo(descriptors, pid, ppid, executable,info);
     }
 
     public Integer getPID() {
@@ -110,9 +113,9 @@ public final class ProcessInfo implements Comparable<ProcessInfo> {
         return ppid;
     }
 
-//    public String getExecutable() {
-//        return executable;
-//    }
+    public String getExecutable() {
+        return executable;
+    }
 
     public List<ProcessInfoDescriptor> getDescriptors() {
         return descriptors;
@@ -137,7 +140,6 @@ public final class ProcessInfo implements Comparable<ProcessInfo> {
     @SuppressWarnings("unchecked")
     public boolean equals(String descriptor_id, String exactValue) {
 
-        List<ProcessInfoDescriptor> descriptors = getDescriptors();
         for (ProcessInfoDescriptor d : descriptors) {
             if (!d.id.equals(descriptor_id)) {
                 continue;
@@ -152,22 +154,21 @@ public final class ProcessInfo implements Comparable<ProcessInfo> {
     }
     
 
-//    @SuppressWarnings("unchecked")
-//    /*package*/ boolean matches(String filter) {
-//        if (pid.toString().contains(filter)) {
-//            return true;
-//        }
-//
-//        List<ProcessInfoDescriptor> descriptors = getDescriptors();
-//        for (ProcessInfoDescriptor d : descriptors) {
-//            Object data = get(d.id, d.type);
-//            if (data != null && data.toString().contains(filter)) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
+    @SuppressWarnings("unchecked")
+    /*package*/ boolean matches(String filter) {
+        if (pid.toString().contains(filter)) {
+            return true;
+        }
+
+        for (ProcessInfoDescriptor d : descriptors) {
+            Object data = get(d.id, d.type);
+            if (data != null && data.toString().contains(filter)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     @Override
     public boolean equals(Object obj) {
