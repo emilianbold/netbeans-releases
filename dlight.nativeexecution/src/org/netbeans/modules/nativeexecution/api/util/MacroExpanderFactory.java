@@ -46,6 +46,7 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -55,7 +56,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
 
 public final class MacroExpanderFactory {
 
-    private static final HashMap<String, MacroExpander> expanderCache = new HashMap<>();
+    private static final Map<String, MacroExpander> expanderCache = new ConcurrentHashMap<>();
 
     public static enum ExpanderStyle {
 
@@ -112,7 +113,10 @@ public final class MacroExpanderFactory {
 
         result = new MacroExpanderImpl(hostInfo, style);
         if (hostInfo != null) {
-            expanderCache.put(key, result);
+            MacroExpander existing = expanderCache.putIfAbsent(key, result);
+            if (existing != null) {
+                result = existing;
+            }
         }
         
         return result;
