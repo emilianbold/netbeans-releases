@@ -79,6 +79,8 @@ import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.lang.model.SourceVersion;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -101,6 +103,9 @@ import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery.Result;
 import org.openide.execution.ExecutorTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -120,6 +125,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -671,9 +677,27 @@ public class ShellSession {
         @Override
         public String getTargetSpec() {
             return del.getTargetSpec();
+        } 
+    }
+    
+    private SpecificationVersion findSourceVersion() {
+        Project p = env.getProject();
+        if (p == null) {
+            return findTargetVersion();
+        }
+        Result r = SourceLevelQuery.getSourceLevel2(p.getProjectDirectory());
+        String s = r.getSourceLevel();
+        if (s != null) {
+            return new SpecificationVersion(s);
+        } else {
+            return findTargetVersion();
         }
     }
-
+    
+    private SpecificationVersion findTargetVersion() {
+        return env.getPlatform().getSpecification().getVersion();
+    }
+    
     private void initJShell() {
         if (shell != null) {
             return;
@@ -684,6 +708,7 @@ public class ShellSession {
             synchronized (this) {
                 if (launcher == null) {
                     launcher = new JShellLauncher(
+                        env.getClasspathInfo(),
                         shellControlOutput,
                         shellControlOutput, 
                         env.getInputStream(),
@@ -692,13 +717,15 @@ public class ShellSession {
                         new GenProxy(env.createExecutionEnv())
                     );
                     launcher.setClasspath(createClasspathString());
+                    launcher.setSourceVersion(findSourceVersion());
+                    launcher.setTargetVersion(findTargetVersion());
                 }
             }
             shell = launcher.getJShell();
             setupJShellClasspath(shell);
             // not necessary to launch  the shell, but WILL display the initial prompt
             launcher.start();
-            initialSetupSnippets = new HashSet<>(shell.snippets());
+            initialSetupSnippets = new HashSet<>(shell.snippets().collect(Collectors.toList()));
         } catch (IOException | ExecutionControlException | InternalError err) {
             Throwable t = err.getCause();
             if (t == null) {
@@ -1322,7 +1349,7 @@ public class ShellSession {
             return Collections.emptyList();
         }
         
-        List<Snippet> snips = new ArrayList<>(sh.snippets());
+        List<Snippet> snips = new ArrayList<>(sh.snippets().collect(Collectors.toList()));
         if (onlyUser) {
             snips.removeAll(initial);
             snips.removeAll(excludedSnippets);
