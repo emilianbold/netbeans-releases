@@ -58,7 +58,9 @@ public final class ProcessInfoDescriptor {
     public static final String PID_COLUMN_ID = "pid"; //NOI18N
     public static final String PPID_COLUMN_ID = "ppid"; //NOI18N
     public static final String COMMAND_COLUMN_ID = "command"; //NOI18N
+    public static final String EXECUTABLE_COLUMN_ID = "executable"; //NOI18N
     public static final String STIME_COLUMN_ID = "stime"; //NOI18N
+    public static final String STIME_WINDOWS_COLUMN_ID = "stime_windows"; //NOI18N
 
     public final String id;
     public final String command;

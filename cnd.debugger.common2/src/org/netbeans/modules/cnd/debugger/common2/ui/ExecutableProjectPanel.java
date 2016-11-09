@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
+package org.netbeans.modules.cnd.debugger.common2.ui;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
@@ -64,11 +64,14 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import java.awt.event.ItemEvent;
+import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfo;
+import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfoDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -81,6 +84,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -97,13 +103,16 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     private final EngineDescriptor debuggerType;
 
     private static Project lastSelectedProject = null;
+    private final boolean isExecutableVisible;
 
-    public ExecutableProjectPanel(JButton actionButton, EngineDescriptor debuggerType) {
+    
+    public ExecutableProjectPanel(JButton actionButton, EngineDescriptor debuggerType, boolean isExecutableVisible) {
+        this.isExecutableVisible = isExecutableVisible;
         this.actionButton = actionButton;
         this.debuggerType = debuggerType;
         initialize();
     }
-
+        
     private void initialize() {
         initComponents();
         // NOI18N
@@ -178,7 +187,11 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 //    }
 //
     public void setExecutablePath(String hostName, String path) {
-        executableField.setText(path);
+        if (path == null) {
+            executableField.setText(NbBundle.getMessage(ExecutableProjectPanel.class, "ExecutableProjectPanel.commandLine_N_A.text")); // NOI18N
+        } else {
+            executableField.setText(path);
+        }
 //        ((JTextField) executableComboBox.getEditor().getEditorComponent()).setText(path);
         setSelectedProjectByPath(hostName, path);
     }
@@ -205,31 +218,32 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         errorLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
+        if (isExecutableVisible) {
+            executableLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("EXECUTABLE_MN").charAt(0));
+            executableLabel.setLabelFor(executableField);
+            executableLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("EXECUTABLE_LBL"));
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
+            // LATER, for Project only IDE
+            // if (DebuggerManager.Standalone()) {
+            add(executableLabel, gridBagConstraints);
+            //}
 
-        executableLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("EXECUTABLE_MN").charAt(0));
-        executableLabel.setLabelFor(executableField);
-        executableLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("EXECUTABLE_LBL"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
-        // LATER, for Project only IDE
-        // if (DebuggerManager.Standalone()) {
-        add(executableLabel, gridBagConstraints);
-        //}
-
-        executableField.setEditable(false);
-        executableField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("ProgramPathname"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
-        // LATER, for Project only IDE
-        //if (DebuggerManager.Standalone()) {
-        add(executableField, gridBagConstraints);
+            executableField.setEditable(false);
+            executableField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("ProgramPathname"));
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
+            // LATER, for Project only IDE
+            //if (DebuggerManager.Standalone()) {
+            add(executableField, gridBagConstraints);
+        }
         //}
 
 //        Catalog.setAccessibleDescription(executableBrowseButton,

@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,7 +53,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.RenameAction;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CallbackSystemAction;
@@ -186,6 +190,17 @@ final class NodeActionFactory {
             InstanceContent ic = new InstanceContent();
             for (Node activatedNode : activatedNodes) {
                 ic.add(activatedNode);
+                if (saveBefore()) {
+                    DataObject dobj = activatedNode.getLookup().lookup(DataObject.class);
+                    SaveCookie sc = dobj.getLookup().lookup(SaveCookie.class);
+                    if (sc != null) {
+                        try {
+                            sc.save();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
             }
             Lookup actionContext = new AbstractLookup(ic);
             final Action a;
@@ -226,6 +241,10 @@ final class NodeActionFactory {
         public String getName() {
             return systemAction.getName();
         }
+        
+        protected boolean saveBefore() {
+            return false;
+        }
     }
 
     static final class RenameNodeAction extends StandardNodeAction {
@@ -245,5 +264,11 @@ final class NodeActionFactory {
         public DeleteNodeAction() {
             super(SystemAction.get(DeleteAction.class));
         }
+
+        @Override
+        protected boolean saveBefore() {
+            return true;
+        }
+        
     }
 }

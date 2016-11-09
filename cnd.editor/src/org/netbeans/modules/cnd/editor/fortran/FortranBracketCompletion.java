@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.editor.fortran;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
@@ -57,6 +58,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -91,16 +93,7 @@ public enum FortranBracketCompletion {
         if (token == null) {
             return;
         }
-        if (ch == ')' || ch == '(') {
-            switch (token.id()) {
-                case RPAREN:
-                    skipClosingBracket(doc, caret, ch);
-                    break;
-                case LPAREN:
-                    completeOpeningBracket(doc, dotPos, caret, ch);
-                    break;
-            }
-        } else if (ch == '\"' || ch == '\'') {
+        if (ch == '\"' || ch == '\'') {
             completeQuote(doc, dotPos, caret, ch);
         }
     }
@@ -118,7 +111,7 @@ public enum FortranBracketCompletion {
         return ts.token();
     }
 
-    private TokenSequence<FortranTokenId> getTokenSequence(BaseDocument doc, int dotPos){
+    private TokenSequence<FortranTokenId> getTokenSequence(Document doc, int dotPos){
         FortranCodeStyle.get(doc).setupLexerAttributes(doc);
         TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, dotPos);
         if (ts == null) {
@@ -142,15 +135,15 @@ public enum FortranBracketCompletion {
      * @param caret caret
      * @param theBracket the bracket character ']' or ')'
      */
-    private void skipClosingBracket(BaseDocument doc, Caret caret, char theBracket)
+    public int skipClosingBracket(TypedTextInterceptor.MutableContext context)
             throws BadLocationException {
-        int caretOffset = caret.getDot();
-        if (isSkipClosingBracket(doc, caretOffset, FortranTokenId.RPAREN)) {
-            doc.remove(caretOffset - 1, 1);
-            caret.setDot(caretOffset); // skip closing bracket
+        if (isSkipClosingBracket(context.getDocument(), context.getOffset(), FortranTokenId.RPAREN)) {
+            context.setText("", 0);  // NOI18N
+            return context.getOffset() + 1;
         }
+        return -1;
     }
-
+    
     /**
      * Check whether the typed bracket should stay in the document
      * or be removed.
@@ -160,7 +153,7 @@ public enum FortranBracketCompletion {
      * @param doc document into which typing was done.
      * @param caretOffset
      */
-    private boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, FortranTokenId bracketId)
+    private boolean isSkipClosingBracket(Document doc, int caretOffset, FortranTokenId bracketId)
             throws BadLocationException {
         // First check whether the caret is not after the last char in the document
         // because no bracket would follow then so it could not be skipped.
@@ -277,22 +270,10 @@ public enum FortranBracketCompletion {
         return skipClosingBracket;
     }
 
-    /**
-     * Check for various conditions and possibly add a pairing bracket
-     * to the already inserted.
-     * @param doc the document
-     * @param dotPos position of the opening bracket (already in the doc)
-     * @param caret caret
-     * @param theBracket the bracket that was inserted
-     */
-    private void completeOpeningBracket(BaseDocument doc,
-            int dotPos,
-            Caret caret,
-            char theBracket) throws BadLocationException {
-        if (isCompletablePosition(doc, dotPos + 1)) {
-            String matchinBracket = "" + matching(theBracket);
-            doc.insertString(dotPos + 1, matchinBracket, null);
-            caret.setDot(dotPos + 1);
+    public void completeOpeningBracket(TypedTextInterceptor.MutableContext context) throws BadLocationException {
+        char insChr = context.getText().charAt(0);
+        if (isCompletablePosition(context.getDocument(), context.getOffset())) {
+            context.setText("" + insChr + matching(insChr) , 1);  // NOI18N
         }
     }
 
@@ -319,7 +300,7 @@ public enum FortranBracketCompletion {
             return;
         }
         FortranTokenId[] tokenIds = new FortranTokenId[]{FortranTokenId.STRING_LITERAL};
-        if ((posWithinQuotes(doc, dotPos + 1, theBracket, tokenIds) && isCompletablePosition(doc, dotPos + 1)) &&
+        if ((posWithinQuotes(doc, dotPos, theBracket, tokenIds) && isCompletablePosition(doc, dotPos + 1)) &&
                 (isUnclosedStringAtLineEnd(doc, dotPos + 1, tokenIds) &&
                 ((doc.getLength() == dotPos + 1) ||
                 (doc.getLength() != dotPos + 1 && doc.getChars(dotPos + 1, 1)[0] != theBracket)))) {
@@ -341,13 +322,13 @@ public enum FortranBracketCompletion {
      * @param doc the document
      * @param dotPos position to be tested
      */
-    private boolean isCompletablePosition(BaseDocument doc, int dotPos)
+    private boolean isCompletablePosition(Document doc, int dotPos)
             throws BadLocationException {
         if (dotPos == doc.getLength()) {// there's no other character to test
             return true;
         } else {
             // test that we are in front of ) , " or '
-            char chr = doc.getChars(dotPos, 1)[0];
+            char chr = doc.getText(dotPos, 1).charAt(0);
             return (chr == ')' ||
                     chr == ',' ||
                     chr == '\"' ||
@@ -368,9 +349,20 @@ public enum FortranBracketCompletion {
     /**
      * Returns true if bracket completion is enabled in options.
      */
-    private boolean completionSettingEnabled() {
+    public boolean completionSettingEnabled() {
         Preferences prefs = MimeLookup.getLookup(MIMENames.FORTRAN_MIME_TYPE).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, true);
+    }
+    
+    private static FortranTokenId bracketCharToId(char bracket) {
+        switch (bracket) {
+            case '(':
+                return FortranTokenId.LPAREN;
+            case ')':
+                return FortranTokenId.RPAREN;
+            default:
+                throw new IllegalArgumentException("Not a bracket char '" + bracket + '\'');  // NOI18N
+        }
     }
 
     /**
@@ -381,6 +373,8 @@ public enum FortranBracketCompletion {
         switch (theBracket) {
             case '(':
                 return ')';
+            case '"':
+                return '"'; // NOI18N
             case '\'':
                 return '\''; // NOI18N
             default:
@@ -399,7 +393,7 @@ public enum FortranBracketCompletion {
     private boolean posWithinQuotes(BaseDocument doc, int dotPos, char quote, FortranTokenId[] tokenIDs) {
         TokenSequence<FortranTokenId> cppTS = getTokenSequence(doc, dotPos);
         if (cppTS != null && matchIDs(cppTS.token().id(), tokenIDs)) {
-            return (dotPos - cppTS.offset() == 1 || DocumentUtilities.getText(doc).charAt(dotPos - 1) != quote);
+            return (dotPos - cppTS.offset() == 0 || DocumentUtilities.getText(doc).charAt(dotPos) != quote);
         }
         return false;
     }

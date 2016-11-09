@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.toolchain.execution;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
@@ -53,6 +55,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -61,7 +64,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -70,17 +72,19 @@ import org.openide.util.Utilities;
 
 public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
 
-    protected FileObject relativeTo;
     protected final ExecutionEnvironment execEnv;
+    protected final ExecutionEnvironment soucreEnv;
     private final PathMap pathMap;
     private NativeProject nativeProject;
     private NativeFileSearch nativeFileSearch;
+    private final MakeContext makeContext;
 
     public ErrorParser(Project project, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super();
-        this.relativeTo = relativeTo;
+        this.makeContext = new MakeContext(relativeTo);
         this.execEnv = execEnv;
         pathMap = RemoteSyncSupport.getPathMap(execEnv, project);
+        soucreEnv = RemoteFileUtil.getProjectSourceExecutionEnvironment(project);
         init(project);
     }
 
@@ -93,7 +97,13 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
         }
     }
 
-    protected FileObject resolveFile(String fileName) {
+    /**
+     * 
+     * @param fileName absolute path
+     * @param isDirectory directory resolved in source file system, file can be resolved in remote file system
+     * @return 
+     */
+    protected FileObject resolveFile(String fileName, boolean isDirectory) {
         if (Utilities.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
             if (fileName.startsWith("/cygdrive/")) { // NOI18N
@@ -104,6 +114,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                 fileName = "" + fileName.charAt(1) + ':' + fileName.substring(2); // NOI18N
             }
             if (fileName.startsWith("/") || fileName.startsWith("\\")) { // NOI18N
+                FileObject relativeTo = makeContext.getLastContext();
                 if (relativeTo != null) {
                     String path = relativeTo.getPath();
                     if (path.length()>2 && path.charAt(1)==':') {
@@ -119,10 +130,17 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
         }
         String localFileName = pathMap.getTrueLocalPath(fileName);
         if (localFileName != null) {
-            return FileSystemProvider.getFileObject(ExecutionEnvironmentFactory.getLocal(), 
-                    FileSystemProvider.normalizeAbsolutePath(localFileName, ExecutionEnvironmentFactory.getLocal()));
+            return FileSystemProvider.getFileObject(soucreEnv, FileSystemProvider.normalizeAbsolutePath(localFileName, soucreEnv));
         }
-        return FileSystemProvider.getFileObject(execEnv, FileSystemProvider.normalizeAbsolutePath(fileName, execEnv));
+        if (isDirectory) {
+            FileObject res = FileSystemProvider.getFileObject(soucreEnv, FileSystemProvider.normalizeAbsolutePath(fileName, soucreEnv));
+            if (res == null && !execEnv.equals(soucreEnv)) {
+                 res = FileSystemProvider.getFileObject(execEnv, FileSystemProvider.normalizeAbsolutePath(fileName, execEnv));
+            }
+            return res;
+        } else {
+            return FileSystemProvider.getFileObject(execEnv, FileSystemProvider.normalizeAbsolutePath(fileName, execEnv));
+        }
     }
 
     protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
@@ -188,7 +206,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                     }
                 }
             }
-            FileObject myObj = resolveFile(relativePath);
+            FileObject myObj = resolveFile(relativePath, false);
             if (myObj != null) {
                 return myObj;
             }
@@ -225,4 +243,83 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
         }
         return myObj;
     }
+    
+    protected MakeContext getMakeContext() {
+        return makeContext;
+    }
+    
+    private static class MakeContextItem {
+        final int level;
+        final FileObject path;
+        
+        private MakeContextItem(int level, FileObject path) {
+            this.level = level;
+            this.path = path;
+        }
+
+        @Override
+        public String toString() {
+            return "["+level+"] "+path.getPath(); //NOI18N
+        }
+    }
+
+    protected final static class MakeContext {
+        private LinkedList<MakeContextItem> stack = new LinkedList<>();
+        
+        private MakeContext(FileObject baseDir) {
+            stack.push(new MakeContextItem(0, baseDir));
+        }
+        
+        /**
+         * Remove from stack paths up to level-1
+         * 
+         * @param level 
+         */
+        protected void pop(int level) {
+            while(true) {
+                if (stack.size() == 1) {
+                    return;
+                }
+                MakeContextItem peek = stack.peek();
+                if (peek.level == -1) {
+                    stack.pop();
+                } else if (peek.level >= level) {
+                    stack.pop();
+                } else {
+                    return;
+                }
+            }
+        }
+
+        /**
+         * Add path with level.
+         * if level equals -1 it replace top entry if top entry has level -1.
+         * 
+         * @param level
+         * @param path 
+         */
+        protected void push(int level, FileObject path) {
+            MakeContextItem peek = stack.peek();
+            if (peek.level == -1) {
+                stack.pop();
+            }
+            stack.push(new MakeContextItem(level, path));
+        }
+        
+        protected FileObject getLastContext() {
+            ListIterator<MakeContextItem> it = stack.listIterator(0);
+            while(it.hasNext()) {
+                MakeContextItem item = it.next();
+                if (item.level != -1) {
+                    return item.path;
+                }
+            }
+            return null;
+        }
+        
+        protected FileObject getTopContext() {
+            return stack.peek().path;
+        }
+    }
+    
 }
