@@ -293,7 +293,7 @@ public final class AttachPanel extends TopComponent {
         tableLabel = new javax.swing.JLabel();
         allProcessesCheckBox = new javax.swing.JCheckBox(Catalog.get("All_Processes_Lab")); // NOI18N
 	allProcessesCheckBox.setEnabled(true);
-	allProcessesCheckBox.setSelected(false);
+        allProcessesCheckBox.setSelected(prefs.getBoolean("showAllProcesses", false));//NOI18N
 	allProcessesCheckBox.setFocusable(false);
 	allProcessesCheckBox.setToolTipText(Catalog.get("All_Processes")); // NOI18N
 	allProcessesCheckBox.setMnemonic(Catalog.getMnemonic("MNEM_All_Processes")); // NOI18N
@@ -304,6 +304,7 @@ public final class AttachPanel extends TopComponent {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 refreshProcesses(null, true);
+                prefs.putBoolean("showAllProcesses", allProcessesCheckBox.isSelected());//NOI18N
             }
         });
 
@@ -432,7 +433,7 @@ public final class AttachPanel extends TopComponent {
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
         gridBagConstraints.weightx = 1.0;
 	//attach dialog should show ALL processes for selection optionally
-        //headingPanel.add(allProcessesCheckBox, gridBagConstraints);
+        headingPanel.add(allProcessesCheckBox, gridBagConstraints);
 
         // Hack to make the panel appear wider:
         // Add an empty label with 800 pixels insert.
@@ -660,6 +661,7 @@ public final class AttachPanel extends TopComponent {
         refreshButton.setEnabled(st);
         hostCombo.setEnabled(st);
         procTable.setEnabled(st);
+        allProcessesCheckBox.setEnabled(st);
     }
 
     /**
@@ -672,7 +674,7 @@ public final class AttachPanel extends TopComponent {
         }
         
         JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
-        Object selected = request ? filterCombo.getSelectedItem() : cbEditor.getText();
+        Object selected = cbEditor.getText();//request ? filterCombo.getSelectedItem() : cbEditor.getText();
 
         // Get ready to filter based on a regular expression
         String regexp = "";
@@ -716,8 +718,8 @@ public final class AttachPanel extends TopComponent {
 
             final Pattern fre = re;
             final String hostname = hostName;
-            //final boolean getAllProcesses = allProcessesCheckBox.isSelected();
-            final boolean getAllProcesses = false;
+            final boolean getAllProcesses = allProcessesCheckBox.isSelected();
+            //final boolean getAllProcesses = false;
 
             tableInfo("MSG_Gathering_Data", false); //NOI18N
 
@@ -1258,22 +1260,32 @@ public final class AttachPanel extends TopComponent {
 	    */
         }
     }
-    
+       
     public static void fillHostsCombo(JComboBox combo) {
-        String[] hostChoices = null;
-        if (NativeDebuggerManager.isStandalone()) {
-            CustomizableHostList hostlist = NativeDebuggerManager.get().getHostList();
-            if (hostlist != null) {
-                hostChoices = hostlist.getRecordsDisplayName();
-            }
-        } else {
-            hostChoices = CndRemote.getServerListIDs();
+        final ActionListener[] actionListeners = combo.getActionListeners();
+        for (final ActionListener listener : actionListeners) {
+            combo.removeActionListener(listener);
         }
+        try {
+            String[] hostChoices = null;
+            if (NativeDebuggerManager.isStandalone()) {
+                CustomizableHostList hostlist = NativeDebuggerManager.get().getHostList();
+                if (hostlist != null) {
+                    hostChoices = hostlist.getRecordsDisplayName();
+                }
+            } else {
+                hostChoices = CndRemote.getServerListIDs();
+            }
 
-        combo.removeAllItems();
-        if (hostChoices != null) {
-            for (String item : hostChoices) {
-                combo.addItem(item);
+            combo.removeAllItems();
+            if (hostChoices != null) {
+                for (String item : hostChoices) {
+                    combo.addItem(item);
+                }
+            }
+        } finally {
+            for (final ActionListener listener : actionListeners) {
+                combo.addActionListener(listener);
             }
         }
     }
