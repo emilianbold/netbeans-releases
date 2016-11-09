@@ -244,9 +244,10 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                             execLog = null;
                         }
                     } catch (Throwable ex) {
-                        logger.log(Level.INFO, "Cannot download file {0}->{1}. Exception {2}", new Object[]{remoteExecLog, execLog.getAbsolutePath(), ex.getMessage()}); // NOI18N
-                        execLog = null;
-                        Exceptions.printStackTrace(ex);
+                        logger.log(Level.INFO, "BuildProjectActionHandler cannot download file {0} from {1} to {2}. Exception {3}: {4}", 
+                                new Object[]{remoteExecLog, execEnv, execLog.getAbsolutePath(), ex.getClass().getName(), ex.getMessage()}); // NOI18N
+                        execLog = null;                        
+                        logger.log(Level.FINE, ex.getLocalizedMessage(), ex);
                     }
                     downloadedExecLog.set(true);
                 }

@@ -176,6 +176,11 @@ public abstract class PsProvider {
             return PsProvider.this.getFileMapper();
         }
 
+        
+        public Collection<ProcessInfo> getProcessesInfo() {
+            return processes;
+        }
+        
 	/**
 	 * filter lines and convert to columns
 	 */
@@ -228,46 +233,67 @@ public abstract class PsProvider {
             String escapedString = escapeString(line);
             String[] escapedValues =  escapedString.substring(firstPosition()).trim().split(spacePattern);
             final int length = descriptors.size();
-            for (int cx = 0; cx < length; cx++) {
-                final ProcessInfoDescriptor descriptor = descriptors.get(cx);
-                String s = vals[cx];
-                if (cx == length - 1 && vals.length > length) {
-                    StringBuilder begining = new StringBuilder("(");//NOI18N
+            int valuesIdx = 0;
+            String pid = null;
+            for (int columnIdx = 0; columnIdx < length; columnIdx++) {
+                final ProcessInfoDescriptor descriptor = descriptors.get(columnIdx);
+                String s = vals[valuesIdx];
+                boolean increaseAndNext = false;
+                //in case previous descriptor was a STIME and on Windows there can be a space
+                if (ProcessInfoDescriptor.STIME_WINDOWS_COLUMN_ID.equals(descriptor.id)) {
+                    //there can be ":" or Space 
+                    //in case there is no comma we need to append next symbol as it will be "Oct 16"
+                    if (!s.contains(":") && valuesIdx + 1 <  vals.length  ){ //NOI18N
+                        s += " " + vals[valuesIdx + 1];//NOI18N     
+                        increaseAndNext = true;
+                    }
+                }
+                if (!increaseAndNext) {
+                    if (columnIdx == length - 1 && vals.length > length) {
+                        StringBuilder begining = new StringBuilder("(");//NOI18N
 
-                    begining.append(spacePattern);
-                    for (int j = 0; j < length - 1; j++) {
-                        begining.append(escapedValues[j]).append(spacePattern);
-                    }
-                    begining.append(")((.*))");//NOI18N
-                    if (Log.Ps.debug) {
-                        System.out.println("pattern = _" + begining.toString() + "_");//NOI18N
-                    }
-                    Pattern p = Pattern.compile(begining.toString());
-                    //need to start with space to match pattern " +" from the begining
-                    Matcher matcher = p.matcher(" " + output);//NOI18N
-                    if (matcher.matches()) {
-                        s = matcher.group(2);
-                    } else {
-                        if (Log.Ps.debug) {
-                            System.out.println("something went wrong, will concatanate tail");//NOI18N
+                        begining.append(spacePattern);
+                        for (int j = 0; j < valuesIdx; j++) {
+                            begining.append(escapedValues[j]).append(spacePattern);
                         }
-                        //concat to the end with space
-                        for (int i = cx + 1; i < vals.length; i++) {
-                            s += " " + vals[i];//NOI18N
-                        }  
-                    }
-      
-                }                 
+                        begining.append(")((.*))");//NOI18N
+                        if (Log.Ps.debug) {
+                            System.out.println("pattern = _" + begining.toString() + "_");//NOI18N
+                        }
+                        Pattern p = Pattern.compile(begining.toString());
+                        //need to start with space to match pattern " +" from the begining
+                        Matcher matcher = p.matcher(" " + output);//NOI18N
+                        if (matcher.matches()) {
+                            s = matcher.group(2);
+                        } else {
+                            if (Log.Ps.debug) {
+                                System.out.println("something went wrong, will concatanate tail");//NOI18N
+                            }
+                            //concat to the end with space
+                            for (int i = valuesIdx + 1; i < vals.length; i++) {
+                                s += " " + vals[i];//NOI18N
+                            }  
+                        }
 
+                    }                 
+                }
                 if (Log.Ps.debug) {
                     System.out.println("----------"); //NOI18N
                     System.out.println("column=" + descriptor.header); //NOI18N
-                    System.out.println("cx=" + cx); //NOI18N
+                    System.out.println("cx=" + columnIdx); //NOI18N
                     System.out.println("s=_" + s + "_"); //NOI18N
+                }
+                if (increaseAndNext) {
+                    valuesIdx++;
+                }
+                valuesIdx++;
+                if (ProcessInfoDescriptor.PID_COLUMN_ID.equals(descriptor.id)) {
+                    pid = s.trim();
                 }
                 info.add(s.trim());
             }
-            final ProcessInfo processInfo = ProcessInfo.create(descriptors, info); 
+            String executable = getExecutable(pid);
+            final ProcessInfo processInfo = ProcessInfo.create(descriptors, info, executable); 
             boolean isIncluded = true;
             //check filter
             for (Pair<ProcessInfoDescriptor, String> filter : filters) {
@@ -316,8 +342,8 @@ public abstract class PsProvider {
  
         private final String solarisPsFormat;
         
-        public SolarisPsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
-            super(host, descriptors);
+        public SolarisPsProvider(ExecutionEnvironment execEnv, List<ProcessInfoDescriptor> descriptors) {
+            super(execEnv, descriptors);
             StringBuilder psCommandBuilder = new StringBuilder();
             for (int i = 0; i < descriptors.size(); i++) {
                 if (i == 0) {
@@ -333,8 +359,8 @@ public abstract class PsProvider {
             solarisPsFormat = psCommandBuilder.toString();            
         }
 
-	public SolarisPsProvider(Host host) {
-	    this(host, 
+	public SolarisPsProvider(ExecutionEnvironment execEnv) {
+	    this(execEnv, 
                     Arrays.<ProcessInfoDescriptor>asList(
                         descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "user", "USER"), // NOI18N
                         descriptor(String.class, true, ZONE_COLUMN_ID, "zone", "ZONE"), // NOI18N
@@ -439,6 +465,15 @@ public abstract class PsProvider {
             
             return res;
         }
+
+        @Override
+        protected String psExecutableCommand(String pid) {
+             // SHOULD set LC_ALL=C here since we're depending
+	    // on column widths to get to the individual ps items!
+            // (moved to getData)
+
+		return "/usr/bin/ps -ocmd= " + pid;//NOI18N
+        }
     }
     
     static void updatePargsData(PsData res, String[] pargs_args, List<String> pargsOutput) {
@@ -473,8 +508,8 @@ public abstract class PsProvider {
     static class LinuxPsProvider extends PsProvider {
 
         private final String linuxPsFormat;
-        public LinuxPsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
-            super(host, descriptors);
+        public LinuxPsProvider(ExecutionEnvironment execEnv, List<ProcessInfoDescriptor> descriptors) {
+            super(execEnv, descriptors);
             StringBuilder psCommandBuilder = new StringBuilder();
             for (int i = 0; i < descriptors.size(); i++) {
                 if (i == 0) {
@@ -490,8 +525,8 @@ public abstract class PsProvider {
             linuxPsFormat = psCommandBuilder.toString();                   
         }
 
-	public LinuxPsProvider(Host host) {
-            this(host,
+	public LinuxPsProvider(ExecutionEnvironment execEnv) {
+            this(execEnv,
                     Arrays.<ProcessInfoDescriptor>asList(
                             descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "user", "USER"), // NOI18N
                             descriptor(Integer.class, true, ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
@@ -531,6 +566,15 @@ public abstract class PsProvider {
             return true;
         }
 
+        @Override
+        protected String psExecutableCommand(String pid) {
+                         // SHOULD set LC_ALL=C here since we're depending
+	    // on column widths to get to the individual ps items!
+            // (moved to getData)
+
+		return "/bin/ps -ocmd= " + pid;//NOI18N
+        }
+
     }
     
     static class MacOSPsProvider extends LinuxPsProvider {
@@ -551,8 +595,8 @@ public abstract class PsProvider {
 //            return header_str_mac;
 //        }
         
-        public MacOSPsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
-            super(host, descriptors);
+        public MacOSPsProvider(ExecutionEnvironment execEnv, List<ProcessInfoDescriptor> descriptors) {
+            super(execEnv, descriptors);
             StringBuilder psCommandBuilder = new StringBuilder();
             for (int i = 0; i < descriptors.size(); i++) {
                 if (i == 0) {
@@ -568,8 +612,8 @@ public abstract class PsProvider {
             macOsPsFormat = psCommandBuilder.toString();                
         }
         
-        public MacOSPsProvider(Host host) {
-            this(host, Arrays.<ProcessInfoDescriptor>asList(
+        public MacOSPsProvider(ExecutionEnvironment execEnv) {
+            this(execEnv, Arrays.<ProcessInfoDescriptor>asList(
                             descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "user", "USER"), // NOI18N
                             descriptor(Integer.class, true, ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
                             descriptor(Integer.class, true, ProcessInfoDescriptor.PPID_COLUMN_ID, "ppid", "PPID"), // NOI18N
@@ -607,8 +651,8 @@ public abstract class PsProvider {
 //	    "COMMAND", // NOI18N
 //	};
 
-	public WindowsPsProvider(Host host) {
-	    super(host,
+	public WindowsPsProvider(ExecutionEnvironment execEnv) {
+	    super(execEnv,
                     Arrays.<ProcessInfoDescriptor>asList(
                         descriptor(String.class, true,  ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
                         descriptor(String.class, true, ProcessInfoDescriptor.PPID_COLUMN_ID, "ppid", "PPID"), // NOI18N
@@ -616,7 +660,7 @@ public abstract class PsProvider {
                         descriptor(String.class, true, "winpid", "winpid", "WINPID"), // NOI18N
                         descriptor(String.class, false, "tty", "tty", "TTY"), // NOI18N
                         descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "uid", "UID"), // NOI18N
-                        descriptor(String.class, true, ProcessInfoDescriptor.STIME_COLUMN_ID, "stime", "STIME"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.STIME_WINDOWS_COLUMN_ID, "stime", "STIME"), // NOI18N
                         descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "cmd", "COMMAND") // NOI18N
                     )
 
@@ -676,40 +720,51 @@ public abstract class PsProvider {
         public FileMapper getFileMapper() {
             return fileMapper;
         }
-    }
 
+        @Override
+        protected String psExecutableCommand(String pid) {
+            return null;
+        }
+    }
+    
+    public static synchronized PsProvider getDefault(ExecutionEnvironment exEnv) {
+        PsProvider psProvider = null;
+        if (!ConnectionManager.getInstance().connect(exEnv)) {
+            return null;
+        }
+        try {
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
+            switch (hostInfo.getOSFamily()) {
+                case LINUX:
+                    psProvider = new LinuxPsProvider(exEnv);
+                    break;
+                case WINDOWS:
+                    psProvider = new WindowsPsProvider(exEnv);
+                    break;
+                case MACOSX:
+                case FREEBSD:
+                    psProvider = new MacOSPsProvider(exEnv);
+                    break;
+                case SUNOS:
+                    psProvider = new SolarisPsProvider(exEnv);
+                    break;
+                case UNKNOWN:
+                default:
+                    psProvider = new SolarisPsProvider(exEnv);
+            }
+        } catch (CancellationException e) {
+            // user cancelled connection attempt
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+        return psProvider;
+    }
+    
     public static synchronized PsProvider getDefault(Host host) {
         PsProvider psProvider = host.getResource(PsProvider.class);
         if (psProvider == null) {
             ExecutionEnvironment exEnv = host.executionEnvironment();
-            if (!ConnectionManager.getInstance().connect(exEnv)) {
-                return null;
-            }
-            try {
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(exEnv);
-                switch (hostInfo.getOSFamily()) {
-                    case LINUX:
-                        psProvider = new LinuxPsProvider(host);
-                        break;
-                    case WINDOWS:
-                        psProvider = new WindowsPsProvider(host);
-                        break;
-                    case MACOSX:
-                    case FREEBSD:
-                        psProvider = new MacOSPsProvider(host);
-                        break;
-                    case SUNOS:
-                        psProvider = new SolarisPsProvider(host);
-                        break;
-                    case UNKNOWN:
-                    default:
-                        psProvider = new SolarisPsProvider(host);
-                }
-            } catch (CancellationException e) {
-                // user cancelled connection attempt
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
+            psProvider = getDefault(exEnv);
             host.putResource(PsProvider.class, psProvider);
         }
         return psProvider;
@@ -752,6 +807,8 @@ public abstract class PsProvider {
 
 
     protected abstract String psCommand(String root);
+    
+    protected abstract String psExecutableCommand(String pid);
 
     protected abstract String uidCommand(); // for Runtime.exe
     
@@ -767,11 +824,49 @@ public abstract class PsProvider {
     protected final ExecutionEnvironment exEnv;
     protected final List<ProcessInfoDescriptor> descriptors;
 
-    private PsProvider(Host host, List<ProcessInfoDescriptor> descriptors) {
-        exEnv = host.executionEnvironment();
+    private PsProvider(ExecutionEnvironment execEnv, List<ProcessInfoDescriptor> descriptors) {
+        exEnv = execEnv;
         this.descriptors = descriptors;
     }
         
+    
+    public List<ProcessInfoDescriptor> getDescriptors() {
+        return descriptors;
+    }
+    
+    private String getExecutable(String pid) {
+        return null;
+        //use proc to read executable path for Linux, Solaris , what to do for Windows have no idea 
+//        
+//        try {
+//            if (pid == null) {
+//                return null;
+//            }
+//            final String psExecutableCommand = psExecutableCommand(pid);
+//            if (psExecutableCommand == null) {
+//                return null;
+//            }
+//            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
+//            
+//            npb.setCommandLine(psExecutableCommand);
+//            ProcessUtils.ExitStatus status = ProcessUtils.execute(npb);
+//            String res = status.getOutputString();
+//            int exitCode = status.exitCode;
+//            if (exitCode != 0) {
+//                String msg = "ps command failed with " + exitCode; // NOI18N
+//                logger.log(Level.WARNING, msg);
+//                return null;
+//            }
+//            if (!res.isEmpty()) {
+//               return res;
+//            } 
+//        } catch (Exception e) {
+//            ErrorManager.getDefault().annotate(e, "Failed to parse OutputStream of ps  command"); // NOI18N
+//            ErrorManager.getDefault().notify(e);
+//        }
+//        return null;
+    }
+    
     // "host" for getUid is usually "localhost"
     private String getUid() {
         if (uid == null) {

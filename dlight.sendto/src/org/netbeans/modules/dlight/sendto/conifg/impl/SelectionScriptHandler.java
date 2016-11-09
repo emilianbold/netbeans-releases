@@ -48,16 +48,19 @@ import org.netbeans.modules.dlight.sendto.api.ScriptsRegistry;
 import org.netbeans.modules.dlight.sendto.spi.Handler;
 import org.netbeans.modules.dlight.sendto.util.ScriptExecutor;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.dlight.sendto.util.Utils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -85,8 +88,17 @@ public class SelectionScriptHandler extends Handler<SelectionConfigurationPanel>
 
     @Override
     public FutureAction createActionFor(final Lookup actionContext, final Configuration cfg) {
-        JTextComponent focusedComponent = EditorRegistry.lastFocusedComponent();
-
+        DataEditorSupport des = actionContext.lookup(DataEditorSupport.class);
+        if (des == null) {
+            return null;
+        }
+        
+        StyledDocument doc = des.getDocument();
+        if (doc == null) {
+            return null;
+        }
+        
+        JTextComponent focusedComponent = EditorRegistry.findComponent(doc);
         if (focusedComponent == null) {
             return null;
         }
