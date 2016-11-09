@@ -65,6 +65,7 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
 import org.netbeans.modules.debugger.jpda.expr.JavaExpression;
 import org.netbeans.modules.debugger.jpda.expr.TreeEvaluator;
+import org.netbeans.modules.debugger.jpda.expr.VMCache;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -85,6 +86,7 @@ import org.openide.util.NbBundle;
 public class JavaEvaluator implements Evaluator<JavaExpression> {
 
     private final JPDADebuggerImpl debugger;
+    private final VMCache vmCache;
     private final Map<Value, EvaluationContext.VariableInfo> valueContainers =
             Collections.synchronizedMap(new IdentityHashMap<Value, EvaluationContext.VariableInfo>());
 
@@ -96,6 +98,7 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                 valueContainers.clear();
             }
         });
+        vmCache = new VMCache(debugger);
     }
 
     public Result evaluate(Expression<JavaExpression> expression, final Context context) throws InvalidExpressionException {
@@ -155,7 +158,8 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                         staticImports,
                         canInvokeMethods,
                         methodInvokePreprocessor,
-                        debugger
+                        debugger,
+                        vmCache
                     )
                 );
             try {

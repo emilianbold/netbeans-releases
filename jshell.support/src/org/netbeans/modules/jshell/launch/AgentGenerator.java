@@ -47,6 +47,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import jdk.jshell.execution.Util;
@@ -84,12 +85,32 @@ abstract class AgentGenerator implements RemoteJShellAccessor, ShellLaunchListen
         OutputStream out = c.getAgentInput();
         InputStream in = c.getAgentOutput();
         
-        ObjectOutput cmdout = new ObjectOutputStream(out);
         Map<String, OutputStream> io = new HashMap<>();
         io.put("out", ee.userOut()); // NOI18N
         io.put("err", ee.userErr()); // NOI18N
-        ObjectInput cmdin = Util.remoteInput(in, io);
-        return createExecControl(agent, cmdout, cmdin, c);
+        Throwable[] t = new Throwable[1];
+        ExecutionControl res = Util.remoteInputOutput(
+            in, out,
+            io,
+            Collections.emptyMap(), 
+            (ObjectInput cmdIn, ObjectOutput cmdOut) -> {
+                try {
+                    return createExecControl(agent, cmdOut, cmdIn, c);
+                } catch (RuntimeException | Error e) {
+                    throw e;
+                } catch (Throwable x) {
+                    t[0] = x;
+                    return null;
+                }
+            }
+        );
+        if (res == null) {
+            if (t[0] != null) {
+                throw t[0];
+            }
+            throw new IllegalStateException();
+        }
+        return res;
     }
     
     protected abstract ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) throws Throwable;

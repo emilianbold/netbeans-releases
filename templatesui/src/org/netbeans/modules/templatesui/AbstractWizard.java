@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -74,8 +75,10 @@ import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.json.Model;
 import net.java.html.json.Models;
+import org.netbeans.api.templates.FileBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
@@ -109,7 +112,8 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     @Override
     public Set<? extends Object> instantiate() throws IOException {
         try {
-            FutureTask<?> t = new FutureTask<>(new Callable<Map<String,Object>>() {
+            final TemplateWizard tw = (TemplateWizard) wizard;
+            FutureTask<Map<String,Object>> t = new FutureTask<>(new Callable<Map<String,Object>>() {
                 @Override
                 public Map<String,Object> call() throws Exception {
                     Object[] namesAndValues = rawProps(data);
@@ -122,14 +126,32 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                     return map;
                 }
             });
-            FXBrowsers.runInBrowser(v, t);
+            if (v != null) {
+                FXBrowsers.runInBrowser(v, t);
+            }
+            Map<String, Object> params = new HashMap<>();
             
-            TemplateWizard tw = (TemplateWizard) wizard;
-            Map<String, ? extends Object> params = Collections.singletonMap(
-                "wizard", t.get()
-            );
-            DataObject obj = tw.getTemplate().createFromTemplate(tw.getTargetFolder(), tw.getTargetName(), params);
-            return Collections.singleton(obj);
+            for (Map.Entry<String, Object> entry : tw.getProperties().entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                params.put(key, value);
+            }
+            if (v != null) {
+                params.put("wizard", t.get()); // NOI18N
+            }
+            
+            List<FileObject> result = new FileBuilder(
+                tw.getTemplate().getPrimaryFile(),
+                tw.getTargetFolder().getPrimaryFile()
+            ).
+            name(tw.getTargetName()).
+            withParameters(params).build();
+                    
+            Set<DataObject> objs = new LinkedHashSet(result.size() * 2);
+            for (FileObject fileObject : result) {
+                objs.add(DataObject.find(fileObject));
+            }
+            return objs;
         } catch (Exception ex) {
             throw (IOException)new InterruptedIOException().initCause(ex);
         }
@@ -580,27 +602,37 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         WizardDescriptor.Panel<WizardDescriptor> panel = choosers.get(type);
         
         if (panel == null) {
-            try {
-                ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-                if (l == null) {
-                    l = Thread.currentThread().getContextClassLoader();
-                }
-                if (l == null) {
-                    l = AbstractWizard.class.getClassLoader();
-                }
-                Class<?> clazz = Class.forName("org.netbeans.spi.java.project.support.ui.templates.JavaTemplates", true, l); // NOI18N
-                Method create = clazz.getDeclaredMethod("createPackageChooser", Object.class, String.class); // NOI18N
-                create.setAccessible(true);
-                panel = (WizardDescriptor.Panel<WizardDescriptor>) create.invoke(
-                    null, wizard.getProperty("project"), type // NOI18N
-                );
-            } catch (Throwable t) {
-                LOG.log(Level.WARNING, "Cannot create targetChooser for type " + type + " using default. "
-                    + "Don't forget to include org.netbeans.modules.java.project.ui module in your application.", t
-                );
-                panel = wizard.targetChooser();
-            }
+            panel = loadPanel(type, wizard);
             choosers.put(type, panel);
+        }
+        return panel;
+    }
+
+    private static WizardDescriptor.Panel<WizardDescriptor> loadPanel(String type, TemplateWizard tw) {
+        WizardDescriptor.Panel<WizardDescriptor> panel;
+        try {
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = Thread.currentThread().getContextClassLoader();
+            }
+            if (l == null) {
+                l = AbstractWizard.class.getClassLoader();
+            }
+            Method create;
+            if ("archetype".equals(type)) { // NOI18N
+                Class<?> clazz = Class.forName("org.netbeans.modules.maven.api.archetype.ArchetypeWizards", true, l); // NOI18N
+                create = clazz.getDeclaredMethod("basicWizardPanel", Object.class, String.class); // NOI18N
+            } else {
+                Class<?> clazz = Class.forName("org.netbeans.spi.java.project.support.ui.templates.JavaTemplates", true, l); // NOI18N
+                create = clazz.getDeclaredMethod("createPackageChooser", Object.class, String.class); // NOI18N
+            }
+            create.setAccessible(true);
+            panel = (WizardDescriptor.Panel<WizardDescriptor>) create.invoke(null, tw.getProperty("project"), type); // NOI18N      
+        } catch (Throwable t) {
+            LOG.log(Level.WARNING, "Cannot create targetChooser for type " + type + " using default. "
+                    + "Don't forget to include org.netbeans.modules.java.project.ui module in your application.", t
+            );
+            panel = tw.targetChooser();
         }
         return panel;
     }

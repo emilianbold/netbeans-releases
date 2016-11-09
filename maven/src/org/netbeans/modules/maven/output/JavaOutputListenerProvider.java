@@ -163,19 +163,25 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                                     if(pos > -1) {
                                         Utilities.openAtPosition(model, pos);
                                     } else {
-                                        try {
-                                            DataObject pomDO = DataObject.find(pomFO);
-                                            OpenCookie oc = pomDO.getLookup().lookup(OpenCookie.class);
-                                            if(oc != null) {
-                                                oc.open();
-                                            }
-                                        } catch (DataObjectNotFoundException x) {
-                                            Logger.getLogger(JavaOutputListenerProvider.class.getName()).log(Level.INFO, null, x);
-                                        }
+                                        open(pomFO);
                                     }
                                 }    
+                            } else {
+                                open(pomFO);                                
                             }
                         }    
+
+                        private void open(FileObject pomFO) {
+                            try {
+                                DataObject pomDO = DataObject.find(pomFO);
+                                OpenCookie oc = pomDO.getLookup().lookup(OpenCookie.class);
+                                if(oc != null) {
+                                    oc.open();
+                                }
+                            } catch (DataObjectNotFoundException x) {
+                                Logger.getLogger(JavaOutputListenerProvider.class.getName()).log(Level.INFO, null, x);
+                            }
+                        }
                         @Override public void outputLineCleared(OutputEvent ev) {}
                     }
                     , false );

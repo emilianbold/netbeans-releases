@@ -1716,8 +1716,15 @@ public class TreeFactory {
         return docMake.at(NOPOS).newDeprecatedTree(text);
     }
     
+    public DocCommentTree DocComment(List<? extends DocTree> fullBody, List<? extends DocTree> tags) {
+        return docMake.at(NOPOS).newDocCommentTree(fullBody, tags);
+    }
+    
     public DocCommentTree DocComment(List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
-        return docMake.at(NOPOS).newDocCommentTree(firstSentence, body, tags);
+        final ArrayList<DocTree> fullBody = new ArrayList<>(firstSentence.size() + body.size());
+        fullBody.addAll(firstSentence);
+        fullBody.addAll(body);                
+        return docMake.at(NOPOS).newDocCommentTree(fullBody, tags);
     }
     
     public com.sun.source.doctree.ErroneousTree Erroneous(String text, DiagnosticSource diagSource, String code, Object... args) {

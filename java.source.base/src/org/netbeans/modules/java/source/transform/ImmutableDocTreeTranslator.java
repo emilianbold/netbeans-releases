@@ -132,11 +132,10 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
     //<editor-fold defaultstate="collapsed" desc="Rewrites">
     protected final DocCommentTree rewriteChildren(DocCommentTree tree) {
         DocCommentTree value = tree;
-        List<? extends DocTree> firstSentence = translateDoc(tree.getFirstSentence());
-        List<? extends DocTree> body = translateDoc(tree.getBody());
+        List<? extends DocTree> fullBody = translateDoc(tree.getFullBody());
         List<? extends DocTree> blockTags = translateDoc(tree.getBlockTags());
-        if (firstSentence != tree.getFirstSentence() || body != tree.getBody() || blockTags != tree.getBlockTags()) {
-            value = make.DocComment(firstSentence, body, blockTags);
+        if (fullBody != tree.getFullBody()|| blockTags != tree.getBlockTags()) {
+            value = make.DocComment(fullBody, blockTags);
         }
         return value;
     }

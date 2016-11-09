@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item.ItemFactory;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
@@ -948,7 +949,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         NativeProjectProvider.firePropertiesChanged(items, cFiles, ccFiles, projectChanged, getActiveConfiguration(), getNativeProjectChangeSupport());
     }
     
-    public void checkForChangedItems(Delta delta) {
+    public void checkForChangedItems(SnapShot delta) {
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             checkForChangedItems2(delta);
         }
@@ -958,7 +959,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    private void checkForChangedItems2(final Delta delta) {
+    private void checkForChangedItems2(final SnapShot delta) {
         if (SwingUtilities.isEventDispatchThread()) {
             RP.post(() -> {
                 checkForChangedItemsWorker(delta);
@@ -968,27 +969,30 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    private void checkForChangedItemsWorker(Delta delta) {
-        if (delta.isEmpty()) {
-            return;
-        }
-        List<NativeFileItem> deleted = delta.getDeleted();
-        List<NativeFileItem> excluded = delta.getExcluded();
-        if (!(deleted.isEmpty() && excluded.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(deleted);
-            list.addAll(excluded);
-            getNativeProjectChangeSupport().fireFilesRemoved(list);
-        }
-        List<NativeFileItem> added = delta.getAdded();
-        List<NativeFileItem> included = delta.getIncluded();
-        if (!(added.isEmpty() && included.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(added);
-            list.addAll(included);
-            getNativeProjectChangeSupport().fireFilesAdded(list);
-        }
-        List<NativeFileItem> changed = delta.getChanged();
-        if (!changed.isEmpty()) {
-            getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(changed));
+    private void checkForChangedItemsWorker(SnapShot snapShot) {
+        if (snapShot instanceof Delta) {
+            Delta delta = (Delta) snapShot;
+            if (delta.isEmpty()) {
+                return;
+            }
+            List<NativeFileItem> deleted = delta.getDeleted();
+            List<NativeFileItem> excluded = delta.getExcluded();
+            if (!(deleted.isEmpty() && excluded.isEmpty())) {
+                List<NativeFileItem> list = new ArrayList<NativeFileItem>(deleted);
+                list.addAll(excluded);
+                getNativeProjectChangeSupport().fireFilesRemoved(list);
+            }
+            List<NativeFileItem> added = delta.getAdded();
+            List<NativeFileItem> included = delta.getIncluded();
+            if (!(added.isEmpty() && included.isEmpty())) {
+                List<NativeFileItem> list = new ArrayList<NativeFileItem>(added);
+                list.addAll(included);
+                getNativeProjectChangeSupport().fireFilesAdded(list);
+            }
+            List<NativeFileItem> changed = delta.getChanged();
+            if (!changed.isEmpty()) {
+                getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(changed));
+            }
         }
     }
     

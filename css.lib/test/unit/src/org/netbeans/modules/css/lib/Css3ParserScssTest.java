@@ -1980,5 +1980,30 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "}");
     }
     
+    public void testMapAnyDatatypeasKey() {
+        assertParses("$font-formats: 'woff' 'ttf'; // Define what webfont formats need importing\n"
+                + "$font-path: '../fonts/'; // Set the a path to your fonts directory\n"
+                + "\n"
+                + "$fonts: (\n"
+                + "  'heading': ( // give your font a semantic name for reference\n"
+                + "    'name': 'maven', // optionally set a different font name\n"
+                + "    'stack': ('helvetica', 'arial', sans-serif), // define the stack\n"
+                + "    'normal': 'maven/maven_pro_regular-webfont', // point to any webfont files\n"
+                + "    'bold': 'maven/maven_pro_bold-webfont',\n"
+                + "  ),\n"
+                + "\n"
+                + "  'body': (\n"
+                + "    'name': 'exo',\n"
+                + "    'stack': ('helvetica', 'arial', sans-serif),\n"
+                + "    'normal': 'exo/exo2-regular-webfont',\n"
+                + "    'italic': 'exo/exo2-italic-webfont',\n"
+                + "    'bold': 'exo/exo2-bold-webfont',\n"
+                + "    'bold' 'italic': 'exo/exo2-bolditalic-webfont',\n"
+                + "  ),\n"
+                + "\n"
+                + "  'alias': 'body', // create aliases when useful\n"
+                + ");");
+    }
+    
     
 }

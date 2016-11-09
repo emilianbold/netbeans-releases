@@ -67,6 +67,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.classpath.ClassPathProviderImpl.MODULE_INFO_JAVA;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -86,7 +87,6 @@ import org.openide.util.WeakListeners;
  * @see org.netbeans.modules.java.api.common.queries.UnitTestsCompilerOptionsQueryImpl
  */
 public final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImplementation {
-    private static final String MODULE_INFO_JAVA = "module-info.java";  //NOI18N
     private static final Logger LOG = Logger.getLogger(UnitTestsCompilerOptionsQueryImpl.class.getName());
     private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
 

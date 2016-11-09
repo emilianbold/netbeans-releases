@@ -671,4 +671,8 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/issue268496_03.php");
     }
 
+    public void testIssue268712() throws Exception {
+        checkErrors("testfiles/parser/issue268712.php");
+    }
+
 }

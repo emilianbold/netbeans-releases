@@ -20,7 +20,7 @@
                 <exclude name="**/JDI*.class"/>
                 <exclude name="**/LocalExecutionControl.class"/>
                 <exclude name="**/StreamingExecutionControl.class"/>
-                <exclude name="**/DemultiplexInput.class"/>
+                <!--<exclude name="**/DemultiplexInput.class"/>-->
             </patternset>
             <patternset>
                 <include name="jdk/jshell/spi/ExecutionControl*.class"/>

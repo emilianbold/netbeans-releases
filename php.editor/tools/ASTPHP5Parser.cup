@@ -376,6 +376,7 @@ terminal T_COALESCE;
 
 non terminal Program thestart;
 non terminal List namespace_name;
+non terminal NamespaceName namespace_name_access;
 non terminal List group_namespace_parts;
 non terminal List non_empty_group_namespace_parts;
 non terminal SingleUseStatementPart group_namespace_part;
@@ -604,6 +605,22 @@ namespace_name:list T_NS_SEPARATOR T_STRING:n
 :}
 ;
 
+namespace_name_access ::=
+namespace_name:list
+{:
+	RESULT = new NamespaceName(listleft, listright, list, false, false);
+:}
+
+| T_NAMESPACE:s T_NS_SEPARATOR namespace_name:list
+{:
+	RESULT = new NamespaceName(sleft, listright, list, false, true);
+:}
+
+| T_NS_SEPARATOR:s namespace_name:list
+{:
+	RESULT = new NamespaceName(sleft, listright, list, true, false);
+:}
+;
 
 top_statement_list ::=
 top_statement_list:sList top_statement:statement
@@ -3504,6 +3521,11 @@ static_constant_array_access:arrayAccess T_OPEN_RECT:o static_scalar_value:index
 {:
 	RESULT = new ExpressionArrayAccess(constantNameleft, endright, new Identifier(constantNameleft, constantNameright, constantName), new ArrayDimension(oleft, endright, index));
 :}
+
+| namespace_name_access:namespace T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+	RESULT = new ExpressionArrayAccess(namespaceleft, endright, namespace, new ArrayDimension(oleft, endright, index));
+:}
 ;
 
 static_array_creation_with_access ::=
@@ -3888,6 +3910,11 @@ constant_array_access:arrayAccess T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:en
 | T_STRING:constantName T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
     RESULT = new ExpressionArrayAccess(constantNameleft, endright, new Identifier(constantNameleft, constantNameright, constantName), new ArrayDimension(oleft, endright, index));
+:}
+
+| namespace_name_access:namespace T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+	RESULT = new ExpressionArrayAccess(namespaceleft, endright, namespace, new ArrayDimension(oleft, endright, index));
 :}
 ;
 

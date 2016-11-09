@@ -131,6 +131,29 @@ public class IndentationCounter {
                 if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {
                     movePrevious = true;
                 }
+
+                // #268621
+                if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+                    newIndent = Utilities.getRowIndent(doc, caretLineStart);
+                    if (newIndent < 0) {
+                        int caretStart = caretOffset - 1;
+                        int caretLineEnd = LineDocumentUtils.getLineEnd(doc, LineDocumentUtils.getLineEnd(doc, caretOffset) - 1);
+                        int curlyOffset = ts.offset() - 1;
+                        if (caretLineEnd == caretStart) {
+                            newIndent = caretStart - caretLineStart;
+                        } else if (caretLineEnd < curlyOffset) {
+                            // -1 : in this case, caretLineEnd is the top of the next line
+                            newIndent = caretLineEnd - 1 - caretLineStart;
+                        } else {
+                            newIndent = curlyOffset - caretLineStart;
+                        }
+                        if (newIndent < 0) {
+                            newIndent = 0;
+                        }
+                    }
+                    return new IndentationImpl(newIndent);
+                }
+
                 if (ts.token().id() == PHPTokenId.PHP_COMMENT
                         || ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
                         || ts.token().id() == PHPTokenId.PHP_COMMENT_START

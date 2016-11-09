@@ -60,6 +60,7 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,11 +73,8 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import jdk.jshell.execution.LoaderDelegate;
 import jdk.jshell.execution.RemoteExecutionControl;
 import static jdk.jshell.execution.Util.forwardExecutionControlAndIO;
-import static org.netbeans.lib.jshell.agent.RemoteCodes.RESULT_KILLED;
-import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
 /**
  *
@@ -280,7 +278,7 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             Map<String, Consumer<OutputStream>> chans = new HashMap<>();
             chans.put("out", st -> System.setOut(new PrintStream(st, true)));
             chans.put("err", st -> System.setErr(new PrintStream(st, true)));
-            forwardExecutionControlAndIO(worker, inStream, outStream, chans);
+            forwardExecutionControlAndIO(worker, inStream, outStream, chans, Collections.emptyMap());
         } catch (EOFException ex) {
             // ignore, forcible close by the tool
         }
@@ -322,7 +320,7 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             LOG.fine("Opening input stream from master");
 
             Map<String, Consumer<OutputStream>> chans = new HashMap<>();
-            forwardExecutionControlAndIO(this, ism, osm, chans);
+            forwardExecutionControlAndIO(this, ism, osm, chans, Collections.emptyMap());
         } catch (EOFException ex) {
             // expected.
             LOG.log(Level.FINE, "EOF", ex);

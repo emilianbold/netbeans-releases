@@ -552,6 +552,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
         @Override
         public Icon getIcon(File f) {
+            if(f == null) {
+                // avoid NPE issue #268498
+                return null;
+            }
             synchronized (this) { //#233480 to reduce number of calls to IO layer
                 Icon icon = knownProjectIcons.get(f);
                 if (icon != null) {

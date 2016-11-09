@@ -748,6 +748,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(ExpressionArrayAccess node) {
         // CONSTANT[0], "String"[0], [1][0]
+        // \NamespaceA\CONSTANT[0], Sub\CONSTANT[0], namespace\CONSTANT[1]
         scan(node.getDimension());
         Expression expression = node.getExpression();
         while (expression instanceof ExpressionArrayAccess) {
@@ -757,12 +758,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
 
         if (expression instanceof Identifier) {
-            // global const
             Identifier identifier = (Identifier) expression;
             String name = identifier.getName();
             if(!NavUtils.isQuoted(name)) {
                 occurencesBuilder.prepare(Kind.CONSTANT, expression, modelBuilder.getCurrentScope());
             }
+        } else {
+            scan(expression);
         }
     }
 

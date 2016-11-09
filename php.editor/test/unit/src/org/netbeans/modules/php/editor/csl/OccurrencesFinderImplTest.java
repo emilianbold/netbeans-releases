@@ -1859,6 +1859,54 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "trait MyTr^ait {", true);
     }
 
+    public void testIssue268712_01() throws Exception {
+        checkOccurrences(getTestPath(), "const TES^T1 = [0, 1];", true);
+    }
+
+    public void testIssue268712_02() throws Exception {
+        checkOccurrences(getTestPath(), "const TE^ST2 = [[0, 1], 1];", true);
+    }
+
+    public void testIssue268712_03() throws Exception {
+        checkOccurrences(getTestPath(), "const TEST^3 = \\TEST1[0];", true);
+    }
+
+    public void testIssue268712_04() throws Exception {
+        checkOccurrences(getTestPath(), "const TEST4 = \\Issue268712_A\\TES^T3;", true);
+    }
+
+    public void testIssue268712_05() throws Exception {
+        checkOccurrences(getTestPath(), "const TEST5 = \\Issue268712_A\\TES^T2[0][1];", true);
+    }
+
+    public void testIssue268712_06() throws Exception {
+        checkOccurrences(getTestPath(), "const TES^T6 = [\"test\" => \"test\"];", true);
+    }
+
+    public void testIssue268712_07() throws Exception {
+        checkOccurrences(getTestPath(), "$const1 = \\TEST^1[0];", true);
+    }
+
+    public void testIssue268712_08() throws Exception {
+        checkOccurrences(getTestPath(), "$const2 = \\Issue268712_A\\TE^ST2[1];", true);
+    }
+
+    public void testIssue268712_09() throws Exception {
+        checkOccurrences(getTestPath(), "echo \\Issue268712_B\\TES^T6[\"test\"] . PHP_EOL;", true);
+    }
+
+    public void testIssue268712_10() throws Exception {
+        checkOccurrences(getTestPath(), "echo Sub\\S^UB[\"sub\"] . PHP_EOL;", true);
+    }
+
+    public void testIssue268712_11() throws Exception {
+        checkOccurrences(getTestPath(), "echo namespace\\TEST^6[\"test\"] . PHP_EOL;", true);
+    }
+
+    public void testIssue268712_12() throws Exception {
+        checkOccurrences(getTestPath(), "const S^UB = [\"sub\" => \"sub\"];", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

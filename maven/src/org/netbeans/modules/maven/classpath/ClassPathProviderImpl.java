@@ -82,6 +82,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
 
     private static final Logger LOGGER = Logger.getLogger(ClassPathProviderImpl.class.getName());
     
+    public static final String MODULE_INFO_JAVA = "module-info.java"; // NOI18N
+    private static final String MODULE_INFO_CLASS = "module-info.class"; // NOI18N
+    
     private static final int TYPE_SRC = 0;
     private static final int TYPE_TESTSRC = 1;
     private static final int TYPE_WEB = 5;
@@ -91,7 +94,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private final ClassPath[] cache = new ClassPath[17];    
     
     public ClassPathProviderImpl(@NonNull Project proj) {
-        this.proj = proj;        
+        this.proj = proj;
     }
     
     /**
@@ -202,7 +205,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             // XXX read <processorpath> from maven-compiler-plugin config
             return getCompileTimeClasspath(fileType);
         } else if (type.equals(JavaClassPathConstants.MODULE_BOOT_PATH)) {            
-            return getModuleBootPath(); //
+            return getModuleBootPath();
         } else if (type.equals(JavaClassPathConstants.MODULE_COMPILE_PATH)) {            
             return getModuleCompilePath(fileType);
         } else if (type.equals(JavaClassPathConstants.MODULE_CLASS_PATH)) {            
@@ -294,7 +297,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         if (cp == null) {
             if (type == TYPE_SRC) {
                 cp = createMultiplexClassPath(
-                    // XXX has to be module-info based
+                    // XXX should be based on module-info or not?
                     new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
                         ClassPath.EMPTY,
                         getCompileClasspath(),
@@ -508,24 +511,24 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         assert type >=0 && type <=1;
         ClassPath cp = cache[12+type];
         if (cp == null) {
-            if (type == TYPE_SRC) {
-                // XXX
-                cp = createMultiplexClassPath (
-                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
-                            getCompileClasspath(),
-                            ClassPath.EMPTY,
-                            "ModuleLegacyClassPath" // NOI18N
-                        )
-                     );   
-            } else {
-                cp = createMultiplexClassPath (
-                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
-                            getTestCompileClasspath(),
-                            ClassPath.EMPTY,
-                            "TestModuleLegacyClassPath" // NOI18N
-                        )
-                     ); 
-            }
+            cp = ClassPath.EMPTY; 
+//            if (type == TYPE_SRC) {
+//                createMultiplexClassPath (
+//                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
+//                            ClassPath.EMPTY,
+//                            getCompileClasspath(),
+//                            "ModuleLegacyClassPath" // NOI18N
+//                        )
+//                     );   
+//            } else {
+//                createMultiplexClassPath (
+//                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
+//                            ClassPath.EMPTY,
+//                            getTestCompileClasspath(),
+//                            "TestModuleLegacyClassPath" // NOI18N
+//                        )
+//                     ); 
+//            }
             cache[12+type] = cp;
         }
         return cp;
@@ -537,8 +540,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     
     private static class ModuleInfoSelector extends ClassPathSelector {
                 
-        private static final String MODULE_INFO = "module-info.java"; // NOI18N
-        
         private final ClassPath noModuleInfoCP;
         private final ClassPath hasModuleInfoCP;
         private final String logDesc;
@@ -556,9 +557,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             if (ret == null) {
                 ret = noModuleInfoCP;
 
-                // see org.apache.maven.plugin.compiler.CompilerMojo
+                // see org.apache.maven.plugin.compiler.CompilerMojo.classpathElements
                 for (String sourceRoot : proj.getOriginalMavenProject().getCompileSourceRoots()) {
-                    if(new File(sourceRoot, MODULE_INFO).exists()) {
+                    if(new File(sourceRoot, MODULE_INFO_JAVA).exists()) {
                         ret = hasModuleInfoCP;  
                         LOGGER.log(Level.FINER, "project {0} has module-info.java", proj.getProjectDirectory().getPath()); // NOI18N
                         break;
@@ -577,7 +578,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             if( (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) && evt.getNewValue() instanceof URI)) {
                 File file = Utilities.toFile((URI) evt.getNewValue());
                 for (String sourceRoot : proj.getOriginalMavenProject().getCompileSourceRoots()) {
-                    if(file.equals(new File(sourceRoot, MODULE_INFO))) {
+                    if(file.equals(new File(sourceRoot, MODULE_INFO_JAVA))) {
                         reset = true;
                         break;
                     }
@@ -629,10 +630,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     }
     
     private abstract static class TestPathSelector extends ClassPathSelector {
-                
-        private static final String MODULE_INFO = "module-info.java"; // NOI18N
-        private static final String MODULE_INFO_CLASS = "module-info.class"; // NOI18N
-        
         protected final ClassPath compilePath;
         protected final ClassPath testPath;
         protected final ClassPath testScopedPath;
@@ -652,7 +649,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             if (ret == null) {
                 MavenProject mp = proj.getOriginalMavenProject();
                 boolean hasMainModuleDescriptor = new File(mp.getBuild().getOutputDirectory(), MODULE_INFO_CLASS).exists();
-                boolean hasTestModuleDescriptor = mp.getTestCompileSourceRoots().stream().anyMatch((sourceRoot) -> (new File(sourceRoot, MODULE_INFO).exists()));
+                boolean hasTestModuleDescriptor = mp.getTestCompileSourceRoots().stream().anyMatch((sourceRoot) -> (new File(sourceRoot, MODULE_INFO_JAVA).exists()));
                 
                 ret = getActiveClassPath(hasTestModuleDescriptor, hasMainModuleDescriptor);
 
@@ -671,7 +668,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
                 File file = Utilities.toFile((URI) evt.getNewValue());
                 MavenProject mp = proj.getOriginalMavenProject();
                 reset = file.equals(new File(mp.getBuild().getOutputDirectory(), MODULE_INFO_CLASS)) ||
-                        mp.getTestCompileSourceRoots().stream().anyMatch((sourceRoot) -> (file.equals(new File(sourceRoot, MODULE_INFO))));                
+                        mp.getTestCompileSourceRoots().stream().anyMatch((sourceRoot) -> (file.equals(new File(sourceRoot, MODULE_INFO_JAVA))));                
                 if(reset) {
                     LOGGER.log(Level.FINER, "{0} selector resource changed: {1}", new Object[]{logDesc, evt});
                 }
@@ -687,9 +684,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         protected ClassPath active = null;
         
         public ClassPathSelector(NbMavenProjectImpl proj) {
-            this.proj = proj;                     
+            this.proj = proj;   
+            // see the usage of org.apache.maven.plugin.compiler.CompilerMojo.preparePaths 
+            // maven checks recursively all source roots for module-info,
+            // for performace reasons we will be checking and listening only on the root of a source root
             NbMavenProject.addPropertyChangeListener(proj, (evt) -> {
-                if (isReset(evt)) {
+                    if (isReset(evt)) {
                     active = null;
                     support.firePropertyChange(PROP_ACTIVE_CLASS_PATH, null, null);
                 }

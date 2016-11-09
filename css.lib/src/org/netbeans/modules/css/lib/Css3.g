@@ -657,7 +657,7 @@ sass_map_pairs
 
 sass_map_pair
     :
-        (NUMBER|STRING|((function)=>function)|property) ws? COLON ws? cp_expression (ws? prio)?
+        (NUMBER|(STRING (ws? STRING)*)|((function)=>function)|property|sass_map) ws? COLON ws? cp_expression (ws? prio)?
     ;
 
 rule
@@ -756,6 +756,7 @@ elementSubsequent
     (
         {isScssSource()}? sass_extend_only_selector
         | {isCssPreprocessorSource()}? LESS_AND (IDENT | NUMBER)*
+        | {isLessSource()}? LESS_AND less_selector_interpolation_exp
     	| cssId
     	| cssClass
         | slAttribute
@@ -1157,7 +1158,7 @@ cp_mixin_call_args
     :
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  (CP_DOTS ws?)?
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  (CP_DOTS ws?)? SEMI?
     ;
 
 cp_mixin_call_arg
