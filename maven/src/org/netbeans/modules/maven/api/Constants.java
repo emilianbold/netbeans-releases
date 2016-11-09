@@ -129,7 +129,7 @@ public interface Constants {
      * </li>
      * <li>
      * maven - starts the debugger and generates correct MAVEN_OPTS value that is passed to the command line maven executable.
-     * MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}
+     * MAVEN_OPTS=-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}
      * </li>
      * </ul>
      */

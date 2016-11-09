@@ -199,7 +199,7 @@ public class ModelHandle2Test extends NbTestCase {
 "                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>\n" +
 "            </goals>\n" +
 "            <properties>\n" +
-"                <exec.args>-XX:MaxPermSize=512m -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>\n" +
+"                <exec.args>-XX:MaxPermSize=512m -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>\n" +
 "                <exec.executable>java</exec.executable>\n" +
 "                <exec.classpathScope>${classPathScope}</exec.classpathScope>\n" +
 "                <jpda.listen>true</jpda.listen>\n" +
@@ -221,7 +221,7 @@ public class ModelHandle2Test extends NbTestCase {
 "                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>\n" +
 "            </goals>\n" +
 "            <properties>\n" +
-"                <exec.args>-XX:MaxPermSize=512m -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>\n" +
+"                <exec.args>-XX:MaxPermSize=512m -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -classpath %classpath ${packageClassName}</exec.args>\n" +
 "                <exec.executable>java</exec.executable>\n" +
 "                <exec.classpathScope>${classPathScope}</exec.classpathScope>\n" +
 "                <jpda.listen>true</jpda.listen>\n" +

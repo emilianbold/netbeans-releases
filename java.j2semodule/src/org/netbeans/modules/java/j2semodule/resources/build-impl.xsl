@@ -930,8 +930,7 @@ is divided into following sections:
                     <sequential>
                         <j2semodularproject1:junit includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
                             <customize>
-                                <jvmarg line="${{debug-args-line}}"/>
-                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                                <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                                 <customizeDebuggee/>
                             </customize>
                         </j2semodularproject1:junit>
@@ -1215,17 +1214,6 @@ is divided into following sections:
             </target>
             
             <target name="-init-debug-args">
-                <xsl:choose>
-                    <xsl:when test="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:explicit-platform">
-                        <exec executable="${{platform.java}}" outputproperty="version-output">
-                            <arg value="-version"/>
-                        </exec>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <property name="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none"/>
                 <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
                     <os family="windows"/>
                 </condition>
@@ -1261,8 +1249,7 @@ is divided into following sections:
                     <sequential>
                         <j2semodularproject1:java modulename="@{{modulename}}" classname="@{{classname}}" modulepath="@{{modulepath}}" classpath="@{{classpath}}">
                             <customize>
-                                <jvmarg line="${{debug-args-line}}"/>
-                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                                <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                                 <customizeDebuggee/>
                             </customize>
                         </j2semodularproject1:java>
@@ -1715,8 +1702,7 @@ is divided into following sections:
                 </nbprofiledirect>
                 <j2semodularproject1:junit includes="${{includes}}" excludes="${{excludes}}" testincludes="${{profile.class}}" testmethods="">
                     <customize>
-                        <jvmarg line="${{debug-args-line}}"/>
-                        <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                        <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                         <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
                         <jvmarg value="${{profiler.info.jvmargs.agent}}"/>
                         <jvmarg line="${{profiler.info.jvmargs}}"/>

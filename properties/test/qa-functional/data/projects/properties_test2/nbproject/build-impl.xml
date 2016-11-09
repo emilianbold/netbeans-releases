@@ -165,10 +165,7 @@ is divided into following sections:
             <attribute name="args" default="${application.args}"/>
             <sequential>
                 <java fork="true" classname="@{classname}" dir="${work.dir}">
-                    <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xnoagent"/>
-                    <jvmarg value="-Djava.compiler=none"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${run.jvmargs}"/>
                     <classpath>
                         <path path="@{classpath}"/>

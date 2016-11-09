@@ -1332,8 +1332,7 @@ is divided into following sections:
                     <sequential>
                         <j2seproject3:junit includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
                             <customize>
-                                <jvmarg line="${{debug-args-line}}"/>
-                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                                <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                                 <customizeDebuggee/>
                             </customize>
                         </j2seproject3:junit>
@@ -1617,28 +1616,6 @@ is divided into following sections:
             </target>
             
             <target name="-init-debug-args">
-                <xsl:choose>
-                    <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
-                        <exec executable="${{platform.java}}" outputproperty="version-output">
-                            <arg value="-version"/>
-                        </exec>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <condition property="have-jdk-older-than-1.4">
-                    <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
-                    <or>
-                        <contains string="${{version-output}}" substring="java version &quot;1.0"/>
-                        <contains string="${{version-output}}" substring="java version &quot;1.1"/>
-                        <contains string="${{version-output}}" substring="java version &quot;1.2"/>
-                        <contains string="${{version-output}}" substring="java version &quot;1.3"/>
-                    </or>
-                </condition>
-                <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
-                    <istrue value="${{have-jdk-older-than-1.4}}"/>
-                </condition>
                 <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
                     <os family="windows"/>
                 </condition>
@@ -1674,8 +1651,7 @@ is divided into following sections:
                     <sequential>
                         <j2seproject1:java modulename="@{{modulename}}" classname="@{{classname}}" modulepath="@{{modulepath}}" classpath="@{{classpath}}">
                             <customize>
-                                <jvmarg line="${{debug-args-line}}"/>
-                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                                <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                                 <customizeDebuggee/>
                             </customize>
                         </j2seproject1:java>
@@ -2439,8 +2415,7 @@ is divided into following sections:
                 </nbprofiledirect>
                 <j2seproject3:junit includes="${{includes}}" excludes="${{excludes}}" testincludes="${{profile.class}}" testmethods="">
                     <customize>
-                        <jvmarg line="${{debug-args-line}}"/>
-                        <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                        <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                         <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
                         <jvmarg value="${{profiler.info.jvmargs.agent}}"/>
                         <jvmarg line="${{profiler.info.jvmargs}}"/>

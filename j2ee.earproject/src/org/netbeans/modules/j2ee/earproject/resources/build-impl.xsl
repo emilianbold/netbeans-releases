@@ -788,28 +788,6 @@ exists or setup the property manually. For example like this:
     </target>
     <target name="-run-debug-appclient" depends="init,-init-debug-args,-debug-appclient-deploy,-as-retrieve-option-workaround,-init-debug-macros,-debug-appclient-start-nbjpda,-debug-appclient-pregfv3,-debug-appclient,connect-debugger"/>
     <target name="-init-debug-args">
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                <exec executable="${{platform.java}}" outputproperty="version-output">
-                    <arg value="-version"/>
-                </exec>
-            </xsl:when>
-            <xsl:otherwise>
-                <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
-            </xsl:otherwise>
-        </xsl:choose>
-        <condition property="have-jdk-older-than-1.4">
-            <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
-            <or>
-                <contains string="${{version-output}}" substring="java version &quot;1.0"/>
-                <contains string="${{version-output}}" substring="java version &quot;1.1"/>
-                <contains string="${{version-output}}" substring="java version &quot;1.2"/>
-                <contains string="${{version-output}}" substring="java version &quot;1.3"/>
-            </or>
-        </condition>
-        <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
-            <istrue value="${{have-jdk-older-than-1.4}}"/>
-        </condition>
     </target>
     <target name="-init-debug-macros" depends="init,-init-debug-args,-as-retrieve-option-workaround,-init-run-macros">
         <condition else="dt_socket" property="debug-transport-by-os" value="dt_shmem">
@@ -856,8 +834,7 @@ exists or setup the property manually. For example like this:
             <sequential>
                 <ear2:run-appclient subprojectname="@{{subprojectname}}">
                     <customize>
-                        <jvmarg value="-Xrunjdwp:transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
-                        <jvmarg line="${{debug-args-line}}"/>
+                        <jvmarg value="-agentlib:jdwp=transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
                     </customize>
                 </ear2:run-appclient>
             </sequential>
@@ -868,8 +845,7 @@ exists or setup the property manually. For example like this:
             <sequential>
                 <ear2:run-appclient-pregfv3>
                     <customize>
-                        <jvmarg value="-Xrunjdwp:transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
-                        <jvmarg line="${{debug-args-line}}"/>
+                        <jvmarg value="-agentlib:jdwp=transport=${{debug-transport-appclient}},address=${{jpda.address.appclient}}"/>
                     </customize>
                 </ear2:run-appclient-pregfv3>
             </sequential>

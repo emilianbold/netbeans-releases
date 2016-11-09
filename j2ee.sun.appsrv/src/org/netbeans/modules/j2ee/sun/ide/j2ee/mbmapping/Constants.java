@@ -72,10 +72,10 @@ public interface Constants {
     static final String SHARED_MEM = "shared_memory"; //NOI18N 
     static final String ISMEM = "transport=dt_shmem"; //NOI18N
     static final String ISSOCKET = "transport=dt_socket"; //NOI18N
-    static final String DEF_DEUG_OPTIONS = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"; //NOI18N                         
-    static final String DEF_DEUG_OPTIONS_81 = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009"; //NOI18N                         
-    static final String DEF_DEUG_OPTIONS_SOCKET = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=11000"; //NOI18N                         
-    static final String DEF_DEUG_OPTIONS_SHMEM = "-Xdebug -Xrunjdwp:transport=dt_shmem,server=y,suspend=n,address="; //NOI18N                         
+    static final String DEF_DEUG_OPTIONS = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044"; //NOI18N                         
+    static final String DEF_DEUG_OPTIONS_81 = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9009"; //NOI18N                         
+    static final String DEF_DEUG_OPTIONS_SOCKET = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=11000"; //NOI18N                         
+    static final String DEF_DEUG_OPTIONS_SHMEM = "-agentlib:jdwp=transport=dt_shmem,server=y,suspend=n,address="; //NOI18N                         
     
     //Config Mbean Queries
     static final String[] CONFIG_MODULE = {"web-module", "j2ee-application", "ejb-module", "connector-module", "appclient-module"}; //NOI18N

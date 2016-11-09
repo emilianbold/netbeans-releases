@@ -100,7 +100,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private boolean isCurrentProfile = true;
     private static final String RUN_PARAMS = "exec.args"; //NOI18N
     private static final String RUN_WORKDIR = "exec.workingdir"; //NOI18N
-    private static final String DEFAULT_DEBUG_PARAMS = "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
+    private static final String DEFAULT_DEBUG_PARAMS = "-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
     private static final String PROFILE_CMD = "profile"; // NOI18N
     
     private ModelHandle2 handle;

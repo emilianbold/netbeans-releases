@@ -924,7 +924,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <property name="debug.pause" value="y" />
     <property name="debug.server" value="y" />
     
-    <property name="tryme.debug.args" value="-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
+    <property name="tryme.debug.args" value="-J-agentlib:jdwp=transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
   </target>
           
   <target name="tryme-debug" depends="-jdk-presetdef-nbjpdastart" description="Start IDE in debugger. May only be called from within IDE.">
@@ -1278,7 +1278,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </classpath>
         </nbjpdastart>
         <antcall target="localtest-single">
-            <param name="junit.vm.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <param name="junit.vm.args" value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
         </antcall>
     </target>
 
