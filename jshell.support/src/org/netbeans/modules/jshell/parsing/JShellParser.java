@@ -174,7 +174,7 @@ public class JShellParser {
             snippetText.append(text);
         }
     }
-
+    
     private void processJavaInput() {
         String input = snippetText.toString();
 
@@ -193,7 +193,14 @@ public class JShellParser {
         O:
         while (true) {
             SourceCodeAnalysis.CompletionInfo info = state.sourceCodeAnalysis().analyzeCompletion(input);
-            int e = info.unitEndPos();
+            int endPos;
+            String rem = info.remaining();
+            if (rem == null) {
+                endPos = input.length() - 1;
+            } else {
+                endPos = input.length() - rem.length();
+            }
+            int e = endPos;
             boolean empty = info.remaining().trim().isEmpty();
             switch (info.completeness()) {
                 case DEFINITELY_INCOMPLETE:
@@ -220,7 +227,7 @@ public class JShellParser {
                     }
                     input = info.remaining();
                     e -= snippetPrefixLen;
-                    addJavaSnippet(snipOffset, info.unitEndPos() + 1);
+                    addJavaSnippet(snipOffset, endPos + 1);
                     snipOffset += e;
                     ModelAccessor.INSTANCE.setSectionComplete(section, true);
                     if (empty) {

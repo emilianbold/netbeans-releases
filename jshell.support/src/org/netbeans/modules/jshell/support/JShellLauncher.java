@@ -47,12 +47,16 @@ import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import javax.lang.model.SourceVersion;
 import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +64,9 @@ import org.openide.util.NbBundle;
  * @author lahvac
  */
 public class JShellLauncher extends InternalJShell {
-
+    private ClasspathInfo   cpInfo;
+    private SpecificationVersion srcVersion;
+    private SpecificationVersion targetVersion;
     private String prefix = "";
     private JShellGenerator execGen;
 
@@ -72,14 +78,24 @@ public class JShellLauncher extends InternalJShell {
      * @param userout user output from the JShell VM
      * @param usererr  user error from the JShell VM
      */
-    public JShellLauncher(PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, JShellGenerator execEnv) {
+    public JShellLauncher(ClasspathInfo cpInfo, 
+            PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, JShellGenerator execEnv) {
         super(cmdout, cmderr, userin, userout, usererr);
         this.execGen = execEnv;
+        this.cpInfo = cpInfo;
+    }
+    
+    public void setSourceVersion(SpecificationVersion level) {
+        this.srcVersion = level;
+    }
+    
+    public void setTargetVersion(SpecificationVersion level) {
+        this.targetVersion = level;
     }
 
     
     protected String prompt(boolean continuation) {
-        int index = state == null ? 0 :  state.snippets().size() + 1;
+        int index = state == null ? 0 :  (int)state.snippets().count() + 1;
         if (continuation) {
             return ">> "; // NOI18N 
         } else if (feedback() == Feedback.Concise) {
@@ -151,12 +167,24 @@ public class JShellLauncher extends InternalJShell {
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
             JShell.Builder b = createJShell().
-                    executionEngine(execGen);
+                    executionEngine(execGen).
+                    fileManager(
+                        new StubJavaFileManager(
+                            ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
+                            cpInfo
+                        )
+                    );
             String s = System.getProperty("jshell.logging.properties");
             if (s == null) {
                 b = b.remoteVMOptions("-classpath", quote(classpath));
             } else {
                 b = b.remoteVMOptions("-classpath", quote(classpath), quote("-Djava.util.logging.config.file=" + s));
+            }
+            if (srcVersion != null) {
+                b.compilerOptions("-source", srcVersion.toString());
+            }
+            if (targetVersion != null) {
+                b.compilerOptions("-target", targetVersion.toString());
             }
             JShell ret = b.build();
             return ret;

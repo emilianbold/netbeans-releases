@@ -386,7 +386,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                                 
                                 int soff = s.getElementOffset();
                                 String sn = s.getNode().getNodeName();
-                                String en = s.getNode().getNodeName();
+                                String en = sel.getNode().getNodeName();
                                 
                                 if(sup.isStartTag(s) && sn.equals(en)) {
                                     //found a matching start tag

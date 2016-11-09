@@ -17,6 +17,7 @@ import com.sun.jdi.VirtualMachine;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -27,13 +28,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.jshell.execution.JDIExecutionControl;
 import jdk.jshell.execution.JDIInitiator;
 import jdk.jshell.execution.Util;
-import static jdk.jshell.execution.Util.remoteInput;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
 
@@ -179,28 +180,54 @@ public class LaunchJDIAgent extends JDIExecutionControl
 
             // Set-up the JDI connection
             JDIInitiator jdii = new JDIInitiator(port,
-                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch);
+                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch, null);
             VirtualMachine vm = jdii.vm();
             Process process = jdii.process();
-
-            // Forward input to the remote agent
-            Util.forwardInputToRemote(env.userIn(), process.getOutputStream(),
-                    ex -> debug(ex, "input forwarding failure"));
-
+            
             List<Consumer<String>> deathListeners = new ArrayList<>();
             deathListeners.add(s -> env.closeDown());
+            
+            vm.resume();
 
             // Set-up the commands/reslts on the socket.  Piggy-back snippet
             // output.
             Socket socket = listener.accept();
             // out before in -- match remote creation so we don't hang
-            ObjectOutput cmdout = new ObjectOutputStream(socket.getOutputStream());
             Map<String, OutputStream> io = new HashMap<>();
             CloseFilter outFilter = new CloseFilter(env.userOut());
             io.put("out", outFilter);
             io.put("err", env.userErr());
-            ObjectInput cmdin = remoteInput(socket.getInputStream(), io);
-            LaunchJDIAgent agent = new LaunchJDIAgent(cmdout, cmdin, vm, process, deathListeners);
+
+            /*
+            class L implements BiFunction<ObjectInput, ObjectOutput, ExecutionControl> {
+                LaunchJDIAgent  agent;
+                
+                ExecutionControl forward() throws IOException {
+                    return Util.remoteInputOutput(
+                        socket.getInputStream(), 
+                        socket.getOutputStream(),
+                        io,
+                        null, this);
+                }
+
+                @Override
+                public ExecutionControl apply(ObjectInput cmdIn, ObjectOutput cmdOut) {
+                    agent = new LaunchJDIAgent(cmdout, cmdIn, vm, process, deathListeners);
+                    return agent;
+                }
+                
+            }
+            */
+
+            LaunchJDIAgent agent = (LaunchJDIAgent)
+                    Util.remoteInputOutput(
+                        socket.getInputStream(), 
+                        socket.getOutputStream(),
+                        io,
+                        Collections.emptyMap(), 
+                        (ObjectInput cmdIn, ObjectOutput cmdOut) ->
+                                new LaunchJDIAgent(cmdOut, cmdIn, vm, process, deathListeners)
+                    );
             Util.detectJDIExitEvent(vm, s -> {
                 for (Consumer<String> h : deathListeners) {
                     h.accept(s);

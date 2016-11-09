@@ -48,6 +48,7 @@ import java.awt.Color;
 import java.awt.Font;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.MatteBorder;
@@ -110,7 +111,12 @@ public final class NimbusLFCustoms extends LFCustoms {
                 "org.netbeans.swing.tabcontrol.plaf.NimbusViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.NimbusSlidingButtonUI", //NOI18N
-            SCROLLPANE_BORDER, new JScrollPane().getViewportBorder(),
+            SCROLLPANE_BORDER, new UIDefaults.LazyValue() {
+                @Override
+                public Object createValue(UIDefaults table) {
+                    return new JScrollPane().getViewportBorder();
+                }
+            }, 
             //Borders for the tab control
             EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
             EDITOR_TAB_CONTENT_BORDER,
