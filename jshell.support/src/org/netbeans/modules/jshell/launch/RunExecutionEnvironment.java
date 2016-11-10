@@ -50,10 +50,13 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.jshell.execution.StreamingExecutionControl;
 import jdk.jshell.execution.Util;
+import jdk.jshell.spi.ExecutionControl;
+import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import org.netbeans.lib.nbjshell.NbExecutionControlBase;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
@@ -118,11 +121,17 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
         int id = this.shellConnection.getRemoteAgentId();
         Map<String, OutputStream> io = new HashMap<>();
         LOG.log(Level.FINE, "Creating agent connection for STOP command");
-        try (JShellConnection stopConnection = agent.createConnection();
-            ObjectOutputStream out = new ObjectOutputStream(stopConnection.getAgentInput());
-            ObjectInput cmdin = Util.remoteInput(stopConnection.getAgentOutput(), io);
-        ) {
-            StreamingExecutionControl stopStream = new StreamingExecutionControl(out, cmdin);
+        
+        try (JShellConnection stopConnection = agent.createConnection()) {
+            StreamingExecutionControl stopStream = (StreamingExecutionControl)
+                    Util.remoteInputOutput(
+                        stopConnection.getAgentOutput(),
+                        stopConnection.getAgentInput(),
+                        io,
+                        null, 
+                        (ObjectInput cmdIn, ObjectOutput cmdOut) ->
+                                new StreamingExecutionControl(cmdOut, cmdIn)
+                    );
             Object o = stopStream.extensionCommand("nb_stop", id);
             LOG.log(Level.FINE, "Sending STOP command for agent ID: " + id);
             int success = (o instanceof Integer) ? (Integer)o : -1;

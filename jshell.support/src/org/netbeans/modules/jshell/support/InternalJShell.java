@@ -37,14 +37,10 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -53,13 +49,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
-import java.util.stream.Stream;
 
 import jdk.internal.jshell.debug.InternalDebugControl;
 import jdk.jshell.DeclarationSnippet;
@@ -378,7 +372,7 @@ public class InternalJShell {
 
             for (String alternative : alternatives) {
                 if (alternative.startsWith(input)) {
-                    result.add(new Suggestion(alternative, false));
+//                    result.add(new Suggestion(alternative, false));
                 }
             }
 
@@ -388,15 +382,16 @@ public class InternalJShell {
         }
 
     }
-
+    
     private static final CompletionProvider EMPTY_COMPLETION_PROVIDER = new FixedCompletionProvider();
-    private static final CompletionProvider FILE_COMPLETION_PROVIDER = fileCompletions(p -> true);
+//    private static final CompletionProvider FILE_COMPLETION_PROVIDER = fileCompletions(p -> true);
     private final Map<String, Command> commands = new LinkedHashMap<>();
     private void registerCommand(Command cmd) {
         for (String str : cmd.aliases) {
             commands.put(str, cmd);
         }
     }
+    /*
     private static CompletionProvider fileCompletions(Predicate<Path> accept) {
         return (code, cursor, anchor) -> {
             int lastSlash = code.lastIndexOf('/'); //XXX
@@ -435,7 +430,6 @@ public class InternalJShell {
         return (prefix, cursor, anchor) -> {
             anchor[0] = 0;
             return state.snippets()
-                        .stream()
                         .flatMap(k -> (k instanceof DeclarationSnippet)
                                 ? Stream.of(String.valueOf(k.id()), ((DeclarationSnippet) k).name())
                                 : Stream.of(String.valueOf(k.id())))
@@ -444,6 +438,7 @@ public class InternalJShell {
                         .collect(Collectors.toList());
         };
     }
+    */
 
     private static CompletionProvider saveCompletion() {
         CompletionProvider keyCompletion = new FixedCompletionProvider("all ", "history ");
@@ -453,7 +448,7 @@ public class InternalJShell {
             if (space == (-1)) {
                 result.addAll(keyCompletion.completionSuggestions(code, cursor, anchor));
             }
-            result.addAll(FILE_COMPLETION_PROVIDER.completionSuggestions(code.substring(space + 1), cursor - space - 1, anchor));
+//            result.addAll(FILE_COMPLETION_PROVIDER.completionSuggestions(code.substring(space + 1), cursor - space - 1, anchor));
             anchor[0] += space + 1;
             return result;
         };
@@ -468,13 +463,13 @@ public class InternalJShell {
 //                                    EMPTY_COMPLETION_PROVIDER));
         registerCommand(new Command("/drop", "/d", "<name or id>", "delete a source entry referenced by name or id",
                                     arg -> cmdDrop(arg),
-                                    editCompletion()));
+                                    null /* editCompletion() */));
         registerCommand(new Command("/save", "/s", "[all|history] <file>", "save the source you have typed",
                                     arg -> cmdSave(arg),
                                     saveCompletion()));
         registerCommand(new Command("/open", "/o", "<file>", "open a file as source input",
                                     arg -> cmdOpen(arg),
-                                    FILE_COMPLETION_PROVIDER));
+                                    null/* FILE_COMPLETION_PROVIDER */));
         registerCommand(new Command("/vars", "/v", null, "list the declared variables and their values",
                                     arg -> cmdVars(),
                                     EMPTY_COMPLETION_PROVIDER));
@@ -495,7 +490,7 @@ public class InternalJShell {
                                     EMPTY_COMPLETION_PROVIDER));
         registerCommand(new Command("/classpath", "/cp", "<path>", "add a path to the classpath",
                                     arg -> cmdClasspath(arg),
-                                    classPathCompletion()));
+                                    null /*classPathCompletion() */));
         registerCommand(new Command("/history", "/h", null, "history of what you have typed",
                                     arg -> cmdHistory(),
                                     EMPTY_COMPLETION_PROVIDER));
@@ -523,35 +518,6 @@ public class InternalJShell {
                                     arg -> { throw new IllegalStateException(); },
                                     EMPTY_COMPLETION_PROVIDER,
                                     CommandKind.HELP_ONLY));
-    }
-
-    public List<Suggestion> commandCompletionSuggestions(String code, int cursor, int[] anchor) {
-        code = code.substring(0, cursor);
-        int space = code.indexOf(' ');
-        List<Suggestion> result = new ArrayList<>();
-
-        if (space == (-1)) {
-            for (Command cmd : new LinkedHashSet<>(commands.values())) {
-                if (cmd.kind == CommandKind.HIDDEN || cmd.kind == CommandKind.HELP_ONLY)
-                    continue;
-                String key = cmd.aliases[0];
-                if (key.startsWith(code)) {
-                    result.add(new Suggestion(key + " ", false));
-                }
-            }
-            anchor[0] = 0;
-        } else {
-            String arg = code.substring(space + 1);
-            String cmd = code.substring(0, space);
-            Command command = commands.get(cmd);
-            if (command != null) {
-                result.addAll(command.completions.completionSuggestions(arg, cursor - space, anchor));
-                anchor[0] += space + 1;
-            }
-        }
-
-        Collections.sort(result, (s1, s2) -> s1.continuation().compareTo(s2.continuation()));
-        return result;
     }
 
     public String commandDocumentation(String code, int cursor) {
@@ -715,13 +681,13 @@ public class InternalJShell {
         Set<Snippet> keySet = new LinkedHashSet<>();
         if (arg.isEmpty()) {
             // Default is all user snippets
-            for (Snippet sn : state.snippets()) {
+            for (Snippet sn : state.snippets().collect(Collectors.toList())) {
                 if (notInStartUp(sn)) {
                     keySet.add(sn);
                 }
             }
         } else {
-            for (Snippet sn : state.snippets()) {
+            for (Snippet sn : state.snippets().collect(Collectors.toList())) {
                 if (sn.id().equals(arg)) {
                     keySet.add(sn);
                     break;
@@ -731,7 +697,7 @@ public class InternalJShell {
                 hard("No id %s found.  See /list", arg);
                 return null;
             }
-            for (Snippet key : state.snippets()) {
+            for (Snippet key : state.snippets().collect(Collectors.toList())) {
                 switch (key.kind()) {
                     case METHOD:
                     case VAR:
@@ -798,7 +764,7 @@ public class InternalJShell {
                 return;
         }
         boolean hasOutput = false;
-        for (Snippet sn : state.snippets()) {
+        for (Snippet sn : state.snippets().collect(Collectors.toList())) {
             if (all || (notInStartUp(sn) && state.status(sn).isActive())) {
                 if (!hasOutput) {
                     cmdout.println();
@@ -864,7 +830,7 @@ public class InternalJShell {
                     writer.write("\n");
                 }
             } else {
-                for (Snippet sn : state.snippets()) {
+                for (Snippet sn : state.snippets().collect(Collectors.toList())) {
                     if (saveAll || notInStartUp(sn)) {
                         writer.write(sn.source());
                         writer.write("\n");
@@ -913,7 +879,7 @@ public class InternalJShell {
     }
 
     private void cmdVars() {
-        for (VarSnippet vk : state.variables()) {
+        for (VarSnippet vk : state.variables().collect(Collectors.toList())) {
             String val = state.status(vk) == Status.VALID
                     ? state.varValue(vk)
                     : "(not-active)";
@@ -922,13 +888,13 @@ public class InternalJShell {
     }
 
     private void cmdMethods() {
-        for (MethodSnippet mk : state.methods()) {
+        for (MethodSnippet mk : state.methods().collect(Collectors.toList())) {
             hard("  %s %s", mk.name(), mk.signature());
         }
     }
 
     private void cmdClasses() {
-        for (TypeDeclSnippet ck : state.types()) {
+        for (TypeDeclSnippet ck : state.types().collect(Collectors.toList())) {
             String kind;
             switch (ck.subKind()) {
                 case INTERFACE_SUBKIND:
@@ -953,7 +919,7 @@ public class InternalJShell {
     }
 
     private void cmdUseHistoryEntry(int index) {
-        List<Snippet> keys = state.snippets();
+        List<Snippet> keys = state.snippets().collect(Collectors.toList());
         if (index < 0)
             index += keys.size();
         else
@@ -1074,7 +1040,7 @@ public class InternalJShell {
             debug("Event with null key: %s", ste);
             return false;
         }
-        List<Diag> diagnostics = state.diagnostics(sn);
+        List<Diag> diagnostics = state.diagnostics(sn).collect(Collectors.toList());
         String source = sn.source();
         if (ste.causeSnippet() == null) {
             // main event
@@ -1273,10 +1239,10 @@ public class InternalJShell {
     //where
     void printUnresolved(UnresolvedReferenceException ex) {
         DeclarationSnippet corralled =  ex.getSnippet();
-        List<Diag> otherErrors = errorsOnly(state.diagnostics(corralled));
+        List<Diag> otherErrors = errorsOnly(state.diagnostics(corralled).collect(Collectors.toList()));
         StringBuilder sb = new StringBuilder();
         if (otherErrors.size() > 0) {
-            if (state.unresolvedDependencies(corralled).size() > 0) {
+            if (state.unresolvedDependencies(corralled).count() > 0) {
                 sb.append(" and");
             }
             if (otherErrors.size() == 1) {
@@ -1305,7 +1271,7 @@ public class InternalJShell {
     }
     //where
     String unresolved(DeclarationSnippet key) {
-        List<String> unr = state.unresolvedDependencies(key);
+        List<String> unr = state.unresolvedDependencies(key).collect(Collectors.toList());
         StringBuilder sb = new StringBuilder();
         int fromLast = unr.size();
         if (fromLast > 0) {

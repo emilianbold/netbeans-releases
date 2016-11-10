@@ -477,7 +477,14 @@ public class JShellParser2 {
         O:
         while (true) {
             SourceCodeAnalysis.CompletionInfo info = state.sourceCodeAnalysis().analyzeCompletion(input);
-            int e = info.unitEndPos();
+            int endPos;
+            String rem = info.remaining();
+            if (rem == null) {
+                endPos = input.length() - 1;
+            } else {
+                endPos = input.length() - rem.length();
+            }
+            int e = endPos;
             boolean empty = info.remaining().trim().isEmpty();
             switch (info.completeness()) {
                 case DEFINITELY_INCOMPLETE:
@@ -506,7 +513,7 @@ public class JShellParser2 {
                     }
                     input = info.remaining();
                     e -= snippetPrefixLen;
-                    addJavaSnippet(snipOffset, info.unitEndPos());
+                    addJavaSnippet(snipOffset, endPos);
                     snipOffset += e;
                     ModelAccessor.INSTANCE.setSectionComplete(section, true);
                     s = State.MAY_INPUT;

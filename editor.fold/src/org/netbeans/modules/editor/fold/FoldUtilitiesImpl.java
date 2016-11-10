@@ -636,7 +636,6 @@ public final class FoldUtilitiesImpl {
      * @return FLAG_ bitfield
      */
     public static int becomesDamagedByRemove(Fold f, DocumentEvent evt, boolean zero) {
-        assert evt.getType() == DocumentEvent.EventType.REMOVE;
         ApiPackageAccessor api = ApiPackageAccessor.get();
         int fs = f.getStartOffset();
         int fe = f.getEndOffset();
@@ -683,7 +682,6 @@ public final class FoldUtilitiesImpl {
      * @return true, if the fold become empty after the mutation
      */
     public static boolean becomesEmptyAfterRemove(Fold f, DocumentEvent evt) {
-        assert evt.getType() == DocumentEvent.EventType.REMOVE;
         int s = evt.getOffset();
         int e = evt.getLength() + s;
         return s <= f.getStartOffset() &&
