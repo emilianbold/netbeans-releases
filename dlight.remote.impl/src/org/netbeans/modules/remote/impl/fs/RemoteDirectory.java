@@ -1159,9 +1159,10 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         String name = entry.getName();
         if (name.startsWith("#") && name.endsWith("#")) { // NOI18N
             name = name.substring(1, name.length() - 1);
-            RemoteFileObject child = getFileObject(name, null);
-            if (child != null && child.getImplementor() instanceof RemotePlainFile) {
-                RemotePlainFile pf = (RemotePlainFile) child.getImplementor();
+            String childAbsPath = getPath() + '/' + name;
+            RemoteFileObjectBase child = getFileSystem().getFactory().getCachedFileObject(childAbsPath);
+            if (child != null && child instanceof RemotePlainFile) {
+                RemotePlainFile pf = (RemotePlainFile) child;
                 if (pf.isPendingRemoteDelivery()) {
                     return true;
                 }
