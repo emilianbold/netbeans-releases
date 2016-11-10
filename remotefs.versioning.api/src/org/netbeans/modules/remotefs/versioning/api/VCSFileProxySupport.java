@@ -355,7 +355,11 @@ public final class VCSFileProxySupport {
             if (suffix == null) {
                 suffix = ".tmp"; //NOI18N
             }
-            return VCSFileProxy.createFileProxy(file.toFileObject().createData(prefix+Long.toString(System.currentTimeMillis()), suffix));
+            VCSFileProxy res = VCSFileProxy.createFileProxy(file.toFileObject().createData(prefix+Long.toString(System.currentTimeMillis()), suffix));
+            if (deleteOnExit) {
+                VCSFileProxySupport.deleteOnExit(res);
+            }
+            return res;
         }
     }
     
@@ -367,9 +371,12 @@ public final class VCSFileProxySupport {
         FileObject tmpDir = VCSFileProxySupport.getFileSystem(file).getTempFolder();
         for (;;) {
             try {
-                //TODO: support delete on exit
                 FileObject dir = tmpDir.createFolder("vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
-                return VCSFileProxy.createFileProxy(dir).normalizeFile();
+                VCSFileProxy res = VCSFileProxy.createFileProxy(dir).normalizeFile();
+                if (deleteOnExit) {
+                    VCSFileProxySupport.deleteOnExit(res);
+                }
+                return res;
             } catch (IOException ex) {
                 continue;
             }
