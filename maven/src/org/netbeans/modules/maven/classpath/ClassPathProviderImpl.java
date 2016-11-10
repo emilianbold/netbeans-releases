@@ -205,7 +205,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             // XXX read <processorpath> from maven-compiler-plugin config
             return getCompileTimeClasspath(fileType);
         } else if (type.equals(JavaClassPathConstants.MODULE_BOOT_PATH)) {            
-            return getModuleBootPath(); //
+            return getModuleBootPath();
         } else if (type.equals(JavaClassPathConstants.MODULE_COMPILE_PATH)) {            
             return getModuleCompilePath(fileType);
         } else if (type.equals(JavaClassPathConstants.MODULE_CLASS_PATH)) {            
@@ -511,24 +511,24 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         assert type >=0 && type <=1;
         ClassPath cp = cache[12+type];
         if (cp == null) {
-            if (type == TYPE_SRC) {
-                // XXX
-                cp = createMultiplexClassPath (
-                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
-                            getCompileClasspath(),
-                            ClassPath.EMPTY,
-                            "ModuleLegacyClassPath" // NOI18N
-                        )
-                     );   
-            } else {
-                cp = createMultiplexClassPath (
-                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
-                            getTestCompileClasspath(),
-                            ClassPath.EMPTY,
-                            "TestModuleLegacyClassPath" // NOI18N
-                        )
-                     ); 
-            }
+            cp = ClassPath.EMPTY; 
+//            if (type == TYPE_SRC) {
+//                createMultiplexClassPath (
+//                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
+//                            ClassPath.EMPTY,
+//                            getCompileClasspath(),
+//                            "ModuleLegacyClassPath" // NOI18N
+//                        )
+//                     );   
+//            } else {
+//                createMultiplexClassPath (
+//                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
+//                            ClassPath.EMPTY,
+//                            getTestCompileClasspath(),
+//                            "TestModuleLegacyClassPath" // NOI18N
+//                        )
+//                     ); 
+//            }
             cache[12+type] = cp;
         }
         return cp;
