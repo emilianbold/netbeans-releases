@@ -48,7 +48,7 @@
 @implementation NBPreferences
 
 #define DEFAULT_DEBUG 0
-#define NODEFAULT_DEBUG @"-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n"
+#define NODEFAULT_DEBUG @"-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=n"
 
 #define DEFAULT_JDKHOME @""
 #define DEFAULT_JDKPATH @"/Library/Java/Home"

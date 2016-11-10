@@ -371,9 +371,7 @@ public class JPDASupport implements DebuggerManagerListener {
         String [] cmdArray = new String [] {
             System.getProperty ("java.home") + File.separatorChar + 
                 "bin" + File.separatorChar + "java",
-            "-Xdebug",
-            "-Xnoagent",
-            "-Xrunjdwp:transport=" + "dt_socket" + ",address=" + 
+            "-agentlib:jdwp=transport=" + "dt_socket" + ",address=" + 
                 connectorAddress + ",suspend=y,server=" + 
                 (server ? "y" : "n"),
             "-classpath",

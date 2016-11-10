@@ -762,9 +762,8 @@ public class StartTask extends BasicTask<TaskState> {
             }
         }
         support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
-        optList.add("-Xdebug");
         StringBuilder opt = new StringBuilder();
-        opt.append("-Xrunjdwp:transport="); // NOI18N
+        opt.append("-agentlib:jdwp=transport="); // NOI18N
         opt.append(debugTransport);
         opt.append(",address="); // NOI18N
         opt.append(debugPortString);
