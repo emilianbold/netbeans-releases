@@ -66,6 +66,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -185,13 +186,43 @@ public class ProjectActionSupport {
                     });
                 }
             };
+            // Bug #219521 - Project with logical items does not update status of externally changed files
+            // Check broken items in other projects that have common source roots.
+            final List<Project> intersectedProjects = new ArrayList<>();
+            intersectedProjects.add(project);
+            for(NativeProject p : NativeProjectRegistry.getDefault().getOpenProjects()) {
+                if (p.getProject() instanceof Project) {
+                    Project aProject = (Project) p.getProject();
+                    if (!project.equals(aProject)) {
+                        Sources aSources = ProjectUtils.getSources(aProject);
+                        SourceGroup[] aGroups = aSources.getSourceGroups(Sources.TYPE_GENERIC);
+                        for (SourceGroup sourceGroup : aGroups) {
+                            FileObject rootFolder = sourceGroup.getRootFolder();
+                            File file = FileUtil.toFile(rootFolder);
+                            if (file != null) {
+                                if (files.contains(file)) {
+                                    intersectedProjects.add(aProject);
+                                    break;
+                                }
+                            } else {
+                                if (fileObjects.contains(rootFolder)) {
+                                    intersectedProjects.add(aProject);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             // Always redirect into RP, otherwise status of build is not displayed for a long time
             RP.post(() -> {
                 FileUtil.runAtomicAction(refresher);
                 fon.onFinish(curPAE);
-                MakeLogicalViewModel viewModel = project.getLookup().lookup(MakeLogicalViewModel.class);
-                if (viewModel != null) {
-                    viewModel.refreshBrokenItems();
+                for(Project p : intersectedProjects) {
+                    MakeLogicalViewModel viewModel = p.getLookup().lookup(MakeLogicalViewModel.class);
+                    if (viewModel != null) {
+                        viewModel.refreshBrokenItems();
+                    }
                 }
             });
             ConfigurationDescriptorProvider.SnapShot snapShot = curPAE.getContext().lookup(ConfigurationDescriptorProvider.SnapShot.class);

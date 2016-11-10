@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
  */
 public class ByteStreamReader implements DataInput {
     private MyRandomAccessFile file = null;
-    private String fileName;
+    private final String fileName;
     private int dataEncoding = 0;
     private int fileClass = 0;
     private byte address_size = -1;
@@ -267,6 +267,7 @@ public class ByteStreamReader implements DataInput {
      * Note: this function will read len bytes from the stream in ANY case.
      * @param len bytes to be read
      * @return Read string
+     * @throws java.io.IOException
      */
     public String readUTF(int len) throws IOException {
         /* 
@@ -365,7 +366,19 @@ public class ByteStreamReader implements DataInput {
     }
     
     public long read3264() throws IOException {
-        return (fileClass == ElfConstants.ELFCLASS32) ? (0xFFFFFFFFL & readInt()) : readLong();
+        return (fileClass == ElfConstants.ELFCLASS32) ? ByteStreamReader.uintToLong(readInt()) : readLong();
     }
     
+    public static int ubyteToInt(byte value) {
+        return 0xFF & value;
+    }
+
+    public static int ushortToInt(short value) {
+        return 0xFFFF & value;
+    }
+
+    public static long uintToLong(int value) {
+        return 0xFFFFFFFFL & value;
+    }
+
 }
