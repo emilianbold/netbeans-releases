@@ -74,12 +74,13 @@ public class SideEffectVisitor extends TreePathScanner {
     private final CompilationInfo ci;
     private Deque<TypeElement> enclosingElements = new LinkedList<TypeElement>();
     private Tree invocationTree;
+    private boolean stopOnUnknownMethods;
 
     public SideEffectVisitor(CompilationInfo ci) {
         this.ci = ci;
         this.nonLocals = false;
     }
-
+    
     /**
      * Explores side effects of the scanned tree. If 'nonLocals' is true, it will report
      * as a potential side effect each call to a method on a different object. QName.this
@@ -92,6 +93,11 @@ public class SideEffectVisitor extends TreePathScanner {
     public SideEffectVisitor(CompilationInfo ci, boolean nonLocals) {
         this.ci = ci;
         this.nonLocals = false;
+    }
+
+    public SideEffectVisitor stopOnUnknownMethods(boolean flag) {
+        this.stopOnUnknownMethods = flag;
+        return this;
     }
 
     @Override
@@ -212,6 +218,9 @@ public class SideEffectVisitor extends TreePathScanner {
             return o;
         }
         if (invocationChainLevel > 0) {
+            if (stopOnUnknownMethods) {
+                stop(node);
+            }
             return o;
         }
         ExecutableElement el = (ExecutableElement) e;
@@ -227,6 +236,8 @@ public class SideEffectVisitor extends TreePathScanner {
             nestingLevel--;
             invocationChainLevel--;
             // no current path is defined here !!
+        } else if (stopOnUnknownMethods) {
+            stop(node);
         }
         return o;
     }

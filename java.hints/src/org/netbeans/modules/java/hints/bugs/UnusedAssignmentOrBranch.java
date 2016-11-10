@@ -54,9 +54,14 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.modules.java.hints.SideEffectVisitor;
+import org.netbeans.modules.java.hints.StopProcessing;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.java.hints.Hint;
@@ -65,6 +70,7 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
@@ -76,8 +82,9 @@ import org.openide.util.Pair;
  */
 public class UnusedAssignmentOrBranch {
     
-    private static final String UNUSED_ASSIGNMENT_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment";
-    private static final String DEAD_BRANCH_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch";
+    private static final String UNUSED_ASSIGNMENT_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment";    // NOI18N
+    private static final String UNUSED_COMPOUND_ASSIGNMENT_ID = "org.netbeans.modules.java.hints.bugs.UnusedCompoundAssignment";    // NOI18N
+    private static final String DEAD_BRANCH_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch";    // NOI18N
     private static final Object KEY_COMPUTED_ASSIGNMENTS = new Object();
 
     private static Pair<Set<Tree>, Set<Element>> computeUsedAssignments(final HintContext ctx) {
@@ -151,19 +158,127 @@ public class UnusedAssignmentOrBranch {
     public static ErrorDescription unusedAssignment(final HintContext ctx) {
         final String unusedAssignmentLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_UNUSED_ASSIGNMENT_LABEL");
         Pair<Set<Tree>, Set<Element>> computedAssignments = computeUsedAssignments(ctx);
-
+        
         if (ctx.isCanceled() || computedAssignments == null) return null;
 
         final CompilationInfo info = ctx.getInfo();
         final Set<Tree> usedAssignments = computedAssignments.first();
         final Set<Element> usedVariables = computedAssignments.second();
         Element var = info.getTrees().getElement(ctx.getVariables().get("$var"));
-        Tree value = ctx.getVariables().get("$value").getLeaf();
+        TreePath valuePath = ctx.getVariables().get("$value");
+        Tree value = (valuePath == null ? ctx.getPath() : valuePath).getLeaf();
 
         if (var != null && LOCAL_VARIABLES.contains(var.getKind()) && !usedAssignments.contains(value) && usedVariables.contains(var)) {
             return ErrorDescriptionFactory.forTree(ctx, value, unusedAssignmentLabel);
         }
 
+        return null;
+    }
+    
+    private static boolean mayHaveSideEffects(HintContext ctx, TreePath path) {
+        SideEffectVisitor visitor = new SideEffectVisitor(ctx.getInfo()).stopOnUnknownMethods(true);
+        Tree culprit = null;
+        try {
+            visitor.scan(path, null);
+            return false;
+        } catch (StopProcessing stop) {
+            culprit = stop.getValue();
+        }
+        return culprit != null;
+    }
+    
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedCompoundAssignment", 
+            description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedCompoundAssignment", 
+            category="bugs", 
+            id=UNUSED_COMPOUND_ASSIGNMENT_ID, 
+            options={Options.QUERY}, suppressWarnings="UnusedAssignment")
+    @TriggerPatterns({
+        @TriggerPattern("$var |= $expr"),
+        @TriggerPattern("$var &= $expr"),
+        @TriggerPattern("$var += $expr"),
+        @TriggerPattern("$var -= $expr"),
+        @TriggerPattern("$var *= $expr"),
+        @TriggerPattern("$var /= $expr"),
+        @TriggerPattern("$var %= $expr"),
+        @TriggerPattern("$var >>= $expr"),
+        @TriggerPattern("$var <<= $expr"),
+        @TriggerPattern("$var >>>= $expr")
+    })
+    @NbBundle.Messages({
+        "LBL_UnusedCompoundAssignmentLabel=The target variable's value is never used",
+        "FIX_ChangeCompoundAssignmentToOperation=Change compound assignment to operation"
+    })
+    public static ErrorDescription unusedCompoundAssignment(final HintContext ctx) {
+        final String unusedAssignmentLabel = Bundle.LBL_UnusedCompoundAssignmentLabel();
+        Pair<Set<Tree>, Set<Element>> computedAssignments = computeUsedAssignments(ctx);
+        
+        if (ctx.isCanceled() || computedAssignments == null) return null;
+
+        final CompilationInfo info = ctx.getInfo();
+        final Set<Tree> usedAssignments = computedAssignments.first();
+        final Set<Element> usedVariables = computedAssignments.second();
+        final Element var = info.getTrees().getElement(ctx.getVariables().get("$var")); // NOI18N
+        final TreePath valuePath = ctx.getVariables().get("$expr"); // NOI18N
+        final Tree value = ctx.getPath().getLeaf();
+        final TypeMirror tm = info.getTrees().getTypeMirror(ctx.getPath());
+        final boolean sideEffects;
+        final boolean booleanOp = Utilities.isValidType(tm) && tm.getKind() == TypeKind.BOOLEAN;
+        Tree.Kind kind = value.getKind();
+        if (booleanOp) {
+            sideEffects = mayHaveSideEffects(ctx, valuePath);
+        } else {
+            sideEffects = false;
+        }
+
+        if (var != null && LOCAL_VARIABLES.contains(var.getKind()) && !usedAssignments.contains(value) && usedVariables.contains(var)) {
+            String replace;
+            switch (kind) {
+                case AND_ASSIGNMENT:
+                    if (booleanOp) {
+                        replace = sideEffects ? "$expr && $var" : "$var && $expr"; // NOI18N
+                    } else {
+                        replace = "$var & $expr"; // NOI18N
+                    }
+                    break;
+                case OR_ASSIGNMENT:
+                    if (booleanOp) {
+                        replace = sideEffects ? "$expr || $var" : "$var || $expr"; // NOI18N
+                    } else {
+                        replace = "$var | $expr"; // NOI18N
+                    }
+                    break;
+                case PLUS_ASSIGNMENT:
+                    replace = "$var + $expr"; // NOI18N
+                    break;
+                case MINUS_ASSIGNMENT:
+                    replace = "$var - $expr"; // NOI18N
+                    break;
+                case MULTIPLY_ASSIGNMENT:
+                    replace = "$var * $expr"; // NOI18N
+                    break;
+                case DIVIDE_ASSIGNMENT:
+                    replace = "$var / $expr"; // NOI18N
+                    break;
+                case REMAINDER_ASSIGNMENT:
+                    replace = "$var % $expr"; // NOI18N
+                    break;
+                case LEFT_SHIFT_ASSIGNMENT:
+                    replace = "$var << $expr"; // NOI18N
+                    break;
+                case RIGHT_SHIFT_ASSIGNMENT:
+                    replace = "$var >> $expr"; // NOI18N
+                    break;
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    replace = "$var >>> $expr"; // NOI18N
+                    break;
+                default:
+                    return null;
+            }
+            
+            return ErrorDescriptionFactory.forTree(ctx, value, unusedAssignmentLabel,
+                    JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_ChangeCompoundAssignmentToOperation(), ctx.getPath(), replace)
+            );
+        }
         return null;
     }
 
