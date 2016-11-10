@@ -108,7 +108,12 @@ public final class BuildTraceSupport {
                 if (wrapper != null) {
                     CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
                     Map<String, String> envAsMap = env.getenvAsMap();
-                    Pair<String, String> modifyPathEnvVariable = ToolchainUtilities.modifyPathEnvVariable(execEnv, envAsMap, compilerSet, "build"); //NOI18N
+                    Pair<String, String> modifyPathEnvVariable;
+                    if (conf.getPrependToolCollectionPath().getValue()) {
+                        modifyPathEnvVariable = ToolchainUtilities.modifyPathEnvVariable(execEnv, envAsMap, compilerSet, "build"); //NOI18N
+                    } else {
+                        modifyPathEnvVariable = ToolchainUtilities.defaultPathEnvVariable(execEnv, envAsMap);
+                    }
                     PlatformInfo pi = conf.getPlatformInfo();
                     String defaultPath = wrapper.getDirectory() + pi.pathSeparator() + modifyPathEnvVariable.second();
                     env.putenv(modifyPathEnvVariable.first(), defaultPath);
@@ -131,7 +136,12 @@ public final class BuildTraceSupport {
                 CompilerSet wrapper = getToolsWrapper();
                 if (wrapper != null) {
                     CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                    Pair<String, String> modifyPathEnvVariable = ToolchainUtilities.modifyPathEnvVariable(execEnv, env, compilerSet, "build"); //NOI18N
+                    Pair<String, String> modifyPathEnvVariable;
+                    if (conf.getPrependToolCollectionPath().getValue()) {
+                        modifyPathEnvVariable = ToolchainUtilities.modifyPathEnvVariable(execEnv, env, compilerSet, "build"); //NOI18N
+                    } else {
+                        modifyPathEnvVariable = ToolchainUtilities.defaultPathEnvVariable(execEnv, env);
+                    }
                     PlatformInfo pi = conf.getPlatformInfo();
                     String defaultPath = modifyPathEnvVariable.second();
                     defaultPath = wrapper.getDirectory() + pi.pathSeparator() + defaultPath;
