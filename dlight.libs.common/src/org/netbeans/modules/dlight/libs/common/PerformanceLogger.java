@@ -198,8 +198,15 @@ public class PerformanceLogger {
         RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
         try {
             List<String> args = runtime.getInputArguments();
-            if (args.contains("-Xdebug")) { //NOI18N
+            if (args.contains("-Xdebug") || args.contains("-agentlib:jdwp")) { //NOI18N
                 isDebugMode = true;
+            } else {
+                for (String arg : args) {
+                    if (arg.startsWith("-agentlib:jdwp=")) {
+                        isDebugMode = true;
+                        break;
+                    }
+                }
             }
         } catch (SecurityException ex) {
         }
