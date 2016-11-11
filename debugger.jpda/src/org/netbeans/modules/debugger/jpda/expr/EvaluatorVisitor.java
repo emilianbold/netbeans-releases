@@ -403,7 +403,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             } else {
                 type = evaluationContext.getFrame().location().declaringType();
                 if (enclosingClass != null) {
-                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    ReferenceType dt = findEnclosingType(type, enclosingClass,
+                                                         evaluationContext.getVMCache());
                     if (dt != null) {
                         type = dt;
                     }
@@ -426,7 +427,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         type = objectReference.referenceType();
                         if (enclosingClass != null) {
                             Method[] methodPtr = new Method[] { null };
-                            ReferenceType enclType = findEnclosingTypeWithMethod(type, enclosingClass, methodName, paramTypes, argTypes, methodPtr);
+                            ReferenceType enclType = findEnclosingTypeWithMethod(
+                                    type, enclosingClass, methodName, paramTypes,
+                                    argTypes, methodPtr, evaluationContext.getVMCache());
                             if (enclType != null) {
                                 method = methodPtr[0];
                                 type = enclType;
@@ -439,7 +442,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (objectReference != null) {
                     type = objectReference.referenceType();
                     if (enclosingClass != null) {
-                        ReferenceType enclType = findEnclosingType(type, enclosingClass);
+                        ReferenceType enclType = findEnclosingType(type, enclosingClass,
+                                                                   evaluationContext.getVMCache());
                         if (enclType != null) {
                             ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
                             if (enclObject != null) {
@@ -569,8 +573,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                                                       String methodName,
                                                       List<? extends TypeMirror> paramTypes,
                                                       List<? extends Type> argTypes,
-                                                      Method[] methodPtr) {
-        ReferenceType etype = findEnclosingType(type, enclosingClass);
+                                                      Method[] methodPtr,
+                                                      VMCache vmCache) {
+        ReferenceType etype = findEnclosingType(type, enclosingClass, vmCache);
         if (etype == null) {
             return null;
         }
@@ -2073,7 +2078,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 ReferenceType declaringType = evaluationContext.getFrame().location().declaringType();
                 if (enclosingClass != null) {
-                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass);
+                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass, evaluationContext.getVMCache());
                     if (dt != null) {
                         declaringType = dt;
                     }
@@ -2222,20 +2227,30 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
     }
 
-    private ReferenceType findEnclosingType(ReferenceType type, String name) {
+    private ReferenceType findEnclosingType(ReferenceType type, String name, VMCache cache) {
         if (type.name().equals(name)) {
             return type;
         }
-        List<ReferenceType> classes = type.virtualMachine().classesByName(name);
-        if (classes.size() == 1) {
-            return classes.get(0);
-        }
-        for (ReferenceType clazz : classes) {
-            if (isNestedOf(clazz, type)) {
-                return clazz;
+        ReferenceType enclosingType;
+        enclosingType = cache.getEnclosingType(type, name);
+        if (enclosingType == null) {
+            List<ReferenceType> classes = type.virtualMachine().classesByName(name);
+            if (classes.size() == 1) {
+                enclosingType = classes.get(0);
+            } else {
+                for (ReferenceType clazz : classes) {
+                    if (isNestedOf(clazz, type)) {
+                        enclosingType = clazz;
+                        break;
+                    }
+                }
+            }
+            if (enclosingType != null) {
+                cache.setEnclosingType(type, name, enclosingType);
             }
         }
-        return null;
+        long end = System.nanoTime();
+        return enclosingType;
     }
 
     private boolean isNestedOf(ReferenceType nested, ReferenceType type) {
@@ -2635,7 +2650,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     // 1) If 'this' is an instance of the outer class, use it directly.
                     // 2) If 'this' is an instance of the inner class, use this$0 (this$1,...)
                     ClassType thisClass = (ClassType) thisObject.type();
-                    ReferenceType outerClass = findEnclosingType(classType, className.substring(0, className.lastIndexOf('$')));
+                    ReferenceType outerClass = findEnclosingType(classType,
+                                                                 className.substring(0, className.lastIndexOf('$')),
+                                                                 evaluationContext.getVMCache());
                     if (outerClass != null) {
                         if (instanceOf(thisClass, outerClass)) {
                             // 'this' is an instance of the outer class, use it directly.
@@ -2718,7 +2735,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     // 1) If 'this' is an instance of the outer class, use it directly.
                     // 2) If 'this' is an instance of the inner class, use this$0 (this$1,...)
                     ClassType thisClass = (ClassType) thisObject.type();
-                    ReferenceType outerClass = findEnclosingType(classType, className.substring(0, className.lastIndexOf('$')));
+                    ReferenceType outerClass = findEnclosingType(classType,
+                                                                 className.substring(0, className.lastIndexOf('$')),
+                                                                 evaluationContext.getVMCache());
                     if (outerClass != null) {
                         if (instanceOf(thisClass, outerClass)) {
                             // 'this' is an instance of the outer class, use it directly.

@@ -39,12 +39,14 @@
  */
 package org.netbeans.modules.debugger.jpda.expr;
 
-import com.sun.jdi.ClassType;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 /**
@@ -53,26 +55,43 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  * @author martin
  */
 public class VMCache {
-    
+
+    private static final int MAX_ENCLOSING_TYPES = 100;
+
     private final JPDADebuggerImpl debugger;
     private final Map<String, ReferenceType> cachedClasses = new HashMap<>();
+    private final Map<CEncl, ReferenceType> enclosingTypes = new LinkedHashMap<>();
 
     public VMCache(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_CLASSES_FIXED,
+                                           event -> reset());
     }
-    
+
+    private void reset() {
+        synchronized (cachedClasses) {
+            cachedClasses.clear();
+        }
+        synchronized (enclosingTypes) {
+            enclosingTypes.clear();
+        }
+    }
+
     /**
      * Get a cached version of a basic Java class, which is used often.
      * Use for Java platform classes only.
      * @param name the class name
      * @return the reference type or <code>null</code>
      */
-    synchronized ReferenceType getClass(String name) {
-        ReferenceType rt = cachedClasses.get(name);
-        if (rt == null) {
-            rt = loadClass(name);
-            if (rt != null) {
-                cachedClasses.put(name, rt);
+    ReferenceType getClass(String name) {
+        ReferenceType rt;
+        synchronized (cachedClasses) {
+            rt = cachedClasses.get(name);
+            if (rt == null) {
+                rt = loadClass(name);
+                if (rt != null) {
+                    cachedClasses.put(name, rt);
+                }
             }
         }
         return rt;
@@ -88,5 +107,69 @@ public class VMCache {
             return null;
         }
         return stringClasses.get(0);
+    }
+
+    /**
+     * Get a cached type of name 'name' that encloses 'type'.
+     * @return The cached type, or <code>null</code>.
+     */
+    ReferenceType getEnclosingType(ReferenceType type, String name) {
+        CEncl classEnclosing = new CEncl(type, name);
+        ReferenceType enclosingType;
+        synchronized (enclosingTypes) {
+            enclosingType = enclosingTypes.get(classEnclosing);
+        }
+        return enclosingType;
+    }
+
+    /**
+     * Set an enclosing type of name 'name' that encloses 'type'.
+     */
+    void setEnclosingType(ReferenceType type, String name, ReferenceType enclosingType) {
+        CEncl classEnclosing = new CEncl(type, name);
+        synchronized (enclosingTypes) {
+            while (enclosingTypes.size() >= (MAX_ENCLOSING_TYPES - 1)) {
+                enclosingTypes.entrySet().iterator().remove();
+            }
+            enclosingTypes.put(classEnclosing, enclosingType);
+        }
+    }
+
+    private static class CEncl {
+
+        final ReferenceType type;
+        final String enclName;
+
+        CEncl(ReferenceType type, String enclName) {
+            this.type = type;
+            this.enclName = enclName;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.type, this.enclName);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CEncl other = (CEncl) obj;
+            if (!Objects.equals(this.enclName, other.enclName)) {
+                return false;
+            }
+            if (!Objects.equals(this.type, other.type)) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }
