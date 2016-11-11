@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -76,6 +77,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.YieldExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.YieldFromExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -200,13 +202,21 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
             super.visit(node);
         }
 
-        // XXX check yield in assignment
         @Override
         public void visit(YieldFromExpression node) {
             if (CancelSupport.getDefault().isCancelled()) {
                 return;
             }
             createError(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(Assignment node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
+            checkYieldInAssignment(node);
             super.visit(node);
         }
 
@@ -310,6 +320,16 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
                     || name instanceof ParenthesisExpression // ($foo)();
                     || name instanceof AnonymousObjectVariable) { // (new Object)();
                 createError(name);
+            }
+        }
+
+        private void checkYieldInAssignment(Assignment node) {
+            Assignment.Type operator = node.getOperator();
+            if (operator == Assignment.Type.EQUAL) {
+                Expression expression = node.getRightHandSide();
+                if (expression instanceof YieldExpression) {
+                    createError(expression);
+                }
             }
         }
 
