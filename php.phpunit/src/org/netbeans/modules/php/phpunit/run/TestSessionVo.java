@@ -61,6 +61,7 @@ public final class TestSessionVo {
     private final String customSuitePath;
 
     private boolean started = false;
+    private boolean fatalError = false;
 
 
     public TestSessionVo(@NullAllowed String customSuitePath) {
@@ -83,6 +84,10 @@ public final class TestSessionVo {
         this.started = started;
     }
 
+    public void setFatalError(boolean fatalError) {
+        this.fatalError = fatalError;
+    }
+
     @NbBundle.Messages({
         "# {0} - suite name",
         "TestSessionVo.msg.customSuite=Using custom test suite {0}."
@@ -97,18 +102,25 @@ public final class TestSessionVo {
     @NbBundle.Messages("TestSessionVo.msg.output=Full output can be found in Output window.")
     @CheckForNull
     public String getFinishMessage() {
-        if (testSuites.isEmpty()) {
-            return null;
-        }
-        return Bundle.TestSessionVo_msg_output();
-    }
-
-    @NbBundle.Messages("TestSessionVo.err.output=Review Output window for full output.")
-    public String getFinishError() {
-        if (testSuites.isEmpty()) {
-            return Bundle.TestSessionVo_err_output();
+        if (getFinishErrors().isEmpty()) {
+            return Bundle.TestSessionVo_msg_output();
         }
         return null;
+    }
+
+    @NbBundle.Messages({
+        "TestSessionVo.err.fatal=PHP Fatal error(s) occured, test results can be incomplete!",
+        "TestSessionVo.err.output=Review Output window for full output.",
+    })
+    public List<String> getFinishErrors() {
+        List<String> errors = new ArrayList<>(2);
+        if (fatalError) {
+            errors.add(Bundle.TestSessionVo_err_fatal());
+            errors.add(Bundle.TestSessionVo_err_output());
+        } else if (testSuites.isEmpty()) {
+            errors.add(Bundle.TestSessionVo_err_output());
+        }
+        return errors;
     }
 
     @Override

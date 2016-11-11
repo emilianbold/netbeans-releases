@@ -127,7 +127,7 @@ public class JsonParserTest extends NbTestCase {
         assertEquals(5L, test.getTime());
     }
 
-    public void testParseMoreChunks() throws Exception {
+    public void testParseMoreChunks1() throws Exception {
         for (int i = 1; i <= 14; i++) {
             jsonParser.parse(readContent("log-chunk-" + i + ".json"));
         }
@@ -153,6 +153,24 @@ public class JsonParserTest extends NbTestCase {
                 "This test has not been implemented yet.",
                 "/home/gapon/NetBeansProjects/Calculator-PHPUnit8/test/src/Calculator2Test.php:214"
         ), Arrays.asList(test.getStackTrace()));
+    }
+
+    public void testParseMoreChunks2() throws Exception {
+        jsonParser.parse(readContent("chunk1.json"));
+        jsonParser.parse(readContent("chunk2.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Util_XMLTest::testPrepareString", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(1, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testPrepareString with \"quotes\"", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        assertEquals(0, test.getTime());
     }
 
     public void testParseSpecialChars() throws Exception {
@@ -349,6 +367,25 @@ public class JsonParserTest extends NbTestCase {
         assertEquals("test_overview_can_run_up_to_2_years", test.getName());
         assertEquals(TestCase.Status.PASSED, test.getStatus());
         assertEquals(1149, test.getTime());
+    }
+
+    public void testIssue268447() throws Exception {
+        jsonParser.parse(readContent("issue268447.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        assertNull(session.getFinishMessage());
+        assertEquals(2, session.getFinishErrors().size());
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("MyTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(1, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testBad", test.getName());
+        assertEquals(TestCase.Status.ERROR, test.getStatus());
+        assertEquals(Arrays.asList("PHP Fatal error occured."), Arrays.asList(test.getStackTrace()));
     }
 
     private String readContent(String filename) throws IOException {

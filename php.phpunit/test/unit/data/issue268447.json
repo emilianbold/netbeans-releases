@@ -1,0 +1,13 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 2
+}{
+    "event": "suiteStart",
+    "suite": "MyTest",
+    "tests": 2
+}{
+    "event": "testStart",
+    "suite": "MyTest",
+    "test": "MyTest::testBad"
+}
