@@ -200,6 +200,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                 leaf.getKind() == Tree.Kind.NEW_CLASS;
         TypeElement tel = findTypeElement(info, path);
         
+        if (!Utilities.isValidElement(tel)) {
+            return null;
+        }
         List<Fix> fixes = new ArrayList<>();
         if (TreeUtilities.CLASS_TREE_KINDS.contains(leaf.getKind())) {
             CompilationUnitTree cut = info.getCompilationUnit();
