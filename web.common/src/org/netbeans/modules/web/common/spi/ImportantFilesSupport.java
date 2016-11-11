@@ -46,6 +46,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -63,6 +65,8 @@ import org.openide.util.WeakListeners;
  * @since 1.73
  */
 public final class ImportantFilesSupport {
+
+    private static final Logger LOGGER = Logger.getLogger(ImportantFilesSupport.class.getName());
 
     private final FileObject directory;
     final List<String> fileNames;
@@ -102,6 +106,10 @@ public final class ImportantFilesSupport {
         for (String name : fileNames) {
             FileObject fo = directory.getFileObject(name);
             if (fo != null) {
+                if (fo.isFolder()) {
+                    LOGGER.log(Level.INFO, "Expected file but folder given [{0}]", fo);
+                    continue;
+                }
                 ImportantFilesImplementation.FileInfo info = null;
                 if (fileInfoCreator != null) {
                     info = fileInfoCreator.create(fo);

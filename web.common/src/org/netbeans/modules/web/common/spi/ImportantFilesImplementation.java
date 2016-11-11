@@ -106,7 +106,7 @@ public interface ImportantFilesImplementation {
         public FileInfo(FileObject file, @NullAllowed String displayName, @NullAllowed String description) {
             Parameters.notNull("file", file); // NOI18N
             if (file.isFolder()) {
-                throw new IllegalArgumentException("File cannot be a directory");
+                throw new IllegalArgumentException("File cannot be a directory (given: " + file + ")");
             }
             this.file = file;
             this.displayName = displayName;
