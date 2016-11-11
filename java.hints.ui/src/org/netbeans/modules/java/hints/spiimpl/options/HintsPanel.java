@@ -1346,7 +1346,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         String fileName = selectedHint.id.indexOf('-') != (-1) ? selectedHint.id.substring(0,selectedHint.id.lastIndexOf('-')) : selectedHint.id; //XXX
         FileObject fo = FileUtil.getConfigFile("rules/" + fileName);
         try {
-            return DataObject.find(fo);
+            return fo == null ? null : DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -1434,16 +1434,24 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            HintMetadata hint = this.hint;
             try {
                 if (hint==null) {
                     hint = getSelectedHint();
+                }
+                if (hint == null) {
+                    return;
+                }
+                DataObject d = getDataObject(hint);
+                if (d == null) {
+                    return;
                 }
                 if (JOptionPane.YES_OPTION == 
                         JOptionPane.showConfirmDialog(errorTree,
                         NbBundle.getMessage(HintsPanel.class, "MSG_DeleteConfirmMessage",  hint.displayName ),
                         NbBundle.getMessage(HintsPanel.class, "MSG_DeleteConfirmTitle"),
                         JOptionPane.YES_NO_OPTION)) {
-                    getDataObject(hint).delete();
+                    d.delete();
                     RulesManager.getInstance().reload();
                     cpBased.reset();
                     //errorTreeModel.removeNodeFromParent(node);

@@ -109,4 +109,97 @@ public class UnusedAssignmentOrBranchTest extends NbTestCase {
                 .run(UnusedAssignmentOrBranch.class)
                 .assertWarnings();
     }
+    
+    /**
+     * Checks that unused var value produced by compound assignment is detected.
+     * Checks that the operation is corrected. Since the expression contains
+     * method call, it may have side effects so the order of operands should be reversed
+     * from the original
+     * 
+     * @throws Exception 
+     */
+    public void testCompoundAssignment267508Boolean() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                        "public class Test {\n"
+                        + "    public static void bad(String... args) {\n"
+                        + "        boolean done = false;\n"
+                        + "        long counting = 0;\n"
+                        + "        while (!(done |= Thread.currentThread().isInterrupted())) {\n"
+                        + "            counting++;\n"
+                        + "            done = counting > 1000000000;\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}\n")
+                .run(UnusedAssignmentOrBranch.class)
+                .findWarning("5:17-5:63:verifier:LBL_UnusedCompoundAssignmentLabel").
+                applyFix().assertOutput(
+                        "package test;\n" +
+                        "public class Test {\n"
+                        + "    public static void bad(String... args) {\n"
+                        + "        boolean done = false;\n"
+                        + "        long counting = 0;\n"
+                        + "        while (!(Thread.currentThread().isInterrupted() || done)) {\n"
+                        + "            counting++;\n"
+                        + "            done = counting > 1000000000;\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}\n"                
+                );
+    }
+
+    /**
+     * Checks that unused var value produced by compound assignment is detected.
+     * Checks that the operation is corrected, in the original order of variable/expression
+     * @throws Exception 
+     */
+    public void testCompoundAssignment267508Integer() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                        "public class Test {\n"
+                        + "    public static void bad(String... args) {\n"
+                        + "        long done = 0;\n"
+                        + "        long counting = 0;\n"
+                        + "        while ((done |= (int)Math.random()) == 0) {\n"
+                        + "            counting++;\n"
+                        + "            done = counting - 1000000000;\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}\n")
+                .run(UnusedAssignmentOrBranch.class)
+                .findWarning("5:16-5:42:verifier:LBL_UnusedCompoundAssignmentLabel").
+                applyFix().assertOutput(
+                        "package test;\n" +
+                        "public class Test {\n"
+                        + "    public static void bad(String... args) {\n"
+                        + "        long done = 0;\n"
+                        + "        long counting = 0;\n"
+                        + "        while ((done | (int)Math.random()) == 0) {\n"
+                        + "            counting++;\n"
+                        + "            done = counting - 1000000000;\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}\n"                
+                );
+    }
+
+    public void testCompoundAssignment267508Negative() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                        "public class Test {\n"
+                        + "    public static void bad(String... args) {\n"
+                        + "        boolean done = false;\n"
+                        + "        long counting = 0;\n"
+                        + "        while (!(done |= Thread.currentThread().isInterrupted())) {\n"
+                        + "            counting++;\n"
+                        + "            // done = counting > 1_000_000_000;\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}\n")
+                .run(UnusedAssignmentOrBranch.class)
+                .assertWarnings();
+    }
 }
