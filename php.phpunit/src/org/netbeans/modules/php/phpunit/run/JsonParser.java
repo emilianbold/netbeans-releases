@@ -73,6 +73,7 @@ public final class JsonParser {
 
     private TestSuiteVo actualSuite = null;
     private TestCaseVo actualTest = null;
+    private char prevChar = ' ';
     private int curlyBalance = 0;
     private int inputIndex = 0;
     private boolean inString = false;
@@ -96,13 +97,13 @@ public final class JsonParser {
             actualSession.setStarted(true);
             handler.onSessionStart(actualSession);
         }
+        LOGGER.log(Level.FINE, "Input to process: {0}", input);
         inputData.append(input);
         int i = inputIndex;
-        char prevCh = ' ';
         while (i < inputData.length()) {
             char ch = inputData.charAt(i);
             if (ch == '"' // NOI18N
-                    && prevCh != '\\') { // NOI18N
+                    && prevChar != '\\') { // NOI18N
                 inString = !inString;
             }
             if (!inString) {
@@ -117,7 +118,7 @@ public final class JsonParser {
                     }
                 }
             }
-            prevCh = ch;
+            prevChar = ch;
             i++;
         }
         inputIndex = inputData.length();
@@ -126,6 +127,8 @@ public final class JsonParser {
     public void finish() {
         assert !StringUtils.hasText(inputData.toString()) : inputData + dumpAllData();
         LOGGER.log(Level.FINE, "Parse finish");
+        // finish last test, if any exists
+        testErrorFinish();
         // finish last suite, if any exists
         suiteFinish();
         // process <no suite>
@@ -188,6 +191,7 @@ public final class JsonParser {
     }
 
     private void testStart(JSONObject data) {
+        testErrorFinish();
         assert actualSuite != null : data  + dumpAllData();
         assert actualTest == null : actualTest + " :: " + data  + dumpAllData();
         String suite = (String) data.get("suite"); // NOI18N
@@ -291,6 +295,21 @@ public final class JsonParser {
             handler.onTestFinish(actualTest);
         }
         actualTest = null;
+    }
+
+    // #268447
+    @NbBundle.Messages("JsonParser.phpFatalerror=PHP Fatal error occured.")
+    private void testErrorFinish() {
+        // any unfinished test?
+        if (actualTest != null) {
+            actualTest.setStatus(TestCase.Status.ERROR);
+            actualTest.addStacktrace(Bundle.JsonParser_phpFatalerror());
+            if (!isActualNoSuite()) {
+                handler.onTestFinish(actualTest);
+            }
+            actualTest = null;
+            actualSession.setFatalError(true);
+        }
     }
 
     private String extractTestName(String testName) {

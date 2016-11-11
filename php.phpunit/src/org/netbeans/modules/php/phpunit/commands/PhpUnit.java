@@ -833,9 +833,11 @@ public final class PhpUnit {
                 testSession.printMessage(finishMessage, false);
                 testSession.printMessage("", false); // NOI18N
             }
-            String finishError = testSessionVo.getFinishError();
-            if (finishError != null) {
+            List<String> finishErrors = testSessionVo.getFinishErrors();
+            for (String finishError : finishErrors) {
                 testSession.printMessage(finishError, true);
+            }
+            if (!finishErrors.isEmpty()) {
                 testSession.printMessage("", false); // NOI18N
             }
         }
