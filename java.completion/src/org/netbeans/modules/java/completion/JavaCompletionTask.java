@@ -1495,6 +1495,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         } else if (lastNonWhitespaceTokenId != JavaTokenId.STAR) {
             controller.toPhase(Phase.RESOLVED);
+            if (withinModuleName(env)) {
+                String fqnPrefix = fa.getExpression().toString() + '.';
+                anchorOffset = (int) sourcePositions.getStartPosition(root, fa);
+                addModuleNames(env, fqnPrefix, true);
+                return;
+            }
             TreePath parentPath = path.getParentPath();
             Tree parent = parentPath != null ? parentPath.getLeaf() : null;
             TreePath grandParentPath = parentPath != null ? parentPath.getParentPath() : null;
@@ -1638,16 +1644,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 } else if (parent.getKind() == Tree.Kind.ENHANCED_FOR_LOOP && ((EnhancedForLoopTree) parent).getExpression() == fa) {
                     env.insideForEachExpression();
                     kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
-                } else if ((parent.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)parent).getModuleNames() != null && ((ExportsTree)parent).getModuleNames().contains(fa))
-                        || (parent.getKind() == Tree.Kind.REQUIRES && ((RequiresTree)parent).getModuleName() == fa)) {
-                    String fqnPrefix = fa.getExpression().toString() + '.';
-                    anchorOffset = (int) sourcePositions.getStartPosition(root, fa);
-                    addModuleNames(env, fqnPrefix, true);
-                    return;
                 } else if (parent.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)parent).getExportName() == fa) {
-                    String fqnPrefix = fa.getExpression().toString() + '.';
-                    addPackages(env, fqnPrefix, true);
-                    return;
+                    kinds = EnumSet.noneOf(ElementKind.class);
                 } else if (parent.getKind() == Tree.Kind.PROVIDES) {
                     kinds = ((ProvidesTree)parent).getServiceName() == fa ? EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE) : EnumSet.of(CLASS);
                 } else if (parent.getKind() == Tree.Kind.USES) {
@@ -1757,7 +1755,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                     }
                                 }
                             }
-                            addPackageContent(env, (PackageElement) el, kinds, baseType, insideNew, false);
+                            addPackageContent(env, (PackageElement) el, kinds, baseType, insideNew, kinds.isEmpty());
                             if (results.isEmpty() && ((PackageElement) el).getQualifiedName() == el.getSimpleName()) {
                                 // no package content? Check for unimported class
                                 ClassIndex ci = controller.getClasspathInfo().getClassIndex();
@@ -3669,7 +3667,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             addLocalAndImportedTypes(env, kinds, baseType);
             hasAdditionalClasses = true;
         }
-        addPackages(env, null, false);
+        addPackages(env, null, kinds.isEmpty());
     }
 
     private void addLocalAndImportedTypes(final Env env, final EnumSet<ElementKind> kinds, final DeclaredType baseType) throws IOException {
@@ -5670,6 +5668,22 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 return true;
             }
             path = path.getParentPath();
+        }
+        return false;
+    }
+
+    private boolean withinModuleName(Env env) {
+        TreePath path = env.getPath();
+        Tree last = null;
+        while (path != null) {
+            Tree tree = path.getLeaf();
+            if (last != null
+                    && (tree.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)tree).getModuleNames() != null && ((ExportsTree)tree).getModuleNames().contains(last)
+                    || tree.getKind() == Tree.Kind.REQUIRES && ((RequiresTree)tree).getModuleName() == last)) {
+                return true;
+            }
+            path = path.getParentPath();
+            last = tree;
         }
         return false;
     }
