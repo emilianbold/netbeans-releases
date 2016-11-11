@@ -43,6 +43,7 @@ package org.netbeans.modules.php.doctrine2.commands;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +67,7 @@ public final class Doctrine2CommandsXmlParser extends DefaultHandler {
     private final List<Doctrine2CommandVO> commands;
 
     private String currentCommand = null;
+    private List<String> currentUsages = new ArrayList<>();
     private StringBuilder currentUsage = null;
     private String currentDescription = null;
     private StringBuilder currentHelp = null;
@@ -137,7 +139,12 @@ public final class Doctrine2CommandsXmlParser extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if ("usage".equals(qName)) { // NOI18N
             if (content == Content.USAGE) {
+                String usage = currentUsage.toString().trim();
+                if (StringUtils.hasText(usage)) {
+                    currentUsages.add(usage);
+                }
                 content = Content.NONE;
+                currentUsage = null;
             }
         } else if ("description".equals(qName)) { // NOI18N
             if (content == Content.DESCRIPTION) {
@@ -146,9 +153,6 @@ public final class Doctrine2CommandsXmlParser extends DefaultHandler {
         } else if ("help".equals(qName)) { // NOI18N
             if (content == Content.HELP) {
                 assert currentCommand != null;
-                if (currentUsage == null) {
-                    currentUsage = new StringBuilder();
-                }
                 if (currentDescription == null) {
                     currentDescription = ""; // NOI18N
                 }
@@ -156,11 +160,11 @@ public final class Doctrine2CommandsXmlParser extends DefaultHandler {
                 commands.add(new Doctrine2CommandVO(
                         currentCommand.trim(),
                         currentDescription.trim(),
-                        processHelp(currentUsage.toString().trim(), currentHelp.toString().trim())));
+                        processHelp(currentUsages, currentHelp.toString().trim())));
                 currentCommand = null;
-                currentUsage = null;
                 currentDescription = null;
                 currentHelp = null;
+                currentUsages.clear();
                 content = Content.NONE;
             }
         }
@@ -188,13 +192,17 @@ public final class Doctrine2CommandsXmlParser extends DefaultHandler {
     }
 
     @Messages("LBL_Usage=Usage:")
-    private static String processHelp(String usage, String help) {
+    private static String processHelp(List<String> usages, String help) {
         StringBuilder result = new StringBuilder();
-        if (StringUtils.hasText(usage)) {
+        if (!usages.isEmpty()) {
             result.append(Bundle.LBL_Usage());
-            result.append("<br><i>"); // NOI18N
-            result.append(usage);
-            result.append("</i><br><br>"); // NOI18N
+            result.append("<br>");
+            for (String usage : usages) {
+                result.append("<i>"); // NOI18N
+                result.append(usage.replace("<", "&lt;").replace(">", "&gt;")); // NOI18N
+                result.append("</i><br>"); // NOI18N
+            }
+            result.append("<br>");
         }
         if (StringUtils.hasText(help)) {
             help = help.replace("<info>", "<i>"); // NOI18N
