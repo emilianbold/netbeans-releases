@@ -44,6 +44,7 @@ package org.openide.util;
 import java.net.Authenticator;
 import java.net.URI;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Useful static methods for getting Network Proxy required for make network
@@ -105,12 +106,31 @@ public final class NetworkSettings {
         return null;
     }
 
+    /** Returns the <code>password</code> for Proxy Authentication.
+     * Returns <code>null</code> if no authentication required.
+     * 
+     * @param u The URI that a connection is required to
+     * @return password for Proxy Authentication
+     * @since 9.8
+     */
+    public static char[] getAuthenticationPassword(URI u) {
+        ProxyCredentialsProvider provider = Lookup.getDefault().lookup(ProxyCredentialsProvider.class);
+        if (provider == null) {
+            LOGGER.log(Level.WARNING, "No ProxyCredentialsProvider found in lookup {0} thus no proxy information will provide!", Lookup.getDefault());
+        }
+        if (provider != null && provider.isProxyAuthentication(u)) {
+            return provider.getProxyPassword(u);
+        }
+        return null;
+    }
+
     /** Returns the <code>key</code> for reading password for Proxy Authentication.
      * Use <a href="@org-netbeans-modules-keyring@/org/netbeans/api/keyring/Keyring.html"><code>org.netbeans.api.keyring.Keyring</code></a> for reading the password from the ring.
      * Returns <code>null</code> if no authentication required.
      * 
      * @param u The URI that a connection is required to
      * @return the key for reading password for Proxy Authentication from the ring or <code>null</code>
+     * @deprecated use {@link #getAuthenticationPassword(java.net.URI)} instead
      */
     public static String getKeyForAuthenticationPassword(URI u) {
         ProxyCredentialsProvider provider = Lookup.getDefault().lookup(ProxyCredentialsProvider.class);
