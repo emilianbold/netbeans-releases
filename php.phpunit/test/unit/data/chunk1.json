@@ -1,0 +1,8 @@
+{
+    "event": "suiteStart",
+    "suite": "Util_XMLTest::testPrepareString",
+    "tests": 676
+}{
+    "event": "testStart",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with \
