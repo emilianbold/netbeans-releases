@@ -55,11 +55,13 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -82,6 +84,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -1385,6 +1388,28 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             }
             
             return super.visitForLoop(node, p);
+        }
+
+        @Override
+        public Void visitIf(IfTree node, EnumSet<UseTypes> p) {
+            scan(node.getCondition(), EnumSet.of(UseTypes.READ));
+            scan(node.getThenStatement(), p);
+            scan(node.getElseStatement(), p);
+            return null;
+        }
+
+        @Override
+        public Void visitWhileLoop(WhileLoopTree node, EnumSet<UseTypes> p) {
+            scan(node.getCondition(), EnumSet.of(UseTypes.READ));
+            scan(node.getStatement(), p);
+            return null;
+        }
+
+        @Override
+        public Void visitDoWhileLoop(DoWhileLoopTree node, EnumSet<UseTypes> p) {
+            scan(node.getStatement(), p);
+            scan(node.getCondition(), EnumSet.of(UseTypes.READ));
+            return null;
         }
 
         @Override

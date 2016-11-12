@@ -155,7 +155,7 @@ public class AddParameterOrLocalFix implements EnhancedFix {
                 //TreePath tp = working.getTreeUtilities().pathFor(unresolvedVariable + 1);
                 //Use TreePathHandle instead of position supplied as field (#143318)
                 TreePath tp = tpHandle[0].resolve(working);
-                if (tp.getLeaf().getKind() != Kind.IDENTIFIER)
+                if (tp != null || tp.getLeaf().getKind() != Kind.IDENTIFIER)
                     return;
 
                 switch (kind) {
