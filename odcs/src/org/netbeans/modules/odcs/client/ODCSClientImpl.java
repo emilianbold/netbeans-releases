@@ -1,3 +1,42 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2013, 2016 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ */
 package org.netbeans.modules.odcs.client;
 
 import com.tasktop.c2c.server.common.service.EntityNotFoundException;
@@ -15,21 +54,30 @@ import com.tasktop.c2c.server.scm.service.ScmServiceClient;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import com.tasktop.c2c.server.tasks.service.TaskServiceClient;
+import java.net.InetSocketAddress;
 import oracle.clouddev.server.profile.activity.client.api.ActivityApi;
 import oracle.clouddev.server.profile.activity.client.api.ListRequestParams;
 import oracle.clouddev.server.profile.activity.client.rest.ActivityApiClient;
 import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.apache.commons.httpclient.HttpClient;
+import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
+import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.team.commons.LogUtils;
 import org.openide.util.Lookup;
+import org.openide.util.NetworkSettings;
 
 public class ODCSClientImpl implements ODCSClient {
     
@@ -307,7 +355,7 @@ public class ODCSClientImpl implements ODCSClient {
     private ActivityApi getActivityClient() {
         if (activityClient == null) {
             ActivityApiClient client = new ActivityApiClient();
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = createHttpClient();
             client.setRestClientDelegate(delegate);
             client.setBaseUrl(url + "api/activity/"); // NOI18N
             activityClient = client;
@@ -319,7 +367,7 @@ public class ODCSClientImpl implements ODCSClient {
         if (profileServiceClient == null) {
             profileServiceClient = new ProfileWebServiceClient();
             profileServiceClient.setBaseUrl(url + "api/");
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = createHttpClient();
             profileServiceClient.setRestClientDelegate(delegate);
         }
         return profileServiceClient;
@@ -329,7 +377,7 @@ public class ODCSClientImpl implements ODCSClient {
         if (scmServiceClient == null) {
             scmServiceClient = new ScmServiceClient();
             scmServiceClient.setBaseUrl(url + "s/" + projectId + "/scm/api/");
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = createHttpClient();
             scmServiceClient.setRestClientDelegate(delegate);
         }
         return scmServiceClient;        
@@ -339,12 +387,72 @@ public class ODCSClientImpl implements ODCSClient {
         if (tasksServiceClient == null) {
             tasksServiceClient = new TaskServiceClient();
             tasksServiceClient.setBaseUrl(url + "s/" + projectId + "/tasks/");
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = createHttpClient();
             tasksServiceClient.setRestClientDelegate(delegate);
         }
         return tasksServiceClient;     
     }
 
+    private ApacheHttpRestClientDelegate createHttpClient() {
+        
+        URI uri = null;
+        try {
+            uri = new URI(url);
+        } catch (URISyntaxException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+        
+        Proxy proxy = null;
+        String proxyHost = NetworkSettings.getProxyHost(uri);
+        if(proxyHost != null && proxyHost.length() > 0) {
+            List<Proxy> proxies = ProxySelector.getDefault().select(uri);
+            for (Proxy p : proxies) {
+                if (p.type() != Proxy.Type.DIRECT) {
+                    SocketAddress addr = p.address();
+                    if (addr instanceof InetSocketAddress) {                        
+                        InetSocketAddress inet = (InetSocketAddress) addr;
+                        if(proxyHost.equals(inet.getHostString())) {
+                            proxy = p;
+                            break;
+                        }                        
+                    }
+                }
+            }            
+        }        
+        
+        if(proxy != null) {
+            String proxyPort = NetworkSettings.getProxyPort(uri);
+            assert proxyPort != null;
+            
+            LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, uri}); //NOI18N
+            String proxyUser = NetworkSettings.getAuthenticationUsername(uri);
+            if(proxyUser != null) {
+                char[] pwd = NetworkSettings.getAuthenticationPassword(uri);
+                String proxyPassword = pwd == null ? "" : new String(pwd); //NOI18N
+                logCredentials(uri.toString(), proxyUser, proxyPassword, "Setting proxy credentials: "); //NOI18N
+                return new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()), proxy, proxyUser, proxyPassword);
+            } else {
+                return new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()), proxy);                
+            }
+        } else {
+            return new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
+        }
+    }
+
+    public static void logCredentials(String uri, String user, String psswd, String msg) {
+        LOG.log( Level.FINEST, msg + "[{0}, user={1}, password={2}]", new Object[] { uri, user, getPasswordLog(psswd) } ); // NOI18N
+    }
+    
+    private static String getPasswordLog(String psswd) {
+        if(psswd == null) {
+            return ""; // NOI18N
+        }
+        if("true".equals(System.getProperty("org.netbeans.modules.odcs.logPasswords", "false"))) { // NOI18N
+            return psswd; 
+        }
+        return "******"; // NOI18N
+    }
+    
     private ProjectsQuery createProjectsQuery(ProjectRelationship rel) {
         ProjectsQuery query = new ProjectsQuery(rel, null);
         query.setOrganizationIdentifier(organizationId);
