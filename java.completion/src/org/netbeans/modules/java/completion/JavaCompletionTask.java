@@ -633,7 +633,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         }
     }
 
-    private void insideImport(Env env) {
+    private void insideImport(Env env) throws IOException {
         int offset = env.getOffset();
         String prefix = env.getPrefix();
         ImportTree im = (ImportTree) env.getPath().getLeaf();
@@ -645,6 +645,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 addKeyword(env, STATIC_KEYWORD, SPACE, false);
             }
             addPackages(env, null, false);
+        }
+        if (options.contains(Options.ALL_COMPLETION)) {
+            env.getController().toPhase(Phase.ELEMENTS_RESOLVED);
+            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE), null);
+        } else {
+            hasAdditionalClasses = true;
         }
     }
 
