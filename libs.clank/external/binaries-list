@@ -1,9 +1,7 @@
-#changeset:   19740:c3f4a3537ba5
+#changeset:   20935:2cfaf882f3cf
 #branch:      jclank
 #tag:         tip
-#parent:      19738:2b3b59ce09a1
-#parent:      19739:82abd3484987
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Sep 20 15:24:44 2016 +0300
-#summary:     merging jclank_39_upgrade into jclank
-F20EEEDF4FE6B93B180387576FB780EED9F79C66 clank_0.3.9.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Mon Nov 14 10:04:24 2016 +0300
+#summary:     Fixed model tests
+B3706CA2B4FFFAA52D6877AAB45433E50A3BAF95 clank_0.3.9.zip
