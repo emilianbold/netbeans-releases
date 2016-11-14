@@ -70,7 +70,7 @@ import org.openide.filesystems.FileObject;
 @FunctionInterceptor.Registration(priority = 370)
 public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
 
-    private static Pattern METHOD_NAME = Pattern.compile(NodeJsUtils.REQUIRE_METHOD_NAME); //NOI18N
+    private static final Pattern METHOD_NAME = Pattern.compile(NodeJsUtils.REQUIRE_METHOD_NAME); //NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -90,7 +90,7 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
             FunctionArgument theFirst = args.iterator().next();
             if (theFirst.getKind() == FunctionArgument.Kind.STRING) {
                 String module = (String)theFirst.getValue();
-                Source source = Source.create(fo);
+                Source source = snapshot.getSource();
                 if (source == null) {
                     // file doesn't exists yet
                     return Collections.emptyList();
@@ -110,7 +110,7 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                         ((JsFunction)requireObject).addReturnType(factory.newType(sb.toString(), -1, true));
                     }
                 }
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), theFirst.getOffset());
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), theFirst.getOffset());
                 if (ts == null) {
                     return Collections.emptyList();
                 }
