@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -180,9 +181,15 @@ final class DependencyCalculator {
     private void collectTransTargets(List<ModuleNode> sources, Map<ModuleNode, List<ModuleNode>> publicEdges, Collection<ModuleNode> transTargets) {
         for (ModuleNode source : sources) {
             List<ModuleNode> targets = publicEdges.get(source);
-            if(targets != null && !transTargets.contains(source)) {
-                transTargets.addAll(targets);
-                collectTransTargets(targets, publicEdges, transTargets);
+            if(targets != null) {                
+                List<ModuleNode> ts = new LinkedList<>();
+                for (ModuleNode target : targets) {
+                    if(!transTargets.contains(target)) {
+                        ts.add(target);
+                    }
+                }
+                transTargets.addAll(ts);
+                collectTransTargets(ts, publicEdges, transTargets);
             }
         }       
     }
