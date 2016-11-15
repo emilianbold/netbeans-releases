@@ -1204,6 +1204,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                         TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
                                         sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                     } else {
+                                        TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
+                                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.IMPORT) {
+                                            ClassItem.super.substituteText(c, offset, length, elem.getQualifiedName(), toAdd);
+                                            return;
+                                        }
                                         sb.append("${PAR#0"); //NOI18N
                                         if ((type == null || type.getKind() != TypeKind.ERROR) &&
                                                 EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
