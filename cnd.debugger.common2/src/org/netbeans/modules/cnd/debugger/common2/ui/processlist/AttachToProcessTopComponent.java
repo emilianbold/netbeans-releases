@@ -363,6 +363,7 @@ public final class AttachToProcessTopComponent extends AttachPanel{
     @Override
     public void removeNotify() {
         updateContent(null);
+        super.removeNotify();
     }
 
     
