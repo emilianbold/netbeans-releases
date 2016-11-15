@@ -418,66 +418,12 @@ class PreferredCCParser {
     }
 
     /**
-     * Parse the expression into AST tree and traverse it via the provided visitor.
-     *
-     * @return the visitor value or <code>null</code>.
-     */
-    @NbBundle.Messages("MSG_NoParseNoEval=Can not evaluate expression - parsing failed.")
-    public <R,D> R parseExpression(final String expression, String url, final int line,
-                                   final TreePathScanner<R,D> visitor, final D context,
-                                   final SourcePathProvider sp) throws InvalidExpressionException {
-        JavaSource js = null;
-        FileObject fo = null;
-        if (url != null) {
-            try {
-                fo = URLMapper.findFileObject(new URL(url));
-                if (fo != null) {
-                    js = JavaSource.forFileObject(fo);
-                }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(Exceptions.attachSeverity(ex, Level.WARNING));
-            }
-        }
-        if (js == null) {
-            js = getJavaSource(sp);
-        }
-        //long t1, t2, t3, t4;
-        //t1 = System.nanoTime();
-        try {
-            final CompilationController ci = getPreferredCompilationController(fo, js);
-            //t2 = System.nanoTime();
-            final ParseExpressionTask<D> task = new ParseExpressionTask<D>(expression, line, context);
-            boolean parsed = task.parse(fo, js, ci);
-            if (!parsed) {
-                return null;
-            }
-            TreePath treePath = task.getTreePath();
-            Tree tree = task.getTree();
-            //t3 = System.nanoTime();
-            R retValue;
-            if (treePath != null) {
-                retValue = visitor.scan(treePath, context);
-            } else {
-                if (tree == null) {
-                    throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
-                }
-                retValue = tree.accept(visitor, context);
-            }
-            //t4 = System.nanoTime();
-            //System.err.println("PARSE TIMES 1: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
-            return retValue;
-        } catch (IOException ioex) {
-            Exceptions.printStackTrace(ioex);
-            return null;
-        }
-    }
-    
-    /**
      * Parse the expression into AST tree and either traverse it via the provided interpreter,
      * or compile it into an extra method in a new class and interpret the method invocation.
      *
      * @return the visitor value or <code>null</code>.
      */
+    @NbBundle.Messages("MSG_NoParseNoEval=Can not evaluate expression - parsing failed.")
     public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
                                           final TreePathScanner<Boolean,D> canInterpret,
                                           final TreePathScanner<R,D> interpreter,

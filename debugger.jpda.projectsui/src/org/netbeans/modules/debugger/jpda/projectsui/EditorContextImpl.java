@@ -840,17 +840,6 @@ public class EditorContextImpl extends EditorContext {
         return EditorContextSupport.getImports(url);
     }
     
-    /**
-     * Parse the expression into AST tree and traverse is via the provided visitor.
-     *
-     * @return the visitor value or <code>null</code>.
-     */
-    public <R,D> R parseExpression(final String expression, String url, final int line,
-                                   final TreePathScanner<R,D> visitor, final D context,
-                                   final SourcePathProvider sp) throws InvalidExpressionException {
-        return EditorContextSupport.parseExpression(expression, url, line, visitor, context, sp);
-    }
-
     public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
                                           final TreePathScanner<Boolean,D> canInterpret,
                                           final TreePathScanner<R,D> interpreter,
