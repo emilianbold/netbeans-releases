@@ -3220,7 +3220,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (childrenValue instanceof MITList) {
             children_list = (MITList) childrenValue;
         }
-
+        int maxIndexLog = log10(parent.getNumChild());
         // iterate through children list
         List<GdbVariable> children = new ArrayList<GdbVariable>();
         if (children_list != null) {
@@ -3245,12 +3245,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         childIdx++;
                     } else {
                         // Show array name and index instead of only index, IZ 192123
+                        //substring first
+                        String indexStr = exp;
+                        if (exp.startsWith("[") && exp.endsWith("]")) {
+                            indexStr = exp.substring(1, exp.length() - 1);
+                        }
                         try {
-                            Integer.parseInt(exp);
-                            exp = parent.getVariableName() + '[' + exp + ']';
+                            int index = Integer.parseInt(indexStr);
+                            //add space
+                            indexStr = parent.getVariableName() + getIndexStr(maxIndexLog, index);
                         } catch (Exception e) {
                             // do nothing
                         }
+                        exp = indexStr;
                     }
                     GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                             parent, exp, null, null, parent.isWatch());
@@ -3279,6 +3286,41 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // make a pull to update children's value
         // parent.setChildren(childrenvar, true);
+    }
+
+    private static String getIndexStr(int maxIndexLog, int index) {
+        return getIndexStr(maxIndexLog, index, ""); // NOI18N
+    }
+
+    private static String getIndexStr(int maxIndexLog, int index, String postfix) {
+        int num0 = maxIndexLog - log10(index);
+        String data = index + postfix;
+        if (num0 > 0) {
+            data = zeros(num0) + data;
+        }
+        return "[" + data + "]"; // NOI18N
+    }
+
+    private static int log10(int n) {
+        int l = 1;
+        while ((n = n / 10) > 0) {
+            l++;
+        }
+        return l;
+    }
+
+    private static final String ZEROS = "            "; // NOI18N
+
+    static String zeros(int n) {
+        if (n < ZEROS.length()) {
+            return ZEROS.substring(0, n);
+        } else {
+            String z = ZEROS;
+            while (z.length() < n) {
+                z += " "; // NOI18N
+            }
+            return z;
+        }
     }
 
     /**
