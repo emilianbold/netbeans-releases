@@ -1994,22 +1994,22 @@ static void shutdown() {
 
 static void log_header(int argc, char* argv[]) {
     if (log_flag) {
-       log_open("log") ;
-log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
-               FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
-       time_t t = time(NULL);
-       struct tm *tt = localtime(&t);
-       if (tt) {
-           log_print("%d/%02d/%02d at %02d:%02d:%02d\n",
-                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday,
-                   tt->tm_hour, tt->tm_min, tt->tm_sec);
-       } else {
-           log_print("<error getting time: %s>\n", strerror(errno));
-       }
-       for (int i = 0; i < argc; i++) {
-           log_print("%s ", argv[i]);
-       }
-       log_print("\n");
+        log_open("log") ;
+        log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
+                FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+        time_t t = time(NULL);
+        struct tm *tt = localtime(&t);
+        if (tt) {
+            log_print("%d/%02d/%02d at %02d:%02d:%02d\n",
+                    tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday,
+                    tt->tm_hour, tt->tm_min, tt->tm_sec);
+        } else {
+            log_print("<error getting time: %s>\n", strerror(errno));
+        }
+        for (int i = 0; i < argc; i++) {
+            log_print("%s ", argv[i]);
+        }
+        log_print("\n");
     }
 }
 
