@@ -134,6 +134,11 @@ public final class TestProject implements Project {
     }
 
     @NonNull
+    public ReferenceHelper getReferenceHelper() {
+        return refHelper;
+    }
+
+    @NonNull
     public SourceRoots getSourceRoots() {
         return src;
     }

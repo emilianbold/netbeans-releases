@@ -378,4 +378,10 @@ public final class ProjectProperties {
 
     //NB 6.1 tracking of files modifications
     public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
+
+    /**
+     * Property for the modules build folder.
+     * @since 1.93
+     */
+    public static final String BUILD_MODULES_DIR="build.modules.dir";   //NOI18N
 }

@@ -310,7 +310,8 @@ public final class J2SEModularProject implements Project {
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 //            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
-//            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            QuerySupport.createMultiModuleSourceForBinaryQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
+            QuerySupport.createMultiModuleBinaryForSourceQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
 //            new AntArtifactProviderImpl(),
             ProjectHooks.createProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper).
@@ -367,7 +368,6 @@ public final class J2SEModularProject implements Project {
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, evaluator()),
             LookupMergerSupport.createJFBLookupMerger(),
-            QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
             QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
             LookupProviderSupport.createActionProviderMerger(),
 //            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),

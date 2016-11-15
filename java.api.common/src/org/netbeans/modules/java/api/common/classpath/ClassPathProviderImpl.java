@@ -50,6 +50,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -149,7 +151,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      * 27  - JDK8 test execute class path           - internal only
      * 28  - JDK8 execute class path for dist.jar   - internal only
      */
-    private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[29];
+    private final Object[/*@GuardedBy("this")*/] cache = new Object[29];
     private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new HashMap<>();
 
 
@@ -762,7 +764,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             // Not a source file.
             return null;
         }
-        ClassPath cp = cache[2+type];
+        ClassPath cp = (ClassPath)cache[2+type];
         if (cp == null) {
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
@@ -789,7 +791,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             // Not a source file.
             return null;
         }
-        ClassPath cp = cache[9+type];
+        ClassPath cp = (ClassPath)cache[9+type];
         if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
@@ -830,7 +832,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return null;
         }
         
-        ClassPath cp = cache[index];
+        ClassPath cp = (ClassPath)cache[index];
         if ( cp == null) {
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
@@ -848,7 +850,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     private synchronized ClassPath getEndorsedClasspath() {
-        ClassPath cp = cache[8];
+        ClassPath cp = (ClassPath)cache[8];
         if ( cp == null) {
             cp = ClassPathFactory.createClassPath(
                 ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
@@ -860,15 +862,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private ClassPath getSourcepath(FileObject file) {
         int type = getType(file);
-        return this.getSourcepath(type);
+        final SourceRoots mods = type == 0 ?
+                moduleSourceRoots :
+                testModuleSourceRoots;
+        if (mods == null) {
+            return this.getSingleModuleSourcepath(type);
+        } else {
+            //Multi-module project
+            return this.getMultiModuleSourcepath(type, file);
+        }
     }
-    
+
     @CheckForNull
-    private synchronized ClassPath getSourcepath(final int type) {
+    private synchronized ClassPath getSingleModuleSourcepath(final int type) {
         if (type < 0 || type > 1) {
             return null;
         }
-        ClassPath cp = cache[type];
+        ClassPath cp = (ClassPath)cache[type];
         if (cp == null) {
             switch (type) {
                 case 0:
@@ -884,9 +894,48 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         return cp;
     }
+
+    @CheckForNull
+    private ClassPath getMultiModuleSourcepath(
+            final int type,
+            final FileObject artifact) {
+        final MultiModule mm = getMultiModuleModel(type);
+        return mm != null ?
+                mm.getModuleSources(artifact) :
+                null;
+    }
+
+    @CheckForNull
+    private synchronized MultiModule getMultiModuleModel(final int type) {
+        if (type < 0 || type > 1) {
+            return null;
+        }
+        MultiModule model = (MultiModule)cache[type];
+        if (model == null) {
+            switch (type) {
+                case 0:
+                    model = MultiModule.getOrCreate(moduleSourceRoots, sourceRoots);
+                    break;
+                case 1:
+                    model = MultiModule.getOrCreate(testModuleSourceRoots, testSourceRoots);
+                    break;
+                default:
+                    throw new IllegalStateException("Invalid classpath type: " + type); //NOI18N
+            }
+            cache[type] = model;
+        }
+        return model;
+    }
+
+    @NonNull
+    private ClassPathImplementation getMultiModuleBinaries(final MultiModule model) {
+        //TODO: Cache
+        return ModuleClassPaths.createMultiModuleBinariesPath(model);
+    }
+
     
     private synchronized ClassPath getBootClassPath() {
-        ClassPath cp = cache[7];
+        ClassPath cp = (ClassPath)cache[7];
         if ( cp == null ) {
             if (platform.hasFirst()) {
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
@@ -918,7 +967,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     @NonNull
     private synchronized ClassPath getModuleBootPath() {
-        ClassPath cp = cache[11];
+        ClassPath cp = (ClassPath)cache[11];
         if ( cp == null ) {
             if (platform.hasFirst()) {
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
@@ -951,15 +1000,26 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     @NonNull
     private synchronized ClassPath getModuleCompilePath(final int type) {
         assert type >=0 && type <=1;
-        ClassPath cp = cache[12+type];
+        ClassPath cp = (ClassPath)cache[12+type];
         if ( cp == null ) {
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
                             ()->ClassPath.EMPTY,
-                            ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
-                                projectDirectory,
-                                evaluator,
-                                type == 0 ? modulePath : testModulePath))));
+                            ()-> {
+                                ClassPathImplementation impl = ModuleClassPaths.createPropertyBasedModulePath(
+                                        projectDirectory,
+                                        evaluator,
+                                        type == 0 ? modulePath : testModulePath);
+                                final SourceRoots modules = type == 0 ? moduleSourceRoots : testModuleSourceRoots;
+                                if (modules != null) {
+                                    final MultiModule model = getMultiModuleModel(type);
+                                    impl = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation(
+                                            getMultiModuleBinaries(model),
+                                            impl
+                                    );
+                                }
+                                return ClassPathFactory.createClassPath(impl);
+                            }));
             cache[12+type] = cp;
         }
         return cp;
@@ -977,7 +1037,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     @NonNull
     private synchronized ClassPath getModuleLegacyClassPath(final int type) {
         assert type >=0 && type <=1;
-        ClassPath cp = cache[14+type];
+        ClassPath cp = (ClassPath)cache[14+type];
         if (cp == null) {
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
@@ -1010,7 +1070,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         } else {
             return null;
         }
-        ClassPath cp = cache[index];
+        ClassPath cp = (ClassPath)cache[index];
         if (cp == null) {
             ClassPathImplementation modules;
             switch (index) {
@@ -1070,7 +1130,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         } else {
             return null;
         }
-        ClassPath cp = cache[index];
+        ClassPath cp = (ClassPath)cache[index];
         if (cp == null) {
             cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
@@ -1093,7 +1153,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     @NonNull
     private synchronized ClassPath getModuleSourcePath(final int type) {
         assert type >=0 && type <=1;
-        ClassPath cp = cache[22+type];
+        ClassPath cp = (ClassPath)cache[22+type];
         if (cp == null) {
             final SourceRoots roots = type == 0 ?
                     this.moduleSourceRoots :
@@ -1115,7 +1175,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     @NonNull
     private synchronized ClassPath getJava8ClassPath(int type) {
         assert type >= 0 && type <=1;
-        ClassPath cp = cache[24+type];
+        ClassPath cp = (ClassPath)cache[24+type];
         if (cp == null) {
             cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
@@ -1138,7 +1198,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         } else {
             return null;
         }        
-        ClassPath cp = cache[index];
+        ClassPath cp = (ClassPath)cache[index];
         if (cp == null) {
             if (type == 0 || type == 2) {
                 cp = ClassPathFactory.createClassPath(
@@ -1210,10 +1270,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     return l;
                 }
                 if (ClassPath.SOURCE.equals(type)) {
-                    ClassPath[] l = new ClassPath[2];
-                    l[0] = getSourcepath(0);
-                    l[1] = getSourcepath(1);
-                    return l;
+                    if (moduleSourceRoots == null && testModuleSourceRoots == null) {
+                        //Single module project
+                        ClassPath[] l = new ClassPath[2];
+                        l[0] = getSingleModuleSourcepath(0);
+                        l[1] = getSingleModuleSourcepath(1);
+                        return l;
+                    } else {
+                        //Either sources or tests are multi module
+                        final List<ClassPath> res = new ArrayList<>();
+                        if (moduleSourceRoots != null) {
+                            collectSourcePaths(getMultiModuleModel(0), res);
+                        }
+                        if (testModuleSourceRoots != null) {
+                            collectSourcePaths(getMultiModuleModel(1), res);
+                        }
+                        return res.toArray(new ClassPath[res.size()]);
+                    }
                 }
                 if (ClassPath.EXECUTE.equals(type)) {
                     ClassPath[] l = new ClassPath[2];
@@ -1262,7 +1335,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return getProcessorClasspath(0);
         }
         if (ClassPath.SOURCE.equals(type)) {
-            return getSourcepath(0);
+            return moduleSourceRoots == null ?
+                getSingleModuleSourcepath(0) :
+                null;   //TODO: What to return here?
         }
         if (ClassPath.EXECUTE.equals(type)) {
             return getRunTimeClasspath(0);
@@ -1387,6 +1462,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return new Filter(distJar);
             default:
                 throw new IllegalArgumentException(Integer.toString(type));
+        }
+    }
+
+    private void collectSourcePaths(
+            @NullAllowed final MultiModule model,
+            @NonNull final Collection<? super ClassPath> collector) {
+        if (model != null) {
+            for (String moduleName : model.getModuleNames()) {
+                final ClassPath scp = model.getModuleSources(moduleName);
+                if (scp != null) {
+                    collector.add(scp);
+                }
+            }
         }
     }
 

@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation2;
@@ -98,6 +99,36 @@ public final class QuerySupport {
             PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
         return createCompiledSourceForBinaryQuery(helper,
             evaluator, srcRoots, testRoots, new String[]{"build.classes.dir", "dist.jar"}, new String[]{"build.test.classes.dir"});
+    }
+
+    /**
+     * Creates a {@link SourceForBinaryQueryImplementation} for multi-module project.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory
+     * @param eval {@link PropertyEvaluator} used for obtaining project properties
+     * @param sourceModules the module roots
+     * @param srcRoots the source roots
+     * @param testModules the test module roots
+     * @param testRoots the test source roots
+     * @return the {@link SourceForBinaryQueryImplementation}
+     * @since 1.93
+     */
+    @NonNull
+    public static SourceForBinaryQueryImplementation createMultiModuleSourceForBinaryQuery(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, srcRoots);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleSourceForBinaryQueryImpl(
+                helper,
+                eval,
+                srcModel,
+                testModel,
+                new String[] {ProjectProperties.DIST_DIR, ProjectProperties.BUILD_MODULES_DIR},
+                new String[] {});
     }
 
     /**
@@ -387,7 +418,41 @@ public final class QuerySupport {
                 new String[] {ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.DIST_JAR},
                 new String[] {ProjectProperties.BUILD_TEST_CLASSES_DIR});
     }
-    
+
+
+    /**
+     * Creates a {@link BinaryForSourceQueryImplementation} for multi-module project.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory
+     * @param eval {@link PropertyEvaluator} used for obtaining project properties
+     * @param sourceModules the module roots
+     * @param srcRoots the source roots
+     * @param testModules the test module roots
+     * @param testRoots the test source roots
+     * @return the {@link BinaryForSourceQueryImplementation}
+     * @since 1.93
+     */
+    @NonNull
+    public static BinaryForSourceQueryImplementation createMultiModuleBinaryForSourceQuery(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, srcRoots);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleBinaryForSourceQueryImpl(
+                helper,
+                eval,
+                srcModel,
+                testModel,
+                new String[] {
+                    String.format("${%s}/${module.name}",ProjectProperties.BUILD_MODULES_DIR),   //NOI18N
+                    String.format("${%s}/${module.name}.jar",ProjectProperties.DIST_DIR)       //NOI18N
+                },
+                new String[] {});
+    }
+
     /**Create a new query to provide annotation processing configuration data.
      * 
      * @param helper project's AntProjectHelper

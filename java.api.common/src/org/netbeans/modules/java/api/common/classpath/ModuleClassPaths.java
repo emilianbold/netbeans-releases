@@ -78,6 +78,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -92,6 +93,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -181,6 +183,57 @@ final class ModuleClassPaths {
             @NullAllowed final Function<URL,Boolean> filter,
             @NonNull final String... props) {
         return new PropertyModulePath(projectDir, eval, filter, props);
+    }
+
+    @NonNull
+    static ClassPathImplementation createMultiModuleBinariesPath(
+            @NonNull final MultiModule model) {
+        return new MultiModuleBinaries(model);
+    }
+
+    private static final class MultiModuleBinaries extends BaseClassPathImplementation {
+        private final MultiModule model;
+
+        MultiModuleBinaries(
+                @NonNull final MultiModule model) {
+            Parameters.notNull("model", model); //NOI18N
+            this.model = model;
+        }
+
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = getCache();
+            if (res != null) {
+                return res;
+            }
+            res = createResources();
+            synchronized (this) {
+                assert res != null;
+                if (getCache() == null) {
+                    setCache(res);
+                } else {
+                    res = getCache();
+                }
+            }
+            return res;
+        }
+
+        private List<PathResourceImplementation> createResources() {
+            final Set<URL> binaries = new LinkedHashSet<>();
+            for (String moduleName : model.getModuleNames()) {
+                final ClassPath scp = model.getModuleSources(moduleName);
+                if (scp != null) {
+                    for (ClassPath.Entry e : scp.entries()) {
+                        Collections.addAll(
+                                binaries,
+                                BinaryForSourceQuery.findBinaryRoots(e.getURL()).getRoots());
+                    }
+                }
+            }
+            return binaries.stream()
+                    .map((url) -> org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
+                    .collect(Collectors.toList());
+        }
     }
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
