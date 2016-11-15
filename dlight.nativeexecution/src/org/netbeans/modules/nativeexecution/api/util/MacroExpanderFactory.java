@@ -75,12 +75,12 @@ public final class MacroExpanderFactory {
         return getExpander(execEnv, ExpanderStyle.DEFAULT_STYLE, connectIfNeed);
     }
 
-    public static synchronized MacroExpander getExpander(
+    public static MacroExpander getExpander(
             ExecutionEnvironment execEnv, ExpanderStyle style) {        
         return getExpander(execEnv, style, true);
     }
 
-    public static synchronized MacroExpander getExpander(
+    public static MacroExpander getExpander(
             ExecutionEnvironment execEnv, ExpanderStyle style, boolean connectIfNeed) {
 
         if (connectIfNeed && !HostInfoUtils.isHostInfoAvailable(execEnv)) {

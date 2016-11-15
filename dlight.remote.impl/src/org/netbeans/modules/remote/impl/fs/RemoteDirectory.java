@@ -488,8 +488,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         List<DirEntry> entries = storage.listValid();
         List<RemoteFileObjectBase> result = new ArrayList<>(entries.size());
         for (DirEntry entry : entries) {
-            String path = getPath() + '/' + entry.getName();
-            RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(path);
+            RemoteFileObjectBase fo = getCachedChild(entry.getName());
             if (fo != null) {
                 result.add(fo);
             }
@@ -940,7 +939,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                     fireRemoteFileObjectCreated(fo.getOwnerFileObject());
                 }
                 for (DirEntry entry : entriesToFireChanged) {
-                    RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+                    RemoteFileObjectBase fo = getCachedChild(entry.getName());
                     if (fo != null) {
                         RemoteFileObject ownerFileObject = fo.getOwnerFileObject();
                         fireFileChangedEvent(getListeners(), new FileEvent(ownerFileObject, ownerFileObject, false, ownerFileObject.lastModified().getTime()));
@@ -1155,13 +1154,19 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         return storage;
     }
 
+    private RemoteFileObjectBase getCachedChild(String name) {
+        String childAbsPath = getPath() + '/' + name;
+        RemoteFileObjectBase child = getFileSystem().getFactory().getCachedFileObject(childAbsPath);
+        return child;
+    }
+
     private boolean isPendingDelivery(DirEntry entry) {
         String name = entry.getName();
         if (name.startsWith("#") && name.endsWith("#")) { // NOI18N
             name = name.substring(1, name.length() - 1);
-            RemoteFileObject child = getFileObject(name, null);
-            if (child != null && child.getImplementor() instanceof RemotePlainFile) {
-                RemotePlainFile pf = (RemotePlainFile) child.getImplementor();
+            RemoteFileObjectBase child = getCachedChild(name);
+            if (child != null && child instanceof RemotePlainFile) {
+                RemotePlainFile pf = (RemotePlainFile) child;
                 if (pf.isPendingRemoteDelivery()) {
                     return true;
                 }
@@ -1337,7 +1342,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 fireRemoteFileObjectCreated(fo);
             }
             for (DirEntry entry : entriesToFireChanged) {
-                RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+                RemoteFileObjectBase fo = getCachedChild(entry.getName());
                 if (fo != null) {
                     if (fo.isPendingRemoteDelivery()) {
                         RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
@@ -1368,7 +1373,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     private void fireReadOnlyChangedEventsIfNeed(List<DirEntry> entriesToFireChangedRO) {
         for (DirEntry entry : entriesToFireChangedRO) {
-            RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+            RemoteFileObjectBase fo = getCachedChild(entry.getName());
             if (fo != null) {
                 if (fo.isPendingRemoteDelivery()) {
                     RemoteLogger.getInstance().log(Level.FINE, "Skipping change r/o event for pending file {0}", fo);
