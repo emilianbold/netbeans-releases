@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,46 +36,15 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.coverage;
+package org.netbeans.modules.php.editor.parser;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.php.phpunit.commands.PhpUnit;
-import org.netbeans.modules.php.spi.testing.coverage.Coverage;
+public final class GSFPHPParserTestUtil {
 
-public class CoverageProvider {
-
-    private static final Logger LOGGER = Logger.getLogger(CoverageProvider.class.getName());
-
-
-    public boolean loggerFileExists() {
-        return PhpUnit.COVERAGE_LOG.isFile();
+    private GSFPHPParserTestUtil() {
     }
 
-    @CheckForNull
-    public Coverage getCoverage() {
-        CoverageImpl coverage = new CoverageImpl();
-        try {
-            PhpUnitCoverageLogParser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.COVERAGE_LOG), "UTF-8")), coverage); // NOI18N
-        } catch (FileNotFoundException ex) {
-            assert false;
-            LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
-                    + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
-            return null;
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return null;
-        }
-        return coverage;
+    public static void setUnitTestCaretPosition(int caretPosition) {
+        GSFPHPParser.setUnitTestCaretPosition(caretPosition);
     }
-
 }

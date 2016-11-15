@@ -553,4 +553,9 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/templates/issue262205_04.php", options, true);
     }
 
+    public void testIssue268920() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue268920.php", options, true);
+    }
+
 }
