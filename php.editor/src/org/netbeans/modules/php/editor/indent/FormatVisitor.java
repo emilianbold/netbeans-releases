@@ -466,7 +466,7 @@ public class FormatVisitor extends DefaultVisitor {
 
             boolean indentationIncluded = false;
             while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)
-                    || isComment(ts.token())) {
+                    || (lastIndex < ts.index() && isComment(ts.token()))) { // #268920 check lastIndex to prevent an infinite loop
                 if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !indentationIncluded) {
                     formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
                     indentationIncluded = true;
