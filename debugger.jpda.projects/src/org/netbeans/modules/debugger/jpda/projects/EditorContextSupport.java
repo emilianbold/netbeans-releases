@@ -122,6 +122,7 @@ public final class EditorContextSupport {
     private static final RequestProcessor scanningProcessor = new RequestProcessor("Debugger Context Scanning", 1);   // NOI18N
     
     private static final PreferredCCParser preferredCCParser = new PreferredCCParser();
+    private static final FieldLNCache fieldLNCache = new FieldLNCache();
 
     private EditorContextSupport() {}
     
@@ -141,8 +142,8 @@ public final class EditorContextSupport {
     /**
      * Returns line number of given field in given class.
      *
-     * @param url the url of file the class is deined in
-     * @param className the name of class (or innerclass) the field is
+     * @param url the url of file the class is defined in
+     * @param className the name of class (or inner class) the field is
      *                  defined in
      * @param fieldName the name of field
      *
@@ -153,6 +154,10 @@ public final class EditorContextSupport {
         final String className,
         final String fieldName
     ) {
+        Integer line = fieldLNCache.getLine(url, className, fieldName);
+        if (line != null) {
+            return line;
+        }
         FileObject file;
         try {
             file = URLMapper.findFileObject (new URL (url));
@@ -164,7 +169,9 @@ public final class EditorContextSupport {
             return -1;
         }
         try {
-            return fi.get();
+            line = fi.get();
+            fieldLNCache.putLine(url, className, fieldName, file, line);
+            return line;
         } catch (InterruptedException ex) {
             return -1;
         } catch (ExecutionException ex) {
@@ -184,6 +191,11 @@ public final class EditorContextSupport {
         final String className,
         final String fieldName
     ) {
+        final String url = fo.toURL().toExternalForm();
+        Integer line = fieldLNCache.getLine(url, className, fieldName);
+        if (line != null) {
+            return new DoneFuture<>(line);
+        }
         JavaSource js = JavaSource.forFileObject(fo);
         if (js == null) {
             return null;
@@ -224,6 +236,7 @@ public final class EditorContextSupport {
                             pos++;
                         }
                         result[0] = (int) lineMap.getLineNumber(pos) + 1;
+                        fieldLNCache.putLine(url, className, fieldName, fo, result[0]);
                         return ;
                     }
                     List classMemberElements = elms.getAllMembers(classElement);
@@ -241,6 +254,7 @@ public final class EditorContextSupport {
                                     continue;
                                 }
                                 result[0] = (int) lineMap.getLineNumber(pos);
+                                fieldLNCache.putLine(url, className, fieldName, fo, result[0]);
                                 //return elms.getSourcePosition(elm).getLine();
                             }
                         }

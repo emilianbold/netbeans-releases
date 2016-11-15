@@ -60,7 +60,12 @@ public class VMCache {
 
     private final JPDADebuggerImpl debugger;
     private final Map<String, ReferenceType> cachedClasses = new HashMap<>();
-    private final Map<CEncl, ReferenceType> enclosingTypes = new LinkedHashMap<>();
+    private final Map<CEncl, ReferenceType> enclosingTypes = new LinkedHashMap<CEncl, ReferenceType>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<CEncl, ReferenceType> eldest) {
+            return size() > MAX_ENCLOSING_TYPES;
+        }
+    };
 
     public VMCache(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
@@ -128,9 +133,6 @@ public class VMCache {
     void setEnclosingType(ReferenceType type, String name, ReferenceType enclosingType) {
         CEncl classEnclosing = new CEncl(type, name);
         synchronized (enclosingTypes) {
-            while (enclosingTypes.size() >= (MAX_ENCLOSING_TYPES - 1)) {
-                enclosingTypes.entrySet().iterator().remove();
-            }
             enclosingTypes.put(classEnclosing, enclosingType);
         }
     }
