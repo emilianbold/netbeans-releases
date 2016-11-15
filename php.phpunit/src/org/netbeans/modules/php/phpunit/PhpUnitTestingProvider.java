@@ -44,6 +44,8 @@ package org.netbeans.modules.php.phpunit;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.editor.PhpType;
@@ -74,6 +76,7 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
 
     public static final String IDENTIFIER = "PhpUnit"; // NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(PhpUnitTestingProvider.class.getName());
     private static final PhpUnitTestingProvider INSTANCE = new PhpUnitTestingProvider();
 
 
@@ -124,11 +127,25 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
         return new TestCreator(phpModule).createTests(files);
     }
 
+    @NbBundle.Messages({
+        "PhpUnitTestingProvider.coverage.log.error.1=Coverage log not found!",
+        "PhpUnitTestingProvider.coverage.log.error.2=Perhaps you need to add \"whitelist\" to your XML configuration?",
+    })
     @Override
     public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
         new TestRunner(phpModule).runTests(runInfo, testSession);
         if (runInfo.isCoverageEnabled()) {
-            testSession.setCoverage(new CoverageProvider().getCoverage());
+            CoverageProvider coverageProvider = new CoverageProvider();
+            if (!coverageProvider.loggerFileExists()) {
+                // perhaps PHPUnit 5?
+                LOGGER.log(Level.INFO, "Coverage log {0} not found for project {1}", new Object[] {PhpUnit.COVERAGE_LOG, phpModule.getDisplayName()});
+                testSession.printMessage(Bundle.PhpUnitTestingProvider_coverage_log_error_1(), true);
+                testSession.printMessage(Bundle.PhpUnitTestingProvider_coverage_log_error_2(), true);
+                testSession.printMessage("", false);
+                testSession.setCoverage(null);
+            } else {
+                testSession.setCoverage(coverageProvider.getCoverage());
+            }
         }
     }
 
