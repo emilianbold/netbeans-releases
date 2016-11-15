@@ -1,0 +1,14 @@
+<Unnamed test>
+IDENTIFIER      "console", la=1, st=LexerState{canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{canFollowLiteral=true, canFollowKeyword=false, templateBalances=[], jsxBalances=[]}
+IDENTIFIER      "log", la=1, st=LexerState{canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+BRACKET_LEFT_PAREN  "(", st=LexerState{canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+NUMBER          "4", la=1, st=LexerState{canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+EOL             "\n", st=LexerState{canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+OPERATOR_LOWER  "<", la=1, st=LexerState{canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+NUMBER          "5", la=1, st=LexerState{canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{canFollowLiteral=false, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+OPERATOR_SEMICOLON  ";", st=LexerState{canFollowLiteral=true, canFollowKeyword=true, templateBalances=[], jsxBalances=[]}
+----- EOF -----
+

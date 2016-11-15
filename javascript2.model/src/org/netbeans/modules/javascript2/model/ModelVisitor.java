@@ -307,10 +307,6 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             // prepare variables that are available in the current scope for later usage
             DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
             Collection<? extends JsObject> variables = ModelUtils.getVariables(scope);
-            Hashtable<String, JsObject> nameToVariable= new Hashtable<String, JsObject>();
-            for (JsObject variable : variables) {
-                nameToVariable.put(variable.getName(), variable);
-            }
                 
             if (rhs instanceof ObjectNode) {
                 // case {a, b} = {a:1, b:2}
@@ -330,7 +326,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 rhs.accept(this);
                 if (rhs instanceof IdentNode) {
                     // we will try to find the right object literal        
-                    rObject = (JsObjectImpl)nameToVariable.get(((IdentNode)rhs).getName());
+                    rObject = (JsObjectImpl)ModelUtils.getScopeVariable(scope, ((IdentNode)rhs).getName());
                 }
             }
             if (rObject != null) {
@@ -352,7 +348,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                         }
                     }
                     if (variableName != null) {
-                        JsObject variable = nameToVariable.get(variableName);
+                        JsObject variable = ModelUtils.getScopeVariable(scope, variableName);
                         JsObject rProperty = rObject.getProperty(lPropertyNode.getKeyName());
                         if (variable != null && rProperty != null) {
                             // copy types from the properties
@@ -2009,13 +2005,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                             }
                         } else {
                             if (fqName.size() == 1) {
-                                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
-                                for (JsObject variable : variables) {
-                                    if (variable.getName().equals(name.getName())) {
-                                        alreadyThere = variable;
-                                        break;
-                                    }
-                                }
+                                alreadyThere = ModelUtils.getScopeVariable(modelBuilder.getCurrentDeclarationScope(), name.getName());
                             }
                             if (alreadyThere == null) {
                                 alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
@@ -2101,14 +2091,12 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                     if (iKey.getName().equals(iValue.getName()) && iKey.getStart() == iValue.getStart() && iKey.getFinish() == iValue.getFinish()) {
                         // it's object initializer shorthand property names
                         // (ES6) var o = { a, b, c }; The variables a, b and c has to exists and properties are references to the orig var
-                        Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
-                        for (JsObject variable : variables) {
-                            if (name.getName().equals(variable.getName())) {
-                                parent.addProperty(variable.getName(), variable);
-                                variable.addOccurrence(name.getOffsetRange());
-                                // don't continue. 
-                                return false;
-                            }
+                        JsObject variable = ModelUtils.getScopeVariable(modelBuilder.getCurrentDeclarationScope(), name.getName());
+                        if (variable != null) {
+                            parent.addProperty(variable.getName(), variable);
+                            variable.addOccurrence(name.getOffsetRange());
+                            // don't continue. 
+                            return false;
                         }
                     }
                 }
@@ -2774,26 +2762,22 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         if (!ModelUtils.THIS.equals(fqn.get(0).getName())) { 
             if (modelBuilder.getCurrentWith() == null) {
                 DeclarationScopeImpl currentDS = modelBuilder.getCurrentDeclarationScope();
-                Collection<? extends JsObject> variables = ModelUtils.getVariables(currentDS);
-                for(JsObject variable : variables) {
-                    if (variable.getName().equals(name.getName()) ) {
-                        if (variable instanceof ParameterObject || variable.getModifiers().contains(Modifier.PRIVATE)) {
-                            object = (JsObjectImpl)variable;
-                            break;
-                        }
+                JsObject variable = ModelUtils.getScopeVariable(currentDS, name.getName());
+                if (variable != null) {
+                    if (variable instanceof ParameterObject || variable.getModifiers().contains(Modifier.PRIVATE)) {
+                        object = (JsObjectImpl) variable;
+                    } else {
                         DeclarationScope variableDS = ModelUtils.getDeclarationScope(variable);
                         if (!variableDS.equals(currentDS)) {
-                            object = (JsObjectImpl)variable;
-                            break;
+                            object = (JsObjectImpl) variable;
                         } else if (currentDS.getProperty(name.getName()) != null) {
                             Node lastNode = getPreviousFromPath(2);
                             if (lastNode instanceof BinaryNode) {
-                                BinaryNode bNode = (BinaryNode)lastNode;
+                                BinaryNode bNode = (BinaryNode) lastNode;
                                 if (bNode.lhs().equals(accessNode)) {
                                     object = (JsObjectImpl) variable;
                                 }
                             }
-                            break;
                         }
                     }
                 }
@@ -3096,13 +3080,10 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                     found = true;
                     jsProperty.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
                 } else {
-                    Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
-                    for (JsObject jsObject : variables) {
-                        if (valueName.equals(jsObject.getName())) {
-                            jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                            found = true;
-                            break;
-                        }
+                    JsObject jsObject = ModelUtils.getScopeVariable(scope.getParentScope(), valueName);
+                    if (jsObject != null) {
+                        jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                        found = true;
                     }
                 }
                 if (!found) {
