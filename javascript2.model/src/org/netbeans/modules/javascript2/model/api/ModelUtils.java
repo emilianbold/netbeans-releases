@@ -1824,7 +1824,7 @@ public class ModelUtils {
      * @param processedObjects list of already processed object
      * @return true if the object full qualified name or his reference full qualified name is in the processedObjects list.
      */
-    public static boolean wasProcessed (JsObject object, List<String> processedObjects) {
+    public static boolean wasProcessed (JsObject object, Set<String> processedObjects) {
         if (processedObjects.contains(object.getFullyQualifiedName())) {
             return true;
         } else if (object instanceof JsReference) {
