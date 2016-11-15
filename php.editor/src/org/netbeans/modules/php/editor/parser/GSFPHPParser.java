@@ -87,6 +87,13 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private ParserResult result = null;
     private boolean projectPropertiesListenerAdded = false;
 
+    // it's for testing
+    private static int unitTestCaretPosition = -1;
+
+    static void setUnitTestCaretPosition(int unitTestCaretPosition) {
+        GSFPHPParser.unitTestCaretPosition = unitTestCaretPosition;
+    }
+
     static {
         LOGGER.log(Level.INFO, "Parsing of big PHP files enabled: {0} (max size: {1})", new Object[] {PARSE_BIG_FILES, BIG_FILE_SIZE});
     }
@@ -163,6 +170,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         aspTags = languageProperties.areAspTagsEnabled();
         try {
             int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
+            if (caretOffset < 0 && unitTestCaretPosition >= 0) {
+                caretOffset = unitTestCaretPosition;
+            }
             LOGGER.log(Level.FINE, "caretOffset: {0}", caretOffset); //NOI18N
             Context context = new Context(snapshot, caretOffset);
             result = parseBuffer(context, Sanitize.NONE, null);
