@@ -14,16 +14,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.lang.model.element.ModuleElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
@@ -81,7 +76,7 @@ final class DependencyCalculator {
                                 null;
                         if (me != null) {
                             final Map<String, ModuleNode> mods = new LinkedHashMap<>();
-                            final Collection<DependencyEdge> deps = new ArrayList<>();    
+                            final Collection<DependencyEdge> deps = new HashSet<>();    
                             String name = me.getQualifiedName().toString();
                             ClasspathInfo classpathInfo = cc.getClasspathInfo();
                             ModuleNode node = new ModuleNode(name, me.isUnnamed(), isJDK(me, classpathInfo), moduleInfo);
@@ -109,7 +104,7 @@ final class DependencyCalculator {
             d.node.setParent(meNode);
             deps.add(new DependencyEdge(meNode, d.node, d.reqD.isPublic(), false));
         }
-        deps.addAll(collectTransitiveDependencies(new LinkedList<>(deps)));
+        deps.addAll(collectTransitiveDependencies(new HashSet<>(deps)));
     }
     
     private Collection<Dependency> collect(  
@@ -118,7 +113,7 @@ final class DependencyCalculator {
         @NonNull final Collection<DependencyEdge> deps,
         ClasspathInfo classpathInfo) {
         List<Dependency> dependencies = new ArrayList<>();
-        if (!me.isUnnamed()) {            
+        if (!me.isUnnamed()) {
             for (ModuleElement.Directive d : me.getDirectives()) {
                 if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                     final ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;
@@ -161,7 +156,7 @@ final class DependencyCalculator {
         }
         return isJDK;
     }
-
+    
     Collection<DependencyEdge> collectTransitiveDependencies(Collection<DependencyEdge> deps) {
         Map<ModuleNode, List<ModuleNode>> publicEdges = deps.stream()
                 .filter((e) -> e.isPublic())
@@ -170,26 +165,26 @@ final class DependencyCalculator {
     
         Collection<DependencyEdge> transitiveEdges = new HashSet<>();
         for (DependencyEdge dep : deps) {
-            List<ModuleNode> transTargets = publicEdges.get(dep.getTarget());
-            if(transTargets != null) {
+            List<ModuleNode> targets = publicEdges.get(dep.getTarget());
+            if(targets != null) {
                 ModuleNode source = dep.getSource();
+                transitiveEdges.addAll(toDependencyEdges(source, targets));
+                Collection<ModuleNode> transTargets = new HashSet<>();
+                collectTransTargets(targets, publicEdges, transTargets);
                 transitiveEdges.addAll(toDependencyEdges(source, transTargets));
-                transitiveEdges.addAll(toDependencyEdges(source, collectTransTargets(transTargets, publicEdges)));
             }
         }
         return transitiveEdges;
     }
 
-    private Collection<ModuleNode> collectTransTargets(List<ModuleNode> sources, Map<ModuleNode, List<ModuleNode>> publicEdges) {
-        Collection<ModuleNode> ret = new HashSet<>();
+    private void collectTransTargets(List<ModuleNode> sources, Map<ModuleNode, List<ModuleNode>> publicEdges, Collection<ModuleNode> transTargets) {
         for (ModuleNode source : sources) {
             List<ModuleNode> targets = publicEdges.get(source);
-            if(targets != null) {
-                ret.addAll(targets);
-                ret.addAll(collectTransTargets(targets, publicEdges));
+            if(targets != null && !transTargets.contains(source)) {
+                transTargets.addAll(targets);
+                collectTransTargets(targets, publicEdges, transTargets);
             }
-        }
-        return ret;
+        }       
     }
 
     private static Collection<DependencyEdge> toDependencyEdges(ModuleNode source, Collection<ModuleNode> targets) {
