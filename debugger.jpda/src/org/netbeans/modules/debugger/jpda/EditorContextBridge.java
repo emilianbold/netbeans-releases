@@ -118,37 +118,6 @@ public class EditorContextBridge {
     }
      */
 
-    /**
-     * Parse the expression into AST tree and traverse it via the provided visitor.
-     *
-     * @return the visitor value or <code>null</code>.
-     */
-    public static <R,D> R parseExpression(String expression, String url, final int line,
-                                          TreePathScanner<R,D> visitor, D context,
-                                          SourcePathProvider sp) throws InvalidExpressionException {
-
-        // TODO: return getContext ().parseExpression ();
-        try {
-            return (R) getContext ().getClass().getMethod(
-                    "parseExpression",
-                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class, SourcePathProvider.class }).
-                        invoke(getContext(), new Object[] { expression, url, line, visitor, context, sp });
-        } catch (java.lang.reflect.InvocationTargetException itex) {
-            Throwable tex = itex.getTargetException();
-            if (tex instanceof RuntimeException) {
-                throw (RuntimeException) tex;
-            } else if (tex instanceof InvalidExpressionException) {
-                throw ((InvalidExpressionException) tex);
-            } else {
-                Exceptions.printStackTrace(tex);
-                return null;
-            }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-    }
-
     public static <R,D> R interpretOrCompileCode(final String code, String url, final int line,
                                                  final TreePathScanner<Boolean,D> canInterpret,
                                                  final TreePathScanner<R,D> interpreter,
@@ -399,15 +368,21 @@ public class EditorContextBridge {
             return ca;
         }
 
-        public <R,D> R parseExpression(String expression, String url, final int line,
-                                              TreePathScanner<R,D> visitor, D context,
-                                              SourcePathProvider sp) {
+        public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+                                              final TreePathScanner<Boolean,D> canInterpret,
+                                              final TreePathScanner<R,D> interpreter,
+                                              final D context, final boolean staticContext,
+                                              final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
+                                              final SourcePathProvider sp) throws InvalidExpressionException {
             R ret = null;
             try {
                 ret = (R) cp1.getClass().getMethod(
-                    "parseExpression",
-                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class, SourcePathProvider.class }).
-                        invoke(cp1, new Object[] { expression, url, line, visitor, context, sp });
+                    "interpretOrCompileCode",
+                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class,
+                                  TreePathScanner.class, Object.class, Boolean.TYPE, Function.class,
+                                  SourcePathProvider.class }).
+                        invoke(cp1, new Object[] { code, url, line, canInterpret, interpreter,
+                                                   context, staticContext, compiledClassHandler, sp });
             } catch (java.lang.reflect.InvocationTargetException itex) {
                 Throwable tex = itex.getTargetException();
                 if (tex instanceof RuntimeException) {
@@ -421,9 +396,12 @@ public class EditorContextBridge {
             if (ret == null) {
                 try {
                     ret = (R) cp2.getClass().getMethod(
-                    "parseExpression",
-                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class, SourcePathProvider.class }).
-                        invoke(cp2, new Object[] { expression, url, line, visitor, context, sp });
+                    "interpretOrCompileCode",
+                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class,
+                                  TreePathScanner.class, Object.class, Boolean.TYPE, Function.class,
+                                  SourcePathProvider.class }).
+                        invoke(cp2, new Object[] { code, url, line, canInterpret, interpreter,
+                                                   context, staticContext, compiledClassHandler, sp });
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable tex = itex.getTargetException();
                     if (tex instanceof RuntimeException) {

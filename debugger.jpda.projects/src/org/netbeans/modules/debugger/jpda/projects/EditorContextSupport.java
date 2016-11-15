@@ -1448,15 +1448,6 @@ public final class EditorContextSupport {
         return preferredCCParser.getImports(url);
     }
     
-    public static <R,D> R parseExpression(final String expression,
-                                          String url,
-                                          final int line,
-                                          final TreePathScanner<R,D> visitor,
-                                          final D context,
-                                          final SourcePathProvider sp) throws InvalidExpressionException {
-        return preferredCCParser.parseExpression(expression, url, line, visitor, context, sp);
-    }
-    
     public static <R,D> R interpretOrCompileCode(final String code, String url, final int line,
                                                  final TreePathScanner<Boolean,D> canInterpret,
                                                  final TreePathScanner<R,D> interpreter,
