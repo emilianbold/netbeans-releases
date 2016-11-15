@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -111,13 +112,13 @@ public class JsStructureScanner implements StructureScanner {
         model.resolve();
         JsObject globalObject = model.getGlobalObject();
         final CancelSupport cancel = CancelSupport.getDefault();
-        getEmbededItems(result, globalObject, items, new ArrayList<String>(), cancel);
+        getEmbededItems(result, globalObject, items, new HashSet<String>(), cancel);
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Creating structure took {0} ms", new Object[]{(end - start)});
         return items;
     }
 
-    private List<StructureItem> getEmbededItems(ParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects, CancelSupport cancel) {
+    private List<StructureItem> getEmbededItems(ParserResult result, JsObject jsObject, List<StructureItem> collectedItems, Set<String> processedObjects, CancelSupport cancel) {
         if (ModelUtils.wasProcessed(jsObject, processedObjects)) {
             return collectedItems;
         }
