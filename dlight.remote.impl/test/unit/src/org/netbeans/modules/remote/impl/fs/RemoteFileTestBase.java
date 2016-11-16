@@ -60,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -105,6 +106,17 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         this.execEnv = execEnv;
     }
     
+    protected void reconnect() throws Exception {
+        char[] paswd = PasswordManager.getInstance().getPassword(execEnv);
+        ConnectionManager.getInstance().disconnect(execEnv);
+        sleep(250);
+        assertFalse("Failure disconnecting from " + execEnv, ConnectionManager.getInstance().isConnectedTo(execEnv));
+        sleep(250);
+        PasswordManager.getInstance().storePassword(execEnv, paswd, true);
+        ConnectionManager.getInstance().connectTo(execEnv);
+        assertTrue("Failure reconnecting to " + execEnv, ConnectionManager.getInstance().isConnectedTo(execEnv));
+    }
+
     @Override
     protected int timeOut() {
         return super.timeOut();
