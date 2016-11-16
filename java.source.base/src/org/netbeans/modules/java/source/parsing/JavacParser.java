@@ -992,7 +992,8 @@ public class JavacParser extends Parser {
         final List<String> res = new ArrayList<>();
         for (int i = 0; i < options.size(); i++) {
             String option = options.get(i);
-            if (option.startsWith("-Xmodule:")) {     //NOI18N
+            if (option.startsWith("-Xmodule:") ||   //NOI18N
+                option.equals("-parameters")) {     //NOI18N
                 res.add(option);
             } else if (i+1 < options.size() && (
                     option.equals("--add-modules") ||   //NOI18N
