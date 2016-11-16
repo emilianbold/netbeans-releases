@@ -304,6 +304,14 @@ public class RemoteVcsSupportUtil {
         }
     }
 
+    public static void deleteOnExit(FileSystem fs, String path) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            final RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            rfs.deleteOnExit(path);
+        }
+    }
+
     public static void deleteExternally(FileSystem fs, String path) {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
         if (fs instanceof RemoteFileSystem) {

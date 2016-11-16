@@ -121,7 +121,7 @@ public final class VCSFileProxySupport {
     }
 
     public static void deleteOnExit(VCSFileProxy file) {
-        //TODO: implemetn it!
+        RemoteVcsSupport.deleteOnExit(file);
     }
 
     /**

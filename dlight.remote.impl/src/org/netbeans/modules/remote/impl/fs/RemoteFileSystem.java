@@ -540,7 +540,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                     FileObject fo = parent.createData(tmpName);
                     if (fo != null && fo.isData() && fo.isValid()) {
                         if (deleteOnExit) {
-                            addDeleteOnExit(fo.getPath());
+                            deleteOnExit(fo.getPath());
                         }
                         return fo;
                     }
@@ -949,7 +949,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return status;
     }
     
-    private void addDeleteOnExit(String path) {
+    public void deleteOnExit(String path) {
         synchronized(deleteOnExitFiles) {
             if (deleteOnExitFiles.isEmpty()) {
                 Runtime.getRuntime().addShutdownHook(new Thread() {
