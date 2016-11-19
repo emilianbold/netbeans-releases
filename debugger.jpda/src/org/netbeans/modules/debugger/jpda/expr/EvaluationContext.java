@@ -57,7 +57,6 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -106,7 +105,6 @@ public class EvaluationContext {
     private final VMCache vmCache;
 
     private Trees trees;
-    private CompilationUnitTree compilationUnitTree;
     private TreePath treePath;
 
     private Map<Tree, VariableInfo> variables = new HashMap<Tree, VariableInfo>();
@@ -230,14 +228,6 @@ public class EvaluationContext {
 
     Trees getTrees() {
         return trees;
-    }
-
-    public void setCompilationUnit(CompilationUnitTree compilationUnitTree) {
-        this.compilationUnitTree = compilationUnitTree;
-    }
-
-    CompilationUnitTree getCompilationUnit() {
-        return compilationUnitTree;
     }
 
     public void setTreePath(TreePath treePath) {

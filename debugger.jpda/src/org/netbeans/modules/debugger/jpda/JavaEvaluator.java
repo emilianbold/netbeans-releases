@@ -51,6 +51,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +62,7 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.expr.CompilationInfoHolder;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
 import org.netbeans.modules.debugger.jpda.expr.JavaExpression;
@@ -101,14 +103,21 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
         vmCache = new VMCache(debugger);
     }
 
+    @Override
     public Result evaluate(Expression<JavaExpression> expression, final Context context) throws InvalidExpressionException {
+        return evaluate(expression, context, null);
+    }
+
+    public Result evaluate(Expression<JavaExpression> expression, Context context,
+                           CompilationInfoHolder ciHolder) throws InvalidExpressionException {
         JavaExpression expr = expression.getPreprocessedObject();
         if (expr == null) {
             expr = JavaExpression.parse(expression.getExpression(), JavaExpression.LANGUAGE_JAVA_1_5);
             expression.setPreprocessedObject(expr);
         }
         Value v = evaluateIn(expr, context.getCallStackFrame(), context.getStackFrame(), context.getStackDepth(),
-                             context.getContextObject(), debugger.methodCallsUnsupportedExc == null,
+                             context.getContextObject(), ciHolder,
+                             debugger.methodCallsUnsupportedExc == null,
                              new Runnable() { public void run() { context.notifyMethodToBeInvoked(); } });
         return new Result(v);
     }
@@ -126,7 +135,8 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
     private Value evaluateIn (org.netbeans.modules.debugger.jpda.expr.JavaExpression expression,
                               CallStackFrame csf,
                               final StackFrame frame, int frameDepth,
-                              ObjectReference var, boolean canInvokeMethods,
+                              ObjectReference var, CompilationInfoHolder ciHolder,
+                              boolean canInvokeMethods,
                               Runnable methodInvokePreprocessor) throws InvalidExpressionException {
         // should be already synchronized on the frame's thread
         if (csf == null)
@@ -134,17 +144,10 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                     (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
 
         // TODO: get imports from the source file
-        List<String> imports = new ArrayList<String>();
-        List<String> staticImports = new ArrayList<String>();
-        imports.add ("java.lang.*");    // NOI18N
         CallStackFrameImpl csfi = (CallStackFrameImpl) csf;
+        List<String> imports = new ImportsLazyList(csfi);
+        List<String> staticImports = new ArrayList<String>();
         try {
-            String[] frameImports = EditorContextBridge.getContext().getImports (
-                    debugger.getEngineContext ().getURL (csfi.getStackFrame(), "Java") // NOI18N
-            );
-            if (frameImports != null) {
-                imports.addAll (Arrays.asList (frameImports));
-            }
             JPDAThreadImpl trImpl = (JPDAThreadImpl) csf.getThread();
             EvaluationContext context;
             TreeEvaluator evaluator =
@@ -160,7 +163,8 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                         methodInvokePreprocessor,
                         debugger,
                         vmCache
-                    )
+                    ),
+                    ciHolder
                 );
             try {
                 Value v = evaluator.evaluate ();
@@ -213,6 +217,50 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
      */
     public EvaluationContext.VariableInfo getValueContainer(Value v) {
         return valueContainers.get(v);
+    }
+    
+    private class ImportsLazyList extends AbstractList<String> {
+        
+        private final CallStackFrameImpl csfi;
+        private List<String> imports;
+        
+        ImportsLazyList(CallStackFrameImpl csfi) {
+            this.csfi = csfi;
+        }
+        
+        private synchronized List<String> getImports() {
+            if (imports == null) {
+                imports = createImports();
+            }
+            return imports;
+        }
+
+        private List<String> createImports() {
+            List<String> im = new ArrayList<String>();
+            im.add ("java.lang.*");    // NOI18N
+            try {
+                String[] frameImports = EditorContextBridge.getContext().getImports (
+                        debugger.getEngineContext ().getURL (csfi.getStackFrame(), "Java") // NOI18N
+                );
+                if (frameImports != null) {
+                    im.addAll (Arrays.asList (frameImports));
+                }
+            } catch (InternalExceptionWrapper | InvalidStackFrameExceptionWrapper |
+                     ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
+            }
+            return im;
+        }
+        
+        @Override
+        public String get(int index) {
+            return getImports().get(index);
+        }
+
+        @Override
+        public int size() {
+            return getImports().size();
+        }
+
     }
 
 }

@@ -95,6 +95,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.remote.RemoteClass;
 import org.netbeans.modules.debugger.jpda.remote.RemoteServices;
+import org.netbeans.spi.debugger.jpda.Evaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -107,14 +108,17 @@ import org.openide.util.Pair;
  */
 public class TreeEvaluator {
 
-    private JavaExpression expression;
-    private EvaluationContext evaluationContext;
+    private final JavaExpression expression;
+    private final EvaluationContext evaluationContext;
+    private final CompilationInfoHolder ciHolder;
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
 
-    TreeEvaluator(JavaExpression expression, EvaluationContext context) {
+    TreeEvaluator(JavaExpression expression, EvaluationContext context,
+                  CompilationInfoHolder ciHolder) {
         this.expression = expression;
         this.evaluationContext = context;
+        this.ciHolder = ciHolder;
     }
 
     /**
@@ -195,8 +199,12 @@ public class TreeEvaluator {
         //if (exprTree == null) return null;
         Mirror mirror = null;
         Map<String, ObjectVariable> uploadedClasses = new HashMap<>();
+        Evaluator.Expression<Object> evex = new Evaluator.Expression<>(expression.getExpression());
+        if (ciHolder != null) {
+            evex.setPreprocessedObject(ciHolder.getParsedData());
+        }
         try {
-            mirror = EditorContextBridge.interpretOrCompileCode(expression.getExpression(), url, line,
+            mirror = EditorContextBridge.interpretOrCompileCode(evex, url, line,
                                                                 new CanInterpretVisitor(),
                                                                 new EvaluatorVisitor(expression), evaluationContext,
                                                                 evaluationContext.getContextObject() == null,
@@ -258,9 +266,10 @@ public class TreeEvaluator {
             for (ObjectVariable var : uploadedClasses.values()) {
                 evaluationContext.getDebugger().markObject(var, null);
             }
+            if (ciHolder != null) {
+                ciHolder.setParsedData(evex.getPreprocessedObject());
+            }
         }
-        //return (Value) rootNode.jjtAccept(this, null);
-        //return null;
     }
 
     private int indexOf(List<StackFrame> frames, StackFrame frame) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper {

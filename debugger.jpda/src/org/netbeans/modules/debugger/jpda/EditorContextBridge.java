@@ -60,6 +60,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.jpda.Evaluator.Expression;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
@@ -118,7 +119,8 @@ public class EditorContextBridge {
     }
      */
 
-    public static <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+    public static <R,D> R interpretOrCompileCode(final Expression<Object> expression,
+                                                 final String url, final int line,
                                                  final TreePathScanner<Boolean,D> canInterpret,
                                                  final TreePathScanner<R,D> interpreter,
                                                  final D context, final boolean staticContext,
@@ -127,11 +129,11 @@ public class EditorContextBridge {
         try {
             return (R) getContext ().getClass().getMethod(
                     "interpretOrCompileCode",
-                    new Class[] { String.class, String.class, Integer.TYPE,
+                    new Class[] { Expression.class, String.class, Integer.TYPE,
                                   TreePathScanner.class, TreePathScanner.class,
                                   Object.class, Boolean.TYPE, Function.class,
                                   SourcePathProvider.class }).
-                        invoke(getContext(), new Object[] { code, url, line,
+                        invoke(getContext(), new Object[] { expression, url, line,
                                                             canInterpret,
                                                             interpreter,
                                                             context, staticContext,
@@ -368,7 +370,8 @@ public class EditorContextBridge {
             return ca;
         }
 
-        public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+        public <R,D> R interpretOrCompileCode(final Expression<Object> expression,
+                                              final String url, final int line,
                                               final TreePathScanner<Boolean,D> canInterpret,
                                               final TreePathScanner<R,D> interpreter,
                                               final D context, final boolean staticContext,
@@ -378,10 +381,10 @@ public class EditorContextBridge {
             try {
                 ret = (R) cp1.getClass().getMethod(
                     "interpretOrCompileCode",
-                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class,
+                    new Class[] { Expression.class, String.class, Integer.TYPE, TreePathScanner.class,
                                   TreePathScanner.class, Object.class, Boolean.TYPE, Function.class,
                                   SourcePathProvider.class }).
-                        invoke(cp1, new Object[] { code, url, line, canInterpret, interpreter,
+                        invoke(cp1, new Object[] { expression, url, line, canInterpret, interpreter,
                                                    context, staticContext, compiledClassHandler, sp });
             } catch (java.lang.reflect.InvocationTargetException itex) {
                 Throwable tex = itex.getTargetException();
@@ -397,10 +400,10 @@ public class EditorContextBridge {
                 try {
                     ret = (R) cp2.getClass().getMethod(
                     "interpretOrCompileCode",
-                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class,
+                    new Class[] { Expression.class, String.class, Integer.TYPE, TreePathScanner.class,
                                   TreePathScanner.class, Object.class, Boolean.TYPE, Function.class,
                                   SourcePathProvider.class }).
-                        invoke(cp2, new Object[] { code, url, line, canInterpret, interpreter,
+                        invoke(cp2, new Object[] { expression, url, line, canInterpret, interpreter,
                                                    context, staticContext, compiledClassHandler, sp });
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable tex = itex.getTargetException();
