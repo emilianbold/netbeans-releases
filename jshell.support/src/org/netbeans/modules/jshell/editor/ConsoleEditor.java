@@ -570,7 +570,6 @@ public class ConsoleEditor extends CloneableEditor {
         @Override
         public void sectionUpdated(ConsoleEvent e) {
             if (e.containsInput()) {
-                caret = false;
                 SwingUtilities.invokeLater(this);
             }
         }

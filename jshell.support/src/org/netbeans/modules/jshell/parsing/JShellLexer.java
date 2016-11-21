@@ -42,9 +42,6 @@
 package org.netbeans.modules.jshell.parsing;
 
 import org.netbeans.modules.jshell.model.JShellToken;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;

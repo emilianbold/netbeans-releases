@@ -194,6 +194,10 @@ public class JShellAccessor {
         public String getClassName() {
             return wrapper.fullClassName();
         }
+        
+        public String toString() {
+            return "Wrapper(snippet = " + (snippet == null ? "none" : snippet.id()) + ", status = " + snippet.status() + ")";
+        }
     }
 
     /**

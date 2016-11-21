@@ -39,59 +39,17 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.model;
+package org.netbeans.modules.jshell.parsing;
 
-import java.util.List;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
+import java.util.concurrent.Callable;
+import jdk.jshell.SourceCodeAnalysis;
 
 /**
  *
  * @author sdedic
  */
-public final class ConsoleResult extends Parser.Result {
-    private final ConsoleModel model;
-    private volatile boolean invalid;
-    private ConsoleContents    contents;
-    
-    private void checkValid() {
-        if (invalid) {
-            throw new IllegalArgumentException();
-        }
-    }
-    
-    public ConsoleResult(ConsoleModel model, Snapshot _snapshot) {
-        super(_snapshot);
-        this.model = model;
-    }
-
-    public int getWritablePos() {
-        checkValid();
-        return model.getWritablePos();
-    }
-
-    public int getInputOffset() {
-        checkValid();
-        return model.getInputOffset();
-    }
-
-    public synchronized ConsoleSection getInputSection() {
-        checkValid();
-        return model.getInputSection();
-    }
-
-    public List<ConsoleSection> getSections() {
-        checkValid();
-        return model.getSections();
-    }
-
-    public String getInputText() {
-        checkValid();
-        return model.getInputText();
-    }
-
-    @Override
-    protected void invalidate() {
-        invalid = true;
-    }
+public interface ShellAccessBridge {
+    <T> T execute(Callable<T> call) throws Exception;
+    SourceCodeAnalysis.CompletionInfo analyzeInput(String input);
+    boolean isInitialized();
 }
