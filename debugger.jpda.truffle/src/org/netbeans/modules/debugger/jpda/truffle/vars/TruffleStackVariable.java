@@ -55,18 +55,19 @@ public class TruffleStackVariable implements TruffleVariable {
     private final String name;
     private final String type;
     private final boolean writable;
-    private String valueStr;
-    private ObjectVariable value;
-    private TruffleVariableImpl truffleVariable;
+    private final String valueStr;
+    private final ObjectVariable truffleObj;
+    private final boolean leaf;
     
     public TruffleStackVariable(JPDADebugger debugger, String name, String type,
-                                boolean writable, String valueStr, ObjectVariable value) {
+                                boolean writable, String valueStr, ObjectVariable truffleObj) {
         this.debugger = debugger;
         this.name = name;
         this.type = type;
         this.writable = writable;
         this.valueStr = valueStr;
-        this.value = value;
+        this.truffleObj = truffleObj;
+        this.leaf = TruffleVariableImpl.isLeaf(truffleObj);
     }
 
     @Override
@@ -86,23 +87,11 @@ public class TruffleStackVariable implements TruffleVariable {
     
     @Override
     public boolean isLeaf() {
-        if (truffleVariable == null) {
-            if ("Object".equals(type)) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return truffleVariable.isLeaf();
-        }
+        return leaf;
     }
     
     @Override
     public Object[] getChildren() {
-        if (truffleVariable != null) {
-            return truffleVariable.getChildren();
-        } else {
-            return new Object[] {};
-        }
+        return TruffleVariableImpl.getChildren(truffleObj);
     }
 }

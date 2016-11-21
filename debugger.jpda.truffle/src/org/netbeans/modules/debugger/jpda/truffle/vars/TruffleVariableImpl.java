@@ -59,8 +59,8 @@ public class TruffleVariableImpl implements TruffleVariable {
     private static final String FIELD_TYPE = "type";                            // NOI18N
     private static final String FIELD_LEAF = "leaf";                            // NOI18N
     private static final String FIELD_DISPLAY_VALUE = "displayValue";           // NOI18N
-    private static final String METHOD_GET_CHILDREN = "getChildren";            // NOI18N
-    private static final String METHOD_GET_CHILDREN_SIG = "()[Ljava/lang/Object;";  // NOI18N
+    private static final String METHOD_GET_CHILDREN = "getProperties";          // NOI18N
+    private static final String METHOD_GET_CHILDREN_SIG = "()[Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleObject;";  // NOI18N
     
     private final ObjectVariable truffleObject;
     private final String name;
@@ -98,21 +98,30 @@ public class TruffleVariableImpl implements TruffleVariable {
                 return null;
             }
             String dispVal = (String) f.createMirrorObject();
-            f = truffleObj.getField(FIELD_LEAF);
-            if (f == null) {
-                return null;
-            }
-            Boolean mirrorLeaf = (Boolean) f.createMirrorObject();
-            boolean leaf;
-            if (mirrorLeaf == null) {
-                leaf = false;
-            } else {
-                leaf = mirrorLeaf;
-            }
+            boolean leaf = isLeaf(truffleObj);
             return new TruffleVariableImpl(truffleObj, name, type, dispVal, leaf);
         } else {
             return null;
         }
+    }
+
+    static boolean isLeaf(ObjectVariable truffleObj) {
+        Field f = truffleObj.getField(FIELD_LEAF);
+        if (f == null) {
+            try {
+                throw new IllegalStateException("No "+FIELD_LEAF+" field in "+truffleObj.getToStringValue());
+            } catch (InvalidExpressionException iex) {
+                throw new IllegalStateException("No "+FIELD_LEAF+" field in "+truffleObj);
+            }
+        }
+        Boolean mirrorLeaf = (Boolean) f.createMirrorObject();
+        boolean leaf;
+        if (mirrorLeaf == null) {
+            leaf = false;
+        } else {
+            leaf = mirrorLeaf;
+        }
+        return leaf;
     }
     
     @Override
@@ -141,6 +150,10 @@ public class TruffleVariableImpl implements TruffleVariable {
     
     @Override
     public Object[] getChildren() {
+        return getChildren(truffleObject);
+    }
+
+    static Object[] getChildren(ObjectVariable truffleObject) {
         try {
             Variable children = truffleObject.invokeMethod(METHOD_GET_CHILDREN, METHOD_GET_CHILDREN_SIG, new Variable[] {});
             if (children instanceof ObjectVariable) {

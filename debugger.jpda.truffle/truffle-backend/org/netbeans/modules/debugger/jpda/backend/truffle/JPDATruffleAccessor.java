@@ -374,7 +374,7 @@ public class JPDATruffleAccessor extends Object {
             vars[vi + 1] = "";  // TODO
             vars[vi + 2] = value.isWriteable();
             vars[vi + 3] = value.as(String.class);
-            vars[vi + 4] = value;
+            vars[vi + 4] = new TruffleObject(value);
         }
         return vars;
     }

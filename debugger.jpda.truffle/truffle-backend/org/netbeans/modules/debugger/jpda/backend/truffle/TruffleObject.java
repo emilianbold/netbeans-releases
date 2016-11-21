@@ -44,16 +44,9 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.ExecutionContext;
-import com.oracle.truffle.api.debug.SuspendedEvent;
-import com.oracle.truffle.api.frame.FrameInstance;
-import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.ObjectType;
-import com.oracle.truffle.api.object.Property;
-import java.util.ArrayList;
+import com.oracle.truffle.api.debug.DebugValue;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -65,111 +58,62 @@ public class TruffleObject {
     
     final String name;
     final String type;
-    final Object object;
     final String displayValue;
     final boolean leaf;
-    final SuspendedEvent event;
-    final FrameInstance fi;
-    
-    TruffleObject(String name, Object object, SuspendedEvent event, FrameInstance fi) {
-        this.name = name;
-        this.object = object;
-        this.event = event;
-        this.fi = fi;
-        if (event != null) {
-            this.displayValue = event.toString(object, fi);
+    final boolean isArray;
+    final Collection<DebugValue> properties;
+    final List<DebugValue> array;
+
+    TruffleObject(DebugValue value) {
+        this.name = value.getName();
+        this.type = ""; // TODO?
+        //this.object = value;
+        this.displayValue = value.as(String.class);
+        this.properties = value.getProperties();
+        this.leaf = properties == null || properties.isEmpty();
+        this.isArray = value.isArray();
+        if (isArray) {
+            this.array = value.getArray();
         } else {
-            this.displayValue = Objects.toString(object);
+            this.array = null;
         }
-        if (object instanceof String) {
-            this.type = String.class.getSimpleName();
-        } else if (object instanceof Number) {
-            this.type = object.getClass().getSimpleName();
-        } else {
-            this.type = FrameSlotKind.Object.name();
-        }
-        this.leaf = isLeaf(object);
-        /*
-        System.err.println("new TruffleObject("+name+", "+object+"): type = "+type+", displayValue = "+displayValue+", leaf = "+leaf);
-        if (object != null) {
-            System.err.println("Object's class = "+object.getClass()+", is DynamicObject = "+(object instanceof DynamicObject));
-        }*/
+        //System.err.println("new TruffleObject("+name+") displayValue = "+displayValue+", leaf = "+leaf+", properties = "+properties);
     }
 
-    public Object[] getChildren() {
+    public TruffleObject[] getProperties() {
         // TODO: Handle arrays in a special way
-        return getChildrenGeneric();
-    }
-    
-    private static boolean isLeaf(Object object) {
-        return isLeafGeneric(object);
-    }
-    /*
-    private static boolean isLeafJS(Object object) {
-        if (object instanceof DynamicObject) {
-            DynamicObject dobj = (DynamicObject) object;
-            Iterable<Property> enumerableProperties = JSObject.getEnumerableProperties(dobj);
-            return !enumerableProperties.iterator().hasNext();
-        } else {
-            return true;
+        if (properties == null) {
+            return new TruffleObject[]{};
         }
-    }
-    */
-    private static boolean isLeafGeneric(Object object) {
-        if (object instanceof DynamicObject) {
-            List<Property> props = ((DynamicObject) object).getShape().getPropertyListInternal(true);
-            return props.isEmpty();
-            /*if (((DynamicObject) object).getShape().getPropertyCount() > 0 ) {//||
-                //((DynamicObject) object).getShape().getEnumerablePropertyCount() > 0) {
-                return false;
-            } else {
-                return true;
-            }*/
-        } else {
-            return true;
+        int n = properties.size();
+        TruffleObject[] children = new TruffleObject[n];
+        int i = 0;
+        for (DebugValue ch : properties) {
+            children[i++] = new TruffleObject(ch);
         }
+        return children;
     }
-    /*
-    private Object[] getChildrenJS() {
-        //if (object instanceof JSObject) {
-        //    JSObject jso = (JSObject) object;
-        if (object instanceof DynamicObject) {
-            DynamicObject dobj = (DynamicObject) object;
-            Iterable<Property> enumerableProperties = JSObject.getEnumerableProperties(dobj);
-            List<Object> ch = new ArrayList<>();
-            for (Property p : enumerableProperties) {
-                String name = p.getKey().toString();
-                Object obj = JSObject.getProperty(dobj, name);
-                //Object obj = p.get(dobj, );//jso.getProperty((JSContext) context, name);
-                ch.add(new TruffleObject(visualizer, name, obj));
-            }
-            return ch.toArray();
-        } else {
-            return null;
-        }
+
+    public int getArraySize() {
+        return (array != null) ? array.size() : 0;
     }
-    */
-    private Object[] getChildrenGeneric() {
-        if (object instanceof DynamicObject) {
-            DynamicObject dobj = (DynamicObject) object;
-            //System.err.println("getChildrenGeneric("+object+"): property count = "+dobj.getShape().getPropertyCount()+", property map = "+dobj.getShape().getPropertyMap()+", property list = "+dobj.getShape().getPropertyList());
-            List<Property> props = dobj.getShape().getPropertyListInternal(true);
-            int n = props.size();
-            Object[] ch = new Object[n];
-            for (int i = 0; i < n; i++) {
-                String name = props.get(i).getKey().toString();
-                Object obj = props.get(i).get(dobj, true);
-                ch[i] = new TruffleObject(name, obj, event, fi);
-            }
-            return ch;
-        } else {
-            return null;
+
+    public TruffleObject[] getArrayElements() {
+        int n = getArraySize();
+        TruffleObject[] elements = new TruffleObject[n];
+        if (n == 0) {
+            return elements;
         }
+        int i = 0;
+        for (DebugValue elm : array) {
+            elements[i++] = new TruffleObject(elm);
+        }
+        return elements;
     }
 
     @Override
     public String toString() {
         return name + " = " + displayValue;
     }
-    
+
 }
