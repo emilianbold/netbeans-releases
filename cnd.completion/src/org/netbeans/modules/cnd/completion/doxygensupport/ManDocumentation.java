@@ -113,24 +113,46 @@ public class ManDocumentation {
     public static CompletionDocumentation getDocumentation(CsmObject obj, CsmFile file) throws IOException {
         if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isClassMember(obj)) {
             CsmFunction function = (CsmFunction) obj;
-            return getDoc(function.getQualifiedName().toString(), file);
+            return getDoc(stripTemplate(function.getQualifiedName().toString()), file);
         } else if (CsmKindUtilities.isClass(obj)) {
             CsmClass cls = (CsmClass) obj;
-            return getDoc(cls.getQualifiedName().toString(), file);
+            return getDoc(stripTemplate(cls.getQualifiedName().toString()), file);
         } else if (CsmKindUtilities.isClassMember(obj)) {
             CsmScope scope = ((CsmMember) obj).getScope();
             if (CsmKindUtilities.isClass(scope)) {
                 CsmClass cls = (CsmClass) scope;
-                return getDoc(cls.getQualifiedName().toString(), file);
+                return getMemberDoc(stripTemplate(cls.getQualifiedName().toString())+"::"+stripTemplate(((CsmMember) obj).getName().toString()), file);
             }
+        }
+        return null;
+    }
+    
+    private static String stripTemplate(String name) {
+        if (name.indexOf('<') > 0) { //NOI18N
+            name = name.substring(0, name.indexOf('<')); //NOI18N
+        }
+        return name;
+    }
+
+    private static CompletionDocumentation getMemberDoc(String name, CsmFile file) throws IOException {
+        try {
+            CompletionDocumentation documentation = getDocumentation(name, file);
+            if (documentation != null) {
+                return documentation;
+            }
+        } catch (IOException ex) {
+            if (!name.contains("::")) { //NOI18N
+                throw ex;
+            }
+            // try class name
+        }
+        if (name.contains("::")) { //NOI18N
+            return getDoc(name.substring(0, name.lastIndexOf(':')-1), file);
         }
         return null;
     }
 
     private static CompletionDocumentation getDoc(String name, CsmFile file) throws IOException {
-        if (name.indexOf('<') > 0) { //NOI18N
-            name = name.substring(0, name.indexOf('<')); //NOI18N
-        }
         try {
             CompletionDocumentation documentation = getDocumentation(name, file);
             if (documentation != null) {
