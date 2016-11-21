@@ -121,7 +121,7 @@ public class ManDocumentation {
             CsmScope scope = ((CsmMember) obj).getScope();
             if (CsmKindUtilities.isClass(scope)) {
                 CsmClass cls = (CsmClass) scope;
-                return getMemberDoc(stripTemplate(cls.getQualifiedName().toString())+"::"+stripTemplate(((CsmMember) obj).getName().toString()), file);
+                return getMemberDoc(stripTemplate(cls.getQualifiedName().toString())+"::"+stripTemplate(((CsmMember) obj).getName().toString()), file); //NOI18N
             }
         }
         return null;
