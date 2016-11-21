@@ -215,6 +215,15 @@ public final class ConsoleSection {
         }
     }
 
+    public String getRangeContents(CharSequence s, Rng snippetRange) {
+        StringBuilder sb = new StringBuilder();
+
+        Rng[] ranges = computeFragments(snippetRange);
+        for (Rng r : ranges) {
+            sb.append(s.subSequence(r.start, r.start + r.len()));
+        }
+        return sb.toString();
+    }
     /**
      * Gets text contents of the section. Respect fragment boundaries. Must be
      * called under document read-lock.
