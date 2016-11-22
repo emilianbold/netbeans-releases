@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.source;
 
 import com.sun.jdi.StringReference;
-import com.sun.jdi.Value;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.Field;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -75,29 +67,18 @@ public final class Source {
     public static final String URL_PROTOCOL = "truffle-scripts"; // NOI18N
     static final String ATTR_URI = "com.oracle.truffle InternalURI"; // NOI18N
     
-    private static final String SOURCE_VAR_NAME = "name";   // NOI18N
-    private static final String SOURCE_VAR_CONTENT = "content"; // NOI18N
-    private static final String SOURCE_VAR_HASH = "hash";   // NOI18N
-    private static final String SOURCE_VAR_URL = "url";     // NOI18N
-    
-    private static final Map<JPDADebugger, Map<Long, Source>> knownSources = new WeakHashMap<>();
+    private static final Map<JPDADebugger, Map<Long, Source>> KNOWN_SOURCES = new WeakHashMap<>();
 
     private final StringReference codeRef;
     private final String name;
-    //private final JPDAClassType classType;
     private final URI uri;          // The original source URI
     private final URL url;          // The source
-    //private final URL runtimeURL;   // The current content in runtime, or null when equal to 'url'
-    //private final int contentLineShift; // Line shift of 'url' content in 'runtimeURL'. Can not be negative.
     private final long hash;
     private String content;
     
     private Source(String name, URI uri, long hash, StringReference codeRef) {
         this.name = name;
         this.codeRef = codeRef;
-        //this.classType = classType;
-        URL rURL = null;
-        int lineShift = 0;
         URL url = null;
         if (uri == null || !"file".equalsIgnoreCase(uri.getScheme())) {
             try {
@@ -105,19 +86,6 @@ public final class Source {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            /*
-        } else if (compareContent) {
-            lineShift = getContentLineShift(url, content);
-            if (lineShift >= 0) {
-                try {
-                    rURL = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                lineShift = 0;
-            }
-            */
         }
         if (url == null) {
             try {
@@ -128,14 +96,12 @@ public final class Source {
         }
         this.url = url;
         this.uri = uri;
-        //this.runtimeURL = rURL;
-        //this.contentLineShift = lineShift;
         this.hash = hash;
     }
     
     public static Source getExistingSource(JPDADebugger debugger, long id) {
-        synchronized (knownSources) {
-            Map<Long, Source> dbgSources = knownSources.get(debugger);
+        synchronized (KNOWN_SOURCES) {
+            Map<Long, Source> dbgSources = KNOWN_SOURCES.get(debugger);
             if (dbgSources != null) {
                 Source src = dbgSources.get(id);
                 if (src != null) {
@@ -168,40 +134,13 @@ public final class Source {
         return (URI) fo.getAttribute(ATTR_URI);
     }
     
-    /*
-    public static Source getSource(JPDADebugger debugger, long id,
-                                   StringReference nameRef,
-                                   StringReference pathRef,
-                                   StringReference codeRef) {
-        synchronized (knownSources) {
-            Map<Long, Source> dbgSources = knownSources.get(debugger);
-            if (dbgSources != null) {
-                Source src = dbgSources.get(id);
-                if (src != null) {
-                    return src;
-                }
-            }
-        }
-        String name;
-        String path;
-        try {
-            name = StringReferenceWrapper.value(nameRef);
-            path = StringReferenceWrapper.value(pathRef);
-        } catch (InternalExceptionWrapper |
-                 ObjectCollectedExceptionWrapper |
-                 VMDisconnectedExceptionWrapper ex) {
-            return null;
-        }
-        return getTheSource(debugger, id, name, path, codeRef);
-    }*/
-    
     public static Source getSource(JPDADebugger debugger, long id,
                                    String name,
                                    String path,
                                    URI uri,
                                    StringReference codeRef) {
-        synchronized (knownSources) {
-            Map<Long, Source> dbgSources = knownSources.get(debugger);
+        synchronized (KNOWN_SOURCES) {
+            Map<Long, Source> dbgSources = KNOWN_SOURCES.get(debugger);
             if (dbgSources != null) {
                 Source src = dbgSources.get(id);
                 if (src != null) {
@@ -218,108 +157,22 @@ public final class Source {
                                        URI uri,
                                        StringReference codeRef) {
         
-        /*URL url = null;
-        File file = new File(path);
-        if (file.isAbsolute() && file.canRead()) {
-            try {
-                url = file.toURI().toURL();
-            } catch (MalformedURLException muex) {}
-        }*/
         Source src = new Source(name, uri, id, codeRef);
-        synchronized (knownSources) {
-            Map<Long, Source> dbgSources = knownSources.get(debugger);
+        synchronized (KNOWN_SOURCES) {
+            Map<Long, Source> dbgSources = KNOWN_SOURCES.get(debugger);
             if (dbgSources == null) {
                 dbgSources = new HashMap<>();
-                knownSources.put(debugger, dbgSources);
+                KNOWN_SOURCES.put(debugger, dbgSources);
             }
             dbgSources.put(id, src);
         }
         return src;
     }
     
-    /*
-    public static Source getSource(JPDAClassType classType) {
-        long uniqueClassID = classType.classObject().getUniqueID();
-        //System.err.println("getSource("+classType+" = "+className+"): classType object's ID = "+uniqueClassID);
-        JPDADebugger debugger;
-        try {
-            java.lang.reflect.Field debuggerField = classType.getClass().getDeclaredField("debugger");
-            debuggerField.setAccessible(true);
-            debugger = (JPDADebugger) debuggerField.get(classType);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-        synchronized (knownSources) {
-            Map<Long, Source> dbgSources = knownSources.get(debugger);
-            if (dbgSources != null) {
-                Source src = dbgSources.get(uniqueClassID);
-                if (src != null) {
-                    return src;
-                }
-            }
-        }
-        ObjectVariable sourceVar = getSourceVar(debugger, classType);
-        if (sourceVar == null) {
-            return null;
-        }
-        Field fieldName = sourceVar.getField(SOURCE_VAR_NAME);
-        Field fieldContent = sourceVar.getField(SOURCE_VAR_CONTENT);
-        Field fieldHash = sourceVar.getField(SOURCE_VAR_HASH);
-        Field fieldURL = sourceVar.getField(SOURCE_VAR_URL);
-        if (fieldName == null || fieldContent == null ||
-            fieldHash == null || fieldURL == null) {
-            
-            return null;
-        }
-        Object urlObj = fieldURL.createMirrorObject();
-        URL url;
-        boolean compareContent = false;
-        if (urlObj == null) {
-            // Check if there's a special URL handler. In that case we have to count with content shifting.
-            url = readURLFromFields(fieldURL);
-            compareContent = true;
-        } else {
-            url = (URL) urlObj;
-        }
-        Object hashMirror = fieldHash.createMirrorObject();
-        if (!(hashMirror instanceof Integer)) {
-            return null;
-        }
-        int hash = ((Integer) hashMirror).intValue();
-        Object contentMirror = fieldContent.createMirrorObject();
-        if (!(contentMirror instanceof char[])) {
-            return null;
-        }
-        String content = new String((char[]) contentMirror);
-        String name = fieldName.getValue();
-        if (name.startsWith("\"") && name.endsWith("\"")) {
-            name = name.substring(1, name.length() - 1);
-        }
-        if (!name.endsWith(".js") && !name.endsWith(".JS")) {
-            name = name + ".js";
-        }
-        Source src = new Source(name, classType, url, compareContent, hash, content);
-        synchronized (knownSources) {
-            Map<Long, Source> dbgSources = knownSources.get(debugger);
-            if (dbgSources == null) {
-                dbgSources = new HashMap<>();
-                knownSources.put(debugger, dbgSources);
-            }
-            dbgSources.put(uniqueClassID, src);
-        }
-        return src;
-    }
-    */
-    
     public String getName() {
         return name;
     }
-    /*
-    public JPDAClassType getClassType() {
-        return classType;
-    }
-    */
+
     public URL getUrl() {
         return url;
     }
@@ -328,15 +181,6 @@ public final class Source {
         return uri;
     }
     
-    /*
-    public URL getRuntimeURL() {
-        return runtimeURL;
-    }
-    
-    public int getContentLineShift() {
-        return contentLineShift;
-    }
-    */
     public long getHash() {
         return hash;
     }
@@ -354,85 +198,6 @@ public final class Source {
             }
             return content;
         }
-    }
-    
-    private static URL readURLFromFields(Field fieldURL) {
-        if (!(fieldURL instanceof ObjectVariable)) {
-            return null;
-        }
-        ObjectVariable urlObj = (ObjectVariable) fieldURL;
-        Field protocolField = urlObj.getField("protocol");      // NOI18N
-        Field authorityField = urlObj.getField("authority");    // NOI18N
-        Field pathField = urlObj.getField("path");              // NOI18N
-        if (protocolField == null || authorityField == null || pathField == null) {
-            return null;
-        }
-        String protocol = stripQuotes(protocolField.getValue());
-        String authority = stripQuotes(authorityField.getValue());
-        String path = stripQuotes(pathField.getValue());
-        StringBuilder result = new StringBuilder();
-        result.append(protocol);
-        result.append(":");
-        if (authority != null && authority.length() > 0) {
-            result.append("//");
-            result.append(authority);
-        }
-        if (path != null) {
-            result.append(path);
-        }
-        try {
-            return new URL(result.toString());
-        } catch (MalformedURLException ex) {
-            return null;
-        }
-    }
-    
-    private static String stripQuotes(String str) {
-        if ("null".equals(str)) {
-            str = null;
-        }
-        if (str != null && str.startsWith("\"") && str.endsWith("\"")) {
-            str = str.substring(1, str.length() - 1);
-        }
-        return str;
-    }
-
-    /**
-     * 
-     * @param url
-     * @param content
-     * @return a non-negative line shift of content of 'url' in 'content', or -1
-     *         when content of 'url' is not a subset of 'content'.
-     */
-    private static int getContentLineShift(URL url, String content) {
-        String origContent;
-        FileObject fo = URLMapper.findFileObject(url);
-        if (fo != null) {
-            try {
-                origContent = fo.asText();
-            } catch (IOException ex) {
-                return 0;
-            }
-        } else {
-            return 0;
-        }
-        int index = content.indexOf(origContent);
-        if (index < 0) {
-            return -1;
-        }
-        String prep = content.substring(0, index);
-        return countNewLines(prep);
-    }
-
-    private static int countNewLines(String prep) {
-        String nl = "\n";
-        int c = 0;
-        int index = 0;
-        while ((index = prep.indexOf(nl, index)) >= 0) {
-            c++;
-            index++;
-        }
-        return c;
     }
     
 }
