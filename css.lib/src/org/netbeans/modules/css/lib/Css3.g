@@ -441,8 +441,8 @@ mediaQueryList
 
 mediaQuery
  :
-    (mediaQueryOperator ws? )?  mediaType ( ws? key_and ws? mediaExpression )*
-    | mediaExpression ( ws? key_and ws? mediaExpression )*
+    (mediaQueryOperator ws? )?  mediaType ((ws? key_and)=> ws? key_and ws? mediaExpression )*
+    | mediaExpression ((ws? key_and)=> ws? key_and ws? mediaExpression )*
     | {isLessSource()}? cp_variable
  ;
 
@@ -456,7 +456,8 @@ mediaType
 
 mediaExpression
     :
-    LPAREN ws? mediaFeature mediaFeatureValue? ws? RPAREN
+    (LPAREN) => (LPAREN ws? mediaFeature mediaFeatureValue? ws? RPAREN)
+    | (HASH) => {isCssPreprocessorSource()}? sass_interpolation_expression_var
     ;
 
 mediaFeatureValue
