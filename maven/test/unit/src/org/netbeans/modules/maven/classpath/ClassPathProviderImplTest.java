@@ -164,7 +164,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull(cp);
         List<ClassPath.Entry> entries = cp.entries();
-        assertTrue(entries.isEmpty());
+        assertFalse(entries.isEmpty());
     }
     
     public void testCompileClassPathWithModuleInfoAddedLater() throws Exception {
@@ -192,7 +192,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull(cp);
         entries = cp.entries();
-        assertTrue(entries.isEmpty());
+        assertFalse(entries.isEmpty());
     }        
 
     private static void assertRoots(ClassPath cp, FileObject... files) {

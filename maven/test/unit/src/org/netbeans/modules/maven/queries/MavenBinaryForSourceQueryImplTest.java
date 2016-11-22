@@ -42,12 +42,14 @@
 
 package org.netbeans.modules.maven.queries;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.logging.Level;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -80,10 +82,14 @@ public class MavenBinaryForSourceQueryImplTest extends NbTestCase {
         FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
         FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
         gtsrc.createData("Whatever.class");
-        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.toURL()).getRoots()));
-        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gsrc.toURL()).getRoots()));
-        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tsrc.toURL()).getRoots()));
-        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gtsrc.toURL()).getRoots()));
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
+        File art0 = new File(repo, "grp/art/0/art-0.jar");
+        URL url0 = FileUtil.getArchiveRoot(art0.toURI().toURL());        
+        
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/"), url0), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.toURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/"), url0), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gsrc.toURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/"), url0), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tsrc.toURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/"), url0), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gtsrc.toURL()).getRoots()));
     }
 
     public void testResources() throws Exception { // #208816
@@ -99,8 +105,12 @@ public class MavenBinaryForSourceQueryImplTest extends NbTestCase {
         FileObject res = FileUtil.createFolder(d, "src/main/resources");
         FileObject tres = FileUtil.createFolder(d, "src/test/resources");
         CharSequence log = Log.enable(BinaryForSourceQuery.class.getName(), Level.FINE);
-        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(res.toURL()).getRoots()));
-        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tres.toURL()).getRoots()));
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
+        File art0 = new File(repo, "grp/art/0/art-0.jar");
+        URL url0 = FileUtil.getArchiveRoot(art0.toURI().toURL()); 
+
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/"), url0), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(res.toURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/"), url0), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tres.toURL()).getRoots()));
         String logS = log.toString();
         assertFalse(logS, logS.contains("-> nil"));
         assertTrue(logS, logS.contains("ProjectBinaryForSourceQuery"));

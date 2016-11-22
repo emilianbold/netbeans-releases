@@ -147,8 +147,9 @@ public class JavaExpression {
      * @param context a runtime JVM context
      * @return the evaluator engine
      */
-    public TreeEvaluator evaluator(EvaluationContext context) {
-        return new TreeEvaluator(this, context);
+    public TreeEvaluator evaluator(EvaluationContext context,
+                                   CompilationInfoHolder ciHolder) {
+        return new TreeEvaluator(this, context, ciHolder);
     }
 
     public String getLanguage() {

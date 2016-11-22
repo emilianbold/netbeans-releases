@@ -88,6 +88,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.jpda.Evaluator.Expression;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -424,94 +425,123 @@ class PreferredCCParser {
      * @return the visitor value or <code>null</code>.
      */
     @NbBundle.Messages("MSG_NoParseNoEval=Can not evaluate expression - parsing failed.")
-    public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+    public <R,D> R interpretOrCompileCode(final Expression<Object> expression,
+                                          final String url, final int line,
                                           final TreePathScanner<Boolean,D> canInterpret,
                                           final TreePathScanner<R,D> interpreter,
                                           final D context, boolean staticContext,
                                           final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
                                           final SourcePathProvider sp) throws InvalidExpressionException {
-        JavaSource js = null;
-        FileObject fo = null;
-        if (url != null) {
+        final String code = expression.getExpression();
+        TreePath treePath;
+        Tree tree;
+        Trees trees;
+        ParsedData parsedData = (ParsedData) expression.getPreprocessedObject();
+        if (parsedData == null) {
+            JavaSource js = null;
+            FileObject fo = null;
+            if (url != null) {
+                try {
+                    fo = URLMapper.findFileObject(new URL(url));
+                    if (fo != null) {
+                        js = JavaSource.forFileObject(fo);
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(Exceptions.attachSeverity(ex, Level.WARNING));
+                }
+            }
+            if (js == null) {
+                js = getJavaSource(sp);
+            }
+            //long t1, t2, t3, t4;
+            //t1 = System.nanoTime();
             try {
-                fo = URLMapper.findFileObject(new URL(url));
-                if (fo != null) {
-                    js = JavaSource.forFileObject(fo);
+                final CompilationController ci = getPreferredCompilationController(fo, js);
+                //t2 = System.nanoTime();
+                ParseExpressionTask<D> task = new ParseExpressionTask<>(code, line, context);
+                boolean parsed = task.parse(fo, js, ci);
+                if (!parsed) {
+                    return null;
                 }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(Exceptions.attachSeverity(ex, Level.WARNING));
-            }
-        }
-        if (js == null) {
-            js = getJavaSource(sp);
-        }
-        //long t1, t2, t3, t4;
-        //t1 = System.nanoTime();
-        try {
-            final CompilationController ci = getPreferredCompilationController(fo, js);
-            //t2 = System.nanoTime();
-            ParseExpressionTask<D> task = new ParseExpressionTask<>(code, line, context);
-            boolean parsed = task.parse(fo, js, ci);
-            if (!parsed) {
-                return null;
-            }
-            TreePath treePath = task.getTreePath();
-            Tree tree = task.getTree();
-            //t3 = System.nanoTime();
-            Boolean canIntrpt;
-            if (treePath != null) {
-                canIntrpt = canInterpret.scan(treePath, context);
-            } else {
-                if (tree == null) {
-                    throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
+                treePath = task.getTreePath();
+                tree = task.getTree();
+                trees = task.getTrees();
+                //t3 = System.nanoTime();
+                Boolean canIntrpt;
+                if (treePath != null) {
+                    canIntrpt = canInterpret.scan(treePath, context);
+                } else {
+                    if (tree == null) {
+                        throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
+                    }
+                    canIntrpt = true; // Can not compile without tree path
                 }
-                canIntrpt = true; // Can not compile without tree path
-            }
-            if (Boolean.FALSE.equals(canIntrpt)) {
-                // Can not interpret, compile:
-                ClassToInvoke compiledClass =
-                        CodeSnippetCompiler.compileToClass(ci, code, task.getCodeOffset(),
-                                                           js, fo, line, treePath, tree,
-                                                           staticContext);
-                LOG.log(Level.FINE, "Compiled to: {0}", compiledClass);
-                if (compiledClass != null) {
-                    boolean success = compiledClassHandler.apply(Pair.of(compiledClass.className, compiledClass.bytecode));
-                    if (compiledClass.innerClasses != null && !compiledClass.innerClasses.isEmpty()) {
-                        for (Map.Entry<String, byte[]> entry : compiledClass.innerClasses.entrySet()) {
-                            success = compiledClassHandler.apply(Pair.of(entry.getKey(), entry.getValue()));
-                            if (!success) {
-                                break;
+                if (Boolean.FALSE.equals(canIntrpt)) {
+                    // Can not interpret, compile:
+                    ClassToInvoke compiledClass =
+                            CodeSnippetCompiler.compileToClass(ci, code, task.getCodeOffset(),
+                                                               js, fo, line, treePath, tree,
+                                                               staticContext);
+                    LOG.log(Level.FINE, "Compiled to: {0}", compiledClass);
+                    if (compiledClass != null) {
+                        boolean success = compiledClassHandler.apply(Pair.of(compiledClass.className, compiledClass.bytecode));
+                        if (compiledClass.innerClasses != null && !compiledClass.innerClasses.isEmpty()) {
+                            for (Map.Entry<String, byte[]> entry : compiledClass.innerClasses.entrySet()) {
+                                success = compiledClassHandler.apply(Pair.of(entry.getKey(), entry.getValue()));
+                                if (!success) {
+                                    break;
+                                }
                             }
                         }
-                    }
-                    if (success) {
-                        // Class is uploaded, interpret the class' method invocation:
-                        task = new ParseExpressionTask<>(compiledClass.methodInvoke, line, context);
-                        parsed = task.parse(fo, js, ci);
-                        if (!parsed) {
-                            return null;
+                        if (success) {
+                            // Class is uploaded, interpret the class' method invocation:
+                            task = new ParseExpressionTask<>(compiledClass.methodInvoke, line, context);
+                            parsed = task.parse(fo, js, ci);
+                            if (!parsed) {
+                                return null;
+                            }
+                            treePath = task.getTreePath();
+                            tree = task.getTree();
+                            trees = task.getTrees();
                         }
-                        treePath = task.getTreePath();
-                        tree = task.getTree();
-                    }
-                } // else when compiledClass == null, try to interpret the original anyway...
-            }
-            R retValue;
-            if (treePath != null) {
-                retValue = interpreter.scan(treePath, context);
-            } else {
-                if (tree == null) {
-                    throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
+                    } // else when compiledClass == null, try to interpret the original anyway...
                 }
-                retValue = tree.accept(interpreter, context);
+            } catch (IOException ioex) {
+                Exceptions.printStackTrace(ioex);
+                return null;
             }
-            //t4 = System.nanoTime();
-            //System.err.println("PARSE TIMES 1: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
-            return retValue;
-        } catch (IOException ioex) {
-            Exceptions.printStackTrace(ioex);
-            return null;
+            expression.setPreprocessedObject(new ParsedData(treePath, tree, trees));
+        } else {
+            treePath = parsedData.getTreePath();
+            tree = parsedData.getTree();
+            trees = parsedData.getTrees();
+            try {
+                //context.setTrees(ci.getTrees());
+                java.lang.reflect.Method setTreesMethod =
+                        context.getClass().getMethod("setTrees", new Class[] { Trees.class });
+                setTreesMethod.invoke(context, trees);
+            } catch (Exception ex) {}
+            if (treePath != null) {
+                try {
+                    //context.setTrees(ci.getTrees());
+                    java.lang.reflect.Method setTreePathMethod =
+                            context.getClass().getMethod("setTreePath", new Class[] { TreePath.class });
+                    setTreePathMethod.invoke(context, treePath);
+                } catch (Exception ex) {}
+            }
         }
+        R retValue;
+        if (treePath != null) {
+            retValue = interpreter.scan(treePath, context);
+        } else {
+            if (tree == null) {
+                throw new InvalidExpressionException(Bundle.MSG_NoParseNoEval()+" URL="+url+":"+line);
+            }
+            retValue = tree.accept(interpreter, context);
+        }
+        //t4 = System.nanoTime();
+        //System.err.println("PARSE TIMES 1: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
+        return retValue;
     }
     
     private static class ParseExpressionTask<D> implements Task<CompilationController> {
@@ -521,6 +551,7 @@ class PreferredCCParser {
         private final D context;
         private TreePath treePath;
         private Tree tree;
+        private Trees trees;
         private int codeOffset;
 
         public ParseExpressionTask(String expression, int line, D context) {
@@ -607,17 +638,12 @@ class PreferredCCParser {
                 scope = treeUtilities.toScopeWithDisabledAccessibilityChecks(scope);
                 treeUtilities.attributeTree(tree, scope);
             }
+            trees = ci.getTrees();
             try {
                 //context.setTrees(ci.getTrees());
                 java.lang.reflect.Method setTreesMethod =
                         context.getClass().getMethod("setTrees", new Class[] { Trees.class });
-                setTreesMethod.invoke(context, ci.getTrees());
-            } catch (Exception ex) {}
-            try {
-                //context.setCompilationUnit(ci.getCompilationUnit());
-                java.lang.reflect.Method setCompilationUnitMethod =
-                        context.getClass().getMethod("setCompilationUnit", new Class[] { CompilationUnitTree.class });
-                setCompilationUnitMethod.invoke(context, ci.getCompilationUnit());
+                setTreesMethod.invoke(context, trees);
             } catch (Exception ex) {}
             treePath = null;
             try {
@@ -638,6 +664,10 @@ class PreferredCCParser {
 
         public Tree getTree() {
             return tree;
+        }
+        
+        public Trees getTrees() {
+            return trees;
         }
         
         public int getCodeOffset() {
