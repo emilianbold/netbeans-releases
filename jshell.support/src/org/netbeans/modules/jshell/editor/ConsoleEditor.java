@@ -93,19 +93,11 @@ import org.openide.windows.TopComponent;
  * @author sdedic
  */
 @TopComponent.Description(
-        preferredID = "REPLTopComponent",
-        //iconBase="SET/PATH/TO/ICON/HERE",
+        preferredID = "JShellEditor",
+        iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
-@ActionID(category = "Window", id = "org.netbeans.modules.java.repl.REPLTopComponent")
-@ActionReference(path = "Menu/Window" /*, position = 333 */)
-@NbBundle.Messages({
-    "CTL_REPLAction=Java REPL",
-    "CTL_REPLTopComponent=Java REPL",
-    "CTL_REPLTopComponentProject=Java REPL for {0}",
-    "HINT_REPLTopComponent=This is a Java REPL window"
-})
 public class ConsoleEditor extends CloneableEditor {
 
     private ShellSession session;

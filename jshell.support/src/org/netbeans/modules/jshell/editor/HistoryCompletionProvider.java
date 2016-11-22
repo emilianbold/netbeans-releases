@@ -75,8 +75,8 @@ import org.openide.util.NbBundle;
  */
 // must be registered for java also, to give completions on the 1st line
 @MimeRegistrations({
-    @MimeRegistration(mimeType="text/x-repl", service=CompletionProvider.class),
-    @MimeRegistration(mimeType="text/x-java", service=CompletionProvider.class)
+    @MimeRegistration(mimeType="text/x-repl", service=CompletionProvider.class, position = 100),
+    @MimeRegistration(mimeType="text/x-java", service=CompletionProvider.class, position = 120)
 })
 public class HistoryCompletionProvider implements CompletionProvider {
 
