@@ -266,9 +266,11 @@ public class InterceptorCopyDOTest extends RemoteVersioningTestBase {
         assertTrue(toFile.exists());
 
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFile).getTextStatus());
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
 
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFile));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getStatus(toFile));
         assertFalse(getSVNStatus(toFile).isCopied());
     }
@@ -301,9 +303,11 @@ public class InterceptorCopyDOTest extends RemoteVersioningTestBase {
         assertTrue(toFile.exists());
 
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder).getTextStatus());
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());
 
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, getStatus(toFolder));
 
         assertFalse(getSVNStatus(toFolder).isCopied());
@@ -405,6 +409,7 @@ public class InterceptorCopyDOTest extends RemoteVersioningTestBase {
         assertTrue(toFolder.exists());
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFolder).getTextStatus());
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFolder));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFolder).getTextStatus());
         assertCachedStatus(toFolder, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
 
