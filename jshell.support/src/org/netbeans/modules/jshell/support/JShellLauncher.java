@@ -150,6 +150,7 @@ public class JShellLauncher extends InternalJShell {
     
     @Override
     protected JShell createJShellInstance() {
+        /*
         if (execGen == null) {
             execGen = new JShellGenerator() {
                 @Override
@@ -163,28 +164,17 @@ public class JShellLauncher extends InternalJShell {
                 }
             };
         }
+        */
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            JShell.Builder b = createJShell().
-                    executionEngine(execGen).
-                    fileManager(
-                        new StubJavaFileManager(
-                            ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
-                            cpInfo
-                        )
-                    );
+            JShell.Builder b = createJShell();
+            if (execGen != null) {
+                    b.executionEngine(execGen);
+            }
             String s = System.getProperty("jshell.logging.properties");
-            if (s == null) {
-                b = b.remoteVMOptions("-classpath", quote(classpath));
-            } else {
-                b = b.remoteVMOptions("-classpath", quote(classpath), quote("-Djava.util.logging.config.file=" + s));
-            }
-            if (srcVersion != null) {
-                b.compilerOptions("-source", srcVersion.toString());
-            }
-            if (targetVersion != null) {
-                b.compilerOptions("-target", targetVersion.toString());
+            if (s != null) {
+                b = b.remoteVMOptions(quote("-Djava.util.logging.config.file=" + s));
             }
             JShell ret = b.build();
             return ret;
@@ -193,15 +183,11 @@ public class JShellLauncher extends InternalJShell {
         }
     }
     
-    private static String quote(String s) {
+    protected static String quote(String s) {
         if (s.indexOf(' ') == -1) {
             return s;
         }
         return '"' + s + '"';
-    }
-    
-    private String decorateLaunchArgs(String s) {
-        return "-classpath " + classpath; // NOI18N
     }
     
     @NbBundle.Messages({

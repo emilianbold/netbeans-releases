@@ -43,9 +43,16 @@ package org.netbeans.modules.jshell.parsing;
 
 import java.util.List;
 import java.util.function.Supplier;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.lib.nbjshell.SnippetWrapping;
+import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.model.Rng;
+import org.netbeans.modules.jshell.model.SnippetHandle;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -84,7 +91,14 @@ public abstract class ModelAccessor {
     public abstract void setSectionComplete(ConsoleSection target, boolean complete);
     
     public abstract void execute(ConsoleModel model, boolean external, Runnable r, Supplier<String> prompt);
-    //public abstract void beforeExecution(ConsoleModel model);
-    //public abstract void afterExecution(ConsoleModel model);
-    public abstract void setSnippetOffset(ConsoleModel model, int offset);
+    
+    public abstract void installSnippets(ConsoleContents contents, ConsoleSection s, List<SnippetHandle> snippets);
+    
+    public abstract ConsoleContents copyModel(ConsoleModel m, Snapshot snapshot);
+    
+    public abstract SnippetHandle createHandle(SnippetRegistry r, ConsoleSection s, Rng[] fragments, SnippetWrapping wrap, boolean b);
+    
+    public abstract void setFile(SnippetHandle h, FileObject f);
+    
+    public abstract ConsoleModel createModel(LineDocument document, RequestProcessor evaluator, ShellAccessBridge shellBridge);
 }

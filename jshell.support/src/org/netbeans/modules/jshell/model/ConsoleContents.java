@@ -41,57 +41,75 @@
  */
 package org.netbeans.modules.jshell.model;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
- *
+ * A snippet-based model built on top of {@link ConsoleModel} by the parsing API.
+ * 
  * @author sdedic
  */
-public final class ConsoleResult extends Parser.Result {
-    private final ConsoleModel model;
-    private volatile boolean invalid;
-    private ConsoleContents    contents;
+public final class ConsoleContents extends Parser.Result {
+    /**
+     * A snapshot of the console model.
+     */
+    private final ConsoleModel    consoleSnapshot; 
     
-    private void checkValid() {
-        if (invalid) {
-            throw new IllegalArgumentException();
-        }
-    }
+    private final Map<ConsoleSection, List<SnippetHandle>> snippets = new HashMap<>();
     
-    public ConsoleResult(ConsoleModel model, Snapshot _snapshot) {
+    private volatile boolean invalidated;
+    
+    ConsoleContents(ConsoleModel consoleSnapshot, Snapshot _snapshot) {
         super(_snapshot);
-        this.model = model;
+        this.consoleSnapshot = consoleSnapshot;
     }
-
-    public int getWritablePos() {
-        checkValid();
-        return model.getWritablePos();
-    }
-
-    public int getInputOffset() {
-        checkValid();
-        return model.getInputOffset();
-    }
-
-    public synchronized ConsoleSection getInputSection() {
-        checkValid();
-        return model.getInputSection();
-    }
-
-    public List<ConsoleSection> getSections() {
-        checkValid();
-        return model.getSections();
-    }
-
-    public String getInputText() {
-        checkValid();
-        return model.getInputText();
+    
+    public ConsoleModel getSectionModel() {
+        return consoleSnapshot;
     }
 
     @Override
     protected void invalidate() {
-        invalid = true;
+        invalidated = true;
+    }
+    
+    void installSnippetHandles(ConsoleSection s, List<SnippetHandle> handles) {
+        if (handles != null) {
+            this.snippets.put(s, handles);
+        }
+    }
+    
+    public List<SnippetHandle> getHandles(ConsoleSection s) {
+        if (!s.getType().java) {
+            return null;
+        }
+        List<SnippetHandle> res = snippets.get(s);
+        if (res != null) {
+            return res;
+        }
+        return Collections.emptyList();
+    }
+    
+    public static ConsoleContents get(ResultIterator iter) throws ParseException {
+        Parser.Result r = iter.getParserResult();
+        if (!(r instanceof ConsoleContents)) {
+            return null;
+        }
+        return (ConsoleContents)r;
+    }
+    
+    private ConsoleSection input;
+    
+    public ConsoleSection getInputSection() {
+        if (input == null) {
+            input = consoleSnapshot.parseInputSection(getSnapshot().getText());
+        }
+        return input;
     }
 }
