@@ -1960,6 +1960,7 @@ public final class EditorCaret implements Caret {
                         scroll = scrollToLastCaret;
                         scrollToLastCaret = false;
                     }
+                    scroll &= c.hasFocus(); // Only scroll focused views (prevent scrolling cloned views)
                     if (scroll) {
                         Rectangle caretBounds;
                         Rectangle oldCaretBounds;
