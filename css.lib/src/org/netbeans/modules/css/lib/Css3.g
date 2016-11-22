@@ -1142,7 +1142,7 @@ cp_mixin_declaration
 cp_mixin_call
     :
     (
-        {isLessSource()}? (DOT cp_mixin_name | HASH | AT_IDENT | LESS_AND) ((pseudo)=>pseudo | (ws? LPAREN)=>(ws? LPAREN ws? cp_mixin_call_args? RPAREN))?
+        {isLessSource()}? (DOT cp_mixin_name | HASH | AT_IDENT | LESS_AND) ((ws? combinator ws?) => ws? combinator ws? (DOT cp_mixin_name | HASH | AT_IDENT | LESS_AND))* ((pseudo)=>pseudo | (ws? LPAREN)=>(ws? LPAREN ws? cp_mixin_call_args? RPAREN))?
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )
