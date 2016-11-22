@@ -859,13 +859,6 @@ public class ConsoleModel {
     private JShell.Subscription snippetSubscription;
 
     /**
-     * Attaches to a JShell instance.
-     * @param shell 
-     */
-    public void attach(JShell shell) {
-    }
-    
-    /**
      * Provides mapping between snippets and individual input sections
      */
     private Map<Snippet, SnippetHandle> sections = new HashMap<>();
@@ -1153,21 +1146,17 @@ public class ConsoleModel {
      * Detaches the console model from the document and the JShell. The model
      * will not restrict or observe the document
      */
-    public JShell.Subscription detach() {
-        JShell.Subscription d;
+    public void detach() {
         synchronized (this) {
             if (!valid) {
-                return null;
+                return;
             }
-            d = snippetSubscription;
-            snippetSubscription = null;
             valid = false;
         }
         document.putProperty(ConsoleModel.class, null);
         document.removeDocumentListener(l);
         ConsoleEvent ev = new ConsoleEvent(this, Collections.emptyList());
         listeners.stream().forEach(l -> l.closed(ev));
-        return d;
     }
     
     static {

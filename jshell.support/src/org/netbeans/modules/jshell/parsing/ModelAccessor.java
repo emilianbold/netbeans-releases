@@ -96,7 +96,7 @@ public abstract class ModelAccessor {
     
     public abstract ConsoleContents copyModel(ConsoleModel m, Snapshot snapshot);
     
-    public abstract SnippetHandle createHandle(SnippetRegistry r, ConsoleSection s, Rng[] fragments, SnippetWrapping wrap, boolean b);
+    public abstract SnippetHandle createHandle(SnippetRegistry r, ConsoleSection s, Rng[] fragments, SnippetWrapping wrap, boolean transientSnippet);
     
     public abstract void setFile(SnippetHandle h, FileObject f);
     
