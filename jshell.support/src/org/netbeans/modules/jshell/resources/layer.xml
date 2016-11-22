@@ -5,6 +5,7 @@
         <folder name="Classes">
             <!-- Template for a class generated from the snippet --> 
             <file name="ShellClass.java" url="ShellClass.java.template">
+                <attr name="position" intvalue="8900"/>
                 <attr name="templateCategory" stringvalue="always-hidden"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -13,6 +14,15 @@
     </folder>
     <folder name="jshell-snippets"/>
     <folder name="Editors">
+        <folder name="Popup">
+            <folder name="text">
+                <attr name="position" intvalue="9800"/>
+                <folder name="x-repl">
+                    <attr name="position" intvalue="9800"/>
+                </folder>
+            </folder>
+        </folder>
+
         <folder name="text">
             <folder name="x-repl">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jshell.resources.Bundle"/>
@@ -58,15 +68,6 @@
                     </folder>
                 </folder>
                 
-                <!--
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-jshell-editor.ResetAction.instance">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jshell-editor.ResetAction.instance"/>
-                        <attr name="position" intvalue="20002"/>
-                    </file>
-                </folder>
-                
-                -->
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator-before-shell-reset.instance">

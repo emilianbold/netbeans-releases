@@ -63,7 +63,7 @@ import org.openide.util.Lookup;
  *
  * @author sdedic
  */
-@StartupExtenderImplementation.Registration(displayName = "Java Shell", startMode = {
+@StartupExtenderImplementation.Registration(displayName = "Java Shell", position = 10000, startMode = {
     StartMode.DEBUG,
     StartMode.NORMAL,
 })
