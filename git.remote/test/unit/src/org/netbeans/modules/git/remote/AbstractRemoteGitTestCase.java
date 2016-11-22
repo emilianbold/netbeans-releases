@@ -90,6 +90,7 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     protected VCSFileProxy repositoryLocation;
     protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
     protected StatusRefreshLogHandler refreshHandler;
+    protected Version version;
 
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
@@ -177,6 +178,14 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
         if (git == null || !git.isValid()) {
             skipTest = true;
             return;
+        }
+        version = new Version(execEnv, git);
+        if (version.compareTo(new Version(1,8,0)) < 0) {
+            System.err.println("Usupported git version "+version);
+            skipTest = true;
+            return;
+        } else {
+            System.err.println("git version "+version);
         }
         String remoteDir = mkTempAndRefreshParent(true);
         org.netbeans.modules.nativeexecution.api.util.ProcessUtils.execute(execEnv, "umask", "0002");
