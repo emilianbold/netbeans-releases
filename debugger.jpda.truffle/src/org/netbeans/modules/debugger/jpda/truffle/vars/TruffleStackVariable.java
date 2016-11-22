@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,48 +36,62 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.backend.truffle;
+package org.netbeans.modules.debugger.jpda.truffle.vars;
 
-import com.oracle.truffle.api.debug.DebugStackFrame;
-import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 /**
- * Collects stack frame information.
- * 
- * @author martin
+ *
+ * @author Martin
  */
-final class FrameInfo {
-    final DebugStackFrame frame;  // the top frame instance
-    final DebugStackFrame[] stackTrace; // All but the top frame
-    final String topFrame;
-    final Object[] topVariables;
-    // TODO: final Object[] thisObjects;
+public class TruffleStackVariable implements TruffleVariable {
+    
+    private final JPDADebugger debugger;
+    private final String name;
+    private final String type;
+    private final boolean writable;
+    private final String valueStr;
+    private final ObjectVariable truffleObj;
+    private final boolean leaf;
+    
+    public TruffleStackVariable(JPDADebugger debugger, String name, String type,
+                                boolean writable, String valueStr, ObjectVariable truffleObj) {
+        this.debugger = debugger;
+        this.name = name;
+        this.type = type;
+        this.writable = writable;
+        this.valueStr = valueStr;
+        this.truffleObj = truffleObj;
+        this.leaf = TruffleVariableImpl.isLeaf(truffleObj);
+    }
 
-    FrameInfo(DebugStackFrame topStackFrame, Iterable<DebugStackFrame> stackFrames) {
-        SourceSection topSS = topStackFrame.getSourceSection();
-        SourcePosition position = JPDATruffleDebugManager.getPosition(topSS);
-        ArrayList<DebugStackFrame> stackFramesArray = new ArrayList<>();
-        for (DebugStackFrame sf : stackFrames) {
-            if (sf == topStackFrame) {
-                continue;
-            }
-            SourceSection ss = sf.getSourceSection();
-            // Ignore frames without sources:
-            if (ss == null || ss.getSource() == null) {
-                continue;
-            }
-            stackFramesArray.add(sf);
-        }
-        frame = topStackFrame;
-        stackTrace = stackFramesArray.toArray(new DebugStackFrame[stackFramesArray.size()]);
-        topFrame = topStackFrame.getName() + "\n" +
-                   DebuggerVisualizer.getSourceLocation(topSS) + "\n" +
-                   position.id + "\n" + position.name + "\n" + position.path + "\n" +
-                   position.uri.toString() + "\n" + position.line;
-        topVariables = JPDATruffleAccessor.getVariables(topStackFrame);
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getType() {
+        return type;
     }
     
+    @Override
+    public Object getValue() {
+        return valueStr;
+    }
+    
+    @Override
+    public boolean isLeaf() {
+        return leaf;
+    }
+    
+    @Override
+    public Object[] getChildren() {
+        return TruffleVariableImpl.getChildren(truffleObj);
+    }
 }
