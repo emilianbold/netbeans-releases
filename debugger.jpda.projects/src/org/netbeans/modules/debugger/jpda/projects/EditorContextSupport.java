@@ -103,6 +103,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.BytecodeProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.jpda.Evaluator.Expression;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -1448,13 +1449,14 @@ public final class EditorContextSupport {
         return preferredCCParser.getImports(url);
     }
     
-    public static <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+    public static <R,D> R interpretOrCompileCode(final Expression<Object> expression,
+                                                 final String url, final int line,
                                                  final TreePathScanner<Boolean,D> canInterpret,
                                                  final TreePathScanner<R,D> interpreter,
                                                  final D context, boolean staticContext,
                                                  final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
                                                  final SourcePathProvider sp) throws InvalidExpressionException {
-        return preferredCCParser.interpretOrCompileCode(code, url, line,
+        return preferredCCParser.interpretOrCompileCode(expression, url, line,
                                                         canInterpret,
                                                         interpreter,
                                                         context, staticContext,

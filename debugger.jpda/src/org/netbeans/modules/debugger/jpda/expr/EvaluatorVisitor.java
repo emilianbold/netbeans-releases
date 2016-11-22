@@ -3845,7 +3845,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             InvalidExpressionException ieex = new InvalidExpressionException (isfex);
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
-            loggerMethod.info("InvocationException has occured when there were following VMs:\n"+
+            loggerMethod.info("InvocationException ("+iex.getLocalizedMessage()+") has occured when there were following VMs:\n"+
                     "evaluationThread VM: "+InvocationExceptionTranslated.printVM(evaluationThread.virtualMachine())+"\n"+
                     ((objectReference != null) ?
                      ("objectReference VM: "+InvocationExceptionTranslated.printVM(objectReference.virtualMachine())) :

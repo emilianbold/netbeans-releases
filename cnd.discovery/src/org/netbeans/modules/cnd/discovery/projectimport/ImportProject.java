@@ -1520,6 +1520,21 @@ public class ImportProject implements PropertyChangeListener {
         if (activeConfiguration == null) {
             return;
         }
+        BuildTraceSupport.BuildTrace buldTraceSupport = getBuildTraceSupport();
+        if (buldTraceSupport != null && buldTraceSupport.getKind() == BuildTraceSupport.BuildTraceKind.Wrapper) {
+            Tool wrapperC = buldTraceSupport.getToolsWrapper().getTool(PredefinedToolKind.CCompiler);
+            if (wrapperC != null && cToolPath != null) {
+                if (cToolPath.equals(wrapperC.getPath())) {
+                    return;
+                }
+            }
+            Tool wrapperCpp = buldTraceSupport.getToolsWrapper().getTool(PredefinedToolKind.CCCompiler);
+            if (wrapperCpp != null && cppToolPath != null) {
+                if (cppToolPath.equals(wrapperCpp.getPath())) {
+                    return;
+                }
+            }
+        }
         String cProjectToolPath = null;
         String cppProjectToolPath = null;
         String fortranProjectToolPath = null;

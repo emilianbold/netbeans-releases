@@ -297,9 +297,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         if (cp == null) {
             if (type == TYPE_SRC) {
                 cp = createMultiplexClassPath(
-                    // XXX should be based on module-info or not?
+                    // XXX has to be based on module-info 
+                    // see org.netbeans.modules.java.api.common.classpath.ModuleClassPaths.ModuleInfoClassPathImplementation
                     new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
-                        ClassPath.EMPTY,
+                        getCompileClasspath(),  //XXX: Wrong but better than EMPTY
                         getCompileClasspath(),
                         "CompileTimeClasspath" // NOI18N
                     )

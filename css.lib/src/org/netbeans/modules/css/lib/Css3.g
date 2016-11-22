@@ -151,6 +151,11 @@ package org.netbeans.modules.css.lib;
         return tokenImage.equalsIgnoreCase(input.LT(1).getText());
     }
 
+    private boolean tokenNameStartsWith(String prefix) {
+        return input.LT(1).getText() != null 
+            && input.LT(1).getText().startsWith(prefix);
+    }
+
     private boolean tokenNameIs(String[] tokens) {
         for(String tokenImage : tokens) {
             if(tokenImage.equalsIgnoreCase(input.LT(1).getText())) {
@@ -780,7 +785,7 @@ cssId
     }
 
 cssClass
-    : DOT
+    : (DOT
         (
              {isScssSource()}?  sass_selector_interpolation_exp
             | {isLessSource()}? less_selector_interpolation_exp
@@ -788,6 +793,7 @@ cssClass
             | NOT
             | GEN
         )
+     ) | {tokenNameStartsWith(".")}? DIMENSION
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
