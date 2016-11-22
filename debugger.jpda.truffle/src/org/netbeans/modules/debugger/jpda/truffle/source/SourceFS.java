@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.source;
@@ -69,27 +69,17 @@ import org.openide.util.io.ReaderInputStream;
 @NbBundle.Messages("SourceFSDisplayName=Truffle Sources")
 final class SourceFS extends AbstractFileSystem {
     
-//    private static SourceFS DEFAULT = new SourceFS();
-    
     private static final AtomicLong COUNT = new AtomicLong();
     private final long id = COUNT.incrementAndGet();
     
-    //private final Map<String, URL> urlCache;
     private final Map<String, Item> items;
-    //private final Status status;
 
     SourceFS() {
-        //this.urlCache = new HashMap<String, URL>();
         this.items = new LinkedHashMap<>();
         list = new SourceList();
         info = new SourceInfo();
         attr = new SourceAttributes();
-        //status = new SourceStatus();
     }
-    
-//    public static SourceFS getDefault() {
-//        return DEFAULT;
-//    }
     
     @Override
     public String getDisplayName() {
@@ -148,61 +138,7 @@ final class SourceFS extends AbstractFileSystem {
         }
     }
 
-    /*
-    private URL getURLforName(String name) {
-        synchronized (urlCache) {
-            return urlCache.get(name);
-        }
-    }
-    
-    private FileObject getDelegateFor(String name) {
-        return getDelegateFor(name, true);
-    }
-    
-    private FileObject getDelegateFor(String name, boolean asynchronous) {
-        URL url = getURLforName(name);
-        if (url == null) {
-            return null;
-        }
-        try {
-            return SourceFilesCache.getDefault().getRemoteFile(url, asynchronous);
-        } catch (IOException ex) {
-            return null;
-        }
-    }
-    
-    private String getNameFrom(URL url) {
-        String surl = url.toExternalForm();
-        if (surl.substring(0, 7).equalsIgnoreCase("http://")) { //NOI18N
-            surl = surl.substring(7);
-        } else if (surl.substring(0, 8).equalsIgnoreCase("https://")) { //NOI18N
-            surl = surl.substring(8);
-        }
-        surl = surl.replace('/', '_');
-        surl = surl.replace('\\', '_');
-        return surl;
-    }
 
-    public FileObject getFileForURL(URL url) {
-        String surl = getNameFrom(url);
-        FileObject fo = getRoot().getFileObject(surl, ""); //NOI18N
-        if (fo != null) {
-            return fo;
-        }
-        synchronized (urlCache) {
-            urlCache.put(surl, url);
-        }
-        getRoot().refresh();
-        return getRoot().getFileObject(surl, ""); //NOI18N
-    }
-    */
-
-    /*@Override
-    public Status getStatus() {
-        return status;
-    }*/
-
-    
     private final class SourceList implements List, ChangeListener {
         
         SourceList() {
@@ -236,17 +172,6 @@ final class SourceFS extends AbstractFileSystem {
                 }
             }
             return children.toArray(new String[]{});
-            /*
-            if (f.isEmpty()) { // root
-                String[] childrenNames;
-                synchronized (urlCache) {
-                    childrenNames = urlCache.keySet().toArray(new String[] {});
-                }
-                return childrenNames;
-            } else {
-                return new String[] {};
-            }
-            */
         }
 
         @Override

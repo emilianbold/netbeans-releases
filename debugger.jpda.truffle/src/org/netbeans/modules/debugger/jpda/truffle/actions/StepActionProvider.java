@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.actions;
 
-import com.sun.jdi.ClassType;
-import com.sun.jdi.Field;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
 import java.io.InvalidObjectException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.actions.JPDADebuggerActionProvider;
-import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
-import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
@@ -87,12 +79,12 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
     
     private static final Logger LOG = Logger.getLogger(StepActionProvider.class.getName());
     
-    private static final Set actions = new HashSet(Arrays.asList (new Object[] {
+    private static final Set ACTIONS = Collections.unmodifiableSet(new HashSet(Arrays.asList (new Object[] {
             ActionsManager.ACTION_STEP_INTO,
             ActionsManager.ACTION_STEP_OUT,
             ActionsManager.ACTION_STEP_OVER,
             ActionsManager.ACTION_CONTINUE
-    }));
+    })));
 
     private final ContextProvider lookupProvider;
 
@@ -123,7 +115,6 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
         JPDADebuggerImpl debugger = getDebuggerImpl();
         CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
         int stepCmd = 0;
-        final String stepInto = (String) ActionsManager.ACTION_STEP_INTO;
         if (ActionsManager.ACTION_CONTINUE.equals(action)) {
             stepCmd = 0;
         } else if (ActionsManager.ACTION_STEP_INTO.equals(action)) {
@@ -133,24 +124,11 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
         } else if (ActionsManager.ACTION_STEP_OUT.equals(action)) {
             stepCmd = 3;
         }
-        JPDAClassType accessorClass = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
         try {
-            Variable[] arguments = new Variable[] { currentPCInfo.getSuspendedInfo(), debugger.createMirrorVar((Integer) stepCmd, true) };
-            accessorClass.invokeMethod("setStep", "(Ljava/lang/Object;I)V", arguments);
-        } catch (InvalidExpressionException | InvalidObjectException | NoSuchMethodException ex) {
+            currentPCInfo.getStepCommandVar().setFromMirrorObject((Integer) stepCmd);
+        } catch (InvalidObjectException ex) {
             Exceptions.printStackTrace(ex);
         }
-        /*
-        ClassType accessorClass = TruffleDebugManager.getDebugAccessorClass(debugger);
-        try {
-            Field stepCmdField = ReferenceTypeWrapper.fieldByName(accessorClass, "stepCmd");
-            ClassTypeWrapper.setValue(accessorClass, stepCmdField,
-                                      VirtualMachineWrapper.mirrorOf(accessorClass.virtualMachine(), stepCmd));
-        } catch (VMDisconnectedExceptionWrapper ex) {
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        */
         killJavaStep(debugger);
         if (stepCmd > 0) {
             debugger.resumeCurrentThread();
@@ -196,7 +174,7 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
 
     @Override
     public Set getActions() {
-        return actions;
+        return ACTIONS;
     }
     
 }

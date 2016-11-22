@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,48 +36,52 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
+ *
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.debugger.jpda.truffle.access;
 
-package org.netbeans.modules.debugger.jpda.backend.truffle;
-
-import com.oracle.truffle.api.debug.DebugStackFrame;
-import com.oracle.truffle.api.source.SourceSection;
-import java.util.ArrayList;
+import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.LocalVariable;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 /**
- * Collects stack frame information.
- * 
- * @author martin
+ *
+ * @author Martin
  */
-final class FrameInfo {
-    final DebugStackFrame frame;  // the top frame instance
-    final DebugStackFrame[] stackTrace; // All but the top frame
-    final String topFrame;
-    final Object[] topVariables;
-    // TODO: final Object[] thisObjects;
-
-    FrameInfo(DebugStackFrame topStackFrame, Iterable<DebugStackFrame> stackFrames) {
-        SourceSection topSS = topStackFrame.getSourceSection();
-        SourcePosition position = JPDATruffleDebugManager.getPosition(topSS);
-        ArrayList<DebugStackFrame> stackFramesArray = new ArrayList<>();
-        for (DebugStackFrame sf : stackFrames) {
-            if (sf == topStackFrame) {
-                continue;
-            }
-            SourceSection ss = sf.getSourceSection();
-            // Ignore frames without sources:
-            if (ss == null || ss.getSource() == null) {
-                continue;
-            }
-            stackFramesArray.add(sf);
-        }
-        frame = topStackFrame;
-        stackTrace = stackFramesArray.toArray(new DebugStackFrame[stackFramesArray.size()]);
-        topFrame = topStackFrame.getName() + "\n" +
-                   DebuggerVisualizer.getSourceLocation(topSS) + "\n" +
-                   position.id + "\n" + position.name + "\n" + position.path + "\n" +
-                   position.uri.toString() + "\n" + position.line;
-        topVariables = JPDATruffleAccessor.getVariables(topStackFrame);
+class ExecutionHaltedInfo {
+    
+    final ObjectVariable debugManager;
+    final ObjectVariable sourcePositions;
+    final boolean haltedBefore;
+    final ObjectVariable returnValue;
+    final ObjectVariable frameInfo;
+    final ObjectVariable[] breakpointsHit;
+    final ObjectVariable[] breakpointConditionExceptions;
+    final LocalVariable stepCmd;
+    
+    private ExecutionHaltedInfo(LocalVariable[] vars) {
+        this.debugManager = (ObjectVariable) vars[0];
+        this.sourcePositions = (ObjectVariable) vars[1];
+        this.haltedBefore = (Boolean) vars[2].createMirrorObject();
+        this.returnValue = (ObjectVariable) vars[3];
+        this.frameInfo = (ObjectVariable) vars[4];
+        this.breakpointsHit = getObjectArray((ObjectVariable) vars[5]);
+        this.breakpointConditionExceptions = getObjectArray((ObjectVariable) vars[6]);
+        this.stepCmd = vars[7];
     }
     
+    static ExecutionHaltedInfo get(LocalVariable[] vars) {
+        return new ExecutionHaltedInfo(vars);
+    }
+    
+    private static ObjectVariable[] getObjectArray(ObjectVariable var) {
+        Field[] fields = var.getFields(0, Integer.MAX_VALUE);
+        int n = fields.length;
+        ObjectVariable[] arr = new ObjectVariable[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = (ObjectVariable) fields[i];
+        }
+        return arr;
+    }
 }
