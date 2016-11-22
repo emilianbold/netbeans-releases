@@ -341,7 +341,12 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
                 dot2 = version.indexOf('.',dot1+1);
                 if (dot2 >= 0) {
                     minor = Integer.parseInt(version.substring(dot1+1, dot2));
-                    last = Integer.parseInt(version.substring(dot2+1));
+                    if(version.indexOf('.',dot2+1) < 0) {
+                        last = Integer.parseInt(version.substring(dot2+1));
+                    } else {
+                        String l = version.substring(dot2+1);
+                        last = Integer.parseInt(l.substring(0, l.indexOf('.')));
+                    }
                 } else {
                     minor = Integer.parseInt(version.substring(dot1+1));
                     last = 0;
