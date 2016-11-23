@@ -107,6 +107,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         FileObject git = VCSFileProxySupport.getResource(workDir, gitPath).toFileObject();
         if (git == null || !git.isValid()) {
             skipTest = true;
+            return;
         }
         version = new Version(ExecutionEnvironmentFactory.getLocal(), git);
         if (version.compareTo(new Version(1,8,0)) < 0) {
