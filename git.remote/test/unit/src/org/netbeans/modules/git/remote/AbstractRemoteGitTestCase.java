@@ -180,7 +180,7 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
             return;
         }
         version = new Version(execEnv, git);
-        if (version.compareTo(new Version(1,8,0)) < 0) {
+        if (version.compareTo(new Version(1,7,0)) < 0) {
             System.err.println("Usupported git version "+version);
             skipTest = true;
             return;
