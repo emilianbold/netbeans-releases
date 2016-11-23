@@ -279,6 +279,7 @@ public class InterceptorMoveFOTest extends RemoteVersioningTestBase {
         if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fromFile));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
     }
        

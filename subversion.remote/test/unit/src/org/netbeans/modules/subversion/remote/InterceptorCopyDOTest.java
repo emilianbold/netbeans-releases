@@ -272,6 +272,7 @@ public class InterceptorCopyDOTest extends RemoteVersioningTestBase {
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFile));
         if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getStatus(toFile));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertFalse(getSVNStatus(toFile).isCopied());
     }
 
