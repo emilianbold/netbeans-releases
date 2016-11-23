@@ -334,25 +334,22 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
         public Version(ExecutionEnvironment execEnv, FileObject binary) {
             version = getVersion(execEnv, binary);
-            int dot1 = version.indexOf('.');
-            int dot2;
-            if (dot1 >= 0) {
-                major = Integer.parseInt(version.substring(0, dot1));
-                dot2 = version.indexOf('.',dot1+1);
-                if (dot2 >= 0) {
-                    minor = Integer.parseInt(version.substring(dot1+1, dot2));
-                    if(version.indexOf('.',dot2+1) < 0) {
-                        last = Integer.parseInt(version.substring(dot2+1));
+            String[] split = version.split("\\.");
+            if (split.length >= 1) {
+                major = Integer.parseInt(split[0]);
+                if (split.length >= 2) {
+                    minor = Integer.parseInt(split[1]);
+                    if (split.length >= 3) {
+                        last = Integer.parseInt(split[2]);
                     } else {
-                        String l = version.substring(dot2+1);
-                        last = Integer.parseInt(l.substring(0, l.indexOf('.')));
+                        last = 0;
                     }
                 } else {
-                    minor = Integer.parseInt(version.substring(dot1+1));
+                    minor = 0;
                     last = 0;
                 }
             } else {
-                major = Integer.parseInt(version);
+                major = 0;
                 minor = 0;
                 last = 0;
             }
