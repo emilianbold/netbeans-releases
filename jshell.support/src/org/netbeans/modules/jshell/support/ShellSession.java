@@ -286,14 +286,14 @@ public class ShellSession  {
             }
         }
         closed = true;
-        JShell.Subscription sub = model.detach();
+        model.detach();
         closed();
         if (exec != null) {
             FORCE_CLOSE_RP.post(this::forceCloseStreams, 300);
         }
         // leave the model
         gsm.getGuardedSections().forEach((GuardedSection gs) -> gs.removeSection());
-        return sendJShellClose(sub);
+        return sendJShellClose();
     }
     
     private synchronized void forceCloseStreams() {
@@ -460,7 +460,7 @@ public class ShellSession  {
         }
     }
 
-    private volatile JShellLauncher launcher;
+    private volatile Launcher launcher;
     
     public Pair<ShellSession, Task> start() {
         ShellSession previous  = null;
@@ -603,7 +603,9 @@ public class ShellSession  {
         return env.getPlatform().getSpecification().getVersion();
     }
     
-    private class Launcher extends JShellLauncher {
+    private class Launcher extends JShellLauncher implements Consumer<SnippetEvent> {
+        Subscription subscription;
+        
         public Launcher(ClasspathInfo cpInfo, PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, JShellGenerator execEnv) {
             super(cpInfo, cmdout, cmderr, userin, userout, usererr, execEnv);
         }
@@ -612,6 +614,31 @@ public class ShellSession  {
         protected JShell.Builder createJShell() {
             return customizeBuilder(super.createJShell());
         }
+
+        @Override
+        protected JShell createJShellInstance() {
+            JShell shell = super.createJShellInstance();
+            try {
+                setupJShellClasspath(shell);
+            } catch (ExecutionControlException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            synchronized (ShellSession.this) {
+                snippetRegistry = new SnippetRegistry(shell, bridgeImpl, workRoot, editorWorkRoot);
+                ShellSession.this.shell = shell;
+            }
+            this.subscription = shell.onSnippetEvent(this);
+            return shell;
+        }
+
+        @Override
+        public void accept(SnippetEvent e) {
+            SnippetHandle handle = snippetRegistry.installSnippet(
+                e.snippet(), null, 0, true);
+            // create an indexed file for the snippet.
+            snippetRegistry.snippetFile(handle, 0);
+        }
+        
     }
     
     private SwitchingJavaFileManger fileman;
@@ -630,9 +657,9 @@ public class ShellSession  {
         return b;
     }
     
-    private synchronized void initShellLauncher() throws IOException {
+    private synchronized Launcher initShellLauncher() throws IOException {
         if (launcher != null) {
-            return;
+            return launcher;
         }
         launcher = new Launcher(
             env.getClasspathInfo(),
@@ -643,6 +670,7 @@ public class ShellSession  {
             env.getErrorStream(),
             new GenProxy(env.createExecutionEnv())
         );
+        return launcher;
     }
     
     /**
@@ -658,16 +686,17 @@ public class ShellSession  {
         if (shell != null) {
             return;
         }
-        JShell shell;
+        Launcher l = null;
+        JShell shell = null;
+        Subscription sub = null;
         try {
             initializing = true;
-            initShellLauncher();
+            l = initShellLauncher();
             shell = launcher.getJShell();
-            setupJShellClasspath(shell);
             // not necessary to launch  the shell, but WILL display the initial prompt
             launcher.start();
             initialSetupSnippets = new HashSet<>(shell.snippets().collect(Collectors.toList()));
-        } catch (IOException | ExecutionControlException | InternalError err) {
+        } catch (IOException | InternalError err) {
             Throwable t = err.getCause();
             if (t == null) {
                 t = err;
@@ -678,14 +707,14 @@ public class ShellSession  {
             return;
         } finally {
             initializing = false;
+            if (l != null & l.subscription != null && shell != null) {
+                shell.unsubscribe(l.subscription);
+            }
         }
         synchronized (this) {
-            this.snippetRegistry = new SnippetRegistry(shell, bridgeImpl, workRoot, editorWorkRoot);
-            this.shell = shell;
             // it's possible that the shell's startup will terminate the session
             if (isValid()) {
                 shell.onShutdown(sh -> closedDelayed());
-                model.attach(shell);
             }
         }
     }
@@ -1162,10 +1191,10 @@ public class ShellSession  {
                 
                 if (isExternal()) {
                     handle = snippetRegistry.installSnippet(
-                        e.snippet(), exec, execOffset);
+                        e.snippet(), null, 0, true);
                 } else {
                     handle = snippetRegistry.installSnippet(
-                        e.snippet(), null, 0);
+                        e.snippet(), exec, execOffset, false);
                 }
                 // create an indexed file for the snippet.
                 snippetRegistry.snippetFile(handle, 0);
@@ -1238,7 +1267,7 @@ public class ShellSession  {
         return launcher.prompt(false);
     }
     
-    private synchronized Task sendJShellClose(JShell.Subscription unsub) {
+    private synchronized Task sendJShellClose() {
         RemoteJShellService e;
         synchronized (this) {
             if (launcher == null) {
@@ -1251,9 +1280,6 @@ public class ShellSession  {
         }
         // possibly delayed, if the evaluator is just processing some remote call.
         return evaluator.post(() -> {
-            if (shell != null && unsub != null) {
-                shell.unsubscribe(unsub);
-            }
             try {
                 launcher.closeState();
             } catch (InternalError ex) {

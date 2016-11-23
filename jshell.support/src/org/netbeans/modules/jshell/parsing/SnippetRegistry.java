@@ -153,7 +153,7 @@ public final class SnippetRegistry {
      * @param sectionOffset snippet's offset within section
      * @return offset <b>after</b> snippet's text.
      */
-    public SnippetHandle installSnippet(Snippet s, ConsoleSection section, int sectionOffset) {
+    public SnippetHandle installSnippet(Snippet s, ConsoleSection section, int sectionOffset, boolean nontransient) {
         SnippetWrapping wrap = wrap(s); //JShellAccessor.snippetWrap(state, s);
         SnippetHandle handle;
         synchronized (this) {
@@ -184,7 +184,7 @@ public final class SnippetRegistry {
                 sectionHandles.put(section, sectionSnippets);
             } else {
                 handle = ModelAccessor.INSTANCE.createHandle(
-                        this, null, null, wrap, true);
+                        this, null, null, wrap, !nontransient);
             }
             if (wrap.getSnippet() != null) {
                 snippets.put(wrap.getSnippet(), handle);
