@@ -613,8 +613,7 @@ public final class XMLSyntaxSupport {
                 id == XMLTokenId.VALUE ||
                 (id == XMLTokenId.TAG &&
                 (">".equals(image) || "/>".equals(image)))) { //NOI18N
-            while (true) {
-                ts.movePrevious();
+            while (ts.movePrevious()) {
                 token = ts.token();
                 id = token.id();
                 if (id == XMLTokenId.TAG || id == XMLTokenId.PI_START || id == XMLTokenId.DECLARATION)
