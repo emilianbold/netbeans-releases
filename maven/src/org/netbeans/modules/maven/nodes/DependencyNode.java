@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -114,9 +115,6 @@ import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.QueryField;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
@@ -146,7 +144,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -188,13 +185,13 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     @NonNull
-    private static Lookup createLookup(@NonNull final Project project, @NonNull final Artifact art, @NullAllowed final Node nodeDelegate) {
+    private static Lookup createLookup(@NonNull final Project project, @NonNull final Artifact art, @NullAllowed final Node nodeDelegate, Supplier<Boolean> canAddToModuleInfo) {
         final PathFinder pathFinderDelegate = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(PathFinder.class);
         final FileObject fo = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(FileObject.class);
         if (fo != null) {
-            return Lookups.fixed(new Data(art, project, fo), project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate), fo);
+            return Lookups.fixed(new Data(art, project, fo, canAddToModuleInfo), project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate), fo);
         } else {
-            return Lookups.fixed(new Data(art, project, null), project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+            return Lookups.fixed(new Data(art, project, null, canAddToModuleInfo), project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
         }
     }
 
@@ -215,8 +212,9 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             final Artifact art,
             final FileObject fo,
             boolean isLongLiving,
-            Node nodeDelegate) {
-        super(createChildren(nodeDelegate), createLookup(project, art, nodeDelegate));
+            Node nodeDelegate, 
+            Supplier<Boolean> canAddToModuleInfo) {
+        super(createChildren(nodeDelegate), createLookup(project, art, nodeDelegate, canAddToModuleInfo));
         this.data = getLookup().lookup(Data.class);
         data.fileObject.set(fo);
         longLiving = isLongLiving;
@@ -413,6 +411,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         } else {
             acts.add(REMOVEDEPINSTANCE);
         }
+        if (data.canAddToModuleInfo()) {             
+            acts.add(ADDTOMODULEINFO);
+        }
+        
         acts.add(null);
         acts.add(CommonArtifactActions.createViewArtifactDetails(data.art, data.getMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createFindUsages(data.art));
@@ -704,17 +706,19 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     //extract the model out of the node class
     public static class Data {
 
-        private Artifact art;
-        private Project project;
+        private final Artifact art;
+        private final Project project;
+        private final Supplier<Boolean> canAddToModuleInfo;
         private java.util.concurrent.atomic.AtomicReference<FileObject> fileObject;
         private final java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
         private final java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
         private DependencyNode node;
 
-        public Data(Artifact art, Project project, FileObject fileObject) {
-            this.art = art;
+        public Data(Artifact art, Project project, FileObject fileObject, Supplier<Boolean> canAddToModuleInfo) {
+            this.art = art; 
             this.project = project;
-            this.fileObject = new AtomicReference<FileObject>(fileObject);
+            this.fileObject = new AtomicReference<>(fileObject);
+            this.canAddToModuleInfo = canAddToModuleInfo;
         }
 
         public String getArtifactRepositoryPath() {
@@ -762,6 +766,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return trail != null && trail.size() > 2;
         }
 
+        boolean canAddToModuleInfo() {
+            return canAddToModuleInfo.get();
+        }
+        
         public boolean isManaged() {
             DependencyManagement dm = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getDependencyManagement();
             if (dm != null) {
@@ -1191,7 +1199,42 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
 
     }
+    
+    private static final AddToModuleInfoAction ADDTOMODULEINFO = new AddToModuleInfoAction(Lookup.EMPTY);
 
+    @Messages("BTN_AddToModuleInfo=Add to ModuleInfo")
+    private static class AddToModuleInfoAction extends AbstractAction  implements ContextAwareAction {
+        private final Lookup lkp;
+
+        AddToModuleInfoAction(Lookup lookup) {
+            putValue(Action.NAME, BTN_AddToModuleInfo());
+            lkp = lookup;
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<>(res);
+            if (prjs.size() != 1) {
+                setEnabled(false);
+            }
+        }
+        
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new AddToModuleInfoAction(actionContext);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            final Collection<? extends Artifact> artifacts = lkp.lookupAll(Artifact.class);
+            if (artifacts.isEmpty()) {
+                return;
+            }
+            Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
+            Set<NbMavenProjectImpl> prjs = new HashSet<>(res);
+            if (prjs.size() != 1) {
+                return;
+            }
+            ModuleInfoSupport.addRequires(prjs.iterator().next(), artifacts);
+        }
+    }
 
     @Messages("BTN_Manually_install=Manually install artifact")
     private class InstallLocalArtifactAction extends AbstractAction {
