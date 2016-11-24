@@ -244,7 +244,6 @@ class XMLResultItem implements CompletionItem {
     }
     
     private boolean isRemovingAvailableLocked(TokenSequence ts, Document doc, int offset, String replaceToText) {
-        ts.move(position);
         boolean isTextRemovingAllowable = true;
         
         while (ts.moveNext() && isTextRemovingAllowable) {
