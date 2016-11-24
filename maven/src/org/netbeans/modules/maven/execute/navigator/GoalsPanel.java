@@ -397,6 +397,10 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                 return true;
             }
             MavenProject mp = nbmp.getMavenProject();
+            if(mp == null) {
+                LOG.log(Level.WARNING, "Project {0} has no MavenProject.", prj);
+                return true;
+            }
             for (Artifact p : mp.getPluginArtifacts()) {
                 try {
 
