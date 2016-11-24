@@ -441,7 +441,7 @@ public class TinyTest extends NbTestCase {
                        "         l.unlock();\n" +
                        "     }\n" +
                        "}\n")
-                .run(Tiny.class)
+                .run(UnlockOutsideFinally.class)
                 .findWarning("3:9-3:18:verifier:ERR_UnlockOutsideTryFinally")
                 .applyFix("FIX_UnlockOutsideTryFinally")
                 .assertCompilable()
@@ -471,7 +471,7 @@ public class TinyTest extends NbTestCase {
                        "         unlock();\n" +
                        "     }\n" +
                        "}\n")
-                .run(Tiny.class)
+                .run(UnlockOutsideFinally.class)
                 .findWarning("3:9-3:16:verifier:ERR_UnlockOutsideTryFinally")
                 .applyFix("FIX_UnlockOutsideTryFinally")
                 .assertCompilable()
@@ -517,7 +517,7 @@ public class TinyTest extends NbTestCase {
                        "         System.err.println(3);\n" +
                        "     }\n" +
                        "}\n")
-                .run(Tiny.class)
+                .run(UnlockOutsideFinally.class)
                 .findWarning("4:9-4:18:verifier:ERR_UnlockOutsideTryFinally")
                 .applyFix("FIX_UnlockOutsideTryFinally")
                 .assertCompilable()
