@@ -108,7 +108,8 @@ import org.openide.util.RequestProcessor;
     private final Map<Integer, FSSResponse> responses = new LinkedHashMap<>();
     private final Object responseLock = new Object();
 
-    private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
+    private static final String USER_DEFINED_REMOTE_SERVER_PATH = System.getProperty("remote.fs_server.path");
+    private static final String USER_DEFINED_LOCAL_SERVER_PATH = System.getProperty("local.fs_server.path");
     private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0); // NOI18N
     private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
     private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
@@ -567,14 +568,19 @@ import org.openide.util.RequestProcessor;
         }
         HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
 
-        String remotePath = USER_DEFINED_SERVER_PATH;
+        String remotePath = USER_DEFINED_REMOTE_SERVER_PATH;
         if (remotePath == null) {
             remotePath = hostInfo.getTempDir() + "/" + toolPath; // NOI18N
         }
         String remoteBase = PathUtilities.getDirName(remotePath);
         
-        File localFile = InstalledFileLocator.getDefault().locate(
-                toolPath, "org.netbeans.modules.remote.impl", false); // NOI18N
+        File localFile;
+        if (USER_DEFINED_LOCAL_SERVER_PATH != null) {
+            localFile = new File(USER_DEFINED_LOCAL_SERVER_PATH);
+        } else {
+            localFile = InstalledFileLocator.getDefault().locate(
+                    toolPath, "org.netbeans.modules.remote.impl", false); // NOI18N
+        }
         if (localFile != null && localFile.exists()) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/mkdir").setArguments("-p", remoteBase); // NOI18N

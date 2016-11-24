@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -60,6 +62,7 @@ import org.openide.util.Exceptions;
  */
 public final class ExpandableEditableComboBox extends EditableComboBox {
     
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private MacroConverter converter;
 
     public ExpandableEditableComboBox() {
@@ -96,6 +99,8 @@ public final class ExpandableEditableComboBox extends EditableComboBox {
                     // should never == null occur if isHostInfoAvailable(env) => report
                     Exceptions.printStackTrace(ex);
                 }
+            } else {
+                LOGGER.log(Level.INFO, "Host info should be available here!", new Exception());
             }
             TempEnv.getInstance(env).addTemporaryEnv(envVariables);
             this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);

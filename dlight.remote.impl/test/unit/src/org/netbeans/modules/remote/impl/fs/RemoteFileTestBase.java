@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -60,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -105,6 +107,17 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         this.execEnv = execEnv;
     }
     
+    protected void reconnect() throws Exception {
+        char[] paswd = PasswordManager.getInstance().getPassword(execEnv);
+        ConnectionManager.getInstance().disconnect(execEnv);
+        sleep(250);
+        assertFalse("Failure disconnecting from " + execEnv, ConnectionManager.getInstance().isConnectedTo(execEnv));
+        sleep(250);
+        PasswordManager.getInstance().storePassword(execEnv, paswd, true);
+        ConnectionManager.getInstance().connectTo(execEnv);
+        assertTrue("Failure reconnecting to " + execEnv, ConnectionManager.getInstance().isConnectedTo(execEnv));
+    }
+
     @Override
     protected int timeOut() {
         return super.timeOut();
@@ -303,5 +316,91 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected String getFileName(ExecutionEnvironment execEnv, String absPath) {
         return execEnv.toString() + ':' + absPath;
-    }    
+    }  
+    
+    protected static final class Version implements Comparable<Version> {
+
+        public final int major;
+        public final int minor;
+        public final int last;
+        public final String version;
+        
+        public Version(int major, int minor, int last) {
+            this.major = major;
+            this.minor = minor;
+            this.last = last;
+            this.version = ""+major+"."+minor+"."+last;
+        }
+
+        public Version(ExecutionEnvironment execEnv, FileObject binary) {
+            version = getVersion(execEnv, binary);
+            String[] split = version.split("\\.");
+            if (split.length >= 1) {
+                major = Integer.parseInt(split[0]);
+                if (split.length >= 2) {
+                    minor = Integer.parseInt(split[1]);
+                    if (split.length >= 3) {
+                        last = Integer.parseInt(split[2]);
+                    } else {
+                        last = 0;
+                    }
+                } else {
+                    minor = 0;
+                    last = 0;
+                }
+            } else {
+                major = 0;
+                minor = 0;
+                last = 0;
+            }
+        }
+
+        private String getVersion(ExecutionEnvironment execEnv, FileObject binary) {
+            ProcessUtils.ExitStatus status = ProcessUtils.execute(execEnv, binary.getPath(), "--version");
+            List<String> outputLines = status.getOutputLines();
+            String aVersion = "0.0.0";
+            if (outputLines.size() > 0) {
+                String v = outputLines.get(0);
+                int i = v.indexOf("version");
+                if (i >= 0) {
+                    //OEL
+                    // svn, version 1.6.11 (r934486)
+                    // git version 1.7.1
+                    // Mercurial Distributed SCM (version 1.4)
+                    //SunOS 11.3
+                    // svn, version 1.7.20 (r1667490)
+                    // Mercurial Distributed SCM (version 3.7.3)
+                    // git version 2.7.4
+                    int last = i + 8;
+                    for (int k = i + 8; k < v.length(); k++) {
+                        char c = v.charAt(k);
+                        if (c >= '0' && c <= '9' || c == '.') {
+                        } else {
+                            break;
+                        }
+                        last++;
+                    }
+                    aVersion = v.substring(i + 8, last);
+                }
+            }
+            return aVersion;
+        }
+
+        @Override
+        public int compareTo(Version o) {
+            int res = this.major - o.major;
+            if (res == 0) {
+                res = this.minor - o.minor;
+                if (res == 0) {
+                    res = this.last - o.last;
+                }
+            }
+            return res;
+        }
+        
+        @Override
+        public String toString() {
+            return version;
+        }
+    }
 }
