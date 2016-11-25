@@ -193,8 +193,6 @@ public class PersistentSnippetsSupport  {
             return;
         }
         Lookup lkp = env.getLookup();
-        Project prj = findProject(lkp);
-
         PersistentSnippets supp = PersistentSnippetsSupport.create(lkp);
         if (supp == null) {
             return;

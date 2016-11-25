@@ -72,6 +72,7 @@ import org.openide.util.Pair;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 import org.openide.util.io.ReaderInputStream;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -118,6 +119,8 @@ public class JShellEnvironment {
     private PropertyChangeSupport supp = new PropertyChangeSupport(this);
     
     private List<ShellListener>   shellListeners = new ArrayList<>();
+    
+    private Lookup            envLookup;
     
     protected JShellEnvironment(Project project, String displayName) {
         this.project = project;
@@ -188,7 +191,17 @@ public class JShellEnvironment {
     }
     
     public Lookup getLookup() {
-        return consoleFile.getLookup();
+        synchronized (this) {
+            if (envLookup == null) {
+                envLookup = new ProxyLookup(
+                        consoleFile.getLookup(),
+                        project == null ? 
+                                Lookup.getDefault() :
+                                project.getLookup()
+                );
+            }
+        }
+        return envLookup;
     }
     
     public PrintStream getOutputStream() throws IOException {

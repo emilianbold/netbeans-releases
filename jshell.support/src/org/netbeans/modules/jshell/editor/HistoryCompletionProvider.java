@@ -50,14 +50,17 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import jdk.jshell.Snippet;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;
+import org.netbeans.modules.jshell.support.ShellHistory;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -143,24 +146,35 @@ public class HistoryCompletionProvider implements CompletionProvider {
         }
         
         return new AsyncCompletionTask(new T(
+            session,
             model,
             is
         ), component);
     }
     
     private static class T extends AsyncCompletionQuery {
+        private ConsoleContents contents;
+        private final ShellSession  session;
         private final ConsoleModel model;
         private final ConsoleSection input;
         private int counter = 1;
         
-        public T(ConsoleModel model, ConsoleSection input) {
+        public T(ShellSession session, ConsoleModel model, ConsoleSection input) {
+            this.session = session;
             this.model = model;
             this.input = input;
         }
         
-        private CompletionItem createSectionItem(ConsoleSection s) {
-            String text = s.getContents(model.getDocument());
-            return new ItemImpl(counter++, text);
+        private CompletionItem createHistoryItem(ShellHistory.Item item) {
+            return createCompletionItem(item, true);
+        }
+        
+        private CompletionItem createCurrentItem(ShellHistory.Item item) {
+            return createCompletionItem(item, false);
+        }
+        
+        private CompletionItem createCompletionItem(ShellHistory.Item item, boolean saved) {
+            return new ItemImpl(saved, counter++, item.getKind(), item.isShellCommand(), item.getContents());
         }
         
         @Override
@@ -169,23 +183,24 @@ public class HistoryCompletionProvider implements CompletionProvider {
                 resultSet.finish();
                 return;
             }
+            ShellHistory  h = session.getEnv().getLookup().lookup(ShellHistory.class);
             resultSet.addAllItems(
-                    model.getSections().stream().
-                            filter(s -> shouldDisplay(s)).
-                            map(s -> createSectionItem(s)).
+                    session.historyItems().stream().
+                            map(this::createCurrentItem).
                             collect(Collectors.toList())
             );
+            if (h != null) {
+                resultSet.addAllItems(
+                        h.getHistory().stream().
+                        map(this::createHistoryItem).
+                        collect(Collectors.toList()));
+            }
             resultSet.finish();
         }
-        
-        private boolean shouldDisplay(ConsoleSection item) {
-            if (!item.getType().input || (input != null && (input.getStart() <= item.getStart()))) {
-                return false;
-            }
-            String text = item.getContents(model.getDocument());
-            return !text.trim().isEmpty();
-        }
     }
+    
+    private static final int PRIORITY_SAVED = 2000;
+    private static final int PRIORITY_CURRENT = 1000;
     
     
     @NbBundle.Messages({
@@ -195,10 +210,16 @@ public class HistoryCompletionProvider implements CompletionProvider {
     private static class ItemImpl implements CompletionItem {
         private final int index;
         private final String text;
-
-        public ItemImpl(int index, String text) {
+        private final boolean saved;
+        private final Snippet.Kind  kind;
+        private final boolean       command;
+        
+        public ItemImpl(boolean saved, int index, Snippet.Kind kind, boolean command, String text) {
             this.index = index;
             this.text = text;
+            this.saved = saved;
+            this.command = command;
+            this.kind = kind;
         }
         
         private String getLeftText() {
@@ -256,11 +277,37 @@ public class HistoryCompletionProvider implements CompletionProvider {
                     getLeftText(), 
                     getRightText(), g, defaultFont);
         }
+        
+        private ImageIcon getIcon() {
+            String baseName;
+            
+            if (command) {
+                baseName = "command"; // NOI18N
+            } else {
+                switch (kind) {
+                    case VAR:
+                    case EXPRESSION:
+                    case IMPORT:
+                    case METHOD:
+                    case TYPE_DECL:
+                    case STATEMENT:
+                            baseName = kind.name().toLowerCase();
+                        break;
+                    default:
+                        baseName = "item"; // NOI18N
+                        break;
+                }
+            }
+            
+            return ImageUtilities.loadImageIcon(ICON_BASE + baseName + ".png", true);
+        }
+        
+        private static final String ICON_BASE = "org/netbeans/modules/jshell/resources/history_"; // NOI18N
 
         @Override
         public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-            ImageIcon icon = ImageUtilities.loadImageIcon(
-                    "org/netbeans/modules/jshell/resources/historyItem.png", true);
+            ImageIcon icon = getIcon();
+            
             CompletionUtilities.renderHtml(
                     icon, 
                     getLeftText(), 
@@ -291,12 +338,12 @@ public class HistoryCompletionProvider implements CompletionProvider {
 
         @Override
         public int getSortPriority() {
-            return 1000;
+            return saved ? PRIORITY_SAVED : PRIORITY_CURRENT;
         }
 
         @Override
         public CharSequence getSortText() {
-            return getRightText();
+            return Integer.toString(1000 - index);
         }
 
         @Override

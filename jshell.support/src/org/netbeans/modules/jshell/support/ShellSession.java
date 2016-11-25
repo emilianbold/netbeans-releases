@@ -108,12 +108,18 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
+import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
 import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
 import static org.netbeans.modules.jshell.support.JShellLauncher.quote;
+import org.netbeans.modules.jshell.support.ShellHistory.Item;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -285,7 +291,7 @@ public class ShellSession  {
                 return Task.EMPTY;
             }
         }
-        closed = true;
+//        closed = true;
         model.detach();
         closed();
         if (exec != null) {
@@ -927,6 +933,16 @@ public class ShellSession  {
         }
         env.notifyDisconnected(this);
         propSupport.firePropertyChange(PROP_ACTIVE, true, false);
+        
+        // save the history
+        ShellHistory h = env.getLookup().lookup(ShellHistory.class);
+        if (h != null) {
+            saveInputSections(h);
+        }
+    }
+    
+    private void saveInputSections(ShellHistory history) {
+        history.pushItems(historyItems());
     }
     
     private void closedDelayed() {
@@ -1424,5 +1440,56 @@ public class ShellSession  {
         }
         shell.stop();
     }
-    
+
+    public List<ShellHistory.Item> historyItems() {
+        final List<Item> historyLines = new ArrayList<>();
+        try {
+            ParserManager.parse(Collections.singleton(Source.create(getConsoleDocument())), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ConsoleContents console = ConsoleContents.get(resultIterator);
+                    ConsoleSection input = console.getInputSection();
+                    for (ConsoleSection s : console.getSectionModel().getSections()) {
+                        if (!s.getType().input) {
+                            continue;
+                        }
+                        if (s == input) {
+                            // do not save current input
+                            continue;
+                        }
+                        String contents = s.getContents(consoleDocument);
+                        // ignore such lines, which contain just history command
+                        if (contents.startsWith("/") && contents.length() > 2) {
+                            if (contents.charAt(1) == '-' || Character.isDigit(contents.charAt(1))) {
+                                continue;
+                            }
+                        }
+                        List<SnippetHandle> handles = console.getHandles(s);
+                        
+                        Snippet.Kind sectionKind;
+                        boolean command;
+                        if (s.getType() == ConsoleSection.Type.COMMAND) {
+                            command = true;
+                            sectionKind = null;
+                        } else {
+                            command = false;
+                            if (handles.isEmpty()) {
+                                sectionKind = Snippet.Kind.ERRONEOUS;
+                            } else {
+                                sectionKind = handles.get(0).getKind();
+                            }
+                        }
+                        contents = contents.trim();
+                        if (contents.isEmpty()) {
+                            continue;
+                        }
+                        historyLines.add(new ShellHistory.Item(sectionKind, command, contents));
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            return Collections.emptyList();
+        }
+        return historyLines;
+    }
 }
