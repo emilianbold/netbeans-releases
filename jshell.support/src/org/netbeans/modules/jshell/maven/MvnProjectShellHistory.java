@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.jshell.maven;
 
-import org.netbeans.modules.jshell.j2se.*;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.launch.ShellOptions;
