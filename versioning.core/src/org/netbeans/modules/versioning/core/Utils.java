@@ -65,6 +65,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VCSForbiddenFolderProvider;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.Places;
@@ -345,6 +346,12 @@ public class Utils {
     }
 
     public static boolean isForbiddenFolder (VCSFileProxy folder) {
+        Collection<? extends VCSForbiddenFolderProvider> forbiddenFolderProviders = Lookup.getDefault().lookupAll(VCSForbiddenFolderProvider.class);
+        for (VCSForbiddenFolderProvider provider : forbiddenFolderProviders) {
+            if (provider.isForbiddenFolder(folder)) {
+                return true;
+            }
+        }
         return forbiddenFolders.contains(folder.getPath());
     }
 
