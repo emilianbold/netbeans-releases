@@ -463,7 +463,7 @@ public class CvsVersioningSystem {
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
             // is the folder a special one where metadata should not be looked for?
-            boolean forbiddenFolder = org.netbeans.modules.versioning.util.Utils.isForbiddenFolder(file.getAbsolutePath());
+            boolean forbiddenFolder = org.netbeans.modules.versioning.util.Utils.isForbiddenFolder(file);
             if (!forbiddenFolder && Utils.containsMetadata(file)) {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
