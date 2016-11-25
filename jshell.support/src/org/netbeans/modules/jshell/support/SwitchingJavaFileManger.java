@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -75,16 +77,20 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author sdedic
  */
-final class SwitchingJavaFileManger implements StandardJavaFileManager {
-    private final JavaFileManager   delegate;
+final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeListener {
+    private volatile JavaFileManager   delegate;
     private final PathFactory pathFactory = Paths::get;
     private final ClasspathInfo   cpInfo;
-    private ThreadLocal<JavaFileManager>    localDelegate = new ThreadLocal<>();
+    private volatile ThreadLocal<JavaFileManager>    localDelegate = new ThreadLocal<>();
     private final Deque<JavaFileManager>    locals = new ArrayDeque<>();
 
     public SwitchingJavaFileManger(ClasspathInfo cpInfo) {
-        this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
         this.cpInfo = cpInfo;
+    }
+    
+    private synchronized void resetFileManager() {
+        delegate = null;
+        locals.clear();
     }
     
     <T> T withLocalManager(Callable<T> r) throws Exception {
@@ -113,7 +119,16 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager {
         if (d != null) {
             return d;
         }
-        return delegate;
+        d = this.delegate;
+        if (d != null) {
+            return d;
+        }
+        synchronized (this) {
+            if (delegate == null) {
+                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
+            }
+            return delegate;
+        }
     }
     
     @Override
@@ -266,5 +281,12 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager {
             }
         }
         return res;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (e.getSource() == cpInfo) {
+            resetFileManager();
+        }
     }
 }
