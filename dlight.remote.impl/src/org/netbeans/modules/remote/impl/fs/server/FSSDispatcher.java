@@ -137,16 +137,7 @@ import org.openide.util.RequestProcessor;
     private volatile FileSystemProvider.AccessCheckType accessCheckType;
     
     private String getMinServerVersion() {
-        if (HostInfoUtils.isHostInfoAvailable(env)) {
-            try {
-                if (HostInfoUtils.getHostInfo(env).getCpuFamily() == HostInfo.CpuFamily.ARM) {
-                    return "1.7.0"; // NOI18N
-                }
-            } catch (IOException | ConnectionManager.CancellationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return "1.10.2"; // NOI18N
+        return "1.11.3"; // NOI18N
     }
     
     private FSSDispatcher(ExecutionEnvironment env) {

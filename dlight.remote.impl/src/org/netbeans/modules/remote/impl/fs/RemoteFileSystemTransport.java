@@ -83,6 +83,15 @@ public abstract class RemoteFileSystemTransport {
     public static boolean canSetAccessCheckType(ExecutionEnvironment execEnv) {
         return getInstanceFast(execEnv).canSetAccessCheckType();
     }
+    
+    public static boolean canDeleteOnDisconnect(ExecutionEnvironment execEnv) {
+        return getInstanceFast(execEnv).canDeleteOnDisconnect();
+    }
+    
+    public static void deleteOnDisconnect(ExecutionEnvironment execEnv, String... paths)
+        throws IOException, CancellationException, InterruptedException, ExecutionException {
+        getInstanceFast(execEnv).deleteOnDisconnect(paths);
+    }
 
     public static void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType) {
         getInstanceFast(execEnv).setAccessCheckType(accessCheckType);
@@ -343,6 +352,11 @@ public abstract class RemoteFileSystemTransport {
             throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException;
 
     protected abstract boolean canSetAccessCheckType();
+
+    protected abstract boolean canDeleteOnDisconnect();
+
+    protected abstract void deleteOnDisconnect(String[] paths) 
+            throws IOException, CancellationException, InterruptedException, ExecutionException;
 
     protected abstract void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType);
 
