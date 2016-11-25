@@ -441,6 +441,8 @@ public final class SemanticHighlighter extends HighlighterBase {
             CountDownLatch aLatch = latch;
             try {
                 SemanticHighlighter.updateImpl(provider, doc, interrupter);
+            } catch (Throwable ex) {
+                CndUtils.printStackTraceOnce(ex);
             } finally {
                 aLatch.countDown();
             }
