@@ -3114,6 +3114,10 @@ public class AstTest extends CslTestBase {
 //        checkAstResult("testfiles/model/functions/returnObjectLiteral01.js");
 //    }
     
+    public void testIssue269061() throws Exception {
+        checkAstResult("testfiles/parser/issue269061.js");
+    }
+    
     private void checkAstResult(String relFilePath) throws Exception {
         FileObject testFO = getTestFile(relFilePath);
         if (testFO == null) {
