@@ -48,6 +48,7 @@ import org.netbeans.modules.jshell.support.FileHistory;
 import org.netbeans.modules.jshell.support.ShellHistory;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -68,6 +69,6 @@ public class NbProjectShellHistory extends FileHistory {
 
     @Override
     protected FileObject createFile() throws IOException {
-        return project.getProjectDirectory().createData(HISTORY_FILENAME);
+        return  FileUtil.createData(project.getProjectDirectory(), HISTORY_FILENAME);
     }
 }
