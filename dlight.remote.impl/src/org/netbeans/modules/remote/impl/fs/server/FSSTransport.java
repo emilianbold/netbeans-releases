@@ -657,6 +657,20 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     protected FileSystemProvider.AccessCheckType getAccessCheckType() {
         return dispatcher.getAccessCheckType();
     }
+    
+    @Override
+    protected boolean canDeleteOnDisconnect() {
+        return true;
+    }
+
+    @Override
+    protected void deleteOnDisconnect(String[] paths) 
+        throws IOException, CancellationException, InterruptedException, ExecutionException {
+        for (String p : paths) {
+            FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_DELETE_ON_DISCONNECT, p, true);
+            dispatcher.dispatch(request);
+        }
+    }    
 
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {
 
