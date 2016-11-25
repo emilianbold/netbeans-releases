@@ -89,6 +89,7 @@ void mutex_unlock_wrapper(pthread_mutex_t *mutex);
 void mutex_lock_wrapper(pthread_mutex_t *mutex);
 void *malloc_wrapper(size_t size);
 void *realloc_wrapper(void *ptr, size_t size);
+char *strdup_wrapper(const char* str);
 
 bool get_home_dir(char* home, int size);
 bool file_exists(const char* path);

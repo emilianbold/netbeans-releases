@@ -146,6 +146,14 @@ void soft_assert(int condition, char* format, ...) {
         va_end(args);
     }
 }
+char *strdup_wrapper(const char* str) {
+    char* p = strdup(str);
+    if (!p) {
+        report_error("out of memory\n");
+        exit(FAILURE_ALLOCATE_MEMORY);
+    }
+    return p;
+}
 
 void *malloc_wrapper(size_t size) {
     void *p = malloc(size);
