@@ -45,8 +45,11 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.debug.DebugValue;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -59,6 +62,7 @@ public class TruffleObject {
     final String name;
     final String type;
     final String displayValue;
+    final boolean writable;
     final boolean leaf;
     final boolean isArray;
     final Collection<DebugValue> properties;
@@ -68,7 +72,21 @@ public class TruffleObject {
         this.name = value.getName();
         this.type = ""; // TODO?
         //this.object = value;
-        this.displayValue = value.as(String.class);
+        String valueStr = value.as(String.class);
+        if (valueStr == null) {
+            // Hack for R:
+            try {
+                Method getMethod = DebugValue.class.getDeclaredMethod("get");
+                getMethod.setAccessible(true);
+                Object realValue = getMethod.invoke(value);
+                valueStr = Objects.toString(realValue);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException |
+                     NoSuchMethodException | SecurityException ex) {
+                ex.printStackTrace();
+            }
+        }
+        this.displayValue = valueStr;
+        this.writable = value.isWriteable();
         this.properties = value.getProperties();
         this.leaf = properties == null || properties.isEmpty();
         this.isArray = value.isArray();
