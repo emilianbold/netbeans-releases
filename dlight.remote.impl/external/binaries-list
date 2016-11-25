@@ -1,5 +1,7 @@
-#changeset:   300533:4cd06f905ed3
+#changeset:   313432:85eedc93576d
+#branch:      release82
+#tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Sep 12 20:14:52 2016 +0300
-#summary:     better error processing, sources (fixing #267975 - NullPointerException at org.netbeans.modules.subversion.remote.RepositoryFile.<init>)
-18E39A0D10357B72EDB76F2070E27019317792F1 fs_server-1.0.zip
+#date:        Fri Nov 25 23:38:18 2016 +0300
+#summary:     fixing #268926 (Remote File System should support DeleteOnExit) - fixed FMR (reading from freed memory)
+1FD9407311B337EB9FCDD417E15954D44DDF69D3 fs_server-1.0.zip
