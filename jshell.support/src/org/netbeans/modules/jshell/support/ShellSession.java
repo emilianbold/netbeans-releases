@@ -122,6 +122,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -227,7 +228,7 @@ public class ShellSession  {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
     private SnippetRegistry     snippetRegistry;
-    
+        
     public ShellSession(JShellEnvironment env) {
         this(env.getDisplayName(), 
              env.getConsoleDocument(), 
@@ -501,6 +502,9 @@ public class ShellSession  {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { 
             env.getSnippetClassPath()
         });
+        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] { 
+            env.getUserLibraryPath()
+        });
 
         return Pair.of(previous, evaluator.post(() -> {
 
@@ -644,7 +648,31 @@ public class ShellSession  {
             // create an indexed file for the snippet.
             snippetRegistry.snippetFile(handle, 0);
         }
-        
+
+        @Override
+        protected void classpathAdded(String arg) {
+            super.classpathAdded(arg);
+            File f = new File(arg);
+            FileObject fob = FileUtil.toFileObject(f);
+            if (fob != null) {
+                env.appendClassPath(fob);
+            }
+        }
+
+        @Override
+        protected String resolveUserHome(String path) {
+            String homeResolved = super.resolveUserHome(path);
+            File f = new File(homeResolved);
+            if (!f.isAbsolute()) {
+                // prepend project's directory
+                Project p = env.getProject();
+                if (p != null) {
+                    f = new File(FileUtil.toFile(p.getProjectDirectory()), homeResolved);
+                    return f.getPath();
+                }
+            }
+            return homeResolved;
+        }
     }
     
     private SwitchingJavaFileManger fileman;
@@ -659,7 +687,7 @@ public class ShellSession  {
             b.compilerOptions("-target", v.toString()); // NOI18N
         }
         b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
-        b.fileManager(fileman = new SwitchingJavaFileManger(cpInfo));
+        b.fileManager(fileman = new SwitchingJavaFileManger(getClasspathInfo()));
         return b;
     }
     
@@ -884,7 +912,7 @@ public class ShellSession  {
                 toolsJar = FileUtil.toFile(toolsJarFO);
             }
         }
-        ClassPath compilePath = cpInfo.getClassPath(PathKind.COMPILE);
+        ClassPath compilePath = getClasspathInfo().getClassPath(PathKind.COMPILE);
         
         FileObject[] roots = compilePath.getRoots();
         File[] urlFiles = new File[roots.length];
@@ -996,10 +1024,12 @@ public class ShellSession  {
                 ClassPathSupport.createClassPath(editorWorkRoot),
                 ClassPathSupport.createClassPath(workRoot)
         );
+        
+        ClassPath compileClasspath = projectInfo.getClassPath(PathKind.COMPILE);
 
         this.cpInfo = ClasspathInfo.create(
                 projectInfo.getClassPath(PathKind.BOOT),
-                projectInfo.getClassPath(PathKind.COMPILE),
+                compileClasspath,
                 snippetSource
         );
         

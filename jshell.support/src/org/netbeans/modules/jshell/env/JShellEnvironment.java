@@ -62,6 +62,8 @@ import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -105,6 +107,10 @@ public class JShellEnvironment {
     
     private String            displayName;
     
+    private ConfigurableClasspath  userClassPathImpl = new ConfigurableClasspath();
+    
+    private ClassPath         userLibraryPath = ClassPathFactory.createClassPath(userClassPathImpl);
+    
     private ClassPath         snippetClassPath;
     
     private InputOutput       inputOutput;
@@ -125,6 +131,10 @@ public class JShellEnvironment {
     protected JShellEnvironment(Project project, String displayName) {
         this.project = project;
         this.displayName = displayName;
+    }
+    
+    public void appendClassPath(FileObject f) {
+        userClassPathImpl.append(f);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -265,6 +275,7 @@ public class JShellEnvironment {
                     projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
                     ClassPathSupport.createProxyClassPath(
                         ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
+                        userLibraryPath,
                         projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
                     ),
                     projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE)
@@ -411,6 +422,10 @@ public class JShellEnvironment {
     
     public ClassPath getSnippetClassPath() {
         return snippetClassPath;
+    }
+    
+    public ClassPath getUserLibraryPath() {
+        return userLibraryPath;
     }
     
     /**

@@ -319,7 +319,7 @@ public class InternalJShell {
         }
     }
 
-    private static String resolveUserHome(String path) {
+    protected String resolveUserHome(String path) {
         if (path.replace(File.separatorChar, '/').startsWith("~/"))
             path = System.getProperty("user.home") + path.substring(1);
         return path;
@@ -548,9 +548,15 @@ public class InternalJShell {
         if (arg == null || arg.isEmpty()) {
             hard("/classpath requires a path argument");
         } else {
-            state.addToClasspath(resolveUserHome(arg));
-//            fluff("Path %s added to classpath", arg);
+            String s = resolveUserHome(arg);
+            state.addToClasspath(s);
+            fluff("Path %s added to classpath", arg);
+            classpathAdded(s);
         }
+    }
+    
+    protected void classpathAdded(String arg) {
+        
     }
 
     void cmdDebug(String arg) {

@@ -549,7 +549,11 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
                 throw new InternalException("Relative paths unuspported yet"); // NOI18N
             }
             try {
-                additionalClasspath.add(f.toURI().toURL());
+                URL url = f.toURI().toURL();
+                additionalClasspath.add(url);
+                if (loader != null) {
+                    loader.addURL(url);
+                }
             } catch (MalformedURLException ex) {
                 throw new InternalException("Invalid file url: " + cpItem);
             }
