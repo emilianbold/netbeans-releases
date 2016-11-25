@@ -50,6 +50,7 @@ import java.awt.HeadlessException;
 import java.awt.KeyboardFocusManager;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
@@ -58,7 +59,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import org.netbeans.modules.openide.filesystems.FileFilterSupport;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystem.spi.FileChooserBuilderProvider;
 import org.openide.util.*;
 
 /**
@@ -125,6 +126,24 @@ public class FileChooserBuilder {
     private SelectionApprover approver;
     private final List<FileFilter> filters = new ArrayList<FileFilter>(3);
     private boolean useAcceptAllFileFilter = true;
+    
+    /**
+     * Creates a new FileChooserBuilder which can interact with the given file system.
+     * @param fileSystem A virtual file system
+     * @return FileChooserBuilder related to the given file system
+     * @since 9.11
+     */
+    public static FileChooserBuilder create(FileSystem fileSystem) {
+        Collection<? extends FileChooserBuilderProvider> providers = Lookup.getDefault().lookupAll(FileChooserBuilderProvider.class);
+        for (FileChooserBuilderProvider provider : providers) {
+            FileChooserBuilder builder =  provider.createFileChooserBuilder(fileSystem);
+            if (builder != null) {
+                return builder;
+            }
+        }
+        return new FileChooserBuilder(fileSystem.getDisplayName());
+    }
+    
     /**
      * Create a new FileChooserBuilder using the name of the passed class
      * as the metadata for looking up a starting directory from previous
