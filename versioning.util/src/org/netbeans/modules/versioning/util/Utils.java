@@ -319,7 +319,7 @@ public final class Utils {
      * @param folderPath path to a folder to query
      * @return <code>true</code> if the folder identified by the given path
      * should be skipped when searching for metadata.
-     * @since 1.71.0
+     * @since 1.69.2
      */
     public static boolean isForbiddenFolder (File folder) {
         return org.netbeans.modules.versioning.core.util.Utils.isForbiddenFolder(VCSFileProxy.createFileProxy(folder));
@@ -339,7 +339,7 @@ public final class Utils {
      * @param folderPath path to a folder to query
      * @return <code>true</code> if the folder identified by the given path
      * should be skipped when searching for metadata.
-     * @since 1.71.0
+     * @since 1.69.2
      */
     public static boolean isForbiddenFolder (VCSFileProxy folder) {
         return org.netbeans.modules.versioning.core.util.Utils.isForbiddenFolder(folder);

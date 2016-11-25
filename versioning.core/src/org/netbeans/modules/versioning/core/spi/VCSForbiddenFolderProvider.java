@@ -56,7 +56,7 @@ public interface VCSForbiddenFolderProvider {
      * @param folder a folder to query
      * @return <code>true</code> if the given folder should be skipped when
      * searching for metadata.
-     * @since 1.32.0
+     * @since 1.30.2.0
      */
     boolean isForbiddenFolder (VCSFileProxy folder);
 }
