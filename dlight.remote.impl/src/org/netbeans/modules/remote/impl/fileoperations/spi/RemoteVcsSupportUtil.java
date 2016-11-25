@@ -441,4 +441,38 @@ public class RemoteVcsSupportUtil {
             }
         }
     }
+    
+    private static boolean isForbiddenFolderImpl(RemoteFileSystem rfs, String path) {
+        if (path.isEmpty()) {
+            return true;
+        } else if (rfs.isAutoMount(path)) {
+            return true;
+        } else if(rfs.isProhibitedToEnter(path)) {
+            return true;
+        } else if (path.equals("/tmp")) { //NOI18N
+            // 1) It just does not make sense to support versioning in tmp.
+            // 2) It mutes too frequently, this produces tremendous amount of noise
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isForbiddenFolder(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            if (isForbiddenFolderImpl(rfs, path)) {
+                return true;
+            }
+            int pos = path.lastIndexOf('/');
+            if (pos >= 0) {
+                String parent = path.substring(0, pos);
+                if (isForbiddenFolderImpl(rfs, parent)) {
+                    return true;
+                }
+            }
+            return false;
+            //return rfs.isAutoMount(path);
+        }
+        return false;
+    }
 }
