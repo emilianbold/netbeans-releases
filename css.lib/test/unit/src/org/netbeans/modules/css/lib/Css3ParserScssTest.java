@@ -2005,5 +2005,13 @@ public class Css3ParserScssTest extends CssTestBase {
                 + ");");
     }
     
-    
+    public void testMediaWithInterpolation() {
+        assertParses("$information-phone: \"(max-width : 320px)\";\n"
+                + "@media screen and (#{$information-phone}) {\n"
+                + "  background: red;\n"
+                + "}\n"
+                + "@media screen and #{$information-phone} {\n"
+                + "  background: red;\n"
+                + "}");
+    }
 }

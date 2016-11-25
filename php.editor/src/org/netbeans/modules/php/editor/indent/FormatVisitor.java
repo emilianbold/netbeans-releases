@@ -183,15 +183,24 @@ public class FormatVisitor extends DefaultVisitor {
                     || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
                     && TokenUtilities.textEquals("//", ts.token().text())) // NOI18N
                     && indexBeforeLastComment == -1) {
-                if (ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0) {
+                if (ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE) {
                     // don't change if the line comment or a comment starts on the same line
-                    indexBeforeLastComment = beforeTokens.size() - 1;
+                    if (countOfNewLines(ts.token().text()) > 0) {
+                        indexBeforeLastComment = beforeTokens.size() - 1;
+                    } else {
+                        // #268710
+                        if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                            indexBeforeLastComment = beforeTokens.size() - 1;
+                        }
+                        ts.moveNext();
+                    }
                 }
                 ts.moveNext();
             }
         }
         includeWSBeforePHPDoc = true;
-        if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
+        // in case of #268710, indexBeforeLastComment may be 0
+        if (indexBeforeLastComment >= 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
             for (int i = 0; i < indexBeforeLastComment; i++) {
                 formatTokens.add(beforeTokens.get(i));
             }
@@ -1717,9 +1726,9 @@ public class FormatVisitor extends DefaultVisitor {
                             tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n" + ts.token().text().toString()));
                             if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
                                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_LINE_COMMENTS, ts.offset()));
-                            } else {
-                                ts.movePrevious();
                             }
+                            // #268710 for adding/checking the PHP_LINE_COMMENT token later
+                            ts.movePrevious();
                         } else {
                             tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, newOffset, "\n"));
                             ts.movePrevious();
