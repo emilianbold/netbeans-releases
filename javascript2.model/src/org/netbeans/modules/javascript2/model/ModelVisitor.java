@@ -1022,7 +1022,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         Identifier newIdentifier = null;
         if (decNameOffset.getLength() == 0) {
             // the function name is not between function and (
-            if (lastVisited instanceof PropertyNode) {
+            if (lastVisited instanceof PropertyNode && fn.getKind() != FunctionNode.Kind.ARROW) {
                 PropertyNode pNode = (PropertyNode)lastVisited;
                 newIdentifier = new Identifier(pNode.getKeyName(), getOffsetRange(pNode.getKey()));
             } else if ((lastVisited instanceof VarNode) && fn.isAnonymous()) {
