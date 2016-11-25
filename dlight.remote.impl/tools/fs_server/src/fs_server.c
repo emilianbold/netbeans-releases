@@ -96,7 +96,7 @@ static unsigned long locker_pid_to_kill = 0;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 10
+#define FS_SERVER_MID_VERSION 11
 #define FS_SERVER_MINOR_VERSION 3
 
 typedef struct fs_entry {
@@ -130,23 +130,13 @@ static __thread struct {
     char* strerr;
 } err_info;
 
+static struct {
+    queue queue;
+    pthread_mutex_t mutex;
+} delete_on_exit_list;
+
 static const int thread_emsg_bufsize = PATH_MAX * 2 + 128; // should it be less?
 static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?
-
-static void err_init() {
-    err_info.err_no = 0;
-    err_info.errmsg = malloc_wrapper(thread_emsg_bufsize);
-    err_info.strerr = malloc_wrapper(strerr_bufsize);
-    *err_info.errmsg = 0; // just in case
-}
-
-static void err_shutdown() {
-    err_info.err_no = 0;
-    free(err_info.errmsg);
-    err_info.errmsg = NULL;
-    free(err_info.strerr);
-    err_info.strerr = NULL;
-}
 
 static int err_get_code() {
     return err_info.err_no;
@@ -174,6 +164,56 @@ static void err_set(int code, const char *format, ...) {
     va_start (args, format);
     vsnprintf(err_info.errmsg, thread_emsg_bufsize, format, args);
     va_end (args);
+}
+
+static void delete_on_exit_list_init() {
+    pthread_mutex_init(&delete_on_exit_list.mutex, NULL);
+    mutex_lock_wrapper(&delete_on_exit_list.mutex);
+    queue_init(&delete_on_exit_list.queue);
+    mutex_unlock_wrapper(&delete_on_exit_list.mutex);
+}
+
+static void delete_on_exit_list_add(const char* p) {
+    mutex_lock_wrapper(&delete_on_exit_list.mutex);
+    const char* p2 = strdup_wrapper(p);
+    queue_add(&delete_on_exit_list.queue, (void*) p2);
+    mutex_unlock_wrapper(&delete_on_exit_list.mutex);
+}
+
+static void delete_on_exit_impl() {
+    trace(TRACE_INFO, "Processing files that should be deleted on exit\n");
+    mutex_lock_wrapper(&delete_on_exit_list.mutex);
+    int success_cnt = 0;
+    int err_cnt = 0;
+    void* p;
+    while((p = queue_poll(&delete_on_exit_list.queue))) {
+        const char* path = (const char*) p;
+        trace(TRACE_FINEST, "  removing %s...", path);
+        if(unlink(path)) {
+            err_cnt++;
+            report_error("error deleting file %s: %s\n", path, err_to_string(errno));
+        } else {
+            success_cnt++;            
+        }
+        free(p);
+    }
+    mutex_unlock_wrapper(&delete_on_exit_list.mutex);    
+    trace(TRACE_INFO, "Successfully removed %d files; error removing %d files\n", success_cnt, err_cnt);
+}
+
+static void err_init() {
+    err_info.err_no = 0;
+    err_info.errmsg = malloc_wrapper(thread_emsg_bufsize);
+    err_info.strerr = malloc_wrapper(strerr_bufsize);
+    *err_info.errmsg = 0; // just in case
+}
+
+static void err_shutdown() {
+    err_info.err_no = 0;
+    free(err_info.errmsg);
+    err_info.errmsg = NULL;
+    free(err_info.strerr);
+    err_info.strerr = NULL;
 }
 
 static bool state_get_proceed() {
@@ -303,6 +343,7 @@ static bool is_valid_request_kind(char c) {
         case FS_REQ_REMOVE_WATCH:
         case FS_REQ_REFRESH:
         case FS_REQ_DELETE:
+        case FS_REQ_DELETE_ON_DISCONNECT:
         case FS_REQ_SERVER_INFO:
         case FS_REQ_HELP:
         case FS_REQ_OPTION:
@@ -847,6 +888,13 @@ static void response_error(int request_id, const char* path, int err_code, const
 static void response_info(int request_id) {
     my_fprintf(STDOUT, "%c %i %i.%i.%i\n", FS_RSP_SERVER_INFO, request_id, FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION);
     my_fflush(STDOUT);
+}
+
+static void response_delete_on_disconnect(int request_id, const char* path) {
+    if (request_id != 0) {
+        response_error(request_id, path, 0, "FS_REQ_DELETE_ON_DISCONNECT request should have zero ID!");
+    }
+    delete_on_exit_list_add(path);
 }
 
 static void response_delete(int request_id, const char* path, const settings_str* settings) {
@@ -1524,6 +1572,7 @@ static void response_help() {
     help_req_kind(FS_REQ_REMOVE_WATCH);
     help_req_kind(FS_REQ_REFRESH);
     help_req_kind(FS_REQ_DELETE);
+    help_req_kind(FS_REQ_DELETE_ON_DISCONNECT);
     help_req_kind(FS_REQ_SERVER_INFO);
     help_req_kind(FS_REQ_OPTION);
     help_req_kind(FS_REQ_HELP);
@@ -1536,6 +1585,9 @@ static void process_request(fs_request* request) {
     switch (request->kind) {
         case FS_REQ_DELETE:
             response_delete(request->id, request->path, &settings);
+            break;
+        case FS_REQ_DELETE_ON_DISCONNECT:
+            response_delete_on_disconnect(request->id, request->path);
             break;
         case FS_REQ_SERVER_INFO:
             response_info(request->id);
@@ -1906,6 +1958,7 @@ static void startup() {
         trace(TRACE_INFO, "loaded dirtab\n");
         dirtab_visit(print_visitor, NULL);
     }
+    delete_on_exit_list_init();    
     int curr_thread = 0;
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
@@ -1957,6 +2010,7 @@ static void *killer(void *data) {
 
 static void shutdown() {
     state_set_proceed(false);
+    delete_on_exit_impl();
     blocking_queue_shutdown(&req_queue);
     trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     if (statistics) {
