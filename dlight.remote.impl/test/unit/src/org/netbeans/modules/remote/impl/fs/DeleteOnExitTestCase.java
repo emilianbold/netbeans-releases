@@ -80,10 +80,9 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             dirFO.getFileSystem().deleteOnExit(path1);
             dirFO.getFileSystem().deleteOnExit(path2);
 
-            reconnect();
-            
-            status = ProcessUtils.execute(execEnv, "ls", path1, path2);
-            assertFalse("Files should be removed", status.isOK());
+            reconnect(true);
+            sleep(200);
+            assertExec("Files should be removed", false, 500, 40, "ls", path1, path2);
         } finally {
             removeRemoteDirIfNotNull(dir);
         }
@@ -97,14 +96,22 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             RemoteFileObject dirFO = (RemoteFileObject) getFileObject(dir);
             FileObject tmpFO = dirFO.getFileSystem().createTempFile(dirFO, "tmp", "tmp", true);            
             String path1 = tmpFO.getPath();            
-            //ProcessUtils.ExitStatus status = ProcessUtils.execute(execEnv, "ls", path1);
-            //assertTrue("Error creating temp files", status.isOK());
-            reconnect();
-            final ProcessUtils.ExitStatus status = ProcessUtils.execute(execEnv, "ls", path1);
-            assertFalse("Files should be removed", status.isOK());
+            reconnect(true);
+            assertExec("Files should be removed", false, 500, 40, "ls", path1);
         } finally {
             removeRemoteDirIfNotNull(dir);
         }
+    }
+    
+    private void assertExec(String failureMessage, boolean expectSuccess, int timeout, int attempts, String cmd, String...args) {
+        for (int i = 0; i < attempts; i++) {
+            ProcessUtils.ExitStatus status = ProcessUtils.execute(execEnv, cmd, args);
+            if (status.isOK() == expectSuccess) {
+                return;
+            }
+            sleep(timeout);
+        }        
+        assertTrue(failureMessage, false);
     }
 
     public static Test suite() {

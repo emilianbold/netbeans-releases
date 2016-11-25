@@ -107,12 +107,13 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         this.execEnv = execEnv;
     }
     
-    protected void reconnect() throws Exception {
+    protected void reconnect(boolean resetFileSystem) throws Exception {
         char[] paswd = PasswordManager.getInstance().getPassword(execEnv);
         ConnectionManager.getInstance().disconnect(execEnv);
-        sleep(250);
+        sleep(200);
         assertFalse("Failure disconnecting from " + execEnv, ConnectionManager.getInstance().isConnectedTo(execEnv));
-        sleep(250);
+        sleep(200);
+        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
         PasswordManager.getInstance().storePassword(execEnv, paswd, true);
         ConnectionManager.getInstance().connectTo(execEnv);
         assertTrue("Failure reconnecting to " + execEnv, ConnectionManager.getInstance().isConnectedTo(execEnv));
