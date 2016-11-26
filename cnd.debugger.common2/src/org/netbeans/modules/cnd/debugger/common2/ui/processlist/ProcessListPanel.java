@@ -150,7 +150,7 @@ public final class ProcessListPanel extends javax.swing.JPanel
 //        
         filterLabel.setLabelFor(filterCombo);
         filterCombo.setEditable(true);
-        filterCombo.setStorage("attach.panel", filterPrefs);//NOI8N
+        filterCombo.setStorage("attach.panel", filterPrefs);//NOI18N
         filterCombo.read(lastFilterPrefs.get(LAST_FILTER_VALUE, ""));//NOI18N
         
         final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
@@ -217,7 +217,7 @@ public final class ProcessListPanel extends javax.swing.JPanel
 
         manager.addPropertyChangeListener(propertyChangeListener);        
     }
-    private static final String LAST_FILTER_VALUE = "value";
+    private static final String LAST_FILTER_VALUE = "value";//NOI18N
     
 //    //
 //    // To support 6646693
