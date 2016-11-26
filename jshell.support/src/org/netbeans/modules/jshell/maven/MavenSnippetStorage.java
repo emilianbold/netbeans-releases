@@ -47,7 +47,6 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.support.SnippetStorage;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

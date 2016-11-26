@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,33 +39,43 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.editor;
+package org.netbeans.modules.jshell.env;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.editor.NbEditorKit;
-//import org.netbeans.modules.editor.plain.PlainKit;
+import java.io.IOException;
+import org.netbeans.modules.jshell.launch.ShellOptions;
+import org.netbeans.modules.jshell.support.FileHistory;
+import org.netbeans.modules.jshell.support.ShellHistory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author sdedic
  */
-@MimeRegistration(service = EditorKit.class, mimeType = "text/x-repl")
-public class REPLEditorKit extends NbEditorKit {
+@ServiceProvider(service = ShellHistory.class)
+public class GlobalShellHistory extends FileHistory {
+    private static final String HISTORY_FILENAME = "jshell.history"; // NOI18N
 
-    @Override
-    public String getContentType() {
-        return "text/x-repl"; // NOI18N
+    public GlobalShellHistory() {
+        super(FileUtil.getConfigRoot().getFileObject(HISTORY_FILENAME));
+        setMaxHistoryItems(ShellOptions.get().getHistoryLines());
     }
 
     @Override
-    public void deinstall(JEditorPane c) {
-        super.deinstall(c);
-    }
-
-    @Override
-    public void install(JEditorPane c) {
-        super.install(c);
+    protected FileObject createFile() throws IOException {
+        FileObject f = FileUtil.getConfigRoot().getFileObject(HISTORY_FILENAME);
+        if (f != null) {
+            return f;
+        }
+        try {
+            return FileUtil.getConfigRoot().createData(HISTORY_FILENAME);
+        } catch (IOException ex) {
+            f = FileUtil.getConfigRoot().getFileObject(HISTORY_FILENAME);
+            if (f != null) {
+                return f;
+            }
+            throw ex;
+        }
     }
 }

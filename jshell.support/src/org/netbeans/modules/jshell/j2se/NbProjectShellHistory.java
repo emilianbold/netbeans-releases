@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,33 +39,36 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.editor;
+package org.netbeans.modules.jshell.j2se;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.editor.NbEditorKit;
-//import org.netbeans.modules.editor.plain.PlainKit;
+import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.jshell.launch.ShellOptions;
+import org.netbeans.modules.jshell.support.FileHistory;
+import org.netbeans.modules.jshell.support.ShellHistory;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author sdedic
  */
-@MimeRegistration(service = EditorKit.class, mimeType = "text/x-repl")
-public class REPLEditorKit extends NbEditorKit {
+@ProjectServiceProvider( service = ShellHistory.class, projectType = "org-netbeans-modules-java-j2seproject")
+public class NbProjectShellHistory extends FileHistory {
+    private static final String HISTORY_FILENAME = "nbproject/private/jshell.history"; // NOI18N
+    private final Project project;
 
-    @Override
-    public String getContentType() {
-        return "text/x-repl"; // NOI18N
+    public NbProjectShellHistory(Project project) {
+        super(project.getProjectDirectory().getFileObject(HISTORY_FILENAME));
+        this.project = project;
+        setMaxHistoryItems(ShellOptions.get().getHistoryLines());
     }
+    
+    
 
     @Override
-    public void deinstall(JEditorPane c) {
-        super.deinstall(c);
-    }
-
-    @Override
-    public void install(JEditorPane c) {
-        super.install(c);
+    protected FileObject createFile() throws IOException {
+        return  FileUtil.createData(project.getProjectDirectory(), HISTORY_FILENAME);
     }
 }

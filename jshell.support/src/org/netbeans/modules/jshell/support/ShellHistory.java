@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,33 +39,57 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.editor;
+package org.netbeans.modules.jshell.support;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.editor.NbEditorKit;
-//import org.netbeans.modules.editor.plain.PlainKit;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import jdk.jshell.Snippet;
 
 /**
  *
  * @author sdedic
  */
-@MimeRegistration(service = EditorKit.class, mimeType = "text/x-repl")
-public class REPLEditorKit extends NbEditorKit {
+public interface ShellHistory {
+    /**
+     * Gets all history items
+     * @return 
+     */
+    public List<Item>   getHistory();
+    
+    public void         clear();
+    
+    /**
+     * Records an item into the history. Fires change event on history change.
+     * 
+     * @param item 
+     */
+    public void         pushItems(List<Item> text);
+    
+    public void         addChangeListener(ChangeListener l);
+    
+    public void         removeChangeListener(ChangeListener l);
+    
+    public final class Item {
+        private final Snippet.Kind    kind;
+        private final boolean         shellCommand;
+        private final String          contents;
 
-    @Override
-    public String getContentType() {
-        return "text/x-repl"; // NOI18N
-    }
+        public Item(Snippet.Kind kind, boolean shellCommand, String contents) {
+            this.kind = kind;
+            this.shellCommand = shellCommand;
+            this.contents = contents;
+        }
 
-    @Override
-    public void deinstall(JEditorPane c) {
-        super.deinstall(c);
-    }
+        public Snippet.Kind getKind() {
+            return kind;
+        }
 
-    @Override
-    public void install(JEditorPane c) {
-        super.install(c);
+        public boolean isShellCommand() {
+            return shellCommand;
+        }
+
+        public String getContents() {
+            return contents;
+        }
     }
 }

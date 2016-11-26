@@ -108,14 +108,21 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
+import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
 import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
 import static org.netbeans.modules.jshell.support.JShellLauncher.quote;
+import org.netbeans.modules.jshell.support.ShellHistory.Item;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -221,7 +228,7 @@ public class ShellSession  {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
     private SnippetRegistry     snippetRegistry;
-    
+        
     public ShellSession(JShellEnvironment env) {
         this(env.getDisplayName(), 
              env.getConsoleDocument(), 
@@ -285,7 +292,7 @@ public class ShellSession  {
                 return Task.EMPTY;
             }
         }
-        closed = true;
+//        closed = true;
         model.detach();
         closed();
         if (exec != null) {
@@ -495,6 +502,9 @@ public class ShellSession  {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { 
             env.getSnippetClassPath()
         });
+        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] { 
+            env.getUserLibraryPath()
+        });
 
         return Pair.of(previous, evaluator.post(() -> {
 
@@ -638,7 +648,31 @@ public class ShellSession  {
             // create an indexed file for the snippet.
             snippetRegistry.snippetFile(handle, 0);
         }
-        
+
+        @Override
+        protected void classpathAdded(String arg) {
+            super.classpathAdded(arg);
+            File f = new File(arg);
+            FileObject fob = FileUtil.toFileObject(f);
+            if (fob != null) {
+                env.appendClassPath(fob);
+            }
+        }
+
+        @Override
+        protected String resolveUserHome(String path) {
+            String homeResolved = super.resolveUserHome(path);
+            File f = new File(homeResolved);
+            if (!f.isAbsolute()) {
+                // prepend project's directory
+                Project p = env.getProject();
+                if (p != null) {
+                    f = new File(FileUtil.toFile(p.getProjectDirectory()), homeResolved);
+                    return f.getPath();
+                }
+            }
+            return homeResolved;
+        }
     }
     
     private SwitchingJavaFileManger fileman;
@@ -653,7 +687,7 @@ public class ShellSession  {
             b.compilerOptions("-target", v.toString()); // NOI18N
         }
         b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
-        b.fileManager(fileman = new SwitchingJavaFileManger(cpInfo));
+        b.fileManager(fileman = new SwitchingJavaFileManger(getClasspathInfo()));
         return b;
     }
     
@@ -878,7 +912,7 @@ public class ShellSession  {
                 toolsJar = FileUtil.toFile(toolsJarFO);
             }
         }
-        ClassPath compilePath = cpInfo.getClassPath(PathKind.COMPILE);
+        ClassPath compilePath = getClasspathInfo().getClassPath(PathKind.COMPILE);
         
         FileObject[] roots = compilePath.getRoots();
         File[] urlFiles = new File[roots.length];
@@ -927,6 +961,16 @@ public class ShellSession  {
         }
         env.notifyDisconnected(this);
         propSupport.firePropertyChange(PROP_ACTIVE, true, false);
+        
+        // save the history
+        ShellHistory h = env.getLookup().lookup(ShellHistory.class);
+        if (h != null) {
+            saveInputSections(h);
+        }
+    }
+    
+    private void saveInputSections(ShellHistory history) {
+        history.pushItems(historyItems());
     }
     
     private void closedDelayed() {
@@ -980,10 +1024,12 @@ public class ShellSession  {
                 ClassPathSupport.createClassPath(editorWorkRoot),
                 ClassPathSupport.createClassPath(workRoot)
         );
+        
+        ClassPath compileClasspath = projectInfo.getClassPath(PathKind.COMPILE);
 
         this.cpInfo = ClasspathInfo.create(
                 projectInfo.getClassPath(PathKind.BOOT),
-                projectInfo.getClassPath(PathKind.COMPILE),
+                compileClasspath,
                 snippetSource
         );
         
@@ -1424,5 +1470,56 @@ public class ShellSession  {
         }
         shell.stop();
     }
-    
+
+    public List<ShellHistory.Item> historyItems() {
+        final List<Item> historyLines = new ArrayList<>();
+        try {
+            ParserManager.parse(Collections.singleton(Source.create(getConsoleDocument())), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ConsoleContents console = ConsoleContents.get(resultIterator);
+                    ConsoleSection input = console.getInputSection();
+                    for (ConsoleSection s : console.getSectionModel().getSections()) {
+                        if (!s.getType().input) {
+                            continue;
+                        }
+                        if (s == input) {
+                            // do not save current input
+                            continue;
+                        }
+                        String contents = s.getContents(consoleDocument);
+                        // ignore such lines, which contain just history command
+                        if (contents.startsWith("/") && contents.length() > 2) {
+                            if (contents.charAt(1) == '-' || Character.isDigit(contents.charAt(1))) {
+                                continue;
+                            }
+                        }
+                        List<SnippetHandle> handles = console.getHandles(s);
+                        
+                        Snippet.Kind sectionKind;
+                        boolean command;
+                        if (s.getType() == ConsoleSection.Type.COMMAND) {
+                            command = true;
+                            sectionKind = null;
+                        } else {
+                            command = false;
+                            if (handles.isEmpty()) {
+                                sectionKind = Snippet.Kind.ERRONEOUS;
+                            } else {
+                                sectionKind = handles.get(0).getKind();
+                            }
+                        }
+                        contents = contents.trim();
+                        if (contents.isEmpty()) {
+                            continue;
+                        }
+                        historyLines.add(new ShellHistory.Item(sectionKind, command, contents));
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            return Collections.emptyList();
+        }
+        return historyLines;
+    }
 }

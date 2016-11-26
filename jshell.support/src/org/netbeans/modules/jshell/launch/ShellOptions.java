@@ -58,6 +58,7 @@ public final class ShellOptions {
     private static final String PREF_PLATFORM = "launchPlatformId"; // NOI18N
     private static final String PREF_OPEN_CONSOLE = "openConsoleOnLaunch"; // NOI18N
     private static final String PREF_REUSE_CONSOLES = "reuseDeadConsoles"; // NOI18N
+    private static final String PREF_HISTORY_LINES = "historyLines"; // NOI18N
     private Preferences prefs;
     
     private Preferences prefs() {
@@ -66,6 +67,14 @@ public final class ShellOptions {
         }
         prefs = NbPreferences.forModule(ShellOptions.class);
         return prefs;
+    }
+    
+    public int getHistoryLines() {
+        return prefs().getInt(PREF_HISTORY_LINES, 50);
+    }
+    
+    public void setHistoryLines(int val) {
+        prefs().putInt(PREF_HISTORY_LINES, val);
     }
     
     public void setOpenConsole(boolean open) {
