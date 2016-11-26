@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.debugger.common2.ui.processlist;
 
 import java.awt.dnd.DnDConstants;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -53,6 +52,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -65,11 +65,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfoDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessList;
+import org.netbeans.modules.cnd.debugger.common2.utils.MRUComboBoxModel;
 import org.netbeans.modules.cnd.debugger.common2.utils.ProcessListSupport;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
@@ -84,8 +86,6 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -124,6 +124,11 @@ public final class ProcessListPanel extends javax.swing.JPanel
     private final ChangeSupport changeSupport;
     
     private Lookup.Result<ProcessInfo> lookupResult = null;
+    private MRUComboBoxModel filterModel;
+    private static final Preferences filterPrefs =
+            prefs.node("attach_filters");			//NOI18N  
+        private static final Preferences lastFilterPrefs =
+            prefs.node("attach_last_filer_value");			//NOI18N      
     
     /** Creates new form AttachToProcessPanel */
     public ProcessListPanel() {
@@ -133,16 +138,23 @@ public final class ProcessListPanel extends javax.swing.JPanel
 
         initComponents();
 
-        filterTask = RequestProcessor.getDefault().create(new Runnable() {
+        // Setting selected index in the model will force an update
+        // (which fires the action event) and we're not ready for
+        // that yet
+       // filterReady = false;
 
-            @Override
-            public void run() {
-                filter.set(filterFld.getText());
-                updateChildren(getSelectedInfo());
-            }
-        });
-
-        filterFld.getDocument().addDocumentListener(new DocumentListener() {
+//        // Fix up the combo box models
+//        Vector<String> filters2 = restoreFilterPrefs();
+//        filterModel = new MRUComboBoxModel(filters2);
+//        filterCombo.setModel(filterModel);
+//        
+        filterLabel.setLabelFor(filterCombo);
+        filterCombo.setEditable(true);
+        filterCombo.setStorage("attach.panel", filterPrefs);//NOI8N
+        filterCombo.read(lastFilterPrefs.get(LAST_FILTER_VALUE, ""));//NOI18N
+        
+        final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
+        cbEditor.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -159,6 +171,33 @@ public final class ProcessListPanel extends javax.swing.JPanel
                 filterTask.schedule(FILTER_DELAY);
             }
         });
+        filterTask = RequestProcessor.getDefault().create(new Runnable() {
+
+            @Override
+            public void run() {
+                JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
+                filter.set(cbEditor.getText());
+                updateChildren(getSelectedInfo());
+            }
+        });
+
+//        filterFld.getDocument().addDocumentListener(new DocumentListener() {
+//
+//            @Override
+//            public void insertUpdate(DocumentEvent e) {
+//                filterTask.schedule(FILTER_DELAY);
+//            }
+//
+//            @Override
+//            public void removeUpdate(DocumentEvent e) {
+//                filterTask.schedule(FILTER_DELAY);
+//            }
+//
+//            @Override
+//            public void changedUpdate(DocumentEvent e) {
+//                filterTask.schedule(FILTER_DELAY);
+//            }
+//        });
 
         refreshTask = RequestProcessor.getDefault().create(new Runnable() {
 
@@ -178,7 +217,52 @@ public final class ProcessListPanel extends javax.swing.JPanel
 
         manager.addPropertyChangeListener(propertyChangeListener);        
     }
+    private static final String LAST_FILTER_VALUE = "value";
     
+//    //
+//    // To support 6646693
+//    //
+//    private static final String PREF_COUNT = "count"; // NOI18N
+//    private static final String PREF_ITEM = "item_"; // NOI18N
+//
+//    private void saveFilterPrefs() {
+//        try {
+//            filterPrefs.clear();
+//
+//            filterPrefs.putInt(PREF_COUNT, filterCombo.getItemCount());
+//            for (int ix = 0; ix < filterCombo.getItemCount(); ix++) {
+//                String item = (String) filterCombo.getItemAt(ix);
+//                filterPrefs.put(PREF_ITEM + ix, item);
+//            }
+//
+//            // Make changes appear on disc now
+//            prefs.flush();
+//
+//        } catch (java.util.prefs.BackingStoreException x) {
+//            return;
+//        }
+//    }
+//    
+//    
+//    private Vector<String> restoreFilterPrefs() {
+//        Vector<String> items = new Vector<String>();
+//        int count = filterPrefs.getInt(PREF_COUNT, 0);
+//
+//        if (count == 0) {
+//            // first time ever ... add the default match-all pattern
+//            items.add("");
+//            return items;
+//        }
+//
+//        for (int ix = 0; ix < count; ix++) {
+//            String item = filterPrefs.get(PREF_ITEM + ix, null);
+//            if (item != null) {
+//                items.add(item);
+//            }
+//        }
+//        return items;
+//    }    
+//    
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
@@ -281,7 +365,7 @@ public final class ProcessListPanel extends javax.swing.JPanel
     @Override
     public void addNotify() {
         super.addNotify();
-
+        filterCombo.read(lastFilterPrefs.get(LAST_FILTER_VALUE, ""));//NOI18N
         if (listProvider != null) {
             listProvider.addChangeListener(this);
         }
@@ -299,6 +383,8 @@ public final class ProcessListPanel extends javax.swing.JPanel
                 listProvider.removeChangeListener(this);
             }
         }
+        lastFilterPrefs.put(LAST_FILTER_VALUE, filterCombo.getText());
+        filterCombo.store();
         super.removeNotify();
     }
 
@@ -327,8 +413,8 @@ public final class ProcessListPanel extends javax.swing.JPanel
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        filterCombo = new org.netbeans.modules.cnd.utils.ui.EditableComboBox();
         filterLabel = new javax.swing.JLabel();
-        filterFld = new javax.swing.JTextField();
         refreshBtn = new javax.swing.JButton();
         splitPane = new javax.swing.JSplitPane();
         processListPanel = new javax.swing.JPanel();
@@ -337,15 +423,8 @@ public final class ProcessListPanel extends javax.swing.JPanel
         listTogleButton = new javax.swing.JToggleButton();
         userProcessesOnlyCheckBox = new javax.swing.JCheckBox();
 
-        filterLabel.setLabelFor(filterFld);
+        filterLabel.setLabelFor(filterCombo);
         org.openide.awt.Mnemonics.setLocalizedText(filterLabel, org.openide.util.NbBundle.getMessage(ProcessListPanel.class, "ProcessListPanel.filterLabel.text")); // NOI18N
-
-        filterFld.setText(org.openide.util.NbBundle.getMessage(ProcessListPanel.class, "ProcessListPanel.filterFld.text")); // NOI18N
-        filterFld.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                filterFldKeyPressed(evt);
-            }
-        });
 
         refreshBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/debugger/common2/icons/refresh.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(refreshBtn, org.openide.util.NbBundle.getMessage(ProcessListPanel.class, "ProcessListPanel.refreshBtn.text")); // NOI18N
@@ -405,20 +484,20 @@ public final class ProcessListPanel extends javax.swing.JPanel
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 765, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(filterLabel)
+                                .addGap(2, 2, 2)
+                                .addComponent(filterCombo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(filterFld, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
+                                .addComponent(refreshBtn))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(userProcessesOnlyCheckBox)
                                 .addGap(0, 0, Short.MAX_VALUE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(refreshBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(treeTogleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -428,30 +507,22 @@ public final class ProcessListPanel extends javax.swing.JPanel
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(filterLabel)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(filterFld, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(refreshBtn)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(refreshBtn)
+                            .addComponent(filterCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(userProcessesOnlyCheckBox))
                     .addComponent(treeTogleButton)
                     .addComponent(listTogleButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                .addGap(5, 5, 5)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void filterFldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_filterFldKeyPressed
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            filterTask.schedule(0);
-            evt.consume();
-        }
-    }//GEN-LAST:event_filterFldKeyPressed
 
     private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
         if (listProvider != null) {
@@ -487,7 +558,7 @@ public final class ProcessListPanel extends javax.swing.JPanel
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JTextField filterFld;
+    private org.netbeans.modules.cnd.utils.ui.EditableComboBox filterCombo;
     private javax.swing.JLabel filterLabel;
     private javax.swing.JToggleButton listTogleButton;
     private org.netbeans.modules.cnd.debugger.common2.ui.processlist.ProcessInfoPanel processInfoPanel;
@@ -507,11 +578,11 @@ public final class ProcessListPanel extends javax.swing.JPanel
     }
 
     public void setFilter(String filter) {
-        this.filterFld.setText(filter);
+        this.filterCombo.getEditor().setItem(filter);
     }
 
     public String getFilter() {
-        return filterFld.getText();
+        return this.filterCombo.getEditor().getItem() + "";
     }
 
     /**

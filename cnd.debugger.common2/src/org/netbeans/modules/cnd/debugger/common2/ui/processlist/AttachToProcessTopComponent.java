@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.debugger.common2.ui.ExecutableProjectPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ProjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
@@ -92,7 +91,6 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
-import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.debugger.ui.PersistentController;
 import org.openide.util.Cancellable;
@@ -254,7 +252,7 @@ public final class AttachToProcessTopComponent extends AttachPanel{
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = gridy++;
+        gridBagConstraints.gridy = 0;//gridy++;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
         headingPanel.add(hostsButton, gridBagConstraints);
@@ -542,6 +540,10 @@ public final class AttachToProcessTopComponent extends AttachPanel{
             
             if (isValid()) {
                 saveState();
+                //target descriptor should be prepared before removeNotify
+                final TargetDescriptor targetDescriptor = new TargetDescriptor(processInfo, 
+                        executableProjectPanel.getSelectedProject(), executableProjectPanel.getNoProject(), engine);
+                
                 // doAttach() should not be called in EDT (i.e. see #212908).
                 // The idea is to start it outside EDT, but 'block' UI.
                 // ProgressUtils.showProgressDialogAndRun() is a good candidate
@@ -559,7 +561,7 @@ public final class AttachToProcessTopComponent extends AttachPanel{
                     @Override
                     public void run() {
                         String title = NbBundle.getMessage(AttachController.class, "PROGRESS_PREPARE_TARGET"); // NOI18N
-                        final TargetPreparator tp = new TargetPreparator(processInfo);
+                        final TargetPreparator tp = new TargetPreparator(targetDescriptor);
 
                         Runnable cont = new Runnable() {
 
@@ -570,10 +572,10 @@ public final class AttachToProcessTopComponent extends AttachPanel{
                                 }
                                 final DebugTarget target = tp.targetRef.get();
                                 if (target != null) {
-                                    if (executableProjectPanel.getSelectedProject() == null) {
+                                    if (targetDescriptor.project == null) {
                                         NativeDebuggerManager.get().attach(target);                                    
                                     } else {
-                                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(executableProjectPanel.getSelectedProject(), 
+                                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(targetDescriptor.project, 
                                                 ProjectActionEvent.PredefinedType.ATTACH, 
                                                 target.getExecutable(), target.getConfig(), 
                                                 target.getRunProfile(), false, 
@@ -722,17 +724,17 @@ private void saveState() {
     
     private class TargetPreparator implements Runnable, Cancellable {
 
-        private final ProcessInfo processInfo;
+        private final TargetDescriptor targetDesctiptor;
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private final AtomicReference<DebugTarget> targetRef = new AtomicReference<DebugTarget>(null);
 
-        public TargetPreparator(ProcessInfo process) {
-            this.processInfo = process;
+        public TargetPreparator(TargetDescriptor targetDesctiptor) {
+            this.targetDesctiptor = targetDesctiptor;
         }
 
         @Override
         public void run() {
-            String pidobj = processInfo == null ? null : processInfo.getPID() + "";
+            String pidobj = targetDesctiptor.processInfo == null ? null : targetDesctiptor.processInfo.getPID() + "";
             if (pidobj == null) {                  
                 return;
             }
@@ -745,10 +747,10 @@ private void saveState() {
             assert pid != 0;
 
             String executable = null;
-            Object path = processInfo.getExecutable();
+            Object path = targetDesctiptor.processInfo.getExecutable();
                     //executableProjectPanel.getExecutablePath();
-            Project project = executableProjectPanel.getSelectedProject();
-            boolean noproject = executableProjectPanel.getNoProject();
+            Project project = targetDesctiptor.project;
+            boolean noproject = targetDesctiptor.noProject;
 
             if (project != null) {
                 MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
@@ -768,7 +770,7 @@ private void saveState() {
             }
 
             seed = new ProjectSupport.ProjectSeed(
-                    project, engine.getType(), noproject,
+                    project, targetDesctiptor.engine.getType(), noproject,
                     executable,
                     ProjectSupport.Model.DONTCARE,
                         /*corefile*/ null,
@@ -793,7 +795,7 @@ private void saveState() {
             dt.setExecutable(seed.executableNoSentinel());
             dt.setPid(seed.pid());
             dt.setHostName(seed.getHostName());
-            dt.setEngine(engine.getType());
+            dt.setEngine(targetDesctiptor.engine.getType());
 
             if (project == null) {
                 if (noproject) { // < no project>
@@ -811,6 +813,21 @@ private void saveState() {
             cancelled.set(true);
             return true;
         }
+    }
+    
+    private class TargetDescriptor {
+        final ProcessInfo processInfo;
+        final Project project;
+        final boolean noProject;
+        final EngineDescriptor engine;
+
+        public TargetDescriptor(ProcessInfo processInfo, Project project, boolean noProject,  EngineDescriptor engine) {
+            this.processInfo = processInfo;
+            this.project = project;
+            this.noProject = noProject;
+            this.engine = engine;
+        }
+        
     }
 
     private void hostsButtonActionPerformed(java.awt.event.ActionEvent evt) {
