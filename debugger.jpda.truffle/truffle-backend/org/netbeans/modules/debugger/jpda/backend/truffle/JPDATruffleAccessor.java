@@ -323,7 +323,11 @@ public class JPDATruffleAccessor extends Object {
         Object[] thiss = new Object[n];
         for (int i = 0; i < n; i++) {
             DebugStackFrame sf = frames[i];
-            frameInfos.append(sf.getName());
+            String sfName = sf.getName();
+            if (sfName == null) {
+                sfName = "";
+            }
+            frameInfos.append(sfName);
             frameInfos.append('\n');
             frameInfos.append(DebuggerVisualizer.getSourceLocation(sf.getSourceSection()));
             frameInfos.append('\n');
@@ -370,11 +374,12 @@ public class JPDATruffleAccessor extends Object {
         for (int i = 0; i < numValues; i++) {
             DebugValue value = values.get(i);
             int vi = 5*i;
-            vars[vi] = value.getName();
-            vars[vi + 1] = "";  // TODO
-            vars[vi + 2] = value.isWriteable();
-            vars[vi + 3] = value.as(String.class);
-            vars[vi + 4] = new TruffleObject(value);
+            TruffleObject tobj = new TruffleObject(value);
+            vars[vi] = tobj.name;
+            vars[vi + 1] = tobj.type;
+            vars[vi + 2] = tobj.writable;
+            vars[vi + 3] = tobj.displayValue;
+            vars[vi + 4] = tobj;
         }
         return vars;
     }

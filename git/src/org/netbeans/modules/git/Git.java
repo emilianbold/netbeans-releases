@@ -331,7 +331,7 @@ public final class Git {
             }
             if (!noExceptions && VersioningSupport.isExcluded(file)) break;
             // is the folder a special one where metadata should not be looked for?
-            boolean forbiddenFolder = Utils.isForbiddenFolder(file.getAbsolutePath());
+            boolean forbiddenFolder = Utils.isForbiddenFolder(file);
             if (!forbiddenFolder && GitUtils.repositoryExistsFor(file)) {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by git

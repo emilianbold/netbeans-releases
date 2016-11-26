@@ -62,6 +62,8 @@ import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -72,6 +74,7 @@ import org.openide.util.Pair;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 import org.openide.util.io.ReaderInputStream;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -104,6 +107,10 @@ public class JShellEnvironment {
     
     private String            displayName;
     
+    private ConfigurableClasspath  userClassPathImpl = new ConfigurableClasspath();
+    
+    private ClassPath         userLibraryPath = ClassPathFactory.createClassPath(userClassPathImpl);
+    
     private ClassPath         snippetClassPath;
     
     private InputOutput       inputOutput;
@@ -119,9 +126,15 @@ public class JShellEnvironment {
     
     private List<ShellListener>   shellListeners = new ArrayList<>();
     
+    private Lookup            envLookup;
+    
     protected JShellEnvironment(Project project, String displayName) {
         this.project = project;
         this.displayName = displayName;
+    }
+    
+    public void appendClassPath(FileObject f) {
+        userClassPathImpl.append(f);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -188,7 +201,17 @@ public class JShellEnvironment {
     }
     
     public Lookup getLookup() {
-        return consoleFile.getLookup();
+        synchronized (this) {
+            if (envLookup == null) {
+                envLookup = new ProxyLookup(
+                        consoleFile.getLookup(),
+                        project == null ? 
+                                Lookup.getDefault() :
+                                project.getLookup()
+                );
+            }
+        }
+        return envLookup;
     }
     
     public PrintStream getOutputStream() throws IOException {
@@ -252,6 +275,7 @@ public class JShellEnvironment {
                     projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
                     ClassPathSupport.createProxyClassPath(
                         ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
+                        userLibraryPath,
                         projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
                     ),
                     projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE)
@@ -398,6 +422,10 @@ public class JShellEnvironment {
     
     public ClassPath getSnippetClassPath() {
         return snippetClassPath;
+    }
+    
+    public ClassPath getUserLibraryPath() {
+        return userLibraryPath;
     }
     
     /**
