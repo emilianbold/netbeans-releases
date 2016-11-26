@@ -158,7 +158,7 @@ public class DeleteOnExitSupport {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             return;
         }
-        ProcessUtils.execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable("xargs").setArguments("rm"), sb.toString().getBytes());
+        ProcessUtils.execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable("xargs").setArguments("rm"), sb.toString().getBytes()); // NOI18N
 
     }
 
