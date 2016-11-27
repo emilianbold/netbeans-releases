@@ -60,7 +60,7 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
  *
  * @author Martin
  */
-public class TruffleStackFrame {
+public final class TruffleStackFrame {
 
     private static final Logger LOG = Logger.getLogger(TruffleStackFrame.class.getName());
     
@@ -78,11 +78,13 @@ public class TruffleStackFrame {
     private final StringReference codeRef;
     private TruffleVariable[] vars;
     private final ObjectVariable thisObject;
+    private final boolean isInternal;
     
     public TruffleStackFrame(JPDADebugger debugger, int depth,
                              ObjectVariable frameInstance,
                              String frameDefinition, StringReference codeRef,
-                             TruffleVariable[] vars, ObjectVariable thisObject) {
+                             TruffleVariable[] vars, ObjectVariable thisObject,
+                             boolean includeInternal) {
         if (LOG.isLoggable(Level.FINE)) {
             try {
                 LOG.fine("new TruffleStackFrame("+depth+", "+
@@ -96,6 +98,7 @@ public class TruffleStackFrame {
         this.debugger = debugger;
         this.depth = depth;
         this.frameInstance = frameInstance;
+        boolean internalFrame = includeInternal;
         try {
             int i1 = 0;
             int i2 = frameDefinition.indexOf('\n');
@@ -120,13 +123,21 @@ public class TruffleStackFrame {
                 throw new IllegalStateException("Bad URI: "+frameDefinition.substring(i1, i2), usex);
             }
             i1 = i2 + 1;
-            sourceLine = Integer.parseInt(frameDefinition.substring(i1));
+            if (includeInternal) {
+                i2 = frameDefinition.indexOf('\n', i1);
+                sourceLine = Integer.parseInt(frameDefinition.substring(i1, i2));
+                i1 = i2 + 1;
+                internalFrame = Boolean.valueOf(frameDefinition.substring(i1));
+            } else {
+                sourceLine = Integer.parseInt(frameDefinition.substring(i1));
+            }
         } catch (IndexOutOfBoundsException ioob) {
             throw new IllegalStateException("frameDefinition='"+frameDefinition+"'", ioob);
         }
         this.codeRef = codeRef;
         this.vars = vars;
         this.thisObject = thisObject;
+        this.isInternal = internalFrame;
     }
     
     public final JPDADebugger getDebugger() {
@@ -175,6 +186,10 @@ public class TruffleStackFrame {
     
     public ObjectVariable getThis() {
         return thisObject;
+    }
+    
+    public boolean isInternal() {
+        return isInternal;
     }
     
 }

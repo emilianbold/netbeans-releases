@@ -231,7 +231,7 @@ public class TruffleAccess implements JPDABreakpointListener {
             ObjectVariable stackTrace = (ObjectVariable) frameInfoVar.getField(VAR_STACK_TRACE);
             String topFrameDescription = (String) frameInfoVar.getField(VAR_TOP_FRAME).createMirrorObject();
             ObjectVariable thisObject = null;// TODO: (ObjectVariable) frameInfoVar.getField("thisObject");
-            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, frame, topFrameDescription, null/*code*/, vars, thisObject);
+            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, frame, topFrameDescription, null/*code*/, vars, thisObject, true);
             TruffleStackInfo stack = new TruffleStackInfo(debugger, stackTrace);
             return new CurrentPCInfo(haltedInfo.stepCmd, thread, sp, vars, topFrame, stack);
         } catch (AbsentInformationException | IllegalStateException ex) {

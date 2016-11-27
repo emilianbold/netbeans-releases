@@ -48,8 +48,11 @@ import com.oracle.truffle.api.debug.DebugValue;
 import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.debug.DebuggerSession;
 import com.oracle.truffle.api.debug.SuspendedEvent;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -316,13 +319,20 @@ public class JPDATruffleAccessor extends Object {
      * @return An array of two elements: a String of frame information and
      * an array of code contents.
      */
-    static Object[] getFramesInfo(DebugStackFrame[] frames) {
+    static Object[] getFramesInfo(DebugStackFrame[] frames, boolean includeInternal) {
+        trace("getFramesInfo({0})",includeInternal);
         int n = frames.length;
         StringBuilder frameInfos = new StringBuilder();
         String[] codes = new String[n];
         Object[] thiss = new Object[n];
+        int j = 0;
         for (int i = 0; i < n; i++) {
             DebugStackFrame sf = frames[i];
+            boolean isInternal = FrameInfo.isInternal(sf);
+            //System.err.println("SF("+sf.getName()+", "+sf.getSourceSection()+") is internal = "+isInternal);
+            if (!includeInternal && isInternal) {
+                continue;
+            }
             String sfName = sf.getName();
             if (sfName == null) {
                 sfName = "";
@@ -349,18 +359,28 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append(position.uri.toString());
             frameInfos.append('\n');
             frameInfos.append(position.line);
+            if (includeInternal) {
+                frameInfos.append('\n');
+                frameInfos.append(isInternal);
+            }
             
             frameInfos.append("\n\n");
             
-            codes[i] = position.code;
+            codes[j] = position.code;
             /*
              TODO Find "this"
             Frame f = fi.getFrame(FrameInstance.FrameAccess.READ_ONLY, false);
             if (f instanceof VirtualFrame) {
                 thiss[i] = JSFrameUtil.getThisObj((VirtualFrame) f);
             }*/
+            j++;
         }
-        return new Object[] { frameInfos.toString(), codes, thiss };
+        if (j < n) {
+            codes = Arrays.copyOf(codes, j);
+            thiss = Arrays.copyOf(thiss, j);
+        }
+        boolean areSkippedInternalFrames = j < n;
+        return new Object[] { frameInfos.toString(), codes, thiss, areSkippedInternalFrames };
     }
 
     // 5*vars: <name>, <type>, <writable>, <String value>, <DebugValue>

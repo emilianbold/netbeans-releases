@@ -41,7 +41,10 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.debug.DebugStackFrame;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
@@ -76,8 +79,31 @@ final class FrameInfo {
         topFrame = topStackFrame.getName() + "\n" +
                    DebuggerVisualizer.getSourceLocation(topSS) + "\n" +
                    position.id + "\n" + position.name + "\n" + position.path + "\n" +
-                   position.uri.toString() + "\n" + position.line;
+                   position.uri.toString() + "\n" + position.line + "\n" + isInternal(topStackFrame);
         topVariables = JPDATruffleAccessor.getVariables(topStackFrame);
+    }
+    
+    /** Calls DebugStackFrame.isInternal() with workarounds for NPEs */
+    static boolean isInternal(DebugStackFrame sf) {
+        boolean isInternal = false;
+        try {
+            isInternal = sf.isInternal();
+        } catch (NullPointerException npe) {
+            //System.err.println("Is Internal blew up for "+sf+", name = "+sf.getName()+", source = "+DebuggerVisualizer.getSourceLocation(sf.getSourceSection()));
+            //System.err.println("  source section = "+sf.getSourceSection());
+            try {
+                Method findCurrentRootMethod = DebugStackFrame.class.getDeclaredMethod("findCurrentRoot");
+                findCurrentRootMethod.setAccessible(true);
+                RootNode rn = (RootNode) findCurrentRootMethod.invoke(sf);
+                //System.err.println("  root node = "+rn);
+                //System.err.println("  source section = "+rn.getSourceSection());
+                isInternal = rn.getSourceSection() == null;
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException |
+                     NoSuchMethodException | SecurityException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return isInternal;
     }
     
 }
