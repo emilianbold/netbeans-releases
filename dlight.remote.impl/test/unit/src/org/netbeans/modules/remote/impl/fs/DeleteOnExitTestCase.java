@@ -58,6 +58,13 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
+    private void traceCanDeleteOnDisconnect() {
+        System.out.println(execEnv.toString() + ": " +
+                (RemoteFileSystemTransport.canDeleteOnDisconnect(execEnv) ? 
+                "Deleting on disconnect via fs_server" : 
+                "Alternative delete on disconnect implementation"));
+    }
+    
     @ForAllEnvironments
     public void testDeleteOnExit() throws Exception {
         String dir = null;
@@ -77,12 +84,12 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus status = ProcessUtils.execute(execEnv, "ls", path1, path2);
             assertTrue("Error creating temp files", status.isOK());
             
+            traceCanDeleteOnDisconnect();
             dirFO.getFileSystem().deleteOnExit(path1);
             dirFO.getFileSystem().deleteOnExit(path2);
 
-            reconnect(true);
-            sleep(200);
-            assertExec("Files should be removed", false, 500, 40, "ls", path1, path2);
+            reconnect(2000, true);
+            assertExec("Files should be removed", false, 500, 120, "ls", path1, path2);
         } finally {
             removeRemoteDirIfNotNull(dir);
         }
@@ -96,8 +103,9 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             RemoteFileObject dirFO = (RemoteFileObject) getFileObject(dir);
             FileObject tmpFO = dirFO.getFileSystem().createTempFile(dirFO, "tmp", "tmp", true);            
             String path1 = tmpFO.getPath();            
-            reconnect(true);
-            assertExec("Files should be removed", false, 500, 40, "ls", path1);
+            traceCanDeleteOnDisconnect();
+            reconnect(2000, true);
+            assertExec("Files should be removed", false, 500, 120, "ls", path1);
         } finally {
             removeRemoteDirIfNotNull(dir);
         }
