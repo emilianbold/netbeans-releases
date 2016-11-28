@@ -46,16 +46,11 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import javax.lang.model.SourceVersion;
-import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import jdk.jshell.JShell;
-import jdk.jshell.JShellAccessor;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
@@ -69,6 +64,7 @@ public class JShellLauncher extends InternalJShell {
     private SpecificationVersion targetVersion;
     private String prefix = "";
     private JShellGenerator execGen;
+    private NbExecutionControl    shellExecControl;
 
     /**
      * 
@@ -150,27 +146,18 @@ public class JShellLauncher extends InternalJShell {
     
     @Override
     protected JShell createJShellInstance() {
-        /*
-        if (execGen == null) {
-            execGen = new JShellGenerator() {
-                @Override
-                public String getTargetSpec() {
-                    return null;
-                }
-
-                @Override
-                public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-                    return LaunchJDIAgent.launch().generate(ee);
-                }
-            };
-        }
-        */
+        ExecutionControl.Generator proxyGen = new ExecutionControl.Generator() {
+            @Override
+            public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
+                return shellExecControl = (NbExecutionControl)execGen.generate(ee);
+            }
+        };
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
             JShell.Builder b = createJShell();
             if (execGen != null) {
-                    b.executionEngine(execGen);
+                    b.executionEngine(proxyGen);
             }
             String s = System.getProperty("jshell.logging.properties");
             if (s != null) {
@@ -203,7 +190,7 @@ public class JShellLauncher extends InternalJShell {
         "MSG_VersionUnknown=<unknown>",
     })
     private void printSystemInfo() {
-        NbExecutionControl ctrl = JShellAccessor.getNbExecControl(state);
+        NbExecutionControl ctrl = shellExecControl;
         Map<String, String> versionInfo = ctrl.commandVersionInfo();
         
         if (versionInfo.isEmpty()) {

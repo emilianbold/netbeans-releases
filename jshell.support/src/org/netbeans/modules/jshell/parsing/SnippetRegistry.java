@@ -59,7 +59,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.jshell.JShell;
-import jdk.jshell.JShellAccessor;
+import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import org.netbeans.lib.nbjshell.SnippetWrapping;
 import org.netbeans.modules.jshell.support.ShellSession;
