@@ -1468,6 +1468,7 @@ public final class FileImpl implements CsmFile,
             }
         } catch (Throwable ex) {
             System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getAbsolutePath()); // NOI18N
+            CndUtils.printStackTraceOnce(ex);
         } finally {
             if (TraceFlags.TRACE_ERROR_PROVIDER) {
                 System.err.printf("<<< Done parsing (getting errors) %s %d ms%n%n%n", getName(), System.currentTimeMillis() - time);
