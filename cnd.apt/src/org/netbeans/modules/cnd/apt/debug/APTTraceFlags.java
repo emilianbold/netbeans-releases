@@ -60,12 +60,15 @@ public class APTTraceFlags {
     public static final boolean USE_CLANK;
     public static final boolean TRACE_PREPROC = Boolean.getBoolean("apt.clank.trace.pp"); // NOI18N
     public static final boolean TRACE_PREPROC_STACKS = Boolean.getBoolean("apt.clank.trace.pp.stacks"); // NOI18N
+    private static final String APT_USE_CLANK_PROP = "apt.use.clank"; // NOI18N
 
     static {
-        String propUseClank = System.getProperty("apt.use.clank"); //NOI18N
+        String propUseClank = System.getProperty(APT_USE_CLANK_PROP); //NOI18N
         boolean val;
+        boolean explicitlySet = false;
         if (propUseClank != null) {
             val = Boolean.parseBoolean(propUseClank);
+            explicitlySet = true;
         } else {
             final ComponentType product = ComponentType.getComponent();
             switch (product) {
@@ -88,7 +91,12 @@ public class APTTraceFlags {
         USE_CLANK = val;
         if (!CndUtils.isUnitTestMode()) {
             // APTUtils.LOG has level SEVERE by default, so we can't use it here
-            Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N
+            String msg = (USE_CLANK ? "new" : "old"); // NOI18N
+            if (explicitlySet) {
+                msg += " (explicitly set by " + APT_USE_CLANK_PROP + "=" + propUseClank + ")"; // NOI18N
+            }
+            msg += " [ " + ComponentType.getFullName() + "]"; // NOI18N
+            Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", msg); //NOI18N
         }
     }
     
