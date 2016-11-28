@@ -101,11 +101,16 @@ public class CompilerPluginVersionError implements POMErrorFixProvider {
             return toRet;
         }
         
-        if(!hasModuleInfo(prj)) {
+        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+        if(nbprj == null) {
             return toRet;
         }
         
-        String version = PluginPropertyUtils.getPluginVersion(prj.getLookup().lookup(NbMavenProject.class).getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);        
+        if(!hasModuleInfo(nbprj)) {
+            return toRet;
+        }
+        
+        String version = PluginPropertyUtils.getPluginVersion(nbprj.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);        
         if(version == null) {
             return toRet;            
         }
@@ -157,8 +162,8 @@ public class CompilerPluginVersionError implements POMErrorFixProvider {
         return configuration;
     }
 
-    private boolean hasModuleInfo(Project prj) {
-        MavenProject mavenProject = prj.getLookup().lookup(NbMavenProject.class).getMavenProject();        
+    private boolean hasModuleInfo(NbMavenProject nbprj) {
+        MavenProject mavenProject = nbprj.getMavenProject();        
         return hasModuleInfoInSourceRoot(mavenProject.getCompileSourceRoots()) || 
                hasModuleInfoInSourceRoot(mavenProject.getTestCompileSourceRoots());
     }
