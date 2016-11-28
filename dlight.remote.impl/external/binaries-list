@@ -1,7 +1,8 @@
-#changeset:   313432:85eedc93576d
+#changeset:   313458:fe1b17c8c28c
 #branch:      release82
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Fri Nov 25 23:38:18 2016 +0300
-#summary:     fixing #268926 (Remote File System should support DeleteOnExit) - fixed FMR (reading from freed memory)
-1FD9407311B337EB9FCDD417E15954D44DDF69D3 fs_server-1.0.zip
+#date:        Mon Nov 28 19:55:10 2016 +0300
+#summary:     Fixing tests (#268926 - Remote File System should support DeleteOnExit): native source
+7152C718762E97CD8201D27BF75DCAC10898E610 fs_server-1.0.zip
+
