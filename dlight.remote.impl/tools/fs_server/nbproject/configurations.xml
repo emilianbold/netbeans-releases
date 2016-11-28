@@ -140,7 +140,7 @@ Contributor(s):
     </conf>
     <conf name="Solaris-x86" type="0" platformSpecific="true">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>OracleDeveloperStudio|OracleDeveloperStudio</compilerSet>
         <platform>1</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
