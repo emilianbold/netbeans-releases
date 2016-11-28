@@ -39,10 +39,8 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package jdk.jshell;
+package org.netbeans.lib.nbjshell;
 
-import org.netbeans.lib.nbjshell.NbExecutionControl;
-import org.netbeans.lib.nbjshell.SnippetWrapping;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -50,30 +48,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jdk.jshell.JShell;
+import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SourceCodeAnalysis.SnippetWrapper;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
 import jdk.jshell.spi.ExecutionControl.InternalException;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
 /**
  *
  * @author sdedic
  */
 public class JShellAccessor {
-    /**
-     * Adds a classpath to the compilation. Does not require or start a target VM,
-     * unlike {@link JShell#addToClasspath}. Note that the classpath added to the compiler
-     * <b>must<b/> be announced to the VM in some other way; the intended use is 
-     * an initial configuration for the project's VM.
-     * 
-     * @param instance JShell instance
-     * @param classpath the classpath (file path or URL) to add
-     */
-    public static void addCompileClasspath(JShell instance, String classpath) {
-        instance.taskFactory.addToClasspath(classpath);
-    }
-
     /**
      * Resets the compile classpath: set it to the desired strng.
      * @param instance
@@ -81,9 +67,11 @@ public class JShellAccessor {
      */
     public static void resetCompileClasspath(JShell instance, String classpath) throws ExecutionControlException {
         try {
-            Field f = TaskFactory.class.getDeclaredField("classpath");
+            Field factory = JShell.class.getDeclaredField("taskFactory");       // NOI18N
+            Class taskFactoryClazz = Class.forName("jdk.jshell.TaskFactory");       // NOI18N
+            Field f = taskFactoryClazz.getDeclaredField("classpath");       // NOI18N
             f.setAccessible(true);
-            f.set(instance.taskFactory, "");
+            f.set(factory.get(instance), "");
             
             Method m = instance.getClass().getDeclaredMethod("executionControl");
             m.setAccessible(true);
@@ -103,7 +91,8 @@ public class JShellAccessor {
             InternalException x = new InternalException("Error during setting classpath");
             x.initCause(t);
             throw x;
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | NoSuchFieldException ex) {
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | 
+                NoSuchFieldException | ClassNotFoundException ex) {
             Logger.getLogger(JShellAccessor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -126,15 +115,7 @@ public class JShellAccessor {
      */
     public static SnippetWrapping snippetWrap(JShell state, Snippet s) {
         SnippetWrapper wrp = state.sourceCodeAnalysis().wrapper(s);
-        return new WrappedWrapper(s, wrp);
-        /*
-        OuterWrap outer = s.outerWrap();
-        if (outer != null) {
-            return new StdWrapper(s);
-        }
-        String src = s.source();
-        return wrapInput(state, src, s);
-        */
+        return new WrappedWrapper(s, wrp, state);
     }
     
     /**
@@ -148,16 +129,18 @@ public class JShellAccessor {
         if (wraps.size() != 1) {
             return null;
         }
-        return new WrappedWrapper(null, wraps.get(0));
+        return new WrappedWrapper(null, wraps.get(0), state);
     }
     
     private static class WrappedWrapper implements SnippetWrapping {
         private final Snippet snippet;
         private final SnippetWrapper wrapper;
+        private final JShell jshell;
 
-        public WrappedWrapper(Snippet snippet, SnippetWrapper wrapper) {
+        public WrappedWrapper(Snippet snippet, SnippetWrapper wrapper, JShell jshell) {
             this.snippet = snippet;
             this.wrapper = wrapper;
+            this.jshell = jshell;
         }
 
         @Override
@@ -167,7 +150,7 @@ public class JShellAccessor {
 
         @Override
         public Status getStatus() {
-            return snippet == null ? Status.NONEXISTENT : snippet.status(); 
+            return snippet == null ? Status.NONEXISTENT : jshell.status(snippet); 
         }
 
         @Override
@@ -196,7 +179,7 @@ public class JShellAccessor {
         }
         
         public String toString() {
-            return "Wrapper(snippet = " + (snippet == null ? "none" : snippet.id()) + ", status = " + snippet.status() + ")";
+            return "Wrapper(snippet = " + (snippet == null ? "none" : snippet.id()) + ", status = " + getStatus() + ")";
         }
     }
 
@@ -209,9 +192,5 @@ public class JShellAccessor {
      */
     public static Collection<Snippet> getDependents(JShell state, Snippet snip) {
         return state.sourceCodeAnalysis().dependents(snip);
-    }
-    
-    public static NbExecutionControl getNbExecControl(JShell state) {
-        return (NbExecutionControl)state.executionControl();
     }
 }

@@ -86,7 +86,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
-import jdk.jshell.JShellAccessor;
+import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.SourceCodeAnalysis;
