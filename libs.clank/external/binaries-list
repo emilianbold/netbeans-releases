@@ -1,7 +1,7 @@
-#changeset:   20987:8c0a90644a39
+#changeset:   21686:aad4dbe8a422
 #branch:      jclank
 #tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Mon Nov 14 21:01:16 2016 +0300
-#summary:     MANUAL: fixed back_insert_iterator and added specialization for char
-B5C19214BD81C4184B5B9D8ABA7E82EA17150F18 clank_0.3.9.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Nov 28 16:15:13 2016 +0300
+#summary:     update message
+20E08CBAE00B27A97AEA08C378A43E6419EF46D4 clank_0.3.9.zip
