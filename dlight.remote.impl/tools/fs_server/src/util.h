@@ -77,6 +77,7 @@ typedef enum TraceLevel {
 void set_trace(TraceLevel new_level);
 bool is_traceable(TraceLevel level);
 void trace(TraceLevel level, const char *format, ...);
+void redirect_err(const char* file_name);
 
 void log_print(const char *format, ...);
 void log_open(const char* path);
