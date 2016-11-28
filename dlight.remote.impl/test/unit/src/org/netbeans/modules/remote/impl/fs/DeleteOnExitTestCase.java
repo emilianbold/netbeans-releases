@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
+import java.util.Properties;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -53,9 +54,43 @@ import org.openide.filesystems.FileObject;
  * @author vkvashin
  */
 public class DeleteOnExitTestCase extends RemoteFileTestBase {
+    
+    private Properties oldProps;
 
     public DeleteOnExitTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+    }
+
+    protected Properties setProperties(String... props) {
+        if (props.length % 2 == 1) {
+            throw new IllegalArgumentException("Incorrect number of parameters");
+        }
+        Properties oldValues = System.getProperties();
+        for (int i = 0; i < props.length; i+=2) {
+            String key = props[i];
+            String value = props[i+1];
+            System.setProperty(key, value);
+        }
+        return oldValues;
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        oldProps = setProperties(
+            "remote.fs_server.log", "true",
+            "remote.fs_server.verbose", "4",
+            "remote.fs_server.log", "true",
+            "remote.fs_server.redirect.err", "/tmp/fs_server_err_1.txt"
+            //"remote.native.delete.on.exit", "false"
+            //"remote.alternative.delete.on.exit", "true"
+        );
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        System.setProperties(oldProps);
+        super.tearDown();
     }
 
     private void traceCanDeleteOnDisconnect() {
@@ -64,7 +99,7 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
                 "Deleting on disconnect via fs_server" : 
                 "Alternative delete on disconnect implementation"));
     }
-    
+
     @ForAllEnvironments
     public void testDeleteOnExit() throws Exception {
         String dir = null;
@@ -87,9 +122,9 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             traceCanDeleteOnDisconnect();
             dirFO.getFileSystem().deleteOnExit(path1);
             dirFO.getFileSystem().deleteOnExit(path2);
-
+            System.setProperty("remote.fs_server.redirect.err", "/tmp/fs_server_err_2.txt");
             reconnect(2000, true);
-            assertExec("Files should be removed", false, 500, 120, "ls", path1, path2);
+            assertRemoved(500, 120, path1, path2);
         } finally {
             removeRemoteDirIfNotNull(dir);
         }
@@ -104,11 +139,25 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             FileObject tmpFO = dirFO.getFileSystem().createTempFile(dirFO, "tmp", "tmp", true);            
             String path1 = tmpFO.getPath();            
             traceCanDeleteOnDisconnect();
+            System.setProperty("remote.fs_server.redirect.err", "/tmp/fs_server_err_" + System.currentTimeMillis());
             reconnect(2000, true);
-            assertExec("Files should be removed", false, 500, 120, "ls", path1);
+            assertRemoved(500, 120, "ls", path1);
         } finally {
             removeRemoteDirIfNotNull(dir);
         }
+    }
+    
+    private void assertRemoved(int timeout, int attempts, String...paths) {
+        StringBuilder message = new StringBuilder("Files should be removed: ");
+        boolean first = true;
+        for (String path : paths) {            
+            if (!first) {
+                message.append(", ");
+            }
+            first = false;
+            message.append(path);
+        }
+        assertExec(message.toString(), false, timeout, attempts, "ls", paths);
     }
     
     private void assertExec(String failureMessage, boolean expectSuccess, int timeout, int attempts, String cmd, String...args) {
