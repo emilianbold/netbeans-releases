@@ -88,7 +88,8 @@ final class FrameInfo {
         boolean isInternal = false;
         try {
             isInternal = sf.isInternal();
-        } catch (NullPointerException npe) {
+        } catch (Exception ex) {
+            LangErrors.exception("Frame "+sf.getName()+" .isInternal()", ex);
             //System.err.println("Is Internal blew up for "+sf+", name = "+sf.getName()+", source = "+DebuggerVisualizer.getSourceLocation(sf.getSourceSection()));
             //System.err.println("  source section = "+sf.getSourceSection());
             try {
@@ -99,8 +100,8 @@ final class FrameInfo {
                 //System.err.println("  source section = "+rn.getSourceSection());
                 isInternal = rn.getSourceSection() == null;
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException |
-                     NoSuchMethodException | SecurityException ex) {
-                ex.printStackTrace();
+                     NoSuchMethodException | SecurityException ex2) {
+                LangErrors.exception("Frame "+sf.getName()+" findCurrentRoot() invocation", ex2);
             }
         }
         return isInternal;

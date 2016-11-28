@@ -70,9 +70,15 @@ public class TruffleObject {
 
     TruffleObject(DebugValue value) {
         this.name = value.getName();
+        //System.err.println("new TruffleObject("+name+")");
         this.type = ""; // TODO?
         //this.object = value;
-        String valueStr = value.as(String.class);
+        String valueStr = null;
+        try {
+            valueStr = value.as(String.class);
+        } catch (Exception ex) {
+            LangErrors.exception("Value "+name+" .as(String.class)", ex);
+        }
         if (valueStr == null) {
             // Hack for R:
             try {
@@ -82,29 +88,63 @@ public class TruffleObject {
                 valueStr = Objects.toString(realValue);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException |
                      NoSuchMethodException | SecurityException ex) {
-                ex.printStackTrace();
+                LangErrors.exception("Value "+name+" get() invocation", ex);
             }
         }
         this.displayValue = valueStr;
+        //System.err.println("  have display value "+valueStr);
         this.writable = value.isWriteable();
-        this.properties = value.getProperties();
+        Collection<DebugValue> valueProperties;
+        try {
+            valueProperties = value.getProperties();
+        } catch (Exception ex) {
+            LangErrors.exception("Value "+name+" .getProperties()", ex);
+            valueProperties = null;
+        }
+        this.properties = valueProperties;
+        //System.err.println("  have properties");
         this.leaf = properties == null || properties.isEmpty();
-        this.isArray = value.isArray();
+        boolean valueIsArray;
+        try {
+            valueIsArray = value.isArray();
+        } catch (Exception ex) {
+            LangErrors.exception("Value "+name+" .isArray()", ex);
+            valueIsArray = false;
+        }
+        this.isArray = valueIsArray;
         if (isArray) {
-            this.array = value.getArray();
+            List<DebugValue> valueArray;
+            try {
+                valueArray = value.getArray();
+            } catch (Exception ex) {
+                LangErrors.exception("Value "+name+" .getArray()", ex);
+                valueArray = null;
+            }
+            this.array = valueArray;
         } else {
             this.array = null;
         }
-        //System.err.println("new TruffleObject("+name+") displayValue = "+displayValue+", leaf = "+leaf+", properties = "+properties);
+        /*try {
+            System.err.println("new TruffleObject("+name+") displayValue = "+displayValue+", leaf = "+leaf+", properties = "+properties);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }*/
     }
 
     public TruffleObject[] getProperties() {
-        // TODO: Handle arrays in a special way
         if (properties == null) {
             return new TruffleObject[]{};
         }
-        int n = properties.size();
+        int n = 0;
+        try {
+            n = properties.size();
+        } catch (Exception ex) {
+            LangErrors.exception("Value "+name+" properties.size()", ex);
+        }
         TruffleObject[] children = new TruffleObject[n];
+        if (n == 0) {
+            return children;
+        }
         int i = 0;
         for (DebugValue ch : properties) {
             children[i++] = new TruffleObject(ch);

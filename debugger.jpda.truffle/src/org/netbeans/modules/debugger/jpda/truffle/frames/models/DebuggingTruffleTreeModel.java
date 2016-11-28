@@ -45,6 +45,8 @@ package org.netbeans.modules.debugger.jpda.truffle.frames.models;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -71,8 +73,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
                              types={ TreeModelFilter.class })
 public class DebuggingTruffleTreeModel implements TreeModelFilter {
     
-    private static final String FILTER1 = "com.oracle.truffle.";                // NOI18N
-    private static final String FILTER2 = "com.oracle.graal.truffle.";          // NOI18N
+    private static final Predicate<String> PREDICATE1 = Pattern.compile("^(com|org)\\.\\p{Alpha}*\\.truffle\\..*$").asPredicate();
+    private static final String FILTER1 = "com.[A-z]*.truffle.";                     // NOI18N
+    private static final String FILTER2 = "com.oracle.graal.";                  // NOI18N
     private static final String FILTER3 = "org.netbeans.modules.debugger.jpda.backend.";    // NOI18N
     
     private final JPDADebugger debugger;
@@ -148,7 +151,7 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
         for (Object ch : children) {
             if (ch instanceof CallStackFrame) {
                 String className = ((CallStackFrame) ch).getClassName();
-                if (className.startsWith(FILTER1) ||
+                if (PREDICATE1.test(className) ||
                     className.startsWith(FILTER2) ||
                     className.startsWith(FILTER3)) {
                     
