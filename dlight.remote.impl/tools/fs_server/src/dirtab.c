@@ -101,6 +101,10 @@ void dirtab_set_persistence_dir(const char* dir) {
     persistence_dir = strdup(dir);
 }
 
+const char* dirtab_get_persistence_dir() {
+    return persistence_dir;
+}
+
 static void init_table() {
     if (initialized) {
         report_error("directories table should only be initialized once!\n");

@@ -93,11 +93,13 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 static int kill_locker_and_wait = 0;
 static unsigned long locker_pid_to_kill = 0;
+const char* error_log = NULL;
+bool redirect_err_flag = false;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 11
-#define FS_SERVER_MINOR_VERSION 3
+#define FS_SERVER_MID_VERSION 12
+#define FS_SERVER_MINOR_VERSION 0
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -206,6 +208,27 @@ static void err_init() {
     err_info.errmsg = malloc_wrapper(thread_emsg_bufsize);
     err_info.strerr = malloc_wrapper(strerr_bufsize);
     *err_info.errmsg = 0; // just in case
+}
+
+static void err_redirect_init() {
+    if (redirect_err_flag) {
+        if (!error_log) {
+            const char* cache_root = dirtab_get_basedir();
+            if (cache_root) {
+                const char* name = "/stderr.txt";
+                size_t sz = strlen(cache_root) + strlen(name) + 1;
+                char* path = malloc(sz);
+                strncpy(path, cache_root, sz);
+                strncat(path, name, sz);
+                error_log = path;
+            } else {
+                error_log = strdup("/tmp/fs_server_stderr.txt");
+            }
+        }
+        redirect_err(error_log);
+    } else {
+        redirect_err(NULL);
+    }
 }
 
 static void err_shutdown() {
@@ -1401,7 +1424,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
 }
 
 static void thread_init() {
-    err_init();
+    err_init();    
     sigset_t set;
     sigfillset(&set);
     sigdelset(&set, SIGUSR1);
@@ -1792,6 +1815,7 @@ static void usage(char* argv[]) {
             "   -t <nthreads> response processing threads count (default is %d)\n"
             "   -p log responses into persisnence\n"
             "   -r <nsec>  set refresh ON and sets refresh interval in seconds\n"
+            "   -e [<file>]  redirect trace and error messages to file; by default file is ${cache}/stderr.txt\n"
             "   -R <i|e>  refresh mode: i - implicit, e - explicit\n"
             "   -v <verbose-level>: print trace messages\n"
             "   -l log all requests into log file\n"
@@ -1809,7 +1833,7 @@ void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
     TraceLevel default_trace_leve = TRACE_INFO;
-    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:K:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:K:e:")) != -1) {
         switch (opt) {
             case 'R':
                 if (optarg) {
@@ -1827,6 +1851,12 @@ void process_options(int argc, char* argv[]) {
             case 'd':
                 if (optarg) {
                     dirtab_set_persistence_dir(optarg);
+                }
+                break;
+            case 'e':
+                redirect_err_flag = true;
+                if (optarg) {
+                    error_log = strdup(optarg);
                 }
                 break;
             case 'c':
@@ -2042,6 +2072,9 @@ static void shutdown() {
     log_close();
     err_shutdown();
     free_settings();
+    if (error_log) {
+        free((void*)error_log);
+    }    
     trace(TRACE_INFO, "Shut down.\n");
     exit(0);
 }
@@ -2069,6 +2102,7 @@ static void log_header(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
     process_options(argc, argv);
+    err_redirect_init();
     trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION,
             FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
     startup();
