@@ -859,7 +859,8 @@ import org.openide.util.RequestProcessor;
 
 
             reader = new BufferedReader(new InputStreamReader(inputStream, charset));
-            StringBuilder sb = new StringBuilder("Started remote agent ").append(path).append(' '); // NOI18N
+            StringBuilder sb = new StringBuilder("[").append(env.getDisplayName()).append("] "). // NOI18N
+                    append("Started remote agent ").append(path).append(' '); // NOI18N
             for (String p : args) {
                 sb.append(p).append(' ');
             }
