@@ -598,7 +598,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
 
     BookmarkInfo getTableSelectedBookmark() {
         BookmarksTable table = tableView.getTable();
-        int selectedRowIndex = table.getSelectedRow();
+        int selectedRowIndex = table.convertRowIndexToModel(table.getSelectedRow());
         if (selectedRowIndex != -1 && selectedRowIndex < table.getRowCount()) {
             return ((BookmarksTableModel)table.getModel()).getEntry(selectedRowIndex).getBookmarkInfo();
         }
