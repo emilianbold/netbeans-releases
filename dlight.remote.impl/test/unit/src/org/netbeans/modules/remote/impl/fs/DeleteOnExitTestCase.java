@@ -39,6 +39,8 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -56,6 +58,7 @@ import org.openide.filesystems.FileObject;
 public class DeleteOnExitTestCase extends RemoteFileTestBase {
     
     private Properties oldProps;
+    private List<String> logsToremove = new ArrayList<>();
 
     public DeleteOnExitTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -74,13 +77,25 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         return oldValues;
     }
     
+    private String getStdErrFileName(String postfix) {
+        StringBuilder sb = new StringBuilder("/tmp/fs_server_err_");
+        sb.append(getName().replace(" ", "").replace("[", "_").replace("]", "")).append('_');
+        String buildTag = System.getenv("BUILD_TAG");
+        if (buildTag != null) {
+            sb.append(buildTag).append('_');
+        }
+        sb.append(postfix).append(".txt");
+        logsToremove.add(sb.toString());
+        return sb.toString();
+    }
+    
     @Override
     protected void setUp() throws Exception {
         oldProps = setProperties(
             "remote.fs_server.log", "true",
             "remote.fs_server.verbose", "4",
             "remote.fs_server.log", "true",
-            "remote.fs_server.redirect.err", "/tmp/fs_server_err_1.txt"
+            "remote.fs_server.redirect.err", getStdErrFileName("1")
             //"remote.native.delete.on.exit", "false"
             //"remote.alternative.delete.on.exit", "true"
         );
@@ -103,6 +118,7 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testDeleteOnExit() throws Exception {
         String dir = null;
+        boolean success = false;
         try {
             dir = mkTempAndRefreshParent(true);
             RemoteFileObject dirFO = (RemoteFileObject) getFileObject(dir);
@@ -122,28 +138,49 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             traceCanDeleteOnDisconnect();
             dirFO.getFileSystem().deleteOnExit(path1);
             dirFO.getFileSystem().deleteOnExit(path2);
-            System.setProperty("remote.fs_server.redirect.err", "/tmp/fs_server_err_2.txt");
+            System.setProperty("remote.fs_server.redirect.err", getStdErrFileName("2"));
             reconnect(2000, true);
             assertRemoved(500, 120, path1, path2);
+            success = true;
         } finally {
             removeRemoteDirIfNotNull(dir);
+            if (success && !logsToremove.isEmpty()) {
+                final ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, "rm", logsToremove.toArray(new String[logsToremove.size()]));
+                if (!rc.isOK()) {
+                    StringBuilder sb = new StringBuilder("Error removing files: ");
+                    for (String p : logsToremove) {
+                        sb.append(p).append(' ');
+                    }
+                    sb.append(rc.getErrorString());
+                    System.err.println(sb.toString());
+                }
+                logsToremove.clear();
+            }
+            //reconnect(1000, true);
         }
     }
 
-    @ForAllEnvironments
-    public void testCreateTempFileDeleteOnExit() throws Exception {
+    //@ForAllEnvironments
+    public void __testCreateTempFileDeleteOnExit() throws Exception {
         String dir = null;
+        boolean success = false;
         try {
             dir = mkTempAndRefreshParent(true);
             RemoteFileObject dirFO = (RemoteFileObject) getFileObject(dir);
             FileObject tmpFO = dirFO.getFileSystem().createTempFile(dirFO, "tmp", "tmp", true);            
             String path1 = tmpFO.getPath();            
             traceCanDeleteOnDisconnect();
-            System.setProperty("remote.fs_server.redirect.err", "/tmp/fs_server_err_" + System.currentTimeMillis());
+            System.setProperty("remote.fs_server.redirect.err", getStdErrFileName("2"));
             reconnect(2000, true);
             assertRemoved(500, 120, "ls", path1);
+            success = true;            
         } finally {
             removeRemoteDirIfNotNull(dir);
+            if (success && !logsToremove.isEmpty()) {
+                ProcessUtils.execute(execEnv, "rm ", logsToremove.toArray(new String[logsToremove.size()]));
+                logsToremove.clear();
+            }
+            //reconnect(1000, true);
         }
     }
     
