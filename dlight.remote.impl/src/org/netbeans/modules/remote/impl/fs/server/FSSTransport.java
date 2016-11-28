@@ -660,7 +660,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     
     @Override
     protected boolean canDeleteOnDisconnect() {
-        return true;
+        return RemoteFileSystemUtils.getBoolean("remote.native.delete.on.exit", true);
     }
 
     @Override
