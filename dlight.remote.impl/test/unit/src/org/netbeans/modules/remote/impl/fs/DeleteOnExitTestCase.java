@@ -82,7 +82,7 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         sb.append(getName().replace(" ", "").replace("[", "_").replace("]", "")).append('_');
         String buildTag = System.getenv("BUILD_TAG");
         if (buildTag == null) {
-            buildTag = System.getenv("USER");
+            buildTag = System.getenv("USER") + '_' + System.currentTimeMillis();
         }
         if (buildTag != null) {
             sb.append(buildTag).append('_');
@@ -135,9 +135,10 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             traceCanDeleteOnDisconnect();
             dirFO.getFileSystem().deleteOnExit(path1);
             dirFO.getFileSystem().deleteOnExit(path2);
+            sleep(250);
             System.setProperty("remote.fs_server.redirect.err", getStdErrFileName("2"));
-            reconnect(2000, true);
-            assertRemoved(500, 120, path1, path2);
+            reconnect(200, true);
+            assertRemoved(500, 60, path1, path2);
             success = true;
         } finally {
             removeRemoteDirIfNotNull(dir);
