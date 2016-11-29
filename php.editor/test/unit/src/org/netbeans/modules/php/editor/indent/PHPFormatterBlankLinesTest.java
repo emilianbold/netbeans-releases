@@ -1221,4 +1221,100 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/blankLines/issue243744.php", options);
     }
 
+    // between a field and a method
+    public void testIssue268710_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_01.php", options);
+    }
+
+    public void testIssue268710_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_02.php", options);
+    }
+
+    public void testIssue268710_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_03.php", options);
+    }
+
+    public void testIssue268710_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_04.php", options);
+    }
+
+    public void testIssue268710_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_05.php", options);
+    }
+
+    public void testIssue268710_06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_06.php", options);
+    }
+
+    // between fields
+    public void testIssue268710_07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 1);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, false);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_07.php", options);
+    }
+
+    public void testIssue268710_08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 1);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, false);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_08.php", options);
+    }
+
+    public void testIssue268710_09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, false);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_09.php", options);
+    }
+
+    public void testIssue268710_10() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, false);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_10.php", options);
+    }
+
+    public void testIssue268710_11() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 1);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, true);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_11.php", options);
+    }
+
+    public void testIssue268710_12() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 1);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, true);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_12.php", options);
+    }
+
+    public void testIssue268710_13() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, true);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_13.php", options);
+    }
+
+    public void testIssue268710_14() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, true);
+        reformatFileContents("testfiles/formatting/blankLines/issue268710_14.php", options);
+    }
+
 }
