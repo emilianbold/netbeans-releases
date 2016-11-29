@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
+import org.netbeans.modules.java.api.common.impl.ModuleTestUtilities;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.netbeans.api.annotations.common.NonNull;
@@ -100,44 +101,6 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         assertNotNull(mtu);
     }
 
-
-    public void testModel() {
-        assertTrue(mtu.updateModuleRoots(src1,src2));
-        final SourceRoots modules = mtu.newModuleRoots(false);
-        assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
-        final SourceRoots sources = mtu.newSourceRoots(false);
-        assertEquals(
-                Arrays.stream(new FileObject[]{mod1a, mod1b, mod2c, mod1d, mod2d})
-                    .map((fo) -> fo.getPath())
-                    .sorted()
-                    .collect(Collectors.toList()),
-                Arrays.stream(sources.getRoots())
-                    .map((fo) -> fo.getPath())
-                    .sorted()
-                    .collect(Collectors.toList()));
-        final MultiModule model = MultiModule.getOrCreate(modules, sources);
-        assertNotNull(model);
-        final MultiModule model2 = MultiModule.getOrCreate(modules, sources);
-        assertSame(model, model2);
-
-        assertNull(model.getModuleSources("foo"));  //NOI18N
-
-        ClassPath scp = model.getModuleSources(mod1a.getParent().getNameExt());
-        assertNotNull(scp);
-        assertEquals(Arrays.asList(mod1a), Arrays.asList(scp.getRoots()));
-
-        scp = model.getModuleSources(mod1b.getParent().getNameExt());
-        assertNotNull(scp);
-        assertEquals(Arrays.asList(mod1b), Arrays.asList(scp.getRoots()));
-
-        scp = model.getModuleSources(mod2c.getParent().getNameExt());
-        assertNotNull(scp);
-        assertEquals(Arrays.asList(mod2c), Arrays.asList(scp.getRoots()));
-
-        scp = model.getModuleSources(mod1d.getParent().getNameExt());
-        assertNotNull(scp);
-        assertEquals(Arrays.asList(mod1d, mod2d), Arrays.asList(scp.getRoots()));
-    }
 
     public void testQueryForDistFolder() {
         assertTrue(mtu.updateModuleRoots(src1,src2));

@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.java.api.common.impl;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
@@ -64,6 +65,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -72,12 +74,13 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 /**
  * A source path model for multi-module project.
  * @author Tomas Zezula
  */
-public final class MultiModule {
+public final class MultiModule implements PropertyChangeListener {
 
     public static final String PROP_MODULES = "modules";    //NOI18N
 
@@ -86,7 +89,7 @@ public final class MultiModule {
 
     private final SourceRoots moduleRoots;
     private final SourceRoots srcRoots;
-    private final AtomicReference<Pair<Boolean,Map<String,Pair<ClassPath,CPImpl>>>> cache;
+    private final AtomicReference<Map<String,Pair<ClassPath,CPImpl>>> cache;
     private final PropertyChangeSupport listeners;
 
     private MultiModule(
@@ -96,8 +99,11 @@ public final class MultiModule {
         Parameters.notNull("srcRoots", srcRoots);       //NOI18N
         this.moduleRoots = moduleRoots;
         this.srcRoots = srcRoots;
-        this.cache = new AtomicReference<>(Pair.of(Boolean.FALSE, Collections.emptyMap()));
+        this.cache = new AtomicReference<>(Collections.emptyMap());
         this.listeners = new PropertyChangeSupport(this);
+        this.moduleRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, this.moduleRoots));
+        this.srcRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, this.srcRoots));
+        updateCache();
     }
 
     @NonNull
@@ -136,46 +142,55 @@ public final class MultiModule {
         this.listeners.removePropertyChangeListener(listener);
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        final String propName = evt.getPropertyName();
+        if (SourceRoots.PROP_ROOTS.equals(propName)) {
+            ProjectManager.mutex().postReadRequest(()->updateCache());
+        }
+    }
+
     @NonNull
     private Map<String,Pair<ClassPath,CPImpl>> getCache() {
-        Pair<Boolean,Map<String,Pair<ClassPath,CPImpl>>> res = cache.get();
-        if (res.first() != Boolean.TRUE) {
-            final Map<String,Pair<ClassPath,CPImpl>> prev = res.second();
-            final Map<String,Collection<URL>> modulesByName = new HashMap<>();
-            for (FileObject moduleRoot : moduleRoots.getRoots()) {
-                collectModuleRoots(moduleRoot, srcRoots.getRootURLs(), modulesByName);
-            }
-            final Set<String> toKeep = new HashSet<>(prev.keySet());
-            final Set<String> toAdd = new HashSet<>(modulesByName.keySet());
-            boolean fire = toKeep.retainAll(modulesByName.keySet());
-            toAdd.removeAll(prev.keySet());
-            fire |= !toAdd.isEmpty();
+        return cache.get();
+    }
 
-            final Map<String,Pair<ClassPath,CPImpl>> next = new HashMap<>();
+    private void updateCache() {
+        final Map<String,Pair<ClassPath,CPImpl>> prev = cache.get();
+        final Map<String,Collection<URL>> modulesByName = new HashMap<>();
+        for (FileObject moduleRoot : moduleRoots.getRoots()) {
+            collectModuleRoots(moduleRoot, srcRoots.getRootURLs(), modulesByName);
+        }
+        final Set<String> toKeep = new HashSet<>(prev.keySet());
+        final Set<String> toRemove = new HashSet<>(prev.keySet());
+        final Set<String> toAdd = new HashSet<>(modulesByName.keySet());
+        boolean fire = toKeep.retainAll(modulesByName.keySet());
+        toRemove.removeAll(modulesByName.keySet());
+        toAdd.removeAll(prev.keySet());
+        fire |= !toAdd.isEmpty();
+
+        final Map<String,Pair<ClassPath,CPImpl>> next = new HashMap<>();
+        for (String modName : toKeep) {
+            next.put(modName, prev.get(modName));
+        }
+        for (String modName : toAdd) {
+            final CPImpl impl = new CPImpl(modulesByName.get(modName));
+            final ClassPath cp = ClassPathFactory.createClassPath(impl);
+            next.put(
+                    modName,
+                    Pair.of(cp,impl));
+        }
+        if (cache.compareAndSet(prev, next)) {
+            if (fire) {
+                this.listeners.firePropertyChange(PROP_MODULES, prev.keySet(), next.keySet());
+            }
             for (String modName : toKeep) {
-                next.put(modName, prev.get(modName));
+                next.get(modName).second().update(modulesByName.get(modName));
             }
-            for (String modName : toAdd) {
-                final CPImpl impl = new CPImpl(modulesByName.get(modName));
-                final ClassPath cp = ClassPathFactory.createClassPath(impl);
-                next.put(
-                        modName,
-                        Pair.of(cp,impl));
-            }
-            final Pair<Boolean,Map<String,Pair<ClassPath,CPImpl>>> newRes = Pair.of(Boolean.TRUE, next);
-            if (cache.compareAndSet(res, newRes)) {
-                res = newRes;
-                if (fire) {
-                    this.listeners.firePropertyChange(PROP_MODULES, prev.keySet(), next.keySet());
-                }
-                for (String modName : toKeep) {
-                    next.get(modName).second().update(modulesByName.get(modName));
-                }
-            } else {
-                res = cache.get();
+            for (String modName : toRemove) {
+                prev.get(modName).second().update(Collections.emptyList());
             }
         }
-        return res.second();
     }
 
     private static void collectModuleRoots(

@@ -70,6 +70,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -323,42 +324,44 @@ public final class SourceRoots extends Roots {
                         for (String srcProp : getRootProperties()) {
                             String prop = evaluator.getProperty(srcProp);
                             if (prop != null) {
-                                String srcPath = null;
-                                int idx = prop.indexOf("/*/");
-                                if (idx >= 0) {
-                                    srcPath = prop.substring(idx + 3);
-                                    prop = prop.substring(0, idx);
-                                }
-                                List<File> files = new ArrayList<>();
-                                File file = helper.getAntProjectHelper().resolveFile(prop);
-                                if (file.isDirectory() && !isModule() && srcPath != null) {
-                                    if (idx > 0) {
-                                        for (File f : file.listFiles()) {
-                                            if (f.isDirectory()) {
-                                                files.add(new File(f, srcPath));
+                                for (String propElement : PropertyUtils.tokenizePath(prop)) {
+                                    String srcPath = null;
+                                    int idx = propElement.indexOf("/*/");
+                                    if (idx >= 0) {
+                                        srcPath = propElement.substring(idx + 3);
+                                        propElement = propElement.substring(0, idx);
+                                    }
+                                    List<File> files = new ArrayList<>();
+                                    File file = helper.getAntProjectHelper().resolveFile(propElement);
+                                    if (file.isDirectory() && !isModule() && srcPath != null) {
+                                        if (idx > 0) {
+                                            for (File f : file.listFiles()) {
+                                                if (f.isDirectory()) {
+                                                    files.add(new File(f, srcPath));
+                                                }
                                             }
                                         }
+                                        listener.add(file, true);
+                                    } else {
+                                        files.add(file);
                                     }
-                                    listener.add(file, true);
-                                } else {
-                                    files.add(file);
-                                }
-                                for (File f : files) {
-                                    try {
-                                        URL url = Utilities.toURI(f).toURL();
-                                        if (!f.exists()) {
-                                            url = new URL(url.toExternalForm() + "/"); // NOI18N
-                                        } else if (removeInvalidRoots && !f.isDirectory()) {
-                                            // file cannot be a source root (archives are not supported as source roots).
-                                            continue;
+                                    for (File f : files) {
+                                        try {
+                                            URL url = Utilities.toURI(f).toURL();
+                                            if (!f.exists()) {
+                                                url = new URL(url.toExternalForm() + "/"); // NOI18N
+                                            } else if (removeInvalidRoots && !f.isDirectory()) {
+                                                // file cannot be a source root (archives are not supported as source roots).
+                                                continue;
+                                            }
+                                            assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; "
+                                                    + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
+                                                    + " file? " + f.isFile();
+                                            result.add(url);
+                                            listener.add(f, false);
+                                        } catch (MalformedURLException e) {
+                                            Exceptions.printStackTrace(e);
                                         }
-                                        assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; "
-                                                + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
-                                                + " file? " + f.isFile();
-                                        result.add(url);
-                                        listener.add(f, false);
-                                    } catch (MalformedURLException e) {
-                                        Exceptions.printStackTrace(e);
                                     }
                                 }
                             }

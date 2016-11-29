@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
+import org.netbeans.modules.java.api.common.impl.ModuleTestUtilities;
 import java.util.Arrays;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.project.Project;
