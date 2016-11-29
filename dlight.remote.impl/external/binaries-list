@@ -1,7 +1,3 @@
-#changeset:   313476:d6afee99277f
-#branch:      release82
-#tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Tue Nov 29 11:52:49 2016 +0300
-#summary:     Minor changes in fs_server trace - source (fixing #268926 - Remote File System should support DeleteOnExit)
-7152C718762E97CD8201D27BF75DCAC10898E610 fs_server-1.0.zip
+
+
+3A8A8E01606681ADE9E671F35086D571DF2D7A79 fs_server-1.0.zip
