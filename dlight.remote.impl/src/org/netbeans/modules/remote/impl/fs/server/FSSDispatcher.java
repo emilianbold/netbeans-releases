@@ -802,7 +802,7 @@ import org.openide.util.RequestProcessor;
             String redirectErr = System.getProperty("remote.fs_server.redirect.err");
             if (redirectErr != null && !redirectErr.equalsIgnoreCase("false")) { //NOI18N
                 argsList.add("-e"); // NOI18N
-                if (!redirectErr.equalsIgnoreCase("true")) {
+                if (!redirectErr.equalsIgnoreCase("true")) { // NOI18N
                     argsList.add(redirectErr);
                 }
             }
