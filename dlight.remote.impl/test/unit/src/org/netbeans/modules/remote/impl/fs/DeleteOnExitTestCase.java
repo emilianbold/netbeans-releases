@@ -133,8 +133,8 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             assertTrue("Error creating temp files", status.isOK());
             
             traceCanDeleteOnDisconnect();
-            dirFO.getFileSystem().deleteOnExit(path1);
-            dirFO.getFileSystem().deleteOnExit(path2);
+            dirFO.getFileSystem().deleteOnDisconnect(path1);
+            dirFO.getFileSystem().deleteOnDisconnect(path2);
             sleep(250);
             System.setProperty("remote.fs_server.redirect.err", getStdErrFileName("2"));
             reconnect(200, true);

@@ -180,6 +180,10 @@ public final class RemoteVcsSupport {
         getImpl().delete(file);
     }
 
+    /**
+     * Deletes on disconnect
+     * @param file file to delete
+     */
     public static void deleteOnExit(VCSFileProxy file) {
         getImpl().deleteOnExit(file);
     }

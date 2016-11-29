@@ -547,7 +547,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                     FileObject fo = parent.createData(tmpName);
                     if (fo != null && fo.isData() && fo.isValid()) {
                         if (deleteOnExit) {
-                            deleteOnExit(fo.getPath());
+                            deleteOnDisconnect(fo.getPath());
                         }
                         return fo;
                     }
@@ -956,7 +956,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return status;
     }
     
-    public void deleteOnExit(String... paths) {
+    public void deleteOnDisconnect(String... paths) {
         if (RemoteFileSystemTransport.canDeleteOnDisconnect(execEnv)) {
             try {
                 RemoteFileSystemTransport.deleteOnDisconnect(execEnv, paths);
