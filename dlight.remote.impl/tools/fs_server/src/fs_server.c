@@ -99,7 +99,7 @@ bool redirect_err_flag = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 12
-#define FS_SERVER_MINOR_VERSION 1
+#define FS_SERVER_MINOR_VERSION 3
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -1810,7 +1810,11 @@ static void main_loop() {
 
 static void usage(char* argv[]) {
     char *prog_name = strrchr(argv[0], '/');
+    if (prog_name) {
+        prog_name++;
+    }
     my_fprintf(STDERR,
+            "%s %i.%i.%i\n"
             "Usage: %s [-t nthreads] [-v] [-p] [-r]\n"
             "   -t <nthreads> response processing threads count (default is %d)\n"
             "   -p log responses into persisnence\n"
@@ -1826,6 +1830,7 @@ static void usage(char* argv[]) {
             "      wait maximum <msec> microseconds until it releases the lock\n"
             "      <msec> should be less than 1000000\n"
             "      if <PID> is specified then only the process with this PID can be killed\n"
+            , prog_name ? prog_name : argv[0], FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION
             , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
@@ -2040,7 +2045,6 @@ static void *killer(void *data) {
 
 static void shutdown() {
     state_set_proceed(false);
-    delete_on_exit_impl();
     blocking_queue_shutdown(&req_queue);
     trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     if (statistics) {
@@ -2058,6 +2062,7 @@ static void shutdown() {
         trace(TRACE_FINE, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i].id);
         pthread_join(rp_threads[i].id, NULL);
     }
+    delete_on_exit_impl();
     if (refresh) {
         int refresh_thread_idx = rp_thread_count;
         pthread_kill(rp_threads[refresh_thread_idx].id, SIGUSR1);
