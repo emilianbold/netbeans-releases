@@ -81,6 +81,9 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         StringBuilder sb = new StringBuilder("/tmp/fs_server_err_");
         sb.append(getName().replace(" ", "").replace("[", "_").replace("]", "")).append('_');
         String buildTag = System.getenv("BUILD_TAG");
+        if (buildTag == null) {
+            buildTag = System.getenv("USER");
+        }
         if (buildTag != null) {
             sb.append(buildTag).append('_');
         }
