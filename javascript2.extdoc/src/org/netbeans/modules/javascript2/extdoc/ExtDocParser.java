@@ -76,6 +76,9 @@ public class ExtDocParser {
     public static Map<Integer, ExtDocComment> parse(Snapshot snapshot) {
         Map<Integer, ExtDocComment> blocks = new HashMap<Integer, ExtDocComment>();
 
+        if (snapshot == null || snapshot.getTokenHierarchy() == null) {
+            return blocks;
+        }
         TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
         if (tokenSequence == null) {
             return blocks;
