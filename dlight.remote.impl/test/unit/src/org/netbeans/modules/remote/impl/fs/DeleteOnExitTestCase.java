@@ -109,7 +109,7 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
     }
 
     private void traceCanDeleteOnDisconnect() {
-        System.out.println(execEnv.toString() + ": " +
+        System.err.println(execEnv.toString() + ": " +
                 (RemoteFileSystemTransport.canDeleteOnDisconnect(execEnv) ? 
                 "Deleting on disconnect via fs_server" : 
                 "Alternative delete on disconnect implementation"));
@@ -123,15 +123,9 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             dir = mkTempAndRefreshParent(true);
             RemoteFileObject dirFO = (RemoteFileObject) getFileObject(dir);
             
-            String file1 = "file1.dat";
-            String path1 = dir + '/' + file1;
-            runScript("echo xxx > " + path1);
-            FileObject fo1 = getFileObject(dirFO, file1);
-            
-            String file2 = "file2.dat";
-            String path2 = dir + '/' + file2;
-            runScript("echo xxx > " + path2);
-            
+            String path1 = dir + "/file1.dat";
+            String path2 = dir + "/file2.dat";
+            runScript("echo xxx > " + path1 + "; echo xxx > " + path2);            
             ProcessUtils.ExitStatus status = ProcessUtils.execute(execEnv, "ls", path1, path2);
             assertTrue("Error creating temp files", status.isOK());
             
@@ -145,45 +139,27 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         } finally {
             removeRemoteDirIfNotNull(dir);
             if (success && !logsToremove.isEmpty()) {
-                final ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, "rm", logsToremove.toArray(new String[logsToremove.size()]));
-                if (!rc.isOK()) {
-                    StringBuilder sb = new StringBuilder("Error removing files: ");
-                    for (String p : logsToremove) {
-                        sb.append(p).append(' ');
-                    }
-                    sb.append(rc.getErrorString());
-                    System.err.println(sb.toString());
-                }
-                logsToremove.clear();
-            }
-            //reconnect(1000, true);
-        }
-    }
-
-    //@ForAllEnvironments
-    public void __testCreateTempFileDeleteOnExit() throws Exception {
-        String dir = null;
-        boolean success = false;
-        try {
-            dir = mkTempAndRefreshParent(true);
-            RemoteFileObject dirFO = (RemoteFileObject) getFileObject(dir);
-            FileObject tmpFO = dirFO.getFileSystem().createTempFile(dirFO, "tmp", "tmp", true);            
-            String path1 = tmpFO.getPath();            
-            traceCanDeleteOnDisconnect();
-            System.setProperty("remote.fs_server.redirect.err", getStdErrFileName("2"));
-            reconnect(2000, true);
-            assertRemoved(500, 120, "ls", path1);
-            success = true;            
-        } finally {
-            removeRemoteDirIfNotNull(dir);
-            if (success && !logsToremove.isEmpty()) {
-                ProcessUtils.execute(execEnv, "rm ", logsToremove.toArray(new String[logsToremove.size()]));
+                // FIXME: remove files!!!
+                System.err.println("Leaving fs_server stderr files " + toString(logsToremove));
+                //System.err.println("Removing fs_server stderr files " + toString(logsToremove));
+                //final ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, "rm", logsToremove.toArray(new String[logsToremove.size()]));
+                //if (!rc.isOK()) {
+                //    System.err.println("Error removing files " + toString(logsToremove) + ": " + rc.getErrorString());
+                //}
                 logsToremove.clear();
             }
             //reconnect(1000, true);
         }
     }
     
+    private CharSequence toString(List<String> l) {
+        StringBuilder sb = new StringBuilder();
+        for (String s : l) {
+            sb.append(s).append(' ');
+        }
+        return sb;
+    }
+
     private void assertRemoved(int timeout, int attempts, String...paths) {
         StringBuilder message = new StringBuilder("Files should be removed: ");
         boolean first = true;
