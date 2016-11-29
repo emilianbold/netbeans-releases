@@ -220,7 +220,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         connectionChanged = false; // volatile
         connectionTask.schedule(0);
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
-        remoteFileZipper = new RemoteFileZipper(execEnv);
+        remoteFileZipper = new RemoteFileZipper(execEnv, this);
     }
 
     private List<String> getFixedAutoMounts() {

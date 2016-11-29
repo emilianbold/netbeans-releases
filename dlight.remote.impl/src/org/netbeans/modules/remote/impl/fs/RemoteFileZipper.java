@@ -62,13 +62,15 @@ import org.openide.util.RequestProcessor;
 public class RemoteFileZipper {
 
     private final ExecutionEnvironment execEnv;
+    private final RemoteFileSystem fileSystem;
     private final RequestProcessor rp;
     
     private final Map<String, Worker> workers = new HashMap<>();
     private final Object workersLock = new Object();
 
-    public RemoteFileZipper(ExecutionEnvironment execEnv) {
+    public RemoteFileZipper(ExecutionEnvironment execEnv, RemoteFileSystem fileSystem) {
         this.execEnv = execEnv;
+        this.fileSystem = fileSystem;
         // throughput is set to 1 to prevent making all channels busy for a long time
         rp = new RequestProcessor(getClass().getSimpleName() + ' ' + execEnv, 1); //NOI18N
     }
@@ -126,7 +128,7 @@ public class RemoteFileZipper {
             // Zip directory on remote host
             //
             time = System.currentTimeMillis();
-            StringBuilder script = new StringBuilder("TZ=UTC; export TZ; F=`mktemp`; if [ $? -eq 0 ]; then echo ZIP=$F; rm -rf $F; "); //NOI18N
+            StringBuilder script = new StringBuilder("TZ=UTC; export TZ; F=`mktemp /tmp/rfs_warmup_XXXXXXXX.zip`; if [ $? -eq 0 ]; then echo ZIP=$F; rm -rf $F; "); //NOI18N
             boolean all;
             if (extensions == null || extensions.isEmpty()) {
                 all = true;
@@ -184,7 +186,8 @@ public class RemoteFileZipper {
             }
             
             String remoteZipPath = lines[0].substring(4);
-            
+            fileSystem.deleteOnExit(remoteZipPath);
+
             try {
                 //
                 // Download zip from remote host
@@ -202,7 +205,6 @@ public class RemoteFileZipper {
                 } catch (ExecutionException ex) {
                     ex.printStackTrace(System.err);
                 }
-
                 if (rc != 0) {
                     if (rc != 0) {
                         RemoteLogger.info("Warmup: error downloading {0} at {1} to {2}, rc={3}", //NOI18N
@@ -230,7 +232,7 @@ public class RemoteFileZipper {
                     ex.printStackTrace(System.err);
                 }
                 RemoteLogger.fine("removing {0} at {1} finished with rc={2} and took {3} ms", //NOI18N
-                        path, execEnv, zipPartFile.getAbsolutePath(), rc, System.currentTimeMillis() - time);
+                        remoteZipPath, execEnv, zipPartFile.getAbsolutePath(), rc, System.currentTimeMillis() - time);
             }
         }
     }
