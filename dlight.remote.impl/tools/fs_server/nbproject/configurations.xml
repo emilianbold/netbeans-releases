@@ -146,7 +146,7 @@ Contributor(s):
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
+        <element flagsID="0" commonFlags="-std=c99 -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -161,10 +161,12 @@ Contributor(s):
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>LINUX</Elem>
               <Elem>NDEBUG</Elem>
-              <Elem>SOLARIS</Elem>
+              <Elem>_GNU_SOURCE</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
               <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>

@@ -99,7 +99,7 @@ bool redirect_err_flag = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 12
-#define FS_SERVER_MINOR_VERSION 0
+#define FS_SERVER_MINOR_VERSION 1
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -190,7 +190,7 @@ static void delete_on_exit_impl() {
     void* p;
     while((p = queue_poll(&delete_on_exit_list.queue))) {
         const char* path = (const char*) p;
-        trace(TRACE_FINEST, "  removing %s...", path);
+        trace(TRACE_FINEST, "  removing %s...\n", path);
         if(unlink(path)) {
             err_cnt++;
             report_error("error deleting file %s: %s\n", path, err_to_string(errno));
