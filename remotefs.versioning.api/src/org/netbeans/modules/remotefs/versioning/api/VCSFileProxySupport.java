@@ -120,6 +120,10 @@ public final class VCSFileProxySupport {
         RemoteVcsSupport.delete(file);
     }
 
+    /**
+     * Deletes on disconnect
+     * @param file file to delete
+     */
     public static void deleteOnExit(VCSFileProxy file) {
         RemoteVcsSupport.deleteOnExit(file);
     }

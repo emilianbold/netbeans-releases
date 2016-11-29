@@ -186,7 +186,7 @@ public class RemoteFileZipper {
             }
             
             String remoteZipPath = lines[0].substring(4);
-            fileSystem.deleteOnExit(remoteZipPath);
+            fileSystem.deleteOnDisconnect(remoteZipPath);
 
             try {
                 //
