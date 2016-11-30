@@ -79,6 +79,8 @@ bool is_traceable(TraceLevel level);
 void trace(TraceLevel level, const char *format, ...);
 void redirect_err(const char* file_name);
 
+void log_and_err_print(const char *format, ...);
+
 void log_print(const char *format, ...);
 void log_open(const char* path);
 void log_close();

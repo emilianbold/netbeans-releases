@@ -74,7 +74,7 @@ static FILE *get_stderr() {
 
 void redirect_err(const char* file_name) {
     if (file_name) {
-        err_file = fopen600(file_name, O_WRONLY | O_TRUNC | O_CREAT);
+        err_file = fopen600(file_name, O_WRONLY | O_APPEND | O_CREAT);
         if (!err_file) {
             err_file = stderr;
             // this is called from 
@@ -129,6 +129,23 @@ void trace(TraceLevel level, const char *format, ...) {
         vfprintf(get_stderr(), format, args);
         va_end(args);  
         fflush(get_stderr());
+    }
+}
+
+void log_and_err_print(const char *format, ...) {
+    if (err_file) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(err_file, format, args);
+        va_end(args);  
+        fflush(err_file);
+    }
+    if (log_file) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(log_file, format, args);
+        va_end(args);  
+        fflush(log_file);
     }
 }
 
