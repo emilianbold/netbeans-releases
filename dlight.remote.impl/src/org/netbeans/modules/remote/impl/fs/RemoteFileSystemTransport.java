@@ -267,6 +267,13 @@ public abstract class RemoteFileSystemTransport {
             throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
         return getInstanceSlow(execEnv).uploadAndRename(src, pathToUpload, pathToRename);
     }
+    
+    static void shutdown(ExecutionEnvironment execEnv) {
+        RemoteFileSystemTransport transport = FSSTransport.removeInstance(execEnv);
+        if (transport != null) {
+            transport.shutdown();
+        }
+    }
 
     private static RemoteFileSystemTransport getInstanceFast(ExecutionEnvironment execEnv) {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
@@ -381,5 +388,8 @@ public abstract class RemoteFileSystemTransport {
     
     protected Warmup createWarmup(String path) {
         return null;
-    }                
+    }
+    
+    protected void shutdown() {        
+    }
 }
