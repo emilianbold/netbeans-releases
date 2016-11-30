@@ -1321,6 +1321,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     break;
                 }
             //fall through
+            case elementName:
             case rule:
             case moz_document:
             case cp_mixin_block: //XXX should be defined in css.prep module
