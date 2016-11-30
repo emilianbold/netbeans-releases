@@ -1519,6 +1519,9 @@ public abstract class CsmResultItem implements CompletionItem {
             String text;
             if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
                 text = CsmBaseUtilitiesProvider.getDefault().getDummyForwardSimpleQualifiedName(cls).toString();
+                if (text.lastIndexOf(':')>0) {
+                    text = text.substring(text.lastIndexOf(':')+1);
+                }
             } else {
                 text = cls.getName().toString();
             }
