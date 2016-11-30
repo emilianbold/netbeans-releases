@@ -105,7 +105,7 @@ void stopwatch_stop(TraceLevel level, const char* message);
 char *replace_first(char *s, char c, char replacement);
 
 /** opens a file in write-only exclusive mode with O_CREAT flag and mode 600 */
-FILE* fopen600(const char* path);
+FILE* fopen600(const char* path, int flags);
 
 int escape_strlen(const char* s);
 

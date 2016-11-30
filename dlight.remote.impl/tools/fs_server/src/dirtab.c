@@ -214,7 +214,7 @@ static bool load_table(dirtab_watch_state default_watch_state) {
 }
 
 static bool flush_impl() {
-    FILE *fp = fopen600(dirtab_file_path);
+    FILE *fp = fopen600(dirtab_file_path, O_WRONLY | O_TRUNC | O_CREAT);
     if (!fp){
         report_error("error opening %s for writing: %s\n", dirtab_file_path, strerror(errno));
         return false;

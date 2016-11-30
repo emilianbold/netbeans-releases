@@ -74,7 +74,7 @@ static FILE *get_stderr() {
 
 void redirect_err(const char* file_name) {
     if (file_name) {
-        err_file = fopen600(file_name);
+        err_file = fopen600(file_name, O_WRONLY | O_TRUNC | O_CREAT);
         if (!err_file) {
             err_file = stderr;
             // this is called from 
@@ -288,8 +288,8 @@ char *replace_first(char *s, char c, char replacement) {
     return s;
 }
 
-FILE* fopen600(const char* path) {
-    int fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0600);
+FILE* fopen600(const char* path, int flags) {
+    int fd = open(path, flags, 0600);
     if (fd == -1) {
         return NULL;
     } else {
