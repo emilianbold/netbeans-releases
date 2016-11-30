@@ -59,6 +59,7 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
     
     private Properties oldProps;
     private List<String> logsToremove = new ArrayList<>();
+    private final long testCreationTimeStamp = System.currentTimeMillis();
 
     public DeleteOnExitTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -82,7 +83,7 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         sb.append(getName().replace(" ", "").replace("[", "_").replace("]", "")).append('_');
         String buildTag = System.getenv("BUILD_TAG");
         if (buildTag == null) {
-            buildTag = System.getenv("USER") + '_' + System.currentTimeMillis();
+            buildTag = System.getenv("USER") + '_' + testCreationTimeStamp;
         }
         if (buildTag != null) {
             sb.append(buildTag).append('_');
@@ -97,10 +98,7 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         oldProps = setProperties(
             "remote.fs_server.log", "true",
             "remote.fs_server.verbose", "4",
-            "remote.fs_server.log", "true",
-            "remote.fs_server.redirect.err", getStdErrFileName("1")
-            //"remote.native.delete.on.exit", "false"
-            //"remote.alternative.delete.on.exit", "true"
+            "remote.fs_server.log", "true"
         );
         super.setUp();
     }
@@ -120,6 +118,8 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testDeleteOnExit() throws Exception {
+        System.setProperty("remote.fs_server.redirect.err", getStdErrFileName("1"));
+        reconnect(200, true);
         String dir = null;
         boolean success = false;
         try {
@@ -143,16 +143,15 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
         } finally {
             removeRemoteDirIfNotNull(dir);
             if (success && !logsToremove.isEmpty()) {
-                // FIXME: remove files!!!
-                System.err.println("Leaving fs_server stderr files " + toString(logsToremove));
-                //System.err.println("Removing fs_server stderr files " + toString(logsToremove));
-                //final ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, "rm", logsToremove.toArray(new String[logsToremove.size()]));
-                //if (!rc.isOK()) {
-                //    System.err.println("Error removing files " + toString(logsToremove) + ": " + rc.getErrorString());
-                //}
+                System.setProperty("remote.fs_server.redirect.err", "false");
+                reconnect(200, true);
+                System.err.println("Removing fs_server stderr files " + toString(logsToremove));
+                final ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, "rm", logsToremove.toArray(new String[logsToremove.size()]));
+                if (!rc.isOK()) {
+                    System.err.println("Error removing files " + toString(logsToremove) + ": " + rc.getErrorString());
+                }
                 logsToremove.clear();
             }
-            //reconnect(1000, true);
         }
     }
     
