@@ -327,7 +327,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
     
     /*package*/ void dispose() {
-        disposed = true;
+        disposed = true; 
+        RemoteFileSystemTransport.shutdown(execEnv);        
         ConnectionManager.getInstance().removeConnectionListener(this);
     }
 

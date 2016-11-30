@@ -116,6 +116,16 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
     }
 
+    public static FSSTransport removeInstance(ExecutionEnvironment env) {
+        synchronized (instancesLock) {
+            FSSTransport instance = instances.remove(env);
+            if (instance != null) {
+                ConnectionManager.getInstance().removeConnectionListener(instance);
+            }
+            return instance;
+        }
+    }
+
     private FSSTransport(ExecutionEnvironment env) {
         this.env = env;
         this.dispatcher = FSSDispatcher.getInstance(env);
@@ -671,6 +681,11 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             dispatcher.dispatch(request);
         }
     }    
+
+    @Override
+    protected void shutdown() {
+        dispatcher.shutdown();
+    }
 
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {
 

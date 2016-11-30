@@ -491,6 +491,21 @@ import org.openide.util.RequestProcessor;
         writer.flush();   
     }
 
+    void shutdown() {
+        FsServer server = getServer();
+        if (server != null) {            
+            NativeProcess process = server.getProcess();
+            if (process.isAlive()) {
+                FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_QUIT, "", true); //NOI18N
+                try {
+                    dispatch(req);
+                } catch (IOException | CancellationException | InterruptedException | ExecutionException ex) {
+                    RemoteLogger.fine(ex);
+                }
+            }
+        }
+    }
+
     private FsServer getServer() {        
         synchronized (serverLock) {
             return server;
