@@ -99,7 +99,7 @@ bool redirect_err_flag = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 12
-#define FS_SERVER_MINOR_VERSION 3
+#define FS_SERVER_MINOR_VERSION 4
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -863,7 +863,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
         el = dirtab_get_element(path);
         dirtab_lock(el);
         dirtab_set_watch_state(el, DE_WSTATE_POLL);
-        cache_fp = fopen600(dirtab_get_element_cache_path(el));
+        cache_fp = fopen600(dirtab_get_element_cache_path(el), O_WRONLY | O_TRUNC | O_CREAT);
         if (cache_fp) {
             fprintf(cache_fp, "%s%i\n", persistence_version_label, persistence_version_curr);
             escape_strcpy(response_buf.data, path);
