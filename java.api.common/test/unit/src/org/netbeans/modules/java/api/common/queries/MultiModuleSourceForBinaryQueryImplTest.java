@@ -312,14 +312,175 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         assertEquals(Arrays.asList(mod1a), Arrays.asList(res.getRoots()));
     }
 
-    public void testModuleSourcesChanges() {
-        //Result should have updated sources
+    public void testModuleSourcesChanges() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
+        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{classesFolder})
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()),
+                Arrays.stream(sources.getRoots())
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()));
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        assertNotNull(model);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+        final MultiModuleSourceForBinaryQueryImpl q =
+                new MultiModuleSourceForBinaryQueryImpl(
+                        tp.getUpdateHelper().getAntProjectHelper(),
+                        tp.getEvaluator(),
+                        model,
+                        testModel,
+                        new String[]{ProjectProperties.DIST_DIR},
+                        new String[]{});
+        final URL origDistJar = mtu.distFor(classesFolder.getParent().getNameExt());
+        SourceForBinaryQueryImplementation2.Result res = q.findSourceRoots2(origDistJar);
+        assertNotNull(res);
+        assertTrue(res.preferSources());
+        assertEquals(Arrays.asList(classesFolder), Arrays.asList(res.getRoots()));
+        final FileObject resourcesFolder = modulesFolder.getFileObject("module").createFolder("resources");        //NOI18N
+        assertEquals(Arrays.asList(classesFolder,resourcesFolder), Arrays.asList(res.getRoots()));
     }
 
-    public void testModuleSetChanges() {
-        //Result for new module should be returned
-        
-        //Result for deleted module should be returned
+    public void testModuleSourcesChangesFires() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
+        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{classesFolder})
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()),
+                Arrays.stream(sources.getRoots())
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()));
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        assertNotNull(model);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+        final MultiModuleSourceForBinaryQueryImpl q =
+                new MultiModuleSourceForBinaryQueryImpl(
+                        tp.getUpdateHelper().getAntProjectHelper(),
+                        tp.getEvaluator(),
+                        model,
+                        testModel,
+                        new String[]{ProjectProperties.DIST_DIR},
+                        new String[]{});
+        final URL origDistJar = mtu.distFor(classesFolder.getParent().getNameExt());
+        SourceForBinaryQueryImplementation2.Result res = q.findSourceRoots2(origDistJar);
+        assertNotNull(res);
+        assertTrue(res.preferSources());
+        assertEquals(Arrays.asList(classesFolder), Arrays.asList(res.getRoots()));
+
+        final MockChangeListener l = new MockChangeListener();
+        res.addChangeListener(l);
+        final FileObject resourcesFolder = modulesFolder.getFileObject("module").createFolder("resources");        //NOI18N
+        l.assertEventCount(1);
+        assertEquals(Arrays.asList(classesFolder,resourcesFolder), Arrays.asList(res.getRoots()));
+
+        classesFolder.delete();
+        l.assertEventCount(1);
+        assertEquals(Arrays.asList(resourcesFolder), Arrays.asList(res.getRoots()));
+    }
+
+    public void testModulePathChanges() {
+        assertTrue(mtu.updateModuleRoots(src1));
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+
+        final MultiModuleSourceForBinaryQueryImpl q =
+                new MultiModuleSourceForBinaryQueryImpl(
+                        tp.getUpdateHelper().getAntProjectHelper(),
+                        tp.getEvaluator(),
+                        model,
+                        testModel,
+                        new String[]{ProjectProperties.BUILD_CLASSES_DIR},
+                        new String[]{});
+
+        SourceForBinaryQueryImplementation2.Result res = q.findSourceRoots2(mtu.buildFor(mod1a.getParent().getNameExt()));
+        assertNotNull(res);
+        res = q.findSourceRoots2(mtu.buildFor(mod2c.getParent().getNameExt()));
+        assertNull(res);
+
+        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
+        //Result for new module path entry should be returned
+        res = q.findSourceRoots2(mtu.buildFor(mod1a.getParent().getNameExt()));
+        assertNotNull(res);
+        res = q.findSourceRoots2(mtu.buildFor(mod2c.getParent().getNameExt()));
+        assertNotNull(res);
+
+        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(Arrays.equals(new FileObject[]{src2}, modules.getRoots()));
+        //Result for removed module path entry should not be returned
+        res = q.findSourceRoots2(mtu.buildFor(mod1a.getParent().getNameExt()));
+        assertNull(res);
+        res = q.findSourceRoots2(mtu.buildFor(mod2c.getParent().getNameExt()));
+        assertNotNull(res);
+    }
+
+    public void testModulePathChangesFires() {
+        assertTrue(mtu.updateModuleRoots(src1, src2));
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+
+        final MultiModuleSourceForBinaryQueryImpl q =
+                new MultiModuleSourceForBinaryQueryImpl(
+                        tp.getUpdateHelper().getAntProjectHelper(),
+                        tp.getEvaluator(),
+                        model,
+                        testModel,
+                        new String[]{ProjectProperties.BUILD_CLASSES_DIR},
+                        new String[]{});
+
+        SourceForBinaryQueryImplementation2.Result res1 = q.findSourceRoots2(mtu.buildFor(mod1a.getParent().getNameExt()));
+        assertNotNull(res1);
+        assertEquals(Arrays.asList(mod1a), Arrays.asList(res1.getRoots()));
+        SourceForBinaryQueryImplementation2.Result res2 = q.findSourceRoots2(mtu.buildFor(mod2c.getParent().getNameExt()));
+        assertNotNull(res2);
+        assertEquals(Arrays.asList(mod2c), Arrays.asList(res2.getRoots()));
+
+        final MockChangeListener l1 = new MockChangeListener();
+        final MockChangeListener l2 = new MockChangeListener();
+        res1.addChangeListener(l1);
+        res2.addChangeListener(l2);
+
+        assertTrue(mtu.updateModuleRoots(src1));
+        l1.assertEventCount(0);
+        assertEquals(Arrays.asList(mod1a), Arrays.asList(res1.getRoots()));
+        l2.assertEventCount(1);
+        assertEquals(Collections.emptyList(), Arrays.asList(res2.getRoots()));
     }
 
 }

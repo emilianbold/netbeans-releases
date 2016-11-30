@@ -48,6 +48,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,7 +84,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
     private final MultiModule testModules;
     private final String[] binaryProperties;
     private final String[] testBinaryProperties;
-    private final Map<URI,Pair<String,R>> cache;
+    private final Map<URI,Pair<String[],R>> cache;
 
     MultiModuleSourceForBinaryQueryImpl(
             @NonNull final AntProjectHelper helper,
@@ -106,6 +107,8 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         this.testBinaryProperties = testBinaryProperties;
         this.cache = new ConcurrentHashMap<>();
         this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
+        this.modules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.modules));
+        this.testModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.testModules));
     }
 
     @Override
@@ -118,13 +121,13 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         R res = null;
         try {
             URI artefact = binaryRoot.toURI();
-            Pair<String,R> p = cache.get(artefact);
+            Pair<String[],R> p = cache.get(artefact);
             if (p == null) {
                 p = createResult(artefact, archive, modules, binaryProperties);
                 if (p == null) {
                     p = createResult(artefact, archive, testModules, testBinaryProperties);
                 }
-                Pair<String,R> prev = cache.get(artefact);
+                Pair<String[],R> prev = cache.get(artefact);
                 if (prev != null) {
                     res = prev.second();
                 } else if (p != null) {
@@ -154,13 +157,32 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        final Object source = evt.getSource();
         final String propName = evt.getPropertyName();
-        if (contains(propName, binaryProperties) || contains(propName, testBinaryProperties)) {
-            for (Iterator<Map.Entry<URI,Pair<String,R>>> it= cache.entrySet().iterator(); it.hasNext();) {
-                final Map.Entry<URI,Pair<String,R>> e = it.next();
+        if (source == this.modules) {
+            final Collection<? extends String> moduleNames = this.modules.getModuleNames();
+            for (Iterator<Map.Entry<URI,Pair<String[],R>>> it= cache.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<URI,Pair<String[],R>> e = it.next();
+                final String[] propModName = e.getValue().first();
+                if (contains(propModName[0], binaryProperties) && !moduleNames.contains(propModName[1])) {
+                    it.remove();
+                }
+            }
+        } else if (source == this.testModules) {
+            final Collection<? extends String> moduleNames = this.testModules.getModuleNames();
+            for (Iterator<Map.Entry<URI,Pair<String[],R>>> it= cache.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<URI,Pair<String[],R>> e = it.next();
+                final String[] propModName = e.getValue().first();
+                if (contains(propModName[0], testBinaryProperties) && !moduleNames.contains(propModName[1])) {
+                    it.remove();
+                }
+            }
+        } else if (contains(propName, binaryProperties) || contains(propName, testBinaryProperties)) {
+            for (Iterator<Map.Entry<URI,Pair<String[],R>>> it= cache.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<URI,Pair<String[],R>> e = it.next();
                 final URI uri = e.getKey();
-                final Pair<String,R> p = e.getValue();
-                if (propName.equals(p.first()) && getOwner(eval, helper, uri, new String[]{propName}) == null) {
+                final Pair<String[],R> p = e.getValue();
+                if (propName.equals(p.first()[0]) && getOwner(eval, helper, uri, new String[]{propName}) == null) {
                     it.remove();
                 }
             }
@@ -179,7 +201,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
     }
 
     @CheckForNull
-    private Pair<String,R> createResult(
+    private Pair<String[],R> createResult(
             @NonNull final URI artefact,
             final boolean archive,
             @NonNull final MultiModule modules,
@@ -190,7 +212,9 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
             if (moduleName != null) {
                 final ClassPath cp = modules.getModuleSources(moduleName);
                 if (cp != null) {
-                    return Pair.of(prop, new R(artefact, cp, eval, helper, prop));
+                    return Pair.of(
+                            new String[]{prop, moduleName},
+                            new R(artefact, cp, eval, helper, prop));
                 }
             }
         }
