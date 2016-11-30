@@ -355,7 +355,43 @@ public class MultiModuleTest extends NbTestCase {
         assertNotNull(scp);
         assertEquals(Arrays.asList(classesFolder), Arrays.asList(scp.getRoots()));
 
-        final FileObject resourcesFolder = src1.createFolder("module").createFolder("resources");        //NOI18N
-//        assertEquals(Arrays.asList(classesFolder, resourcesFolder), Arrays.asList(scp.getRoots()));
+        final FileObject resourcesFolder = modulesFolder.getFileObject("module").createFolder("resources");        //NOI18N
+        assertEquals(Arrays.asList(classesFolder, resourcesFolder), Arrays.asList(scp.getRoots()));
+
+        classesFolder.delete();
+        assertEquals(Arrays.asList(resourcesFolder), Arrays.asList(scp.getRoots()));
+    }
+
+    public void testModuleSourcesChangesFires() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
+        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{classesFolder})
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()),
+                Arrays.stream(sources.getRoots())
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()));
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        assertNotNull(model);
+        ClassPath scp = model.getModuleSources("module");   //NOI18N
+        assertNotNull(scp);
+        assertEquals(Arrays.asList(classesFolder), Arrays.asList(scp.getRoots()));
+
+        final MockPropertyChangeListener l = new MockPropertyChangeListener();
+        scp.addPropertyChangeListener(l);
+        final FileObject resourcesFolder = modulesFolder.getFileObject("module").createFolder("resources");        //NOI18N
+        l.assertEvents(ClassPath.PROP_ROOTS);
+
+        classesFolder.delete();
+        l.assertEvents(ClassPath.PROP_ROOTS);
     }
 }

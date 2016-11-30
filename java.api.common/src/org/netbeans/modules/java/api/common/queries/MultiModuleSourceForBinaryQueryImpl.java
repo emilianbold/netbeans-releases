@@ -48,6 +48,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -55,6 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
@@ -65,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -72,7 +75,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation2 {
+final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation2, PropertyChangeListener {
     private static final Logger LOG = Logger.getLogger(MultiModuleSourceForBinaryQueryImpl.class.getName());
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -80,7 +83,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
     private final MultiModule testModules;
     private final String[] binaryProperties;
     private final String[] testBinaryProperties;
-    private final Map<URI,R> cache;
+    private final Map<URI,Pair<String,R>> cache;
 
     MultiModuleSourceForBinaryQueryImpl(
             @NonNull final AntProjectHelper helper,
@@ -102,6 +105,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         this.binaryProperties = binaryProperties;
         this.testBinaryProperties = testBinaryProperties;
         this.cache = new ConcurrentHashMap<>();
+        this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
     }
 
     @Override
@@ -114,21 +118,25 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         R res = null;
         try {
             URI artefact = binaryRoot.toURI();
-            res = cache.get(artefact);
-            if (res == null) {
-                res = createResult(artefact, archive, modules, binaryProperties);
-                if (res == null) {
-                    res = createResult(artefact, archive, testModules, testBinaryProperties);
+            Pair<String,R> p = cache.get(artefact);
+            if (p == null) {
+                p = createResult(artefact, archive, modules, binaryProperties);
+                if (p == null) {
+                    p = createResult(artefact, archive, testModules, testBinaryProperties);
                 }
-                R prev = cache.get(artefact);
+                Pair<String,R> prev = cache.get(artefact);
                 if (prev != null) {
-                    res = prev;
-                } else if (res != null) {
-                    prev = cache.putIfAbsent(artefact, res);
+                    res = prev.second();
+                } else if (p != null) {
+                    prev = cache.putIfAbsent(artefact, p);
                     if (prev != null) {
-                        res = prev;
+                        res = prev.second();
+                    } else {
+                        res = p.second();
                     }
                 }
+            } else {
+                res = p.second();
             }
         } catch (URISyntaxException e) {
             LOG.log(
@@ -144,46 +152,80 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         return findSourceRoots2(binaryRoot);
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        final String propName = evt.getPropertyName();
+        if (contains(propName, binaryProperties) || contains(propName, testBinaryProperties)) {
+            for (Iterator<Map.Entry<URI,Pair<String,R>>> it= cache.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<URI,Pair<String,R>> e = it.next();
+                final URI uri = e.getKey();
+                final Pair<String,R> p = e.getValue();
+                if (propName.equals(p.first()) && getOwner(eval, helper, uri, new String[]{propName}) == null) {
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    private static boolean contains(
+            @NullAllowed final String prop,
+            @NonNull final String[] props) {
+        for (String p : props) {
+            if (p.equals(prop)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @CheckForNull
-    private R createResult(
+    private Pair<String,R> createResult(
             @NonNull final URI artefact,
             final boolean archive,
             @NonNull final MultiModule modules,
             @NonNull final String... properties) {
-        if (isOwned(artefact, properties)) {
+        final String prop = getOwner(eval, helper, artefact, properties);
+        if (prop != null) {
             final String moduleName = getModuleName(artefact, archive);
             if (moduleName != null) {
                 final ClassPath cp = modules.getModuleSources(moduleName);
                 if (cp != null) {
-                    return new R(cp);
+                    return Pair.of(prop, new R(artefact, cp, eval, helper, prop));
                 }
             }
         }
         return null;
     }
 
-    private boolean isOwned(
+    @CheckForNull
+    private static String getOwner(
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final AntProjectHelper helper,
             @NonNull final URI artefact,
             @NonNull final String[] properties) {
         return Arrays.stream(properties)
-                .map((prop) -> eval.getProperty(prop))
-                .filter((prop) -> prop != null)
-                .map((path) -> {
+                .map((prop) -> {
+                    final String val = eval.getProperty(prop);
+                    return val == null ? null : Pair.of(prop,val);
+                })
+                .filter((propPathPair) -> propPathPair != null)
+                .map((propPathPair) -> {
                     try {
-                        final File f = helper.resolveFile(path);
+                        final File f = helper.resolveFile(propPathPair.second());
                         URI uri = BaseUtilities.toURI(f);
                         final String suri = uri.toString();
                         if (!suri.endsWith("/")) {      //NOI18N
                             uri = new URI(suri+'/');    //NOI18N
                         }
-                        return uri;
+                        return Pair.of(propPathPair.first(),uri);
                     } catch (URISyntaxException e) {
                         return null;
                     }
                 })
-                .filter((folderURI) -> folderURI != null && artefact.toString().startsWith(folderURI.toString()))
+                .filter((propFolderURIPair) -> propFolderURIPair != null && artefact.toString().startsWith(propFolderURIPair.second().toString()))
+                .map((propFolderURIPair) -> propFolderURIPair.first())
                 .findAny()
-                .isPresent();
+                .orElse(null);
     }
 
     @CheckForNull
@@ -206,14 +248,34 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
     }
 
     private static final class R implements Result, PropertyChangeListener {
+        private static final FileObject[] EMPTY = new FileObject[0];
+        private final URI artefact;
         private final ClassPath srcPath;
+        private final PropertyEvaluator eval;
+        private final AntProjectHelper helper;
+        private final String prop;
         private final ChangeSupport listeners;
+        private volatile int state;    //0 - Valid, 1 - Modified, 2 - Invalid
 
-        R(@NonNull final ClassPath srcPath) {
+        R(
+                @NonNull final URI artefact,
+                @NonNull final ClassPath srcPath,
+                @NonNull final PropertyEvaluator eval,
+                @NonNull final AntProjectHelper helper,
+                @NonNull final String prop) {
+            Parameters.notNull("artefact", artefact);   //NOI18N
             Parameters.notNull("srcPath", srcPath); //NOI18N
+            Parameters.notNull("eval", eval);       //NOI18N
+            Parameters.notNull("helper", helper);       //NOI18N
+            Parameters.notNull("prop", prop);       //NOI18N
+            this.artefact = artefact;
             this.srcPath = srcPath;
+            this.eval = eval;
+            this.helper = helper;
+            this.prop = prop;
             this.listeners = new ChangeSupport(this);
             this.srcPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.srcPath));
+            this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
         }
 
         @Override
@@ -223,7 +285,17 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
 
         @Override
         public FileObject[] getRoots() {
-            return srcPath.getRoots();
+            int st = state;
+            if (st == 1) {
+                st = state = getOwner(
+                        eval,
+                        helper,
+                        artefact,
+                        new String[]{prop}) != null ? 0 : 2;
+            }
+            return st == 0 ?
+                    srcPath.getRoots() :
+                    EMPTY;
         }
 
         @Override
@@ -238,7 +310,11 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
+            final String propName = evt.getPropertyName();
+            if (ClassPath.PROP_ROOTS.equals(propName)) {
+                listeners.fireChange();
+            } else if (prop.equals(propName) || propName == null) {
+                state = 1;
                 listeners.fireChange();
             }
         }

@@ -39,21 +39,29 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
+import java.io.IOException;
+import java.net.URL;
 import org.netbeans.modules.java.api.common.impl.ModuleTestUtilities;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.TestProject;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockChangeListener;
 import org.openide.util.test.MockLookup;
+import org.openide.util.test.MockPropertyChangeListener;
 
 /**
  *
@@ -196,6 +204,122 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         assertNotNull(res);
         assertTrue(res.preferSources());
         assertEquals(Arrays.asList(mod1d, mod2d), Arrays.asList(res.getRoots()));
+    }
+
+    public void testDistFolderChanges() {
+        assertTrue(mtu.updateModuleRoots(src1));
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+        final MultiModuleSourceForBinaryQueryImpl q =
+                new MultiModuleSourceForBinaryQueryImpl(
+                        tp.getUpdateHelper().getAntProjectHelper(),
+                        tp.getEvaluator(),
+                        model,
+                        testModel,
+                        new String[]{ProjectProperties.DIST_DIR},
+                        new String[]{});
+
+        final URL origDistJar = mtu.distFor(mod1a.getParent().getNameExt());
+        SourceForBinaryQueryImplementation2.Result res = q.findSourceRoots2(origDistJar);
+        assertNotNull(res);
+        assertTrue(res.preferSources());
+        assertEquals(Arrays.asList(mod1a), Arrays.asList(res.getRoots()));
+
+        ProjectManager.mutex().writeAccess(()->{
+            try {
+                final EditableProperties ep = tp.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                ep.setProperty(ProjectProperties.DIST_DIR, "release");  //NOI18N
+                tp.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                ProjectManager.getDefault().saveProject(tp);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        //New dist folder should return result
+        SourceForBinaryQueryImplementation2.Result res2 = q.findSourceRoots2(mtu.distFor(mod1a.getParent().getNameExt()));
+        assertNotNull(res2);
+        assertNotSame(res, res2);
+        assertTrue(res2.preferSources());
+        assertEquals(Arrays.asList(mod1a), Arrays.asList(res2.getRoots()));
+
+        //Old result should have no sources
+        assertEquals(Collections.emptyList(), Arrays.asList(res.getRoots()));
+
+        //Old dist folder should not return result
+        SourceForBinaryQueryImplementation2.Result res3 = q.findSourceRoots2(origDistJar);
+        assertNull(res3);
+    }
+    
+    public void testDistFolderChangesFires() {
+        assertTrue(mtu.updateModuleRoots(src1));
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+        final MultiModuleSourceForBinaryQueryImpl q =
+                new MultiModuleSourceForBinaryQueryImpl(
+                        tp.getUpdateHelper().getAntProjectHelper(),
+                        tp.getEvaluator(),
+                        model,
+                        testModel,
+                        new String[]{ProjectProperties.DIST_DIR},
+                        new String[]{});
+
+        final URL origDistJar = mtu.distFor(mod1a.getParent().getNameExt());
+        SourceForBinaryQueryImplementation2.Result res = q.findSourceRoots2(origDistJar);
+        assertNotNull(res);
+        assertTrue(res.preferSources());
+        assertEquals(Arrays.asList(mod1a), Arrays.asList(res.getRoots()));
+
+        final MockChangeListener l = new MockChangeListener();
+        res.addChangeListener(l);
+        final String[] origDistDir = new String[1];
+        ProjectManager.mutex().writeAccess(()->{
+            try {
+                final EditableProperties ep = tp.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                origDistDir[0] = ep.getProperty(ProjectProperties.DIST_DIR);
+                ep.setProperty(ProjectProperties.DIST_DIR, "release");  //NOI18N
+                tp.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                ProjectManager.getDefault().saveProject(tp);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        l.assertEventCount(1);
+        assertEquals(Collections.emptyList(), Arrays.asList(res.getRoots()));
+
+        ProjectManager.mutex().writeAccess(()->{
+            try {
+                final EditableProperties ep = tp.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                ep.setProperty(ProjectProperties.DIST_DIR, origDistDir[0]);
+                tp.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                ProjectManager.getDefault().saveProject(tp);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        l.assertEventCount(1);
+        assertEquals(Arrays.asList(mod1a), Arrays.asList(res.getRoots()));
+    }
+
+    public void testModuleSourcesChanges() {
+        //Result should have updated sources
+    }
+
+    public void testModuleSetChanges() {
+        //Result for new module should be returned
+        
+        //Result for deleted module should be returned
     }
 
 }
