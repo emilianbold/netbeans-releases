@@ -1944,7 +1944,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void updateLocalsForSelectFrame() {
         if (get_locals) { // get local vars for current frame
-            getMILocals(false);    // get local vars for current frame from gdb
+            getMILocals(true);    // get local vars for current frame from gdb
         }
     }
 
@@ -2415,8 +2415,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     @Override
-    public void makeFrameCurrent(Frame f) {
-        String fno = f.getNumber();
+    public void makeFrameCurrent(final Frame f) {
+        final String fno = f.getNumber();
         boolean changed = false;
         if (guiStackFrames != null) {
             for (Frame frame : guiStackFrames) {
@@ -2433,24 +2433,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
         }
         if (changed) {
-            // selectFrame would update local vars too
-            selectFrame(fno); // notify gdb to change current frame
+            Runnable onDoneRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    // has source info,
+                    // get full path for current frame from gdb,
+                    // update source editor, and make frame as current
+                    getFullPath((GdbFrame) f);
 
-            // has source info,
-            // get full path for current frame from gdb,
-            // update source editor, and make frame as current
-            getFullPath((GdbFrame) f);
-
-            if (get_debugging) {    // TODO maybe better way
-                for (Thread thread : threadsWithStacks) {
-                    if (thread.isCurrent()) {
-                        for (Frame frame : thread.getStack()) {
-                            frame.setCurrent(frame.getNumber().equals(fno));
+                    if (get_debugging) {    // TODO maybe better way
+                        for (Thread thread : threadsWithStacks) {
+                            if (thread.isCurrent()) {
+                                for (Frame frame : thread.getStack()) {
+                                    frame.setCurrent(frame.getNumber().equals(fno));
+                                }
+                            }
                         }
+                        debuggingViewUpdater.treeChanged();
                     }
+                    stackUpdater.treeChanged();     // causes a pull
+                    disassembly.stateUpdated();
+                    localUpdater.treeChanged();
                 }
-                debuggingViewUpdater.treeChanged();
-            }
+            };
+            // selectFrame would update local vars too
+            selectFrame(fno, onDoneRunnable); // notify gdb to change current frame
+            return;
+
         }
         stackUpdater.treeChanged();     // causes a pull
         disassembly.stateUpdated();
@@ -2501,7 +2510,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * notify gdb to switch current frame to fno
      * also get locals info for new current frame
      */
-    private void selectFrame(final Object fno) {
+    private void selectFrame(final Object fno, final Runnable onDoneRunnable) {
 
         MICommand cmd =
             new MiCommandImpl("-stack-select-frame " + fno) { // NOI18N
@@ -2512,6 +2521,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     requestRegisters();
                 }
                 finish();
+                if (onDoneRunnable != null) {
+                    onDoneRunnable.run();
+                }
             }
         };
         gdb.sendCommand(cmd);
