@@ -41,12 +41,17 @@
  */
 package org.netbeans.modules.spellchecker.bindings.php;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
+import org.netbeans.modules.spellchecker.spi.language.support.MultiTokenList;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = TokenListProvider.class)
@@ -57,7 +62,15 @@ public class PHPTokenListProvider implements TokenListProvider {
         String mimeType = NbEditorUtilities.getMimeType(doc);
         if (FileUtils.PHP_MIME_TYPE.equals(mimeType)
                 && doc instanceof BaseDocument) {
-            return new PHPTokenList(doc);
+            for (TokenListProvider p : MimeLookup.getLookup(MimePath.get("text/html")).lookupAll(TokenListProvider.class)) { // NOI18N
+                TokenList l = p.findTokenList(doc);
+                if (l != null) {
+                    List<TokenList> tokens = new ArrayList<>(2);
+                    tokens.add(new PHPTokenList(doc));
+                    tokens.add(l);
+                    return MultiTokenList.create(tokens);
+                }
+            }
         }
         return null;
     }
