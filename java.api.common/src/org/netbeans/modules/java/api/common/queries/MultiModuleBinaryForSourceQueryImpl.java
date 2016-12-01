@@ -39,15 +39,21 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,12 +74,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Tomas Zezula
  */
-final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {
+final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation, PropertyChangeListener {
     private static final Logger LOG = Logger.getLogger(MultiModuleBinaryForSourceQueryImpl.class.getName());
 
     private final AntProjectHelper helper;
@@ -82,7 +89,7 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
     private final MultiModule testModules;
     private final String[] binaryTemplates;
     private final String[] testBinaryTemplates;
-    private final ConcurrentMap<URI,BinaryForSourceQuery.Result> cache;
+    private final ConcurrentMap<URI,R> cache;
 
     MultiModuleBinaryForSourceQueryImpl(
             @NonNull final AntProjectHelper helper,
@@ -104,11 +111,13 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
         this.binaryTemplates = binaryTemplates;
         this.testBinaryTemplates = testBinaryTemplates;
         this.cache = new ConcurrentHashMap<>();
+        this.modules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.modules));
+        this.testModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.testModules));
     }
 
     @Override
     public BinaryForSourceQuery.Result findBinaryRoots(URL sourceRoot) {
-        BinaryForSourceQuery.Result res = null;
+        R res = null;
         try {
             final URI sourceRootURI = sourceRoot.toURI();
             res = cache.get(sourceRootURI);
@@ -117,7 +126,7 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
                 if (res == null) {
                     res = createResult(sourceRoot, testModules, testBinaryTemplates);
                 }
-                BinaryForSourceQuery.Result prev = cache.get(sourceRootURI);
+                R prev = cache.get(sourceRootURI);
                 if (prev != null) {
                     res = prev;
                 } else if (res != null) {
@@ -136,8 +145,30 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
         return res;
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        final Object source = evt.getSource();
+        if (source == this.modules) {
+            for (Iterator<Map.Entry<URI,R>> it = cache.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<URI,R> e = it.next();
+                final R r = e.getValue();
+                if (!r.isValid(this.modules)) {
+                    it.remove();
+                }
+            }
+        } else if (source == this.testModules) {
+            for (Iterator<Map.Entry<URI,R>> it = cache.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<URI,R> e = it.next();
+                final R r = e.getValue();
+                if (!r.isValid(this.testModules)) {
+                    it.remove();
+                }
+            }
+        }
+    }
+
     @CheckForNull
-    private BinaryForSourceQuery.Result createResult(
+    private R createResult(
             @NonNull final URL artifact,
             @NonNull final MultiModule modules,
             @NonNull final String[] templates) {
@@ -159,14 +190,18 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
         return null;
     }
 
-    private static final class R implements BinaryForSourceQuery.Result {
+    private static final class R implements BinaryForSourceQuery.Result, PropertyChangeListener {
+        private static final URL[] EMPTY = new URL[0];
+
         private final AntProjectHelper helper;
+        private final PP pp;
         private final PropertyEvaluator evaluator;
         private final MultiModule modules;
         private final String moduleName;
         private final String[] templates;
         private final AtomicReference<URL[]> cache;
         private final ChangeSupport listeners;
+        private final AtomicReference<Set<String>> propsCache;
 
         R(
                 @NonNull final AntProjectHelper helper,
@@ -180,14 +215,18 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
             Parameters.notNull("moduleName", moduleName);   //NOI18N
             Parameters.notNull("templates", templates);         //NOI18N
             this.helper = helper;
+            this.pp = new PP(evaluator);
             this.evaluator = PropertyUtils.sequentialPropertyEvaluator(
                 PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.name",moduleName)), //NOI18N
-                new PP(evaluator));
+                pp);
             this.modules = modules;
             this.moduleName = moduleName;
             this.templates = templates;
             this.cache = new AtomicReference();
             this.listeners = new ChangeSupport(this);
+            this.propsCache = new AtomicReference<>();
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+            this.modules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.modules));
         }
 
         @Override
@@ -195,19 +234,23 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
             URL[] res = cache.get();
             if (res == null) {
                 try {
-                    res = new URL[templates.length];
-                    for (int i=0; i<templates.length; i++) {
-                        final File f = helper.resolveFile(evaluator.evaluate(templates[i]));
-                        URL u = BaseUtilities.toURI(f).toURL();
-                        //The FileUtil.urlForArchiveOrDir does not work for qualified module name in build folder
-                        //custom implementation
-                        final String su = u.toExternalForm();
-                        if (su.length() > 4 && ".jar".equals(su.substring(su.length()-4).toLowerCase(Locale.ENGLISH))) { //NOI18N
-                            u = FileUtil.getArchiveRoot(u);
-                        } else if (!su.endsWith("/")) { //NOI18N
-                            u = new URL(su+'/');        //NOI18N
+                    if (modules.getModuleNames().contains(moduleName)) {
+                        res = new URL[templates.length];
+                        for (int i=0; i<templates.length; i++) {
+                            final File f = helper.resolveFile(evaluator.evaluate(templates[i]));
+                            URL u = BaseUtilities.toURI(f).toURL();
+                            //The FileUtil.urlForArchiveOrDir does not work for qualified module name in build folder
+                            //custom implementation
+                            final String su = u.toExternalForm();
+                            if (su.length() > 4 && ".jar".equals(su.substring(su.length()-4).toLowerCase(Locale.ENGLISH))) { //NOI18N
+                                u = FileUtil.getArchiveRoot(u);
+                            } else if (!su.endsWith("/")) { //NOI18N
+                                u = new URL(su+'/');        //NOI18N
+                            }
+                            res[i] = u;
                         }
-                        res[i] = u;
+                    } else {
+                        res = EMPTY;
                     }
                 } catch (MalformedURLException e) {
                     res = new URL[0];
@@ -225,6 +268,68 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
         @Override
         public void removeChangeListener(ChangeListener l) {
             this.listeners.removeChangeListener(l);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (evt.getSource() == this.modules) {
+                cache.set(null);
+                this.listeners.fireChange();
+            } else if (propName == null || getImportantProperties().contains(propName)) {
+                pp.update();
+                cache.set(null);
+                this.listeners.fireChange();
+            }
+        }
+
+        boolean isValid(@NonNull final MultiModule model) {
+            if (model != this.modules) {
+                return true;
+            }
+            return this.modules.getModuleNames().contains(moduleName);
+        }
+
+        @NonNull
+        private Set<? extends String> getImportantProperties() {
+            Set<String> res = propsCache.get();
+            if (res == null) {
+                res = new HashSet<>();
+                for (String template : templates) {
+                    int propStart = -2;
+                    for (int i=0; i<template.length(); i++) {
+                        final char c = template.charAt(i);
+                        switch (propStart) {
+                            case -2:
+                                if (c == '$') { //NOI18N
+                                    propStart = -1;
+                                }
+                                break;
+                            case -1:
+                                switch (c) {
+                                    case '{':   //NOI18N
+                                        propStart = i+1;
+                                        break;
+                                    case '$':   //NOI18N
+                                        propStart = -1;
+                                        break;
+                                    default:
+                                        propStart = -2;
+                                        break;
+                                }
+                                break;
+                            default:
+                                if (c == '}') { //NOI18N
+                                    final String propName = template.substring(propStart, i);
+                                    res.add(propName);
+                                    propStart = -2;
+                                }
+                        }
+                    }
+                }
+                propsCache.set(res);
+            }
+            return res;
         }
     }
 
@@ -250,6 +355,10 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
         @Override
         public void removeChangeListener(ChangeListener l) {
             this.listeners.removeChangeListener(l);
+        }
+
+        void update() {
+            listeners.fireChange();
         }
     }
 }
