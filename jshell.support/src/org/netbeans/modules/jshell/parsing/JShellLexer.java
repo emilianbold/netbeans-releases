@@ -41,6 +41,13 @@
  */
 package org.netbeans.modules.jshell.parsing;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.modules.jshell.model.JShellToken;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -59,6 +66,20 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
     
     private S state = S.INITIAL;
     
+    private static final String[] COMMANDS = {
+        "list", "drop", "save",
+        "open",
+        "vars", "methods", "types", "imports",
+        "exit", "reset", "reload",
+        
+        "feedback", "prompt", 
+        
+        "classpath", "history",
+            
+        "help",
+        "?", "!"
+    };
+    
     private static final String[] COMMAND_STRINGS = {
         "l", "list", // NOI18N
         "", "seteditor", // NOI18N
@@ -67,13 +88,16 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
         "o", "open", // NOI18N
         "v", "vars", // NOI18N
         "m", "methods",  // NOI18N
-        "cl", "classes",  // NOI18N
-        "r", "reset",  // NOI18N
+        "cl", "types",  // NOI18N
+        "im", "imports", // NOI18N
+        "ex", "exit", // NOI18N
+        "res", "reset",  // NOI18N
+        "rel", "reload",  // NOI18N
         "f", "feedback",  // NOI18N
         "p", "prompt",  // NOI18N
-        "cp", "classpath",  // NOI18N
-        "h", "history",  // NOI18N
-        "?", "help",  // NOI18N
+        "c", "classpath",  // NOI18N
+        "hi", "history",  // NOI18N
+        "he", "?", "help",  // NOI18N
         "!", "" // NOI18N
     };
     
@@ -93,6 +117,37 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
     }
     
     private S prevState = S.INITIAL;
+    
+    private static final Map<String, String> commandUniquePrefixes = new HashMap<>();
+    
+    private static void initCommandPrefixes() {
+        Set<String> seenPrefixes = new HashSet<>();
+        for (String s : COMMANDS) {
+            for (int i = 1; i <= s.length(); i++) {
+                String x = s.substring(0, i);
+                if (seenPrefixes.contains(x)) {
+                    commandUniquePrefixes.remove(x);
+                } else {
+                    commandUniquePrefixes.put(x, s);
+                    seenPrefixes.add(x);
+                }
+            }
+        }
+    }
+    
+    public static List<String>  getCommandsFromPrefix(String prefix) {
+        List<String> commands = new ArrayList<>();
+        for (String s : COMMANDS) {
+            if (s.startsWith(prefix)) {
+                commands.add(s);
+            }
+        }
+        return commands;
+    }
+    
+    static {
+        initCommandPrefixes();
+    }
     
     public JShellLexer(LexerRestartInfo<JShellToken> info) {
         this.input = info.input();
@@ -124,7 +179,7 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
             if (c != ' ' && c != '\n') {
                 // not a part of the token:
                 input.backup(1);
-                return tokenFactory.createToken(t);
+                return blockToken(t);
             }
         }
         if (flyweight) {
@@ -195,7 +250,7 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
                         if (input.readLength() > 1) { // something else preceding the ^ marker
                             input.backup(1);
                             setState(S.PROMPT_MESSAGE);
-                            return tokenFactory.createToken(JShellToken.MESSAGE_TEXT);
+                            return blockToken(JShellToken.MESSAGE_TEXT);
                         }
                     } else if (s >= 1 && s < 3) {
                         // terminating ^ after initial ^
@@ -271,13 +326,9 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
                 return -1;
             }
         }
-        for (int i = 0; i < COMMAND_STRINGS.length; i++) {
-            String c = COMMAND_STRINGS[i];
-            if (c.length() >= l) {
-                if (c.startsWith(s)) {
-                    return c.length() - l;
-                }
-            }
+        String full = commandUniquePrefixes.get(s);
+        if (full != null) {
+            return full.length() - l;
         }
         return -1;
     }
@@ -317,18 +368,27 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
         }
         if (status > 0) {
             if (c == '\n') {
-                int n = input.read();
                 input.backup(1);
-                if (n != LexerInput.EOF) {
-                    // not a last newline, so report error;
-                    return blockToken(JShellToken.ERR_COMMAND);
-                }
             } else if (c != LexerInput.EOF) {
                 // just a whitespace after partial command
                  return blockToken(JShellToken.ERR_COMMAND);
             }
+        } else if (status == 0) {
+            if (c != LexerInput.EOF) {
+                if (!Character.isWhitespace(c)) {
+                    do {
+                        c = input.read();
+                    } while (c != LexerInput.EOF && !Character.isWhitespace(c));
+                    if (c != LexerInput.EOF) {
+                        input.backup(1);
+                    }
+                    return tokenFactory.createToken(JShellToken.ERR_COMMAND);
+                }
+                input.backup(1);
+            }
         }
-        setState(cont ? S.COMMAND : S.INITIAL);
+//        setState(cont ? S.COMMAND : S.INITIAL);
+        setState(S.COMMAND);
         return blockToken(JShellToken.COMMAND);
     }
     
@@ -412,7 +472,7 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
                 }
                 
             case COMMAND:
-                return eoln(JShellToken.COMMAND_TEXT);
+                return commandLine();
                 
             case MESSAGE:
                 return eoln(JShellToken.MESSAGE_TEXT);
@@ -427,6 +487,73 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
             default:
                 throw new IllegalStateException(state.toString());
         }
+    }
+    
+    private Token<JShellToken>  commandLine() {
+        int c = input.read();
+        if (c == LexerInput.EOF) {
+            return null;
+        }
+        if (Character.isWhitespace(c)) {
+            boolean endsNonWhite = eatWhitespace();
+            if (!endsNonWhite) {
+                input.backup(1);
+            } else {
+                setState(S.INITIAL);
+            }
+            return blockToken(JShellToken.WHITESPACE);
+        }
+        int quote = 0;
+        if (c == '\'' || c == '"') {
+            quote = c;
+            c = input.read();
+        }
+        
+        if (c == '-') {
+            // dash-option
+            return readParameter(JShellToken.COMMAND_OPTION, quote);
+        } else {
+            return readParameter(quote == 0  ? JShellToken.COMMAND_PARAM : JShellToken.COMMAND_STRING, quote);
+        }
+    }
+    
+    private Token<JShellToken> readParameter(JShellToken tokenId, int quote) {
+        int c = input.read();
+        boolean verbatim = false;
+        
+        while (true) {
+            if (c == LexerInput.EOF) {
+                // only partial token
+                state = S.INITIAL;
+                return tokenFactory.createToken(tokenId, input.readLength(), PartType.START);
+            }
+            if (c == '\\') { // NOI18N
+                // next character verbatim
+                verbatim = true;
+                c = input.read();
+                continue;
+            }
+            if (!verbatim && c == quote) {
+                break;
+            }
+            if (!verbatim && quote == 0) {
+                if (Character.isWhitespace(c)) {
+                    input.backup(1);
+                    break;
+                }
+            } else if (c == '\n') { // NOI18N
+                // unterminated quote
+                input.backup(1);
+                state = S.INITIAL;
+                return tokenFactory.createToken(tokenId, input.readLength(), PartType.START);
+            }
+            verbatim = false;
+            c = input.read();
+        }
+        if (c == '\n') { // NOI18N
+            state = S.INITIAL;
+        }
+        return tokenFactory.createToken(tokenId, input.readLength());
     }
 
     @Override
@@ -444,12 +571,12 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
 
     @Override
     public Object getValue(Token<JShellToken> token, Object key) {
-        if ("highliht.block".equals(key)) { // NOI18N
+        if ("highlight.block".equals(key)) { // NOI18N
             switch (token.id()) {
                 case MESSAGE_TEXT:
                 case JAVA:
                 case COMMAND:
-                case COMMAND_TEXT:
+                case COMMAND_PARAM:
                 case OUTPUT:
                     return true;
             }
