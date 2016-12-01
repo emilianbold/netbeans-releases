@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.java.api.common.impl.ModuleTestUtilities;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.project.Project;
@@ -409,10 +410,131 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
                 ),
                 Arrays.asList(r2.getRoots()));
 
-        final MockChangeListener l = new MockChangeListener();
-        r2.addChangeListener(l);
+        final MockChangeListener l1 = new MockChangeListener();
+        r1.addChangeListener(l1);
+        final MockChangeListener l2 = new MockChangeListener();
+        r2.addChangeListener(l2);
         assertTrue(mtu.updateModuleRoots(src1));
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
-        l.assertEventCount(1);
+        l1.assertEventCount(0);
+        l2.assertEventCount(1);
+    }
+
+    public void testModuleSourcesChanges() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
+        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        assertNotNull(model);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+
+        final MultiModuleBinaryForSourceQueryImpl q = new MultiModuleBinaryForSourceQueryImpl(
+                tp.getUpdateHelper().getAntProjectHelper(),
+                tp.getEvaluator(),
+                model,
+                testModel,
+                new String[]{
+                    String.format("${%s}/${module.name}",ProjectProperties.BUILD_CLASSES_DIR),   //NOI18N
+                    String.format("${%s}/${module.name}.jar",ProjectProperties.DIST_DIR)       //NOI18N
+                },
+                new String[]{});
+        final BinaryForSourceQuery.Result r1 = q.findBinaryRoots(classesFolder.toURL());
+        assertNotNull(r1);
+        assertEquals(
+                Arrays.asList(
+                    mtu.buildFor(classesFolder.getParent().getNameExt()),
+                    mtu.distFor(classesFolder.getParent().getNameExt())
+                ),
+                Arrays.asList(r1.getRoots()));
+
+        final FileObject resourcesFolder = modulesFolder.getFileObject("module").createFolder("resources");        //NOI18N
+        final BinaryForSourceQuery.Result r2 = q.findBinaryRoots(resourcesFolder.toURL());
+        assertNotNull(r2);
+        assertEquals(
+                Arrays.asList(
+                    mtu.buildFor(classesFolder.getParent().getNameExt()),
+                    mtu.distFor(classesFolder.getParent().getNameExt())
+                ),
+                Arrays.asList(r2.getRoots()));
+
+        assertTrue(mtu.updateModuleRoots("*/resources",modulesFolder));   //NOI18N
+        assertEquals(
+                Collections.emptyList(),
+                Arrays.asList(r1.getRoots()));
+
+        final BinaryForSourceQuery.Result r3 = q.findBinaryRoots(classesFolder.toURL());
+        assertNull(r3);
+
+        final BinaryForSourceQuery.Result r4 = q.findBinaryRoots(resourcesFolder.toURL());
+        assertNotNull(r4);
+        assertEquals(
+                Arrays.asList(
+                    mtu.buildFor(classesFolder.getParent().getNameExt()),
+                    mtu.distFor(classesFolder.getParent().getNameExt())
+                ),
+                Arrays.asList(r4.getRoots()));
+    }
+
+
+    public void testModuleSourcesChangesFires() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
+        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        final MultiModule model = MultiModule.getOrCreate(modules, sources);
+        assertNotNull(model);
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+
+        final MultiModuleBinaryForSourceQueryImpl q = new MultiModuleBinaryForSourceQueryImpl(
+                tp.getUpdateHelper().getAntProjectHelper(),
+                tp.getEvaluator(),
+                model,
+                testModel,
+                new String[]{
+                    String.format("${%s}/${module.name}",ProjectProperties.BUILD_CLASSES_DIR),   //NOI18N
+                    String.format("${%s}/${module.name}.jar",ProjectProperties.DIST_DIR)       //NOI18N
+                },
+                new String[]{});
+        final BinaryForSourceQuery.Result r1 = q.findBinaryRoots(classesFolder.toURL());
+        assertNotNull(r1);
+        assertEquals(
+                Arrays.asList(
+                    mtu.buildFor(classesFolder.getParent().getNameExt()),
+                    mtu.distFor(classesFolder.getParent().getNameExt())
+                ),
+                Arrays.asList(r1.getRoots()));
+
+        final FileObject resourcesFolder = modulesFolder.getFileObject("module").createFolder("resources");        //NOI18N
+        final BinaryForSourceQuery.Result r2 = q.findBinaryRoots(resourcesFolder.toURL());
+        assertNotNull(r2);
+        assertEquals(
+                Arrays.asList(
+                    mtu.buildFor(classesFolder.getParent().getNameExt()),
+                    mtu.distFor(classesFolder.getParent().getNameExt())
+                ),
+                Arrays.asList(r2.getRoots()));
+
+        final MockChangeListener l1 = new MockChangeListener();
+        r1.addChangeListener(l1);
+        final MockChangeListener l2 = new MockChangeListener();
+        r2.addChangeListener(l2);
+        assertTrue(mtu.updateModuleRoots("*/resources",modulesFolder));   //NOI18N
+        l1.assertEventCount(1);
+        l2.assertEventCount(0);
     }
 }
