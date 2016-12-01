@@ -110,6 +110,11 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
 
     @Override
+    public boolean canWriteImpl(RemoteFileObjectBase orig) {
+        return getFlag(MASK_CYCLIC_LINK) ? false : super.canWriteImpl(orig);
+    }
+
+    @Override
     public RemoteFileObjectBase getCanonicalDelegate() {
 // It seems that the fix below is not complete and leads to inconsistency.
 // Soon after I wrote it I got exception
