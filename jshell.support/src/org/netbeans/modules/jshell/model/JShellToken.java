@@ -64,6 +64,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum JShellToken implements TokenId {
     /**
      * Prompt for the user input
+     *//**
+     * Prompt for the user input
      */
     PROMPT("prompt", "-> "),
     
@@ -98,9 +100,20 @@ public enum JShellToken implements TokenId {
     COMMAND("command"),
     
     /**
-     * whitespace and parameters for the command
+     * parameters for the command
      */
-    COMMAND_TEXT("command-text"),
+    COMMAND_WHITESPACE("command-whitespace"),
+    
+    /**
+     * parameters for the command
+     */
+    COMMAND_PARAM("command-text"),
+    COMMAND_STRING("command-string"),
+    
+    /**
+     * Dash option for a command
+     */
+    COMMAND_OPTION("command-option"),
     
     /**
      * Unknown command

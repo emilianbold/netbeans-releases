@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.jshell.support;
 
+import org.netbeans.modules.jshell.tool.JShellLauncher;
+import org.netbeans.modules.jshell.tool.JShellTool;
 import org.netbeans.modules.jshell.parsing.ModelAccessor;
 import org.netbeans.modules.jshell.parsing.LexerEmbeddingAdapter;
 import org.netbeans.modules.jshell.model.Rng;
@@ -65,6 +67,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,6 +82,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -106,13 +111,14 @@ import org.netbeans.api.java.queries.SourceLevelQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
 import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
-import static org.netbeans.modules.jshell.support.JShellLauncher.quote;
+import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
 import org.netbeans.modules.jshell.support.ShellHistory.Item;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -133,6 +139,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -383,6 +390,10 @@ public class ShellSession  {
         return snippetRegistry.snippetFile(snippet, editedSnippetIndex);
     }
     
+    public JShellTool   getJShellTool() {
+        return launcher;
+    }
+    
     /**
      * Stream backed by a Writer. Uses UTF-8 to decode characters from the stream.
      */
@@ -613,16 +624,32 @@ public class ShellSession  {
         return env.getPlatform().getSpecification().getVersion();
     }
     
+    private Preferences createShellPreferences() {
+        Project p = env.getProject();
+        if (p != null) {
+            return ProjectUtils.getPreferences(p, ShellSession.class, false).node("jshell");
+        } else {
+            return NbPreferences.forModule(ShellSession.class).node("jshell");
+        }
+    }
+    
     private class Launcher extends JShellLauncher implements Consumer<SnippetEvent> {
         Subscription subscription;
         
-        public Launcher(ClasspathInfo cpInfo, PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, JShellGenerator execEnv) {
-            super(cpInfo, cmdout, cmderr, userin, userout, usererr, execEnv);
+        public Launcher(JShellGenerator execEnv) throws IOException {
+            super(
+                createShellPreferences(),
+                shellControlOutput, 
+                shellControlOutput, 
+                env.getInputStream(),
+                env.getOutputStream(),
+                env.getErrorStream(),
+                execEnv);
         }
 
         @Override
-        protected JShell.Builder createJShell() {
-            return customizeBuilder(super.createJShell());
+        protected JShell.Builder makeBuilder() {
+            return customizeBuilder(super.makeBuilder());
         }
 
         @Override
@@ -660,18 +687,22 @@ public class ShellSession  {
         }
 
         @Override
-        protected String resolveUserHome(String path) {
-            String homeResolved = super.resolveUserHome(path);
-            File f = new File(homeResolved);
-            if (!f.isAbsolute()) {
+        protected Path toPathResolvingUserHome(String pathString) {
+            Path homeResolvedPath = super.toPathResolvingUserHome(pathString);
+            
+            if (!homeResolvedPath.isAbsolute()) {
                 // prepend project's directory
                 Project p = env.getProject();
                 if (p != null) {
-                    f = new File(FileUtil.toFile(p.getProjectDirectory()), homeResolved);
-                    return f.getPath();
+                    File f = FileUtil.toFile(p.getProjectDirectory());
+                    if (f == null) {
+                        return homeResolvedPath;
+                    }
+                    Path projectPath = f.toPath();
+                    return projectPath.resolve(homeResolvedPath);
                 }
             }
-            return homeResolved;
+            return homeResolvedPath;
         }
     }
     
@@ -696,24 +727,9 @@ public class ShellSession  {
             return launcher;
         }
         launcher = new Launcher(
-            env.getClasspathInfo(),
-            shellControlOutput,
-            shellControlOutput, 
-            env.getInputStream(),
-            env.getOutputStream(),
-            env.getErrorStream(),
             new GenProxy(env.createExecutionEnv())
         );
         return launcher;
-    }
-    
-    /**
-     * Creates a private JShell instance
-     * @return 
-     */
-    private JShell createJShellInstance() {
-        JShell.Builder b = JShell.builder();
-        return customizeBuilder(b).build();
     }
     
     private void initJShell() {
@@ -1521,5 +1537,9 @@ public class ShellSession  {
             return Collections.emptyList();
         }
         return historyLines;
+    }
+    
+    public Path resolvePath(String s) {
+        return launcher == null ? Paths.get(s) : launcher.toPathResolvingUserHome(s);
     }
 }
