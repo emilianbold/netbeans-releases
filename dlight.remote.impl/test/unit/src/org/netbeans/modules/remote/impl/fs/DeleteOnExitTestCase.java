@@ -154,7 +154,14 @@ public class DeleteOnExitTestCase extends RemoteFileTestBase {
             }
         }
     }
-    
+
+    @Override
+    protected void reconnect(int timeout, boolean resetFileSystem) throws Exception {
+        sleep(timeout);
+        RemoteFileSystemTransport.shutdown(execEnv);
+        super.reconnect(timeout, resetFileSystem);
+    }
+
     private CharSequence toString(List<String> l) {
         StringBuilder sb = new StringBuilder();
         for (String s : l) {
