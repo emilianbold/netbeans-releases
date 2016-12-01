@@ -136,7 +136,7 @@ public class JShellTool implements MessageHandler {
     private static final String LINE_SEP = System.getProperty("line.separator");
     private static final Pattern LINEBREAK = Pattern.compile("\\R");
     private static final String RECORD_SEPARATOR = "\u241E";
-    private static final String RB_NAME_PREFIX  = "org.netbeans.modules.jshell.support";
+    private static final String RB_NAME_PREFIX  = "org.netbeans.modules.jshell.tool";
     private static final String VERSION_RB_NAME = RB_NAME_PREFIX + ".version";
     private static final String L10N_RB_NAME    = RB_NAME_PREFIX + ".l10n";
 
