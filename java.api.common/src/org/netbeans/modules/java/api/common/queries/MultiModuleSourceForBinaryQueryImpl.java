@@ -84,7 +84,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
     private final MultiModule testModules;
     private final String[] binaryProperties;
     private final String[] testBinaryProperties;
-    private final Map<URI,Pair<String[],R>> cache;
+    private final Map<URI,R> cache;
 
     MultiModuleSourceForBinaryQueryImpl(
             @NonNull final AntProjectHelper helper,
@@ -121,25 +121,21 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         R res = null;
         try {
             URI artefact = binaryRoot.toURI();
-            Pair<String[],R> p = cache.get(artefact);
-            if (p == null) {
-                p = createResult(artefact, archive, modules, binaryProperties);
-                if (p == null) {
-                    p = createResult(artefact, archive, testModules, testBinaryProperties);
+            res = cache.get(artefact);
+            if (res == null) {
+                res = createResult(artefact, archive, modules, binaryProperties);
+                if (res == null) {
+                    res = createResult(artefact, archive, testModules, testBinaryProperties);
                 }
-                Pair<String[],R> prev = cache.get(artefact);
+                R prev = cache.get(artefact);
                 if (prev != null) {
-                    res = prev.second();
-                } else if (p != null) {
-                    prev = cache.putIfAbsent(artefact, p);
+                    res = prev;
+                } else if (res != null) {
+                    prev = cache.putIfAbsent(artefact, res);
                     if (prev != null) {
-                        res = prev.second();
-                    } else {
-                        res = p.second();
+                        res = prev;
                     }
                 }
-            } else {
-                res = p.second();
             }
         } catch (URISyntaxException e) {
             LOG.log(
@@ -161,28 +157,26 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         final String propName = evt.getPropertyName();
         if (source == this.modules) {
             final Collection<? extends String> moduleNames = this.modules.getModuleNames();
-            for (Iterator<Map.Entry<URI,Pair<String[],R>>> it= cache.entrySet().iterator(); it.hasNext();) {
-                final Map.Entry<URI,Pair<String[],R>> e = it.next();
-                final String[] propModName = e.getValue().first();
-                if (contains(propModName[0], binaryProperties) && !moduleNames.contains(propModName[1])) {
+            for (Iterator<Map.Entry<URI,R>> it= cache.entrySet().iterator(); it.hasNext();) {
+                final R r = it.next().getValue();
+                if (contains(r.getProperty(), binaryProperties) && !moduleNames.contains(r.getModuleName())) {
                     it.remove();
                 }
             }
         } else if (source == this.testModules) {
             final Collection<? extends String> moduleNames = this.testModules.getModuleNames();
-            for (Iterator<Map.Entry<URI,Pair<String[],R>>> it= cache.entrySet().iterator(); it.hasNext();) {
-                final Map.Entry<URI,Pair<String[],R>> e = it.next();
-                final String[] propModName = e.getValue().first();
-                if (contains(propModName[0], testBinaryProperties) && !moduleNames.contains(propModName[1])) {
+            for (Iterator<Map.Entry<URI,R>> it= cache.entrySet().iterator(); it.hasNext();) {
+                final R r = it.next().getValue();
+                if (contains(r.getProperty(), testBinaryProperties) && !moduleNames.contains(r.getModuleName())) {
                     it.remove();
                 }
             }
         } else if (contains(propName, binaryProperties) || contains(propName, testBinaryProperties)) {
-            for (Iterator<Map.Entry<URI,Pair<String[],R>>> it= cache.entrySet().iterator(); it.hasNext();) {
-                final Map.Entry<URI,Pair<String[],R>> e = it.next();
+            for (Iterator<Map.Entry<URI,R>> it= cache.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<URI,R> e = it.next();
                 final URI uri = e.getKey();
-                final Pair<String[],R> p = e.getValue();
-                if (propName.equals(p.first()[0]) && getOwner(eval, helper, uri, new String[]{propName}) == null) {
+                final R r = e.getValue();
+                if (propName.equals(r.getProperty()) && getOwner(eval, helper, uri, new String[]{propName}) == null) {
                     it.remove();
                 }
             }
@@ -201,7 +195,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
     }
 
     @CheckForNull
-    private Pair<String[],R> createResult(
+    private R createResult(
             @NonNull final URI artefact,
             final boolean archive,
             @NonNull final MultiModule modules,
@@ -212,9 +206,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
             if (moduleName != null) {
                 final ClassPath cp = modules.getModuleSources(moduleName);
                 if (cp != null) {
-                    return Pair.of(
-                            new String[]{prop, moduleName},
-                            new R(artefact, cp, eval, helper, prop));
+                    return new R(artefact, cp, eval, helper, moduleName, prop);
                 }
             }
         }
@@ -277,6 +269,7 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
         private final ClassPath srcPath;
         private final PropertyEvaluator eval;
         private final AntProjectHelper helper;
+        private final String moduleName;
         private final String prop;
         private final ChangeSupport listeners;
         private volatile int state;    //0 - Valid, 1 - Modified, 2 - Invalid
@@ -286,16 +279,19 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
                 @NonNull final ClassPath srcPath,
                 @NonNull final PropertyEvaluator eval,
                 @NonNull final AntProjectHelper helper,
+                @NonNull final String moduleName,
                 @NonNull final String prop) {
             Parameters.notNull("artefact", artefact);   //NOI18N
             Parameters.notNull("srcPath", srcPath); //NOI18N
             Parameters.notNull("eval", eval);       //NOI18N
             Parameters.notNull("helper", helper);       //NOI18N
+            Parameters.notNull("moduleName", moduleName);   //NOI18N
             Parameters.notNull("prop", prop);       //NOI18N
             this.artefact = artefact;
             this.srcPath = srcPath;
             this.eval = eval;
             this.helper = helper;
+            this.moduleName = moduleName;
             this.prop = prop;
             this.listeners = new ChangeSupport(this);
             this.srcPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.srcPath));
@@ -341,6 +337,14 @@ final class MultiModuleSourceForBinaryQueryImpl implements SourceForBinaryQueryI
                 state = 1;
                 listeners.fireChange();
             }
+        }
+
+        String getProperty() {
+            return prop;
+        }
+
+        String getModuleName() {
+            return moduleName;
         }
     }
 
