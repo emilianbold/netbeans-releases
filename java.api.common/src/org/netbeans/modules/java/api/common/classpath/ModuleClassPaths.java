@@ -191,13 +191,16 @@ final class ModuleClassPaths {
         return new MultiModuleBinaries(model);
     }
 
-    private static final class MultiModuleBinaries extends BaseClassPathImplementation {
+    private static final class MultiModuleBinaries extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener {
         private final MultiModule model;
+        //@GuardedBy("this")
+        private Collection<BinaryForSourceQuery.Result> currentResults;
 
         MultiModuleBinaries(
                 @NonNull final MultiModule model) {
             Parameters.notNull("model", model); //NOI18N
             this.model = model;
+            this.model.addPropertyChangeListener(WeakListeners.propertyChange(this, this.model));
         }
 
         @Override
@@ -206,11 +209,17 @@ final class ModuleClassPaths {
             if (res != null) {
                 return res;
             }
-            res = createResources();
+            final List<BinaryForSourceQuery.Result> results = new ArrayList<>();
+            res = createResources(results);
             synchronized (this) {
                 assert res != null;
                 if (getCache() == null) {
                     setCache(res);
+                    if (currentResults != null) {
+                        currentResults.forEach((r)->r.removeChangeListener(this));
+                    }
+                    results.forEach((r)->r.addChangeListener(this));
+                    currentResults = results;
                 } else {
                     res = getCache();
                 }
@@ -218,15 +227,30 @@ final class ModuleClassPaths {
             return res;
         }
 
-        private List<PathResourceImplementation> createResources() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (MultiModule.PROP_MODULES.equals(propName)) {
+                resetCache(true);
+            }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            resetCache(true);
+        }
+
+        private List<PathResourceImplementation> createResources(Collection<? super BinaryForSourceQuery.Result> results) {
             final Set<URL> binaries = new LinkedHashSet<>();
             for (String moduleName : model.getModuleNames()) {
                 final ClassPath scp = model.getModuleSources(moduleName);
                 if (scp != null) {
                     for (ClassPath.Entry e : scp.entries()) {
+                        final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(e.getURL());
+                        results.add(r);
                         Collections.addAll(
                                 binaries,
-                                BinaryForSourceQuery.findBinaryRoots(e.getURL()).getRoots());
+                                r.getRoots());
                     }
                 }
             }
