@@ -94,6 +94,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     protected FileStatusCache cache;
     private boolean skipTest = false;
     protected String testName;
+    protected Version version;
     
     public RemoteVersioningTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -156,6 +157,14 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         if (hg == null || !hg.isValid()) {
             skipTest = true;
             return;
+        }
+        version = new Version(execEnv, hg);
+        if (version.compareTo(new Version(1,4,0)) < 0) {
+            System.err.println("Usupported hg version "+version);
+            skipTest = true;
+            return;
+        } else {
+            System.err.println("hg version "+version);
         }
         
         MockServices.setServices(new Class[] {VersioningAnnotationProviderImpl.class, MercurialVCS.class, FilesystemInterceptorProviderImpl.class});

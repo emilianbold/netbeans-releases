@@ -75,6 +75,6 @@ abstract public class ProcessListAccessor {
 
         DEFAULT = accessor;
     }
-
+    
     abstract public ProcessList create(final Collection<ProcessInfo> info, ExecutionEnvironment execEnv);    
 }

@@ -80,6 +80,7 @@ import org.openide.util.RequestProcessor;
     private final RequestProcessor.Task task;
     private final Object eventsLock = new Object();
     private int suspendCount = 0;
+    private Exception suspendResumes = null;
 
     private HashMap<String, CsmEvent> events = new LinkedHashMap<>();
 
@@ -165,7 +166,14 @@ import org.openide.util.RequestProcessor;
     void resume() {
         boolean schedule;
         synchronized (eventsLock) {
-            CndUtils.assertTrue(suspendCount > 0, "resume without suspend " + suspendCount);
+            if (CndUtils.isDebugMode()) {
+                if (suspendCount == 1) {
+                    CndUtils.assertTrue(suspendResumes != null, "resume without suspend " + suspendCount);
+                    suspendResumes = new Exception("2: resume with suspendCount==1 [" + project + "] enabledEventsHandling=" + enabledEventsHandling, suspendResumes); // NOI18N
+                } else if (suspendCount <= 0) {
+                    CndUtils.printStackTraceOnce(new Exception("3: resume with suspendCount==" + suspendCount + " [" + project + "] enabledEventsHandling=" + enabledEventsHandling, suspendResumes)); // NOI18N
+                }
+            }
             suspendCount--;
             if (suspendCount < 0) {
                 suspendCount = 0;
@@ -179,7 +187,12 @@ import org.openide.util.RequestProcessor;
 
     void suspend() {
         synchronized (eventsLock) {
-            CndUtils.assertTrue(suspendCount >= 0, "suspend with " + suspendCount);
+            if (CndUtils.isDebugMode()) {
+                if (suspendCount == 0) {
+                    suspendResumes = new Exception("1: suspend when suspendCount==0 [" + project + "] enabledEventsHandling=" + enabledEventsHandling); // NOI18N
+                }
+                CndUtils.assertTrue(suspendCount >= 0, "suspend with " + suspendCount);
+            }            
             suspendCount++;
         }
     }
