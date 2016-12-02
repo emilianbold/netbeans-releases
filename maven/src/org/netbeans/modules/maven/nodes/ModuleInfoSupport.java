@@ -220,27 +220,27 @@ class ModuleInfoSupport {
         RP.post(() -> {
             if(moduleInfo != null) {
                 Set<String> declaredModules = getDeclaredModules(moduleInfo);
-                Set<URL> roots = new HashSet<>();
+                List<String> newModules = new LinkedList<>();
                 for (Artifact a : artifacts) {
                     URL url = FileUtil.urlForArchiveOrDir(a.getFile());
-                    String name = SourceUtils.getModuleName(url);
+                    String name = url != null ? SourceUtils.getModuleName(url) : null;
                     LOG.log(Level.FINE, "Artifact {0} has modules name ''{1}''", new Object[]{url, name}); // NOI18N
                     if(name != null) {
                         if(!declaredModules.contains(name)) {
-                            roots.add(url);
+                            newModules.add(name);
                         }
                     } else {
                         LOG.log(Level.WARNING, "Could not determine module name for artifact {0}", new Object[]{url}); // NOI18N
                     }
                 }
-                if(!roots.isEmpty()) {
-                    ModuleInfoSupport.addRequires(moduleInfo, roots);
+                if(!newModules.isEmpty()) {
+                    ModuleInfoSupport.addRequires(moduleInfo, newModules);
                 }
             }                
         });
     }
     
-    private static void addRequires(FileObject moduleInfo, Set<URL> roots) {
+    private static void addRequires(FileObject moduleInfo, List<String> newModules) {
         final JavaSource src = JavaSource.forFileObject(moduleInfo);
         if (src == null) {
             return;
@@ -248,10 +248,7 @@ class ModuleInfoSupport {
 
         Set<String> declaredModuleNames = getDeclaredModules(src);
         Set<String> requiredModuleNames = new LinkedHashSet<>();
-        for (URL root : roots) {
-            // XXX - root - does it exist in m2?                
-            String name = SourceUtils.getModuleName(root);
-            LOG.log(Level.FINE, "Compile artifact {0} has modules name ''{1}''", new Object[]{root, name}); // NOI18N
+        for (String  name : newModules) {
             if (name != null && !declaredModuleNames.contains(name)) {
                 requiredModuleNames.add(name);
             }

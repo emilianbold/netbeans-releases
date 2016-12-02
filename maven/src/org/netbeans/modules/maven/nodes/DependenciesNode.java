@@ -279,7 +279,7 @@ public class DependenciesNode extends AbstractNode {
             for (Artifact a : arts) {
                 if (accept.apply(a)) {
                     URL url = FileUtil.urlForArchiveOrDir(a.getFile());
-                    String name = SourceUtils.getModuleName(url);
+                    String name = url != null ? SourceUtils.getModuleName(url) : null;
                     if(name != null) {
                         LOG.log(Level.FINE, "Artifact {0} has module name ''{1}''", new Object[]{url, name}); // NOI18N
                         lst.add(new DependencyWrapper(a, longLiving, () -> moduleInfoSupport != null ? moduleInfoSupport.canAddToModuleInfo(name) : false));
