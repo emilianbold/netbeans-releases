@@ -248,15 +248,27 @@ final class ModuleClassPaths {
                     for (ClassPath.Entry e : scp.entries()) {
                         final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(e.getURL());
                         results.add(r);
-                        Collections.addAll(
-                                binaries,
-                                r.getRoots());
+                        binaries.addAll(distFor(r.getRoots()));
                     }
                 }
             }
             return binaries.stream()
                     .map((url) -> org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
                     .collect(Collectors.toList());
+        }
+
+        private static Collection<? extends URL> distFor(@NonNull final URL... urls) {
+            final Collection<URL> res = new ArrayList<>(urls.length);
+            for (URL url : urls) {
+                if (FileUtil.isArchiveArtifact(url)) {
+                    res.add(url);
+                    break;
+                }
+            }
+            if (res.isEmpty()) {
+                Collections.addAll(res, urls);
+            }
+            return res;
         }
     }
 

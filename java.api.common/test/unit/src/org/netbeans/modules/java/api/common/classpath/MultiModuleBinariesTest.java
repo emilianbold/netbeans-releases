@@ -156,7 +156,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod2c, mod1d, mod2d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -201,7 +200,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -215,7 +213,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod2c, mod1d, mod2d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -229,7 +226,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod2c, mod2d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -274,7 +270,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -327,7 +322,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -341,7 +335,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d, foomodule})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -354,7 +347,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -399,7 +391,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -450,7 +441,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         final List<URL> oldExpected = Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                 .flatMap((fo) -> Arrays.stream(new URL[]{
-                    mtu.buildFor(fo.getParent().getNameExt()),
                     mtu.distFor(fo.getParent().getNameExt())}))
                 .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                 .distinct()
@@ -466,7 +456,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
@@ -519,7 +508,6 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
-                        mtu.buildFor(fo.getParent().getNameExt()),
                         mtu.distFor(fo.getParent().getNameExt())}))
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .distinct()
