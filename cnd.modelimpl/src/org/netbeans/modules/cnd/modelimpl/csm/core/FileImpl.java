@@ -2383,6 +2383,12 @@ public final class FileImpl implements CsmFile,
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s%n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d%n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N
+        String fileLanguage = this.getFileLanguage();
+        String fileLanguageFlavor = this.getFileLanguageFlavor();
+        if (fileLanguageFlavor.isEmpty()) {
+            fileLanguageFlavor = "FLAVOR_UNKNOWN"; // NOI18N
+        }
+        printOut.printf("\tfileImplLanguage=%s fileImplLanguageFlavor=%s%n", fileLanguage, fileLanguageFlavor);// NOI18N
     }
 
     public void dumpIndex(PrintWriter printOut) {
