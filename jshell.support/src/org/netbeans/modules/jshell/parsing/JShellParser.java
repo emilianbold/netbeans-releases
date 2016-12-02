@@ -169,11 +169,17 @@ public class JShellParser {
             int a = p(ls);
             // potentially join ranges
             if (r.end == a || r.start == a) {
-                ranges.set(l, new Rng(r.start, p(le)));
+                r = new Rng(r.start, p(le));
+                ranges.set(l, r);
+                ModelAccessor.INSTANCE.extendSection(section, 
+                        r.start, r.end, null, null);
                 return;
             }
         }
-        ranges.add(new Rng(p(ls), p(le)));
+        Rng r = new Rng(p(ls), p(le));
+        ranges.add(r);
+        ModelAccessor.INSTANCE.extendSection(section, 
+                r.start, r.end, null, null);
     }
     
     private void addSnippetText(int pos, CharSequence text) {
@@ -266,7 +272,9 @@ public class JShellParser {
             switch (tukac.id()) {
                 case COMMAND:
                 case ERR_COMMAND:
-                case COMMAND_TEXT:
+                case COMMAND_PARAM:
+                case COMMAND_OPTION:
+                case COMMAND_STRING:
                     // both go to an input section
                     createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type.COMMAND);
                     extendWithPart();
@@ -288,8 +296,10 @@ public class JShellParser {
                     wasPrompt = true;
                     switch (sequence.token().id()) {
                         case COMMAND:
-                        case COMMAND_TEXT:
+                        case COMMAND_PARAM:
                         case ERR_COMMAND:
+                        case COMMAND_OPTION:
+                        case COMMAND_STRING:
                             createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type.COMMAND);
                             // these will create a section
                             sequence.movePrevious();

@@ -45,6 +45,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -69,6 +71,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -88,34 +91,34 @@ public class HistoryCompletionProvider implements CompletionProvider {
         return 0;
     }
     
-    private boolean isFirstJavaLine(JTextComponent component) {
+    static int isFirstJavaLine(JTextComponent component) {
         ShellSession s = ShellSession.get(component.getDocument());
         if (s == null) {
-            return false;
+            return -1;
         }
         ConsoleSection sec = s.getModel().getInputSection();
         if (sec == null) {
-            return false;
+            return -1;
         }
         LineDocument ld = LineDocumentUtils.as(component.getDocument(), LineDocument.class);
         if (ld == null) {
-            return false;
+            return -1;
         }
 
         int off = sec.getStart();
         int caret = component.getCaretPosition();
         int s1 = LineDocumentUtils.getLineStart(ld, caret);
         int s2 = LineDocumentUtils.getLineStart(ld, off);
-        return s1 == s2;
+        try {
+            return s1 == s2 ?
+                    component.getDocument().getText(sec.getPartBegin(), sec.getPartLen()).trim().length() 
+                    : -1;
+        } catch (BadLocationException ex) {
+            return 0;
+        }
     }
     
-    @Override
-    public CompletionTask createTask(int queryType, final JTextComponent component) {
-        if ((queryType != COMPLETION_ALL_QUERY_TYPE && queryType != COMPLETION_QUERY_TYPE) || 
-                !isFirstJavaLine(component)) {
-            return null;
-        }
-        // check that the caret is at the first line of the editable area:
+    static ShellSession checkInputSection(JTextComponent component) {
         Document doc = component.getDocument();
         ShellSession session = ShellSession.get(doc);
         if (session == null) {
@@ -144,11 +147,26 @@ public class HistoryCompletionProvider implements CompletionProvider {
         } catch (BadLocationException ex) {
             return null;
         }
-        
+        return session;
+    }
+    
+    @Override
+    public CompletionTask createTask(int queryType, final JTextComponent component) {
+        int a = isFirstJavaLine(component);
+        if (queryType != COMPLETION_ALL_QUERY_TYPE) {
+            if (queryType != COMPLETION_QUERY_TYPE || a != 0) {
+                return null;
+            }
+        }
+        // check that the caret is at the first line of the editable area:
+        ShellSession session = checkInputSection(component);
+        if (session == null) {
+            return null;
+        }
         return new AsyncCompletionTask(new T(
             session,
-            model,
-            is
+            session.getModel(),
+            session.getModel().getInputSection()
         ), component);
     }
     
@@ -183,15 +201,31 @@ public class HistoryCompletionProvider implements CompletionProvider {
                 resultSet.finish();
                 return;
             }
+            int b = input.getPartBegin();
+            if (caretOffset < b) {
+                return;
+            }
+            String prefix = "";
+            try {
+                prefix = doc.getText(b, (caretOffset - b));
+            } catch (BadLocationException ex) {
+            }
+            final String fPrefix = prefix;
             ShellHistory  h = session.getEnv().getLookup().lookup(ShellHistory.class);
             resultSet.addAllItems(
                     session.historyItems().stream().
+                            filter(i -> i.getContents().startsWith(fPrefix)).
                             map(this::createCurrentItem).
                             collect(Collectors.toList())
             );
             if (h != null) {
+                final Set<String> commands = new HashSet<>();
                 resultSet.addAllItems(
                         h.getHistory().stream().
+                        filter(i -> 
+                                i.getContents().startsWith(fPrefix) &&
+                                commands.add(i.getContents())
+                        ).
                         map(this::createHistoryItem).
                         collect(Collectors.toList()));
             }

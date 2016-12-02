@@ -289,6 +289,7 @@ public final class ConsoleSection {
                         sb.append(d.getText(r.start, Math.min(l, r.end) - startFrom));
                     }
                 }
+                return sb.toString();
             } else if (startFrom >= getEnd()) {
                 return ""; // NOI18N
             } else if (startFrom > contentStart) {

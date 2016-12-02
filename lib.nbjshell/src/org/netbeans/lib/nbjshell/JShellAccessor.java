@@ -68,10 +68,12 @@ public class JShellAccessor {
     public static void resetCompileClasspath(JShell instance, String classpath) throws ExecutionControlException {
         try {
             Field factory = JShell.class.getDeclaredField("taskFactory");       // NOI18N
+            factory.setAccessible(true);
             Class taskFactoryClazz = Class.forName("jdk.jshell.TaskFactory");       // NOI18N
             Field f = taskFactoryClazz.getDeclaredField("classpath");       // NOI18N
             f.setAccessible(true);
-            f.set(factory.get(instance), "");
+            Object factoryInstance = factory.get(instance);
+            f.set(factoryInstance, "");
             
             Method m = instance.getClass().getDeclaredMethod("executionControl");
             m.setAccessible(true);
