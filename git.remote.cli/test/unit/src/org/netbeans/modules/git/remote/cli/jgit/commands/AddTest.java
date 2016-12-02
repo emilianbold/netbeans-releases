@@ -608,7 +608,10 @@ public class AddTest extends AbstractGitTestCase {
         write(file2, "init");
         getClient(workDir).add(new VCSFileProxy[0], NULL_PROGRESS_MONITOR);
         Map<VCSFileProxy, GitStatus> statuses = getClient(workDir).getStatus(new VCSFileProxy[0], NULL_PROGRESS_MONITOR);
+        if (false)
         assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false);
+        else
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false);
         assertStatus(statuses, workDir, file2, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
     }
 

@@ -596,6 +596,13 @@ public abstract class CsmResultItem implements CompletionItem {
      */
     protected String decorateReplaceTextIfTemplate(String replaceText, CsmObject csmObj) {
         if (CsmKindUtilities.isTemplate(csmObj)) {                
+            if (CsmKindUtilities.isSpecialization(csmObj)) {
+                List<CsmTemplateParameter> templateParameters = ((CsmTemplate)csmObj).getTemplateParameters();
+                if (templateParameters != null && templateParameters.isEmpty()) {
+                    // full specialization
+                    return ((CsmTemplate)csmObj).getDisplayName().toString();
+                }
+            }
             selectionStartOffset = replaceText.length() + 1;
             selectionEndOffset = replaceText.length() + 1;
             return replaceText + "<>"; // NOI18N
@@ -1519,6 +1526,9 @@ public abstract class CsmResultItem implements CompletionItem {
             String text;
             if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
                 text = CsmBaseUtilitiesProvider.getDefault().getDummyForwardSimpleQualifiedName(cls).toString();
+                if (text.lastIndexOf(':')>0) {
+                    text = text.substring(text.lastIndexOf(':')+1);
+                }
             } else {
                 text = cls.getName().toString();
             }

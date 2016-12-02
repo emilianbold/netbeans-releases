@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,40 +36,37 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
+ */
+package org.netbeans.modules.cnd.modelimpl.csm.core;
+
+import static junit.framework.TestCase.assertEquals;
+import org.junit.Test;
+
+/**
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * @author petrk
  */
-
-package org.netbeans.modules.remote.impl.fs.server;
-
-/** 
- * Request and response kind 
- */
- public enum FSSRequestKind {
-    FS_REQ_LS('l'), 
-    FS_REQ_RECURSIVE_LS('r'), 
-    FS_REQ_STAT('S'), 
-    FS_REQ_LSTAT('s'),
-    FS_REQ_QUIT('q'),
-    FS_REQ_SLEEP('P'),
-    FS_REQ_ADD_WATCH('W'),
-    FS_REQ_REMOVE_WATCH('w'),
-    FS_REQ_REFRESH('R'),
-    FS_REQ_DELETE('d'),
-    FS_REQ_DELETE_ON_DISCONNECT('D'),
-    FS_REQ_COPY('C'),
-    FS_REQ_MOVE('m'),
-    FS_REQ_SERVER_INFO('i'),
-    FS_REQ_OPTION('o');
-
-    private final char letter;
-
-    private FSSRequestKind(char letter) {
-        this.letter = letter;
+public class FilePreprocessorConditionStateTest {
+    @Test
+    public void testCoverage() {
+        int blocks[] = new int[] {
+            10, 20,
+            35, 40,
+            100, 127,
+            200, 201,
+            250, 300
+        };
+        assertEquals(1000, FilePreprocessorConditionState.getCoverage(blocks, 0, 1000));
+        assertEquals(-1, FilePreprocessorConditionState.getCoverage(blocks, 10, 30));
+        assertEquals(-1, FilePreprocessorConditionState.getCoverage(blocks, 20, 30));
+        assertEquals(-1, FilePreprocessorConditionState.getCoverage(blocks, 5, 100));
+        assertEquals(-1, FilePreprocessorConditionState.getCoverage(blocks, 5, 127));
+        assertEquals(-1, FilePreprocessorConditionState.getCoverage(blocks, 15, 17));
+        assertEquals(-1, FilePreprocessorConditionState.getCoverage(blocks, 30, 120));
+        assertEquals(10, FilePreprocessorConditionState.getCoverage(blocks, 5, 25));
+        assertEquals(93, FilePreprocessorConditionState.getCoverage(blocks, 25, 150));
+        assertEquals(50, FilePreprocessorConditionState.getCoverage(blocks, 220, 320));
+        assertEquals(100, FilePreprocessorConditionState.getCoverage(blocks, 310, 410));
+        assertEquals(5, FilePreprocessorConditionState.getCoverage(blocks, 3, 8));
     }
-
-    public char getChar() {
-        return letter;
-    }
-    
 }

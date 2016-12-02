@@ -116,6 +116,16 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
     }
 
+    public static FSSTransport removeInstance(ExecutionEnvironment env) {
+        synchronized (instancesLock) {
+            FSSTransport instance = instances.remove(env);
+            if (instance != null) {
+                ConnectionManager.getInstance().removeConnectionListener(instance);
+            }
+            return instance;
+        }
+    }
+
     private FSSTransport(ExecutionEnvironment env) {
         this.env = env;
         this.dispatcher = FSSDispatcher.getInstance(env);
@@ -656,6 +666,25 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     @Override
     protected FileSystemProvider.AccessCheckType getAccessCheckType() {
         return dispatcher.getAccessCheckType();
+    }
+    
+    @Override
+    protected boolean canDeleteOnDisconnect() {
+        return RemoteFileSystemUtils.getBoolean("remote.native.delete.on.exit", true);
+    }
+
+    @Override
+    protected void deleteOnDisconnect(String[] paths) 
+        throws IOException, CancellationException, InterruptedException, ExecutionException {
+        for (String p : paths) {
+            FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_DELETE_ON_DISCONNECT, p, true);
+            dispatcher.dispatch(request);
+        }
+    }    
+
+    @Override
+    protected void shutdown() {
+        dispatcher.shutdown();
     }
 
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {

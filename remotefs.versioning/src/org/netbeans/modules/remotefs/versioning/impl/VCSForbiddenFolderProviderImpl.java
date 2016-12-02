@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,40 +36,25 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
+ */
+package org.netbeans.modules.remotefs.versioning.impl;
+
+import org.netbeans.modules.remote.impl.fileoperations.spi.RemoteVcsSupportUtil;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSForbiddenFolderProvider;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.lookup.ServiceProvider;
+
+/**
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * @author vkvashin
  */
-
-package org.netbeans.modules.remote.impl.fs.server;
-
-/** 
- * Request and response kind 
- */
- public enum FSSRequestKind {
-    FS_REQ_LS('l'), 
-    FS_REQ_RECURSIVE_LS('r'), 
-    FS_REQ_STAT('S'), 
-    FS_REQ_LSTAT('s'),
-    FS_REQ_QUIT('q'),
-    FS_REQ_SLEEP('P'),
-    FS_REQ_ADD_WATCH('W'),
-    FS_REQ_REMOVE_WATCH('w'),
-    FS_REQ_REFRESH('R'),
-    FS_REQ_DELETE('d'),
-    FS_REQ_DELETE_ON_DISCONNECT('D'),
-    FS_REQ_COPY('C'),
-    FS_REQ_MOVE('m'),
-    FS_REQ_SERVER_INFO('i'),
-    FS_REQ_OPTION('o');
-
-    private final char letter;
-
-    private FSSRequestKind(char letter) {
-        this.letter = letter;
+@ServiceProvider(service = VCSForbiddenFolderProvider.class)
+public class VCSForbiddenFolderProviderImpl implements VCSForbiddenFolderProvider {
+    @Override
+    public boolean isForbiddenFolder(VCSFileProxy folder) {
+        FileSystem fs = RemoteVcsSupport.getFileSystem(folder);
+        return RemoteVcsSupportUtil.isForbiddenFolder(fs, folder.getPath());
     }
-
-    public char getChar() {
-        return letter;
-    }
-    
 }

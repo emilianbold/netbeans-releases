@@ -3247,7 +3247,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         // Show array name and index instead of only index, IZ 192123
                         //substring first
                         String indexStr = exp;
-                        if (exp.startsWith("[") && exp.endsWith("]")) {
+                        if (exp.startsWith("[") && exp.endsWith("]")) { // NOI18N
                             indexStr = exp.substring(1, exp.length() - 1);
                         }
                         try {

@@ -296,4 +296,13 @@ public class SftpTransport extends RemoteFileSystemTransport {
     protected FileSystemProvider.AccessCheckType getAccessCheckType() {
         return null;
     }
+
+    @Override
+    protected boolean canDeleteOnDisconnect() {
+        return false;
+    }
+
+    @Override
+    protected void deleteOnDisconnect(String[] paths) {
+    }
 }

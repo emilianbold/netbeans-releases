@@ -331,9 +331,16 @@ public final class BreakpointManager {
             } else {
 		assert RoutingToken.BREAKPOINTS.isSameSubsystem(rt);
                 bj = map.get(rt);
-                assert bj != null :
-                        "BreakpointJobs.get(): no bpt for rt " + rt; // NOI18N
-
+//                assert bj != null :
+//                        "BreakpointJobs.get(): no bpt for rt " + rt; // NOI18N
+                if (bj == null) {
+                    if (Log.Bpt.pathway) {
+                        System.out.println("BreakpointJobs.get(): no bpt for rt " + rt);//NOI18N
+                    }
+                    bj = new BreakpointJob(BreakpointJob.Kind.SPONTANEOUS, null, null, null);
+                    bj.setGen(Gen.primary(null));
+                    return bj;
+                }
                 if (bj.isOverload()) {
                     bj.seeOverload();
                     if (bj.isLastOverload()) {
