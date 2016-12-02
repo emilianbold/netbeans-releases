@@ -351,11 +351,11 @@ public class RemoteFileSystemUtils {
     public static String getConnectExceptionMessage(ExecutionEnvironment env) {
         return NbBundle.getMessage(RemoteFileSystemUtils.class, "NotConnectedExceptionMessage", env.getDisplayName());
     }
-    
+
     public static boolean isUnitTestMode() {
-        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+        return Boolean.getBoolean("cnd.mode.unittest") | Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     }
-    
+
     @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public static Boolean isLinux(ExecutionEnvironment env) {
         if (HostInfoUtils.isHostInfoAvailable(env)) {
