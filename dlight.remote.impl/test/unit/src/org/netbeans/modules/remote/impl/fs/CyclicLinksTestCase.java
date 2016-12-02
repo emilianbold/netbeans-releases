@@ -42,6 +42,8 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -97,7 +99,54 @@ public class CyclicLinksTestCase extends RemoteFileTestBase {
             FSSTransport.getInstance(execEnv).testSetCleanupUponStart(true);
         }        
     }
-    
+  
+    @ForAllEnvironments
+    public void test_iz_269198() throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            executeInDir(baseDir, "ln", "-s", "./", "cyclic_link1");
+            executeInDir(baseDir, "ln", "-s", "./", "cyclic_link2");
+            RemoteFileObject baseFO = getFileObject(baseDir);
+            baseFO.refresh();
+            AtomicInteger maxNestedLevel = new AtomicInteger(0);
+            AtomicReference<String> deepestPath = new AtomicReference();
+            recurse(baseFO, new AtomicInteger(0), deepestPath, maxNestedLevel, 5);
+            System.err.println("Max nestng level " + maxNestedLevel + " directory is " + deepestPath);
+        } finally {
+            if (baseDir != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
+                removeRemoteDirIfNotNull(baseDir);
+            }
+            FSSTransport.getInstance(execEnv).testSetCleanupUponStart(true);
+        }        
+    }
+
+    private void recurse(RemoteFileObject fo, AtomicInteger currNestedLevel, 
+            AtomicReference<String> deepestPath, AtomicInteger maxNestedLevel, int maxAllowedNestedLevel) {
+        if (fo.isFolder()) {
+            RemoteFileObject[] children = fo.getChildren();
+            if (children == null || children.length == 0) {
+                return;
+            }
+            currNestedLevel.incrementAndGet();
+            if (currNestedLevel.get() > maxNestedLevel.get()) {
+                maxNestedLevel.set(currNestedLevel.get());
+                deepestPath.set(children[0].getPath());
+                if (maxNestedLevel.get() > maxAllowedNestedLevel) {
+                    assertTrue("Maximim allowed nesting " + maxAllowedNestedLevel + " exceeded at path " + deepestPath, false);
+                }
+            }
+            try {
+                for (RemoteFileObject child : children) {
+                    recurse(child, currNestedLevel, deepestPath, maxNestedLevel, maxAllowedNestedLevel);
+                }
+            } finally {
+                currNestedLevel.decrementAndGet();
+            }
+        }
+    }
+
     public static Test suite() {
         return RemoteApiTest.createSuite(CyclicLinksTestCase.class);
     }

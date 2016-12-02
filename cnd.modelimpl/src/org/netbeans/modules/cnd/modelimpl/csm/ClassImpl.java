@@ -752,8 +752,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             DeclarationsContainer currentContainer = ClassImpl.this;
                             if (APTLanguageSupport.getInstance().isLanguageC(language)) {
                                 if (!isRenderingLocalContext()) {
-                                    currentScope = getContainingFile().getProject().getGlobalNamespace();
-                                    currentContainer = getFileContent();
+                                    if (!isUnnamedStructOrUnion(token)) {
+                                        currentScope = getContainingFile().getProject().getGlobalNamespace();
+                                        currentContainer = getFileContent();
+                                    }
                                 } else {
                                     currentScope = null;
                                     currentContainer = container; // Used to render local declarations
@@ -990,7 +992,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 if (innerScope == ClassImpl.this) {
                     addMember(innerClass, !isRenderingLocalContext());
                 } else {
-                    // In C language strutures are always members of global namespace
+                    // In C language named strutures are members of global namespace
                     assert APTLanguageSupport.getInstance().isLanguageC(language);
                     if (container instanceof MutableDeclarationsContainer) {
                         ((MutableDeclarationsContainer) container).addDeclaration(innerClass);
@@ -1002,6 +1004,26 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         private void setTemplateDescriptor(List<CsmTemplateParameter> params, CharSequence name, boolean specialization) {
             templateDescriptor = new TemplateDescriptor(params, name, specialization, !isRenderingLocalContext());
+        }
+        
+        private boolean isUnnamedStructOrUnion(AST cls) {
+            if (cls.getType() == CPPTokenTypes.CSM_CLASS_DECLARATION 
+                    || cls.getType() == CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION) {
+                // Look for qualified id. Name should appear as CSM_QUALIFIED_ID in AST
+                if (AstUtil.findChildOfType(cls, CPPTokenTypes.CSM_QUALIFIED_ID) != null) {
+                    return false;
+                }
+                // Look for variable declaration. Like in the following construction:
+                // struct AAA {
+                //   struct {
+                //     ...
+                //   } field; <- this is variable declaration
+                // };
+//                if (AstUtil.findChildOfType(cls, CPPTokenTypes.CSM_VARIABLE_DECLARATION) != null) {
+//                    return false;
+//                }
+            }
+            return true;
         }
 
         private boolean hasFriendPrefix(AST child) {

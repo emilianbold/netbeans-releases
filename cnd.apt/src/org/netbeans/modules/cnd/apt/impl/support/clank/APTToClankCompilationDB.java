@@ -47,10 +47,14 @@ import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
+import static org.clank.support.NativePointer.*;
+import org.llvm.adt.StringRef;
+import org.llvm.support.sys.path;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -115,6 +119,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 FileObject fileObject = fsPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
                     CharSequence incPathUrl = fsPath.getURL();
+                    if (CndUtils.isDebugMode()) {
+                        CndUtils.assertTrueInConsole(path.is_absolute(new StringRef(create_char$ptr_utf8(incPathUrl))), "why non-absolute path " + incPathUrl + " is used for:" + fsPath + ".PP=", ppHandler);
+                    }
                     builder.addUserIncludePath(incPathUrl, incDir.isFramework(), incDir.ignoreSysRoot());
                 }
             }
@@ -128,6 +135,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                     FileObject fileObject = fsPath.getFileObject();
                     if (fileObject != null && fileObject.isFolder()) {
                         CharSequence incPathUrl = fsPath.getURL();
+                        if (CndUtils.isDebugMode()) {
+                            CndUtils.assertTrueInConsole(path.is_absolute(new StringRef(create_char$ptr_utf8(incPathUrl))), "why non-absolute path " + incPathUrl + " is used for:" + fsPath + ".PP=", ppHandler);
+                        }
                         builder.addPredefinedSystemIncludePath(incPathUrl, incDir.isFramework(), incDir.ignoreSysRoot());
                     }
                 }
@@ -145,6 +155,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             FileObject fileObject = fsPath.getFileObject();
             if (fileObject != null && fileObject.isData()) {
                 CharSequence incPathUrl = fsPath.getURL();
+                if (CndUtils.isDebugMode()) {
+                    CndUtils.assertTrueInConsole(path.is_absolute(new StringRef(create_char$ptr_utf8(incPathUrl))), "why non-absolute path " + incPathUrl + " is used for:" + fsPath + ".PP=", ppHandler);
+                }                
                 builder.addIncFile(incPathUrl.toString());
             }
         }
