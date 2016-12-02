@@ -459,7 +459,7 @@ public class RemoteVcsSupportUtil {
 
     public static boolean isForbiddenFolder(FileSystem fs, String path) {
         if (fs instanceof RemoteFileSystem) {
-            if (path.isEmpty() || path.equals("/tmp") && RemoteFileSystemUtils.isUnitTestMode()) {
+            if (path.isEmpty() || path.equals("/tmp") && RemoteFileSystemUtils.isUnitTestMode()) { // NOI18N
                 return false;
             }            
             RemoteFileSystem rfs = (RemoteFileSystem) fs;
