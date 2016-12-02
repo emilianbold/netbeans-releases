@@ -1359,11 +1359,13 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             if (interceptor != null && !Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable")) {
                 try {
                     getFileSystem().setInsideVCS(true);
+                    getFileSystem().setGettingDirectoryStorage(true);
                     interceptor.refreshRecursively(FilesystemInterceptorProvider.toFileProxy(getOwnerFileObject()), 
                             lastModified().getTime(), new LinkedList<>()); // Collections.emptyList() does not suite - implementor can add elements
 
                 } finally {
                     getFileSystem().setInsideVCS(false);
+                    getFileSystem().setGettingDirectoryStorage(false);
                 }
             }
             //fireFileChangedEvent(getListeners(), new FileEvent(this));
