@@ -57,9 +57,9 @@ public final class Filter<T extends TokenId> {
 
     private final Map<CharSequence, T> filter = new HashMap<CharSequence, T>();
     private final Map<CharSequence, T> prefixFilter = new HashMap<CharSequence, T>();
-
-    /*package*/ Filter() {
-        
+    private final String name;
+    /*package*/ Filter(String name) {
+        this.name = name;
     }
     
     /**
@@ -103,9 +103,14 @@ public final class Filter<T extends TokenId> {
     /*package*/ final void addMatch(CharSequence text, T id) {
         filter.put(text, id);
     }    
+
+    @Override
+    public String toString() {
+        return name + " with " + filter.size() + " keywords" + (prefixFilter.isEmpty() ? "" : (" and matching " + prefixFilter.size() + " prefixes")); 
+    }
     
-    public static <T extends TokenId> Filter<T> create(Map<CharSequence, T> matchTable) {
-        Filter<T> out = new Filter<T>();
+    public static <T extends TokenId> Filter<T> create(String filterName, Map<CharSequence, T> matchTable) {
+        Filter<T> out = new Filter<T>(filterName);
         for (Map.Entry<CharSequence, T> entry : matchTable.entrySet()) {
             out.addMatch(entry.getKey(), entry.getValue());
         }
