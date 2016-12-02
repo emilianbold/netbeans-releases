@@ -304,12 +304,18 @@ abstract public class FileOperationsProvider {
             return RemoteFileUrlMapper.toURI(env, path, folder);
         }
 
+        private boolean isKnownSniffingExtension(FileProxyO file) {
+            String path = file.getPath();
+            // TODO: change hardcoded extensions by registration
+            return path.endsWith(".svn") || path.endsWith(".git") || path.endsWith(".hg"); //NOI18N
+        }
+
         protected boolean exists(FileProxyO file) {
             if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
                 RemoteFileObject fo = getFileObject(file);
                 return fo != null && fo.isValid();
             }
-            if (USE_CACHE) {
+            if (USE_CACHE && (fileSystem.isGettingDirectoryStorage() || isKnownSniffingExtension(file))) {
                 Boolean res = fileSystem.vcsSafeExists(file.getPath());
                 if (res != null) {
                     return res.booleanValue();
@@ -491,7 +497,7 @@ abstract public class FileOperationsProvider {
             }
             return true;
         }
-        
+
     }
 
     public static FileProxyO toFileProxy(final String path) {

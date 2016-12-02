@@ -145,6 +145,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<>();
     private final RemoteFileZipper remoteFileZipper;
     private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
+    private final ThreadLocal<Boolean> isGettingDirectoryStorage = new ThreadLocal<>();
 
     private final RequestProcessor.Task connectionTask;
 
@@ -298,6 +299,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         Integer currValue = isInsideVCS.get();
         int newValue = ((currValue == null) ? 0 : currValue.intValue()) + (value ? +1 : -1);
         isInsideVCS.set(newValue);
+    }
+    
+    public boolean isGettingDirectoryStorage() {
+        Boolean inside = isGettingDirectoryStorage.get();
+        return inside != null && inside.booleanValue();
+    }
+
+    public void setGettingDirectoryStorage(boolean inside) {
+        isGettingDirectoryStorage.set(inside);
     }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
