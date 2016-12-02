@@ -95,7 +95,7 @@ import org.openide.util.NbBundle;
  * @author sdedic
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType="text/x-repl", service=CompletionProvider.class, position = 100),
+    @MimeRegistration(mimeType="text/x-repl", service=CompletionProvider.class, position = 150),
 })
 public class CommandCompletionProvider implements CompletionProvider{
     private static final String ICON_JAR = "org/netbeans/modules/jshell/resources/jar.png"; // NOI18N
