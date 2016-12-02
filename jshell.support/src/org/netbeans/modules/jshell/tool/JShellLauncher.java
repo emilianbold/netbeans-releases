@@ -39,30 +39,31 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.modules.jshell.tool;
 
+import org.netbeans.modules.jshell.tool.IOContext;
+import org.netbeans.modules.jshell.tool.JShellTool;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import jdk.jshell.JShell;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.openide.modules.SpecificationVersion;
+import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-public class JShellLauncher extends InternalJShell {
-    private ClasspathInfo   cpInfo;
-    private SpecificationVersion srcVersion;
-    private SpecificationVersion targetVersion;
-    private String prefix = "";
+public class JShellLauncher extends JShellTool {
+    private String prefix = "";     // NOI18N
     private JShellGenerator execGen;
     private NbExecutionControl    shellExecControl;
 
@@ -74,23 +75,22 @@ public class JShellLauncher extends InternalJShell {
      * @param userout user output from the JShell VM
      * @param usererr  user error from the JShell VM
      */
-    public JShellLauncher(ClasspathInfo cpInfo, 
+    public JShellLauncher(
+            Preferences prefs,
             PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, JShellGenerator execEnv) {
-        super(cmdout, cmderr, userin, userout, usererr);
+        super(
+                new ByteArrayInputStream(new byte[1]),
+                cmdout, cmderr, cmderr, userin, userout, usererr, 
+                prefs, 
+                Collections.emptyMap(), Locale.getDefault());
+            //, // dummy stream, commands will be injected 
+//            cmderr, userin, userout, usererr);
         this.execGen = execEnv;
-        this.cpInfo = cpInfo;
     }
     
-    public void setSourceVersion(SpecificationVersion level) {
-        this.srcVersion = level;
-    }
-    
-    public void setTargetVersion(SpecificationVersion level) {
-        this.targetVersion = level;
-    }
-
-    
-    protected String prompt(boolean continuation) {
+    public String prompt(boolean continuation) {
+        return feedback().getPrompt(currentNameSpace.tidNext());
+        /*
         int index = state == null ? 0 :  (int)state.snippets().count() + 1;
         if (continuation) {
             return ">> "; // NOI18N 
@@ -98,7 +98,8 @@ public class JShellLauncher extends InternalJShell {
             return "[" + index + "] -> "; // NOI18N 
         } else {
             return "\n[" + index + "] -> "; // NOI18N 
-        }
+        }*/
+                
     }
 
     public void start() {
@@ -112,37 +113,126 @@ public class JShellLauncher extends InternalJShell {
         closeState();
     }
     
+    /**
+     * Executes the command, optionally prints trailing prompt.
+     * @param command the command to execute
+     * @param prompt
+     * @throws IOException 
+     */
     public void evaluate(String command, boolean prompt) throws IOException {
         ensureLive();
         String trimmed = trimEnd(command);
+        IOContextImpl ioImpl = new IOContextImpl(trimmed.isEmpty() ? null : trimmed);
+        run(ioImpl);
+        /*
         if (!trimmed.isEmpty()) {
             prefix = process(prefix, command);
         }
+        */
         if (prompt) {
-            cmdout.append(prompt(!prefix.isEmpty()));
+            //cmdout.append(prompt(!prefix.isEmpty()));
+            if (ioImpl.promptAfter != null) {
+                cmdout.append(ioImpl.promptAfter);
+            } else {
+                cmdout.append(prompt(!prefix.isEmpty()));
+            }
         }
     }
     
-    public List<String> completion(String command) {
-        return completions(prefix, command);
-    }
+    private class IOContextImpl extends IOContext {
+        private String  str;
+        private String  promptAfter;
 
+        public IOContextImpl(String str) {
+            this.str = str;
+        }
+        
+        @Override
+        public void close() throws IOException {
+        }
+
+        @Override
+        public String readLine(String prompt, String prefix) throws IOException, InputInterruptedException {
+            if (str == null) {
+                promptAfter = prompt;
+                return null;
+            } else {
+                String s = str;
+                str = null;
+                return s;
+            }
+        }
+
+        @Override
+        public boolean interactiveOutput() {
+            return true;
+        }
+
+        @Override
+        public Iterable<String> currentSessionHistory() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean terminalEditorRunning() {
+            return false;
+        }
+
+        @Override
+        public void suspend() {
+        }
+
+        @Override
+        public void resume() {
+        }
+
+        @Override
+        public void beforeUserCode() {
+        }
+
+        @Override
+        public void afterUserCode() {
+        }
+
+        @Override
+        public void replaceLastHistoryEntry(String source) {
+        }
+
+        @Override
+        public int readUserInput() throws IOException {
+            return -1;
+        }
+        
+    }
+    
     private void ensureLive() {
-        if (!live) {
+        if (!isLive()) {
             resetState();
-            live = true;
         }
     }
 
     public JShell getJShell() {
+        initStartup();
         ensureLive();
         return state;
     }
 
     @Override
-    protected void setupState() {
+    protected void resetState() {
+        super.resetState();
+        printSystemInfo();
+//        feedback().setMode(this,  new ArgTokenizer("-command", "verbose"), null);
+    }
+    
+    
+    /*
+    @Override
+    protected void startUpRun(String start) {
+        feedback().setMode(this,  new ArgTokenizer("netbeans", "normal"), null);
+        feedback().setPrompt(this, new ArgTokenizer("netbeans", "[%s]-> [%s]>>"));
         printSystemInfo();
     }
+*/
     
     @Override
     protected JShell createJShellInstance() {
@@ -155,7 +245,7 @@ public class JShellLauncher extends InternalJShell {
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            JShell.Builder b = createJShell();
+            JShell.Builder b = makeBuilder();
             if (execGen != null) {
                     b.executionEngine(proxyGen);
             }
@@ -170,7 +260,7 @@ public class JShellLauncher extends InternalJShell {
         }
     }
     
-    protected static String quote(String s) {
+    public static String quote(String s) {
         if (s.indexOf(' ') == -1) {
             return s;
         }
@@ -197,31 +287,35 @@ public class JShellLauncher extends InternalJShell {
             // some error ?
             return;
         }
-        fluff(""); // newline
-        fluff(Bundle.MSG_SystemInformation());
+        hard(""); // newline
+        hard(Bundle.MSG_SystemInformation());
         String javaName = versionInfo.getOrDefault("java.vm.name", Bundle.MSG_MachineUnknown()); // NOI18N
         String vmVersion = versionInfo.getOrDefault("java.vm.version", Bundle.MSG_VMVersionUnknown()); // NOI18N
         String javaSpec = versionInfo.getOrDefault("java.runtime.version", Bundle.MSG_VersionUnknown() );
-        fluff(Bundle.MSG_JavaVersion(javaSpec));
-        fluff(Bundle.MSG_VirtualMachine(javaName, vmVersion));
+        hard(Bundle.MSG_JavaVersion(javaSpec));
+        hard(Bundle.MSG_VirtualMachine(javaName, vmVersion));
         
         String cpString = versionInfo.get("nb.class.path"); // NOI18N
         String[] cpItems = cpString.split(":"); // NOI18N
         if (cpItems.length > 0) {
-            fluff("Classpath:");
+            hard("Classpath:");
             for (String item : cpItems) {
                 if (item.isEmpty()) {
                     continue;
                 }
-                fluff("\t%s", item);
+                hard("\t%s", item);
             }
         }
-        fluff(""); // newline
+        hard(""); // newline
     }
 
     private String classpath;
 
     public void setClasspath(String classpath) {
         this.classpath = classpath;
+    }
+    
+    public void closeState() {
+        super.closeState();
     }
 }

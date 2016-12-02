@@ -204,6 +204,8 @@ public class JShellParser2 {
          * command provoked by a prompt
          */
         COMMAND,
+        COMMAND_LINE,
+        
         /**
          * Continuation after a command; may produce output
          */
@@ -289,7 +291,11 @@ public class JShellParser2 {
         createSection(Type.COMMAND);
         extendWithPart(lineContentsOffset, len());
         consumed();
-        s = State.INITIAL;
+        s = State.COMMAND;
+    }
+    
+    private void onCommandLine() {
+        
     }
     
     private void onMessageNext() {
@@ -592,6 +598,9 @@ public class JShellParser2 {
                     break;
                 case COMMAND:
                     onCommand();
+                    break;
+                case COMMAND_LINE:
+                    onCommandLine();
                     break;
                 case COMMAND_OUTPUT:
                     onCommandOutput();
