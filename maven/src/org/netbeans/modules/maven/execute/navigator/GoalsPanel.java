@@ -389,7 +389,6 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
 
         protected @Override
         boolean createKeys(List<Mojo> toPopulate) {
-            Set<Mojo> goals = new TreeSet<Mojo>();
             NbMavenProject nbmp = prj.getLookup().lookup(NbMavenProject.class);
             assert nbmp != null : "Project " + prj + " has no NbMavenProject in lookup.";
             if(nbmp == null) {
@@ -401,7 +400,18 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                 LOG.log(Level.WARNING, "Project {0} has no MavenProject.", prj);
                 return true;
             }
-            for (Artifact p : mp.getPluginArtifacts()) {
+            Set<Artifact> artifacts = mp.getPluginArtifacts();
+            if(artifacts == null || artifacts.isEmpty()) {
+                LOG.log(Level.FINE, "Project {0} returns {1} artifacts.", new Object[]{prj, artifacts == null ? "NULL" : "no"}); 
+                return true;
+            }
+            toPopulate.addAll(getGoals(artifacts, mp));
+            return true;
+        }
+
+        private Set<Mojo> getGoals(Set<Artifact> artifacts, MavenProject mp) throws IllegalArgumentException {
+            Set<Mojo> goals = new TreeSet<Mojo>();
+            for (Artifact p : artifacts) {
                 try {
 
                     EmbedderFactory.getOnlineEmbedder().resolve(p, mp.getPluginArtifactRepositories(), EmbedderFactory.getOnlineEmbedder().getLocalRepository());
@@ -480,11 +490,11 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                             List<PluginExecution> execs = plg.getExecutions();
                             if (execs != null) {
                                 for (PluginExecution exec : execs) {
-                                    //TODO there are also executions defined in the pom, that don't have the default id and don't have phase defined.
-                                    //however phase is defined also in the plugin.xml .. do we want to include these?
-//                                    String execgoal = exec.getGoals() != null && exec.getGoals().size() == 1 ? exec.getGoals().get(0) : null;
+                                    // TODO there are also executions defined in the pom, that don't have the default id and don't have phase defined.
+                                    // however phase is defined also in the plugin.xml .. do we want to include these?
+                                    // String execgoal = exec.getGoals() != null && exec.getGoals().size() == 1 ? exec.getGoals().get(0) : null;
                                     if (exec.getGoals().contains(goalString) /*&& exec.getPhase() != null && ("default-" + execgoal).equals(exec.getId())*/) {
-                                        //a bit of a heuristics applied..
+                                        //va bit of a heuristics applied..
                                         lifecycleBound = true;
                                         break;
                                     }
@@ -503,8 +513,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                     Exceptions.printStackTrace(ex);
                 }
             }
-            toPopulate.addAll(goals);
-            return true;
+            return goals;
         }
 
         protected @Override
