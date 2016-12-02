@@ -1268,47 +1268,47 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {action.end_simple_declaration(LT(1));}
         { #external_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration); }
     |
-                // Destructor DEFINITION (templated or non-templated)
-                {isCPlusPlus()}?
-                (   (template_head)? 
-                    dtor_head[true] 
-                    (   LCURLY
-                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                    )
-                )=>
-                {if (statementTrace>=1) 
-                        printf("external_declaration_4[%d]: Destructor definition\n",
-                                LT(1).getLine());
-                }
-                (template_head)? 
-                dtor_head[true]
-                (   dtor_body
-                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                )
-                { #external_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration); }
-        |
-                // Constructor DEFINITION (non-templated)
-                {isCPlusPlus()}?
-                ((options {warnWhenFollowAmbig = false;}: ctor_decl_spec)?
-                        {qualifiedItemIsOneOf(qiCtor)}?
-                )=>
-                {if (statementTrace>=1) 
-                        printf("external_declaration_5[%d]: Constructor definition\n",
-                                LT(1).getLine());
-                }
-                ctor_definition
-                { #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
-        |  
-                // User-defined type cast
-                {isCPlusPlus()}?
-                ((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
-                {if (statementTrace>=1) 
-                        printf("external_declaration_6[%d]: Operator function\n",
-                                LT(1).getLine());
-                }
-                (template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
-                { if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
-                    else           #external_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #external_declaration); }
+        // Destructor DEFINITION (templated or non-templated)
+        {isCPlusPlus()}?
+        (   (template_head)? 
+            dtor_head[true] 
+            (   LCURLY
+            |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+            )
+        )=>
+        {if (statementTrace>=1) 
+                printf("external_declaration_4[%d]: Destructor definition\n",
+                        LT(1).getLine());
+        }
+        (template_head)? 
+        dtor_head[true]
+        (   dtor_body
+        |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+        )
+        { #external_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration); }
+    |
+        // Constructor DEFINITION (non-templated)
+        {isCPlusPlus()}?
+        ((options {warnWhenFollowAmbig = false;}: ctor_decl_spec)?
+                {qualifiedItemIsOneOf(qiCtor)}?
+        )=>
+        {if (statementTrace>=1) 
+                printf("external_declaration_5[%d]: Constructor definition\n",
+                        LT(1).getLine());
+        }
+        ctor_definition
+        { #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
+    |  
+        // User-defined type cast
+        {isCPlusPlus()}?
+        ((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
+        {if (statementTrace>=1) 
+                printf("external_declaration_6[%d]: Operator function\n",
+                        LT(1).getLine());
+        }
+        (template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
+        { if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
+            else           #external_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #external_declaration); }
     |
         // Function declaration
         (   (LITERAL___extension__)?
