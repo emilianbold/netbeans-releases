@@ -42,14 +42,21 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -67,7 +74,7 @@ public class RemoteFileZipper {
     
     private final Map<String, Worker> workers = new HashMap<>();
     private final Object workersLock = new Object();
-
+    
     public RemoteFileZipper(ExecutionEnvironment execEnv, RemoteFileSystem fileSystem) {
         this.execEnv = execEnv;
         this.fileSystem = fileSystem;
@@ -153,40 +160,76 @@ public class RemoteFileZipper {
                 script.append(" | xargs zip -rq $F "); // NOI18N
             }            
             script.append("; echo RC=$?; fi"); //NOI18N
-            ProcessUtils.ExitStatus res = ProcessUtils.executeInDir("/", execEnv, "sh", "-c", script.toString()); //NOI18N
-            if (!res.isOK()) {
-                RemoteLogger.info("Warmup: error zipping {0} at {1}: {2}", //NOI18N
-                        path, execEnv, res.getErrorString());
-                return;
+            NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
+            processBuilder.setExecutable("sh").setWorkingDirectory("/").setArguments("-c", script.toString()); //NOI18N
+            NativeProcess process = null;
+            try {
+                process = processBuilder.call();
+            } catch (IOException ex) {
+                RemoteLogger.fine(ex);
+                RemoteLogger.info("Warmup: error zipping {0}:{1} can't launch remote process", //NOI18N
+                        execEnv, path);
+                return;                
             }
-            RemoteLogger.fine("zipping {0} at {1} took {2}", //NOI18N
-                    path, execEnv, System.currentTimeMillis() - time);
-
+            Future<List<String>> stderrFuture = ProcessUtils.readProcessErrorAsync(process);
+            String remoteZipPath = null;
+            int rc = -1;
             // Output should be like the following:
             // ZIP=/tmp/tmp.xLDawcYe5M
             // RC=0
-            String[] lines = res.getOutputString().split("\n"); // NOI18N
-            if (lines.length < 2 || !lines[0].startsWith("ZIP=") || !lines[1].startsWith("RC=")) { // NOI18N
-                RemoteLogger.info("Warmup: error zipping {0} at {1}: unexpected output: {2}",  //NOI18N
-                        path, execEnv, res.getOutputString()); 
-                return;                
+            try (BufferedReader rdr = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = rdr.readLine()) != null) {
+                    if (remoteZipPath == null) {
+                        if (line.startsWith("ZIP=")) { //NOI18N
+                            remoteZipPath = line.substring(4);
+                            fileSystem.deleteOnDisconnect(remoteZipPath);
+                        } else { // NOI18N
+                            RemoteLogger.info("Warmup: error zipping {0} at {1}: unexpected output: {2}", //NOI18N
+                                    path, execEnv, line);
+                            // don't return here, read the rest of the output first
+                        }                        
+                    } else if (line.startsWith("RC=")) { //NOI18N
+                        try {
+                            rc = Integer.parseInt(line.substring(3));
+                        } catch (NumberFormatException ex) {
+                            RemoteLogger.info("Warmup: error zipping {0} at {1}: unexpected output: {2}", //NOI18N
+                                    path, execEnv, line);
+                            // don't return here, read the rest of the output first
+}                            
+                    }
+                }
+            } catch (IOException ex) {
+                RemoteLogger.fine(ex);
+                RemoteLogger.info("Warmup: error zipping {0}:{1} error reading script output: {2}", //NOI18N
+                        execEnv, path, ex.getLocalizedMessage());
             }
-            int rc;
+            if (rc == -1 || remoteZipPath == null) { 
+                // unexpected process output or its absence
+                // error message should be printed by the code above
+                return;
+            }
+
+            int shrc = -1;
+            List<String> stderr = Collections.emptyList();
             try {
-                rc = Integer.parseInt(lines[1].substring(3));
-            } catch (NumberFormatException ex) {
-                RemoteLogger.info("Warmup: error zipping {0} at {1}: unexpected output: {2}", //NOI18N
-                        path, execEnv, res.getOutputString());
-                return;                                
+                shrc = process.waitFor();
+                stderr = stderrFuture.get();
+            } catch (InterruptedException | ExecutionException ex) {
+                RemoteLogger.fine(ex);
+                RemoteLogger.info("Warmup: error zipping {0}:{1} {2} {3}", //NOI18N
+                        execEnv, path, ex.getClass().getSimpleName(), ex.getLocalizedMessage());
+                return;
+            }
+
+            if (shrc != 0 || rc != 0) {
+                RemoteLogger.info("Warmup: error zipping {0}:{1} {2}", //NOI18N
+                        execEnv, path, merge(stderr));
+                return;
             }
             
-            if (rc != 0) {
-                RemoteLogger.info("Warmup: error zipping {0} at {1}: {2}", path, execEnv, res.getErrorString()); //NOI18N
-                return;                
-            }
-            
-            String remoteZipPath = lines[0].substring(4);
-            fileSystem.deleteOnDisconnect(remoteZipPath);
+            RemoteLogger.fine("zipping {0} at {1} took {2}", //NOI18N
+                    path, execEnv, System.currentTimeMillis() - time);
 
             try {
                 //
@@ -207,16 +250,16 @@ public class RemoteFileZipper {
                 }
                 if (rc != 0) {
                     if (rc != 0) {
-                        RemoteLogger.info("Warmup: error downloading {0} at {1} to {2}, rc={3}", //NOI18N
-                                remoteZipPath, execEnv, zipPartFile.getAbsolutePath(), rc);
+                        RemoteLogger.info("Warmup: error downloading {0}:{1} to {2}, rc={3}", //NOI18N
+                                execEnv, remoteZipPath, zipPartFile.getAbsolutePath(), rc);
                         return;
                     }
                 }
-                RemoteLogger.fine("uploading {0} at {1} to {2} took {3}", //NOI18N
-                        path, execEnv, zipPartFile.getAbsolutePath(), System.currentTimeMillis() - time);
+                RemoteLogger.fine("uploading {0}:{1} to {2} took {3} ms", //NOI18N
+                        execEnv, path, zipPartFile.getAbsolutePath(), System.currentTimeMillis() - time);
                 
                 if (!zipPartFile.renameTo(zipFile)) {
-                    RemoteLogger.info("Warmup: error renaming {0} at {1}",  //NOI18N
+                    RemoteLogger.info("Warmup: error renaming {0} to {1}",  //NOI18N
                             zipPartFile.getAbsolutePath(), zipFile.getAbsolutePath());
                 }
             } finally {
@@ -232,8 +275,22 @@ public class RemoteFileZipper {
                     ex.printStackTrace(System.err);
                 }
                 RemoteLogger.fine("removing {0} at {1} finished with rc={2} and took {3} ms", //NOI18N
-                        remoteZipPath, execEnv, zipPartFile.getAbsolutePath(), rc, System.currentTimeMillis() - time);
+                        remoteZipPath, execEnv, rc, System.currentTimeMillis() - time);
             }
         }
     }
+    
+    private static String merge(List<String> outputLines) {
+        StringBuilder sb = new StringBuilder();
+        if (outputLines != null) {
+            for (String line : outputLines) {
+                if (sb.length() > 0) {
+                    sb.append('\n'); //NOI18N
+                }
+                sb.append(line);
+            }
+        }
+        return sb.toString();
+    }
+    
 }
