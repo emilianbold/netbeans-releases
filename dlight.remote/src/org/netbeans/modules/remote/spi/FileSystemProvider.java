@@ -418,12 +418,7 @@ public final class FileSystemProvider {
             }
         }
         noProvidersWarning(fileObject);
-        try {
-            return fileObject.getURL().toExternalForm();
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+        return fileObject.toURL().toExternalForm();
     }
 
     public static void refresh(FileObject fileObject, boolean recursive) {
