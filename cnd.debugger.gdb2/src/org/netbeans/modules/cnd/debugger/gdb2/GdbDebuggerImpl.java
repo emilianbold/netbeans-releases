@@ -1944,7 +1944,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void updateLocalsForSelectFrame() {
         if (get_locals) { // get local vars for current frame
-            getMILocals(false);    // get local vars for current frame from gdb
+            getMILocals(true);    // get local vars for current frame from gdb
         }
     }
 
@@ -2415,8 +2415,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     @Override
-    public void makeFrameCurrent(Frame f) {
-        String fno = f.getNumber();
+    public void makeFrameCurrent(final Frame f) {
+        final String fno = f.getNumber();
         boolean changed = false;
         if (guiStackFrames != null) {
             for (Frame frame : guiStackFrames) {
@@ -2433,24 +2433,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
         }
         if (changed) {
-            // selectFrame would update local vars too
-            selectFrame(fno); // notify gdb to change current frame
+            Runnable onDoneRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    // has source info,
+                    // get full path for current frame from gdb,
+                    // update source editor, and make frame as current
+                    getFullPath((GdbFrame) f);
 
-            // has source info,
-            // get full path for current frame from gdb,
-            // update source editor, and make frame as current
-            getFullPath((GdbFrame) f);
-
-            if (get_debugging) {    // TODO maybe better way
-                for (Thread thread : threadsWithStacks) {
-                    if (thread.isCurrent()) {
-                        for (Frame frame : thread.getStack()) {
-                            frame.setCurrent(frame.getNumber().equals(fno));
+                    if (get_debugging) {    // TODO maybe better way
+                        for (Thread thread : threadsWithStacks) {
+                            if (thread.isCurrent()) {
+                                for (Frame frame : thread.getStack()) {
+                                    frame.setCurrent(frame.getNumber().equals(fno));
+                                }
+                            }
                         }
+                        debuggingViewUpdater.treeChanged();
                     }
+                    stackUpdater.treeChanged();     // causes a pull
+                    disassembly.stateUpdated();
+                    localUpdater.treeChanged();
                 }
-                debuggingViewUpdater.treeChanged();
-            }
+            };
+            // selectFrame would update local vars too
+            selectFrame(fno, onDoneRunnable); // notify gdb to change current frame
+            return;
+
         }
         stackUpdater.treeChanged();     // causes a pull
         disassembly.stateUpdated();
@@ -2501,7 +2510,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * notify gdb to switch current frame to fno
      * also get locals info for new current frame
      */
-    private void selectFrame(final Object fno) {
+    private void selectFrame(final Object fno, final Runnable onDoneRunnable) {
 
         MICommand cmd =
             new MiCommandImpl("-stack-select-frame " + fno) { // NOI18N
@@ -2512,6 +2521,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     requestRegisters();
                 }
                 finish();
+                if (onDoneRunnable != null) {
+                    onDoneRunnable.run();
+                }
             }
         };
         gdb.sendCommand(cmd);
@@ -3220,7 +3232,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (childrenValue instanceof MITList) {
             children_list = (MITList) childrenValue;
         }
-
+        int maxIndexLog = log10(parent.getNumChild());
         // iterate through children list
         List<GdbVariable> children = new ArrayList<GdbVariable>();
         if (children_list != null) {
@@ -3245,12 +3257,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         childIdx++;
                     } else {
                         // Show array name and index instead of only index, IZ 192123
+                        //substring first
+                        String indexStr = exp;
+                        if (exp.startsWith("[") && exp.endsWith("]")) { // NOI18N
+                            indexStr = exp.substring(1, exp.length() - 1);
+                        }
                         try {
-                            Integer.parseInt(exp);
-                            exp = parent.getVariableName() + '[' + exp + ']';
+                            int index = Integer.parseInt(indexStr);
+                            //add space
+                            indexStr = parent.getVariableName() + getIndexStr(maxIndexLog, index);
                         } catch (Exception e) {
                             // do nothing
                         }
+                        exp = indexStr;
                     }
                     GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                             parent, exp, null, null, parent.isWatch());
@@ -3279,6 +3298,41 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // make a pull to update children's value
         // parent.setChildren(childrenvar, true);
+    }
+
+    private static String getIndexStr(int maxIndexLog, int index) {
+        return getIndexStr(maxIndexLog, index, ""); // NOI18N
+    }
+
+    private static String getIndexStr(int maxIndexLog, int index, String postfix) {
+        int num0 = maxIndexLog - log10(index);
+        String data = index + postfix;
+        if (num0 > 0) {
+            data = zeros(num0) + data;
+        }
+        return "[" + data + "]"; // NOI18N
+    }
+
+    private static int log10(int n) {
+        int l = 1;
+        while ((n = n / 10) > 0) {
+            l++;
+        }
+        return l;
+    }
+
+    private static final String ZEROS = "            "; // NOI18N
+
+    static String zeros(int n) {
+        if (n < ZEROS.length()) {
+            return ZEROS.substring(0, n);
+        } else {
+            String z = ZEROS;
+            while (z.length() < n) {
+                z += " "; // NOI18N
+            }
+            return z;
+        }
     }
 
     /**

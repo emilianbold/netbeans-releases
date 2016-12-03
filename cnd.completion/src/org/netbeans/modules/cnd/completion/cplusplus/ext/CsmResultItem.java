@@ -487,6 +487,13 @@ public abstract class CsmResultItem implements CompletionItem {
         }
         final CsmInclude lastInclude2 = lastInclude;
         final boolean isLastIncludeTypeMatch2 = isLastIncludeTypeMatch;
+        final CsmOffsetable guardOffset;
+        if (lastInclude == null) {
+            CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+            guardOffset = fiq.getGuardOffset(currentFile);
+        } else {
+            guardOffset = null;
+        }
         doc.runAtomic(new Runnable() {
 
             @Override
@@ -501,8 +508,6 @@ public abstract class CsmResultItem implements CompletionItem {
                             doc.insertString(lastInclude2.getStartOffset(), include + "\n\n", null); // NOI18N
                         }
                     } else {
-                        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
-                        CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
                         TokenSequence<TokenId> ts;
                         if (guardOffset != null) {
                             ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset(), false, false);
@@ -591,6 +596,13 @@ public abstract class CsmResultItem implements CompletionItem {
      */
     protected String decorateReplaceTextIfTemplate(String replaceText, CsmObject csmObj) {
         if (CsmKindUtilities.isTemplate(csmObj)) {                
+            if (CsmKindUtilities.isSpecialization(csmObj)) {
+                List<CsmTemplateParameter> templateParameters = ((CsmTemplate)csmObj).getTemplateParameters();
+                if (templateParameters != null && templateParameters.isEmpty()) {
+                    // full specialization
+                    return ((CsmTemplate)csmObj).getDisplayName().toString();
+                }
+            }
             selectionStartOffset = replaceText.length() + 1;
             selectionEndOffset = replaceText.length() + 1;
             return replaceText + "<>"; // NOI18N
@@ -1514,6 +1526,9 @@ public abstract class CsmResultItem implements CompletionItem {
             String text;
             if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
                 text = CsmBaseUtilitiesProvider.getDefault().getDummyForwardSimpleQualifiedName(cls).toString();
+                if (text.lastIndexOf(':')>0) {
+                    text = text.substring(text.lastIndexOf(':')+1);
+                }
             } else {
                 text = cls.getName().toString();
             }

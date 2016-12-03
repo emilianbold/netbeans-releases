@@ -304,6 +304,18 @@ public class RemoteVcsSupportUtil {
         }
     }
 
+    /**
+     * Deletes on disconnect
+     * @param path file to delete
+     */
+    public static void deleteOnExit(FileSystem fs, String path) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            final RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            rfs.deleteOnDisconnect(path);
+        }
+    }
+
     public static void deleteExternally(FileSystem fs, String path) {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
         if (fs instanceof RemoteFileSystem) {
@@ -432,5 +444,39 @@ public class RemoteVcsSupportUtil {
                 fo.refresh();
             }
         }
+    }
+    
+    private static boolean isForbiddenFolderImpl(RemoteFileSystem rfs, String path) {
+        if (path.isEmpty()) {
+            return true;
+        } else if (rfs.isAutoMount(path)) {
+            return true;
+        } else if(rfs.isProhibitedToEnter(path)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isForbiddenFolder(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            if (path.isEmpty() || path.equals("/tmp") && RemoteFileSystemUtils.isUnitTestMode()) { // NOI18N
+                return false;
+            }            
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            if (isForbiddenFolderImpl(rfs, path)) {
+                return true;
+            }
+            int pos = path.lastIndexOf('/');
+            if (pos >= 0) {
+                String parent = path.substring(0, pos);
+                // if we decide to remove this check, then at least return "true" for /tmp
+                // (except for unit tests!)
+                if (isForbiddenFolderImpl(rfs, parent)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
     }
 }

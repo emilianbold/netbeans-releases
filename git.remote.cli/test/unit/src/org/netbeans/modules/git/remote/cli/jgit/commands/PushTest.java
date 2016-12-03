@@ -336,20 +336,20 @@ else    assertEqualsID(newid, branches.get("master").getId());
         write(f, "huhu");
         add(f);
         String newid = getClient(workDir).commit(new VCSFileProxy[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
-        GitTag newTag = getClient(workDir).createTag("my-tag", newid, "tag message", false, true, NULL_PROGRESS_MONITOR);
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        GitTag newTag = getClient(workDir).createTag("my-tag1", newid, "tag message", false, true, NULL_PROGRESS_MONITOR);
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "refs/tags/my-tag1:refs/tags/my-tag1" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
         remoteTags = getClient(workDir).listRemoteTags(remoteUri, NULL_PROGRESS_MONITOR);
-        assertEquals(newTag.getTagId(), remoteTags.get("my-tag"));
+        assertEquals(newTag.getTagId(), remoteTags.get("my-tag1"));
         assertEquals(2, updates.size());
         assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
-        assertUpdate(updates.get("my-tag"), "my-tag", "my-tag", newTag.getTagId(), null, new URIish(remoteUri).toString(), Type.TAG, GitRefUpdateResult.OK);
+        assertUpdate(updates.get("my-tag1"), "my-tag1", "my-tag1", newTag.getTagId(), null, new URIish(remoteUri).toString(), Type.TAG, GitRefUpdateResult.OK);
         
         // modification, updating tag now works
         write(f, "huhu1");
         add(f);
         updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "+refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
         remoteTags = getClient(workDir).listRemoteTags(remoteUri, NULL_PROGRESS_MONITOR);
-        assertEquals(newTag.getTagId(), remoteTags.get("my-tag"));
+        assertEquals(newTag.getTagId(), remoteTags.get("my-tag1"));
         assertEquals(1, updates.size());
         assertUpdate(updates.get("my-tag"), "my-tag", "my-tag", newTag.getTagId(), null, new URIish(remoteUri).toString(), Type.TAG, GitRefUpdateResult.UP_TO_DATE);
 }

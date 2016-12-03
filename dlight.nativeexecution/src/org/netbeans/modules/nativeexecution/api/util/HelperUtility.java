@@ -121,6 +121,14 @@ public class HelperUtility {
         }
 
         String result;
+        HostInfo localHostInfo;
+        
+        try {
+            localHostInfo = env.isLocal() ? hinfo
+                    : HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+        } catch (CancellationException ex) {
+            throw new IOException(ex);
+        }
 
         synchronized (cache) {
             result = cache.get(env);
@@ -139,8 +147,6 @@ public class HelperUtility {
 
                     final String fileName = localFile.getName();
                     // Construct destination: {tmpbase}/{hash}/{name}
-                    HostInfo localHostInfo = env.isLocal() ? hinfo
-                            : HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
                     File localTmpBase = localHostInfo.getTempDirFile();
                     // hash - a string unique to pair: 
                     //        local file location and env
@@ -224,7 +230,7 @@ public class HelperUtility {
                   throw new IOException(ex);
                 } catch (IOException ex) {
                     throw ex;
-                } catch (Exception ex) {
+                } catch (ParseException | InterruptedException ex) {
                     if (ex.getCause() instanceof IOException) {
                         throw (IOException) ex.getCause();
                     }

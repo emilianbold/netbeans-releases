@@ -239,6 +239,10 @@ public abstract class AbstractCompiler extends Tool {
      * Same as <code>resetCompilerDefinitions(false)</code>
      */
     public final void resetCompilerDefinitions() {
+        String path = getPath();
+        if (path == null || path.isEmpty()) {
+            return;
+        }
         resetCompilerDefinitions(false);
     }
 

@@ -92,7 +92,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
     /** Default timeout; zero means forever */
-    public static final int DEFAULT_TIMEOUT = Integer.getInteger("remote.fs_server.default.timeout", 60*100); //NOI18N
+    public static final int DEFAULT_TIMEOUT = Integer.getInteger("remote.fs_server.default.timeout", 15*1000); //NOI18N
 
     private final ExecutionEnvironment env;
 
@@ -111,6 +111,16 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 instance = new FSSTransport(env);
                 instances.put(env, instance);
                 ConnectionManager.getInstance().addConnectionListener(instance);
+            }
+            return instance;
+        }
+    }
+
+    public static FSSTransport removeInstance(ExecutionEnvironment env) {
+        synchronized (instancesLock) {
+            FSSTransport instance = instances.remove(env);
+            if (instance != null) {
+                ConnectionManager.getInstance().removeConnectionListener(instance);
             }
             return instance;
         }
@@ -656,6 +666,25 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     @Override
     protected FileSystemProvider.AccessCheckType getAccessCheckType() {
         return dispatcher.getAccessCheckType();
+    }
+    
+    @Override
+    protected boolean canDeleteOnDisconnect() {
+        return RemoteFileSystemUtils.getBoolean("remote.native.delete.on.exit", true);
+    }
+
+    @Override
+    protected void deleteOnDisconnect(String[] paths) 
+        throws IOException, CancellationException, InterruptedException, ExecutionException {
+        for (String p : paths) {
+            FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_DELETE_ON_DISCONNECT, p, true);
+            dispatcher.dispatch(request);
+        }
+    }    
+
+    @Override
+    protected void shutdown() {
+        dispatcher.shutdown();
     }
 
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {

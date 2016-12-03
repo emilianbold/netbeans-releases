@@ -429,6 +429,20 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         }
     }
 
+    /**
+     * Deletes on disconnect
+     * @param file file to delete
+     */
+    @Override
+    public void deleteOnExit(VCSFileProxy file) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            javaFile.deleteOnExit();
+        } else {
+            RemoteVcsSupportUtil.deleteOnExit(getFileSystem(file), file.getPath());
+        }
+    }
+
     @Override
     public void deleteExternally(VCSFileProxy file) {
         File javaFile = file.toFile();

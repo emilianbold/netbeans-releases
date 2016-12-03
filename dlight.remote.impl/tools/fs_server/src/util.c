@@ -56,6 +56,7 @@
 
 static TraceLevel trace_level = TRACE_NONE;
 static FILE *log_file = NULL;
+static FILE *err_file = NULL;
 
 static volatile bool broken_pipe = false;
 
@@ -67,9 +68,28 @@ void set_broken_pipe() {
     broken_pipe = true;
 }
 
+static FILE *get_stderr() {
+    return err_file ? err_file : stderr;
+}
+
+void redirect_err(const char* file_name) {
+    if (file_name) {
+        err_file = fopen600(file_name, O_WRONLY | O_APPEND | O_CREAT);
+        if (!err_file) {
+            err_file = stderr;
+            // this is called from 
+            char strerr_buf[PATH_MAX*2];
+            strerror_r(errno, strerr_buf, sizeof(strerr_buf));
+            report_error("Error redirecting stderr to %s: %s", file_name, strerr_buf);
+        }
+    } else {
+        err_file = stderr;
+    }
+}
+
 void my_fflush(std_stream stream) {
     if (!is_broken_pipe()) {
-        fflush(stream == STDERR ? stderr : stdout);
+        fflush(stream == STDERR ? get_stderr() : stdout);
     }
 }
 
@@ -77,7 +97,7 @@ void my_fprintf(std_stream stream, const char *format, ...) {
     if (!is_broken_pipe()) {
         va_list args;
         va_start(args, format);
-        vfprintf(stream == STDERR ? stderr : stdout, format, args);
+        vfprintf(stream == STDERR ? get_stderr() : stdout, format, args);
         va_end(args);  
     }
 }
@@ -94,8 +114,8 @@ void report_error(const char *format, ...) {
     if (!is_broken_pipe()) {
         va_list args;
         va_start (args, format);
-        fprintf(stderr, "fs_server [%li %li]: ", (long) getpid(), (long) pthread_self());
-        vfprintf(stderr, format, args);
+        fprintf(get_stderr(), "fs_server [%li %li]: ", (long) getpid(), (long) pthread_self());
+        vfprintf(get_stderr(), format, args);
         va_end (args);
     }
 }
@@ -105,10 +125,27 @@ void trace(TraceLevel level, const char *format, ...) {
         va_list args;
         va_start(args, format);
         //fprintf(stderr, "fs_server [pid=%li, tid=%li]: ", (long) getpid(), (long) pthread_self());
-        fprintf(stderr, "fs_server [%li %li]: ", (long) getpid(), (long) pthread_self());
-        vfprintf(stderr, format, args);
+        fprintf(get_stderr(), "fs_server [%li %li]: ", (long) getpid(), (long) pthread_self());
+        vfprintf(get_stderr(), format, args);
         va_end(args);  
-        fflush(stderr);
+        fflush(get_stderr());
+    }
+}
+
+void log_and_err_print(const char *format, ...) {
+    if (err_file) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(err_file, format, args);
+        va_end(args);  
+        fflush(err_file);
+    }
+    if (log_file) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(log_file, format, args);
+        va_end(args);  
+        fflush(log_file);
     }
 }
 
@@ -142,9 +179,17 @@ void soft_assert(int condition, char* format, ...) {
     if (!condition && !is_broken_pipe()) {
         va_list args;
         va_start(args, format);
-        vfprintf(stderr, format, args);
+        vfprintf(get_stderr(), format, args);
         va_end(args);
     }
+}
+char *strdup_wrapper(const char* str) {
+    char* p = strdup(str);
+    if (!p) {
+        report_error("out of memory\n");
+        exit(FAILURE_ALLOCATE_MEMORY);
+    }
+    return p;
 }
 
 void *malloc_wrapper(size_t size) {
@@ -260,8 +305,8 @@ char *replace_first(char *s, char c, char replacement) {
     return s;
 }
 
-FILE* fopen600(const char* path) {
-    int fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0600);
+FILE* fopen600(const char* path, int flags) {
+    int fd = open(path, flags, 0600);
     if (fd == -1) {
         return NULL;
     } else {

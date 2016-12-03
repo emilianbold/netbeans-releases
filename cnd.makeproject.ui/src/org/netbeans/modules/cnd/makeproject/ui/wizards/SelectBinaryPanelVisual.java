@@ -60,7 +60,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -112,6 +111,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -141,6 +142,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private final AtomicBoolean searching = new AtomicBoolean(false);
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
+    private volatile boolean firstTime = true;
 
     /** Creates new form SelectBinaryPanelVisual */
     public SelectBinaryPanelVisual(SelectBinaryPanel controller) {
@@ -831,7 +833,25 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         fileSystem = FileSystemProvider.getFileSystem(env);
 
         ((ExpandableEditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
-        ((ExpandableEditableComboBox)binaryField).setEnv(env);
+        if (firstTime) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!SwingUtilities.isEventDispatchThread()) {
+                        // init host info if it has not been inited yet.
+                        try {
+                            HostInfoUtils.getHostInfo(env);
+                        } catch (IOException | ConnectionManager.CancellationException ex) {
+                            // do nothing
+                        }
+                        SwingUtilities.invokeLater(this);
+                    } else {
+                        ((ExpandableEditableComboBox)binaryField).setEnv(env);
+                    }
+                }
+            });
+        }
+        firstTime = false;
         String binary = WizardConstants.PROPERTY_BUILD_RESULT.get(wizardDescriptor);
         if (binary == null) {
             binary = ""; // NOI18N

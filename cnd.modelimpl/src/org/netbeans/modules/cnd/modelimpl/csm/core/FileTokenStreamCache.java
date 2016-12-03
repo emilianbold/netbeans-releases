@@ -65,9 +65,29 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
     }
 
     public final TokenStream getTokenStreamInActiveBlock(boolean filtered, int start, int end, int/*CPPTokenTypes*/ firstTokenIDIfExpandMacros) {
-        for (TSData pair : cacheData) {
-            if (pair.pcState != null && pair.pcState.isInActiveBlock(start, end)) {
-                return pair.getTS(filtered, start, end, firstTokenIDIfExpandMacros);
+        if (cacheData.size() > 1) {
+            int bestCoverage = -1;
+            TSData bestData = null;
+            for (TSData pair : cacheData) {
+                if (pair.pcState != null) {
+                    int coverage = pair.pcState.getActiveCoverage(start, end);
+                    if (coverage > bestCoverage) {
+                        bestCoverage = coverage;
+                        bestData = pair;
+                        if (coverage == (end - start)) {
+                            // max coverage is found
+                            break;
+                        }
+                    }
+                }
+            }
+            if (bestData != null) {
+                return bestData.getTS(filtered, start, end, firstTokenIDIfExpandMacros);
+            }
+        } else if (!cacheData.isEmpty()) {
+            TSData data = cacheData.get(0);
+            if (data.pcState != null && data.pcState.isInActiveBlock(start, end)) {
+                return data.getTS(filtered, start, end, firstTokenIDIfExpandMacros);
             }
         }
         return null;

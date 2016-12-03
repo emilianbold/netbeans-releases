@@ -67,15 +67,16 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     private final Map<CharSequence,Integer/*ttype*/> filter;
     private final Set<Integer/*ttype*/> keywords = new HashSet<Integer>();
 
-    // uncomment to use reduced memory
-//    private static final int BUFFERED_COUNT = 256;
-//    private static final Integer[] int2Int;
-//    static {
-//        int2Int = new Integer[BUFFERED_COUNT];
-//        for (int i = 0; i < BUFFERED_COUNT; i++) {
-//            int2Int[i] = null;
-//        }
-//    }
+    // #268301 - ArrayIndexOutOfBoundsException: 308
+    // use own cache of Integers
+    private static final int BUFFERED_COUNT = 1024;
+    private static final Integer[] INT_TO_INTEGER_CACHE;
+    static {
+        INT_TO_INTEGER_CACHE = new Integer[BUFFERED_COUNT];
+        for (int i = 0; i < BUFFERED_COUNT; i++) {
+            INT_TO_INTEGER_CACHE[i] = Integer.valueOf(i);
+        }
+    }
 
     /**
      * Creates a new instance of APTBaseLanguageFilter
@@ -104,25 +105,17 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
      * if original token has the filtered textKey value
      */
     protected void filter(String text, int ttype) {
-        // uncomment to use reduced memory
-//        if (ttype < BUFFERED_COUNT) {
-//            if (int2Int[ttype] == null) {
-//                int2Int[ttype] = new Integer(ttype);
-//            }
-//        }
-//        Integer val = (ttype < BUFFERED_COUNT) ? int2Int[ttype] : new Integer(ttype);
-//        assert(val != null);
-//        filter.put(textKey, val);
-        filter.put(CharSequences.create(text), Integer.valueOf(ttype));
-        keywords.add(Integer.valueOf(ttype));
+        filter.put(CharSequences.create(text), INT_TO_INTEGER_CACHE[ttype]);
+        keywords.add(INT_TO_INTEGER_CACHE[ttype]);
     }
 
     protected Token onID(Token token) {
         // literal token has new type inside already
         if (token instanceof APTLiteLiteralToken) {
             APTLiteLiteralToken literalToken = (APTLiteLiteralToken)token;
-            if (keywords.contains(literalToken.getLiteralType())) {
-                assert literalToken.getLiteralType() == filter.get(((APTToken)token).getTextID());
+            final Integer literalTypeAsInteger = INT_TO_INTEGER_CACHE[literalToken.getLiteralType()];
+            if (keywords.contains(literalTypeAsInteger)) {
+                assert literalTypeAsInteger == filter.get(((APTToken)token).getTextID());
                 return new FilterLiteralToken((APTLiteLiteralToken)token);
             } else {
                 return token;
