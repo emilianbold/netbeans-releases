@@ -58,7 +58,6 @@ import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -146,8 +145,6 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             throw ex;
         } catch (InterruptedIOException | ExecutionException | InterruptedException | TimeoutException ex) {
             RemoteLogger.finest(ex, this);
-            return null; // don't report
-        } catch (CancellationException ex) {
             return null; // don't report
         }
     }
@@ -239,8 +236,6 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 RemoteLogger.finest(ex, this);
-            } catch (CancellationException ex) {
-                // too late
             }
         }
     }
@@ -341,10 +336,6 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 creationFalure(name, directory, orig);
                 throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
                         "EXC_CannotCreateFileWithReason", getDisplayName(path), "interrupted"), ex); // NOI18N
-            } catch (CancellationException ex) {
-                creationFalure(name, directory, orig);
-                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
-                        "EXC_CannotCreateFileWithReason", getDisplayName(path), "cancelled"), ex); // NOI18N
             }
         } else {
             creationFalure(name, directory, orig);
@@ -413,7 +404,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 return null;
             }
             return getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
-        } catch (InterruptedException | InterruptedIOException | CancellationException 
+        } catch (InterruptedException | InterruptedIOException
                 | ExecutionException | FileNotFoundException | TimeoutException ex) {
             RemoteLogger.finest(ex, this);
             return null;
@@ -508,7 +499,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             }
             return childrenFO;
         } catch (InterruptedException | InterruptedIOException | 
-                FileNotFoundException | CancellationException | ExecutionException | TimeoutException ex ) {
+                FileNotFoundException | ExecutionException | TimeoutException ex ) {
             // InterruptedException:
             //      don't report, this just means that we aren't connected
             //      or just interrupted (for example by FileChooser UI)
@@ -526,7 +517,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private DirectoryStorage getDirectoryStorage(String childName) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(false, null, childName, false);
@@ -542,7 +533,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private DirectoryStorage refreshDirectoryStorage(String expectedName, boolean expected) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(true, expectedName, null, expected);
@@ -605,7 +596,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) 
-            throws TimeoutException, IOException, InterruptedException, ExecutionException, CancellationException {
+            throws TimeoutException, IOException, InterruptedException, ExecutionException {
         if (getFileSystem().isProhibitedToEnter(getPath())) {
             return Collections.<String, DirEntry>emptyMap();
         }
@@ -715,7 +706,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     @Override
     protected final void renameChild(FileLock lock, RemoteFileObjectBase directChild2Rename, String newNameExt, RemoteFileObjectBase orig) throws
-            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            ConnectException, IOException, InterruptedException, ExecutionException {
         String nameExt2Rename = directChild2Rename.getNameExt();
         String name2Rename = directChild2Rename.getName();
         String ext2Rename = directChild2Rename.getExt();
@@ -1008,7 +999,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private DirectoryStorage getDirectoryStorageImpl(final boolean forceRefresh, final String expectedName, final String childName, final boolean expected) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             //RemoteLogger.getInstance().warning("refreshDirectoryStorage is called while host is not connected");
@@ -1573,7 +1564,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
     
     /*package*/ void ensureChildSync(RemotePlainFile child) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         if (cacheExists(child)) {
             if(isLoadingInEditor() && ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
@@ -1691,7 +1682,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     @Override
     public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         if (antiLoop != null) {
             if (antiLoop.contains(getPath())) {
                 return;
@@ -1749,7 +1740,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             }
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
-        } catch (IOException | ExecutionException | InterruptedException | CancellationException | TimeoutException ex) {
+        } catch (IOException | ExecutionException | InterruptedException | TimeoutException ex) {
             RemoteLogger.finest(ex, this);
         }
         return null;

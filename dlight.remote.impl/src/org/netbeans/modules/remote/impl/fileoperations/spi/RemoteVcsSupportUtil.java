@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -431,7 +430,7 @@ public class RemoteVcsSupportUtil {
             for (RemoteDirectory impl : refreshSet) {
                 try {
                     RemoteFileSystemTransport.refreshFast(impl, false);
-                } catch (InterruptedException | CancellationException | TimeoutException ex) {
+                } catch (InterruptedException | TimeoutException ex) {
                     InterruptedIOException ie = new InterruptedIOException(ex.getMessage());
                     ie.initCause(ex);
                     throw ie;

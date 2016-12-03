@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -229,7 +228,7 @@ abstract public class FileOperationsProvider {
                             } else {
                                 return !e.isDirectory();
                             }
-                        } catch (IOException | InterruptedException | CancellationException | ExecutionException | TimeoutException e) {
+                        } catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
                             RemoteLogger.finest(e);
                         }
                     }
