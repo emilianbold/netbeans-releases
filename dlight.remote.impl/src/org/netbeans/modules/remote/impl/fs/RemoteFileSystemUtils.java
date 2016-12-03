@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -424,7 +423,7 @@ public class RemoteFileSystemUtils {
                         }
                         return fo;
                     }
-                } catch (InterruptedException | CancellationException ex) {
+                } catch (InterruptedException ex) {
                     throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex);
                 } catch (ExecutionException | TimeoutException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {

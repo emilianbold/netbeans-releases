@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -114,7 +113,7 @@ public class RefreshManager {
                     } catch (ConnectException ex) {
                         clear();
                         break;
-                    } catch (InterruptedException | CancellationException ex) {
+                    } catch (InterruptedException ex) {
                         RemoteLogger.finest(ex, fo);
                         break;
                     } catch (IOException ex) {

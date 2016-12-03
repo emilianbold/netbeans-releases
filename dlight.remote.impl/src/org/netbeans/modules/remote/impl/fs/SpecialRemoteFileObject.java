@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
@@ -126,7 +125,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
 
     @Override
     protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException {
         // plain file can not be container of children
         RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
     }

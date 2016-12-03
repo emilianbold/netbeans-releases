@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.util.Collection;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -89,7 +88,7 @@ public abstract class RemoteFileSystemTransport {
     }
     
     public static void deleteOnDisconnect(ExecutionEnvironment execEnv, String... paths)
-        throws IOException, CancellationException, InterruptedException, ExecutionException {
+        throws IOException, InterruptedException, ExecutionException {
         getInstanceFast(execEnv).deleteOnDisconnect(paths);
     }
 
@@ -102,7 +101,7 @@ public abstract class RemoteFileSystemTransport {
     }
     
     public static void refreshFast(RemoteDirectory directory, boolean expected) 
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         if (!directory.hasCache()) {
             return;
         }
@@ -153,7 +152,7 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static DirEntryList readDirectory(ExecutionEnvironment execEnv, String path) 
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         DirEntryList entries = null;
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
@@ -185,25 +184,25 @@ public abstract class RemoteFileSystemTransport {
     }
     
     public static DirEntry stat(ExecutionEnvironment execEnv, String path)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         return getInstanceSlow(execEnv).stat(path);
     }
 
     public static DirEntry stat(ExecutionEnvironment execEnv, String path, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         return getInstanceSlow(execEnv).stat(path, timeoutMillis);
     }
 
     public static DirEntry lstat(ExecutionEnvironment execEnv, String path)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         return getInstanceSlow(execEnv).lstat(path);
      }
 
     public static DirEntry lstat(ExecutionEnvironment execEnv, String path, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         return getInstanceSlow(execEnv).lstat(path, timeoutMillis);
      }
@@ -212,7 +211,7 @@ public abstract class RemoteFileSystemTransport {
             throws ConnectException, IOException {
         try {
             return getInstanceSlow(execEnv).delete(path, directory);
-        } catch (InterruptedException | CancellationException ex) {
+        } catch (InterruptedException ex) {
             InterruptedIOException ioe = new InterruptedIOException(ex.getMessage());
             ioe.initCause(ex);
             throw ioe;
@@ -240,7 +239,7 @@ public abstract class RemoteFileSystemTransport {
      */
     public static DirEntryList copy(ExecutionEnvironment execEnv, String from, String to, 
             Collection<IOException> subdirectoryExceptions)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         return getInstanceSlow(execEnv).copy(from, to, subdirectoryExceptions);
     }
 
@@ -258,7 +257,7 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static MoveInfo move(ExecutionEnvironment execEnv, String from, String to)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         return getInstanceSlow(execEnv).move(from, to);
     }
     
@@ -284,7 +283,7 @@ public abstract class RemoteFileSystemTransport {
     }
 
     private static RemoteFileSystemTransport getInstanceSlow(ExecutionEnvironment execEnv)
-            throws ConnectException, InterruptedException, CancellationException {
+            throws ConnectException, InterruptedException {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
         if (transport == null || ! transport.isValidSlow()) {
             transport = SftpTransport.getInstance(execEnv);
@@ -296,31 +295,31 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract DirEntryList copy(String from, String to, 
             Collection<IOException> subdirectoryExceptions)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
 
     protected abstract boolean canMove(String from, String to);
 
     protected abstract MoveInfo move(String from, String to)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
 
     protected abstract DirEntry stat(String path)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
 
     // TODO: should only versions with timeout be kept?
     // Should other methods have a timeout parameter? (or probably there should be a static default?)
     // It seems to be right idea, but it needs to many changes and we are too close to thr release
 
     protected abstract DirEntry stat(String path, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
 
     protected abstract DirEntry lstat(String path)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
 
     protected abstract DirEntry lstat(String path, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
 
     protected abstract DirEntryList readDirectory(String path) 
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
 
     /**
      * Fast validity check - returns true if no problem (yet?) occurred
@@ -340,14 +339,14 @@ public abstract class RemoteFileSystemTransport {
      * Otherwise it should just return true or false.
      */
     protected abstract boolean isValidSlow()
-            throws ConnectException, InterruptedException, CancellationException;
+            throws ConnectException, InterruptedException;
 
     protected abstract boolean needsClientSidePollingRefresh();
 
     protected abstract boolean canRefreshFast();
     
     protected abstract void refreshFast(String path, boolean expected)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException;
     
     protected abstract void registerDirectoryImpl(RemoteDirectory directory);
 
@@ -363,7 +362,7 @@ public abstract class RemoteFileSystemTransport {
     protected abstract boolean canDeleteOnDisconnect();
 
     protected abstract void deleteOnDisconnect(String[] paths) 
-            throws IOException, CancellationException, InterruptedException, ExecutionException;
+            throws IOException, InterruptedException, ExecutionException;
 
     protected abstract void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType);
 

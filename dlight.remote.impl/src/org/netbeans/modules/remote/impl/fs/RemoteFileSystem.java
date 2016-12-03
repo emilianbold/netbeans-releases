@@ -973,7 +973,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 RemoteFileSystemTransport.deleteOnDisconnect(execEnv, paths);
                 return;
             }
-            catch (IOException | java.util.concurrent.CancellationException | InterruptedException | ExecutionException ex) {
+            catch (IOException | InterruptedException | ExecutionException ex) {
                 ex.printStackTrace(System.err);
             }
         }

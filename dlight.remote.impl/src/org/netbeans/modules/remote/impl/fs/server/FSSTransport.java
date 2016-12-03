@@ -52,7 +52,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -138,17 +137,11 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected boolean isValidSlow()
-            throws ConnectException, InterruptedException, CancellationException {
+            throws ConnectException, InterruptedException {
         if (!dispatcher.isValidFast()) {
             return false;
         }
-        try {
-            return dispatcher.isValidSlow();
-        } catch (ConnectionManager.CancellationException ex) {
-            // TODO: refactor callers and change java.util.concurrent.CancellationException
-            // with ConnectionManager.CancellationException
-            throw new CancellationException(ex.getMessage());
-        }
+        return dispatcher.isValidSlow();
     }
 
     @Override
@@ -236,7 +229,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     @Override
     protected DirEntryList copy(String from, String to,
             Collection<IOException> subdirectoryExceptions)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_COPY, from, to);
         FSSResponse response = null;
@@ -286,7 +279,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected MoveInfo move(String from, String to)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(env, from, to);
         f.get();
         String fromParent = PathUtilities.getDirName(from);
@@ -308,7 +301,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected DirEntryList readDirectory(String path)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
         }
@@ -504,7 +497,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected void refreshFast(String path, boolean expected)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         long time = System.currentTimeMillis();
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_fast_refresh", path); // NOI18N
@@ -588,7 +581,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 assert pkg.getKind() == FSSResponseKind.FS_RSP_LS;
             }
             return readEntries(response, path, request.getId(), dirReadCnt);
-        } catch (ConnectException | CancellationException | InterruptedException | ExecutionException ex) {
+        } catch (ConnectException | InterruptedException | ExecutionException ex) {
             throw new IOException(ex);
         } finally {
             RemoteStatistics.stopChannelActivity(activityID, 0);
@@ -622,7 +615,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     private DirEntry renameAfterUpload(String pathToUpload, String pathToRename)
-            throws IOException, InterruptedException, CancellationException, ExecutionException {
+            throws IOException, InterruptedException, ExecutionException {
 
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_MOVE, pathToUpload, pathToRename);
         FSSResponse response = null;
@@ -675,7 +668,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
 
     @Override
     protected void deleteOnDisconnect(String[] paths) 
-        throws IOException, CancellationException, InterruptedException, ExecutionException {
+        throws IOException, InterruptedException, ExecutionException {
         for (String p : paths) {
             FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_DELETE_ON_DISCONNECT, p, true);
             dispatcher.dispatch(request);
@@ -708,8 +701,6 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                     sendRequest();
                 } catch (IOException | ExecutionException ex) {
                     ex.printStackTrace(System.err);
-                } catch (CancellationException ex) {
-                    // don't log CancellationException
                 } catch (InterruptedException ex) {
                     // don't log InterruptedException
                 }
@@ -781,8 +772,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
 
         private FSSResponse sendRequest()
-                throws IOException, ConnectException, ExecutionException,
-                CancellationException, InterruptedException {
+                throws IOException, ConnectException, ExecutionException, InterruptedException {
 
             FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_RECURSIVE_LS, path);
                 RemoteLogger.finest("Sending recursive request #{0} for directory {1} to fs_server",
@@ -814,12 +804,6 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                         cache.put(serverPath, entries);
                         lock.notifyAll();
                     }
-                }
-
-            } catch (CancellationException ex) {
-                // don't report CancellationException
-                synchronized (lock) {
-                    cache.clear();
                 }
             } catch (ConnectException | ExecutionException | TimeoutException ex) {
                 ex.printStackTrace(System.err);
