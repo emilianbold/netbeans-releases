@@ -230,35 +230,32 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         if (itemLang == null) {
             itemLang = nfi.getLanguage();
         }
+        if (flavor == null && nfi != null) {
+            flavor = getLanguageFlavor(nfi);
+        }
         Filter<?> filter = null;
         Language<?> language = null;
         switch (itemLang) {
             case C:
                 language = CppTokenId.languageC();
-                filter = CndLexerUtilities.getGccCFilter();
+                filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 break;
             case C_HEADER:
                 language = CppTokenId.languageHeader();
-                if (flavor == null) {
-                    flavor = getLanguageFlavor(nfi);
-                }
                 if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
                         flavor == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getHeaderCpp11Filter();
                 } else {
-                    filter = CndLexerUtilities.getHeaderCppFilter();
+                    filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 }
                 break;
             case CPP:
-                language = CppTokenId.languageCpp();
-                if (flavor == null) {
-                    flavor = getLanguageFlavor(nfi);
-                }                
+                language = CppTokenId.languageCpp();                
                 if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
                         flavor == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getGccCpp11Filter();
                 } else {
-                    filter = CndLexerUtilities.getGccCppFilter();
+                    filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 }
                 break;
             case FORTRAN:
