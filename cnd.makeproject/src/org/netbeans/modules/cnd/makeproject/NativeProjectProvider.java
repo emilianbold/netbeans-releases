@@ -118,7 +118,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public final class NativeProjectProvider implements NativeProject, PropertyChangeListener, ChangeListener, NativeProjectChangeSupport {
-
+    private static final boolean USE_STANDARD_HEADER_INDEX_FILES = CndUtils.getBoolean("cnd.use.headers.indexer", true); // NOI18N
     private static final boolean TRACE = false;
     private final Project project;
     private final String projectRoot;
@@ -244,13 +244,13 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             if (conf != null) {
                 List<NativeFileItem> list = new ArrayList<>();
                 synchronized(this) {
-                    if (indexerC == null) {
+                    if (USE_STANDARD_HEADER_INDEX_FILES && indexerC == null) {
                         indexerC = createIndexer(descriptor, this, NativeFileItem.Language.C);
                     }
                     if (indexerC != null) {
                         list.add(indexerC);
                     }
-                    if (indexerCpp == null) {
+                    if (USE_STANDARD_HEADER_INDEX_FILES && indexerCpp == null) {
                         indexerCpp = createIndexer(descriptor, this, NativeFileItem.Language.CPP);
                     }
                     if (indexerCpp != null) {
