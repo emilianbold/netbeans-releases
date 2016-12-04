@@ -448,13 +448,22 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public NativeFileItem findFileItem(FileObject fileObject) {
+        NativeFileItem out = null;
         if (projectDescriptorProvider.gotDescriptor()) {
             MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
             if (descr != null) {
-                return (NativeFileItem) descr.findItemByFileObject(fileObject);
+                out = (NativeFileItem) descr.findItemByFileObject(fileObject);
+                if (out == null && fileObject != null) {
+                    // check if it is indexers
+                    if (indexerC != null && fileObject.equals(indexerC.getFileObject())) {
+                        out = indexerC;
+                    } else if (indexerCpp != null && fileObject.equals((indexerCpp.getFileObject()))) {
+                        out = indexerCpp;
+                    }
+                }
             }
         }
-        return null;
+        return out;
     }
 
     private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
