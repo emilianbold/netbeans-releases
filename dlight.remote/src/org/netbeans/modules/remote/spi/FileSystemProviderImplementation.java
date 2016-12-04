@@ -44,8 +44,10 @@ package org.netbeans.modules.remote.spi;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -110,4 +112,6 @@ public interface FileSystemProviderImplementation {
     void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType);
     FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv);
     FileSystemProvider.Stat getStat(FileObject fo);
+    void uploadAndUnzip(InputStream zipStream, FileObject targetFolder) 
+            throws FileNotFoundException, ConnectException, IOException, InterruptedException;
 }

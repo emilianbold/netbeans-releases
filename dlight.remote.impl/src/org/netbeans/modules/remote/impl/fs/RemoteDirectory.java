@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,11 +70,9 @@ import java.util.zip.ZipFile;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
@@ -261,8 +260,8 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
                 try {
-                    getFileSystem().setInsideVCS(true);
-                    interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);
+                    getFileSystem().setInsideVCS(true);                    
+                    interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);                    
                 } finally {
                     getFileSystem().setInsideVCS(false);
                 }
@@ -1457,6 +1456,56 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 getFileSystem().getZipper().schedule(zipFile, zipPartFile, getPath(), extensions);
             }
         }
+    }
+
+    void uploadAndUnzip(InputStream zipStream) throws ConnectException, InterruptedException, IOException {
+        final ExecutionEnvironment env = getExecutionEnvironment();
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            zipStream.close();
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+        }        
+        // we have to copy the content into temporary local file, since we need to use it twice:
+        // 1) to copy to remote and 2) to unzip into local cache
+        File localZipFO = File.createTempFile(".rfs_local", ".zip");
+        try {
+            // copy zip stream to local zip file
+            try (FileOutputStream os = new FileOutputStream(localZipFO)) {
+                FileUtil.copy(zipStream, os);
+            } finally {
+                zipStream.close();
+            }
+            // Copy local zip file to remote
+            FileObject remoteZipFO = getFileSystem().createTempFile(this.getOwnerFileObject(), RemoteFileSystem.TEMP_ZIP_PREFIX, ".zip", false); //NOI18N
+            try (OutputStream os = remoteZipFO.getOutputStream()) {
+                try (InputStream is = new FileInputStream(localZipFO)) {
+                    FileUtil.copy(is, os);
+                }
+            }
+            StringBuilder script = new StringBuilder("unzip -q ").append(remoteZipFO.getPath()).append(" && rm ").append(remoteZipFO.getPath()); //NOI18N
+//            if (adjustLineEndings && Utils.isWindows()) {
+//                script.append(" && (which dos2unix > /dev/null; if [ $? = 0 ]; then find . -name \"*[Mm]akefile*\" -exec dos2unix {}  \\; ; else echo \"no_dos2unix\"; fi)"); //NOI18N
+//            }
+            ProcessUtils.ExitStatus rc = ProcessUtils.executeInDir(getPath(), env,
+                    "sh", /*"-x",*/ "-c", script.toString()); //NOI18N
+            if (!rc.isOK()) {
+                throw new IOException(rc.getErrorString() + " when unzipping and removing " + remoteZipFO.getPath() + " in " + this); //NOI18N
+            }
+            getCache().mkdirs();
+            try (InputStream is = new FileInputStream(localZipFO)) {
+                RemoteFileSystemUtils.unpackZipFile(is, getCache());
+            }
+            try {
+                refreshImpl(trace, null, true, RefreshMode.DEFAULT, 0);
+            } catch (TimeoutException ex) {
+                RemoteFileSystemUtils.reportUnexpectedTimeout(ex, this);
+            } catch (ExecutionException ex) {
+                throw new IOException(ex);
+            }            
+        } finally {
+            if (localZipFO != null) {
+                localZipFO.delete();
+            }
+        }        
     }
 
     private boolean ensureChildSyncFromZip(RemotePlainFile child) {

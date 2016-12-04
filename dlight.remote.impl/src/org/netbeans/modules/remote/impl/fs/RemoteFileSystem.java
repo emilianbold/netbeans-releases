@@ -117,6 +117,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     // TODO: consider moving cache names to RemoteDirectory
     protected static final String CACHE_ZIP_FILE_NAME = ".rfs_zip.zip"; // NOI18N
     protected static final String CACHE_ZIP_PART_NAME = ".rfs_zip.part"; // NOI18N
+    protected static final String TEMP_ZIP_PREFIX = ".rfs_tmp_"; // NOI18N
     public static final String RESERVED_PREFIX = ".rfs_"; // NOI18N
     public static final String RESERVED_PREFIX_ESCAPED = "._rfs_"; // NOI18N
     

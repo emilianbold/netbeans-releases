@@ -43,10 +43,16 @@
 package org.netbeans.modules.remote.support;
 
 import java.beans.PropertyVetoException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,11 +65,15 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;import org.netbeans.modules.remote.api.RemoteFile;
@@ -537,5 +547,22 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
             }
         }
         return FileSystemProvider.Stat.createInvalid();
+    }
+
+    @Override
+    public void uploadAndUnzip(InputStream zipStream, FileObject targetFolder) throws FileNotFoundException, IOException {
+        try(ZipInputStream zip = new ZipInputStream(zipStream)) {
+            ZipEntry ent;
+            while ((ent = zip.getNextEntry()) != null) {
+                if (ent.isDirectory()) {
+                    FileUtil.createFolder(targetFolder, ent.getName());
+                } else {
+                    FileObject f = FileUtil.createData(targetFolder, ent.getName());
+                    try (OutputStream out = f.getOutputStream()) {
+                        FileUtil.copy(zip, out);
+                    }
+                }
+            }
+        }
     }
 }
