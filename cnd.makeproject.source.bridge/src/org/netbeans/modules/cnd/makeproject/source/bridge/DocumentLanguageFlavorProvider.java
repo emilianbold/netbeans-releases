@@ -111,8 +111,6 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             }
             if (primaryFile != null) {
                 doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, primaryFile, nfis));
-                setLanguage(primaryFile, doc);
-                rebuildTH(doc);
                 return;
             }
         }
