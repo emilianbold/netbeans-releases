@@ -106,7 +106,7 @@ public final class Filter<T extends TokenId> {
 
     @Override
     public String toString() {
-        return name + " with " + filter.size() + " keywords" + (prefixFilter.isEmpty() ? "" : (" and matching " + prefixFilter.size() + " prefixes")); 
+        return name + " with " + filter.size() + " keywords" + (prefixFilter.isEmpty() ? "" : (" and matching " + prefixFilter.size() + " prefixes")); // NOI18N
     }
     
     public static <T extends TokenId> Filter<T> create(String filterName, Map<CharSequence, T> matchTable) {
