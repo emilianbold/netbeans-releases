@@ -127,8 +127,8 @@ public class CppFlyTokensTestCase extends NbTestCase {
             );
         }
         
-        assertEquals(2402, LexerTestUtilities.flyweightTokenCount(ts));
-        assertEquals(3508, LexerTestUtilities.flyweightTextLength(ts));
+        assertEquals(2500, LexerTestUtilities.flyweightTokenCount(ts));
+        assertEquals(4656, LexerTestUtilities.flyweightTextLength(ts));
         assertEquals(3577, ts.tokenCount());        
     }
     
