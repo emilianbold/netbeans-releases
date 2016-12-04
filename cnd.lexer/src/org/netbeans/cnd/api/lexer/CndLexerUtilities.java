@@ -464,7 +464,9 @@ public final class CndLexerUtilities {
     }
 
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
-        return cpp ? getStdCppFilter() : getStdCFilter();
+        return (Filter<CppTokenId>) (cpp ? 
+                getDefaultFilter(CppTokenId.languageCpp(), null) : 
+                getDefaultFilter(CppTokenId.languageC(), null));
     }
 
     public synchronized static Filter<CppTokenId> getPreprocFilter() {
