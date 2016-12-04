@@ -313,7 +313,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         private void dumpParseStatistics() {
             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms%n", file.getAbsolutePath(), numTokens, initTime, parseTime, renderTime);
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms (Lang=%s, Flavor=%s)%n", file.getAbsolutePath(), numTokens, initTime, parseTime, renderTime, language, languageFlavor);
             }
         }
 
@@ -420,7 +420,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         private void dumpParseStatistics() {
             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms%n", file.getAbsolutePath(), -1, initTime, parseTime, renderTime);
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms (Lang=Forntra, Flavor=%s)%n", file.getAbsolutePath(), -1, initTime, parseTime, renderTime, file.getFileLanguageFlavor());
             }
         }
 
