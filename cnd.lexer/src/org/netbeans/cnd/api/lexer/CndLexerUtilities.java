@@ -448,6 +448,21 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_OMP;
     private static Filter<FortranTokenId> FILTER_FORTRAN;
     
+    public static Filter<?> getDefaultFilter(Language<?> language, Document doc) {
+        if (language == CppTokenId.languageHeader()) {
+            return CndLexerUtilities.getHeaderCppFilter();
+        } else if (language == CppTokenId.languageC()) {
+            return CndLexerUtilities.getGccCFilter();
+        } else if (language == CppTokenId.languagePreproc()) {
+            return CndLexerUtilities.getPreprocFilter();
+        } else if (language == FortranTokenId.languageFortran()) {
+            return CndLexerUtilities.getFortranFilter();
+        } else if (language == CppTokenId.languageCpp()) {
+            return CndLexerUtilities.getGccCppFilter();
+        }
+        return null;
+    }
+
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
         return cpp ? getStdCppFilter() : getStdCFilter();
     }
