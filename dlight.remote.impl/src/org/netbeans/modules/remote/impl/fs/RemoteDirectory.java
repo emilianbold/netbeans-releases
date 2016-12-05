@@ -77,6 +77,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystem.FileInfo;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -260,10 +261,12 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
                 try {
-                    getFileSystem().setInsideVCS(true);                    
+                    getFileSystem().setInsideVCS(true);
+                    getFileSystem().setBeingCreated(new FileInfo(path, directory ? FileType.Directory : FileType.Regular));
                     interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);                    
                 } finally {
                     getFileSystem().setInsideVCS(false);
+                    getFileSystem().setBeingCreated(null);
                 }
             }
         }
@@ -291,7 +294,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 if (USE_VCS) {
                     try {
                         getFileSystem().setInsideVCS(true);
-                        getFileSystem().setBeingCreated(fo.getImplementor());
+                        getFileSystem().setBeingCreated(new FileInfo(fo.getImplementor()));
                         FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                         if (interceptor != null) {
                             if (this == orig) {

@@ -74,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.actions.FastPasteAction;
 import org.netbeans.modules.remote.api.ConnectionNotifier;
@@ -142,7 +143,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     transient private final StatusImpl status = new StatusImpl();
     private final DeleteOnExitSupport deleteOnExitSupport;
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<>();
-    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<>();
+    private final ThreadLocal<FileInfo> beingCreated = new ThreadLocal<>();
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<>();
     private final RemoteFileZipper remoteFileZipper;
     private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
@@ -985,12 +986,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         beingRemoved.set(fo);
     }
 
-    /*package*/ void setBeingCreated(RemoteFileObjectBase fo) {
+    /*package*/ void setBeingCreated(FileInfo fo) {
         beingCreated.set(fo);
     }
     
     /** Be very CAUCIOUS when using this FO - it can be in process of VCS operations  */
-    public RemoteFileObjectBase getBeingCreated() {
+    public FileInfo getBeingCreated() {
         return beingCreated.get();
     }
 
@@ -1282,6 +1283,29 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
+    public static final class FileInfo {
+        private final String path;
+        private final FileType type;
+
+        public FileInfo(RemoteFileObjectBase fo) {
+            this.path = fo.getPath();
+            this.type = fo.getType();
+        }
+
+        public FileInfo(String path, FileType type) {
+            this.path = path;
+            this.type = type;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public FileType getType() {
+            return type;
+        }        
+    }
+
     private class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
 
         public RemoteFileSupport() {
