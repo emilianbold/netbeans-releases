@@ -39,7 +39,10 @@
  */
 package org.netbeans.modules.java.api.common.impl;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import static junit.framework.TestCase.assertEquals;
@@ -54,6 +57,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.TestProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
@@ -102,6 +106,78 @@ public class MultiModuleTest extends NbTestCase {
         assertNotNull(tp);
         mtu = ModuleTestUtilities.newInstance(tp);
         assertNotNull(mtu);
+    }
+
+    public void testCompositeModuleSourcePath1() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject m1 = modulesFolder.createFolder("m1");         //NOI18N
+        assertNotNull(m1);
+        final FileObject m2 = modulesFolder.createFolder("m2");         //NOI18N
+        assertNotNull(m2);
+        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{m1, m2})
+                .map((fo) -> FileUtil.toFile(fo))
+                .flatMap((f) -> Arrays.stream(new File[]{new File(f,"classes"), new File(f,"resources")}))  //NOI18N
+                .map((f) -> {
+                    return FileUtil.urlForArchiveOrDir(f);
+                })
+                .sorted((a,b) -> a.toExternalForm().compareTo(b.toExternalForm()))
+                .collect(Collectors.toList()),
+                Arrays.stream(sources.getRootURLs())
+                .sorted((a,b) -> a.toExternalForm().compareTo(b.toExternalForm()))
+                .collect(Collectors.toList()));
+    }
+
+    public void testCompositeModuleSourcePath2() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject m1 = modulesFolder.createFolder("m1");     //NOI18N
+        assertNotNull(m1);
+        final FileObject m2 = modulesFolder.createFolder("m2");     //NOI18N
+        assertNotNull(m2);
+        assertTrue(mtu.updateModuleRoots("*/{classes,resources}", modulesFolder));   //NOI18N
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{m1, m2})
+                .map((fo) -> FileUtil.toFile(fo))
+                .flatMap((f) -> Arrays.stream(new File[]{new File(f,"classes"), new File(f,"resources")}))  //NOI18N
+                .map((f) -> {
+                    return FileUtil.urlForArchiveOrDir(f);
+                })
+                .sorted((a,b) -> a.toExternalForm().compareTo(b.toExternalForm()))
+                .collect(Collectors.toList()),
+                Arrays.stream(sources.getRootURLs())
+                .sorted((a,b) -> a.toExternalForm().compareTo(b.toExternalForm()))
+                .collect(Collectors.toList()));
+    }
+
+    public void testCompositeModuleSourcePath3() throws IOException {
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
+        assertNotNull(modulesFolder);
+        final FileObject m1 = modulesFolder.createFolder("src").createFolder("m1"); //NOI18N
+        assertNotNull(m1);
+        final FileObject m2 = modulesFolder.createFolder("lib").createFolder("m2"); //NOI18N
+        assertNotNull(m2);
+        assertTrue(mtu.updateModuleRoots("{src,lib}/*/{classes,resources}",modulesFolder));   //NOI18N
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{m1, m2})
+                .map((fo) -> FileUtil.toFile(fo))
+                .flatMap((f) -> Arrays.stream(new File[]{new File(f,"classes"), new File(f,"resources")}))  //NOI18N
+                .map((f) -> {
+                    return FileUtil.urlForArchiveOrDir(f);
+                })
+                .sorted((a,b) -> a.toExternalForm().compareTo(b.toExternalForm()))
+                .collect(Collectors.toList()),
+                Arrays.stream(sources.getRootURLs())
+                .sorted((a,b) -> a.toExternalForm().compareTo(b.toExternalForm()))
+                .collect(Collectors.toList()));
     }
 
     public void testModel() {

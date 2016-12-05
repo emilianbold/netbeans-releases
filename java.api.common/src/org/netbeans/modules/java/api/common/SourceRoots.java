@@ -52,9 +52,11 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -320,47 +322,64 @@ public final class SourceRoots extends Roots {
                 synchronized (SourceRoots.this) {
                     // local caching
                     if (sourceRootURLs == null) {
-                        List<URL> result = new ArrayList<URL>();
+                        List<URL> result = new ArrayList<>();
                         for (String srcProp : getRootProperties()) {
                             String prop = evaluator.getProperty(srcProp);
                             if (prop != null) {
                                 for (String propElement : PropertyUtils.tokenizePath(prop)) {
-                                    String srcPath = null;
-                                    int idx = propElement.indexOf("/*/");
-                                    if (idx >= 0) {
-                                        srcPath = propElement.substring(idx + 3);
-                                        propElement = propElement.substring(0, idx);
+                                    final Collection<? extends String> pathElements;
+                                    final boolean modulePath;
+                                    if (propElement.contains("/*/")) {  //NOI18N
+                                        pathElements = parsePathVariants(propElement);
+                                        modulePath = true;
+                                    } else {
+                                        pathElements = Collections.singleton(propElement);
+                                        modulePath = false;
                                     }
-                                    List<File> files = new ArrayList<>();
-                                    File file = helper.getAntProjectHelper().resolveFile(propElement);
-                                    if (file.isDirectory() && !isModule() && srcPath != null) {
-                                        if (idx > 0) {
-                                            for (File f : file.listFiles()) {
-                                                if (f.isDirectory()) {
-                                                    files.add(new File(f, srcPath));
+                                    for (String pathElement : pathElements) {
+                                        final String pathToRoot;
+                                        final String srcPath;
+                                        if (modulePath) {
+                                            final int idx = pathElement.indexOf("/*/"); //NOI18N
+                                            srcPath = pathElement.substring(idx + 3);
+                                            pathToRoot = pathElement.substring(0, idx);
+                                        } else {
+                                            srcPath = null;
+                                            pathToRoot = pathElement;
+                                        }
+
+
+                                        List<File> files = new ArrayList<>();
+                                        File file = helper.getAntProjectHelper().resolveFile(pathToRoot);
+                                        if (file.isDirectory() && !isModule() && srcPath != null) {
+                                            if (modulePath) {
+                                                for (File f : file.listFiles()) {
+                                                    if (f.isDirectory()) {
+                                                        files.add(new File(f, srcPath));
+                                                    }
                                                 }
                                             }
+                                            listener.add(file, true);
+                                        } else {
+                                            files.add(file);
                                         }
-                                        listener.add(file, true);
-                                    } else {
-                                        files.add(file);
-                                    }
-                                    for (File f : files) {
-                                        try {
-                                            URL url = Utilities.toURI(f).toURL();
-                                            if (!f.exists()) {
-                                                url = new URL(url.toExternalForm() + "/"); // NOI18N
-                                            } else if (removeInvalidRoots && !f.isDirectory()) {
-                                                // file cannot be a source root (archives are not supported as source roots).
-                                                continue;
+                                        for (File f : files) {
+                                            try {
+                                                URL url = Utilities.toURI(f).toURL();
+                                                if (!f.exists()) {
+                                                    url = new URL(url.toExternalForm() + "/"); // NOI18N
+                                                } else if (removeInvalidRoots && !f.isDirectory()) {
+                                                    // file cannot be a source root (archives are not supported as source roots).
+                                                    continue;
+                                                }
+                                                assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; "
+                                                        + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
+                                                        + " file? " + f.isFile();
+                                                result.add(url);
+                                                listener.add(f, false);
+                                            } catch (MalformedURLException e) {
+                                                Exceptions.printStackTrace(e);
                                             }
-                                            assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; "
-                                                    + f + " exists? " + f.exists() + " dir? " + f.isDirectory()
-                                                    + " file? " + f.isFile();
-                                            result.add(url);
-                                            listener.add(f, false);
-                                        } catch (MalformedURLException e) {
-                                            Exceptions.printStackTrace(e);
                                         }
                                     }
                                 }
@@ -372,6 +391,92 @@ public final class SourceRoots extends Roots {
                 }
             }
         });
+    }
+
+    @NonNull
+    /*test*/ static Collection<? extends String> parsePathVariants(@NonNull final String path) {
+        final Set<String> res = new LinkedHashSet<>();
+        parsePathVariantsImpl(path, res);
+        return res;
+    }
+
+    private static void parsePathVariantsImpl(
+            @NonNull final String path,
+            @NonNull final Collection<? super String> collector) {
+        final int[] index = findGroup(path);
+        if (index == null) {
+            collector.add(path);
+        } else {
+            final String prefix = path.substring(0, index[0]);
+            final String suffix = path.substring(index[1]);
+            for (String variant : expandGroup(path, index[0], index[1])) {
+                parsePathVariantsImpl(new StringBuilder()
+                    .append(prefix)
+                    .append(variant)
+                    .append(suffix)
+                    .toString(),
+                    collector);
+            }
+        }
+    }
+
+    private static int[] findGroup(@NonNull final String path) {
+        final int start = path.indexOf('{');  //NOI18N
+        if (start == -1) {
+            return null;
+        }
+        int depth = 1;
+        int end = start + 1;
+        while (end < path.length() && depth > 0) {
+            char c = path.charAt(end++);
+            switch (c) {
+                case '{':   //NOI18N
+                    depth++;
+                    break;
+                case '}':   //NOI18N
+                    depth--;
+                    break;
+            }
+        }
+        return new int[] {start, end};
+    }
+
+    private static Collection<? extends String> expandGroup(
+            @NonNull final String path,
+            final int start,
+            final int end) {
+        final Collection<String> res = new ArrayList<>();
+        int depth = 0;
+        final StringBuilder current = new StringBuilder();
+        for (int i=start; i<end; i++) {
+            final char c = path.charAt(i);
+            switch (c) {
+                case '{':   //NOI18N
+                    if (depth > 0) {
+                        current.append(c);
+                    }
+                    depth++;
+                    break;
+                case '}':   //NOI18N
+                    depth--;
+                    if (depth > 0) {
+                        current.append(c);
+                    }
+                    break;
+                case ',':   //NOI18N
+                    if (depth == 1) {
+                        res.add(current.toString());
+                        current.delete(0, current.length());
+                    } else {
+                        current.append(c);
+                    }
+                    break;
+                default:
+                    current.append(c);
+            }
+        }
+        res.add(current.toString());
+        return res;
     }
 
     private Map<URL, String> getRootsToProps() {
