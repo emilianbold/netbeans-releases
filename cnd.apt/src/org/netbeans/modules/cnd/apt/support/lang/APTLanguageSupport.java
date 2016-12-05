@@ -64,6 +64,7 @@ public final class APTLanguageSupport {
     public static final String FORTRAN  = "Fortran Language"; // NOI18N
     public static final String UNKNOWN  = "Unknown Language"; // NOI18N
 
+    public static final String FLAVOR_CPP14  = "C++14"; // NOI18N
     public static final String FLAVOR_CPP11  = "C++11"; // NOI18N
     public static final String FLAVOR_UNKNOWN  = ""; // NOI18N
     public static final String FLAVOR_FORTRAN_FIXED  = "Fortran Fixed"; // NOI18N
@@ -85,8 +86,11 @@ public final class APTLanguageSupport {
     }
     
     public boolean isFlavourSufficient(String actualFlavour, String necessaryFlavour) {
-        if (FLAVOR_CPP11.equals(necessaryFlavour)) {
-            return FLAVOR_CPP11.equals(actualFlavour);
+        if (FLAVOR_CPP14.equals(necessaryFlavour)) {
+            return FLAVOR_CPP14.equals(actualFlavour);
+        } else if (FLAVOR_CPP11.equals(necessaryFlavour)) {
+            return FLAVOR_CPP11.equals(actualFlavour) 
+                    || FLAVOR_CPP14.equals(actualFlavour);
         } else if (FLAVOR_UNKNOWN.equals(necessaryFlavour)) {
             return true;
         }
