@@ -48,6 +48,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -128,7 +129,7 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
                         stopConnection.getAgentOutput(),
                         stopConnection.getAgentInput(),
                         io,
-                        null, 
+                        Collections.emptyMap(), 
                         (ObjectInput cmdIn, ObjectOutput cmdOut) ->
                                 new StreamingExecutionControl(cmdOut, cmdIn)
                     );

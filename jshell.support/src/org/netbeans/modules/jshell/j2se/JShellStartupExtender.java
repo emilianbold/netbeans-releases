@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.jshell.launch.ShellAgent;
@@ -99,8 +100,14 @@ public class JShellStartupExtender implements StartupExtenderImplementation {
         LOG.log(Level.FINE, "Connect address is: {0}:{1}", new Object[] { isa.getHostString(), isa.getPort() });
         
         J2SEPropertyEvaluator  prjEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-        List<String> args = ShellLaunchManager.buildLocalJVMAgentArgs(agent, prjEval.evaluator()::getProperty);
+        JavaPlatform platform = ShellProjectUtils.findPlatform(p);
+        List<String> args = ShellLaunchManager.buildLocalJVMAgentArgs(platform, agent, prjEval.evaluator()::getProperty);
         LOG.log(Level.FINE, "Final args: {0}", args);
+        
+        List<String> shellArgs = ShellProjectUtils.launchVMOptions(p);
+        if (shellArgs != null) {
+            args.addAll(shellArgs);
+        }
         return args;
     }
 }

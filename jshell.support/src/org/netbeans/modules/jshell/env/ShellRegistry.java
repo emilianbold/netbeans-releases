@@ -403,7 +403,7 @@ public class ShellRegistry {
 
                 @Override
                 public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-                    return LaunchJDIAgent.launch().generate(ee);
+                    return LaunchJDIAgent.launch(getPlatform()).generate(ee);
                 }
             };
         }
