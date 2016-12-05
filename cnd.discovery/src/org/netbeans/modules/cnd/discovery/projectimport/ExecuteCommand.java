@@ -203,7 +203,7 @@ public class ExecuteCommand {
 
         MacroMap mm = MacroMap.forExecEnv(execEnv);
         mm.putAll(envMap);
-        if (wrapper == null) {
+        if (buldTraceSupport != null && buldTraceSupport.getKind() == BuildTraceSupport.BuildTraceKind.Preload) {
             if (envMap.containsKey(BuildTraceSupport.CND_TOOLS)) { // NOI18N
                 try {
                     if (BuildTraceHelper.isMac(execEnv)) {
