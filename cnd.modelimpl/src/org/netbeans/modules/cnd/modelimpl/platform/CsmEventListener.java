@@ -377,7 +377,7 @@ import org.openide.util.RequestProcessor;
                     }
                 }
             }
-            items.addAll(nativeProject.getStandardHeadersIndexers());
+            if (false/*part of AllFiles*/) items.addAll(nativeProject.getStandardHeadersIndexers());
             project.onFileItemsPropertyChanged(items, true);
             changedItemProps.clear();
         }
