@@ -291,6 +291,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         @Override
         public String toString() {
             StringBuilder retValue = new StringBuilder();
+            retValue.append("Lang=").append(lang).append("; Flavor=").append(flavor).append("; CRC=").append(cuCRC);// NOI18N
             retValue.append(isCleaned() ? "\nCleaned State;" : "\nNot Cleaned State;"); // NOI18N
             retValue.append(isCompileContext() ? "Compile Context;" : "Default/Null State;"); // NOI18N
             retValue.append(isValid() ? "Valid State;" : "Invalid State;"); // NOI18N
@@ -436,6 +437,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     @Override
     public String toString() {
         StringBuilder retValue = new StringBuilder();
+        retValue.append("Lang=").append(lang).append("; Flavor=").append(flavor).append("; CRC=").append(cuCRC);// NOI18N
         retValue.append(this.isCompileContext() ? "\nCompile Context" : "\nDefault/Null State"); // NOI18N
         retValue.append("\nInclude Info:\n"); // NOI18N
         retValue.append(this.inclHandler);
