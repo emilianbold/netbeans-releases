@@ -602,14 +602,14 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         Future<CommonTasksSupport.UploadStatus> task = CommonTasksSupport.uploadFile(params);
         CommonTasksSupport.UploadStatus uploadStatus = task.get();
         if (uploadStatus.isOK()) {
-            RemoteLogger.getInstance().log(Level.FINEST, "Uploading {0} succeeded", this);
+            RemoteLogger.getInstance().log(Level.FINEST, "Uploading to {0} succeeded", pathToUpload);
             if(pathToRename == null) { // possible if parent directory is r/o
                 return lstat(pathToUpload);
             } else {
                 return renameAfterUpload(pathToUpload, pathToRename);
             }
         } else {
-            RemoteLogger.getInstance().log(Level.FINEST, "Uploading {0} failed", this);
+            RemoteLogger.getInstance().log(Level.FINEST, "Uploading to {0} failed", pathToUpload);
             throw new IOException(uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N
         }
     }
