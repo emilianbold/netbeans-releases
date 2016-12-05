@@ -230,6 +230,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
                         }
                     }
                 }
+                list.addAll(getStandardHeadersIndexers());
                 return list;
             }
         }
@@ -454,11 +455,13 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             if (descr != null) {
                 out = (NativeFileItem) descr.findItemByFileObject(fileObject);
                 if (out == null && fileObject != null) {
-                    // check if it is indexers
-                    if (indexerC != null && fileObject.equals(indexerC.getFileObject())) {
-                        out = indexerC;
-                    } else if (indexerCpp != null && fileObject.equals((indexerCpp.getFileObject()))) {
-                        out = indexerCpp;
+                    // could be standard headers indexer
+                    List<NativeFileItem> standardHeadersIndexers = getStandardHeadersIndexers();
+                    for (NativeFileItem standardHeadersIndexer : standardHeadersIndexers) {
+                        if (fileObject.equals(standardHeadersIndexer.getFileObject())) {
+                            out = standardHeadersIndexer;
+                            break;
+                        }
                     }
                 }
             }
