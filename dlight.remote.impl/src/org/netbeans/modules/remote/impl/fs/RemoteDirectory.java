@@ -1469,7 +1469,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         }        
         // we have to copy the content into temporary local file, since we need to use it twice:
         // 1) to copy to remote and 2) to unzip into local cache
-        File localZipFO = File.createTempFile(".rfs_local", ".zip");
+        File localZipFO = File.createTempFile(".rfs_local", ".zip"); // NOI18N
         try {
             // copy zip stream to local zip file
             try (FileOutputStream os = new FileOutputStream(localZipFO)) {
