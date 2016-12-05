@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
  */
-
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author petrk
  */
-public class CsmHyperlink2Test extends CndBaseTestSuite {
-    
-    public CsmHyperlink2Test() {
-        super("C/C++ Hyperlink part 2");
-        
-        this.addTestSuite(ClassMembersHyperlinkTestCase.class);
-        this.addTestSuite(TemplateSpecializationsTestCase.class);
-        this.addTestSuite(InstantiationHyperlinkTestCase.class);
-        this.addTestSuite(Cpp11TestCase.class);
-        this.addTestSuite(Cpp11TemplatesTestCase.class);
-        this.addTestSuite(Cpp11TooltipsTestCase.class);
-        this.addTestSuite(Cpp14TestCase.class);
+public class Cpp14TestCase extends HyperlinkBaseTestCase {
+
+    public Cpp14TestCase(String testName) {
+        super(testName, true);
     }
 
-    public static Test suite() {
-        TestSuite suite = new CsmHyperlink2Test();
-        return suite;
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        System.setProperty("cnd.language.flavor.cpp14", "true");         
+        super.setUp();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        System.setProperty("cnd.language.flavor.cpp14", "false");
+    }
+
+    public void testBug268671() throws Exception {
+        performTest("bug268671.cpp", 15, 32, "bug268671.cpp", 6, 9);
+        performTest("bug268671.cpp", 16, 39, "bug268671.cpp", 6, 9);
     }
 }
