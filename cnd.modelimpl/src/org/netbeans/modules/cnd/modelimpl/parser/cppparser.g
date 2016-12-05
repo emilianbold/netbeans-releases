@@ -171,6 +171,7 @@ tokens {
         CSM_CTOR_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_FUNCTION_LIKE_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_FUNCTION_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_FUNCTION_RET_FUN_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_FUNCTION_RET_FUN_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -303,6 +304,7 @@ tokens {
 
         CSM_ARRAY_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_VARIABLE_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
         CSM_VARIABLE_LIKE_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
@@ -337,6 +339,7 @@ tokens {
     public static final int CPP_KandR_C                        = 0x20;
     
     public static final int CPP_FLAVOR_CPP11            = 0x40;
+    public static final int CPP_FLAVOR_CPP14            = 0x80;
 
     /** Switches legacy warnings on */
     protected static final boolean reportOddWarnings = Boolean.getBoolean("cnd.parser.odd.warnings");
@@ -412,7 +415,9 @@ tokens {
             lang = UNKNOWN_LANG;
         }
 
-        if ((flags & CPP_FLAVOR_CPP11) > 0) {
+        if ((flags & CPP_FLAVOR_CPP14) > 0) {
+            langFlavor = FLAVOR_CPP14;
+        } else if ((flags & CPP_FLAVOR_CPP11) > 0) {
             langFlavor = FLAVOR_CPP11;
         } else {
             langFlavor = FLAVOR_UNKNOWN;
@@ -423,8 +428,12 @@ tokens {
         return lang == CPLUSPLUS;
     }
 
-    boolean isCPlusPlus11() {
-        return isCPlusPlus() && langFlavor == FLAVOR_CPP11;
+    boolean isCpp11OrLater() {
+        return isCPlusPlus() && (langFlavor == FLAVOR_CPP11 || langFlavor == FLAVOR_CPP14);
+    }
+
+    boolean isCpp14OrLater() {
+        return isCPlusPlus() && (langFlavor == FLAVOR_CPP14);
     }
 
     boolean isC() {
@@ -504,6 +513,7 @@ tokens {
         // Language Flavors
         protected static final  int FLAVOR_UNKNOWN  = 0x0;
         protected static final  int FLAVOR_CPP11    = 0x1;
+        protected static final  int FLAVOR_CPP14    = 0x2;
 
         protected static final int ERROR_LIMIT = 100;
         private int errorCount = 0;
@@ -835,7 +845,7 @@ public translation_unit:
                 (options{generateAmbigWarnings = false;}:
             { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (literal_ident literal_ident) => pro_c_statement
         |
-            {shouldProceed() && !isCPlusPlus11()}? (LSQUARE) =>
+            {shouldProceed() && !isCpp11OrLater()}? (LSQUARE) =>
             /* This alternative fixes recovery problem happened because C++11 declaration
                could begin with LSQAURE token (see c++11 attributes). This
                breaks recovery for C++98 because rule external_declaration now
@@ -1121,7 +1131,7 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                     "declaration\n", LT(1).getLine());
             }
             declaration[declOther]
-            { #declaration_template_impl = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #declaration_template_impl); }
+            { #declaration_template_impl = #(#[CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION"], #declaration_template_impl); }
         |
             // Templated function definition
             (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
@@ -2047,8 +2057,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             (options {greedy=true;} : LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
         |
             (   options {warnWhenFollowAmbig = false;} : 
-                {isCPlusPlus11()}? sc = cpp11_storage_class_specifier
-            |   {!isCPlusPlus11()}? sc = storage_class_specifier
+                {isCpp11OrLater()}? sc = cpp11_storage_class_specifier
+            |   {!isCpp11OrLater()}? sc = storage_class_specifier
             |   tq = cv_qualifier 
             |   literal_inline {ds = dsINLINE;}
             |   LITERAL__Noreturn
@@ -3581,7 +3591,7 @@ attribute_specification
         literal_attribute
         LPAREN balanceParens RPAREN
     |
-        ({isCPlusPlus11()}? LSQUARE balanceSquares RSQUARE)
+        ({isCpp11OrLater()}? LSQUARE balanceSquares RSQUARE)
     ;
 
 protected
