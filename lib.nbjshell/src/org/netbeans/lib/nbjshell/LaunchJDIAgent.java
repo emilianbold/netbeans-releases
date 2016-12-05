@@ -53,9 +53,7 @@ import com.sun.jdi.VirtualMachine;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -64,7 +62,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,6 +70,8 @@ import jdk.jshell.execution.JDIInitiator;
 import jdk.jshell.execution.Util;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 
 /**
  * Launches a JShell VM using standard JDI agent, but incorporates
@@ -191,8 +190,8 @@ public class LaunchJDIAgent extends JDIExecutionControl
      *
      * @return the generator
      */
-    public static ExecutionControl.Generator launch() {
-        return env -> create(env, true);
+    public static ExecutionControl.Generator launch(JavaPlatform platform) {
+        return env -> create(platform, env, true);
     }
 
     /**
@@ -208,15 +207,23 @@ public class LaunchJDIAgent extends JDIExecutionControl
      * @return the channel
      * @throws IOException if there are errors in set-up
      */
-    private static JDIExecutionControl create(ExecutionEnv env, boolean isLaunch) throws IOException {
+    private static JDIExecutionControl create(JavaPlatform platform, ExecutionEnv env, boolean isLaunch) throws IOException {
         try (final ServerSocket listener = new ServerSocket(0)) {
             // timeout after 60 seconds
             listener.setSoTimeout(60000);
             int port = listener.getLocalPort();
 
+            Map<String, String> customArguments = null;
+            
+            if (platform != null) {
+                String jHome = platform.getSystemProperties().get("java.home");
+                customArguments = new HashMap<>();
+                // TODO: if jHome is null for some reason, the connector fails.
+                customArguments.put("home", jHome);
+            }
             // Set-up the JDI connection
             JDIInitiator jdii = new JDIInitiator(port,
-                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch, null);
+                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch, null, customArguments);
             VirtualMachine vm = jdii.vm();
             Process process = jdii.process();
             

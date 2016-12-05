@@ -66,16 +66,20 @@ import org.netbeans.lib.nbjshell.RemoteJShellService;
  */
 public class DebugExecutionEnvironment extends LaunchJDIAgent implements RemoteJShellService, NbExecutionControl, ShellLaunchListener {
     private static final Logger LOG = Logger.getLogger(DebugExecutionEnvironment.class.getName());
+    private static final String AGENT_VARVALUE_METHOD = "varValue"; // NOI18N
+    private static final String AGENT_INVOKE_METHOD = "invoke"; // NOI18N
+    private static final String REMOTE_AGENT_CLASS = "jdk.jshell.execution.RemoteExecutionControl"; // NOI18N
 
     private boolean added;
     private volatile JShellConnection shellConnection;
     private boolean closed;
     final ShellAgent agent;
 
-    public DebugExecutionEnvironment(ShellAgent agent, ObjectOutput out, ObjectInput in, VirtualMachine vm) {
+    public DebugExecutionEnvironment(ShellAgent agent, ObjectOutput out, ObjectInput in, VirtualMachine vm, JShellConnection c) {
         super(out, in, vm);
         this.agent = agent;
         ShellLaunchManager.getInstance().addLaunchListener(this);
+        this.shellConnection = c;
     }
 
     @Override
@@ -140,20 +144,22 @@ public class DebugExecutionEnvironment extends LaunchJDIAgent implements RemoteJ
             for (ThreadReference thread : vm.allThreads()) {
                 // could also tag the thread (e.g. using name), to find it easier
                 AGENT: for (StackFrame frame : thread.frames()) {
-                    String remoteAgentName = "jdk.internal.jshell.remote.RemoteAgent";
-                    if (remoteAgentName.equals(frame.location().declaringType().name()) && "performCommand".equals(frame.location().method().name())) {
-                        ObjectReference thiz = frame.thisObject();
-                        if (myRef != null && myRef != thiz) {
-                            break AGENT;
+                    if (REMOTE_AGENT_CLASS.equals(frame.location().declaringType().name())) {
+                        String n = frame.location().method().name();
+                        if (AGENT_INVOKE_METHOD.equals(n) || AGENT_VARVALUE_METHOD.equals(n)) {
+                            ObjectReference thiz = frame.thisObject();
+                            if (myRef != null && myRef != thiz) {
+                                break AGENT;
+                            }
+                            if (((BooleanValue) thiz.getValue(thiz.referenceType().fieldByName("inClientCode"))).value()) {
+                                thiz.setValue(thiz.referenceType().fieldByName("expectingStop"), vm.mirrorOf(true));
+                                ObjectReference stopInstance = (ObjectReference) thiz.getValue(thiz.referenceType().fieldByName("stopException"));
+                                vm.resume();
+                                thread.stop(stopInstance);
+                                thiz.setValue(thiz.referenceType().fieldByName("expectingStop"), vm.mirrorOf(false));
+                            }
+                            return true;
                         }
-                        if (((BooleanValue) thiz.getValue(thiz.referenceType().fieldByName("inClientCode"))).value()) {
-                            thiz.setValue(thiz.referenceType().fieldByName("expectingStop"), vm.mirrorOf(true));
-                            ObjectReference stopInstance = (ObjectReference) thiz.getValue(thiz.referenceType().fieldByName("stopException"));
-                            vm.resume();
-                            thread.stop(stopInstance);
-                            thiz.setValue(thiz.referenceType().fieldByName("expectingStop"), vm.mirrorOf(false));
-                        }
-                        return true;
                     }
                 }
             }
