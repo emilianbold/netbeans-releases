@@ -1965,7 +1965,6 @@ public final class EditorCaret implements Caret {
                         scroll = scrollToLastCaret;
                         scrollToLastCaret = false;
                     }
-                    scroll &= c.hasFocus(); // Only scroll focused views (prevent scrolling cloned views)
                     if (scroll) {
                         Rectangle caretBounds;
                         Rectangle oldCaretBounds;
@@ -2643,7 +2642,8 @@ public final class EditorCaret implements Caret {
             // but that would break existing tests like TypingCompletionUnitTest wihch expects
             // that even typing modifications do not influence the caret position (not only the non-typing ones).
             boolean typingModification = DocumentUtilities.isTypingModification(evt.getDocument());
-            scrollToLastCaret |= typingModification;
+            JTextComponent c = component;
+            scrollToLastCaret |= typingModification && (c != null && c.hasFocus());
 
             if (!implicitSetDot(evt, setDotOffset)) {
                 // Ensure that a valid atomicSectionImplicitSetDotOffset value
