@@ -183,6 +183,11 @@ public final class EditorCaret implements Caret {
     // -J-Dorg.netbeans.api.editor.caret.EditorCaret.blinkRate=800 - Force overrride of a default caret blink rate
     static final Integer overrideCaretBlinkRate = Integer.getInteger("org.netbeans.api.editor.caret.EditorCaret.blinkRate");
     
+    /**
+     * D&D can be turned off in the editor by -J-Dorg.netbeans.editor.dnd.disabled=true
+     */
+    private static final boolean dndDisabled = Boolean.getBoolean("org.netbeans.editor.dnd.disabled");
+    
     static final long serialVersionUID = 0L;
     
     static {
@@ -2719,7 +2724,7 @@ public final class EditorCaret implements Caret {
                             if (c.isEnabled() && !c.hasFocus()) {
                                 c.requestFocus();
                             }
-                            c.setDragEnabled(true);
+                            c.setDragEnabled(!dndDisabled);
                             // Check Add Caret: Cmd+Shift+Click on Mac or Ctrl+Shift+Click on other platforms
                             if ((org.openide.util.Utilities.isMac() ? evt.isMetaDown() : evt.isControlDown()) &&
                                 evt.isShiftDown())
@@ -2742,7 +2747,7 @@ public final class EditorCaret implements Caret {
                                 mouseState = MouseState.CHAR_SELECTION;
                             } else // Regular press
                             // check whether selection drag is possible
-                            if (isDragPossible(evt) && mapDragOperationFromModifiers(evt) != TransferHandler.NONE) {
+                            if (!dndDisabled && isDragPossible(evt) && mapDragOperationFromModifiers(evt) != TransferHandler.NONE) {
                                 mouseState = MouseState.DRAG_SELECTION_POSSIBLE;
                             } else { // Drag not possible
                                 mouseState = MouseState.CHAR_SELECTION;
