@@ -296,6 +296,17 @@ public class AstUtil {
         }
         return false;
     }
+    
+    public static boolean hasChild(AST ast, AST child) {
+        if (ast != null && child != null) {
+            for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
+                if (token == child) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public static AST findChildOfType(AST ast, int type) {
         return findChildOfType(ast, type, null);

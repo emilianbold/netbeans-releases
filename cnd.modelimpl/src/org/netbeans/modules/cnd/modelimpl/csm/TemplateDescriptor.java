@@ -131,8 +131,12 @@ public final class TemplateDescriptor {
         if (ast == null) {
             return null;
         }
-        AST start = TemplateUtils.getTemplateStart(ast.getFirstChild());
-        for( AST token = start; token != null; token = token.getNextSibling() ) {
+        return createIfNeededDirect(ast.getFirstChild(), file, scope, global);
+    }
+    
+    public static TemplateDescriptor createIfNeededDirect(AST ast, CsmFile file, CsmScope scope, boolean global) {
+        AST start = TemplateUtils.getTemplateStart(ast);
+        for (AST token = start; token != null; token = token.getNextSibling()) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
                 CharSequence classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
                 return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope, global),

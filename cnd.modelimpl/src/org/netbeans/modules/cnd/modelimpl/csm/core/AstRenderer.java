@@ -87,10 +87,11 @@ public class AstRenderer {
     private boolean registeredFakeInclude = false;
     protected final Map<Integer, CsmObject> objects;
     protected final String language;
+    protected final String languageFlavor;
 
     protected static final boolean SKIP_AST_RENDERER_EXCEPTIONS = Boolean.getBoolean("cnd.skip.ast.renderer.exceptions"); //NOI18N
 
-    public AstRenderer(FileImpl fileImpl, FileContent fileContent, String language, Map<Integer, CsmObject> objects) {
+    public AstRenderer(FileImpl fileImpl, FileContent fileContent, String language, String languageFlavor, Map<Integer, CsmObject> objects) {
         if (isBeingParsed(fileImpl)) {
             CndUtils.assertNotNullInConsole(fileContent, "null file content"); // NOI18N
             assert false;
@@ -100,10 +101,11 @@ public class AstRenderer {
         this.fileContent = fileContent;
         this.objects = objects;
         this.language = language;
+        this.languageFlavor = languageFlavor;
     }
 
     public AstRenderer(FileImpl fileImpl) {
-        this(fileImpl, null, fileImpl.getFileLanguage(), null);
+        this(fileImpl, null, fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor(), null);
     }
 
     protected CsmFile getContainingFile() {
@@ -148,7 +150,7 @@ public class AstRenderer {
                             CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
                             if(o instanceof ClassImpl) {
                                 ClassImpl cls = (ClassImpl)o;
-                                cls.render(token, getContainingFile(), fileContent, language, isRenderingLocalContext(), null);
+                                cls.render(token, getContainingFile(), fileContent, language, languageFlavor, isRenderingLocalContext(), null);
                                 //container.addDeclaration(cls);
                                 addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                                 renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -198,6 +200,7 @@ public class AstRenderer {
                         }
                         break;
                     }
+                    case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION:
                     case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
                         if (isFuncLikeVariable(token, false)) {
                             if (renderFuncLikeVariable(token, currentNamespace, container, !isFuncLikeVariable(token, true))) {
@@ -257,14 +260,14 @@ public class AstRenderer {
                         break;
                     case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                         if (isClassSpecialization(token)) {
-                            ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
+                            ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, language, languageFlavor, fileContent, !isRenderingLocalContext(), container);
                             container.addDeclaration(spec);
                             addTypedefs(renderTypedef(token, spec, currentNamespace).typedefs, currentNamespace, container, spec);
                         } else {
                             if (isMemberDefinition(token)) {
                                 if(!isFunctionOnlySpecialization(token)) {
                                     // this is a template method specialization declaration (without a definition)
-                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
+                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, languageFlavor, fileContent, !isRenderingLocalContext(), container);
                                     MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, file, fileContent, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
                                     spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
                                     if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
@@ -300,7 +303,7 @@ public class AstRenderer {
                     case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                         if (isMemberDefinition(token)) {
                             if(!isFunctionOnlySpecialization(token)) {
-                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
+                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, languageFlavor, fileContent, !isRenderingLocalContext(), container);
                             }
                             FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, fileContent, currentNamespace, !isRenderingLocalContext(), objects);
                             container.addDeclaration(funcDef);
@@ -813,7 +816,12 @@ public class AstRenderer {
             if (token != null) {
                 boolean _static = false;
                 boolean _extern = false;
-                if (isQualifier(token.getType())) {
+                AST templateAst = null;
+                if (token.getType() == CPPTokenTypes.LITERAL_template) {
+                    templateAst = token;
+                    token = token.getNextSibling();
+                }
+                if (token != null && isQualifier(token.getType())) {
                     _static = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_static);
                     _extern = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_extern);
                     token = getFirstSiblingSkipQualifiers(token);
@@ -846,8 +854,25 @@ public class AstRenderer {
                         }
 
                         if (!fakeRegistration) {
+                            // Ensure that offset node contains template node if it present (in case of template node
+                            // there could be only one declaration in the current statement, as per 
+                            // [C++14 standard, 14.3]:
+                            // In a template-declaration, explicit specialization, or explicit instantiation 
+                            // the init-declarator-list in the declaration shall contain at most one declarator
+                            AST varAstNode = (templateAst != null) ? ast : next;
                             NameHolder nameHolder = NameHolder.createSimpleName(next);
-                            VariableImpl<?> var = createVariable(next, file, type, nameHolder, _static, _extern, currentNamespace, container, null);
+                            VariableImpl<?> var = createVariable(
+                                    varAstNode,
+                                    templateAst, 
+                                    file, 
+                                    type, 
+                                    nameHolder, 
+                                    _static, 
+                                    _extern, 
+                                    currentNamespace, 
+                                    container, 
+                                    null
+                            );
                             if (currentNamespace != null) {
                                 currentNamespace.addDeclaration(var);
                             }
@@ -958,7 +983,8 @@ public class AstRenderer {
                         }
                         if (nameHolder != null) {
                             CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file, startOffset, endOffset);
-                            VariableImpl<?> var = createVariable(token, file, type, nameHolder, _static, _extern, container1, container2, null);
+                            // TODO: null for templateAst?
+                            VariableImpl<?> var = createVariable(token, null, file, type, nameHolder, _static, _extern, container1, container2, null);
                             if (container2 != null) {
                                 container2.addDeclaration(var);
                             }
@@ -990,7 +1016,7 @@ public class AstRenderer {
                             nothingBeforSemicolon = false;
                             CsmType type = TypeFactory.createType(classifier, null, 0, null, file, startOffset, endOffset);
                             VariableImpl<?> var = VariableImpl.create(file, rcurlyOffset, rcurlyOffset,
-                                    type, "", null, true, false, !isRenderingLocalContext()); // NOI18N
+                                    type, null, "", null, true, false, !isRenderingLocalContext()); // NOI18N
                             if (container2 != null) {
                                 container2.addDeclaration(var);
                             }
@@ -1420,8 +1446,8 @@ public class AstRenderer {
 
     protected ClassImpl createClass(AST token, CsmScope scope, DeclarationsContainer container) throws AstRendererException {
         ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                            ClassImplSpecialization.create(token, scope, file, language, fileContent, !isRenderingLocalContext(), container) :
-                            ClassImpl.create(token, scope, file, language, fileContent, !isRenderingLocalContext(), container);
+                            ClassImplSpecialization.create(token, scope, file, language, languageFlavor, fileContent, !isRenderingLocalContext(), container) :
+                            ClassImpl.create(token, scope, file, language, languageFlavor, fileContent, !isRenderingLocalContext(), container);
         if (container instanceof MutableDeclarationsContainer) {
             ((MutableDeclarationsContainer)container).addDeclaration(cls);
         }
@@ -1847,9 +1873,13 @@ public class AstRenderer {
     public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2, CsmScope scope, boolean functionParameter) {
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         boolean _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
+        AST templateAst = null;
         AST typeAST = ast.getFirstChild();
         AST tokType = typeAST;
         while (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
+            if (templateAst == null) {
+                templateAst = tokType;
+            }
             typeAST = tokType = skipTemplateSibling(tokType);
         }
         tokType = getFirstSiblingSkipQualifiers(tokType);
@@ -1960,7 +1990,7 @@ public class AstRenderer {
                                     }
                                 }
                             }
-                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
+                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, templateAst, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                             ptrOperator = null;
                             break;
                         case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
@@ -1980,7 +2010,7 @@ public class AstRenderer {
 //                                    CsmScope scope = (namespaceContainer instanceof CsmNamespace) ? (CsmNamespace) namespaceContainer : null;
                                     processFunction(token, file, type, namespaceContainer, container2, scope);
                                 } else {
-                                    processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                                    processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, templateAst, namespaceContainer, container2, file, _static, _extern, false, cfdi);
                                     ptrOperator = null;
                                 }
                             }
@@ -1988,7 +2018,7 @@ public class AstRenderer {
                 }
                 if (!hasVariables && functionParameter) {
                     // unnamed parameter
-                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
+                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, templateAst, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                 }
                 if (createForwardClass) {
                     MutableObject<CsmNamespace> targetScope = new MutableObject<>();
@@ -2002,11 +2032,11 @@ public class AstRenderer {
 
             if (functionParameter && nextToken != null) {
                 if (nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                    processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                    processVariable(nextToken, null, ast, typeAST/*tokType*/, templateAst, namespaceContainer, container2, file, _static, _extern, true, cfdi);
                 } else if (nextToken.getType() == CPPTokenTypes.CSM_PARMLIST) {
-                    processVariable(null, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                    processVariable(null, null, ast, typeAST/*tokType*/, templateAst, namespaceContainer, container2, file, _static, _extern, true, cfdi);
                 } else if (nextToken.getType() == CPPTokenTypes.RPAREN) {
-                    processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                    processVariable(ast, null, ast, typeAST/*tokType*/, templateAst, namespaceContainer, container2, file, _static, _extern, true, cfdi);
                 }
             }
         }
@@ -2014,7 +2044,7 @@ public class AstRenderer {
     }
 
     @SuppressWarnings("fallthrough")
-    protected void processVariable(AST varAst, AST ptrOperator, AST offsetAst, AST classifier,
+    protected void processVariable(AST varAst, AST ptrOperator, AST offsetAst, AST classifier, AST templateAst,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,
             FileImpl file, boolean _static, boolean _extern, boolean inFunctionParameters, CsmClassForwardDeclaration cfdi) {
         int arrayDepth = 0;
@@ -2079,7 +2109,7 @@ public class AstRenderer {
                 container2.addDeclaration(var);
             }
         } else {
-            VariableImpl<?> var = createVariable(offsetAst, file, type, name, _static, _extern, container1, container2, null);
+            VariableImpl<?> var = createVariable(offsetAst, templateAst, file, type, name, _static, _extern, container1, container2, null);
             if (container2 != null) {
                 container2.addDeclaration(var);
             }
@@ -2090,9 +2120,8 @@ public class AstRenderer {
         }
     }
 
-    protected VariableImpl<?> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static,  boolean _extern,
+    protected VariableImpl<?> createVariable(AST offsetAst, AST templateAst, CsmFile file, CsmType type, NameHolder name, boolean _static,  boolean _extern,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
-        type = TemplateUtils.checkTemplateType(type, scope);
         VariableImpl<?> var = VariableImpl.create(offsetAst, file, type, name, scope, _static, _extern, !isRenderingLocalContext());
         return var;
     }
@@ -2181,11 +2210,11 @@ public class AstRenderer {
         class AstRendererEx extends AstRenderer {
 
             public AstRendererEx(FileContent fileContent) {
-                super((FileImpl) file, fileContent, ((FileImpl) file).getFileLanguage(), null);
+                super((FileImpl) file, fileContent, ((FileImpl) file).getFileLanguage(), ((FileImpl) file).getFileLanguageFlavor(), null);
             }
 
             @Override
-            protected VariableImpl<?> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
+            protected VariableImpl<?> createVariable(AST offsetAst, AST templateAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
                 type = TemplateUtils.checkTemplateType(type, scope1);
                 ParameterImpl parameter;
                 if (offsetAst.getType() == CPPTokenTypes.ELLIPSIS) {
@@ -2376,7 +2405,7 @@ public class AstRenderer {
             case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                if(new AstRenderer((FileImpl) file, null, ((FileImpl) file).getFileLanguage(), objects).isExpressionLikeDeclaration(ast, scope)) {
+                if(new AstRenderer((FileImpl) file, null, ((FileImpl) file).getFileLanguage(), ((FileImpl) file).getFileLanguageFlavor(), objects).isExpressionLikeDeclaration(ast, scope)) {
                     return ExpressionStatementImpl.create(ast, file, scope);
                 } else {
                     return DeclarationStatementImpl.create(ast, file, scope);

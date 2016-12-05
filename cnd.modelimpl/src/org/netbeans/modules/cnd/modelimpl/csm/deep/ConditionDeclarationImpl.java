@@ -86,10 +86,11 @@ public final class ConditionDeclarationImpl extends OffsetableBase implements Cs
     private void initDeclaration(AST node, final CsmScope scope) {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
             @Override
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
+            protected VariableImpl createVariable(AST offsetAst, AST templateAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
 		    MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope passedScope) {
 		
-                ConditionDeclarationImpl.this.declaration = super.createVariable(offsetAst, file, type, name, _static, _extern,
+                ConditionDeclarationImpl.this.declaration = super.createVariable(offsetAst, templateAst,
+                        file, type, name, _static, _extern,
 			container1, container2, scope);
                 return declaration;
             }

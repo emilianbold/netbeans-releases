@@ -71,8 +71,21 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         this.visibility = visibility;
     }
 
-    public static FieldImpl create(AST ast, CsmFile file, FileContent fileContent, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean register) {
+    public static FieldImpl create(AST ast, CsmFile file, FileContent fileContent, CsmType type, AST templateAst, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean register) {
+        TemplateDescriptor tplDescr = TemplateDescriptor.createIfNeededDirect(templateAst, file, cls, register);
+        type = TemplateUtils.checkTemplateType(type, cls, tplDescr);
         FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility);
+        fieldImpl.setTemplateDescriptor(tplDescr);
+        postObjectCreateRegistration(register, fieldImpl);
+        name.addReference(fileContent, fieldImpl);
+        return fieldImpl;
+    }
+    
+    public static FieldImpl create(AST ast, CsmFile file, FileContent fileContent, CsmType type, AST templateAst, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern, boolean register) {
+        TemplateDescriptor tplDescr = TemplateDescriptor.createIfNeededDirect(templateAst, file, cls, register);
+        type = TemplateUtils.checkTemplateType(type, cls, tplDescr);
+        FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility, _static, _extern);
+        fieldImpl.setTemplateDescriptor(tplDescr);
         postObjectCreateRegistration(register, fieldImpl);
         name.addReference(fileContent, fieldImpl);
         return fieldImpl;
@@ -81,13 +94,6 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
     private FieldImpl(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern) {
         super(ast, file, type, name, cls, _static, _extern);
         this.visibility = visibility;
-    }
-
-    public static FieldImpl create(AST ast, CsmFile file, FileContent fileContent, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern, boolean register) {
-        FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility, _static, _extern);
-        postObjectCreateRegistration(register, fieldImpl);
-        name.addReference(fileContent, fieldImpl);
-        return fieldImpl;
     }
 
     private FieldImpl(CsmType type, CharSequence name, CsmScope cls, CsmVisibility visibility, boolean _static, boolean _extern, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {

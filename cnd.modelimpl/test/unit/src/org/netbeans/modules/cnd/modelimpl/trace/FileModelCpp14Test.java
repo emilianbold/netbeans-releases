@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,43 +36,41 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.modelimpl.impl.services;
-
-import java.io.File;
-import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp11Test;
-import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp14Test;
+package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author petrk
  */
-public class SelectModelTestCase extends SelectTestBase {
+public class FileModelCpp14Test extends TraceModelTestBase {
 
-
-    public SelectModelTestCase(String name) {
-        super(name);
+    public FileModelCpp14Test(String testName) {
+        super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("cnd.tests.cpp11directories", FileModelCpp11Test.class.getSimpleName()); // NOI18N
-        System.setProperty("cnd.tests.cpp14directories", FileModelCpp14Test.class.getSimpleName()); // NOI18N
-        super.setUp(); 
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        System.setProperty("cnd.language.flavor.cpp14", "true"); 
+        super.setUp();
     }
 
     @Override
-    protected File getProjectRoot() {
-        return getDataFile("org");
+    protected void postSetUp() {
+        // init flags needed for file model tests
+        getTraceModel().setDumpModel(true);
+        getTraceModel().setDumpPPState(true);
     }
-
-
-//    @Test
-    public void testSelectModelGetFunctions() throws Exception {
-        doTestGetFunctions();
+    
+    @Override
+    protected void postTest(String[] args, Object... params) throws Exception {
+        System.setProperty("cnd.language.flavor.cpp14", "false"); 
     }
-
+    
+    public void testBug268671() throws Exception {
+        performTest("bug268671.cpp");
+    }
 }
