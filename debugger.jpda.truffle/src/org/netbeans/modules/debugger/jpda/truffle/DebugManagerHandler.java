@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle;
@@ -52,7 +52,6 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
@@ -60,7 +59,6 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -68,17 +66,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.LocalVariable;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
@@ -86,11 +78,9 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import static org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess.BASIC_CLASS_NAME;
@@ -102,17 +92,16 @@ import org.openide.util.Exceptions;
  *
  * @author martin
  */
-class DebugManagerHandler implements JPDABreakpointListener {
+class DebugManagerHandler {
     
     private static final Logger LOG = Logger.getLogger(DebugManagerHandler.class.getName());
     
-    private static final String TRUFFLE_JS_ENGINE_CLASS_NAME = "com.oracle.truffle.js.engine.TruffleJSEngine"; // NOI18N
     private static final String ACCESSOR_START_ACCESS_LOOP = "startAccessLoop"; // NOI18N
-    private static final String ACCESSOR_STOP_ACCESS_LOOP = "stopAccessLoop";   // NOI18N
-    private static final String ACCESSOR_SET_UP_DEBUG_MANAGER = "setUpDebugManager";    // NOI18N
+    private static final String ACCESSOR_LOOP_RUNNING_FIELD = "accessLoopRunning";  // NOI18N
     private static final String ACCESSOR_SET_UP_DEBUG_MANAGER_FOR = "setUpDebugManagerFor"; // NOI18N
-    private static final String ACCESSOR_DEBUGGER_ACCESS = "debuggerAccess";    // NOI18N
-    private static final String ACCESSOR_EXECUTION_HALTED = "executionHalted";  // NOI18N
+    private static final String ACCESSOR_SET_UP_DEBUG_MANAGER_FOR_SGN =
+            "(L"+Object.class.getName().replace('.', '/')+";Z)"+                // NOI18N
+            "Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;"; // NOI18N
     
     private static final Map<JPDADebugger, Boolean> dbgStepInto = Collections.synchronizedMap(new WeakHashMap<JPDADebugger, Boolean>());
 
@@ -142,83 +131,52 @@ class DebugManagerHandler implements JPDABreakpointListener {
         return stepInto != null && stepInto;
     }
     
-    @Override
-    public void breakpointReached(JPDABreakpointEvent event) {
-        LOG.log(Level.FINE, "Engine created breakpoint hit: {0}", event);
+    void newPolyglotEngineInstance(ObjectReference engine, JPDAThreadImpl thread) {
+        LOG.log(Level.FINE, "Engine created breakpoint hit: engine = {0} in thread = {1}", new Object[] { engine, thread.getThreadReference()});
+        if (inited.compareAndSet(false, true)) {
+            initDebuggerRemoteService(thread);
+        }
+        if (accessorClass == null) {
+            // No accessor
+            return ;
+        }
+        InvocationExceptionTranslated iextr = null;
         try {
-            if (debugger.equals(event.getDebugger())) {
-                if (inited.compareAndSet(false, true)) {
-                    initDebuggerRemoteService(event.getThread());
-                }
-                if (accessorClass == null) {
-                    // No accessor
-                    return ;
-                }
-                /* Even when initialized already, we need the new ExecutionEvent in the backend.
-                if (debugManager != null) {
-                    // Initialized already
-                    return ;
-                }*/
-                //event.getThread();
-                JPDAThreadImpl thread = (JPDAThreadImpl) event.getThread();
-                InvocationExceptionTranslated iextr = null;
-                try {
-                    thread.notifyMethodInvoking();
-                    //This engine = thread.getCallStack(0, 1)[0].getThisVariable();
-                    CallStackFrame csf = thread.getCallStack(0, 1)[0];
-                    LocalVariable[] args = ((CallStackFrameImpl) csf).getMethodArguments();
-                    if (args.length == 0) {
-                        LOG.warning("No arguments to "+event.getSource());
-                        return ;
-                    }
-                    Variable engine = args[0];//event.getVariable();
-                    Value engineValue = ((JDIVariable) engine).getJDIValue();
-                    LOG.log(Level.FINE, "breakpointReached({0}): engineValue = {1}", new Object[]{event, engineValue});
-                    if (!(engineValue instanceof ObjectReference)) {
-                        return ;
-                    }
-                    //ReferenceType engineClasstype = ((ObjectReference) engineValue).referenceType();
-                    //if (!TRUFFLE_JS_ENGINE_CLASS_NAME.equals(engineClasstype.name())) {
-                    //    return ;
-                    //}
-                    VirtualMachine vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
-                    if (vm == null) {
-                        return ;
-                    }
-                    BooleanValue doStepInto = vm.mirrorOf(isStepInto());
-                    Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(
-                            accessorClass,
-                            ACCESSOR_SET_UP_DEBUG_MANAGER_FOR,
-                            //"(L"+TRUFFLE_JS_ENGINE_CLASS_NAME.replace('.', '/')+";)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
-                            //"(L"+ScriptEngine.class.getName().replace('.', '/')+";)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
-                            "(L"+Object.class.getName().replace('.', '/')+";Z)Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
-                    ThreadReference tr = thread.getThreadReference();
-                    List<Value> dmArgs = Arrays.asList(engineValue, doStepInto);
-                    LOG.log(Level.FINE, "Setting engine and step into = {0}", isStepInto());
-                    Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, dmArgs, ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (ret instanceof ObjectReference) {   // Can be null when an existing debug manager is reused.
-                        //debugManager = (ObjectReference) ret;
-                        breakpointsHandler.submitBreakpoints(accessorClass, (ObjectReference) ret, thread);
-                    }
-                } catch (VMDisconnectedExceptionWrapper vmd) {
-                } catch (InvocationException iex) {
-                    iextr = new InvocationExceptionTranslated(iex, thread.getDebugger());
-                    Exceptions.printStackTrace(iex);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    thread.notifyMethodInvokeDone();
-                }
-                if (iextr != null) {
-                    iextr.preload(thread);
-                    Exceptions.printStackTrace(iextr);
-                }
+            // Create an instance of JPDATruffleDebugManager in the backend
+            // and submit breakpoints:
+            thread.notifyMethodInvoking();
+            VirtualMachine vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
+            if (vm == null) {
+                return ;
             }
+            BooleanValue doStepInto = vm.mirrorOf(isStepInto());
+            Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(
+                    accessorClass,
+                    ACCESSOR_SET_UP_DEBUG_MANAGER_FOR,
+                    ACCESSOR_SET_UP_DEBUG_MANAGER_FOR_SGN);
+            ThreadReference tr = thread.getThreadReference();
+            List<Value> dmArgs = Arrays.asList(engine, doStepInto);
+            LOG.log(Level.FINE, "Setting engine and step into = {0}", isStepInto());
+            Object ret = ClassTypeWrapper.invokeMethod(accessorClass, tr, debugManagerMethod, dmArgs, ObjectReference.INVOKE_SINGLE_THREADED);
+            if (ret instanceof ObjectReference) {   // Can be null when an existing debug manager is reused.
+                //debugManager = (ObjectReference) ret;
+                breakpointsHandler.submitBreakpoints(accessorClass, (ObjectReference) ret, thread);
+            }
+        } catch (VMDisconnectedExceptionWrapper vmd) {
+        } catch (InvocationException iex) {
+            iextr = new InvocationExceptionTranslated(iex, thread.getDebugger());
+            Exceptions.printStackTrace(iex);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         } finally {
-            event.resume();
+            thread.notifyMethodInvokeDone();
+        }
+        if (iextr != null) {
+            iextr.preload(thread);
+            Exceptions.printStackTrace(iextr);
         }
     }
-    
+
     private void initDebuggerRemoteService(JPDAThread thread) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "initDebuggerRemoteService({0})", thread);
@@ -230,21 +188,17 @@ class DebugManagerHandler implements JPDABreakpointListener {
             ClassObjectReference cor = null;
             try {
                 cor = RemoteServices.uploadBasicClasses(t, BASIC_CLASS_NAME);
-            } catch (PropertyVetoException pvex) {
+            } catch (PropertyVetoException |
+                     InvalidTypeException |
+                     ClassNotLoadedException |
+                     IncompatibleThreadStateException |
+                     IOException pvex) {
                 Exceptions.printStackTrace(pvex);
-            } catch (InvalidTypeException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ClassNotLoadedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IncompatibleThreadStateException ex) {
-                Exceptions.printStackTrace(ex);
             } catch (InvocationException ex) {
                 Exceptions.printStackTrace(ex);
                 final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, t.getDebugger());
                 iextr.preload(t);
                 Exceptions.printStackTrace(iextr);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "Uploaded class = {0}", cor);
@@ -266,19 +220,10 @@ class DebugManagerHandler implements JPDABreakpointListener {
                 t.notifyMethodInvoking();
                 Value ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 if (ret instanceof ThreadReference) {
-                    //boolean success = PrimitiveValueWrapper.booleanValue((PrimitiveValue) ret);
                     RemoteServices.setAccessLoopStarted(t.getDebugger(), (ThreadReference) ret);
                 } else {
                     LOG.log(Level.WARNING, "Could not start the access loop of "+serviceClass);
                     return ;
-                }
-                Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_SET_UP_DEBUG_MANAGER, "()Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
-                if (debugManagerMethod != null) {
-                    ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, debugManagerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (ret != null && !(ret instanceof ObjectReference)) {
-                        LOG.log(Level.WARNING, "Could not start up debugger manager of "+serviceClass);
-                        return ;
-                    }
                 }
                 TruffleAccess.assureBPSet(debugger, serviceClass);
                 JPDAClassType serviceJPDAClass = ((JPDADebuggerImpl) debugger).getClassType(serviceClass);
@@ -286,14 +231,15 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     accessorClass = serviceClass;
                     accessorJPDAClass = serviceJPDAClass;
                 }
-                if (debugManagerMethod != null) {
-                    //debugManager = (ObjectReference) ret;
-                }
-            } catch (VMDisconnectedExceptionWrapper vmd) {
             } catch (InvocationException iex) {
                 iextr = new InvocationExceptionTranslated(iex, t.getDebugger());
                 Exceptions.printStackTrace(iex);
-            } catch (Exception ex) {
+            } catch (ClassNotLoadedException |
+                     IncompatibleThreadStateException |
+                     InvalidTypeException |
+                     PropertyVetoException |
+                     InternalExceptionWrapper |
+                     ObjectCollectedExceptionWrapper ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 t.notifyMethodInvokeDone();
@@ -342,7 +288,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
             return ;
         }
         try {
-            Field accessLoopRunning = ReferenceTypeWrapper.fieldByName(accessorClass, "accessLoopRunning");
+            Field accessLoopRunning = ReferenceTypeWrapper.fieldByName(accessorClass, ACCESSOR_LOOP_RUNNING_FIELD);
             if (accessLoopRunning != null) {
                 ClassTypeWrapper.setValue(accessorClass, accessLoopRunning,
                                           VirtualMachineWrapper.mirrorOf(accessorClass.virtualMachine(), false));
@@ -353,24 +299,6 @@ class DebugManagerHandler implements JPDABreakpointListener {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        /*
-        ClassObjectReference serviceClass = RemoteServices.getServiceClass(debugger);
-        if (serviceClass == null) {
-            return ;
-        }
-        try {
-            ReferenceType serviceType = serviceClass.reflectedType();
-            Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
-            if (awtAccessLoop != null) {
-                ((ClassType) serviceType).setValue(awtAccessLoop, serviceClass.virtualMachine().mirrorOf(false));
-            }
-            serviceClass.enableCollection();
-        } catch (VMDisconnectedException vdex) {
-            // Ignore
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-                */
     }
     
     void breakpointAdded(JSLineBreakpoint jsLineBreakpoint) {

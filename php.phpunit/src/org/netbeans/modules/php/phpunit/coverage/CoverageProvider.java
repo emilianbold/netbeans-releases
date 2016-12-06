@@ -57,12 +57,17 @@ public class CoverageProvider {
     private static final Logger LOGGER = Logger.getLogger(CoverageProvider.class.getName());
 
 
+    public boolean loggerFileExists() {
+        return PhpUnit.COVERAGE_LOG.isFile();
+    }
+
     @CheckForNull
     public Coverage getCoverage() {
         CoverageImpl coverage = new CoverageImpl();
         try {
             PhpUnitCoverageLogParser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.COVERAGE_LOG), "UTF-8")), coverage); // NOI18N
         } catch (FileNotFoundException ex) {
+            assert false;
             LOGGER.info(String.format("File %s not found. If there are no errors in PHPUnit output (verify in Output window), "
                     + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.COVERAGE_LOG));
             return null;

@@ -213,14 +213,18 @@ class JBStartRunnable implements Runnable {
         // get Java platform that will run the server
         JavaPlatform platform = getJavaPlatform(properties);
 
-        if (startServer.getMode() == JBStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
+        if (startServer.getMode() == JBStartServer.MODE.DEBUG && !haveDebugOptions(javaOptsBuilder.toString())) {
             // if in debug mode and the debug options not specified manually
             if (platform.getSpecification().getVersion().compareTo(JDK_14) <= 0) {
                 javaOptsBuilder.append(" -classic");
+                javaOptsBuilder.append(" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
+                                append(dm.getDebuggingPort()).
+                                append(",server=y,suspend=n"); // NOI18N
+            } else {
+                javaOptsBuilder.append(" -agentlib:jdwp=transport=dt_socket,address="). // NOI18N
+                                append(dm.getDebuggingPort()).
+                                append(",server=y,suspend=n"); // NOI18N
             }
-            javaOptsBuilder.append(" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-                            append(dm.getDebuggingPort()).
-                            append(",server=y,suspend=n"); // NOI18N
 
         } else if (startServer.getMode() == JBStartServer.MODE.PROFILE) {
             if (properties.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
@@ -249,6 +253,23 @@ class JBStartRunnable implements Runnable {
             JAVA_OPTS+"=" + javaOpts,            // NOI18N
         };
         return envp;
+    }
+
+    private static boolean haveDebugOptions(String opts) {
+        if (opts.contains("-Xdebug")) {             // NOI18N
+            return true;
+        }
+        String jdwpAgent = "-agentlib:jdwp";        // NOI18N
+        int jdwpAgentIndex = opts.indexOf(jdwpAgent);
+        if (jdwpAgentIndex < 0) {
+            return false;
+        }
+        int i = jdwpAgentIndex + jdwpAgent.length();
+        if (i >= opts.length()) {
+            return true;
+        }
+        char c = opts.charAt(i);
+        return Character.isWhitespace(c) || c == '=';
     }
 
     private static StartupExtender.StartMode getMode(JBStartServer.MODE jbMode) {

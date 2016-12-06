@@ -52,6 +52,7 @@ import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.GSFPHPParserTestUtil;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -158,6 +159,7 @@ public abstract class PHPFormatterTestBase extends PHPTestBase {
             text = text.substring(0, formatStart) + text.substring(formatStart + FORMAT_START_MARK.length());
             formatEnd = text.indexOf(FORMAT_END_MARK);
             text = text.substring(0, formatEnd) + text.substring(formatEnd + FORMAT_END_MARK.length());
+            GSFPHPParserTestUtil.setUnitTestCaretPosition(formatEnd);
             if (!isTemplate) {
                 formatEnd --;
             }
@@ -184,6 +186,7 @@ public abstract class PHPFormatterTestBase extends PHPTestBase {
             }
 
             TokenFormatter.setUnitTestCarretPosition(carretPosition);
+            GSFPHPParserTestUtil.setUnitTestCaretPosition(carretPosition);
             doc.remove(0, doc.getLength());
             doc.insertString(0, text, null);
             doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());
@@ -213,5 +216,6 @@ public abstract class PHPFormatterTestBase extends PHPTestBase {
         format(doc, formatter, formatStart, formatEnd, false);
         String after = doc.getText(0, doc.getLength());
         assertDescriptionMatches(file, after, false, ".formatted");
+        GSFPHPParserTestUtil.setUnitTestCaretPosition(-1);
     }
 }

@@ -45,19 +45,24 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import jdk.jshell.Snippet;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;
+import org.netbeans.modules.jshell.support.ShellHistory;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -66,6 +71,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -75,8 +81,8 @@ import org.openide.util.NbBundle;
  */
 // must be registered for java also, to give completions on the 1st line
 @MimeRegistrations({
-    @MimeRegistration(mimeType="text/x-repl", service=CompletionProvider.class),
-    @MimeRegistration(mimeType="text/x-java", service=CompletionProvider.class)
+    @MimeRegistration(mimeType="text/x-repl", service=CompletionProvider.class, position = 100),
+    @MimeRegistration(mimeType="text/x-java", service=CompletionProvider.class, position = 120)
 })
 public class HistoryCompletionProvider implements CompletionProvider {
 
@@ -85,34 +91,34 @@ public class HistoryCompletionProvider implements CompletionProvider {
         return 0;
     }
     
-    private boolean isFirstJavaLine(JTextComponent component) {
+    static int isFirstJavaLine(JTextComponent component) {
         ShellSession s = ShellSession.get(component.getDocument());
         if (s == null) {
-            return false;
+            return -1;
         }
         ConsoleSection sec = s.getModel().getInputSection();
         if (sec == null) {
-            return false;
+            return -1;
         }
         LineDocument ld = LineDocumentUtils.as(component.getDocument(), LineDocument.class);
         if (ld == null) {
-            return false;
+            return -1;
         }
 
         int off = sec.getStart();
         int caret = component.getCaretPosition();
         int s1 = LineDocumentUtils.getLineStart(ld, caret);
         int s2 = LineDocumentUtils.getLineStart(ld, off);
-        return s1 == s2;
+        try {
+            return s1 == s2 ?
+                    component.getDocument().getText(sec.getPartBegin(), sec.getPartLen()).trim().length() 
+                    : -1;
+        } catch (BadLocationException ex) {
+            return 0;
+        }
     }
     
-    @Override
-    public CompletionTask createTask(int queryType, final JTextComponent component) {
-        if ((queryType != COMPLETION_ALL_QUERY_TYPE && queryType != COMPLETION_QUERY_TYPE) || 
-                !isFirstJavaLine(component)) {
-            return null;
-        }
-        // check that the caret is at the first line of the editable area:
+    static ShellSession checkInputSection(JTextComponent component) {
         Document doc = component.getDocument();
         ShellSession session = ShellSession.get(doc);
         if (session == null) {
@@ -141,26 +147,52 @@ public class HistoryCompletionProvider implements CompletionProvider {
         } catch (BadLocationException ex) {
             return null;
         }
-        
+        return session;
+    }
+    
+    @Override
+    public CompletionTask createTask(int queryType, final JTextComponent component) {
+        int a = isFirstJavaLine(component);
+        if (queryType != COMPLETION_ALL_QUERY_TYPE) {
+            if (queryType != COMPLETION_QUERY_TYPE || a != 0) {
+                return null;
+            }
+        }
+        // check that the caret is at the first line of the editable area:
+        ShellSession session = checkInputSection(component);
+        if (session == null) {
+            return null;
+        }
         return new AsyncCompletionTask(new T(
-            model,
-            is
+            session,
+            session.getModel(),
+            session.getModel().getInputSection()
         ), component);
     }
     
     private static class T extends AsyncCompletionQuery {
+        private ConsoleContents contents;
+        private final ShellSession  session;
         private final ConsoleModel model;
         private final ConsoleSection input;
         private int counter = 1;
         
-        public T(ConsoleModel model, ConsoleSection input) {
+        public T(ShellSession session, ConsoleModel model, ConsoleSection input) {
+            this.session = session;
             this.model = model;
             this.input = input;
         }
         
-        private CompletionItem createSectionItem(ConsoleSection s) {
-            String text = s.getContents(model.getDocument());
-            return new ItemImpl(counter++, text);
+        private CompletionItem createHistoryItem(ShellHistory.Item item) {
+            return createCompletionItem(item, true);
+        }
+        
+        private CompletionItem createCurrentItem(ShellHistory.Item item) {
+            return createCompletionItem(item, false);
+        }
+        
+        private CompletionItem createCompletionItem(ShellHistory.Item item, boolean saved) {
+            return new ItemImpl(saved, counter++, item.getKind(), item.isShellCommand(), item.getContents());
         }
         
         @Override
@@ -169,23 +201,40 @@ public class HistoryCompletionProvider implements CompletionProvider {
                 resultSet.finish();
                 return;
             }
+            int b = input.getPartBegin();
+            if (caretOffset < b) {
+                return;
+            }
+            String prefix = "";
+            try {
+                prefix = doc.getText(b, (caretOffset - b));
+            } catch (BadLocationException ex) {
+            }
+            final String fPrefix = prefix;
+            ShellHistory  h = session.getEnv().getLookup().lookup(ShellHistory.class);
             resultSet.addAllItems(
-                    model.getSections().stream().
-                            filter(s -> shouldDisplay(s)).
-                            map(s -> createSectionItem(s)).
+                    session.historyItems().stream().
+                            filter(i -> i.getContents().startsWith(fPrefix)).
+                            map(this::createCurrentItem).
                             collect(Collectors.toList())
             );
+            if (h != null) {
+                final Set<String> commands = new HashSet<>();
+                resultSet.addAllItems(
+                        h.getHistory().stream().
+                        filter(i -> 
+                                i.getContents().startsWith(fPrefix) &&
+                                commands.add(i.getContents())
+                        ).
+                        map(this::createHistoryItem).
+                        collect(Collectors.toList()));
+            }
             resultSet.finish();
         }
-        
-        private boolean shouldDisplay(ConsoleSection item) {
-            if (!item.getType().input || (input != null && (input.getStart() <= item.getStart()))) {
-                return false;
-            }
-            String text = item.getContents(model.getDocument());
-            return !text.trim().isEmpty();
-        }
     }
+    
+    private static final int PRIORITY_SAVED = 2000;
+    private static final int PRIORITY_CURRENT = 1000;
     
     
     @NbBundle.Messages({
@@ -195,10 +244,16 @@ public class HistoryCompletionProvider implements CompletionProvider {
     private static class ItemImpl implements CompletionItem {
         private final int index;
         private final String text;
-
-        public ItemImpl(int index, String text) {
+        private final boolean saved;
+        private final Snippet.Kind  kind;
+        private final boolean       command;
+        
+        public ItemImpl(boolean saved, int index, Snippet.Kind kind, boolean command, String text) {
             this.index = index;
             this.text = text;
+            this.saved = saved;
+            this.command = command;
+            this.kind = kind;
         }
         
         private String getLeftText() {
@@ -256,11 +311,37 @@ public class HistoryCompletionProvider implements CompletionProvider {
                     getLeftText(), 
                     getRightText(), g, defaultFont);
         }
+        
+        private ImageIcon getIcon() {
+            String baseName;
+            
+            if (command) {
+                baseName = "command"; // NOI18N
+            } else {
+                switch (kind) {
+                    case VAR:
+                    case EXPRESSION:
+                    case IMPORT:
+                    case METHOD:
+                    case TYPE_DECL:
+                    case STATEMENT:
+                            baseName = kind.name().toLowerCase();
+                        break;
+                    default:
+                        baseName = "item"; // NOI18N
+                        break;
+                }
+            }
+            
+            return ImageUtilities.loadImageIcon(ICON_BASE + baseName + ".png", true);
+        }
+        
+        private static final String ICON_BASE = "org/netbeans/modules/jshell/resources/history_"; // NOI18N
 
         @Override
         public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-            ImageIcon icon = ImageUtilities.loadImageIcon(
-                    "org/netbeans/modules/jshell/resources/historyItem.png", true);
+            ImageIcon icon = getIcon();
+            
             CompletionUtilities.renderHtml(
                     icon, 
                     getLeftText(), 
@@ -291,12 +372,12 @@ public class HistoryCompletionProvider implements CompletionProvider {
 
         @Override
         public int getSortPriority() {
-            return 1000;
+            return saved ? PRIORITY_SAVED : PRIORITY_CURRENT;
         }
 
         @Override
         public CharSequence getSortText() {
-            return getRightText();
+            return Integer.toString(1000 - index);
         }
 
         @Override

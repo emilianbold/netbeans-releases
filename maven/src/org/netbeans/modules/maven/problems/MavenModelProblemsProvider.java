@@ -300,16 +300,15 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
         List<ProjectProblem> toRet = new ArrayList<ProjectProblem>();
         for (Throwable e : res.getExceptions()) {
             LOG.log(Level.FINE, "Error on loading project " + project.getProjectDirectory(), e);
-            String msg = e.getMessage();
             if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
-                toRet.add(ProjectProblem.createError(TXT_Artifact_Resolution_problem(), msg));
+                toRet.add(ProjectProblem.createError(TXT_Artifact_Resolution_problem(), getDescriptionText(e)));
                 problemReporter.addMissingArtifact(((ArtifactResolutionException) e).getArtifact());
                 
             } else if (e instanceof ArtifactNotFoundException) { // XXX when does this occur?
-                toRet.add(ProjectProblem.createError(TXT_Artifact_Not_Found(), msg));
+                toRet.add(ProjectProblem.createError(TXT_Artifact_Not_Found(), getDescriptionText(e)));
                 problemReporter.addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
             } else if (e instanceof ProjectBuildingException) {
-                toRet.add(ProjectProblem.createError(TXT_Cannot_Load_Project(), msg, new SanityBuildAction(project)));
+                toRet.add(ProjectProblem.createError(TXT_Cannot_Load_Project(), getDescriptionText(e), new SanityBuildAction(project)));
                 if (e.getCause() instanceof ModelBuildingException) {
                     ModelBuildingException mbe = (ModelBuildingException) e.getCause();
                     for (ModelProblem mp : mbe.getProblems()) {
@@ -329,6 +328,7 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
                     }
                 }
             } else {
+                String msg = e.getMessage();
                 if(msg != null) {
                     LOG.log(Level.INFO, "Exception thrown while loading maven project at " + project.getProjectDirectory(), e); //NOI18N
                     toRet.add(ProjectProblem.createError(TXT_Cannot_read_model(), msg));
@@ -340,5 +340,15 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
             }
         }
         return toRet;
+    }
+
+    private String getDescriptionText(Throwable e) {
+        String msg = e.getMessage();        
+        if(msg != null) {
+            return msg;
+        } else {
+            String path = project.getProjectDirectory().getPath();
+            return TXT_NoMsg(path);
+        }
     }
 }

@@ -633,7 +633,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
         }
     }
 
-    private void insideImport(Env env) {
+    private void insideImport(Env env) throws IOException {
         int offset = env.getOffset();
         String prefix = env.getPrefix();
         ImportTree im = (ImportTree) env.getPath().getLeaf();
@@ -645,6 +645,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 addKeyword(env, STATIC_KEYWORD, SPACE, false);
             }
             addPackages(env, null, false);
+        }
+        if (options.contains(Options.ALL_COMPLETION)) {
+            env.getController().toPhase(Phase.ELEMENTS_RESOLVED);
+            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE), null);
+        } else {
+            hasAdditionalClasses = true;
         }
     }
 
@@ -1495,6 +1501,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         } else if (lastNonWhitespaceTokenId != JavaTokenId.STAR) {
             controller.toPhase(Phase.RESOLVED);
+            if (withinModuleName(env)) {
+                String fqnPrefix = fa.getExpression().toString() + '.';
+                anchorOffset = (int) sourcePositions.getStartPosition(root, fa);
+                addModuleNames(env, fqnPrefix, true);
+                return;
+            }
             TreePath parentPath = path.getParentPath();
             Tree parent = parentPath != null ? parentPath.getLeaf() : null;
             TreePath grandParentPath = parentPath != null ? parentPath.getParentPath() : null;
@@ -1504,11 +1516,13 @@ public final class JavaCompletionTask<T> extends BaseTask {
             TypeMirror type = controller.getTrees().getTypeMirror(expPath);
             if (type != null) {
                 Element el = controller.getTrees().getElement(expPath);
+                TreeUtilities tu = controller.getTreeUtilities();
                 EnumSet<ElementKind> kinds;
                 DeclaredType baseType = null;
                 Set<TypeMirror> exs = null;
                 boolean inImport = false;
                 boolean insideNew = false;
+                boolean srcOnly = false;
                 if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree) parent).getExtendsClause() == fa) {
                     kinds = EnumSet.of(CLASS);
                     env.afterExtends();
@@ -1638,19 +1652,12 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 } else if (parent.getKind() == Tree.Kind.ENHANCED_FOR_LOOP && ((EnhancedForLoopTree) parent).getExpression() == fa) {
                     env.insideForEachExpression();
                     kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
-                } else if ((parent.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)parent).getModuleNames() != null && ((ExportsTree)parent).getModuleNames().contains(fa))
-                        || (parent.getKind() == Tree.Kind.REQUIRES && ((RequiresTree)parent).getModuleName() == fa)) {
-                    String fqnPrefix = fa.getExpression().toString() + '.';
-                    anchorOffset = (int) sourcePositions.getStartPosition(root, fa);
-                    addModuleNames(env, fqnPrefix, true);
-                    return;
-                } else if (parent.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)parent).getExportName() == fa) {
-                    String fqnPrefix = fa.getExpression().toString() + '.';
-                    addPackages(env, fqnPrefix, true);
-                    return;
-                } else if (parent.getKind() == Tree.Kind.PROVIDES) {
-                    kinds = ((ProvidesTree)parent).getServiceName() == fa ? EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE) : EnumSet.of(CLASS);
-                } else if (parent.getKind() == Tree.Kind.USES) {
+                } else if (tu.getPathElementOfKind(Tree.Kind.EXPORTS, path) != null) {
+                    kinds = EnumSet.noneOf(ElementKind.class);
+                    srcOnly = true;
+                } else if (tu.getPathElementOfKind(Tree.Kind.PROVIDES, path) != null) {                    
+                    kinds = withinProvidesService(env) ? EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE) : EnumSet.of(CLASS);
+                } else if (tu.getPathElementOfKind(Tree.Kind.USES, path) != null) {
                     kinds = EnumSet.of(ANNOTATION_TYPE, CLASS, INTERFACE);
                 } else {
                     kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
@@ -1757,7 +1764,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                     }
                                 }
                             }
-                            addPackageContent(env, (PackageElement) el, kinds, baseType, insideNew, false);
+                            addPackageContent(env, (PackageElement) el, kinds, baseType, insideNew, srcOnly);
                             if (results.isEmpty() && ((PackageElement) el).getQualifiedName() == el.getSimpleName()) {
                                 // no package content? Check for unimported class
                                 ClassIndex ci = controller.getClasspathInfo().getClassIndex();
@@ -3628,12 +3635,26 @@ public final class JavaCompletionTask<T> extends BaseTask {
         if (fqnPrefix == null) {
             fqnPrefix = EMPTY;
         }
-        String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : null;
-        EnumSet<ClassIndex.SearchScope> scope = srcOnly ? EnumSet.of(ClassIndex.SearchScope.SOURCE) : EnumSet.allOf(ClassIndex.SearchScope.class);
-        for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true, scope)) {
-            if (startsWith(env, pkgName, prefix) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
-            {
-                results.add(itemFactory.createPackageItem(pkgName, anchorOffset, srcOnly));
+        String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : fqnPrefix;
+        CompilationController controller = env.getController();
+        Elements elements = controller.getElements();
+        Element el = controller.getTrees().getElement(new TreePath(controller.getCompilationUnit()));
+        ModuleElement moduleElement = el != null ? controller.getElements().getModuleOf(el) : null;
+        Set<String> seenPkgs = new HashSet<>();
+        EnumSet<ClassIndex.SearchScope> scope = srcOnly ? EnumSet.of(ClassIndex.SearchScope.SOURCE) : EnumSet.allOf(ClassIndex.SearchScope.class);        
+        for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, false, scope)) {
+            if (startsWith(env, pkgName, prefix) && !Utilities.isExcluded(pkgName + ".")
+                    && (moduleElement != null ? elements.getPackageElement(moduleElement, pkgName) : elements.getPackageElement(pkgName)) != null) { //NOI18N
+                if (fqnPrefix != null) {
+                    pkgName = pkgName.substring(fqnPrefix.length());
+                }
+                int idx = pkgName.indexOf('.');
+                if (idx > 0) {
+                    pkgName = pkgName.substring(0, idx);
+                }
+                if (seenPkgs.add(pkgName)) {
+                    results.add(itemFactory.createPackageItem(pkgName, anchorOffset, srcOnly));
+                }
             }
         }
     }
@@ -3669,7 +3690,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             addLocalAndImportedTypes(env, kinds, baseType);
             hasAdditionalClasses = true;
         }
-        addPackages(env, null, false);
+        addPackages(env, null, kinds.isEmpty());
     }
 
     private void addLocalAndImportedTypes(final Env env, final EnumSet<ElementKind> kinds, final DeclaredType baseType) throws IOException {
@@ -5672,6 +5693,36 @@ public final class JavaCompletionTask<T> extends BaseTask {
             path = path.getParentPath();
         }
         return false;
+    }
+
+    private boolean withinModuleName(Env env) {
+        TreePath path = env.getPath();
+        Tree last = null;
+        while (path != null) {
+            Tree tree = path.getLeaf();
+            if (last != null
+                    && (tree.getKind() == Tree.Kind.EXPORTS && ((ExportsTree)tree).getModuleNames() != null && ((ExportsTree)tree).getModuleNames().contains(last)
+                    || tree.getKind() == Tree.Kind.REQUIRES && ((RequiresTree)tree).getModuleName() == last)) {
+                return true;
+            }
+            path = path.getParentPath();
+            last = tree;
+        }
+        return false;
+    }
+    
+    private boolean withinProvidesService(Env env) {
+        TreePath path = env.getPath();
+        Tree last = null;
+        while (path != null) {
+            Tree tree = path.getLeaf();
+            if (last != null && tree.getKind() == Tree.Kind.PROVIDES && ((ProvidesTree)tree).getServiceName() == last) {
+                return true;
+            }
+            path = path.getParentPath();
+            last = tree;
+        }
+        return false;        
     }
 
     private boolean hasAccessibleInnerClassConstructor(Element e, Scope scope, Trees trees) {

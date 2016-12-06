@@ -528,5 +528,13 @@ public class CssCompletionTest extends CssModuleTestBase {
         assertCompletion(document, Match.EMPTY);
     }
 
+    public void testCompletionBeforeSelector() throws ParseException {
+        checkCC(".comments-head {\n"
+                + "    fon|\n"
+                + "    .fb-like {\n"
+                + "        float: left;\n"
+                + "    }\n"
+                + "}", arr("font-weight"), Match.CONTAINS);
+    }
     
 }

@@ -53,7 +53,6 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -78,8 +77,6 @@ import org.netbeans.modules.jshell.model.Rng;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.editor.caret.CascadingNavigationFilter;
 import org.netbeans.spi.editor.caret.NavigationFilterBypass;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
@@ -93,19 +90,11 @@ import org.openide.windows.TopComponent;
  * @author sdedic
  */
 @TopComponent.Description(
-        preferredID = "REPLTopComponent",
-        //iconBase="SET/PATH/TO/ICON/HERE",
+        preferredID = "JShellEditor",
+        iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
-@ActionID(category = "Window", id = "org.netbeans.modules.java.repl.REPLTopComponent")
-@ActionReference(path = "Menu/Window" /*, position = 333 */)
-@NbBundle.Messages({
-    "CTL_REPLAction=Java REPL",
-    "CTL_REPLTopComponent=Java REPL",
-    "CTL_REPLTopComponentProject=Java REPL for {0}",
-    "HINT_REPLTopComponent=This is a Java REPL window"
-})
 public class ConsoleEditor extends CloneableEditor {
 
     private ShellSession session;
@@ -570,7 +559,6 @@ public class ConsoleEditor extends CloneableEditor {
         @Override
         public void sectionUpdated(ConsoleEvent e) {
             if (e.containsInput()) {
-                caret = false;
                 SwingUtilities.invokeLater(this);
             }
         }

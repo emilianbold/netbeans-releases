@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.frames;
@@ -45,28 +45,28 @@ package org.netbeans.modules.debugger.jpda.truffle.frames;
 import com.sun.jdi.StringReference;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.netbeans.api.debugger.jpda.Field;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 
 /**
  *
  * @author Martin
  */
-public class TruffleStackFrame {
+public final class TruffleStackFrame {
 
+    private static final Logger LOG = Logger.getLogger(TruffleStackFrame.class.getName());
+    
     private final JPDADebugger debugger;
-    private final Variable suspendedInfo;
     private final int depth;
     private final ObjectVariable frameInstance;
-    private final ObjectVariable stackTrace;
-    private final String callTargetName;
     private final String methodName;
     private final String sourceLocation;
     
@@ -76,39 +76,32 @@ public class TruffleStackFrame {
     private final URI    sourceURI;
     private final int    sourceLine;
     private final StringReference codeRef;
-    private TruffleSlotVariable[] vars;
+    private TruffleVariable[] vars;
     private final ObjectVariable thisObject;
+    private final boolean isInternal;
     
-    /*
-    TruffleStackFrame(int depth, String callTargetName, String methodName, String sourceLocation) {
-        this.depth = depth;
-        this.callTargetName = callTargetName;
-        this.methodName = methodName;
-        this.sourceLocation = sourceLocation;
-    }
-    */
-
-    public TruffleStackFrame(JPDADebugger debugger, Variable suspendedInfo, int depth,
-                             ObjectVariable frameInstance, ObjectVariable stackTrace,
+    public TruffleStackFrame(JPDADebugger debugger, int depth,
+                             ObjectVariable frameInstance,
                              String frameDefinition, StringReference codeRef,
-                             TruffleSlotVariable[] vars, ObjectVariable thisObject) {
-        /*
-        try {
-            System.err.println("new TruffleStackFrame("+depth+", "+frameInstance.getToStringValue()+" of type "+frameInstance.getClassType().getName());
-        } catch (InvalidExpressionException iex) {
-            iex.printStackTrace();
-        }*/
+                             TruffleVariable[] vars, ObjectVariable thisObject,
+                             boolean includeInternal) {
+        if (LOG.isLoggable(Level.FINE)) {
+            try {
+                LOG.fine("new TruffleStackFrame("+depth+", "+
+                         frameInstance.getToStringValue()+" of type "+frameInstance.getClassType().getName()+
+                         ", "+frameDefinition+", vars = "+Arrays.toString(vars)+
+                         ", "+thisObject+")");
+            } catch (InvalidExpressionException iex) {
+                LOG.log(Level.FINE, iex.getMessage(), iex);
+            }
+        }
         this.debugger = debugger;
-        this. suspendedInfo = suspendedInfo;
         this.depth = depth;
         this.frameInstance = frameInstance;
-        this.stackTrace = stackTrace;
+        boolean internalFrame = includeInternal;
         try {
             int i1 = 0;
             int i2 = frameDefinition.indexOf('\n');
-            callTargetName = frameDefinition.substring(i1, i2);
-            i1 = i2 + 1;
-            i2 = frameDefinition.indexOf('\n', i1);
             methodName = frameDefinition.substring(i1, i2);
             i1 = i2 + 1;
             i2 = frameDefinition.indexOf('\n', i1);
@@ -130,13 +123,21 @@ public class TruffleStackFrame {
                 throw new IllegalStateException("Bad URI: "+frameDefinition.substring(i1, i2), usex);
             }
             i1 = i2 + 1;
-            sourceLine = Integer.parseInt(frameDefinition.substring(i1));
+            if (includeInternal) {
+                i2 = frameDefinition.indexOf('\n', i1);
+                sourceLine = Integer.parseInt(frameDefinition.substring(i1, i2));
+                i1 = i2 + 1;
+                internalFrame = Boolean.valueOf(frameDefinition.substring(i1));
+            } else {
+                sourceLine = Integer.parseInt(frameDefinition.substring(i1));
+            }
         } catch (IndexOutOfBoundsException ioob) {
             throw new IllegalStateException("frameDefinition='"+frameDefinition+"'", ioob);
         }
         this.codeRef = codeRef;
         this.vars = vars;
         this.thisObject = thisObject;
+        this.isInternal = internalFrame;
     }
     
     public final JPDADebugger getDebugger() {
@@ -147,10 +148,6 @@ public class TruffleStackFrame {
         return depth;
     }
     
-    public String getCallTargetName() {
-        return callTargetName;
-    }
-
     public String getMethodName() {
         return methodName;
     }
@@ -180,15 +177,19 @@ public class TruffleStackFrame {
         return frameInstance;// also is: (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
     }
     
-    public TruffleSlotVariable[] getVars() {
+    public TruffleVariable[] getVars() {
         if (vars == null) {
-            vars = TruffleAccess.createVars(debugger, suspendedInfo, getStackFrameInstance());
+            vars = TruffleAccess.createFrameVars(debugger, /*suspendedInfo,*/ getStackFrameInstance());
         }
         return vars;
     }
     
     public ObjectVariable getThis() {
         return thisObject;
+    }
+    
+    public boolean isInternal() {
+        return isInternal;
     }
     
 }

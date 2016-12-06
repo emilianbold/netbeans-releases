@@ -56,15 +56,15 @@ import org.netbeans.api.lexer.TokenSequence;
  * @author sdedic
  */
 public class JShellParser {
-    private final TokenSequence<JShellToken>  sequence;
-    private final JShell state;
-    private final int startOffset;
+    private final ShellAccessBridge   shellAccess;
+    private TokenSequence<JShellToken>  sequence;
+    private int startOffset;
     private int limit;
     
-    public JShellParser(JShell state, TokenSequence<JShellToken> seq, int initialPos, int limit) {
-        this.sequence = seq;
-        this.state = state;
+    public JShellParser(ShellAccessBridge access, TokenSequence<JShellToken> seq, int initialPos, int limit) {
+        this.shellAccess = access;
         this.startOffset = initialPos;
+        this.sequence = seq;
         this.limit = limit;
     }
     
@@ -95,11 +95,15 @@ public class JShellParser {
     }
     
     private void finishSection() {
+        finishSection(sequence.offset());
+    }
+    
+    private void finishSection(int eoffset) {
         if (section == null) {
             return;
         }
         ModelAccessor.INSTANCE.extendSection(section, 
-                p(lineContentsStart), p(sequence.offset()),
+                p(lineContentsStart), p(eoffset),
                 ranges,
                 snippets);
         sectionList.add(section);
@@ -108,10 +112,13 @@ public class JShellParser {
     }
     
     private void createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type type) {
-        int l = sequence.token().length();
+        createSection(type, sequence.token().length(), sequence.offset());
+    }
+    
+    private void createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type type, int l, int start) {
         if (section != null) {
             if (section != null && section.getType() == type) {
-                int s = sequence.offset();
+                int s = start;
                 if (s + l >= limit) {
                     l = limit - s;
                 }
@@ -148,6 +155,10 @@ public class JShellParser {
     private void extendWithPart() {
         int ls = sequence.offset();
         int le = ls + sequence.token().length();
+        extendWithPart(ls, le);
+    }
+    
+    private void extendWithPart(int ls, int le) {
         if (le == limit + 1) {
             // hack: lexer produces token which is one past the document / snapshot contents
             le = limit;
@@ -158,11 +169,17 @@ public class JShellParser {
             int a = p(ls);
             // potentially join ranges
             if (r.end == a || r.start == a) {
-                ranges.set(l, new Rng(r.start, p(le)));
+                r = new Rng(r.start, p(le));
+                ranges.set(l, r);
+                ModelAccessor.INSTANCE.extendSection(section, 
+                        r.start, r.end, null, null);
                 return;
             }
         }
-        ranges.add(new Rng(p(ls), p(le)));
+        Rng r = new Rng(p(ls), p(le));
+        ranges.add(r);
+        ModelAccessor.INSTANCE.extendSection(section, 
+                r.start, r.end, null, null);
     }
     
     private void addSnippetText(int pos, CharSequence text) {
@@ -180,7 +197,7 @@ public class JShellParser {
 
         int lpos = sequence.offset();
         CharSequence lineContents = sequence.token().text();
-        if (state == null) {
+        if (!shellAccess.isInitialized()) {
             boolean empty = input.trim().isEmpty();
             int e = input.length();
             e = input.length();
@@ -192,13 +209,13 @@ public class JShellParser {
         int snipOffset = lpos;
         O:
         while (true) {
-            SourceCodeAnalysis.CompletionInfo info = state.sourceCodeAnalysis().analyzeCompletion(input);
+            SourceCodeAnalysis.CompletionInfo info = shellAccess.analyzeInput(input);
             int endPos;
             String rem = info.remaining();
             if (rem == null) {
                 endPos = input.length() - 1;
             } else {
-                endPos = input.length() - rem.length();
+                endPos = input.length() - rem.length() - 1;
             }
             int e = endPos;
             boolean empty = info.remaining().trim().isEmpty();
@@ -243,6 +260,7 @@ public class JShellParser {
     public void execute() {
         boolean f = true;
         boolean wasPrompt = false;
+        int end = 0;
         while (sequence.moveNext() && (limit <  1 || sequence.offset() < limit)) {
             if (f) {
                 lineStart = sequence.offset();
@@ -250,11 +268,13 @@ public class JShellParser {
             }
             Token<JShellToken> tukac = sequence.token();
             boolean resetJava = true;
-            
+            end = sequence.offset() + tukac.length();
             switch (tukac.id()) {
                 case COMMAND:
                 case ERR_COMMAND:
-                case COMMAND_TEXT:
+                case COMMAND_PARAM:
+                case COMMAND_OPTION:
+                case COMMAND_STRING:
                     // both go to an input section
                     createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type.COMMAND);
                     extendWithPart();
@@ -269,15 +289,17 @@ public class JShellParser {
                     }
                     if (!sequence.moveNext()) {
                         // prompt ends the line
-                        createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type.JAVA);
-                        extendWithPart();
+                        createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type.JAVA, 0, end);
+                        extendWithPart(end, end);
                         break;
                     }
                     wasPrompt = true;
                     switch (sequence.token().id()) {
                         case COMMAND:
-                        case COMMAND_TEXT:
+                        case COMMAND_PARAM:
                         case ERR_COMMAND:
+                        case COMMAND_OPTION:
+                        case COMMAND_STRING:
                             createSection(org.netbeans.modules.jshell.model.ConsoleSection.Type.COMMAND);
                             // these will create a section
                             sequence.movePrevious();
@@ -351,7 +373,7 @@ public class JShellParser {
                 snippetText = null;
             }
         }
-        finishSection();
+        finishSection(end);
     }
     
     public List<ConsoleSection> sections() {

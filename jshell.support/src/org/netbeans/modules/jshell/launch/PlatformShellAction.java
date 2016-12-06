@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
         iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png"
 )
 @ActionReference(
-        path = "UI/ToolActions/Java", position = 3000
+        path = "UI/ToolActions/Java"
 )
 @NbBundle.Messages({
     "DN_PlatformShell=Open Java Platform Shell",

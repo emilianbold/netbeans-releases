@@ -1,7 +1,43 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.module.graph;
 
@@ -14,16 +50,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.lang.model.element.ModuleElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
@@ -81,7 +113,7 @@ final class DependencyCalculator {
                                 null;
                         if (me != null) {
                             final Map<String, ModuleNode> mods = new LinkedHashMap<>();
-                            final Collection<DependencyEdge> deps = new ArrayList<>();    
+                            final Collection<DependencyEdge> deps = new HashSet<>();
                             String name = me.getQualifiedName().toString();
                             ClasspathInfo classpathInfo = cc.getClasspathInfo();
                             ModuleNode node = new ModuleNode(name, me.isUnnamed(), isJDK(me, classpathInfo), moduleInfo);
@@ -109,7 +141,7 @@ final class DependencyCalculator {
             d.node.setParent(meNode);
             deps.add(new DependencyEdge(meNode, d.node, d.reqD.isPublic(), false));
         }
-        deps.addAll(collectTransitiveDependencies(new LinkedList<>(deps)));
+        deps.addAll(collectTransitiveDependencies(new HashSet<>(deps)));
     }
     
     private Collection<Dependency> collect(  
@@ -118,7 +150,7 @@ final class DependencyCalculator {
         @NonNull final Collection<DependencyEdge> deps,
         ClasspathInfo classpathInfo) {
         List<Dependency> dependencies = new ArrayList<>();
-        if (!me.isUnnamed()) {            
+        if (!me.isUnnamed()) {
             for (ModuleElement.Directive d : me.getDirectives()) {
                 if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                     final ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;
@@ -161,7 +193,7 @@ final class DependencyCalculator {
         }
         return isJDK;
     }
-
+    
     Collection<DependencyEdge> collectTransitiveDependencies(Collection<DependencyEdge> deps) {
         Map<ModuleNode, List<ModuleNode>> publicEdges = deps.stream()
                 .filter((e) -> e.isPublic())
@@ -170,26 +202,32 @@ final class DependencyCalculator {
     
         Collection<DependencyEdge> transitiveEdges = new HashSet<>();
         for (DependencyEdge dep : deps) {
-            List<ModuleNode> transTargets = publicEdges.get(dep.getTarget());
-            if(transTargets != null) {
+            List<ModuleNode> targets = publicEdges.get(dep.getTarget());
+            if(targets != null) {
                 ModuleNode source = dep.getSource();
+                transitiveEdges.addAll(toDependencyEdges(source, targets));
+                Collection<ModuleNode> transTargets = new HashSet<>();
+                collectTransTargets(targets, publicEdges, transTargets);
                 transitiveEdges.addAll(toDependencyEdges(source, transTargets));
-                transitiveEdges.addAll(toDependencyEdges(source, collectTransTargets(transTargets, publicEdges)));
             }
         }
         return transitiveEdges;
     }
 
-    private Collection<ModuleNode> collectTransTargets(List<ModuleNode> sources, Map<ModuleNode, List<ModuleNode>> publicEdges) {
-        Collection<ModuleNode> ret = new HashSet<>();
+    private void collectTransTargets(List<ModuleNode> sources, Map<ModuleNode, List<ModuleNode>> publicEdges, Collection<ModuleNode> transTargets) {
         for (ModuleNode source : sources) {
             List<ModuleNode> targets = publicEdges.get(source);
-            if(targets != null) {
-                ret.addAll(targets);
-                ret.addAll(collectTransTargets(targets, publicEdges));
+            if(targets != null) {                
+                List<ModuleNode> ts = new LinkedList<>();
+                for (ModuleNode target : targets) {
+                    if(!transTargets.contains(target)) {
+                        ts.add(target);
+                    }
+                }
+                transTargets.addAll(ts);
+                collectTransTargets(ts, publicEdges, transTargets);
             }
-        }
-        return ret;
+        }       
     }
 
     private static Collection<DependencyEdge> toDependencyEdges(ModuleNode source, Collection<ModuleNode> targets) {

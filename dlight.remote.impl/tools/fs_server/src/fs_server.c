@@ -93,11 +93,13 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 static int kill_locker_and_wait = 0;
 static unsigned long locker_pid_to_kill = 0;
+const char* error_log = NULL;
+bool redirect_err_flag = false;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 10
-#define FS_SERVER_MINOR_VERSION 3
+#define FS_SERVER_MID_VERSION 12
+#define FS_SERVER_MINOR_VERSION 5
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -130,23 +132,13 @@ static __thread struct {
     char* strerr;
 } err_info;
 
+static struct {
+    queue queue;
+    pthread_mutex_t mutex;
+} delete_on_exit_list;
+
 static const int thread_emsg_bufsize = PATH_MAX * 2 + 128; // should it be less?
 static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?
-
-static void err_init() {
-    err_info.err_no = 0;
-    err_info.errmsg = malloc_wrapper(thread_emsg_bufsize);
-    err_info.strerr = malloc_wrapper(strerr_bufsize);
-    *err_info.errmsg = 0; // just in case
-}
-
-static void err_shutdown() {
-    err_info.err_no = 0;
-    free(err_info.errmsg);
-    err_info.errmsg = NULL;
-    free(err_info.strerr);
-    err_info.strerr = NULL;
-}
 
 static int err_get_code() {
     return err_info.err_no;
@@ -174,6 +166,77 @@ static void err_set(int code, const char *format, ...) {
     va_start (args, format);
     vsnprintf(err_info.errmsg, thread_emsg_bufsize, format, args);
     va_end (args);
+}
+
+static void delete_on_exit_list_init() {
+    pthread_mutex_init(&delete_on_exit_list.mutex, NULL);
+    mutex_lock_wrapper(&delete_on_exit_list.mutex);
+    queue_init(&delete_on_exit_list.queue);
+    mutex_unlock_wrapper(&delete_on_exit_list.mutex);
+}
+
+static void delete_on_exit_list_add(const char* p) {
+    mutex_lock_wrapper(&delete_on_exit_list.mutex);
+    const char* p2 = strdup_wrapper(p);
+    queue_add(&delete_on_exit_list.queue, (void*) p2);
+    mutex_unlock_wrapper(&delete_on_exit_list.mutex);
+}
+
+static void delete_on_exit_impl() {
+    trace(TRACE_INFO, "Processing files that should be deleted on exit\n");
+    mutex_lock_wrapper(&delete_on_exit_list.mutex);
+    int success_cnt = 0;
+    int err_cnt = 0;
+    void* p;
+    while((p = queue_poll(&delete_on_exit_list.queue))) {
+        const char* path = (const char*) p;
+        trace(TRACE_FINEST, "  removing %s...\n", path);
+        if(unlink(path)) {
+            err_cnt++;
+            report_error("error deleting file %s: %s\n", path, err_to_string(errno));
+        } else {
+            success_cnt++;            
+        }
+        free(p);
+    }
+    mutex_unlock_wrapper(&delete_on_exit_list.mutex);    
+    trace(TRACE_INFO, "Successfully removed %d files; error removing %d files\n", success_cnt, err_cnt);
+}
+
+static void err_init() {
+    err_info.err_no = 0;
+    err_info.errmsg = malloc_wrapper(thread_emsg_bufsize);
+    err_info.strerr = malloc_wrapper(strerr_bufsize);
+    *err_info.errmsg = 0; // just in case
+}
+
+static void err_redirect_init() {
+    if (redirect_err_flag) {
+        if (!error_log) {
+            const char* cache_root = dirtab_get_basedir();
+            if (cache_root) {
+                const char* name = "/stderr.txt";
+                size_t sz = strlen(cache_root) + strlen(name) + 1;
+                char* path = malloc(sz);
+                strncpy(path, cache_root, sz);
+                strncat(path, name, sz);
+                error_log = path;
+            } else {
+                error_log = strdup("/tmp/fs_server_stderr.txt");
+            }
+        }
+        redirect_err(error_log);
+    } else {
+        redirect_err(NULL);
+    }
+}
+
+static void err_shutdown() {
+    err_info.err_no = 0;
+    free(err_info.errmsg);
+    err_info.errmsg = NULL;
+    free(err_info.strerr);
+    err_info.strerr = NULL;
 }
 
 static bool state_get_proceed() {
@@ -303,6 +366,7 @@ static bool is_valid_request_kind(char c) {
         case FS_REQ_REMOVE_WATCH:
         case FS_REQ_REFRESH:
         case FS_REQ_DELETE:
+        case FS_REQ_DELETE_ON_DISCONNECT:
         case FS_REQ_SERVER_INFO:
         case FS_REQ_HELP:
         case FS_REQ_OPTION:
@@ -799,7 +863,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
         el = dirtab_get_element(path);
         dirtab_lock(el);
         dirtab_set_watch_state(el, DE_WSTATE_POLL);
-        cache_fp = fopen600(dirtab_get_element_cache_path(el));
+        cache_fp = fopen600(dirtab_get_element_cache_path(el), O_WRONLY | O_TRUNC | O_CREAT);
         if (cache_fp) {
             fprintf(cache_fp, "%s%i\n", persistence_version_label, persistence_version_curr);
             escape_strcpy(response_buf.data, path);
@@ -847,6 +911,13 @@ static void response_error(int request_id, const char* path, int err_code, const
 static void response_info(int request_id) {
     my_fprintf(STDOUT, "%c %i %i.%i.%i\n", FS_RSP_SERVER_INFO, request_id, FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION);
     my_fflush(STDOUT);
+}
+
+static void response_delete_on_disconnect(int request_id, const char* path) {
+    if (request_id != 0) {
+        response_error(request_id, path, 0, "FS_REQ_DELETE_ON_DISCONNECT request should have zero ID!");
+    }
+    delete_on_exit_list_add(path);
 }
 
 static void response_delete(int request_id, const char* path, const settings_str* settings) {
@@ -1353,7 +1424,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
 }
 
 static void thread_init() {
-    err_init();
+    err_init();    
     sigset_t set;
     sigfillset(&set);
     sigdelset(&set, SIGUSR1);
@@ -1524,6 +1595,7 @@ static void response_help() {
     help_req_kind(FS_REQ_REMOVE_WATCH);
     help_req_kind(FS_REQ_REFRESH);
     help_req_kind(FS_REQ_DELETE);
+    help_req_kind(FS_REQ_DELETE_ON_DISCONNECT);
     help_req_kind(FS_REQ_SERVER_INFO);
     help_req_kind(FS_REQ_OPTION);
     help_req_kind(FS_REQ_HELP);
@@ -1536,6 +1608,9 @@ static void process_request(fs_request* request) {
     switch (request->kind) {
         case FS_REQ_DELETE:
             response_delete(request->id, request->path, &settings);
+            break;
+        case FS_REQ_DELETE_ON_DISCONNECT:
+            response_delete_on_disconnect(request->id, request->path);
             break;
         case FS_REQ_SERVER_INFO:
             response_info(request->id);
@@ -1735,11 +1810,16 @@ static void main_loop() {
 
 static void usage(char* argv[]) {
     char *prog_name = strrchr(argv[0], '/');
+    if (prog_name) {
+        prog_name++;
+    }
     my_fprintf(STDERR,
+            "%s %i.%i.%i\n"
             "Usage: %s [-t nthreads] [-v] [-p] [-r]\n"
             "   -t <nthreads> response processing threads count (default is %d)\n"
             "   -p log responses into persisnence\n"
             "   -r <nsec>  set refresh ON and sets refresh interval in seconds\n"
+            "   -e [<file>]  redirect trace and error messages to file; by default file is ${cache}/stderr.txt\n"
             "   -R <i|e>  refresh mode: i - implicit, e - explicit\n"
             "   -v <verbose-level>: print trace messages\n"
             "   -l log all requests into log file\n"
@@ -1750,6 +1830,7 @@ static void usage(char* argv[]) {
             "      wait maximum <msec> microseconds until it releases the lock\n"
             "      <msec> should be less than 1000000\n"
             "      if <PID> is specified then only the process with this PID can be killed\n"
+            , prog_name ? prog_name : argv[0], FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION
             , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
@@ -1757,7 +1838,7 @@ void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
     TraceLevel default_trace_leve = TRACE_INFO;
-    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:K:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:K:e:")) != -1) {
         switch (opt) {
             case 'R':
                 if (optarg) {
@@ -1775,6 +1856,12 @@ void process_options(int argc, char* argv[]) {
             case 'd':
                 if (optarg) {
                     dirtab_set_persistence_dir(optarg);
+                }
+                break;
+            case 'e':
+                redirect_err_flag = true;
+                if (optarg) {
+                    error_log = strdup(optarg);
                 }
                 break;
             case 'c':
@@ -1906,6 +1993,7 @@ static void startup() {
         trace(TRACE_INFO, "loaded dirtab\n");
         dirtab_visit(print_visitor, NULL);
     }
+    delete_on_exit_list_init();    
     int curr_thread = 0;
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
@@ -1974,6 +2062,7 @@ static void shutdown() {
         trace(TRACE_FINE, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i].id);
         pthread_join(rp_threads[i].id, NULL);
     }
+    delete_on_exit_impl();
     if (refresh) {
         int refresh_thread_idx = rp_thread_count;
         pthread_kill(rp_threads[refresh_thread_idx].id, SIGUSR1);
@@ -1988,33 +2077,37 @@ static void shutdown() {
     log_close();
     err_shutdown();
     free_settings();
+    if (error_log) {
+        free((void*)error_log);
+    }    
     trace(TRACE_INFO, "Shut down.\n");
     exit(0);
 }
 
 static void log_header(int argc, char* argv[]) {
     if (log_flag) {
-       log_open("log") ;
-log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
-               FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
-       time_t t = time(NULL);
-       struct tm *tt = localtime(&t);
-       if (tt) {
-           log_print("%d/%02d/%02d at %02d:%02d:%02d\n",
-                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday,
-                   tt->tm_hour, tt->tm_min, tt->tm_sec);
-       } else {
-           log_print("<error getting time: %s>\n", strerror(errno));
-       }
-       for (int i = 0; i < argc; i++) {
-           log_print("%s ", argv[i]);
-       }
-       log_print("\n");
+        log_open("log") ;
+        log_and_err_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
+                FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+        time_t t = time(NULL);
+        struct tm *tt = localtime(&t);
+        if (tt) {
+            log_and_err_print("%d/%02d/%02d at %02d:%02d:%02d\n",
+                    tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday,
+                    tt->tm_hour, tt->tm_min, tt->tm_sec);
+        } else {
+            log_and_err_print("<error getting time: %s>\n", strerror(errno));
+        }
+        for (int i = 0; i < argc; i++) {
+            log_and_err_print("%s ", argv[i]);
+        }
+        log_and_err_print("\n");
     }
 }
 
 int main(int argc, char* argv[]) {
     process_options(argc, argv);
+    err_redirect_init();
     trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION,
             FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
     startup();

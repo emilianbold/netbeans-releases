@@ -151,6 +151,11 @@ package org.netbeans.modules.css.lib;
         return tokenImage.equalsIgnoreCase(input.LT(1).getText());
     }
 
+    private boolean tokenNameStartsWith(String prefix) {
+        return input.LT(1).getText() != null 
+            && input.LT(1).getText().startsWith(prefix);
+    }
+
     private boolean tokenNameIs(String[] tokens) {
         for(String tokenImage : tokens) {
             if(tokenImage.equalsIgnoreCase(input.LT(1).getText())) {
@@ -436,8 +441,8 @@ mediaQueryList
 
 mediaQuery
  :
-    (mediaQueryOperator ws? )?  mediaType ( ws? key_and ws? mediaExpression )*
-    | mediaExpression ( ws? key_and ws? mediaExpression )*
+    (mediaQueryOperator ws? )?  mediaType ((ws? key_and)=> ws? key_and ws? mediaExpression )*
+    | mediaExpression ((ws? key_and)=> ws? key_and ws? mediaExpression )*
     | {isLessSource()}? cp_variable
  ;
 
@@ -451,7 +456,8 @@ mediaType
 
 mediaExpression
     :
-    LPAREN ws? mediaFeature mediaFeatureValue? ws? RPAREN
+    (LPAREN) => (LPAREN ws? mediaFeature mediaFeatureValue? ws? RPAREN)
+    | (HASH) => {isCssPreprocessorSource()}? sass_interpolation_expression_var
     ;
 
 mediaFeatureValue
@@ -780,7 +786,7 @@ cssId
     }
 
 cssClass
-    : DOT
+    : (DOT
         (
              {isScssSource()}?  sass_selector_interpolation_exp
             | {isLessSource()}? less_selector_interpolation_exp
@@ -788,6 +794,7 @@ cssClass
             | NOT
             | GEN
         )
+     ) | {tokenNameStartsWith(".")}? DIMENSION
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -1135,7 +1142,7 @@ cp_mixin_declaration
 cp_mixin_call
     :
     (
-        {isLessSource()}? (DOT cp_mixin_name | HASH | AT_IDENT | LESS_AND) ((pseudo)=>pseudo | (ws? LPAREN)=>(ws? LPAREN ws? cp_mixin_call_args? RPAREN))?
+        {isLessSource()}? (DOT cp_mixin_name | HASH | AT_IDENT | LESS_AND) ((ws? combinator ws?) => ws? combinator ws? (DOT cp_mixin_name | HASH | AT_IDENT | LESS_AND))* ((pseudo)=>pseudo | (ws? LPAREN)=>(ws? LPAREN ws? cp_mixin_call_args? RPAREN))?
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )

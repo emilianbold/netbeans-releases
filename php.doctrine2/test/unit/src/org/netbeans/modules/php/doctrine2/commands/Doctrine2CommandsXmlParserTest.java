@@ -108,4 +108,24 @@ public class Doctrine2CommandsXmlParserTest extends NbTestCase {
         assertSame(19, commands.size());
     }
 
+    public void testIssue268899() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "commands-issue268899.xml")));
+
+        List<Doctrine2CommandVO> commands = new ArrayList<>();
+        Doctrine2CommandsXmlParser.parse(reader, commands);
+
+        assertFalse(commands.isEmpty());
+        assertSame(20, commands.size());
+
+        Doctrine2CommandVO command = commands.get(7);
+        assertEquals("orm:convert-d1-schema", command.getCommand());
+        assertEquals("Converts Doctrine 1.X schema into a Doctrine 2.X schema.", command.getDescription());
+        assertEquals("<html>Usage:<br>"
+                + "<i>orm:convert-d1-schema [--from FROM] [--extend [EXTEND]] [--num-spaces [NUM-SPACES]] [--] &lt;from-path&gt; &lt;to-type&gt; &lt;dest-path&gt;</i><br>"
+                + "<i>orm:convert:d1-schema</i><br>"
+                + "<br>"
+                + "Converts Doctrine 1.X schema into a Doctrine 2.X schema.", command.getHelp());
+    }
+
+
 }

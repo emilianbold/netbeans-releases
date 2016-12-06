@@ -45,16 +45,18 @@ package org.netbeans.modules.debugger.jpda.expr;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.modules.debugger.jpda.JavaEvaluator;
 import org.netbeans.spi.debugger.jpda.Evaluator;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class EvaluatorExpression {
+public final class EvaluatorExpression implements CompilationInfoHolder {
 
-    private String expression;
-    private Map<Evaluator, AssociatedExpression<?>> associatedExpressions = new HashMap<Evaluator, AssociatedExpression<?>>();
+    private final String expression;
+    private final Map<Evaluator, AssociatedExpression<?>> associatedExpressions = new HashMap<Evaluator, AssociatedExpression<?>>();
+    private Object parsedData;
 
     public EvaluatorExpression(String expression) {
         this.expression = expression;
@@ -70,20 +72,30 @@ public class EvaluatorExpression {
             ae = new AssociatedExpression(e, expression);
             associatedExpressions.put(e, ae);
         }
+        if (e instanceof JavaEvaluator) {
+            return ((JavaEvaluator) e).evaluate((Evaluator.Expression<JavaExpression>) ae.expr,
+                                                context, this);
+        }
         return ae.evaluate(context);
     }
 
+    @Override
+    public Object getParsedData() {
+        return parsedData;
+    }
+
+    @Override
+    public void setParsedData(Object parsedData) {
+        this.parsedData = parsedData;
+    }
+
     private static class AssociatedExpression<PI> {
-        private Evaluator<PI> e;
-        private Evaluator.Expression<PI> expr;
+        private final Evaluator<PI> e;
+        private final Evaluator.Expression<PI> expr;
 
         AssociatedExpression(Evaluator<PI> e, String expression) {
             this.e = e;
-            this.expr = new Evaluator.Expression<PI>(expression);
-        }
-
-        Evaluator<PI> getEvaluator() {
-            return e;
+            this.expr = new Evaluator.Expression<>(expression);
         }
 
         public Evaluator.Result evaluate(Evaluator.Context context) throws InvalidExpressionException {

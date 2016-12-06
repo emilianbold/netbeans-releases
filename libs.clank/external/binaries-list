@@ -1,9 +1,7 @@
-#changeset:   19740:c3f4a3537ba5
+#changeset:   21704:717eaec19c30
 #branch:      jclank
 #tag:         tip
-#parent:      19738:2b3b59ce09a1
-#parent:      19739:82abd3484987
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Sep 20 15:24:44 2016 +0300
-#summary:     merging jclank_39_upgrade into jclank
-F20EEEDF4FE6B93B180387576FB780EED9F79C66 clank_0.3.9.zip
+#date:        Wed Nov 30 19:00:21 2016 +0300
+#summary:     fixing #269068 - [newcodemodel] AssertionError: Invalid index!
+F3A74CD526DF05DFBFF96D0072BB71A334B52AD9 clank_0.3.9.zip

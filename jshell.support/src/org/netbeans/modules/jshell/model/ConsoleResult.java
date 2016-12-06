@@ -52,6 +52,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 public final class ConsoleResult extends Parser.Result {
     private final ConsoleModel model;
     private volatile boolean invalid;
+    private ConsoleContents    contents;
     
     private void checkValid() {
         if (invalid) {

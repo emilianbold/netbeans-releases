@@ -84,7 +84,8 @@ public final class Doctrine2Script {
     private static final List<String> DEFAULT_PARAMS = Collections.singletonList("--ansi"); // NOI18N
     private static final List<String> LIST_PARAMS = Arrays.asList(
             "list", // NOI18N
-            "--xml"); // NOI18N
+            "--format", // NOI18N
+            "xml"); // NOI18N
 
     private final String doctrine2Path;
 

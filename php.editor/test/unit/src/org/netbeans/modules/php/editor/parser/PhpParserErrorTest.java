@@ -486,16 +486,17 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/yieldFrom_03.php");
     }
 
-    // XXX
-//    public void testYieldFrom04() throws Exception {
-//        checkErrors("testfiles/parser/yieldFrom_04.php");
-//    }
+    public void testYieldFrom04() throws Exception {
+        checkErrors("testfiles/parser/yieldFrom_04.php");
+    }
 
     public void testYieldFrom05() throws Exception {
+        // it's available since PHP7
         checkErrors("testfiles/parser/yieldFrom_05.php");
     }
 
     public void testYieldFrom06() throws Exception {
+        // it's available since PHP7
         checkErrors("testfiles/parser/yieldFrom_06.php");
     }
 
@@ -673,6 +674,11 @@ public class PhpParserErrorTest extends PHPTestBase {
 
     public void testIssue268712() throws Exception {
         checkErrors("testfiles/parser/issue268712.php");
+    }
+
+    public void testIssue262144() throws Exception {
+        // yeild and yield from expressions for PHP7
+        checkErrors("testfiles/parser/issue262144.php");
     }
 
 }

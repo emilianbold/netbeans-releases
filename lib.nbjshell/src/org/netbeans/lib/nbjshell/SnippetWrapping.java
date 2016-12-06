@@ -90,5 +90,9 @@ public interface SnippetWrapping {
      */
     public int     getWrappedPosition(int pos);
     
+    /**
+     * Class name of the shell snippet
+     * @return 
+     */
     public String  getClassName();
 }

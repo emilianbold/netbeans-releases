@@ -83,7 +83,7 @@ Contributor(s):
                     <code-name-base>oracle.clouddev.server.profile.activity.client.rest</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.apache.commons.httpclient</code-name-base>
                     <compile-dependency/>
@@ -131,14 +131,6 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -152,6 +144,14 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.8</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

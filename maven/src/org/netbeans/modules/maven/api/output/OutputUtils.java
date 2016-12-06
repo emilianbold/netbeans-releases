@@ -47,6 +47,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -213,11 +215,15 @@ public final class OutputUtils {
                                 try {
                                     DataObject obj = DataObject.find(javaFo);
                                     EditorCookie cookie = obj.getLookup().lookup(EditorCookie.class);
-                                    int lineInt = Integer.parseInt(sa.lineNum);
-                                    try {
-                                        cookie.getLineSet().getCurrent(lineInt - 1).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                                    } catch (IndexOutOfBoundsException x) { // #155880
-                                        cookie.open();
+                                    if(cookie != null) {
+                                        int lineInt = Integer.parseInt(sa.lineNum);
+                                        try {
+                                            cookie.getLineSet().getCurrent(lineInt - 1).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                                        } catch (IndexOutOfBoundsException x) { // #155880
+                                            cookie.open();
+                                        }
+                                    } else {
+                                        Logger.getLogger(OutputUtils.class.getName()).log(Level.WARNING, "No cookie found for dataobject {0}", obj); // NOI18N
                                     }
                                     return;
                                 } catch (DataObjectNotFoundException ex) {

@@ -68,17 +68,17 @@ public class InterceptorMoveDOTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorMoveDOTest.class, "moveUnversionedFile_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveUnversionedFolder_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveAddedFile2UnversionedFolder_DO");
-//        addTest(suite, InterceptorMoveDOTest.class, "moveVersionedFile2IgnoredFolder_DO");
+        addTest(suite, InterceptorMoveDOTest.class, "moveVersionedFile2IgnoredFolder_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveAddedFile2VersionedFolder_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveA2B2A_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveA2B2C_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveA2B2C2A_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveA2B_CreateA_DO");
-//        addTest(suite, InterceptorMoveDOTest.class, "moveVersionedFolder_DO");
-//        addTest(suite, InterceptorMoveDOTest.class, "moveFileTree_DO");
+        addTest(suite, InterceptorMoveDOTest.class, "moveVersionedFolder_DO");
+        addTest(suite, InterceptorMoveDOTest.class, "moveFileTree_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveVersionedFile2Repos_DO");
-//        addTest(suite, InterceptorMoveDOTest.class, "moveVersionedFolder2Repos_DO");
-//        addTest(suite, InterceptorMoveDOTest.class, "moveFileTree2Repos_DO");
+        addTest(suite, InterceptorMoveDOTest.class, "moveVersionedFolder2Repos_DO");
+        addTest(suite, InterceptorMoveDOTest.class, "moveFileTree2Repos_DO");
         addTest(suite, InterceptorMoveDOTest.class, "moveA2CB2A_DO");
         addTest(suite, InterceptorMoveDOTest.class, "deleteA_moveB2A2B_DO");
         addTest(suite, InterceptorMoveDOTest.class, "deleteA_moveUnversioned2A_DO");
@@ -223,8 +223,10 @@ public class InterceptorMoveDOTest extends RemoteVersioningTestBase {
         assertTrue(toFile.exists());
 
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(fromFile).getTextStatus());
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
         assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fromFile));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertCachedStatus(toFile, FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
     }
     

@@ -176,7 +176,7 @@ public class MeasureWarmUp extends MeasureStartupTimeTestCase {
         // close the IDE after warmup
         cmd.append(" -J-Dnetbeans.warm.close=true");
         cmd.append(" -J-Dnetbeans.logger.console=false");
-//        cmd.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=localhost:1234");  //debugging
+//        cmd.append(" -agentlib:jdwp=transport=dt_socket,address=localhost:1234");  //debugging
 
         System.out.println("Running: " + cmd);
         System.out.println("Userdir: " + userdir.getAbsolutePath());

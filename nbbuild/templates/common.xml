@@ -936,8 +936,7 @@ made subject to such option by the copyright holder.
                     <isset property="test.methods"/>
                 </condition>
                 <java fork="true" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner">
-                    <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${test.run.args}"/>
                     <classpath>
                         <path refid="test.@{test.type}.run.cp"/>
@@ -971,8 +970,7 @@ made subject to such option by the copyright holder.
                 <!-- therefore results while debugging single class/method -->
                 <!-- can be different from running all tests at once       -->
                 <java classname="org.testng.TestNG" fork="true">
-                    <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${test.run.args}"/>
                     <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
@@ -993,8 +991,7 @@ made subject to such option by the copyright holder.
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
-                    <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
                 </testng>
                 -->
             </sequential>
@@ -1020,8 +1017,7 @@ made subject to such option by the copyright holder.
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
-                    <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
                     <!-- needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
                     <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
                 </testng>
@@ -1150,8 +1146,7 @@ made subject to such option by the copyright holder.
                 <fail unless="main.class">Must set main.class.</fail>
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <java fork="true" classname="${main.class}">
-                    <jvmarg value="-Xdebug"/>
-                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${test.run.args}"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>

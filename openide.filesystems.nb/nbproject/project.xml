@@ -103,6 +103,7 @@ Contributor(s):
                 </test-type>
             </test-dependencies>
             <public-packages>
+                <package>org.openide.filesystem.spi</package>
                 <package>org.openide.filesystems</package>
             </public-packages>
         </data>

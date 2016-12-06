@@ -41,12 +41,14 @@ package org.netbeans.modules.cnd.mixeddev.ui;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.wizard.GenerateProjectAction;
 import org.openide.DialogDisplayer;
@@ -57,6 +59,8 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -85,6 +89,31 @@ public class MixedDevToolsMetaAction extends AbstactDynamicMenuAction implements
 
     @Override
     protected Action[] createActions(Lookup actionContext) {
+        Collection<? extends Node> nodes = actionContext.lookupAll(Node.class);
+        if (nodes == null || nodes.size() != 1) {
+            return new Action[0];
+        }
         return new Action[]{GenerateProjectAction.INSTANCE};
     }
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        Action action = super.createContextAwareInstance(actionContext);
+        Collection<? extends Node> nodes = actionContext.lookupAll(Node.class);
+        if (nodes == null || nodes.size() != 1) {
+            action.setEnabled(false);
+        } else {
+            Node n = nodes.iterator().next();
+            if (n == null) {
+                action.setEnabled(false);
+            } else {
+                FileObject fobj = n.getLookup().lookup(FileObject.class);
+                if (fobj == null || JavaSource.forFileObject(fobj) == null) {
+                    action.setEnabled(false);
+                }
+            }
+        }
+        return action;
+    }
+    
 }

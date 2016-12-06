@@ -387,8 +387,7 @@ final class JavaActions implements ActionProvider {
     }
     
     private static final String[] DEBUG_VM_ARGS = {
-        "-Xdebug", // NOI18N
-        "-Xrunjdwp:transport=dt_socket,address=${jpda.address}", // NOI18N
+        "-agentlib:jdwp=transport=dt_socket,address=${jpda.address}", // NOI18N
     };
     private void addDebugVMArgs(Element java, Document ownerDocument) {
         //Add fork="true" if not alredy there

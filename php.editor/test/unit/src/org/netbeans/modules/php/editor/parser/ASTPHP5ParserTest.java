@@ -505,6 +505,16 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/yield_04");
     }
 
+    public void testYield_05() throws Exception {
+        // it's available since PHP7
+        performTest("parser/yield_05");
+    }
+
+    public void testYield_06() throws Exception {
+        // it's available since PHP7
+        performTest("parser/yield_06");
+    }
+
     public void testYield_07() throws Exception {
         performTest("parser/yield_07");
     }
@@ -586,10 +596,9 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/yieldFrom_03");
     }
 
-    // XXX
-//    public void testYieldFrom04() throws Exception {
-//        performTest("parser/yieldFrom_04");
-//    }
+    public void testYieldFrom04() throws Exception {
+        performTest("parser/yieldFrom_04");
+    }
 
     public void testYieldFrom05() throws Exception {
         performTest("parser/yieldFrom_05");
@@ -765,6 +774,11 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 
     public void testIssue268712() throws Exception {
         performTest("parser/issue268712");
+    }
+
+    public void testIssue262144() throws Exception {
+        // yeild and yield from expressions for PHP7
+        performTest("parser/issue262144");
     }
 
     @Override

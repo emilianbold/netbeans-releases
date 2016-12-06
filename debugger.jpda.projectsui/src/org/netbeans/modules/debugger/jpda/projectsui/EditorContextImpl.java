@@ -85,6 +85,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.Evaluator.Expression;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
@@ -840,24 +841,13 @@ public class EditorContextImpl extends EditorContext {
         return EditorContextSupport.getImports(url);
     }
     
-    /**
-     * Parse the expression into AST tree and traverse is via the provided visitor.
-     *
-     * @return the visitor value or <code>null</code>.
-     */
-    public <R,D> R parseExpression(final String expression, String url, final int line,
-                                   final TreePathScanner<R,D> visitor, final D context,
-                                   final SourcePathProvider sp) throws InvalidExpressionException {
-        return EditorContextSupport.parseExpression(expression, url, line, visitor, context, sp);
-    }
-
-    public <R,D> R interpretOrCompileCode(final String code, String url, final int line,
+    public <R,D> R interpretOrCompileCode(final Expression<Object> expression, String url, final int line,
                                           final TreePathScanner<Boolean,D> canInterpret,
                                           final TreePathScanner<R,D> interpreter,
                                           final D context, final boolean staticContext,
                                           final Function<Pair<String, byte[]>, Boolean> compiledClassHandler,
                                           final SourcePathProvider sp) throws InvalidExpressionException {
-        return EditorContextSupport.interpretOrCompileCode(code, url, line,
+        return EditorContextSupport.interpretOrCompileCode(expression, url, line,
                                                            canInterpret,
                                                            interpreter,
                                                            context, staticContext,

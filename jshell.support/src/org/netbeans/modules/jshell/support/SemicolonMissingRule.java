@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.hints.friendapi.OverrideErrorMessage;
@@ -66,7 +67,10 @@ public class SemicolonMissingRule implements OverrideErrorMessage {
     @Override
     public String createMessage(CompilationInfo info, Diagnostic d, int offset, TreePath treePath, Data data) {
         if (!info.getSnapshot().getMimeType().equals("text/x-repl")) {
-            return null;
+            MimePath mp = info.getSnapshot().getMimePath();
+            if (!"text/x-repl".equals(mp.getMimeType(0))) {
+                return null;
+            }
         }
         Object dp = SourceUtils.getDiagnosticParam(d, 0);
         if (dp != Tokens.TokenKind.SEMI) {

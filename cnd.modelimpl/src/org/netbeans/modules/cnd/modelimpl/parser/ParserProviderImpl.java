@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -203,7 +204,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     }
                 } catch (Throwable ex) {
                     System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-                    ex.printStackTrace(System.err);
+                    CndUtils.printStackTraceOnce(ex);
                 }
                 ast = parser.getAST();
             }
@@ -373,6 +374,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 }
             } catch (Exception ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+                CndUtils.printStackTraceOnce(ex);
             }
             parseTime = System.currentTimeMillis() - start;
             return this;
@@ -495,7 +497,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-                ex.printStackTrace(System.err);
+                CndUtils.printStackTraceOnce(ex);
             } finally {
                 CsmCacheManager.leave();
             }

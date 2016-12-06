@@ -428,7 +428,7 @@ public class ODCSClientImpl implements ODCSClient {
             LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, uri}); //NOI18N
             String proxyUser = NetworkSettings.getAuthenticationUsername(uri);
             if(proxyUser != null) {
-                char[] pwd = Keyring.read(NetworkSettings.getKeyForAuthenticationPassword(uri));
+                char[] pwd = NetworkSettings.getAuthenticationPassword(uri);
                 String proxyPassword = pwd == null ? "" : new String(pwd); //NOI18N
                 logCredentials(uri.toString(), proxyUser, proxyPassword, "Setting proxy credentials: "); //NOI18N
                 return new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()), proxy, proxyUser, proxyPassword);

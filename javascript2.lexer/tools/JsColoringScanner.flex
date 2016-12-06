@@ -62,6 +62,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private boolean canFollowKeyword = true;
 
+    private JsTokenId lastNonWhiteToken = null;
+
     private LinkedList<Integer> templateBalances = new LinkedList<Integer>();
 
     private LinkedList<Integer> jsxBalances = new LinkedList<Integer>();
@@ -84,7 +86,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 && canFollowLiteral && canFollowKeyword) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, templateBalances, jsxBalances);
+        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, templateBalances, jsxBalances, lastNonWhiteToken);
     }
 
     public void setState(LexerState state) {
@@ -94,6 +96,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.canFollowKeyword = state.canFollowKeyword;
         this.templateBalances = new LinkedList<Integer>(state.templateBalances);
         this.jsxBalances = new LinkedList<Integer>(state.jsxBalances);
+        this.lastNonWhiteToken = state.lastNonWhiteToken;
     }
 
     public JsTokenId nextToken() throws java.io.IOException {
@@ -107,6 +110,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             canFollowLiteral = canFollowLiteral(token);
             if (!JsTokenId.EOL.equals(token)) {
                 canFollowKeyword = canFollowKeyword(token);
+                lastNonWhiteToken = token;
             }
         }
         return token;
@@ -167,14 +171,17 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         final LinkedList<Integer> templateBalances;
         /** are we in jsx primary expression */
         final LinkedList<Integer> jsxBalances;
+        /** remember last non white token */
+        final JsTokenId lastNonWhiteToken;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, LinkedList<Integer> templateBalances, LinkedList<Integer> jsxBalances) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, LinkedList<Integer> templateBalances, LinkedList<Integer> jsxBalances, JsTokenId lastNonWhiteToken) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowLiteral = canFollowLiteral;
             this.canFollowKeyword = canFollowKeyword;
             this.templateBalances = new LinkedList<Integer>(templateBalances);
             this.jsxBalances = new LinkedList<Integer>(jsxBalances);
+            this.lastNonWhiteToken = lastNonWhiteToken;
         }
 
         @Override
@@ -214,6 +221,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                     return false;
                 }
             }
+            if (this.lastNonWhiteToken != other.lastNonWhiteToken) {
+                return false;
+            }
             return true;
         }
 
@@ -230,6 +240,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             for (int i = 0; i < this.jsxBalances.size(); i++) {
                 hash = 29 * hash + this.jsxBalances.get(i);
             }
+            hash = 29 * hash + this.lastNonWhiteToken.ordinal();
             return hash;
         }
 
@@ -451,7 +462,9 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "..."                          { return JsTokenId.OPERATOR_REST; }
   "="                            { return JsTokenId.OPERATOR_ASSIGNMENT; }
   ">"                            { return JsTokenId.OPERATOR_GREATER; }
-  "<"                            { if (!canFollowLiteral) {
+  "<"                            { if (!canFollowLiteral || (lastNonWhiteToken != null 
+                  && (lastNonWhiteToken == JsTokenId.IDENTIFIER
+                  || lastNonWhiteToken == JsTokenId.NUMBER))) {
                                         return JsTokenId.OPERATOR_LOWER; 
                                    } else {
                                         jsxBalances.push(0);

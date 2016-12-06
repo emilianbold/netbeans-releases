@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.remote.utils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +56,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -155,4 +158,21 @@ public class RemoteUtil {
 }
         return result;
     }    
+    
+    // see #268771 - Can't build project in simple remote mode with IPv6
+    public static String hostNameToLocalFileName(String hostName) {
+        try {
+            return URLEncoder.encode(hostName, "UTF-8"); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex); // can not happen
+            return hostName.replace(":", "_"); //NOI18N
+        }
+    }
+
+    // For now I decided to leave remote mirror and other host-related remote files as is
+    // since Unix has much less filename limitations and changing can affect users
+    // see #268771 - Can't build project in simple remote mode with IPv6    
+    public static String hostNameToRemoteFileName(String hostName) {
+        return hostName;
+    }
 }

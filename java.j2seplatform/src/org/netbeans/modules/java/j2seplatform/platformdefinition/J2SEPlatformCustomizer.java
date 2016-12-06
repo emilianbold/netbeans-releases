@@ -122,7 +122,6 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
 
     private static final Logger LOG = Logger.getLogger(J2SEPlatformCustomizer.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(J2SEPlatformCustomizer.class);
-    private static final SpecificationVersion JDK_19 = new SpecificationVersion("9"); //NOI18N
 
     private static final String CUSTOMIZERS_PATH =
         "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N
@@ -357,7 +356,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.insets = new Insets (5,6,6,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(moveDownButton,c);
                 this.add (moveDownButton);
-            } else if (platform.getSpecification().getVersion().compareTo(JDK_19) >= 0) {
+            } else if (platform.getSpecification().getVersion().compareTo(Util.JDK9) >= 0) {
                 RP.execute(new Runnable() {
                     @Override
                     public void run() {

@@ -384,6 +384,28 @@ public class ModelUtils {
         return result.values();
     }
     
+    public static JsObject getScopeVariable(DeclarationScope inScope, String name) {
+        for( DeclarationScope curScope = inScope; curScope != null; curScope = curScope.getParentScope()) {
+            JsObject prop = ((JsObject)curScope).getProperty(name);
+            
+            if( prop != null && prop.getModifiers().contains(Modifier.PRIVATE) )
+                return prop;
+            
+            if( curScope instanceof JsFunction ) {
+                JsObject param = ((JsFunction)curScope).getParameter(name);
+                if( param != null )
+                    return param;
+            }
+            
+            if( prop != null )
+                return prop;
+            
+            if( name.equals(((JsObject)inScope).getName()) )
+                return (JsObject)inScope;
+        }
+        
+        return null;
+    }
 
     public static Collection<? extends JsObject> getVariables(Model model, int offset) {
         DeclarationScope scope = ModelUtils.getDeclarationScope(model, offset);
@@ -1802,7 +1824,7 @@ public class ModelUtils {
      * @param processedObjects list of already processed object
      * @return true if the object full qualified name or his reference full qualified name is in the processedObjects list.
      */
-    public static boolean wasProcessed (JsObject object, List<String> processedObjects) {
+    public static boolean wasProcessed (JsObject object, Set<String> processedObjects) {
         if (processedObjects.contains(object.getFullyQualifiedName())) {
             return true;
         } else if (object instanceof JsReference) {

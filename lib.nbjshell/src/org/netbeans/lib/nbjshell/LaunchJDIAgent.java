@@ -1,7 +1,43 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.lib.nbjshell;
 
@@ -17,9 +53,7 @@ import com.sun.jdi.VirtualMachine;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -28,7 +62,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,22 +70,24 @@ import jdk.jshell.execution.JDIInitiator;
 import jdk.jshell.execution.Util;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 
 /**
  * Launches a JShell VM using standard JDI agent, but incorporates
  * a customized agent class.
- * 
+ *
  * @author sdedic
  */
 // PENDING: JDIExecutionControl does not bring that much - copy over and derive
 // from NbExecutionControlBase to provide an uniform API
-public class LaunchJDIAgent extends JDIExecutionControl 
+public class LaunchJDIAgent extends JDIExecutionControl
     implements ExecutionControl, RemoteJShellService, NbExecutionControl{
-    
+
     private static final Logger LOG = Logger.getLogger(LaunchJDIAgent.class.getName());
-    
+
     private static final String REMOTE_AGENT =  "org.netbeans.lib.jshell.agent.AgentWorker"; // NOI18N
-    
+
     protected final ObjectInput in;
     protected final ObjectOutput out;
 
@@ -82,7 +117,7 @@ public class LaunchJDIAgent extends JDIExecutionControl
     private final Object STOP_LOCK = new Object();
     private boolean userCodeRunning = false;
     private boolean closed = false;
-    
+
     @Override
     public void closeStreams() {
         synchronized (this) {
@@ -155,8 +190,8 @@ public class LaunchJDIAgent extends JDIExecutionControl
      *
      * @return the generator
      */
-    public static ExecutionControl.Generator launch() {
-        return env -> create(env, true);
+    public static ExecutionControl.Generator launch(JavaPlatform platform) {
+        return env -> create(platform, env, true);
     }
 
     /**
@@ -172,15 +207,23 @@ public class LaunchJDIAgent extends JDIExecutionControl
      * @return the channel
      * @throws IOException if there are errors in set-up
      */
-    private static JDIExecutionControl create(ExecutionEnv env, boolean isLaunch) throws IOException {
+    private static JDIExecutionControl create(JavaPlatform platform, ExecutionEnv env, boolean isLaunch) throws IOException {
         try (final ServerSocket listener = new ServerSocket(0)) {
             // timeout after 60 seconds
             listener.setSoTimeout(60000);
             int port = listener.getLocalPort();
 
+            Map<String, String> customArguments = null;
+            
+            if (platform != null) {
+                String jHome = platform.getSystemProperties().get("java.home");
+                customArguments = new HashMap<>();
+                // TODO: if jHome is null for some reason, the connector fails.
+                customArguments.put("home", jHome);
+            }
             // Set-up the JDI connection
             JDIInitiator jdii = new JDIInitiator(port,
-                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch, null);
+                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch, null, customArguments);
             VirtualMachine vm = jdii.vm();
             Process process = jdii.process();
             

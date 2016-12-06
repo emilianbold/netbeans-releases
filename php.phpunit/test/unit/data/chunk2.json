@@ -1,0 +1,11 @@
+"quotes\""
+}{
+    "event": "test",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with \"quotes\"",
+    "status": "pass",
+    "time": 8.7976455688477e-5,
+    "trace": [],
+    "message": "",
+    "output": ""
+}

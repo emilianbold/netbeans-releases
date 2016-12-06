@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
     </condition>
     <property name="allowed.violations" value="0"/>
     <property name="debug.pause" value="y"/>
-    <condition property="debug.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}">
+    <condition property="debug.args" value="-agentlib:jdwp=transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}">
         <isset property="debug.port"/>
     </condition>
     <property name="debug.args" value=""/>

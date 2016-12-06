@@ -304,6 +304,18 @@ public class RemoteVcsSupportUtil {
         }
     }
 
+    /**
+     * Deletes on disconnect
+     * @param path file to delete
+     */
+    public static void deleteOnExit(FileSystem fs, String path) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            final RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            rfs.deleteOnDisconnect(path);
+        }
+    }
+
     public static void deleteExternally(FileSystem fs, String path) {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
         if (fs instanceof RemoteFileSystem) {
@@ -432,5 +444,39 @@ public class RemoteVcsSupportUtil {
                 fo.refresh();
             }
         }
+    }
+    
+    private static boolean isForbiddenFolderImpl(RemoteFileSystem rfs, String path) {
+        if (path.isEmpty()) {
+            return true;
+        } else if (rfs.isAutoMount(path)) {
+            return true;
+        } else if(rfs.isProhibitedToEnter(path)) {
+            return true;
+        } else if (path.equals("/tmp")) { //NOI18N
+            // 1) It just does not make sense to support versioning in tmp.
+            // 2) It mutes too frequently, this produces tremendous amount of noise
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isForbiddenFolder(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            if (isForbiddenFolderImpl(rfs, path)) {
+                return true;
+            }
+            int pos = path.lastIndexOf('/');
+            if (pos >= 0) {
+                String parent = path.substring(0, pos);
+                if (isForbiddenFolderImpl(rfs, parent)) {
+                    return true;
+                }
+            }
+            return false;
+            //return rfs.isAutoMount(path);
+        }
+        return false;
     }
 }

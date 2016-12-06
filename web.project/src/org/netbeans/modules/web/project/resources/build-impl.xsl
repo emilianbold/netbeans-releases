@@ -1080,8 +1080,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
                             <jvmarg value="-ea"/>
-                            <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <customize/>
                         </junit>
                     </sequential>
@@ -1143,8 +1142,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <formatter type="xml"/>
                             <jvmarg value="-ea"/>
                             <jvmarg line="${{run.jvmargs.ide}}"/>
-                            <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <customize/>
                         </junit>
                     </sequential>
@@ -1437,28 +1435,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             </target>
             
             <target name="-init-debug-args">
-                <xsl:choose>
-                    <xsl:when test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
-                        <exec executable="${{platform.java}}" outputproperty="version-output">
-                            <arg value="-version"/>
-                        </exec>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <property name="version-output" value="java version &quot;${{ant.java.version}}"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <condition property="have-jdk-older-than-1.4">
-                    <!-- <matches pattern="^java version &quot;1\.[0-3]" string="${version-output}"/> (ANT 1.7) -->
-                    <or>
-                        <contains string="${{version-output}}" substring="java version &quot;1.0"/>
-                        <contains string="${{version-output}}" substring="java version &quot;1.1"/>
-                        <contains string="${{version-output}}" substring="java version &quot;1.2"/>
-                        <contains string="${{version-output}}" substring="java version &quot;1.3"/>
-                    </or>
-                </condition>
-                <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
-                    <istrue value="${{have-jdk-older-than-1.4}}"/>
-                </condition>
                 <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
                     <os family="windows"/>
                 </condition>
@@ -1493,8 +1469,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                            <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <jvmarg value="-agentlib:jdwp=transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
