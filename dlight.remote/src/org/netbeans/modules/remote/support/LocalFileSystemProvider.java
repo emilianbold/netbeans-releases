@@ -565,4 +565,13 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
             }
         }
     }
+
+    @Override
+    public void suspendWritesUpload(FileObject folder) {
+    }
+
+    @Override
+    public void resumeWritesUpload(FileObject folder) {
+        folder.refresh();
+    }
 }

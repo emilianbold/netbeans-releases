@@ -133,7 +133,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
     }
 
     /** just a conveniency shortcut that allows not to cast each time */
-    private RemoteDirectory getParentImpl() {
+    /*package*/ RemoteDirectory getParentImpl() {
         return (RemoteDirectory) getParent(); // cast guaranteed by constructor
     }
 
@@ -458,7 +458,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             }
         }
     }
-
+    
     private class DelegateOutputStream extends OutputStream {
 
         private final FileOutputStream delegate;
@@ -499,7 +499,11 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             try {
                 delegate.close();
                 RemotePlainFile.this.setPendingRemoteDelivery(true);
-
+                SuspendInfo suspendInfo = getParentImpl().getFileSystem().getSuspendInfo(getParentImpl());
+                if (suspendInfo != null) {
+                    suspendInfo.addSuspended(RemotePlainFile.this);
+                    return;
+                }
                 String pathToRename, pathToUpload;
 
                 if (RemotePlainFile.this.getParent().canWrite()) {

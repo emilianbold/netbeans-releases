@@ -110,21 +110,29 @@ public class RemoteFileObjectFactory {
     }
 
     public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry) {
-        return createFileObject(parent, entry, null);
+        return createFileObject(parent, entry, null, false);
+    }
+    
+    public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry, boolean dummy) {
+        return createFileObject(parent, entry, null, dummy);
     }
 
     public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry, RemoteFileObject owner) {
+        return createFileObject(parent, entry, owner, false);
+    }
+    
+    public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry, RemoteFileObject owner, boolean dummy) {
         File childCache = new File(parent.getCache(), entry.getCache());
         String childPath = parent.getPath() + '/' + entry.getName();
         RemoteFileObjectBase fo;
         if (entry.isDirectory()) {
-            fo = createRemoteDirectory(parent, childPath, childCache, owner);
+            fo = createRemoteDirectory(parent, childPath, childCache, owner, dummy);
         }  else if (entry.isLink()) {
-            fo = createRemoteLink(parent, childPath, entry.getLinkTarget(), owner);
+            fo = createRemoteLink(parent, childPath, entry.getLinkTarget(), owner, dummy);
         } else if (entry.isPlainFile()) {
-            fo = createRemotePlainFile(parent, childPath, childCache, owner);
+            fo = createRemotePlainFile(parent, childPath, childCache, owner, dummy);
         } else {
-            fo = createSpecialFile(parent, childPath, childCache, entry.getFileType(), owner);
+            fo = createSpecialFile(parent, childPath, childCache, entry.getFileType(), owner, dummy);
         }
         // in -J-da mode we'll get an NPE in all the callers - and this always worged that way
         assert (fo != null) : "Returning null file object for " + entry + " in " + parent; //NOI18N
@@ -135,7 +143,7 @@ public class RemoteFileObjectFactory {
         return putIfAbsent(fo.getPath(), fo);
     }
 
-    private RemoteFileObjectBase createRemoteDirectory(final RemoteDirectory parent, final String remotePath, final File cacheFile, final RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemoteDirectory(final RemoteDirectory parent, final String remotePath, final File cacheFile, final RemoteFileObject owner, final boolean dummy) {
         cacheRequests++;
         final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
@@ -156,6 +164,9 @@ public class RemoteFileObjectFactory {
                 RemoteFileObjectBase fo;
                 fo = new RemoteDirectory((owner == null) ? new RemoteFileObject(fileSystem) : owner,
                         fileSystem, env, parent, normalizedRemotePath, cacheFile);
+                if (dummy) {
+                    fo.setFlag(RemoteFileObjectBase.MASK_SUSPENDED_DUMMY, true);
+                }
                 return fo;
             }
         };
@@ -174,7 +185,7 @@ public class RemoteFileObjectFactory {
         }
     }
 
-    private RemoteFileObjectBase createRemotePlainFile(final RemoteDirectory parent, final String remotePath, final File cacheFile, final RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemotePlainFile(final RemoteDirectory parent, final String remotePath, final File cacheFile, final RemoteFileObject owner, final boolean dummy) {
         cacheRequests++;
         final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
@@ -195,6 +206,9 @@ public class RemoteFileObjectFactory {
                 RemoteFileObjectBase fo;
                 fo = new RemotePlainFile((owner == null) ? new RemoteFileObject(fileSystem) : owner,
                         fileSystem, env, parent, normalizedRemotePath, cacheFile);
+                if (dummy) {
+                    fo.setFlag(RemoteFileObjectBase.MASK_SUSPENDED_DUMMY, true);
+                }
                 return fo;
             }
         };
@@ -213,7 +227,7 @@ public class RemoteFileObjectFactory {
         }
     }
 
-    private RemoteFileObjectBase createSpecialFile(final RemoteDirectory parent, final String remotePath, final File cacheFile, final FileType fileType, final RemoteFileObject owner) {
+    private RemoteFileObjectBase createSpecialFile(final RemoteDirectory parent, final String remotePath, final File cacheFile, final FileType fileType, final RemoteFileObject owner, final boolean dummy) {
         cacheRequests++;
         final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
@@ -234,6 +248,9 @@ public class RemoteFileObjectFactory {
                 RemoteFileObjectBase fo;
                 fo = new SpecialRemoteFileObject((owner == null) ? new RemoteFileObject(fileSystem) : owner,
                         fileSystem, env, parent, normalizedRemotePath, fileType);
+                if (dummy) {
+                    fo.setFlag(RemoteFileObjectBase.MASK_SUSPENDED_DUMMY, true);
+                }
                 return fo;
             }
         };
@@ -252,13 +269,16 @@ public class RemoteFileObjectFactory {
         }
     }
 
-    private RemoteFileObjectBase createRemoteLink(final RemoteFileObjectBase parent, final String remotePath, final String link, final RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemoteLink(final RemoteFileObjectBase parent, final String remotePath, final String link, final RemoteFileObject owner, final boolean dummy) {
         final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         Creator creator = new Creator() {
             @Override
             public RemoteFileObjectBase create() {
                 RemoteLink fo = new RemoteLink((owner == null) ? new RemoteFileObject(fileSystem) : owner,
                         fileSystem, env, parent, normalizedRemotePath, link);
+                if (dummy) {
+                    fo.setFlag(RemoteFileObjectBase.MASK_SUSPENDED_DUMMY, true);
+                }
                 fo.initListeners(true);  // TODO: shouldn't it be moved to constructor?
                 return fo;
             }

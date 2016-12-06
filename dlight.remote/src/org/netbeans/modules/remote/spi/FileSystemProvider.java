@@ -674,6 +674,53 @@ public final class FileSystemProvider {
         noProvidersWarning(targetFolder);
     }
 
+    /**
+     * NB: there are several flaws in the implementation:
+     * #1: it does NOT support links inside directory
+     * #2: it does NOT file and caches names transformation, they will be exactly the same, 
+     * so you can get into trouble it 2 situations:
+     *  a) if your local file system is case insensitive and there are files that differ only in case, 
+     *  b) if your file name is forbidden on the local file system (like COM1, etc on Windows)
+     * #3: it's callers responsibility to call resume in finally block 
+     * and to call it on the same directory suspend was called
+     * #4: Weird usages such as "suspend and never resume", "suspend twice", "resume twicw" lead to unpredictable results,
+     * However, this works well when creating projects - and that was the main goal of introducing this
+     */
+    public static void suspendWritesUpload(FileObject folder) throws IOException {
+        DLightLibsCommonLogger.assertTrue(folder.isFolder(), "Not a folder: " + folder); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(folder)) {
+                provider.suspendWritesUpload(folder);
+                return;
+            }
+        }
+        noProvidersWarning(folder);
+    }
+
+    /**
+     * NB: there are several flaws in the implementation:
+     * #1: it does NOT support links inside directory
+     * #2: it does NOT file and caches names transformation, they will be exactly the same, 
+     * so you can get into trouble it 2 situations:
+     *  a) if your local file system is case insensitive and there are files that differ only in case, 
+     *  b) if your file name is forbidden on the local file system (like COM1, etc on Windows)
+     * #3: it's callers responsibility to call resume in finally block 
+     * and to call it on the same directory suspend was called
+     * #4: Weird usages such as "suspend and never resume", "suspend twice", "resume twicw" lead to unpredictable results,
+     * However, this works well when creating projects - and that was the main goal of introducing this
+     */
+    public static void resumeWritesUpload(FileObject folder) 
+            throws IOException, InterruptedException, ConnectException {
+        DLightLibsCommonLogger.assertTrue(folder.isFolder(), "Not a folder: " + folder); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(folder)) {
+                provider.resumeWritesUpload(folder);
+                return;
+            }
+        }
+        noProvidersWarning(folder);
+    }
+
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
