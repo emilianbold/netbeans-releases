@@ -423,7 +423,7 @@ public final class ClasspathInfo {
         }
         ClassPath moduleBootPath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_BOOT_PATH);
         if (moduleBootPath == null) {
-            moduleBootPath = bootPath;
+            moduleBootPath = ClassPath.EMPTY;
         }
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         if (compilePath == null) {
