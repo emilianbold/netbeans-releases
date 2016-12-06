@@ -369,7 +369,7 @@ public class JShellEnvironment {
             return;
         }
         ShellEvent e = new ShellEvent(this, session, 
-                start ? ShellStatus.EXECUTE : ShellStatus.READY);
+                start ? ShellStatus.EXECUTE : ShellStatus.READY, false);
         ll.stream().forEach(l -> l.shellStatusChanged(e));
     }
     
@@ -528,7 +528,7 @@ public class JShellEnvironment {
         inputOutput.select();
     }
     
-    public void notifyDisconnected(ShellSession old) {
+    public void notifyDisconnected(ShellSession old, boolean remoteClose) {
         List<ShellListener> ll;
         ShellSession s;
         synchronized (this) {
@@ -538,12 +538,12 @@ public class JShellEnvironment {
             }
             ll = new ArrayList<>(shellListeners);
         }
-        old.notifyClosed(this);
-        ShellEvent e = new ShellEvent(this, s, ShellStatus.DISCONNECTED);
+        old.notifyClosed(this, remoteClose);
+        ShellEvent e = new ShellEvent(this, s, ShellStatus.DISCONNECTED, remoteClose);
         ll.stream().forEach(l -> l.shellStatusChanged(e));
     }
     
-    protected void notifyShutdown() {
+    protected void notifyShutdown(boolean remote) {
         List<ShellListener> ll;
         ShellSession s;
         
@@ -556,7 +556,7 @@ public class JShellEnvironment {
             s = this.shellSession;
         }
         if (s != null) {
-            s.notifyClosed(this);
+            s.notifyClosed(this, remote);
         }
         ShellEvent e = new ShellEvent(this);
         ll.stream().forEach(l -> l.shellShutdown(e));
