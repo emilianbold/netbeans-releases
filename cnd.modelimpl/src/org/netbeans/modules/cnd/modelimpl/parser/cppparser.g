@@ -2594,12 +2594,12 @@ init_declarator_list[int kind]
 init_declarator[int kind]
         :        declarator[kind, 0]
                 (        
-                        ASSIGNEQUAL 
-            (cast_array_initializer_head) => initializer
-        |        
-            LPAREN cpp11_expression_list RPAREN
-        |
-            array_initializer
+                    ASSIGNEQUAL 
+                    (cast_array_initializer_head) => initializer
+                |        
+                    LPAREN cpp11_expression_list RPAREN
+                |
+                    array_initializer
                 )?
         ;
 
@@ -2611,9 +2611,9 @@ initializer
             s=literal_ident 
             COLON 
             (options {greedy=true;} : initializer)? 
-    |
-        array_initializer
-    |
+        |
+            array_initializer
+        |
         (   
             ((LITERAL___extension__)? cast_array_initializer_head) => 
                 (LITERAL___extension__)? 
@@ -2937,18 +2937,18 @@ direct_declarator[int kind, int level]
         (options {greedy=true;} :variable_attribute_specification)?
         (asm_block!)?
         (options {greedy=true;} :variable_attribute_specification)?
-        |        
-                // DW 24/05/04 This block probably never entered as dtor selected out earlier
-                //        Note 1: In fact no dictionary entries for ctor or dtor        
-                //        Note 2: 2: "class" not recorded in CPPSymbol
-                TILDE id = literal_ident {declaratorID(id,qiDtor);}
-                {
-            if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(id));
-                }
-                LPAREN //{declaratorParameterList(false);}
-                (parameter_list[false])?
-                RPAREN //{declaratorEndParameterList(false);}
-        |        
+    |        
+        // DW 24/05/04 This block probably never entered as dtor selected out earlier
+        //        Note 1: In fact no dictionary entries for ctor or dtor        
+        //        Note 2: 2: "class" not recorded in CPPSymbol
+        TILDE id = literal_ident {declaratorID(id,qiDtor);}
+        {
+        if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(id));
+        }
+        LPAREN //{declaratorParameterList(false);}
+        (parameter_list[false])?
+        RPAREN //{declaratorEndParameterList(false);}
+    |        
         LPAREN declarator[kind, level+1] RPAREN
         (options {greedy=true;} :variable_attribute_specification)?
         (
