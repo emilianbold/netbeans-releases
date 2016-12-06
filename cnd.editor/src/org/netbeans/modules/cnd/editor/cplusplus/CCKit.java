@@ -110,7 +110,7 @@ public class CCKit extends NbEditorKit {
     }
 
     protected Filter<?> getFilter(Language<?> language, BaseDocument doc) {
-        return CndLexerUtilities.getDefatultFilter(true);
+        return CndLexerUtilities.getDefaultFilter(language, doc);
     }
 
     protected Action getCommentAction() {

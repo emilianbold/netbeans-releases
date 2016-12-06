@@ -599,7 +599,7 @@ public class Mercurial {
                 break;
             }
             // is the folder a special one where metadata should not be looked for?
-            boolean forbiddenFolder = Utils.isForbiddenFolder(file.getPath());
+            boolean forbiddenFolder = Utils.isForbiddenFolder(file);
             if (!forbiddenFolder && HgUtils.hgExistsFor(file)){
                 if (Mercurial.LOG.isLoggable(Level.FINE)) {
                     Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });

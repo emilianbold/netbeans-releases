@@ -68,7 +68,6 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 /**
@@ -240,6 +239,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                         if (HostInfoUtils.fileExists(execEnv, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, execEnv, execLog.getAbsolutePath(), null);
                             /*int rc =*/ task.get();
+                            CommonTasksSupport.rmFile(execEnv, remoteExecLog, null);
                         } else {
                             execLog = null;
                         }

@@ -60,6 +60,12 @@ public class Cpp11TooltipsTestCase extends TooltipsBaseTestCase {
         System.setProperty("cnd.language.flavor.cpp11", "true");         
         super.setUp();
     }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        System.setProperty("cnd.language.flavor.cpp11", "false");
+    }
 
     public void testBug247751() throws Exception {
         // Bug #247751 - Provide tooltips and navigation for auto variables

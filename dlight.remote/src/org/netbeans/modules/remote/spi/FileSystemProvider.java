@@ -44,8 +44,11 @@ package org.netbeans.modules.remote.spi;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -418,12 +421,7 @@ public final class FileSystemProvider {
             }
         }
         noProvidersWarning(fileObject);
-        try {
-            return fileObject.getURL().toExternalForm();
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+        return fileObject.toURL().toExternalForm();
     }
 
     public static void refresh(FileObject fileObject, boolean recursive) {
@@ -649,6 +647,31 @@ public final class FileSystemProvider {
         }
         noProvidersWarning(execEnv);
         return null;
+    }
+
+    /**
+     * Uploads zip to a temporary file on the remote host, unzips it into the given directory, then removes the uploaded zip.
+     * Also unzip its content into remote file system caches
+     */
+    public static void uploadAndUnzip(File zipFile, FileObject targetFolder) 
+            throws FileNotFoundException, ConnectException, IOException, InterruptedException {
+        uploadAndUnzip(new FileInputStream(zipFile), targetFolder);
+    }
+
+    /**
+     * Uploads zip to a temporary file on the remote host, unzips it into the given directory, then removes the uploaded zip.
+     * Also unzip its content into remote file system caches
+     */
+    public static void uploadAndUnzip(InputStream zipStream, FileObject targetFolder) 
+            throws FileNotFoundException, ConnectException, IOException, InterruptedException {
+        DLightLibsCommonLogger.assertTrue(targetFolder.isFolder(), "Not a folder: " + targetFolder); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(targetFolder)) {
+                provider.uploadAndUnzip(zipStream, targetFolder);
+                return;
+            }
+        }
+        noProvidersWarning(targetFolder);
     }
 
     private static void noProvidersWarning(Object object) {

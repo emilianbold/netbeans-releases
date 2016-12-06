@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.makeproject.api.launchers;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -182,20 +183,6 @@ public final class LauncherExecutor {
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project).clone();
 
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-        String buildCommand = launcher.getBuildCommand();
-        if (buildCommand == null) {
-            String makeCommand = getMakeCommand(pd, conf);
-            buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
-        } else {
-            //expand macros if presented
-            buildCommand = preprocessValueField(buildCommand, conf);
-        }
-        String args = "";
-        int index = getArgsIndex(buildCommand);
-        if (index >= 0) {
-            args = buildCommand.substring(index + 1);
-            buildCommand = removeQuotes(buildCommand.substring(0, index));
-        }
         Map<String, String> env = launcher.getEnv();    //Environment
         Env e = new Env();
         if (env != null) {
@@ -205,10 +192,28 @@ public final class LauncherExecutor {
                 e.putenv(key, value);
             });
         }
+        HashMap lookupMap = new HashMap();
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
-        profile.setArgs(args);
+        String buildCommand = launcher.getBuildCommand();
+        if (buildCommand == null) {
+            String makeCommand = getMakeCommand(pd, conf);
+            buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
+            String args = ""; // NOI18N
+            int index = getArgsIndex(buildCommand);
+            if (index >= 0) {
+                args = buildCommand.substring(index + 1);
+                buildCommand = removeQuotes(buildCommand.substring(0, index));
+            }
+            profile.setArgs(args);
+        } else {
+            //expand macros if presented
+            buildCommand = preprocessValueField(buildCommand, conf);
+            profile.getRunCommand().setValue(buildCommand);
+            lookupMap.put("UseCommandLine", "true"); // NOI18N
+        }
+        
         profile.setEnvironment(e);
-        Lookup context = Lookups.fixed(new ExecutionListenerImpl());
+        Lookup context = Lookups.fixed(new ExecutionListenerImpl(), lookupMap);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                 project, 
                 actionType, 

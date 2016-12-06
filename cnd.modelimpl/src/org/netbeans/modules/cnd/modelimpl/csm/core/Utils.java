@@ -175,8 +175,9 @@ public class Utils {
     }
 
     public static String getLanguageFlavor(NativeFileItem.LanguageFlavor flavor) {
-        if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
-            flavor == NativeFileItem.LanguageFlavor.CPP14) {
+        if (flavor == NativeFileItem.LanguageFlavor.CPP14) {
+            return APTLanguageSupport.FLAVOR_CPP14;
+        } else if (flavor == NativeFileItem.LanguageFlavor.CPP11) {
             return APTLanguageSupport.FLAVOR_CPP11;
         } 
         return APTLanguageSupport.FLAVOR_UNKNOWN;

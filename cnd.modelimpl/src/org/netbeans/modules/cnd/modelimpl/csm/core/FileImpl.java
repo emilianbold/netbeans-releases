@@ -587,8 +587,28 @@ public final class FileImpl implements CsmFile,
         }
         Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this);
         // select the best based on context offsets
-        for (PreprocessorStatePair statePair : preprocStatePairs) {
-            if (statePair.pcState.isInActiveBlock(startContext, endContext)) {
+        if (preprocStatePairs.size() > 1) {
+            int bestCoverage = -1;
+            PreprocessorStatePair bestStatePair = null;
+            for (PreprocessorStatePair pair : preprocStatePairs) {
+                if (pair.pcState != null) {
+                    int coverage = pair.pcState.getActiveCoverage(startContext, endContext);
+                    if (coverage > bestCoverage) {
+                        bestCoverage = coverage;
+                        bestStatePair = pair;
+                        if (coverage == (endContext - startContext)) {
+                            // max coverage is found
+                            break;
+                        }
+                    }
+                }
+            }
+            if (bestStatePair != null) {
+                return bestStatePair;
+            }
+        } else if (!preprocStatePairs.isEmpty()) {
+            PreprocessorStatePair statePair = preprocStatePairs.iterator().next();
+            if (statePair.pcState != null && statePair.pcState.isInActiveBlock(startContext, endContext)) {
                 return statePair;
             }
         }
@@ -1468,6 +1488,7 @@ public final class FileImpl implements CsmFile,
             }
         } catch (Throwable ex) {
             System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getAbsolutePath()); // NOI18N
+            CndUtils.printStackTraceOnce(ex);
         } finally {
             if (TraceFlags.TRACE_ERROR_PROVIDER) {
                 System.err.printf("<<< Done parsing (getting errors) %s %d ms%n%n%n", getName(), System.currentTimeMillis() - time);
@@ -2362,6 +2383,12 @@ public final class FileImpl implements CsmFile,
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s%n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d%n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N
+        String fileLanguage = this.getFileLanguage();
+        String fileLanguageFlavor = this.getFileLanguageFlavor();
+        if (fileLanguageFlavor.isEmpty()) {
+            fileLanguageFlavor = "FLAVOR_UNKNOWN"; // NOI18N
+        }
+        printOut.printf("\tfileImplLanguage=%s fileImplLanguageFlavor=%s%n", fileLanguage, fileLanguageFlavor);// NOI18N
     }
 
     public void dumpIndex(PrintWriter printOut) {

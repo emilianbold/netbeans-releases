@@ -79,6 +79,12 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         super.setUp();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        System.setProperty("cnd.language.flavor.cpp11", "false");
+    }
+
     public void test229025() throws Exception {
         // #229025 - Editor cannot find static member of rvalue reference specialized template        
         performTest("bug229025.cpp", 8, 20, "bug229025.cpp", 3, 36);

@@ -91,7 +91,8 @@ import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.debugger.common2.APIAccessor;
-import org.netbeans.modules.cnd.debugger.common2.ui.ExecutableProjectPanel.ProjectCBItem;
+import org.netbeans.modules.cnd.debugger.common2.utils.ProjectComboBoxSupport;
+import org.netbeans.modules.cnd.debugger.common2.utils.ProjectComboBoxSupport.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -712,7 +713,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	projectComboBox.addItem(getString("NO_PROJECT")); // always first
 	projectComboBox.addItem(getString("NEW_PROJECT")); // always first
         
-        ExecutableProjectPanel.fillProjectsCombo(projectComboBox, lastSelectedProject);
+        ProjectComboBoxSupport.fillProjectsCombo(projectComboBox, lastSelectedProject);
     }
 
     private ValidationResult validateCorefilePath(String corePath) {
