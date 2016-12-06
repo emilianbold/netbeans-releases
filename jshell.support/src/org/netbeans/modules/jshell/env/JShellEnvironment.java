@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
+import jdk.jshell.JShell;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -250,6 +251,10 @@ public class JShellEnvironment {
         return errStream;
     }
     
+    public JShell.Builder customizeJShell(JShell.Builder b) {
+        return b;
+    }
+    
     private volatile boolean starting;
 
     public synchronized void start() throws IOException {
@@ -271,6 +276,30 @@ public class JShellEnvironment {
 
         if (root != null) {
             ClasspathInfo projectInfo = ClasspathInfo.create(root);
+            ClasspathInfo.Builder bld = new ClasspathInfo.Builder(
+                    projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT)
+            );
+            ClassPath source = projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+            ClassPath compile = ClassPathSupport.createProxyClassPath(
+                        ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
+                        userLibraryPath,
+                        projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
+                    );
+            
+            bld.setClassPath(compile)
+                //.setSourcePath(source)
+                    ;
+            
+            ClassPath modBoot = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_BOOT);
+            ClassPath modClass = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_CLASS);
+            ClassPath modCompile = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_COMPILE);
+            
+            bld.
+                setModuleBootPath(modBoot).
+                setModuleClassPath(modClass).
+                setModuleCompilePath(modCompile);
+            cpi = bld.build();
+            /*
             cpi = ClasspathInfo.create(
                     projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
                     ClassPathSupport.createProxyClassPath(
@@ -280,6 +309,7 @@ public class JShellEnvironment {
                     ),
                     projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE)
             );
+            */
         } else {
             cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
                     platformTemp.getStandardLibraries(),

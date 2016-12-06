@@ -363,7 +363,7 @@ public final class ShellAgent {
         }
         @Override
         protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
-            return new DebugExecutionEnvironment(agent, out, in, c.getVirtualMachine());
+            return new DebugExecutionEnvironment(agent, out, in, c.getVirtualMachine(), c);
         }
     }
 

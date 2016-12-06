@@ -43,11 +43,16 @@ package org.netbeans.modules.jshell.project;
 
 import org.netbeans.modules.jshell.launch.RemoteJShellAccessor;
 import java.io.IOException;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import jdk.jshell.JShell;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.launch.JShellConnection;
@@ -57,6 +62,7 @@ import org.netbeans.modules.jshell.launch.ShellLaunchListener;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
+import org.openide.modules.SpecificationVersion;
 import org.openide.windows.InputOutput;
 
 /**
@@ -76,6 +82,33 @@ class ProjectShellEnv extends JShellEnvironment {
     protected InputOutput createInputOutput() {
         return agent.getIO();
     }
+
+    @Override
+    public JShell.Builder customizeJShell(JShell.Builder b) {
+        Collection<String> exportMods = ShellProjectUtils.findProjectImportedModules(getProject(), 
+            ShellProjectUtils.findProjectModules(getProject(), null)
+        );
+        JavaPlatform pl = ShellProjectUtils.findPlatform(getProject());
+        boolean modular = false;
+        if (pl != null) {
+            Specification plSpec = pl.getSpecification();
+            SpecificationVersion jvmversion = plSpec.getVersion();
+            if (jvmversion.compareTo(new SpecificationVersion("9")) >= 0) {
+                modular = true;
+            }
+        }
+        if (exportMods.isEmpty() || !modular) {
+            return b;
+        }
+        List<String> addReads = new ArrayList<>();
+        for (String mod : exportMods) {
+            addReads.add("-XaddReads:" + mod + "=ALL-UNNAMED"); // NOI18N
+        }
+        addReads.add("-XaddReads:java.jshell=ALL-UNNAMED");
+        return b.remoteVMOptions(addReads.toArray(new String[addReads.size()]));
+    }
+    
+    
 
     public JShellGenerator createExecutionEnv() {
         try {

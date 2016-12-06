@@ -54,7 +54,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Writer;
@@ -128,7 +127,6 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -719,16 +717,19 @@ public class ShellSession  {
         }
         b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
         b.fileManager(fileman = new SwitchingJavaFileManger(getClasspathInfo()));
-        return b;
+        return getEnv().customizeJShell(b);
     }
     
     private synchronized Launcher initShellLauncher() throws IOException {
         if (launcher != null) {
             return launcher;
         }
-        launcher = new Launcher(
-            new GenProxy(env.createExecutionEnv())
-        );
+        JShellGenerator gen = new GenProxy(env.createExecutionEnv());
+        try {
+            launcher = new Launcher(gen);
+        } catch (IOException | RuntimeException | Error e) {
+            e.printStackTrace();
+        }
         return launcher;
     }
     
@@ -757,7 +758,7 @@ public class ShellSession  {
             return;
         } finally {
             initializing = false;
-            if (l != null & l.subscription != null && shell != null) {
+            if (l != null && l.subscription != null && shell != null) {
                 shell.unsubscribe(l.subscription);
             }
         }
@@ -1035,6 +1036,10 @@ public class ShellSession  {
     private GuardedSectionManager gsm;
 
     private void initClasspath() {
+        ClasspathInfo.Builder bld = new ClasspathInfo.Builder(
+                projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT)
+        );
+        
         ClassPath snippetSource = ClassPathSupport.createProxyClassPath(
                 projectInfo.getClassPath(PathKind.SOURCE),
                 ClassPathSupport.createClassPath(editorWorkRoot),
@@ -1043,12 +1048,25 @@ public class ShellSession  {
         
         ClassPath compileClasspath = projectInfo.getClassPath(PathKind.COMPILE);
 
+        ClassPath modBoot = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_BOOT);
+        ClassPath modClass = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_CLASS);
+        ClassPath modCompile = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_COMPILE);
+        
+        bld.
+            setClassPath(compileClasspath).
+            setSourcePath(snippetSource).
+                
+            setModuleBootPath(modBoot).
+            setModuleClassPath(modClass).
+            setModuleCompilePath(modCompile);
+        /*
         this.cpInfo = ClasspathInfo.create(
                 projectInfo.getClassPath(PathKind.BOOT),
                 compileClasspath,
                 snippetSource
         );
-        
+        */
+        this.cpInfo = bld.build();
         this.consoleDocument.putProperty("java.classpathInfo", this.cpInfo);
     }
 
