@@ -130,6 +130,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
                     if (ast != null) {
                         // The most complex case - declText should be template function signature.
                         switch (ast.getType()) {
+                            case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
