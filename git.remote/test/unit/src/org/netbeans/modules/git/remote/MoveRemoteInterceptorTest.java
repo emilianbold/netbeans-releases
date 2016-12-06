@@ -104,7 +104,7 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
     @Override
     protected boolean isFailed() {
-        return Arrays.asList(/*"testMoveFileToIgnoredFolder_DO","testMoveFileToIgnoredFolder_FO"*/).contains(testName);
+        return Arrays.asList("moveFileTree_DO","moveFileToIgnoredFolder_DO","moveFileToIgnoredFolder_FO").contains(testName);
     }
 
     @Override
@@ -1175,7 +1175,7 @@ else    getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fileA)));
         assertTrue(toFile.exists());
         getCache().refreshAllRoots(fromFile, toFile);
         assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.REMOVED_HEAD_INDEX));
-        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED)); // it is a problem with git version 1.8.3.1
     }
     
     public void moveFileToIgnoredFolder_FO () throws Exception {
@@ -1200,7 +1200,7 @@ else    getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fileA)));
         assertTrue(toFile.exists());
         getCache().refreshAllRoots(fromFile, toFile);
         assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.REMOVED_HEAD_INDEX));
-        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED)); // it is a problem with git version 1.8.3.1
     }
 
 }
