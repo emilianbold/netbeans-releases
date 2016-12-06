@@ -131,6 +131,7 @@ class ProjectShellEnv extends JShellEnvironment {
         }
     }
 
+    /*
     protected void reportClosedBridge(ShellSession s, boolean disconnectOrShutdown) {
         if (disconnectOrShutdown) {
             notifyDisconnected(s);
@@ -138,6 +139,7 @@ class ProjectShellEnv extends JShellEnvironment {
             notifyShutdown();
         }
     }
+    */
 
     ShellAgent getAgent() {
         return agent;
@@ -163,7 +165,7 @@ class ProjectShellEnv extends JShellEnvironment {
                 closed = true;
             }
 
-            notifyDisconnected(session);
+            notifyDisconnected(session, ev.isRemoteClose());
             ShellLaunchManager.getInstance().removeLaunchListener(this);
         }
 
@@ -175,7 +177,7 @@ class ProjectShellEnv extends JShellEnvironment {
                 }
                 closed = true;
             }
-            notifyShutdown();
+            notifyShutdown(true);
             ShellLaunchManager.getInstance().removeLaunchListener(this);
         }
 

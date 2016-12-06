@@ -208,7 +208,7 @@ public class ShellSession  {
      * should not receive anything from the JShell. Detached ShellSession
      * MAY receive something, but should not reflect it in the document.
      */
-    private volatile boolean closed;
+    private volatile boolean ignoreClose;
     
     private FileObject consoleFile;
     private JShellEnvironment env;
@@ -327,7 +327,8 @@ public class ShellSession  {
     }
     
     public boolean isValid() {
-        return !closed && !detached;
+        Launcher l = this.launcher;
+        return l != null && l.isLive() && !detached;
     }
     
     /**
@@ -660,9 +661,16 @@ public class ShellSession  {
             }
             synchronized (ShellSession.this) {
                 snippetRegistry = new SnippetRegistry(shell, bridgeImpl, workRoot, editorWorkRoot);
+                // replace for fresh instance !
+                // TODO: should fire an event ?
                 ShellSession.this.shell = shell;
             }
             this.subscription = shell.onSnippetEvent(this);
+            // it's possible that the shell's startup will terminate the session
+            if (!detached) {
+                shell.onShutdown(sh -> closedDelayed());
+                ignoreClose = false;
+            }
             return shell;
         }
 
@@ -754,18 +762,12 @@ public class ShellSession  {
             }
             reportErrorMessage(t);
             closed();
-            env.notifyDisconnected(this);
+            env.notifyDisconnected(this, false);
             return;
         } finally {
             initializing = false;
             if (l != null && l.subscription != null && shell != null) {
                 shell.unsubscribe(l.subscription);
-            }
-        }
-        synchronized (this) {
-            // it's possible that the shell's startup will terminate the session
-            if (isValid()) {
-                shell.onShutdown(sh -> closedDelayed());
             }
         }
     }
@@ -843,16 +845,19 @@ public class ShellSession  {
         "MSG_JShellCannotStart=The Java Shell VM is not reachable. You may only use shell commands, or re-run the target process.",
         "MSG_JShellDisconnected=The remote Java Shell has terminated. Restart the Java Shell to continue"
     })
-    public void notifyClosed(JShellEnvironment env) {
+    public void notifyClosed(JShellEnvironment env, boolean remote) {
         synchronized (this) {
-            if (closed) {
+            if (ignoreClose) {
                 return;
             }
-            closed = true;
+            ignoreClose = true;
         }
         String s;
         if (initializing) {
             s = Bundle.MSG_JShellCannotStart();
+        } else if (!remote) {
+            // somewhat expected, do not report
+            return;
         } else if (env.isClosed()) {
             s = Bundle.MSG_JShellClosed();
         } else {
@@ -972,11 +977,11 @@ public class ShellSession  {
 
     private void closed() {
         synchronized (this) {
-            if (closed) {
+            if (ignoreClose) {
                 return;
             }
         }
-        env.notifyDisconnected(this);
+        env.notifyDisconnected(this, false);
         propSupport.firePropertyChange(PROP_ACTIVE, true, false);
         
         // save the history
@@ -1229,7 +1234,7 @@ public class ShellSession  {
         // rely on JShell's own parsing from the input section
         // just for case:
         ModelAccessor.INSTANCE.execute(model, cmd != null, () -> {
-            Executor executor = new Executor(cmd, model.getExecutingSection(), shell);
+            Executor executor = new Executor(cmd, model.getExecutingSection());
             executor.execute();
         }, this::getPromptAfterError);
     }
@@ -1237,16 +1242,14 @@ public class ShellSession  {
     private class Executor implements Runnable, Consumer<SnippetEvent> {
         private final String          cmd;
         private final ConsoleSection  exec;
-        private final JShell          shell;
         
         private List<String>    toExec = new ArrayList<>();
         private boolean         erroneous;
         private int             execOffset;
 
-        public Executor(String cmd, ConsoleSection exec, JShell shell) {
+        public Executor(String cmd, ConsoleSection exec) {
             this.cmd = cmd;
             this.exec = exec;
-            this.shell = shell;
         }
         
         private boolean isExternal() {
@@ -1307,13 +1310,26 @@ public class ShellSession  {
                 int index = 0;
                 execOffset = 0;
                 Subscription sub = null;
-                
+                JShell sh = null;
                 try {
                     for (String s : toExec) {
+                            launcher.ensureLive();
+                            if (!launcher.isLive()) {
+                                RemoteJShellService ec = ShellSession.this.exec;
+                                if (ec != null) {
+                                    ExecutionControlException ee = 
+                                            ec.getBrokenException();
+                                    if (ee != null) {
+                                        throw ee;
+                                    }
+                                }
+                                break;
+                            }
+                            sh = launcher.getJShell();
                             if (sub == null) {
                                 String t = s.trim();
                                 if (!t.isEmpty() && t.charAt(0) != '/') { // shell commands
-                                    sub = shell.onSnippetEvent(this);
+                                    sub = sh.onSnippetEvent(this);
                                 }
                             }
                             if (ranges != null) {
@@ -1325,14 +1341,14 @@ public class ShellSession  {
                             }
                         index++;
                     }
-                } catch (IllegalStateException ex) {
+                } catch (IllegalStateException | ExecutionControlException ex) {
                     reportShellMessage(Bundle.MSG_JShellCannotExecute());
                 } catch (RuntimeException | IOException ex) {
                     reportErrorMessage(ex);
                     reportShellMessage(Bundle.MSG_ErrorExecutingCommand());
                 } finally {
                     if (sub != null) {
-                        shell.unsubscribe(sub);
+                        sh.unsubscribe(sub);
                     }
                     ensureInputSectionAvailable();
                 }

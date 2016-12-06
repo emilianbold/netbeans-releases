@@ -205,7 +205,11 @@ public class JShellLauncher extends JShellTool {
         
     }
     
-    private void ensureLive() {
+    public boolean isLive() {
+        return super.isLive();
+    }
+    
+    public void ensureLive() {
         if (!isLive()) {
             resetState();
         }
@@ -283,7 +287,7 @@ public class JShellLauncher extends JShellTool {
         NbExecutionControl ctrl = shellExecControl;
         Map<String, String> versionInfo = ctrl.commandVersionInfo();
         
-        if (versionInfo.isEmpty()) {
+        if (versionInfo == null || versionInfo.isEmpty()) {
             // some error ?
             return;
         }

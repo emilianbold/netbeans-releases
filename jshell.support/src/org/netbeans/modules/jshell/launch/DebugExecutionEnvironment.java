@@ -56,7 +56,6 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 import org.netbeans.lib.nbjshell.LaunchJDIAgent;
-import jdk.jshell.spi.ExecutionControl;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
 
@@ -114,6 +113,7 @@ public class DebugExecutionEnvironment extends LaunchJDIAgent implements RemoteJ
         if (in == null) {
             return;
         }
+        ShellLaunchManager.getInstance().removeLaunchListener(this);
         closeStreams();
     }
 
@@ -216,7 +216,6 @@ public class DebugExecutionEnvironment extends LaunchJDIAgent implements RemoteJ
             closed = true;
         }
         shutdown();
-//        shellEnv.reportClosedBridge(reportSession, true);
     }
 
     @Override
@@ -230,5 +229,4 @@ public class DebugExecutionEnvironment extends LaunchJDIAgent implements RemoteJ
         shutdown();
 //        shellEnv.reportClosedBridge(reportSession, false);
     }
-    
 }

@@ -350,6 +350,9 @@ public final class ShellAgent {
             }
         }
         */
+        synchronized (this) {
+            connections.add(con);
+        }
         if (notify) {
             ShellLaunchEvent ev = new ShellLaunchEvent(mgr, con, false);
             mgr.fire((l) -> l.connectionInitiated(ev));
