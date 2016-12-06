@@ -79,7 +79,7 @@ public class Util {
     private static final String MODULES_FOLDER = "modules";      //NOI18N
     private static final String MODULE_INFO = "module-info.class";  //NOI18N
     private static final SpecificationVersion OLD_JDK9 = new SpecificationVersion("1.9");   //NOI18N
-    private static final SpecificationVersion NEW_JDK9 = new SpecificationVersion("9");     //NOI18N
+    public static final SpecificationVersion JDK9 = new SpecificationVersion("9");     //NOI18N
 
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
     //Properties used by IDE which should be fixed not to use resolved symlink
@@ -395,7 +395,7 @@ public class Util {
 
     private static SpecificationVersion fixJDK9SpecVersion(@NonNull final SpecificationVersion version) {
         return  OLD_JDK9.equals(version) ?
-                NEW_JDK9 :
+                JDK9 :
                 version;
     }
 

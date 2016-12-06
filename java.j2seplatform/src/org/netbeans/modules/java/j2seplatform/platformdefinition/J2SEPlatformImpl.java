@@ -267,7 +267,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             if (cp != null) {
                 return cp;
             }
-            if (new SpecificationVersion("9").compareTo(getSpecification().getVersion())<=0) {    //NOI18N
+            if (Util.JDK9.compareTo(getSpecification().getVersion())<=0) {    //NOI18N
                 cp = Util.createModulePath(getInstallFolders());
             }
             if (cp == null) {
