@@ -79,11 +79,22 @@ public class RemoteLinkChild extends RemoteLinkBase {
         }
     }
 
+    private static RemoteFileObjectBase findSemiCanonicalDelegate(RemoteLinkChild fo) {
+        RemoteFileObjectBase d = fo.delegate;
+        while (d instanceof RemoteLinkChild) {
+            d = ((RemoteLinkChild) d).delegate;
+        }
+        return d;
+    }
+    
     private boolean hasCycle() {
-        RemoteFileObjectBase dlg = getCanonicalDelegate();
+        RemoteFileObjectBase dlg = findSemiCanonicalDelegate(this);
         RemoteFileObjectBase p = getParent();
         while (p instanceof RemoteLinkChild) {
             if (p == dlg) {
+                return true;
+            }
+            if (findSemiCanonicalDelegate((RemoteLinkChild) p) == dlg) {
                 return true;
             }
             p = p.getParent();
@@ -107,6 +118,11 @@ public class RemoteLinkChild extends RemoteLinkBase {
         } else {
             return super.getFileObject(relativePath, antiLoop);
         }
+    }
+
+    @Override
+    public boolean canWriteImpl(RemoteFileObjectBase orig) {
+        return getFlag(MASK_CYCLIC_LINK) ? false : super.canWriteImpl(orig);
     }
 
     @Override

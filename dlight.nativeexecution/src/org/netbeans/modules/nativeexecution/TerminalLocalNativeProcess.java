@@ -193,7 +193,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             pb.directory(workingDirectory);
             pb.redirectErrorStream(true);
 
-            LOG.log(Level.FINEST, "Command: %s", command); // NOI18N
+            LOG.log(Level.FINEST, "External terminal command: {0}", command); // NOI18N
 
             final MacroMap env = info.getEnvironment().clone();
 

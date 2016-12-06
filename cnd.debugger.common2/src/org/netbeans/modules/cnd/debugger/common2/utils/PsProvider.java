@@ -416,7 +416,7 @@ public abstract class PsProvider {
                     if (exitCode != 0) {
                         String msg = "zonename command failed with " + exitCode; // NOI18N
                         logger.log(Level.WARNING, msg);
-                        return exEnv.getUser();
+                        return "global";//NOI18N
                     }
                     if (!res.isEmpty()) {
                         zone = res;

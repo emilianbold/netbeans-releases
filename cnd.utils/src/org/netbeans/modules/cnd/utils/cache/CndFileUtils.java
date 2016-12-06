@@ -58,6 +58,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
@@ -86,6 +88,7 @@ import org.openide.util.Utilities;
  * @author Vladimir Voskresensky
  */
 public final class CndFileUtils {
+    private static final String CASE_SENSITIVE_SYSTEM_PROP = "cnd.case.sensitive.fs"; // NOI18N
     private static final boolean TRUE_CASE_SENSITIVE_SYSTEM;
     private static final FileChangeListener FSL = new FSListener();
     private static final FSProblemListener FSPL = new FSProblemListener();
@@ -128,16 +131,30 @@ public final class CndFileUtils {
 
     static {
         boolean caseSenstive;
+        boolean explicitlySet = false;
+        String property = System.getProperty(CASE_SENSITIVE_SYSTEM_PROP);
         try {
-            File tmpFile = File.createTempFile("CaseSensitiveFile", ".check"); // NOI18N
-            String absPath = tmpFile.getAbsolutePath();
-            absPath = absPath.toUpperCase();
-            caseSenstive = !new File(absPath).exists();
-            tmpFile.delete();
-        } catch (IOException ex) {
+            if (property != null) {
+              caseSenstive = Boolean.parseBoolean(property);
+              explicitlySet = true;
+            } else {
+                File tmpFile = File.createTempFile("CaseSensitiveFile", ".check"); // NOI18N
+                String absPath = tmpFile.getAbsolutePath();
+                absPath = absPath.toUpperCase();
+                caseSenstive = !new File(absPath).exists();
+                tmpFile.delete();
+            }
+        } catch (Throwable ex) {
             caseSenstive = Utilities.isUnix() && !Utilities.isMac();
         }
         TRUE_CASE_SENSITIVE_SYSTEM = caseSenstive;
+        if (!CndUtils.isUnitTestMode()) {
+            String msg = (TRUE_CASE_SENSITIVE_SYSTEM ? "case-sensitive" : "case-insensitive"); // NOI18N
+            if (explicitlySet) {
+              msg += " (explicitly set by " + CASE_SENSITIVE_SYSTEM_PROP + "=" + property + ")"; // NOI18N
+            }
+            Logger.getLogger(CndFileUtils.class.getName()).log(Level.INFO, "C/C++ File Utils: using {0} file system", msg); //NOI18N
+        }        
         CndFileSystemProvider.addFileChangeListener(FSL);
         CndFileSystemProviderHelper.addFileSystemProblemListener(FSPL);
     }

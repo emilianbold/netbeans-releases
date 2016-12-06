@@ -371,7 +371,7 @@ public final class Git {
                 break;
             }
             // is the folder a special one where metadata should not be looked for?
-            boolean forbiddenFolder = Utils.isForbiddenFolder(file.getPath());
+            boolean forbiddenFolder = Utils.isForbiddenFolder(file);
             if (!forbiddenFolder && GitUtils.repositoryExistsFor(file)) {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });

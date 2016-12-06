@@ -287,6 +287,10 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return new Method((CsmMethod)template, mapping);            
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
+        } else if (template instanceof CsmField) {
+            return new Field((CsmField) template, mapping);
+        } else if (template instanceof CsmVariable) {
+            return new Variable((CsmVariable) template, mapping);
         } else if (template instanceof CsmTypeAlias) {
             CsmTypeAlias alias = (CsmTypeAlias) template;
             return CsmKindUtilities.isClassMember(alias) ? new MemberTypeAlias(alias, mapping) : new TypeAlias(alias, mapping);
@@ -985,13 +989,58 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return ((CsmTemplate)declaration).getDisplayName();
         }
     }
+    
+    private static class Variable extends Instantiation<CsmVariable> implements CsmVariable {
+        
+        private final CsmType type;
+        
+
+        public Variable(CsmVariable var, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(var, mapping);
+            this.type = createType(var.getType(), Variable.this);
+        }
+
+        @Override
+        public boolean isExtern() {
+            return declaration.isExtern();
+        }
+
+        @Override
+        public CsmType getType() {
+            return type;
+        }
+
+        @Override
+        public CsmExpression getInitialValue() {
+            return declaration.getInitialValue();
+        }
+
+        @Override
+        public CharSequence getDisplayText() {
+            return declaration.getDisplayText();
+        }
+
+        @Override
+        public CsmVariableDefinition getDefinition() {
+            return declaration.getDefinition();
+        }
+
+        @Override
+        public CharSequence getDeclarationText() {
+            return declaration.getDeclarationText();
+        }
+    }
 
     private static class Field extends Instantiation<CsmField> implements CsmField {
         private final CsmType type;
-
+        
         public Field(CsmField field, CsmInstantiation instantiation) {
-            super(field, instantiation.getMapping());
-            this.type = createType(field.getType(), instantiation);
+            this(field, instantiation.getMapping());
+        }
+
+        public Field(CsmField field, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(field, mapping);
+            this.type = createType(field.getType(), Field.this);
         }
 
         @Override

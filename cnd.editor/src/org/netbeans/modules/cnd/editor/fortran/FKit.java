@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
+import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
@@ -116,22 +117,14 @@ public class FKit extends NbEditorKit {
             doc.putProperty(InputAttributes.class, lexerAttrs);
         }
         FortranCodeStyle codeStyle = FortranCodeStyle.get(doc);
-        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, CndLexerUtilities.getFortranFilter(), true);
+        Filter<?> fortranFilter = CndLexerUtilities.getDefaultFilter(getLanguage(), doc);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, fortranFilter, true);
         lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, codeStyle.getRrightMargin(), true);
         lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, codeStyle.getFormatFortran(), true);
     }
     
     private Language<FortranTokenId> getLanguage() {
         return FortranTokenId.languageFortran();
-    }
-
-    private InputAttributes getLexerAttributes(BaseDocument doc) {
-        InputAttributes lexerAttrs = new InputAttributes();
-        FortranCodeStyle codeStyle = FortranCodeStyle.get(doc);
-        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, CndLexerUtilities.getFortranFilter(), true);
-        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, codeStyle.getRrightMargin(), true);
-        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, FortranFormat.UNDEFINED, true);
-        return lexerAttrs;
     }
 
     @Override

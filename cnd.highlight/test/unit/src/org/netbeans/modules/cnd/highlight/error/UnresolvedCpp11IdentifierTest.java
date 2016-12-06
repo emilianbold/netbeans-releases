@@ -160,36 +160,8 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         assertNotNull(lexerAttrs);
         Collection<? extends CndSourcePropertiesProvider> providers = Lookups.forPath(CndSourcePropertiesProvider.REGISTRATION_PATH).lookupAll(CndSourcePropertiesProvider.class);
         assertFalse(providers.isEmpty());
-        assertEquals("Unexpected Filter " + getFilterName(filter) + " for language " + language.mimeType(), CppTokenId.DECLTYPE, filter.check("decltype"));
+        assertEquals("Unexpected Filter " + filter + " for language " + language.mimeType(), CppTokenId.DECLTYPE, filter.check("decltype"));
         return doc;
-    }
-
-    private String getFilterName(Filter<CppTokenId> filter) {
-        if (filter == CndLexerUtilities.getGccCFilter()) {
-            return "GccCFilter";
-        } else if (filter == CndLexerUtilities.getGccCpp11Filter()) {
-            return "GccCpp11Filter";
-        } else if (filter == CndLexerUtilities.getGccCppFilter()) {
-            return "GccCppFilter";
-        } else if (filter == CndLexerUtilities.getHeaderCFilter()) {
-            return "HeaderCFilter";
-        } else if (filter == CndLexerUtilities.getHeaderCpp11Filter()) {
-            return "HeaderCpp11Filter";
-        } else if (filter == CndLexerUtilities.getHeaderCppFilter()) {
-            return "HeaderCppFilter";
-        } else if (filter == CndLexerUtilities.getOmpFilter()) {
-            return "OmpFilter";
-        } else if (filter == CndLexerUtilities.getPreprocFilter()) {
-            return "PreprocFilter";
-        } else if (filter == CndLexerUtilities.getStdCFilter()) {
-            return "StdCFilter";
-        } else if (filter == CndLexerUtilities.getStdCpp11Filter()) {
-            return "StdCpp11Filter";
-        } else if (filter == CndLexerUtilities.getStdCppFilter()) {
-            return "StdCppFilter";
-        } else {
-            return "unknown Filter ";
-        }
     }
     
     @ServiceProvider(path = CndSourcePropertiesProvider.REGISTRATION_PATH, service = CndSourcePropertiesProvider.class, position = 1200)

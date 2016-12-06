@@ -1332,6 +1332,15 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug257821.c", 19, 11, "bug257821.c", 2, 5);
     }
     
+    public void testBug269201() throws Exception {
+        // Bug 269201 - Unnamed inner structures and unions in C11 language or as an extension in previous standards 
+        performTest("bug269201.c", 18, 13, "bug269201.c", 3, 9);
+        performTest("bug269201.c", 19, 13, "bug269201.c", 4, 9);
+        performTest("bug269201.c", 20, 13, "bug269201.c", 7, 9);
+        performTest("bug269201.c", 21, 13, "bug269201.c", 8, 9);
+        performTest("bug269201.c", 22, 14, "bug269201.c", 11, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

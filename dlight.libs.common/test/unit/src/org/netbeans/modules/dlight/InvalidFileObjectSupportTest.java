@@ -60,11 +60,17 @@ public class InvalidFileObjectSupportTest {
     @Test
     public void testInvalidFileObject() throws Exception {
         File file = File.createTempFile("qwe", "asd");
-        FileObject origFo = FileUtil.toFileObject(FileUtil.normalizeFile(file)); // FileUtil SIC!
-        String path = origFo.getPath();
-        FileSystem fs = origFo.getFileSystem();
-        assertNotNull(origFo);
-        file.delete();
+        FileObject origFo = null;
+        String path = null;
+        FileSystem fs = null;
+        try {
+            origFo = FileUtil.toFileObject(FileUtil.normalizeFile(file)); // FileUtil SIC!
+            assertNotNull(origFo);
+            path = origFo.getPath();
+            fs = origFo.getFileSystem();
+        } finally {
+            file.delete();
+        }
         FileObject invalidFo1 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
         FileObject invalidFo2 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
         assertTrue(invalidFo1 == invalidFo2);
@@ -90,11 +96,17 @@ public class InvalidFileObjectSupportTest {
     @Test
     public void testInvalidFileObjectParent() throws Exception {
         File file = File.createTempFile("qwe", "asd");
-        FileObject origFo = FileUtil.toFileObject(file); // FileUtil SIC!
-        String path = origFo.getPath();
-        FileSystem fs = origFo.getFileSystem();
-        assertNotNull(origFo);
-        file.delete();
+        FileObject origFo = null;
+        String path = null;
+        FileSystem fs = null;
+        try {
+            origFo = FileUtil.toFileObject(file); // FileUtil SIC!
+            assertNotNull(origFo);
+            path = origFo.getPath();
+            fs = origFo.getFileSystem();
+        } finally {
+            file.delete();
+        }
         FileObject invalidFo = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
         assertNotNull(invalidFo);
         FileObject parent = invalidFo.getParent();

@@ -1644,19 +1644,18 @@ abstract public class CsmCompletionQuery {
         }
 
         List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp) {
-            return resolveObj(exp, new ContextCloneStrategy());
+            return resolveObj(exp, true, new ContextCloneStrategy());
         }
 
-        private List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp, ContextCloneStrategy cloneStrategy) {
+        private List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp, boolean first, ContextCloneStrategy cloneStrategy) {
             Context ctx = cloneStrategy.cloneContext(this);
             ctx.setFindType(false);
             // when resolve type use full scope of search
             QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
             try {
-                if (ctx.resolveExp(exp, true)) {
-                    if (ctx.result != null && !ctx.result.getItems().isEmpty()) {
-                        return ctx.result.getItems();
-                    }
+                ctx.resolveExp(exp, first);
+                if (ctx.result != null && !ctx.result.getItems().isEmpty()) {
+                    return ctx.result.getItems();
                 }
             } finally {
                 // restore old
@@ -2266,7 +2265,11 @@ abstract public class CsmCompletionQuery {
                     boolean outsiderTypeAlias = false;
                     CsmType typ = null;
                     CsmType contextType = lastType;
-                    if(first) {
+                    if (resolveTemplateVariable(item, first, last, kind)) {
+                        break;
+                    }
+                    if (first) {
+                        // TODO: in case of cpp 14 it is worth to reuse resolved object!
                         typ = resolveType(item.getParameter(0));
                     }
                     if(typ == null) {
@@ -3193,6 +3196,44 @@ abstract public class CsmCompletionQuery {
                 cont = false;
             }
             return cont;
+        }
+        
+        // Returns true if resolved (even if resolved with an error)
+        private boolean resolveTemplateVariable(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
+            if (!last || findType) {
+                if (CsmFileInfoQuery.getDefault().isCpp14OrLater(getContextFile())) {
+                    // Check if it is variable
+                    ContextCloneStrategy strategy;
+                    if (first) {
+                        strategy = new ContextCloneStrategy();
+                    } else {
+                        strategy = new ContextCloneStrategy(
+                                new ContextPropertyChanger()
+                                        .setStaticOnly(kind == ExprKind.SCOPE)
+                                        .setLastNamespace(lastNamespace)
+                                        .setLastType(lastType)
+                        );
+                    }
+                    List<? extends CompletionItem> candidates = resolveObj(item.getParameter(0), first, strategy);
+                    if (candidates != null && !candidates.isEmpty() && candidates.get(0) instanceof CsmResultItem) {
+                        CsmResultItem resItem = (CsmResultItem) candidates.get(0);
+                        if (CsmKindUtilities.isCsmObject(resItem.getAssociatedObject()) && CsmKindUtilities.isVariable((CsmObject) resItem.getAssociatedObject())) {
+                            CsmVariable var = (CsmVariable) resItem.getAssociatedObject();
+                            if (CsmKindUtilities.isTemplate(var)) {
+                                CsmObject inst = CompletionSupport.createInstantiation(this, (CsmTemplate) var, item, Collections.emptyList());
+                                if (CsmKindUtilities.isVariable(inst)) {
+                                    lastType = ((CsmVariable) inst).getType();
+                                    return true;
+                                }
+                            }
+                            // Error! Trying to instantiate non-template variable
+                            lastType = null;
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         private CsmFunctionDefinition getCsmLambda(CsmCompletionExpression lambdaFunction) {

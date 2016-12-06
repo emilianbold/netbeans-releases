@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -54,6 +55,8 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -87,7 +90,7 @@ import org.openide.util.CharSequences;
  * @param T 
  * @author Dmitriy Ivanov
  */
-public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable, Disposable {
+public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable, CsmTemplate, Disposable {
 
     private final CharSequence name;
     private final CsmType type;
@@ -97,13 +100,26 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private CsmUID<CsmScope> scopeUID;
     private final boolean _extern;
     private ExpressionBase initExpr;
+    private TemplateDescriptor templateDescriptor;
 
-    public static<T> VariableImpl<T> create(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+    public static<T> VariableImpl<T> create(CsmFile file, int startOffset, int endOffset, CsmType type, AST templateAst, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+        TemplateDescriptor tplDescr = TemplateDescriptor.createIfNeededDirect(templateAst, file, scope, registerInProject);
+        type = TemplateUtils.checkTemplateType(type, scope, tplDescr);
         VariableImpl<T> variableImpl = new VariableImpl<>(file, startOffset, endOffset, type, name, scope, _static, _extern);
+        variableImpl.setTemplateDescriptor(tplDescr);
         postObjectCreateRegistration(registerInProject, variableImpl);
         return variableImpl;
     }
 
+    public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
+        TemplateDescriptor tplDescr = createTemplateDescriptor(ast, file, scope, null, global);
+        type = TemplateUtils.checkTemplateType(type, scope, tplDescr);
+        VariableImpl<T> variableImpl = new VariableImpl<>(ast, file, type, name, scope, _static, _extern);
+        variableImpl.setTemplateDescriptor(tplDescr);
+        postObjectCreateRegistration(global, variableImpl);
+        return variableImpl;
+    }
+    
     protected VariableImpl(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         initInitialValue(ast, scope);
@@ -122,12 +138,6 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.name = name;
         this.type = type;
         _setScope(scope);
-    }
-    
-    public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
-        VariableImpl<T> variableImpl = new VariableImpl<>(ast, file, type, name, scope, _static, _extern);
-        postObjectCreateRegistration(global, variableImpl);
-        return variableImpl;
     }
 
     protected VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern) {
@@ -152,6 +162,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public static int getEndOffset(AST node) {
         int endOffset = 0;
         if (node != null) {
+            if (node.getType() == CPPTokenTypes.LITERAL_template) {
+                node = AstRenderer.skipTemplateSibling(node);
+            }
             AST lastChild = AstUtil.getLastChildRecursively(node);
             if (lastChild instanceof CsmAST) {
                 endOffset = ((CsmAST) lastChild).getEndOffset();
@@ -478,7 +491,35 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public CharSequence getText() {
         return getDisplayText();
     }
+    
+    @Override
+    public CharSequence getDisplayName() {
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+    }
+    
+    @Override
+    public boolean isTemplate() {
+        return templateDescriptor != null;
+    }
 
+    @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+
+    @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
+    @Override
+    public List<CsmTemplateParameter> getTemplateParameters() {
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
+    }    
+    
+    protected void setTemplateDescriptor(TemplateDescriptor templateDescriptor) {
+        this.templateDescriptor = templateDescriptor;
+    }
     
     public static class VariableBuilder extends SimpleDeclarationBuilder implements CsmObjectBuilder {
 
@@ -513,6 +554,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         output.writeByte(pack);
         PersistentUtils.writeExpression(initExpr, output);
         PersistentUtils.writeType(type, output);
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
         if (isScopePersistent()) {
             // could be null UID (i.e. parameter)
             UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
@@ -539,6 +581,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this._extern = (pack & 2) == 2;
         this.initExpr = (ExpressionBase) PersistentUtils.readExpression(input);
         this.type = PersistentUtils.readType(input);
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.scopeUID = null;
         this.scopeRef = scope;
     }

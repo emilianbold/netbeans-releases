@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -132,6 +133,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
             }
             if (APTLanguageSupport.FLAVOR_CPP11.equals(languageFlavor)) {
                 aFlags |= CPPParserEx.CPP_FLAVOR_CPP11;
+            } else if (APTLanguageSupport.FLAVOR_CPP14.equals(languageFlavor)) {
+                aFlags |= CPPParserEx.CPP_FLAVOR_CPP14;
             }
             this.flags = aFlags;
             csmCorePackageAccessor = CsmCorePackageAccessor.get();
@@ -203,7 +206,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     }
                 } catch (Throwable ex) {
                     System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-                    ex.printStackTrace(System.err);
+                    CndUtils.printStackTraceOnce(ex);
                 }
                 ast = parser.getAST();
             }
@@ -240,7 +243,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         if (ast != null) {
                             CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
                             FileContent parseFileContent = getCsmCorePackageAccessor().getFileContent(descr);
-                            new AstRenderer(file, parseFileContent, language, objects).render(ast);
+                            new AstRenderer(file, parseFileContent, language, languageFlavor, objects).render(ast);
                         }
                         break;
                     case NAMESPACE_DEFINITION_BODY:
@@ -250,7 +253,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
                         CsmNamespace ns = nsDef.getNamespace();
                         if (ast != null && ns instanceof NamespaceImpl) {
-                            new AstRenderer(nsBodyFile, fileContent, language, objects).render(ast, (NamespaceImpl) ns, nsDef);
+                            new AstRenderer(nsBodyFile, fileContent, language, languageFlavor, objects).render(ast, (NamespaceImpl) ns, nsDef);
                         }
                         RepositoryUtils.put(ns);
                         break;
@@ -261,7 +264,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         ClassImpl cls = (ClassImpl) context[1];
                         CsmVisibility visibility = (CsmVisibility) context[2];
                         boolean localClass = (Boolean) context[3];
-                        cls.fixFakeRender(language, fileContent, visibility, ast, localClass);
+                        cls.fixFakeRender(language, languageFlavor, fileContent, visibility, ast, localClass);
                         if (!localClass) {
                             RepositoryUtils.put(cls);
                         }
@@ -312,7 +315,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         private void dumpParseStatistics() {
             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms%n", file.getAbsolutePath(), numTokens, initTime, parseTime, renderTime);
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms (Lang=%s, Flavor=%s)%n", file.getAbsolutePath(), numTokens, initTime, parseTime, renderTime, language, languageFlavor);
             }
         }
 
@@ -373,6 +376,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 }
             } catch (Exception ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+                CndUtils.printStackTraceOnce(ex);
             }
             parseTime = System.currentTimeMillis() - start;
             return this;
@@ -418,7 +422,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         private void dumpParseStatistics() {
             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms%n", file.getAbsolutePath(), -1, initTime, parseTime, renderTime);
+                System.err.printf(" [ Parsing %s] %d Tokens (took %d ms), Parse=%d ms, Render=%d ms (Lang=Forntra, Flavor=%s)%n", file.getAbsolutePath(), -1, initTime, parseTime, renderTime, file.getFileLanguageFlavor());
             }
         }
 
@@ -495,7 +499,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
-                ex.printStackTrace(System.err);
+                CndUtils.printStackTraceOnce(ex);
             } finally {
                 CsmCacheManager.leave();
             }

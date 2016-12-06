@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -64,7 +65,15 @@ public class DeclarationReferenceResolverImpl extends CsmReferenceResolver {
     public CsmReference findReference(CsmFile file, Document doc, int offset) {
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
-            return impl.getReference(offset);
+            CsmReference out = impl.getReference(offset);
+            if (out != null) {
+                // reference can be outdated
+                // check if referenced object is still alive
+                CsmObject referencedObject = out.getReferencedObject();
+                if (referencedObject != null) {
+                    return out;
+                }
+            }
         }
         return null;
     }

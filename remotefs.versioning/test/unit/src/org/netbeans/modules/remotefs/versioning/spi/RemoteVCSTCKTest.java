@@ -125,6 +125,7 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         super.setUp();
         MockLookup.setLayersAndInstances();
         System.setProperty("nativeexecution.mode.unittest", "true");
+        System.setProperty("cnd.mode.unittest", "true");
         
         String userdir = System.getProperty("netbeans.user");
         if (userdir == null) {

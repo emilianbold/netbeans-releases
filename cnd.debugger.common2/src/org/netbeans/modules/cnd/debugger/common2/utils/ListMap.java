@@ -49,8 +49,9 @@
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
@@ -64,7 +65,7 @@ import java.util.Iterator;
 public class ListMap<O extends ListMapItem> implements Iterable<O> {
 
     private final HashMap<Object, O> map = new HashMap<Object, O>();
-    private final ArrayList<O> list = new ArrayList<O>();
+    private final List<O> list = new CopyOnWriteArrayList<O>();
 
     public O byKey(Object key) {
 	return map.get(key);

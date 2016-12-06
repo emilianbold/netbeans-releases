@@ -53,6 +53,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -84,6 +86,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(path=CndSourcePropertiesProvider.REGISTRATION_PATH, service=CndSourcePropertiesProvider.class, position=1000)
 public final class DocumentLanguageFlavorProvider implements CndSourcePropertiesProvider {
+    private static final boolean TRACE = CndUtils.getBoolean("cnd.doc.flavor.trace", false); // NOI18N
 
     @Override
     public void addProperty(DataObject dob, StyledDocument doc) {
@@ -108,6 +111,8 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             }
             if (primaryFile != null) {
                 doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, primaryFile, nfis));
+                setLanguage(primaryFile, doc);
+                rebuildTH(doc);                
                 return;
             }
         }
@@ -230,35 +235,32 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         if (itemLang == null) {
             itemLang = nfi.getLanguage();
         }
+        if (flavor == null && nfi != null) {
+            flavor = getLanguageFlavor(nfi);
+        }
         Filter<?> filter = null;
         Language<?> language = null;
         switch (itemLang) {
             case C:
                 language = CppTokenId.languageC();
-                filter = CndLexerUtilities.getGccCFilter();
+                filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 break;
             case C_HEADER:
                 language = CppTokenId.languageHeader();
-                if (flavor == null) {
-                    flavor = getLanguageFlavor(nfi);
-                }
                 if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
                         flavor == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getHeaderCpp11Filter();
                 } else {
-                    filter = CndLexerUtilities.getHeaderCppFilter();
+                    filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 }
                 break;
             case CPP:
-                language = CppTokenId.languageCpp();
-                if (flavor == null) {
-                    flavor = getLanguageFlavor(nfi);
-                }                
+                language = CppTokenId.languageCpp();                
                 if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
                         flavor == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getGccCpp11Filter();
                 } else {
-                    filter = CndLexerUtilities.getGccCppFilter();
+                    filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 }
                 break;
             case FORTRAN:
@@ -269,6 +271,11 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         assert filter != null;
         doc.putProperty(Language.class, language);
         InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+        if (TRACE) {
+            System.err.println("DocumentLanguageFlavorProvider:" + doc + ":\n\t{" + itemLang + "} : Change Filter:" +  // NOI18N
+                    lexerAttrs.getValue(LanguagePath.get(language), CndLexerUtilities.LEXER_FILTER) +
+                    "=>" + filter + "; flavor=" + flavor); // NOI18N
+        }
         lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);
         return true;
     }
@@ -311,7 +318,6 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
     }
 
     private final static class ListenerImpl extends NativeProjectItemsAdapter implements PropertyChangeListener {
-        private static final boolean TRACE = false;
         private final Reference<StyledDocument> docRef;
         private final String path;
         private final FileObject fo;
@@ -333,7 +339,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 System.err.println("no native project for " + nativeFileItem); 
             }
             EditorRegistry.addPropertyChangeListener(ListenerImpl.this);
-            if (TRACE) System.err.println(path + " created Listener " + System.identityHashCode(ListenerImpl.this));
+            if (TRACE) System.err.println("DocumentLanguageFlavorProvider:" + path + " created Listener " + System.identityHashCode(ListenerImpl.this));
         }
 
         public ListenerImpl(StyledDocument doc, DataObject dob, FileObject primaryFile, NativeFileItemSet nfis) {
@@ -344,12 +350,12 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             this.nfisRef = new WeakReference<NativeFileItemSet>(nfis);
             EditorRegistry.addPropertyChangeListener(ListenerImpl.this);
             nfis.addPropertyChangeListener(ListenerImpl.this);
-            if (TRACE) System.err.println(path + " created Listener " + System.identityHashCode(ListenerImpl.this));
+            if (TRACE) System.err.println("DocumentLanguageFlavorProvider:" + path + " created Listener " + System.identityHashCode(ListenerImpl.this));
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (TRACE) System.err.println(path + " propertyChange Listener " + System.identityHashCode(this));
+            if (TRACE) System.err.println("DocumentLanguageFlavorProvider:" + path + " propertyChange Listener " + System.identityHashCode(this) + ": evt=" + evt);
             StyledDocument doc = docRef.get();
             NativeProject project = prjRef.get();
             NativeFileItemSet nfis = nfisRef.get();
@@ -389,7 +395,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
 
         private void unregister() {
-            if (TRACE) System.err.println("unregister Listener " + System.identityHashCode(this) + " for " + path);
+            if (TRACE) System.err.println("DocumentLanguageFlavorProvider:" + "unregister Listener " + System.identityHashCode(this) + " for " + path);
             EditorRegistry.removePropertyChangeListener(this);
             NativeProject nativeProject = this.prjRef.get();
             if (nativeProject != null) {
@@ -417,7 +423,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                     unregister();
                     return;
                 }
-                if (TRACE) System.err.println(path + " Item Listener " + System.identityHashCode(this));
+                if (TRACE) System.err.println("DocumentLanguageFlavorProvider:" + path + " Item Listener " + System.identityHashCode(this));
                 LanguageFlavor newFlavor = getLanguageFlavor(fileItem);
                 if (languageFlavor == null) {
                     if (newFlavor != null) {

@@ -259,7 +259,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                     lexerAttrs = new InputAttributes();
                     doc.putProperty(InputAttributes.class, lexerAttrs);
                 }
-                Filter<?> filter = getDefaultFilter(language, doc);
+                Filter<?> filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 if (filter != null) {
                     lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
                 } else {
@@ -316,21 +316,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                 provider.addProperty(dobj, doc);
             }
         }
-    }
-
-    private static Filter<?> getDefaultFilter(Language<?> language, Document doc) {
-        if (language == CppTokenId.languageHeader()) {
-            return CndLexerUtilities.getHeaderCppFilter();
-        } else if (language == CppTokenId.languageC()) {
-            return CndLexerUtilities.getGccCFilter();
-        } else if (language == CppTokenId.languagePreproc()) {
-            return CndLexerUtilities.getPreprocFilter();
-        } else if (language == FortranTokenId.languageFortran()) {
-            return CndLexerUtilities.getFortranFilter();
-        } else if (language == CppTokenId.languageCpp()) {
-            return CndLexerUtilities.getGccCppFilter();
-        }
-        return null;
     }
 
     private static class GuardedEditorSupportImpl implements GuardedEditorSupport {

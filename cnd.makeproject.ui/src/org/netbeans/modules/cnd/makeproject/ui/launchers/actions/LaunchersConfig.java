@@ -41,11 +41,12 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.launchers.actions;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -107,6 +108,7 @@ public class LaunchersConfig {
     }
 
     private void load(FileObject config, boolean pub) {
+        BufferedReader in = null;
         try {
             int id = pub ? COMMON_PUBLIC_INDEX : COMMON_PRIVATE_INDEX;
             LauncherConfig l = map.get(id);
@@ -114,11 +116,10 @@ public class LaunchersConfig {
                 l = new LauncherConfig(id, pub);
                 map.put(id, l);
             }
-            List<String> asLines = new ArrayList<>(config.asLines("UTF-8")); //NOI18N
-            Iterator<String> it = asLines.iterator();
             boolean initComments = true;
-            while (it.hasNext()) {
-                String line = it.next();
+            in = new BufferedReader(new InputStreamReader(config.getInputStream(), "UTF-8")); //NOI18N
+            String line;
+            while((line = in.readLine()) != null) {
                 int i = line.indexOf('#');
                 if (i >= 0) {
                     if (i == 0) {
@@ -138,10 +139,16 @@ public class LaunchersConfig {
                 if (line.isEmpty()) {
                     continue;
                 }
-                while (it.hasNext() && line.endsWith("\\")) { //NOI18N
-                    String next = it.next();
-                    next = next.replace('\t', ' ');
-                    line = line.substring(0, line.length() - 1) + next;
+                boolean eof = false;
+                while (line.endsWith("\\") && !eof) { //NOI18N
+                    String next = in.readLine();
+                    if (next == null) {
+                        eof = true;
+                        line = line.substring(0, line.length() - 1);
+                    } else {
+                        next = next.replace('\t', ' ');
+                        line = line.substring(0, line.length() - 1) + next;
+                    }
                 }
                 i = line.indexOf('=');
                 if (i > 0) {
@@ -150,10 +157,19 @@ public class LaunchersConfig {
                     add(key, value, pub);
 
                 }
+                if (eof) {
+                    break;
+                }
             }
-
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                }
+            }
         }
     }
 
