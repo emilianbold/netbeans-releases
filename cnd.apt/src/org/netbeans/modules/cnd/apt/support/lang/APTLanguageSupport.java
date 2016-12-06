@@ -132,7 +132,9 @@ public final class APTLanguageSupport {
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_C)) {
             filter = new APTGnuCFilter();
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_CPP)) {
-            if(flavor.equalsIgnoreCase(FLAVOR_CPP11)) {
+            if (flavor.equalsIgnoreCase(FLAVOR_CPP14)) {
+                filter = new APTGnuCpp14Filter();
+            } else if (flavor.equalsIgnoreCase(FLAVOR_CPP11)) {
                 filter = new APTGnuCpp11Filter();
             } else {
                 filter = new APTGnuCppFilter();
