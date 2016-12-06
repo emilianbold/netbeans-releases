@@ -295,25 +295,14 @@ public final class J2SEModularProject implements Project {
 //        final PlatformChangedHook platformChangedHook = new PlatformChangedHook();
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), ProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(J2SEModularProject.this,
+            //REVIEWED FOR MODULAR PROJECT
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_MODULE_PROJECT_ICON),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
-            refHelper.createSubprojectProvider(),
-            LogicalViewProviders.createBuilder(
-                this,
-                eval,
-                "org-netbeans-modules-java-j2semodule").   //NOI18N
-                setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2semodule.ui.J2SEModularLogicalViewProvider.J2SEModularLogicalViewRootNode")).    //NOI18N
-//                setCompileOnSaveBadge(newCoSBadge()).
-                build(),
-            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
-//            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createMultiModuleSourceForBinaryQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
             QuerySupport.createMultiModuleBinaryForSourceQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
-            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
-//            new AntArtifactProviderImpl(),
             ProjectHooks.createProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper).
                     setBuildImplTemplate(J2SEModularProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                     setBuildTemplate(J2SEModularProject.class.getResource("resources/build.xsl")).             //NOI18N
@@ -336,12 +325,45 @@ public final class J2SEModularProject implements Project {
 //                        addOpenPostAction(newUpdateCopyLibsAction()).
 //                        addClosePostAction(newStopMainUpdaterAction()).
                         build()),
-//            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
-            QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), getModuleRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
+            QuerySupport.createSources(this, helper, evaluator(),
+                    getSourceRoots(),
+                    getTestSourceRoots(),
+                    getModuleRoots(),
+                    getTestModuleRoots(),
+                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
+            new RecommendedTemplatesImpl(getProjectDirectory()),
+            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+            UILookupMergerSupport.createRecommendedTemplatesMerger(),
+            LookupProviderSupport.createSourcesMerger(),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
+            QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
+            LookupMergerSupport.createCompilerOptionsQueryMerger(),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, evaluator()),
+            LookupMergerSupport.createSFBLookupMerger(),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, evaluator()),
+            LookupMergerSupport.createJFBLookupMerger(),
+            QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
+            LookupProviderSupport.createActionProviderMerger(),
+
+
+            //UNKNOWN FOR MODULAR PROJECT
+            refHelper.createSubprojectProvider(),
+            LogicalViewProviders.createBuilder(
+                this,
+                eval,
+                "org-netbeans-modules-java-j2semodule").   //NOI18N
+                setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2semodule.ui.J2SEModularLogicalViewProvider.J2SEModularLogicalViewRootNode")).    //NOI18N
+//                setCompileOnSaveBadge(newCoSBadge()).
+                build(),
+            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
+//            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
+            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
+//            new AntArtifactProviderImpl(),
+//            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
 //            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
 //            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
-            new RecommendedTemplatesImpl(getProjectDirectory()),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
@@ -358,28 +380,15 @@ public final class J2SEModularProject implements Project {
 //                    setCustomizerAction(newConfigCustomizerAction()).
                     build(),
 //            new J2SEPersistenceProvider(this, cpProvider),
-            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
-            UILookupMergerSupport.createRecommendedTemplatesMerger(),
-            LookupProviderSupport.createSourcesMerger(),
-            encodingQuery,
 //            new J2SEPropertyEvaluatorImpl(evaluator()),
-            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
-            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, evaluator()),
-            LookupMergerSupport.createSFBLookupMerger(),
-            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, evaluator()),
-            LookupMergerSupport.createJFBLookupMerger(),
-            QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
-            LookupProviderSupport.createActionProviderMerger(),
 //            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
 //            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, platformChangedHook, J2SEProjectUtil.getBreakableProperties(this), new String[]{ProjectProperties.PLATFORM_ACTIVE}),
 //            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
 //            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
 //            UILookupMergerSupport.createProjectProblemsProviderMerger(),
 //            new J2SEProjectPlatformImpl(this),
-            QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
             QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots),
-            QuerySupport.createModuleInfoAccessibilityQuery(sourceRoots, testRoots),
-            LookupMergerSupport.createCompilerOptionsQueryMerger()
+            QuerySupport.createModuleInfoAccessibilityQuery(sourceRoots, testRoots)
 //            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
