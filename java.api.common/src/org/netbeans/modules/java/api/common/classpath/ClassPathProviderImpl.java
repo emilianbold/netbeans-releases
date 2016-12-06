@@ -64,7 +64,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -153,6 +152,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      */
     private final Object[/*@GuardedBy("this")*/] cache = new Object[29];
     private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new HashMap<>();
+    private final PropertyChangeSupport listeners = new PropertyChangeSupport(this);
+    private final PropertyChangeListener pl = (e) -> {
+        if (MultiModule.PROP_MODULES.equals(e.getPropertyName())) {
+            listeners.firePropertyChange(ClassPath.SOURCE, null, null);
+        }
+    };
 
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
@@ -915,9 +920,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             switch (type) {
                 case 0:
                     model = MultiModule.getOrCreate(moduleSourceRoots, sourceRoots);
+                    model.addPropertyChangeListener(WeakListeners.propertyChange(pl, model));
                     break;
                 case 1:
                     model = MultiModule.getOrCreate(testModuleSourceRoots, testSourceRoots);
+                    model.addPropertyChangeListener(WeakListeners.propertyChange(pl, model));
                     break;
                 default:
                     throw new IllegalStateException("Invalid classpath type: " + type); //NOI18N
@@ -927,13 +934,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return model;
     }
 
-    @NonNull
-    private ClassPathImplementation getMultiModuleBinaries(final MultiModule model) {
-        //TODO: Cache
-        return ModuleClassPaths.createMultiModuleBinariesPath(model);
-    }
-
-    
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = (ClassPath)cache[7];
         if ( cp == null ) {
@@ -1014,7 +1014,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                 if (modules != null) {
                                     final MultiModule model = getMultiModuleModel(type);
                                     impl = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation(
-                                            getMultiModuleBinaries(model),
+                                            ModuleClassPaths.createMultiModuleBinariesPath(model),
                                             impl
                                     );
                                 }
@@ -1318,6 +1318,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 assert false;
                 return null;
             }});
+    }
+
+    public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        listeners.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        listeners.removePropertyChangeListener(listener);
     }
 
     /**
