@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
@@ -72,7 +73,12 @@ public class EmbeddedHintsCollector extends JavaParserResultTask<Parser.Result> 
     
     public static void setAnnotations(Snapshot snap, List<ErrorDescription> descs) {
         if (snap.getMimePath().size() == 1) {
-            HintsController.setErrors(snap.getSource().getDocument(false), "java-hints", descs);
+            Document doc = snap.getSource().getDocument(false);
+            if (doc == null) {
+                // the document may have disappeared before errors were computed.
+                return;
+            }
+            HintsController.setErrors(doc, "java-hints", descs);
             return;
         }
         
