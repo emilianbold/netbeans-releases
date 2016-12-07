@@ -56,6 +56,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
@@ -67,6 +68,7 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.main.JavaCompiler;
 
@@ -85,9 +87,7 @@ import javax.swing.text.BadLocationException;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
-import javax.tools.ToolProvider;
 
-import com.sun.source.tree.NewClassTree;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -234,10 +234,7 @@ public class Reindenter implements IndentTask {
             ClassLoader origCL = Thread.currentThread().getContextClassLoader();
             try {
                 Thread.currentThread().setContextClassLoader(Reindenter.class.getClassLoader());
-                JavacTaskImpl javacTask = (JavacTaskImpl)ToolProvider.getSystemJavaCompiler().getTask(null, null, new DiagnosticListener<JavaFileObject>() {
-                    @Override
-                    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-                    }
+                JavacTaskImpl javacTask = (JavacTaskImpl)JavacTool.create().getTask(null, null, diagnostic -> {
                 }, Collections.singletonList("-proc:none"), null, Collections.<JavaFileObject>emptySet()); //NOI18N
                 com.sun.tools.javac.util.Context ctx = javacTask.getContext();
                 JavaCompiler.instance(ctx).genEndPos = true;

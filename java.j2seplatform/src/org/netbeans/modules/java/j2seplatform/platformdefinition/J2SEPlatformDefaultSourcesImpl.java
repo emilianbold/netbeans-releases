@@ -47,15 +47,18 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -81,11 +84,13 @@ public class J2SEPlatformDefaultSourcesImpl implements J2SEPlatformDefaultSource
         if (javaHome == null) {
             return Collections.emptyList();
         }
-        return getSources(javaHome);
+        return getSources(javaHome, platform.getSpecification().getVersion());
     }
 
     @NonNull
-    private static List<URI> getSources (@NonNull final File javaHome) {
+    private static List<URI> getSources (
+            @NonNull final File javaHome,
+            @NonNull final SpecificationVersion version) {
         try {
             File f;
             //On VMS, the root of the "src.zip" is "src", and this causes
@@ -107,18 +112,27 @@ public class J2SEPlatformDefaultSourcesImpl implements J2SEPlatformDefaultSource
             }
             if (f.exists() && f.canRead()) {
                 URL url = FileUtil.getArchiveRoot(Utilities.toURI(f).toURL());
-                 //Test for src folder in the src.zip on Mac
-                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                     FileObject fo = URLMapper.findFileObject(url);
-                     if (fo != null) {
-                         fo = fo.getFileObject("src");    //NOI18N
-                         if (fo != null) {
-                             url = fo.toURL();
-                         }
-                     }
+                List<URI> res = Collections.singletonList (url.toURI());
+                if (Util.JDK9.compareTo(version)<=0) {
+                    final FileObject fo = URLMapper.findFileObject(url);
+                    if (fo.getFileObject("java.base") != null) {    //NOI18N
+                        res = Arrays.stream(fo.getChildren())
+                                .filter((m) -> m.isFolder())
+                                .map((m) -> m.toURI())
+                                .collect(Collectors.toList());
+                    }
+                } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    //Test for src folder in the src.zip on Mac
+                    FileObject fo = URLMapper.findFileObject(url);
+                    if (fo != null) {
+                        fo = fo.getFileObject("src");    //NOI18N
+                        if (fo != null) {
+                            url = fo.toURL();
+                            res = Collections.singletonList (url.toURI());
+                        }
+                    }
                 }
-                final URI uri = url.toURI();
-                return Collections.singletonList (uri);
+                return res;
             }
         } catch (MalformedURLException | URISyntaxException e) {
             Exceptions.printStackTrace(e);
