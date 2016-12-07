@@ -404,6 +404,8 @@ public enum CppTokenId implements TokenId {
     PRAGMA_OMP_COPYIN("copyin", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_TASK("task", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_TASKWAIT("taskwait", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TASKGROUP("taskgroup", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TASKLOOP("taskloop", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_COLLAPSE("collapse", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_COPYPRIVATE("copyprivate", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_DEFAULT("default", "pragma-omp-keyword-directive"), // NOI18N

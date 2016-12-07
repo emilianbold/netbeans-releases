@@ -641,6 +641,8 @@ public final class CndLexerUtilities {
             CppTokenId.PRAGMA_OMP_COPYIN,
             CppTokenId.PRAGMA_OMP_TASK,
             CppTokenId.PRAGMA_OMP_TASKWAIT,
+            CppTokenId.PRAGMA_OMP_TASKGROUP,
+            CppTokenId.PRAGMA_OMP_TASKLOOP,
             CppTokenId.PRAGMA_OMP_COLLAPSE,
             CppTokenId.PRAGMA_OMP_COPYPRIVATE,
             CppTokenId.PRAGMA_OMP_DEFAULT,
