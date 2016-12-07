@@ -56,6 +56,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
@@ -200,6 +201,7 @@ public final class TestProject implements Project {
                 pp.setProperty("run.test.classpath", "${javac.test.classpath}:${build.test.classes.dir}:runlib.jar");
                 pp.setProperty("dist.dir", "dist");
                 pp.setProperty("dist.jar", "${dist.dir}/x.jar");
+                pp.setProperty(ProjectProperties.DIST_JAVADOC_DIR, "${dist.dir}/javadoc");
                 pp.setProperty("javac.source", "1.6");
                 pp.setProperty("encoding", "UTF-8");
                 h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pp);

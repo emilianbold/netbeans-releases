@@ -191,6 +191,30 @@ public final class QuerySupport {
     }
 
     /**
+     * Creates a {@link JavadocForBinaryQueryImplementation} for multi-module project.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory
+     * @param eval {@link PropertyEvaluator} used for obtaining project properties
+     * @param sourceModules the module roots
+     * @param srcRoots the source roots
+     * @return the {@link JavadocForBinaryQueryImplementation}
+     * @since 1.94
+     */
+    @NonNull
+    public static JavadocForBinaryQueryImplementation createMultiModuleJavadocForBinaryQuery(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots srcRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, srcRoots);
+        return new MultiModuleJavadocForBinaryQueryImpl(
+                helper,
+                eval,
+                srcModel,
+                new String[] {ProjectProperties.DIST_DIR, ProjectProperties.BUILD_MODULES_DIR},
+                ProjectProperties.DIST_JAVADOC_DIR);
+    }
+
+    /**
      * Create a new query to find Javadoc. The returned query listens on changes of the Javadoc directory.
      * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory.
      * @param evaluator {@link PropertyEvaluator} used for obtaining the Javadoc root.

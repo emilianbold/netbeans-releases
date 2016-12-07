@@ -303,6 +303,7 @@ public final class J2SEModularProject implements Project {
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createMultiModuleSourceForBinaryQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
             QuerySupport.createMultiModuleBinaryForSourceQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
+            QuerySupport.createMultiModuleJavadocForBinaryQuery(helper, evaluator(), getModuleRoots(), getSourceRoots()),
             ProjectHooks.createProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper).
                     setBuildImplTemplate(J2SEModularProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                     setBuildTemplate(J2SEModularProject.class.getResource("resources/build.xsl")).             //NOI18N
@@ -359,7 +360,6 @@ public final class J2SEModularProject implements Project {
                 build(),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 //            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
 //            new AntArtifactProviderImpl(),
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
 //            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
