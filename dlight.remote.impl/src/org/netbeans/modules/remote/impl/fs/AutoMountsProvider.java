@@ -47,7 +47,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -57,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.openide.util.NbPreferences;
 
 /**
  * @author vkvashin
@@ -64,18 +69,47 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 public class AutoMountsProvider {
 
     private final ExecutionEnvironment env;
+    private static final String AUTO_MOUNT_KEY = "auto.mounts"; //NOI18N
 
     public AutoMountsProvider(ExecutionEnvironment env) {
         this.env = env;        
     }
 
-    public static List<String> getFixedAutoMounts() {
-        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/ws", "/workspace")); //NOI18N
-        appendExplicitelySet(list);
-        return list;
+    public static List<String> restoreAutoMounts() {
+        String restored = NbPreferences.forModule(AutoMountsProvider.class).get(AUTO_MOUNT_KEY, null);
+        if (restored == null || restored.isEmpty()) {
+            return getFixedAutoMounts();
+        } else {
+            Set<String> result = new TreeSet<>();
+            for (String p : restored.split(",")) { //NOI18N
+                if (p.startsWith("/")) { //NOI18N
+                    result.add(p);
+                }
+            }
+            appendExplicitlySet(result);
+            return new ArrayList<>(result);
+        }
+    }
+    
+    private List<String> storeAutoMounts(List<String> autoMounts) {
+        StringBuilder sb = new StringBuilder();
+        for (String p : autoMounts) {
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(p);
+        }        
+        NbPreferences.forModule(AutoMountsProvider.class).put(AUTO_MOUNT_KEY, sb.toString());
+        return autoMounts;
     }
 
-    private static void appendExplicitelySet(List<String> list) {
+    private static List<String> getFixedAutoMounts() {
+        Set<String> set = new TreeSet<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/ws", "/workspace")); //NOI18N
+        appendExplicitlySet(set);
+        return new ArrayList<>(set);
+    }
+
+    private static void appendExplicitlySet(Collection<String> list) {
         String t = System.getProperty("remote.autofs.list"); //NOI18N
         if (t != null) {
             String[] paths = t.split(","); //NOI18N
@@ -95,9 +129,9 @@ public class AutoMountsProvider {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             switch (hostInfo.getOSFamily()) {
                 case SUNOS:
-                    return analyzeSolarisAutoMounts();
+                    return storeAutoMounts(analyzeSolarisAutoMounts());
                 case LINUX:
-                    return analyzeLinuxAutoMounts();
+                    return storeAutoMounts(analyzeLinuxAutoMounts());
                 case WINDOWS:
                 case MACOSX:
                 case UNKNOWN:
@@ -142,7 +176,7 @@ public class AutoMountsProvider {
     }
 
     private List<String> analyzeLinuxAutoMounts() throws IOException, InterruptedException, ExecutionException {
-        List<String> autoMounts = new ArrayList<>();
+        Set<String> autoMounts = new TreeSet<>();
         List<String> lines = readFile("/etc/auto.master"); //NOI18N
         for (String l : lines) {
             if (l.startsWith("/")) { //NOI18N
@@ -155,11 +189,11 @@ public class AutoMountsProvider {
                 }
             }
         }
-        return autoMounts;
+        return new ArrayList<>(autoMounts);
     }
 
     private List<String> analyzeSolarisAutoMounts() throws IOException, InterruptedException, ExecutionException {
-        List<String> autoMounts = new ArrayList<>();
+        Set<String> autoMounts = new TreeSet<>();
         List<String> lines = readFile("/etc/auto_master"); //NOI18N
         for (String l : lines) {
             if (l.startsWith("/")) { //NOI18N
@@ -184,10 +218,10 @@ public class AutoMountsProvider {
                 }
             }
         }
-        return autoMounts;
+        return new ArrayList<>(autoMounts);
     }
 
-    private boolean containsParent(List<String> autoMounts, String path) {
+    private boolean containsParent(Collection<String> autoMounts, String path) {
         for (String parent = PathUtilities.getDirName(path);
                 parent != null && !parent.isEmpty();
                 parent = PathUtilities.getDirName(parent)) {

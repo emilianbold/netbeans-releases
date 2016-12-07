@@ -217,7 +217,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         });
-        autoMounts = AutoMountsProvider.getFixedAutoMounts(); // before adding connection listeners and schdulling connectionTask!
+        autoMounts = AutoMountsProvider.restoreAutoMounts(); // before adding connection listeners and schdulling connectionTask!
+        if (RemoteLogger.isLoggable(Level.FINE)) {
+            RemoteLogger.fine("Restored automount list for {0}:", execEnv);//NOI18N
+            for (String path : autoMounts) {
+                RemoteLogger.fine("\t{0}", path);
+            }
+        }
         connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
         connectionChanged = false; // volatile
         connectionTask.schedule(0);
