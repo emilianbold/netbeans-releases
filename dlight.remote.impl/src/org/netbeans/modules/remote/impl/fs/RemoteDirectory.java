@@ -1541,7 +1541,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             if (files == null || files.isEmpty()) {
                 return;
             }
-            File zipFile = File.createTempFile("rfs_local", ".zip");
+            File zipFile = File.createTempFile("rfs_local", ".zip"); // NOI18N
             try {
                 try (ZipOutputStream zipStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
                     for (RemoteFileObjectBase fo : files) {
@@ -1599,7 +1599,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     private void uploadAndUnzip(File localZipFile) throws InterruptedException, IOException  {
         final ExecutionEnvironment env = getExecutionEnvironment();
         // Copy local zip file to remote
-        String remoteZipPath = getPath() + '/' + ".rfs_tmp_" + System.currentTimeMillis() + ".zip";
+        String remoteZipPath = getPath() + '/' + ".rfs_tmp_" + System.currentTimeMillis() + ".zip"; // NOI18N
         boolean success;
         String errorMessage = null;
         try {
