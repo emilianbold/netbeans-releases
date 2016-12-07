@@ -39,59 +39,57 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.model;
+package org.netbeans.modules.jshell.editor;
 
-import java.util.List;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.api.editor.fold.FoldTemplate;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.spi.editor.fold.FoldTypeProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author sdedic
  */
-public final class ConsoleResult extends Parser.Result {
-    private final ConsoleModel model;
-    private volatile boolean invalid;
-    private ConsoleContents    contents;
+@MimeRegistration(mimeType = "text/x-repl", service = FoldTypeProvider.class)
+public final class ConsoleFoldsProvider implements FoldTypeProvider {
+    private static final Collection<FoldType>   types = new ArrayList<FoldType>(5);
     
-    private void checkValid() {
-        if (invalid) {
-            throw new IllegalArgumentException();
-        }
+    @NbBundle.Messages("FoldType_InitialInfo=Greeting Message")
+    public static final FoldType    INITIAL_INFO = FoldType.INITIAL_COMMENT.derive(
+            FoldType.INITIAL_COMMENT.code(), 
+            Bundle.FoldType_InitialInfo(), 
+            FoldType.INITIAL_COMMENT.getTemplate());
+    
+    @NbBundle.Messages("FoldType_ClasspathInfo=Classpath Info")
+    public static final FoldType    CLASSPATH_INFO = FoldType.INITIAL_COMMENT.derive("classpath-info", 
+            Bundle.FoldType_ClasspathInfo(), new
+            FoldTemplate(0, 0, "{ ... }"));
+    
+    @NbBundle.Messages("FoldType_CommandOutput=Command output")
+    public static final FoldType    OUTPUT  = FoldType.create("command-output", Bundle.FoldType_CommandOutput(),
+                                    new FoldTemplate(0, 0, "..."));
+    
+    @NbBundle.Messages("FoldType_Message=Message")
+    public static final FoldType    MESSAGE  = FoldType.create("message", Bundle.FoldType_Message(),
+                                    new FoldTemplate(0, 0, "[...]"));
+
+    static {
+        types.add(INITIAL_INFO);
+        types.add(CLASSPATH_INFO);
+        types.add(OUTPUT);
+        types.add(MESSAGE);
     }
     
-    public ConsoleResult(ConsoleModel model, Snapshot _snapshot) {
-        super(_snapshot);
-        this.model = model;
-    }
-
-    public int getWritablePos() {
-        checkValid();
-        return model.getWritablePos();
-    }
-
-    public int getInputOffset() {
-        checkValid();
-        return model.getInputOffset();
-    }
-
-    public synchronized ConsoleSection getInputSection() {
-        checkValid();
-        return model.getInputSection();
-    }
-
-    public List<ConsoleSection> getSections() {
-        checkValid();
-        return model.getSections();
-    }
-
-    public String getInputText() {
-        checkValid();
-        return model.getInputText();
+    @Override
+    public Collection getValues(Class type) {
+        return types;
     }
 
     @Override
-    protected void invalidate() {
-        invalid = true;
+    public boolean inheritable() {
+        return false;
     }
 }
