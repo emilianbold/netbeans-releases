@@ -46,8 +46,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -64,17 +64,33 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 public class AutoMountsProvider {
 
     private final ExecutionEnvironment env;
-    private final TreeSet<String> autoMounts;
 
     public AutoMountsProvider(ExecutionEnvironment env) {
-        this.env = env;
-        autoMounts = new TreeSet<>();
+        this.env = env;        
     }
 
-    public boolean analyze() {
+    public static List<String> getFixedAutoMounts() {
+        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/ws", "/workspace")); //NOI18N
+        appendExplicitelySet(list);
+        return list;
+    }
+
+    private static void appendExplicitelySet(List<String> list) {
+        String t = System.getProperty("remote.autofs.list"); //NOI18N
+        if (t != null) {
+            String[] paths = t.split(","); //NOI18N
+            for (String p : paths) {
+                if (p.startsWith("/")) { //NOI18N
+                    list.add(p);
+                }
+            }
+        }
+    }
+
+    public List<String> analyze() {
         try {
             if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                return false;
+                return null;
             }
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             switch (hostInfo.getOSFamily()) {
@@ -86,18 +102,12 @@ public class AutoMountsProvider {
                 case MACOSX:
                 case UNKNOWN:
                 default:
-                    return false;
+                    return null;
             }
         } catch (IOException | ConnectionManager.CancellationException | InterruptedException | ExecutionException ex) {
             RemoteLogger.fine(ex);
         }
-        return false;
-    }
-
-    public List<String> getAutoMounts() {
-        List<String> res = new ArrayList<>();
-        res.addAll(autoMounts);
-        return res;
+        return null;
     }
 
     private List<String> readFile(String path) throws IOException, InterruptedException, ExecutionException {
@@ -131,7 +141,8 @@ public class AutoMountsProvider {
         }
     }
 
-    private boolean analyzeLinuxAutoMounts() throws IOException, InterruptedException, ExecutionException {
+    private List<String> analyzeLinuxAutoMounts() throws IOException, InterruptedException, ExecutionException {
+        List<String> autoMounts = new ArrayList<>();
         List<String> lines = readFile("/etc/auto.master"); //NOI18N
         for (String l : lines) {
             if (l.startsWith("/")) { //NOI18N
@@ -144,10 +155,11 @@ public class AutoMountsProvider {
                 }
             }
         }
-        return true;
+        return autoMounts;
     }
 
-    private boolean analyzeSolarisAutoMounts() throws IOException, InterruptedException, ExecutionException {
+    private List<String> analyzeSolarisAutoMounts() throws IOException, InterruptedException, ExecutionException {
+        List<String> autoMounts = new ArrayList<>();
         List<String> lines = readFile("/etc/auto_master"); //NOI18N
         for (String l : lines) {
             if (l.startsWith("/")) { //NOI18N
@@ -166,16 +178,16 @@ public class AutoMountsProvider {
                 String[] words = l.split("\\s+"); // NOI18N
                 if (words.length > 1) {
                     String path = words[1];
-                    if (!path.equals("/-") && !containsParent(path)) { // NOI18N
+                    if (!path.equals("/-") && !containsParent(autoMounts, path)) { // NOI18N
                         autoMounts.add(path);
                     }
                 }
             }
         }
-        return true;
+        return autoMounts;
     }
 
-    private boolean containsParent(String path) {
+    private boolean containsParent(List<String> autoMounts, String path) {
         for (String parent = PathUtilities.getDirName(path);
                 parent != null && !parent.isEmpty();
                 parent = PathUtilities.getDirName(parent)) {

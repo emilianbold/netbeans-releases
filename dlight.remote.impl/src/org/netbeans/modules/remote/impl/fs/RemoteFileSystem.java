@@ -217,26 +217,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         });
-        autoMounts = getFixedAutoMounts(); // before adding connection listeners and schdulling connectionTask!
+        autoMounts = AutoMountsProvider.getFixedAutoMounts(); // before adding connection listeners and schdulling connectionTask!
         connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
         connectionChanged = false; // volatile
         connectionTask.schedule(0);
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
         remoteFileZipper = new RemoteFileZipper(execEnv, this);
-    }
-
-    private List<String> getFixedAutoMounts() {
-        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/ws", "/workspace")); //NOI18N
-        String t = System.getProperty("remote.autofs.list"); //NOI18N
-        if (t != null) {
-            String[] paths = t.split(","); //NOI18N
-            for (String p : paths) {
-                if (p.startsWith("/")) { //NOI18N
-                    list.add(p);
-                }
-            }
-        }
-        return list;
     }
 
     public boolean isAutoMount(String path) {
@@ -376,8 +362,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             try {
                 RemoteLogger.fine("Getting automount list for {0}...", execEnv); //NOI18N
                 AutoMountsProvider amp = new AutoMountsProvider(execEnv);
-                if (amp.analyze()) {
-                    List<String> newAutoMounts = amp.getAutoMounts();
+                List<String> newAutoMounts = amp.analyze();
+                if (newAutoMounts != null) {
                     synchronized (autoMounts) {
                         autoMounts.clear();
                         autoMounts.addAll(newAutoMounts);
