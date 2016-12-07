@@ -426,6 +426,10 @@ public class EvaluatorApp extends BaseClass {
         return System.err != System.out;
     }
 
+    public static boolean testOp9g() {
+        return 10 == methodBoxedNull();
+    }
+
     public static boolean testOp10a() {
         return bx && true;
     }
@@ -1183,6 +1187,10 @@ public class EvaluatorApp extends BaseClass {
     
     public static Float methodAutobox2(Integer i, long l, double d) {
         return new Float(((d / l)) * i);
+    }
+    
+    public static Integer methodBoxedNull() {
+        return null;
     }
     
     public static int count(String[]... args) {
