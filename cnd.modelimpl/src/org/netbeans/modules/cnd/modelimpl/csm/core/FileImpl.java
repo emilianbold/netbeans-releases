@@ -516,6 +516,8 @@ public final class FileImpl implements CsmFile,
         } else {
             if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
                 return APTLanguageSupport.FLAVOR_CPP11;
+            } else if (CndTraceFlags.LANGUAGE_FLAVOR_CPP14) {
+                return APTLanguageSupport.FLAVOR_CPP14;
             }
             NativeFileItem nativeFileItem = getNativeFileItem();
             if(nativeFileItem != null) {
@@ -1464,8 +1466,11 @@ public final class FileImpl implements CsmFile,
         if (!TraceFlags.TRACE_ERROR_PROVIDER) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }
-        if (APTLanguageSupport.FLAVOR_CPP11.equals(getFileLanguageFlavor())) {
+        String fileLanguageFlavor = getFileLanguageFlavor();
+        if (APTLanguageSupport.FLAVOR_CPP11.equals(fileLanguageFlavor)) {
             flags |= CPPParserEx.CPP_FLAVOR_CPP11;
+        } else if (APTLanguageSupport.FLAVOR_CPP14.equals(fileLanguageFlavor)) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP14;
         }
         try {
             // use cached TS
