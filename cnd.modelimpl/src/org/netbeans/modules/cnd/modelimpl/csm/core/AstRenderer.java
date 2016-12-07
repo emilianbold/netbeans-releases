@@ -2674,7 +2674,7 @@ public class AstRenderer {
             return null;
         }
         int templateLevel = 0;
-        AST id = null;
+        AST id = null, last = null;
         AST child = token.getFirstChild();
         while (child != null) {
             switch (child.getType()) {
@@ -2690,9 +2690,10 @@ public class AstRenderer {
                     --templateLevel;
                     break;
             }
+            last = child;
             child = child.getNextSibling();
         }
-        return id;
+        return id != null ? id : last;
     }
 
     private static NamespaceImpl findClosestNamespace(CsmScope scope) {
