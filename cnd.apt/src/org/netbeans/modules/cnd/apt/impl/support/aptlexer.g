@@ -593,7 +593,8 @@ tokens {
         UNKNOWN,
         FORTRAN_FIXED,
         FORTRAN_FREE,
-        CPP11
+        CPP11,
+        CPP14
     };
 
     public interface APTLexerCallback {
@@ -623,6 +624,8 @@ tokens {
             this.flavor = Flavor.FORTRAN_FREE;
         } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_CPP11)) {
             this.flavor = Flavor.CPP11;
+        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_CPP14)) {
+            this.flavor = Flavor.CPP14;
         } else {
             this.flavor = Flavor.UNKNOWN;
         }
@@ -690,8 +693,13 @@ tokens {
         return lang == Language.CPP;
     }
 
-    private boolean isCPlusPlus11() {
-        return isCPlusPlus() && flavor == Flavor.CPP11;
+    private boolean isCpp11OrLater() {
+        return isCPlusPlus() && 
+            (flavor == Flavor.CPP11 || flavor == Flavor.CPP14);
+    }
+
+    private boolean isCpp14OrLater() {
+        return isCPlusPlus() && flavor == Flavor.CPP14;
     }
 
 /*
@@ -1036,7 +1044,7 @@ FIRST_COLON options { constText=true; } :
 FIRST_LESS :
     ( 
         // C++11 standard - 2.5 p3, bullet 2
-        ({isCPlusPlus11()}? "<::" ~(':'|'>')) => '<' {$setType(LESSTHAN);}
+        ({isCpp11OrLater()}? "<::" ~(':'|'>')) => '<' {$setType(LESSTHAN);}
     | 
         ('<' (options{generateAmbigWarnings = false;}:
             {isAfterInclude()}? H_char_sequence ('>')? {$setType(SYS_INCLUDE_STRING);setAfterInclude(false);}

@@ -134,6 +134,8 @@ public class TypesProviderImpl implements TypesProvider {
         }
         if (APTLanguageSupport.FLAVOR_CPP11.equals(langFlavour)) {
             flags |= CPPParserEx.CPP_FLAVOR_CPP11;
+        } else if (APTLanguageSupport.FLAVOR_CPP14.equals(langFlavour)) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP14;
         }
         return flags;
     }
