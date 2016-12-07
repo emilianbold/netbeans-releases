@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -96,7 +95,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntry stat(String path, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, false, timeoutMillis);
     }
 
@@ -113,7 +112,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntry lstat(String path, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, true, timeoutMillis);
     }
 
@@ -142,7 +141,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
     @Override
     protected DirEntryList copy(String from, String to, 
             Collection<IOException> subdirectoryExceptions) 
-            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, InterruptedException, ExecutionException {
         throw new UnsupportedOperationException();
     }
 
@@ -153,7 +152,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected MoveInfo move(String from, String to) 
-            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, InterruptedException, ExecutionException {
         Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(execEnv, from, to);
         f.get();
         String fromParent = PathUtilities.getDirName(from);
@@ -165,7 +164,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntryList readDirectory(String remotePath)
-            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, InterruptedException, ExecutionException {
         if (remotePath.length() == 0) {
             remotePath = "/"; //NOI18N
         } else  {

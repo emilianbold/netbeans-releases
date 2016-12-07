@@ -44,15 +44,17 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -351,11 +353,11 @@ public class RemoteFileSystemUtils {
     public static String getConnectExceptionMessage(ExecutionEnvironment env) {
         return NbBundle.getMessage(RemoteFileSystemUtils.class, "NotConnectedExceptionMessage", env.getDisplayName());
     }
-    
+
     public static boolean isUnitTestMode() {
-        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+        return Boolean.getBoolean("cnd.mode.unittest") | Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     }
-    
+
     @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public static Boolean isLinux(ExecutionEnvironment env) {
         if (HostInfoUtils.isHostInfoAvailable(env)) {
@@ -389,6 +391,42 @@ public class RemoteFileSystemUtils {
     public static void reportUnexpectedTimeout(TimeoutException ex, String path) {
         RemoteLogger.getInstance().log(Level.FINE, "Unexpected TimeoutException with zero timeout " + path, ex);
     }
+    
+    /**
+     * Unpacks a ZIP stream to disk. All entries are unpacked. 
+     * Parent directories are created as needed (even if not mentioned in the ZIP); 
+     * empty ZIP directories are created too. Existing files are overwritten.
+     * @param zip a ZIP stream. It will NOT be closed.
+     * @param dir the base directory in which to unpack (need not yet exist)
+     * @throws IOException in case of problems
+     */
+    public static void unpackZipFile(InputStream zipStream, File dir) throws IOException {
+        byte[] buf = new byte[8192];
+        ZipInputStream zis = new ZipInputStream(zipStream);
+        ZipEntry entry;
+        while ((entry = zis.getNextEntry()) != null) {
+            String name = entry.getName();
+            int slash = name.lastIndexOf('/');                
+            if (slash >= 0) {
+                File baseDir = new File(dir, name.substring(0, slash).replace('/', File.separatorChar));
+                if (!baseDir.isDirectory() && !baseDir.mkdirs()) {
+                    throw new IOException("could not make " + baseDir); // NOI18N
+                }
+            }                
+            if (slash != name.length() - 1) {
+                File f = new File(dir, name.replace('/', File.separatorChar));
+                OutputStream os = new FileOutputStream(f);
+                try {
+                    int read;
+                    while ((read = zis.read(buf)) != -1) {
+                        os.write(buf, 0, read);
+                    }
+                } finally {
+                    os.close();
+                }
+            }
+        }
+    }    
 
     // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil" defaultstate="collapsed">
 
@@ -424,7 +462,7 @@ public class RemoteFileSystemUtils {
                         }
                         return fo;
                     }
-                } catch (InterruptedException | CancellationException ex) {
+                } catch (InterruptedException ex) {
                     throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex);
                 } catch (ExecutionException | TimeoutException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {

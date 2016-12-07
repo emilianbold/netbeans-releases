@@ -136,11 +136,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return classImpl;
     }
 
-    public void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, String languageFlavor, boolean register, DeclarationsContainer container) throws AstRendererException {
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
         initClassDefinition(scope);
-        render(ast, file, fileContent, language, !register, container);
+        render(ast, file, fileContent, language, languageFlavor, !register, container);
         if (register) {
             register(getScope(), false);
         }
@@ -178,13 +178,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    public final void render(AST ast, CsmFile file, FileContent fileContent, String language, boolean localClass, DeclarationsContainer container) {
-        new ClassAstRenderer(file, language, fileContent, CsmVisibility.PRIVATE, localClass, container).render(ast);
+    public final void render(AST ast, CsmFile file, FileContent fileContent, String language, String languageFlavor, boolean localClass, DeclarationsContainer container) {
+        new ClassAstRenderer(file, language, languageFlavor, fileContent, CsmVisibility.PRIVATE, localClass, container).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
 
-    public final void fixFakeRender(String language, FileContent fileContent, CsmVisibility visibility, AST ast, boolean localClass) {
-        new ClassAstRenderer(fileContent.getFile(), language, fileContent, visibility, localClass, null).render(ast);
+    public final void fixFakeRender(String language, String languageFlavor, FileContent fileContent, CsmVisibility visibility, AST ast, boolean localClass) {
+        new ClassAstRenderer(fileContent.getFile(), language, languageFlavor, fileContent, visibility, localClass, null).render(ast);
     }
 
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
@@ -205,7 +205,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
 
-    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, String language, String languageFlavor, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
         ClassImpl impl = findExistingClassImplInContainer(container, ast);
         if (impl != null && !(ClassImpl.class.equals(impl.getClass()))) {
             // not our instance
@@ -226,7 +226,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 return null;
             }
         }
-        impl.init(scope, ast, file, fileContent, language, register, container);
+        impl.init(scope, ast, file, fileContent, language, languageFlavor, register, container);
         if (nameHolder != null) {
             nameHolder.addReference(fileContent, impl);
         }
@@ -685,8 +685,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private final boolean renderingLocalContext;
         private CsmVisibility curentVisibility;
 
-        public ClassAstRenderer(CsmFile containingFile, String language, FileContent fileContent, CsmVisibility curentVisibility, boolean renderingLocalContext, DeclarationsContainer parentContainer) {
-            super((FileImpl) containingFile, fileContent, language, null);
+        public ClassAstRenderer(CsmFile containingFile, String language, String languageFlavor, FileContent fileContent, CsmVisibility curentVisibility, boolean renderingLocalContext, DeclarationsContainer parentContainer) {
+            super((FileImpl) containingFile, fileContent, language, languageFlavor, null);
             this.renderingLocalContext = renderingLocalContext;
             this.curentVisibility = curentVisibility;
             this.container = parentContainer;
@@ -698,10 +698,22 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
-        protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
+        protected VariableImpl<CsmField> createVariable(AST offsetAst, AST templateAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
-            FieldImpl field = FieldImpl.create(offsetAst, file, fileContent, type, name, ClassImpl.this, curentVisibility, _static, _extern, !isRenderingLocalContext());
+            FieldImpl field = FieldImpl.create(
+                    offsetAst, 
+                    file, 
+                    fileContent, 
+                    type, 
+                    templateAst, 
+                    name, 
+                    ClassImpl.this, 
+                    curentVisibility, 
+                    _static, 
+                    _extern, 
+                    !isRenderingLocalContext()
+            );
             ClassImpl.this.addMember(field,!isRenderingLocalContext());
             return field;
         }
@@ -850,6 +862,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                         addMember(fd, !isRenderingLocalContext());
                                         fd.init(token, ClassImpl.this, !isRenderingLocalContext());
                                         break;
+                                    } else {
+                                        // C++14 template variables. Check is downgraded to the most generic one
+                                        // because we want to accept this code even in C++98 standard.
+                                        if (APTLanguageSupport.getInstance().isLanguageCpp(language)) {
+                                            renderVariable(token, null, null, ClassImpl.this, false);
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -985,8 +1004,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected ClassImpl createClass(AST token, CsmScope innerScope, DeclarationsContainer container) throws AstRendererException {
             ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
-                    ? ClassImplSpecialization.create(token, innerScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container)
-                    : ClassImpl.create(token, innerScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container);
+                    ? ClassImplSpecialization.create(token, innerScope, getContainingFile(), language, languageFlavor, getFileContent(), !isRenderingLocalContext(), container)
+                    : ClassImpl.create(token, innerScope, getContainingFile(), language, languageFlavor, getFileContent(), !isRenderingLocalContext(), container);
             if (innerClass != null) {
                 innerClass.setVisibility(curentVisibility);
                 if (innerScope == ClassImpl.this) {
@@ -1215,7 +1234,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 }
                 if(!unnamed) {
                     NameHolder nameHolder = NameHolder.createSimpleName(idAST);
-                    FieldImpl field = FieldImpl.create(start, getContainingFile(), fileContent, type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                    FieldImpl field = FieldImpl.create(start, getContainingFile(), fileContent, type, null, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
                     ClassImpl.this.addMember(field,!isRenderingLocalContext());
                     if (classifier != null) {
                         classifier.addEnclosingVariable(field);

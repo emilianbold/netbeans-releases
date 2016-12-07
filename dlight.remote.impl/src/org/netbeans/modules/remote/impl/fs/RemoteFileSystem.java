@@ -74,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.actions.FastPasteAction;
 import org.netbeans.modules.remote.api.ConnectionNotifier;
@@ -117,6 +118,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     // TODO: consider moving cache names to RemoteDirectory
     protected static final String CACHE_ZIP_FILE_NAME = ".rfs_zip.zip"; // NOI18N
     protected static final String CACHE_ZIP_PART_NAME = ".rfs_zip.part"; // NOI18N
+    protected static final String TEMP_ZIP_PREFIX = ".rfs_tmp_"; // NOI18N
     public static final String RESERVED_PREFIX = ".rfs_"; // NOI18N
     public static final String RESERVED_PREFIX_ESCAPED = "._rfs_"; // NOI18N
     
@@ -141,10 +143,11 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     transient private final StatusImpl status = new StatusImpl();
     private final DeleteOnExitSupport deleteOnExitSupport;
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<>();
-    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<>();
+    private final ThreadLocal<FileInfo> beingCreated = new ThreadLocal<>();
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<>();
     private final RemoteFileZipper remoteFileZipper;
     private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
+    private final ThreadLocal<Boolean> isGettingDirectoryStorage = new ThreadLocal<>();
 
     private final RequestProcessor.Task connectionTask;
 
@@ -298,6 +301,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         Integer currValue = isInsideVCS.get();
         int newValue = ((currValue == null) ? 0 : currValue.intValue()) + (value ? +1 : -1);
         isInsideVCS.set(newValue);
+    }
+    
+    public boolean isGettingDirectoryStorage() {
+        Boolean inside = isGettingDirectoryStorage.get();
+        return inside != null && inside.booleanValue();
+    }
+
+    public void setGettingDirectoryStorage(boolean inside) {
+        isGettingDirectoryStorage.set(inside);
     }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
@@ -963,7 +975,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 RemoteFileSystemTransport.deleteOnDisconnect(execEnv, paths);
                 return;
             }
-            catch (IOException | java.util.concurrent.CancellationException | InterruptedException | ExecutionException ex) {
+            catch (IOException | InterruptedException | ExecutionException ex) {
                 ex.printStackTrace(System.err);
             }
         }
@@ -974,12 +986,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         beingRemoved.set(fo);
     }
 
-    /*package*/ void setBeingCreated(RemoteFileObjectBase fo) {
+    /*package*/ void setBeingCreated(FileInfo fo) {
         beingCreated.set(fo);
     }
     
     /** Be very CAUCIOUS when using this FO - it can be in process of VCS operations  */
-    public RemoteFileObjectBase getBeingCreated() {
+    public FileInfo getBeingCreated() {
         return beingCreated.get();
     }
 
@@ -1271,6 +1283,29 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
+    public static final class FileInfo {
+        private final String path;
+        private final FileType type;
+
+        public FileInfo(RemoteFileObjectBase fo) {
+            this.path = fo.getPath();
+            this.type = fo.getType();
+        }
+
+        public FileInfo(String path, FileType type) {
+            this.path = path;
+            this.type = type;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public FileType getType() {
+            return type;
+        }        
+    }
+
     private class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
 
         public RemoteFileSupport() {

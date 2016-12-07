@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -61,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
@@ -69,6 +69,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystem.FileInfo;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
@@ -102,7 +103,7 @@ abstract public class FileOperationsProvider {
         private static final boolean USE_CACHE;
         static {
             String text = System.getProperty("rfs.vcs.cache");
-            USE_CACHE = false;//(text == null) ? true : Boolean.parseBoolean(text);
+            USE_CACHE = (text == null) ? true : Boolean.parseBoolean(text);
         }
 
         protected FileOperations(FileSystem fs) {
@@ -157,12 +158,12 @@ abstract public class FileOperationsProvider {
                     return res.booleanValue();
                 }
             }
-            RemoteFileObjectBase beingCreated = fileSystem.getBeingCreated();
+            FileInfo beingCreated = fileSystem.getBeingCreated();
             if (beingCreated != null) {
                 if (beingCreated.getPath().equals(file.getPath())) {
-                    if (beingCreated instanceof RemotePlainFile) {
+                    if (beingCreated.getType() == FileType.Regular) {
                         return false;
-                    } else if (beingCreated instanceof RemoteDirectory) {
+                    } else if (beingCreated.getType() == FileType.Directory) {
                         return true;
                     }
                 }
@@ -229,7 +230,7 @@ abstract public class FileOperationsProvider {
                             } else {
                                 return !e.isDirectory();
                             }
-                        } catch (IOException | InterruptedException | CancellationException | ExecutionException | TimeoutException e) {
+                        } catch (IOException | InterruptedException | ExecutionException | TimeoutException e) {
                             RemoteLogger.finest(e);
                         }
                     }
@@ -304,15 +305,33 @@ abstract public class FileOperationsProvider {
             return RemoteFileUrlMapper.toURI(env, path, folder);
         }
 
+        private boolean isKnownSniffingExtension(FileProxyO file) {
+            String path = file.getPath();
+            // TODO: change hardcoded extensions by registration
+            return path.endsWith(".svn") || path.endsWith(".git") || path.endsWith(".hg"); //NOI18N
+        }
+
         protected boolean exists(FileProxyO file) {
             if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
                 RemoteFileObject fo = getFileObject(file);
                 return fo != null && fo.isValid();
             }
-            if (USE_CACHE) {
-                Boolean res = fileSystem.vcsSafeExists(file.getPath());
+            final String path = file.getPath();
+            if (USE_CACHE && (fileSystem.isGettingDirectoryStorage() || isKnownSniffingExtension(file))) {
+                Boolean res = fileSystem.vcsSafeExists(path);
                 if (res != null) {
                     return res.booleanValue();
+                }
+            }
+            // VCS asks for .git, .hg, etc in a directory that is now being created!
+            // we need to filter it out
+            FileInfo beingCreated = fileSystem.getBeingCreated();
+            if (beingCreated != null) {
+                if (path.startsWith(beingCreated.getPath())) {
+                    int pos = beingCreated.getPath().length();
+                    if (path.length() > pos && path.charAt(pos) == '/') {
+                        return false;
+                    }
                 }
             }
             return existsSafe(file);
@@ -491,7 +510,7 @@ abstract public class FileOperationsProvider {
             }
             return true;
         }
-        
+
     }
 
     public static FileProxyO toFileProxy(final String path) {

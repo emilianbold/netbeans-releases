@@ -58,7 +58,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -540,7 +539,7 @@ public abstract class RemoteFileObjectBase {
 
     protected void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop,
             boolean expected, RefreshMode refreshMode, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
     }
 
     public static enum RefreshMode {
@@ -551,7 +550,7 @@ public abstract class RemoteFileObjectBase {
         DEFAULT
     }
 
-    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, ExecutionException {
         try {
             refreshImpl(recursive, antiLoop, expected, refreshMode, 0);
         } catch (TimeoutException ex) {
@@ -561,13 +560,13 @@ public abstract class RemoteFileObjectBase {
 
     public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected,
             RefreshMode refreshMode, int timeout)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
     }
 
     /*package*/ void nonRecursiveRefresh() {
         try {
             refreshImpl(false, null, true, RefreshMode.DEFAULT);
-        } catch (ConnectException | InterruptedException | CancellationException ex) {
+        } catch (ConnectException | InterruptedException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
@@ -579,7 +578,7 @@ public abstract class RemoteFileObjectBase {
     public final void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected, RefreshMode.DEFAULT);
-        } catch (ConnectException | InterruptedException | CancellationException ex) {
+        } catch (ConnectException | InterruptedException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
@@ -711,9 +710,6 @@ public abstract class RemoteFileObjectBase {
             } catch (InterruptedException ex) {
                 throw RemoteExceptions.createInterruptedIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
                         "EXC_CanNotRenameIn", p.getDisplayName()), ex); // NOI18N
-            } catch (CancellationException ex) {
-                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
-                        "EXC_CanNotRenameInCancelled", p.getDisplayName()), ex); // NOI18N
             } catch (ExecutionException ex) {
                 throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
                         "EXC_CanNotRenameExecutionException", newNameExt, ex.getLocalizedMessage()), ex); // NOI18N
@@ -855,7 +851,7 @@ public abstract class RemoteFileObjectBase {
                         }
                     }
                     return movedFO;
-                } catch (InterruptedException | CancellationException ex) {
+                } catch (InterruptedException ex) {
                     throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (ExecutionException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -909,7 +905,7 @@ public abstract class RemoteFileObjectBase {
     }
 
     protected abstract void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws ConnectException, IOException, InterruptedException, ExecutionException;
 
     final void renamePath(String newPath) {
         this.remotePath = newPath;

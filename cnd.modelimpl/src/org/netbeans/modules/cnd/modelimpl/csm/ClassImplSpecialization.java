@@ -89,14 +89,14 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
     
     @Override
-    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, String languageFlavor, boolean register, DeclarationsContainer container) throws AstRendererException {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
 
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
-        render(ast, file, fileContent, language, !register, container);
+        render(ast, file, fileContent, language, languageFlavor, !register, container);
 
         initQualifiedName(ast, scope, register, file);
 
@@ -135,7 +135,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), this, register);
     }
 
-    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, String languageFlavor, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
         assert !APTLanguageSupport.getInstance().isLanguageC(language) : "Class specialization is not allowed in C"; // NOI18N
         
         ClassImpl clsImpl = findExistingClassImplInContainer(container, ast);
@@ -149,7 +149,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
             nameHolder = NameHolder.createClassName(ast);
             impl = new ClassImplSpecialization(ast, nameHolder, file);
         }
-        impl.init(scope, ast, file, fileContent, language, register, container); 
+        impl.init(scope, ast, file, fileContent, language, languageFlavor, register, container); 
         if (nameHolder != null) {
             nameHolder.addReference(fileContent, impl);
         }

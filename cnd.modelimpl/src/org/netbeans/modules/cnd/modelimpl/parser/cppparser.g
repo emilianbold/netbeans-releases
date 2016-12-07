@@ -135,7 +135,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.*;
 }
 
 options {
-	language = "Java";
+        language = "Java";
 } 
 
 {
@@ -144,13 +144,13 @@ options {
 class CPPParser extends Parser;
 
 options {
-	k = 2;
-	importVocab = APT;
-	exportVocab = CPP;
-	codeGenMakeSwitchThreshold = 2;
-	codeGenBitsetTestThreshold = 3;
-	noConstructors = true;
-	buildAST = true;
+        k = 2;
+        importVocab = APT;
+        exportVocab = CPP;
+        codeGenMakeSwitchThreshold = 2;
+        codeGenBitsetTestThreshold = 3;
+        noConstructors = true;
+        buildAST = true;
         genASTClassMap = false;
 }
 
@@ -162,124 +162,125 @@ options {
 tokens {
         CSM_START<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>; // dummy token - should be BEFORE ALL CSM_...
 
-	CSM_TRANSLATION_UNIT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_ENUM_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_ENUM_FWD_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_NAMESPACE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
-	CSM_CTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_CTOR_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FUNCTION_LIKE_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FUNCTION_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FUNCTION_RET_FUN_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FUNCTION_RET_FUN_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FUNCTION_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FUNCTION_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TRANSLATION_UNIT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_ENUM_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_ENUM_FWD_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_NAMESPACE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+        CSM_CTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CTOR_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_LIKE_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_RET_FUN_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_RET_FUN_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUNCTION_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_TYPE_ATOMIC<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_TYPE_DECLTYPE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TEMPLATE_EXPLICIT_INSTANTIATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEMPLATE_EXPLICIT_INSTANTIATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
         CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TEMPLATE_TEMPLATE_PARAMETER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEMPLATE_TEMPLATE_PARAMETER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_DTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_DTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_CTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_CTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_USER_TYPE_CAST_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_USER_TYPE_CAST_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_DTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_DTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_USER_TYPE_CAST_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_USER_TYPE_CAST_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_GENERIC_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	
-	CSM_TEMPL_FWD_CL_OR_STAT_MEM<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_STRANGE_2<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FIELD<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_GENERIC_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        
+        CSM_TEMPL_FWD_CL_OR_STAT_MEM<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_STRANGE_2<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FIELD<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_VISIBILITY_REDEF<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
-	
-	CSM_TEMPLATE_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_KR_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	
-	CSM_ENUMERATOR_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_VISIBILITY_REDEF<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+        
+        CSM_TEMPLATE_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_KR_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        
+        CSM_ENUMERATOR_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_NAMESPACE_ALIAS<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
-	CSM_USING_DIRECTIVE<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
-	CSM_USING_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+        CSM_NAMESPACE_ALIAS<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+        CSM_USING_DIRECTIVE<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+        CSM_USING_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
     CSM_TYPE_ALIAS<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
     CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
     CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_QUALIFIED_ID<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+        CSM_QUALIFIED_ID<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
-	////////// STATEMENTS //////////
+        ////////// STATEMENTS //////////
 
-	// This is just a start marker of the token types, related with statements
-	// Do NOT create tokens of this type
-	// Place token types, which correspond to statements only AFTER this type
-	// (but BEFORE CSM_STATEMENTS_END)
-	CSM_STATEMENTS_START<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // This is just a start marker of the token types, related with statements
+        // Do NOT create tokens of this type
+        // Place token types, which correspond to statements only AFTER this type
+        // (but BEFORE CSM_STATEMENTS_END)
+        CSM_STATEMENTS_START<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_LABELED_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_CASE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_DEFAULT_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_EXPRESSION_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_DECLARATION_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_COMPOUND_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_LABELED_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CASE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_DEFAULT_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_EXPRESSION_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_DECLARATION_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_COMPOUND_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
     CSM_COMPOUND_STATEMENT_LAZY<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
     CSM_TRY_CATCH_STATEMENT_LAZY<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	// selection
-	CSM_IF_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_SWITCH_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	// iteration
-	CSM_WHILE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_DO_WHILE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_FOR_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	// jump
-	CSM_GOTO_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_CONTINUE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_BREAK_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_RETURN_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	// try-catch
+        // selection
+        CSM_IF_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_SWITCH_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // iteration
+        CSM_WHILE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_DO_WHILE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FOR_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // jump
+        CSM_GOTO_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CONTINUE_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_BREAK_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_RETURN_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // try-catch
     CSM_TRY_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
     CSM_CATCH_CLAUSE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_THROW_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_ASM_BLOCK<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_THROW_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_ASM_BLOCK<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	// This is just an end marker of the token types, related with statements
-	// Do NOT create tokens of this type
-	// Place token types, which correspond to statements only BEFORE this type
-	// (but AFTER CSM_STATEMENTS_START)
-	CSM_STATEMENTS_END<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // This is just an end marker of the token types, related with statements
+        // Do NOT create tokens of this type
+        // Place token types, which correspond to statements only BEFORE this type
+        // (but AFTER CSM_STATEMENTS_START)
+        CSM_STATEMENTS_END<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	////////// EXPRESSIONS //////////
+        ////////// EXPRESSIONS //////////
 
-	// This is just a start marker of the token types, related with expressions
-	// Do NOT create tokens of this type
-	// Place token types, which correspond to expressions only AFTER this type
-	// (but BEFORE CSM_EXPRESSIONS_END)
-	CSM_EXPRESSIONS_START<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // This is just a start marker of the token types, related with expressions
+        // Do NOT create tokens of this type
+        // Place token types, which correspond to expressions only AFTER this type
+        // (but BEFORE CSM_EXPRESSIONS_END)
+        CSM_EXPRESSIONS_START<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	// temporary solution
-	// to wrap all expressions 
-	CSM_EXPRESSION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // temporary solution
+        // to wrap all expressions 
+        CSM_EXPRESSION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
         // cast
         CSM_CAST_EXPRESSION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -288,30 +289,31 @@ tokens {
         // function call
         CSM_FUNCALL_EXPRESSION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	// This is just an end marker of the token types, related with expressions
-	// Do NOT create tokens of this type
-	// Place token types, which correspond to expressions only BEFORE this type
-	// (but AFTER CSM_EXPRESSIONS_START)
-	CSM_EXPRESSIONS_END<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        // This is just an end marker of the token types, related with expressions
+        // Do NOT create tokens of this type
+        // Place token types, which correspond to expressions only BEFORE this type
+        // (but AFTER CSM_EXPRESSIONS_START)
+        CSM_EXPRESSIONS_END<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	//////////  //////////
+        //////////  //////////
 
-	CSM_FOR_INIT_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FOR_INIT_STATEMENT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_LINKAGE_SPECIFICATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_PTR_OPERATOR<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_LINKAGE_SPECIFICATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_PTR_OPERATOR<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_ARRAY_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_ARRAY_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_VARIABLE_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_VARIABLE_LIKE_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_VARIABLE_LIKE_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_CONDITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_BASE_SPECIFIER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_CONDITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_BASE_SPECIFIER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_TEST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TEST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
-	CSM_END<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>; // dummy token - should be AFTER ALL CSM_...
+        CSM_END<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>; // dummy token - should be AFTER ALL CSM_...
 }
 
 {
@@ -328,29 +330,30 @@ tokens {
     }
 
     // Defines for flags passed to init methods
-    public static final int CPP_STATEMENT_TRACE		= 0x1;
+    public static final int CPP_STATEMENT_TRACE                = 0x1;
     public static final int CPP_STATEMENT_TRACE_VERBOSE = 0x2;
-    public static final int CPP_SUPPRESS_ERRORS		= 0x4;
+    public static final int CPP_SUPPRESS_ERRORS                = 0x4;
 
-    public static final int CPP_CPLUSPLUS		= 0x8;
-    public static final int CPP_ANSI_C			= 0x10;
-    public static final int CPP_KandR_C			= 0x20;
+    public static final int CPP_CPLUSPLUS                = 0x8;
+    public static final int CPP_ANSI_C                        = 0x10;
+    public static final int CPP_KandR_C                        = 0x20;
     
     public static final int CPP_FLAVOR_CPP11            = 0x40;
+    public static final int CPP_FLAVOR_CPP14            = 0x80;
 
     /** Switches legacy warnings on */
     protected static final boolean reportOddWarnings = Boolean.getBoolean("cnd.parser.odd.warnings");
 
     protected void addNewFold(int type, int startLnum, int startOffset, int endLnum, int endOffset) {}
 
-    //	The statements in this block appear only in CPPParser.cpp and not in CPPLexer.cpp
+    //        The statements in this block appear only in CPPParser.cpp and not in CPPLexer.cpp
 
     public static final
-    int statementTrace = 0;	// Used to control selected (level) tracing (see support.cpp)
-				// 1 Shows which external and member statements selected
-				// 2 Shows above plus all declarations/definitions
-				// 3 reserved for future use
-				// 4 and above available for user
+    int statementTrace = 0;        // Used to control selected (level) tracing (see support.cpp)
+                                // 1 Shows which external and member statements selected
+                                // 2 Shows above plus all declarations/definitions
+                                // 3 reserved for future use
+                                // 4 and above available for user
 
      protected boolean isLazyCompound() {
         return false;
@@ -358,61 +361,63 @@ tokens {
 
     protected void init(String filename, int flags) {
 
-	setFilename(filename);
-	//
-	// Creates a dictionary to hold symbols with 4001 buckets, 200 scopes
-	// and 800,000 characters // These can be changed to suit the size of
-	// program(s) being parsed.
-	//symbols = new CPPDictionary(4001, 200, 800000);
+        setFilename(filename);
+        //
+        // Creates a dictionary to hold symbols with 4001 buckets, 200 scopes
+        // and 800,000 characters // These can be changed to suit the size of
+        // program(s) being parsed.
+        //symbols = new CPPDictionary(4001, 200, 800000);
 
-	// Set template parameter and external scopes. Set template parameter scope to 0.
-	//templateParameterScope = symbols->getCurrentScopeIndex();
-	//symbols->saveScope();	// Advance currentScope from 0 to 1
-	//externalScope = symbols->getCurrentScopeIndex();	// Set external scope to 1
+        // Set template parameter and external scopes. Set template parameter scope to 0.
+        //templateParameterScope = symbols->getCurrentScopeIndex();
+        //symbols->saveScope();        // Advance currentScope from 0 to 1
+        //externalScope = symbols->getCurrentScopeIndex();        // Set external scope to 1
 
-	// Declare predefined scope "std" in external scope
-	//CPPSymbol *a = new CPPSymbol("std", CPPSymbol::otTypedef);
-	//symbols->define("std", a);
+        // Declare predefined scope "std" in external scope
+        //CPPSymbol *a = new CPPSymbol("std", CPPSymbol::otTypedef);
+        //symbols->define("std", a);
 
-	// Global flags to allow for nested declarations
-	_td = false;		// For typedef
-	_fd = false;		// For friend
-	_sc = scInvalid;	// For StorageClass
-	_tq = tqInvalid;	// For TypeQualifier
-	_ts = tsInvalid;	// For TypeSpecifier
-	_ds = dsInvalid;	// For DeclSpecifier
+        // Global flags to allow for nested declarations
+        _td = false;                // For typedef
+        _fd = false;                // For friend
+        _sc = scInvalid;        // For StorageClass
+        _tq = tqInvalid;        // For TypeQualifier
+        _ts = tsInvalid;        // For TypeSpecifier
+        _ds = dsInvalid;        // For DeclSpecifier
 
-	//functionDefinition = 0;
-	qualifierPrefix = new StringBuilder();
-	enclosingClass = "";
-	assign_stmt_RHS_found = 0;
-	in_parameter_list = false;
-	K_and_R = false;	// used to distinguish old K & R parameter definitions
-	in_return = false;
-	is_address = false;
-	is_pointer = false;
+        //functionDefinition = 0;
+        qualifierPrefix = new StringBuilder();
+        enclosingClass = "";
+        assign_stmt_RHS_found = 0;
+        in_parameter_list = false;
+        K_and_R = false;        // used to distinguish old K & R parameter definitions
+        in_return = false;
+        is_address = false;
+        is_pointer = false;
         in_postfunc_unknown_specifiers = 0;
 
-	/*if ((flags & CPP_STATEMENT_TRACE) > 0) {
-	    statementTrace = 1;
-	}
-	if ((flags & CPP_STATEMENT_TRACE_VERBOSE) > 0) {
-	    statementTrace = 2;
-	}*/
-	if ((flags & CPP_SUPPRESS_ERRORS) > 0) {
-	    reportErrors = false;
-	}
-	if ((flags & CPP_CPLUSPLUS) > 0) {
-	    lang = CPLUSPLUS;
-	} else if ((flags & CPP_ANSI_C) > 0) {
-	    lang = ANSI_C;
-	} else if (CPP_KandR_C > 0) { // VK: looks strange; well leave for a while
-	    lang = KandR_C;
-	} else {
-	    lang = UNKNOWN_LANG;
-	}
+        /*if ((flags & CPP_STATEMENT_TRACE) > 0) {
+            statementTrace = 1;
+        }
+        if ((flags & CPP_STATEMENT_TRACE_VERBOSE) > 0) {
+            statementTrace = 2;
+        }*/
+        if ((flags & CPP_SUPPRESS_ERRORS) > 0) {
+            reportErrors = false;
+        }
+        if ((flags & CPP_CPLUSPLUS) > 0) {
+            lang = CPLUSPLUS;
+        } else if ((flags & CPP_ANSI_C) > 0) {
+            lang = ANSI_C;
+        } else if (CPP_KandR_C > 0) { // VK: looks strange; well leave for a while
+            lang = KandR_C;
+        } else {
+            lang = UNKNOWN_LANG;
+        }
 
-        if ((flags & CPP_FLAVOR_CPP11) > 0) {
+        if ((flags & CPP_FLAVOR_CPP14) > 0) {
+            langFlavor = FLAVOR_CPP14;
+        } else if ((flags & CPP_FLAVOR_CPP11) > 0) {
             langFlavor = FLAVOR_CPP11;
         } else {
             langFlavor = FLAVOR_UNKNOWN;
@@ -420,93 +425,98 @@ tokens {
     }
 
     boolean isCPlusPlus() {
-	return lang == CPLUSPLUS;
+        return lang == CPLUSPLUS;
     }
 
-    boolean isCPlusPlus11() {
-        return isCPlusPlus() && langFlavor == FLAVOR_CPP11;
+    boolean isCpp11OrLater() {
+        return isCPlusPlus() && (langFlavor == FLAVOR_CPP11 || langFlavor == FLAVOR_CPP14);
+    }
+
+    boolean isCpp14OrLater() {
+        return isCPlusPlus() && (langFlavor == FLAVOR_CPP14);
     }
 
     boolean isC() {
         return lang == ANSI_C;
     }
 
-	protected static final int tsInvalid   = 0x0;
-	protected static final int tsVOID      = 0x1;
-	protected static final int tsCHAR      = 0x2;
-	protected static final int tsSHORT     = 0x4;
-	protected static final int tsINT       = 0x8;
-	protected static final int tsLONG      = 0x10;
-	protected static final int tsFLOAT     = 0x20;
-	protected static final int tsDOUBLE    = 0x40;
-	protected static final int tsSIGNED    = 0x80;
-	protected static final int tsUNSIGNED  = 0x100;
-	protected static final int tsTYPEID    = 0x200;
-	protected static final int tsSTRUCT    = 0x400;
-	protected static final int tsENUM      = 0x800;
-	protected static final int tsUNION     = 0x1000;
-	protected static final int tsCLASS     = 0x2000;
-	protected static final int tsWCHAR_T   = 0x4000;
-	protected static final int tsBOOL      = 0x8000;
-	protected static final int tsCOMPLEX   = 0x10000;
-	protected static final int tsIMAGINARY = 0x20000;
+        protected static final int tsInvalid   = 0x0;
+        protected static final int tsVOID      = 0x1;
+        protected static final int tsCHAR      = 0x2;
+        protected static final int tsSHORT     = 0x4;
+        protected static final int tsINT       = 0x8;
+        protected static final int tsLONG      = 0x10;
+        protected static final int tsFLOAT     = 0x20;
+        protected static final int tsDOUBLE    = 0x40;
+        protected static final int tsSIGNED    = 0x80;
+        protected static final int tsUNSIGNED  = 0x100;
+        protected static final int tsTYPEID    = 0x200;
+        protected static final int tsSTRUCT    = 0x400;
+        protected static final int tsENUM      = 0x800;
+        protected static final int tsUNION     = 0x1000;
+        protected static final int tsCLASS     = 0x2000;
+        protected static final int tsWCHAR_T   = 0x4000;
+        protected static final int tsBOOL      = 0x8000;
+        protected static final int tsCOMPLEX   = 0x10000;
+        protected static final int tsIMAGINARY = 0x20000;
         protected static final int tsAUTO      = 0x40000; // c++11 auto type specifier
         protected static final int tsOTHER     = 0x80000;
 
-	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
+        public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
-	protected static final TypeQualifier tqInvalid = new TypeQualifier("tqInvalid");
-	protected static final TypeQualifier tqCONST = new TypeQualifier("tqCONST");
-	protected static final TypeQualifier tqVOLATILE = new TypeQualifier("tqVOLATILE");
+        protected static final TypeQualifier tqInvalid = new TypeQualifier("tqInvalid");
+        protected static final TypeQualifier tqCONST = new TypeQualifier("tqCONST");
+        protected static final TypeQualifier tqVOLATILE = new TypeQualifier("tqVOLATILE");
         protected static final TypeQualifier tqAtomic = new TypeQualifier("tqAtomic");
-	protected static final TypeQualifier tqCDECL = new TypeQualifier("tqCDECL");
-	protected static final TypeQualifier tqOTHER = new TypeQualifier("tqOTHER");
+        protected static final TypeQualifier tqCDECL = new TypeQualifier("tqCDECL");
+        protected static final TypeQualifier tqOTHER = new TypeQualifier("tqOTHER");
 
-	public static class StorageClass extends Enum { public StorageClass(String id) { super(id); } }
+        public static class StorageClass extends Enum { public StorageClass(String id) { super(id); } }
 
-	protected static final StorageClass scInvalid = new StorageClass("scInvalid");
-	protected static final StorageClass scAUTO = new StorageClass("scAUTO");
-	protected static final StorageClass scREGISTER = new StorageClass("scREGISTER");
-	protected static final StorageClass scSTATIC = new StorageClass("scSTATIC");
-	protected static final StorageClass scEXTERN = new StorageClass("scEXTERN");
-	protected static final StorageClass scMUTABLE = new StorageClass("scMUTABLE");
-	protected static final StorageClass scTHREAD = new StorageClass("scTHREAD");
-	protected static final StorageClass scOTHER = new StorageClass("scOTHER");
+        protected static final StorageClass scInvalid = new StorageClass("scInvalid");
+        protected static final StorageClass scAUTO = new StorageClass("scAUTO");
+        protected static final StorageClass scREGISTER = new StorageClass("scREGISTER");
+        protected static final StorageClass scSTATIC = new StorageClass("scSTATIC");
+        protected static final StorageClass scEXTERN = new StorageClass("scEXTERN");
+        protected static final StorageClass scMUTABLE = new StorageClass("scMUTABLE");
+        protected static final StorageClass scTHREAD = new StorageClass("scTHREAD");
+        protected static final StorageClass scOTHER = new StorageClass("scOTHER");
 
-	public static class DeclSpecifier extends Enum { public DeclSpecifier(String id) { super(id); } }
+        public static class DeclSpecifier extends Enum { public DeclSpecifier(String id) { super(id); } }
 
-	protected static final DeclSpecifier dsInvalid = new DeclSpecifier("dsInvalid");
-	protected static final DeclSpecifier dsVIRTUAL = new DeclSpecifier("dsVIRTUAL");
-	protected static final DeclSpecifier dsINLINE = new DeclSpecifier("dsINLINE");
-	protected static final DeclSpecifier dsEXPLICIT = new DeclSpecifier("dsEXPLICIT");
-	protected static final DeclSpecifier dsFRIEND = new DeclSpecifier("dsFRIEND");
+        protected static final DeclSpecifier dsInvalid = new DeclSpecifier("dsInvalid");
+        protected static final DeclSpecifier dsVIRTUAL = new DeclSpecifier("dsVIRTUAL");
+        protected static final DeclSpecifier dsINLINE = new DeclSpecifier("dsINLINE");
+        protected static final DeclSpecifier dsEXPLICIT = new DeclSpecifier("dsEXPLICIT");
+        protected static final DeclSpecifier dsFRIEND = new DeclSpecifier("dsFRIEND");
 
         protected static final String LITERAL_EXEC = "EXEC";
         protected static final String LITERAL_SQL = "SQL";
 
-	// typedef int QualifiedItem;
-	protected static final int qiInvalid     = 0x0;
-	protected static final int qiType        = 0x1;	// includes enum, class, typedefs, namespace
-	protected static final int qiDtor        = 0x2;
-	protected static final int qiCtor        = 0x4;
-	protected static final int qiOperator    = 0x8;
-	protected static final int qiPtrMember   = 0x10;
-	protected static final int qiVar         = 0x20;
-	protected static final int qiFun         = 0x40;
-	
-	// Language Definitions
-	// TODO: what's the difference with the above constants (CPP_ANSI_C, etc)
-	protected static final  int UNKNOWN_LANG	= 0x0;
-	protected static final  int CPLUSPLUS	= 0x2;
-	protected static final  int ANSI_C	= 0x4;
-	protected static final  int KandR_C	= 0x8;
+        // typedef int QualifiedItem;
+        protected static final int qiInvalid     = 0x0;
+        protected static final int qiType        = 0x1;        // includes enum, class, typedefs, namespace
+        protected static final int qiDtor        = 0x2;
+        protected static final int qiCtor        = 0x4;
+        protected static final int qiOperator    = 0x8;
+        protected static final int qiPtrMember   = 0x10;
+        protected static final int qiVar         = 0x20;
+        protected static final int qiFun         = 0x40;
+        
+        // Language Definitions
+        // TODO: what's the difference with the above constants (CPP_ANSI_C, etc)
+        protected static final  int UNKNOWN_LANG        = 0x0;
+        protected static final  int CPLUSPLUS        = 0x2;
+        protected static final  int ANSI_C        = 0x4;
+        protected static final  int KandR_C        = 0x8;
 
         // Language Flavors
         protected static final  int FLAVOR_UNKNOWN  = 0x0;
         protected static final  int FLAVOR_CPP11    = 0x1;
+        protected static final  int FLAVOR_CPP14    = 0x2;
 
         protected static final int ERROR_LIMIT = 100;
-	private int errorCount = 0;
+        private int errorCount = 0;
 
     protected static final int declOther = 0;
     protected static final int declStatement = 1;
@@ -516,10 +526,10 @@ tokens {
     protected static final int declExternFunction = 5;
     protected static final int declSimpleFunction = 6;
 
-	public int getErrorCount() {
-	    int cnt = errorCount;
-	    return cnt;
-	}
+        public int getErrorCount() {
+            int cnt = errorCount;
+            return cnt;
+        }
 
         public boolean shouldProceed() {
             boolean res = errorCount < ERROR_LIMIT;
@@ -529,7 +539,7 @@ tokens {
             return res;
         }
 
-	public void reportError(RecognitionException e) {
+        public void reportError(RecognitionException e) {
             // Do not report errors that we had reported already
             if (lastRecoveryPosition == input.index()) {
                 return;
@@ -539,22 +549,22 @@ tokens {
             
             if (Diagnostic.needStatistics()) Diagnostic.onParserError(e);
 
-	    if (reportErrors) {
+            if (reportErrors) {
                 if (TraceFlags.DEBUG) {
                     e.printStackTrace(System.err);
                 } else {
                     super.reportError(e);
                 }
-	    }
-	    errorCount++;
-	}
+            }
+            errorCount++;
+        }
 
-	public void reportError(String s) {
-	    if (reportErrors) {
-		super.reportError(s);
-	    }
-	    errorCount++;
-	}
+        public void reportError(String s) {
+            if (reportErrors) {
+                super.reportError(s);
+            }
+            errorCount++;
+        }
 
         protected boolean hasReportErrors() {
             return reportErrors;
@@ -589,12 +599,12 @@ tokens {
             }
             tokenSet.orInPlace(stopSet);
             consumeUntil(tokenSet);
-	}
+        }
 
         public boolean isTemplateTooDeep(int currentLevel, int maxLevel) {
             return isTemplateTooDeep(currentLevel, maxLevel, 0);
         }
-	
+        
         public static int TEMPLATE_PREVIEW_POS_LIMIT = 4096;
         public boolean isTemplateTooDeep(int currentLevel, int maxLevel, int startPos) {
             int level = currentLevel;
@@ -624,61 +634,61 @@ tokens {
         }
 
 
-	//protected boolean isCtor() { /*TODO: implement*/ throw new NotImplementedException(); }
-	//protected boolean isValidIdentifier(String id) { /*TODO: implement*/ throw new NotImplementedException(); }
+        //protected boolean isCtor() { /*TODO: implement*/ throw new NotImplementedException(); }
+        //protected boolean isValidIdentifier(String id) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected
-	int lang;
+        protected
+        int lang;
 
-	protected
-	int langFlavor;
+        protected
+        int langFlavor;
 
-	// Symbol table management stuff
-	//CPPDictionary *symbols;
+        // Symbol table management stuff
+        //CPPDictionary *symbols;
 
-	//protected
-	//int templateParameterScope;
+        //protected
+        //int templateParameterScope;
 
-	//protected
-	//int externalScope;
+        //protected
+        //int externalScope;
 
-	protected
-	boolean _td;			// For typedef
+        protected
+        boolean _td;                        // For typedef
 
-	protected
-	boolean _fd;			// For friend
+        protected
+        boolean _fd;                        // For friend
 
-	protected
-	StorageClass _sc;	// For storage class
+        protected
+        StorageClass _sc;        // For storage class
 
-	protected
-	TypeQualifier _tq;	// For type qualifier
+        protected
+        TypeQualifier _tq;        // For type qualifier
 
-	protected
-	/*TypeSpecifier*/int _ts;	// For type specifier
+        protected
+        /*TypeSpecifier*/int _ts;        // For type specifier
 
-	protected
-	DeclSpecifier _ds;	// For declaration specifier
+        protected
+        DeclSpecifier _ds;        // For declaration specifier
 
-	/*protected
-	int functionDefinition;	// 0 = Function definition not being parsed
-				// 1 = Parsing function name
-				// 2 = Parsing function parameter list
-				// 3 = Parsing function block*/
+        /*protected
+        int functionDefinition;        // 0 = Function definition not being parsed
+                                // 1 = Parsing function name
+                                // 2 = Parsing function parameter list
+                                // 3 = Parsing function block*/
 
-	protected
-	StringBuilder qualifierPrefix = new StringBuilder();
+        protected
+        StringBuilder qualifierPrefix = new StringBuilder();
 
-	protected
-	String enclosingClass;
+        protected
+        String enclosingClass;
 
-	int assign_stmt_RHS_found;
+        int assign_stmt_RHS_found;
 
-	boolean in_parameter_list;	// DW 13/02/04 used within CPP_parser
-	boolean K_and_R;	// used to distinguish old K & R parameter definitions
-	boolean in_return;
-	boolean is_address;
-	boolean is_pointer;
+        boolean in_parameter_list;        // DW 13/02/04 used within CPP_parser
+        boolean K_and_R;        // used to distinguish old K & R parameter definitions
+        boolean in_return;
+        boolean is_address;
+        boolean is_pointer;
         int in_postfunc_unknown_specifiers; // to protect from infinite loop
 
         private boolean setInPostFuncUnknownSpecifiers(boolean enter) {
@@ -698,67 +708,67 @@ tokens {
 
         protected int classDefinitionDepth = 0; // to restrict number of nested classes
 
-	protected int MaxTemplateTokenScan = 200;
+        protected int MaxTemplateTokenScan = 200;
 
-	static class IF_Type extends Enum { public IF_Type(String id) { super(id); } }
-	protected static final IF_Type IF_Local = new IF_Type("IF_Local");
-	protected static final IF_Type IF_System = new IF_Type("IF_System");
-	protected static final IF_Type IF_Macro = new IF_Type("IF_Macro");
+        static class IF_Type extends Enum { public IF_Type(String id) { super(id); } }
+        protected static final IF_Type IF_Local = new IF_Type("IF_Local");
+        protected static final IF_Type IF_System = new IF_Type("IF_System");
+        protected static final IF_Type IF_Macro = new IF_Type("IF_Macro");
 
-	static class IncludeFile {
-	    public IF_Type type;
-	    public String file;
-	}
+        static class IncludeFile {
+            public IF_Type type;
+            public String file;
+        }
 
-	// Semantic interface; You could subclass and redefine these functions
-	//  so you don't have to mess with the grammar itself.
+        // Semantic interface; You could subclass and redefine these functions
+        //  so you don't have to mess with the grammar itself.
 
-	// Antlr doesn't allow to make parser abstract;
-	// I throw this exception in methods, which otherwise were just abstract 
-	public static class NotImplementedException extends Error {
-		public NotImplementedException() { super("not imlemented"); }
-	}
-	
-	// Symbol stuff
-	protected boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags) { return qualifiedItemIsOneOf(qiFlags, 0); }
-	protected boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags, int lookahead_offset) { /*TODO: implement*/ throw new NotImplementedException(); }
+        // Antlr doesn't allow to make parser abstract;
+        // I throw this exception in methods, which otherwise were just abstract 
+        public static class NotImplementedException extends Error {
+                public NotImplementedException() { super("not imlemented"); }
+        }
+        
+        // Symbol stuff
+        protected boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags) { return qualifiedItemIsOneOf(qiFlags, 0); }
+        protected boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags, int lookahead_offset) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected /*QualifiedItem*/int qualifiedItemIs()	{ return qualifiedItemIs(0); }
-	protected /*QualifiedItem*/int qualifiedItemIs(int lookahead_offset) { /*TODO: implement*/ throw new NotImplementedException(); }
+        protected /*QualifiedItem*/int qualifiedItemIs()        { return qualifiedItemIs(0); }
+        protected /*QualifiedItem*/int qualifiedItemIs(int lookahead_offset) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	// both skipTemplateQualifiers and skipNestedParens used only in CPPParserEx
-	//protected boolean skipTemplateQualifiers(int kInOut) { /*TODO: implement*/ throw new NotImplementedException(); }
-	// TODO: original skipNestedParens(int& kInOut) passes kInOut BY REF!
-	//protected int skipNestedParens(int kInOut) { /*TODO: implement*/ throw new NotImplementedException(); }
+        // both skipTemplateQualifiers and skipNestedParens used only in CPPParserEx
+        //protected boolean skipTemplateQualifiers(int kInOut) { /*TODO: implement*/ throw new NotImplementedException(); }
+        // TODO: original skipNestedParens(int& kInOut) passes kInOut BY REF!
+        //protected int skipNestedParens(int kInOut) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected boolean scopedItem() { return scopedItem(1); }
-	protected boolean scopedItem(int k) { /*TODO: implement*/ throw new NotImplementedException(); }
+        protected boolean scopedItem() { return scopedItem(1); }
+        protected boolean scopedItem(int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	// finalQualifier is used in CPPParserEx only
-	//protected int finalQualifier() { return finalQualifier(1); }
-	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
+        // finalQualifier is used in CPPParserEx only
+        //protected int finalQualifier() { return finalQualifier(1); }
+        //protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
     protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
     protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
-	// isClassName is used in CPPParserEx only
-	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
-	//protected void end_of_stmt() {}
+        // isClassName is used in CPPParserEx only
+        //protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
+        //protected void end_of_stmt() {}
 
 
-	// Scoping stuff
-	//protected void enterNewLocalScope() {}
-	//protected void exitLocalScope() {}
-	//protected void enterExternalScope() {}
-	//protected void exitExternalScope() {}
+        // Scoping stuff
+        //protected void enterNewLocalScope() {}
+        //protected void exitLocalScope() {}
+        //protected void enterExternalScope() {}
+        //protected void exitExternalScope() {}
 
-	// Aggregate stuff
-	protected void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {}
+        // Aggregate stuff
+        protected void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {}
 
-	protected void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
+        protected void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
             classDefinitionDepth++;
         }
 
-	protected void endClassDefinition() {
+        protected void endClassDefinition() {
             classDefinitionDepth--;
         }
         
@@ -766,61 +776,61 @@ tokens {
             return classDefinitionDepth < maxDepth;
         }
 
-	protected void beginEnumDefinition(String s) {}
-	protected void endEnumDefinition() {}
-	protected void enumElement(String s) {}
+        protected void beginEnumDefinition(String s) {}
+        protected void endEnumDefinition() {}
+        protected void enumElement(String s) {}
 
-	// Declaration and definition stuff
-	protected void declarationSpecifier(boolean td, boolean fd, StorageClass sc, TypeQualifier tq,
-			     /*TypeSpecifier*/int ts, DeclSpecifier ds) {}
-	protected void beginDeclaration() {}
-	protected void endDeclaration() {}
-	protected void beginConstructorDeclaration(String s) {}
-	protected void endConstructorDeclaration() {}
-	protected void beginDestructorDeclaration(String s) {}
-	protected void endDestructorDeclaration() {}
-	protected boolean beginParameterDeclaration() { _ts = tsInvalid; return true; }
+        // Declaration and definition stuff
+        protected void declarationSpecifier(boolean td, boolean fd, StorageClass sc, TypeQualifier tq,
+                             /*TypeSpecifier*/int ts, DeclSpecifier ds) {}
+        protected void beginDeclaration() {}
+        protected void endDeclaration() {}
+        protected void beginConstructorDeclaration(String s) {}
+        protected void endConstructorDeclaration() {}
+        protected void beginDestructorDeclaration(String s) {}
+        protected void endDestructorDeclaration() {}
+        protected boolean beginParameterDeclaration() { _ts = tsInvalid; return true; }
     protected boolean endParameterDeclaration(int oldTs) { _ts = oldTs; return true; }
-	protected void beginFieldDeclaration() {}
-	//protected void beginFunctionDefinition() {}
-	//protected void endFunctionDefinition() {}
-	//protected void functionParameterList() {}
-	//protected void functionEndParameterList(boolean def) {}
-	//protected void beginConstructorDefinition() {}
-	//protected void endConstructorDefinition() {}
-	//protected void beginDestructorDefinition() {}
-	//protected void endDestructorDefinition() {}
+        protected void beginFieldDeclaration() {}
+        //protected void beginFunctionDefinition() {}
+        //protected void endFunctionDefinition() {}
+        //protected void functionParameterList() {}
+        //protected void functionEndParameterList(boolean def) {}
+        //protected void beginConstructorDefinition() {}
+        //protected void endConstructorDefinition() {}
+        //protected void beginDestructorDefinition() {}
+        //protected void endDestructorDefinition() {}
 
-	// Declarator stuff
-	protected void declaratorID(String s, /*QualifiedItem*/int qi) {}	// stores new symbol with type
-	protected void declaratorArray() {}
-	//protected void declaratorParameterList(boolean def) {}
-	//protected void declaratorEndParameterList(boolean def) {}
+        // Declarator stuff
+        protected void declaratorID(String s, /*QualifiedItem*/int qi) {}        // stores new symbol with type
+        protected void declaratorArray() {}
+        //protected void declaratorParameterList(boolean def) {}
+        //protected void declaratorEndParameterList(boolean def) {}
 
-	// template stuff
-	protected void templateTypeParameter(String s) {}
-	//protected void beginTemplateDeclaration() {}
-	//protected void endTemplateDeclaration() {}
-	protected void beginTemplateDefinition() {}
-	protected void endTemplateDefinition() {}
-	//protected void beginTemplateParameterList() {}
-	//protected void endTemplateParameterList() {}
+        // template stuff
+        protected void templateTypeParameter(String s) {}
+        //protected void beginTemplateDeclaration() {}
+        //protected void endTemplateDeclaration() {}
+        protected void beginTemplateDefinition() {}
+        protected void endTemplateDefinition() {}
+        //protected void beginTemplateParameterList() {}
+        //protected void endTemplateParameterList() {}
 
-	// exception stuff
-	//protected void exceptionBeginHandler() {}
-	//protected void exceptionEndHandler() {}
-	protected void panic(String s) {}
+        // exception stuff
+        //protected void exceptionBeginHandler() {}
+        //protected void exceptionEndHandler() {}
+        protected void panic(String s) {}
 
-	boolean reportErrors = true;
+        boolean reportErrors = true;
 
-	// myCode functions ready for overriding in MyCode subclass
+        // myCode functions ready for overriding in MyCode subclass
 
-	//protected int getOffset() { /*TODO: implement*/ throw new NotImplementedException(); }
-	//protected int getLine()	{ /*TODO: implement*/ throw new NotImplementedException(); }
+        //protected int getOffset() { /*TODO: implement*/ throw new NotImplementedException(); }
+        //protected int getLine()        { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected void printf(String pattern, Object... params) { /*TODO: implement*/ throw new NotImplementedException(); }
+        protected void printf(String pattern, Object... params) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected boolean balanceBraces(int left, int right) { throw new NotImplementedException(); };
+        protected boolean balanceBraces(int left, int right) { throw new NotImplementedException(); };
 
         protected boolean checkTemplateExplicitSpecialization() { throw new NotImplementedException(); }
 
@@ -829,13 +839,13 @@ tokens {
 }
 
 public translation_unit:
-		//{enterExternalScope();}
+                //{enterExternalScope();}
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
-		(options{generateAmbigWarnings = false;}:
+                (options{generateAmbigWarnings = false;}:
             { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (literal_ident literal_ident) => pro_c_statement
         |
-            {shouldProceed() && !isCPlusPlus11()}? (LSQUARE) =>
+            {shouldProceed() && !isCpp11OrLater()}? (LSQUARE) =>
             /* This alternative fixes recovery problem happened because C++11 declaration
                could begin with LSQAURE token (see c++11 attributes). This
                breaks recovery for C++98 because rule external_declaration now
@@ -855,7 +865,7 @@ public translation_unit:
                report it as an error and not include in AST */
             .! { reportError(new NoViableAltException(LT(0), getFilename())); }
         )* EOF!
-		{/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
+                {/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
        ;
 
 //
@@ -885,43 +895,43 @@ template_explicit_specialization
         ctor_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
     |
-	// Template explicit specialisation dtor definition
-		(dtor_declarator[true] LCURLY)=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0b[%d]: template " +
-				"explicit-specialisation dtor definition\n", LT(1).getLine());
-		}
-		dtor_definition
-		//{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+        // Template explicit specialisation dtor definition
+                (dtor_declarator[true] LCURLY)=>
+                {if(statementTrace >= 1)
+                        printf("template_explicit_specialization_0b[%d]: template " +
+                                "explicit-specialisation dtor definition\n", LT(1).getLine());
+                }
+                dtor_definition
+                //{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	| 
+        | 
         // Template explicit specialisation ctor declaration 
-		(ctor_declarator[false] SEMICOLON)=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0c[%d]: template " +
-				"explicit-specialisation ctor declaration\n", LT(1).getLine());
-		}
-		b = ctor_declarator[false] SEMICOLON
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+                (ctor_declarator[false] SEMICOLON)=>
+                {if(statementTrace >= 1)
+                        printf("template_explicit_specialization_0c[%d]: template " +
+                                "explicit-specialisation ctor declaration\n", LT(1).getLine());
+                }
+                b = ctor_declarator[false] SEMICOLON
+                { #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         // Template explicit specialisation dtor declaration        
         |
-		(dtor_declarator[false] SEMICOLON)=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0d[%d]: template " +
-				"explicit-specialisation dtor definition\n", LT(1).getLine());
-		}
-		dtor_declarator[false] SEMICOLON
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+                (dtor_declarator[false] SEMICOLON)=>
+                {if(statementTrace >= 1)
+                        printf("template_explicit_specialization_0d[%d]: template " +
+                                "explicit-specialisation dtor definition\n", LT(1).getLine());
+                }
+                dtor_declarator[false] SEMICOLON
+                { #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 
         |
         // Template explicit specialisation dtor declaration
-		(class_forward_declaration)=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0f[%d]: template " +
-				"class forward explicit-specialisation\n", LT(1).getLine());
-		}
-		declaration_specifiers[false, false] SEMICOLON
-		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+                (class_forward_declaration)=>
+                {if(statementTrace >= 1)
+                        printf("template_explicit_specialization_0f[%d]: template " +
+                                "class forward explicit-specialisation\n", LT(1).getLine());
+                }
+                declaration_specifiers[false, false] SEMICOLON
+                { #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
             (   (LITERAL___extension__!)?
                 (LITERAL_template LESSTHAN GREATERTHAN)?
@@ -979,16 +989,16 @@ template_explicit_specialization
             { if (b) #template_explicit_specialization = #(#[CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_USER_TYPE_CAST_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization);
               else #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
-	// Template explicit specialisation (DW 14/04/03)
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0e[%d]: template " +
-				"explicit-specialisation\n", LT(1).getLine());
-		}
+        // Template explicit specialisation (DW 14/04/03)
+                {if(statementTrace >= 1)
+                        printf("template_explicit_specialization_0e[%d]: template " +
+                                "explicit-specialisation\n", LT(1).getLine());
+                }
         (LITERAL_template LESSTHAN GREATERTHAN)?
-		declaration[declOther]
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	)
-	;
+                declaration[declOther]
+                { #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
+        )
+        ;
 
 //
 // it's a caller's responsibility to check isCPlusPlus
@@ -1020,7 +1030,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
         |
             declaration[declOther]
         )
-        {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}	
+        {#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}        
     |
         declaration_template_impl
     ;
@@ -1038,167 +1048,167 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                     template_head
             )
         )+
-		(   
-                // Class template definition
-                (class_head)=>
+        (   
+            // Class template definition
+            (class_head)=>
+            {if (statementTrace>=1) 
+                printf("declaration_template_impl_1b[%d]: Class template definition\n",
+                    LT(1).getLine());
+            }
+            declaration[declOther]
+            { #declaration_template_impl = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #declaration_template_impl); }
+        |
+            // Templated FUNCTIONS and CONSTRUCTORS matched here.
+            // Templated CONSTRUCTOR declaration
+            (        
+                    ctor_decl_spec
+                    /*{qualifiedItemIsOneOf(qiCtor)}?*/
+                    ctor_declarator[false] (EOF|SEMICOLON)
+            )=>
+            {if (statementTrace>=1) 
+                    printf("declaration_template_impl_11a[%d]: Constructor or no-ret type fun declarator\n",
+                            LT(1).getLine());
+            }
+            friend = ctor_decl_spec
+//            {ctrName = qualifiedItemIsOneOf(qiCtor);}
+            ctrName = ctor_declarator[false]
+            (
+                    EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                |   
+                    SEMICOLON  // Constructor declarator
+            )
+            {
+                // below is a workaround for know infinite loop bug in ANTLR 
+                // see http://www.jguru.com/faq/view.jsp?EID=271922
+                //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
+                if (ctrName && !friend) {
+                    #declaration_template_impl= #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #declaration_template_impl); //end_of_stmt();
+                } else {
+                    #declaration_template_impl= #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"],  #declaration_template_impl); //end_of_stmt();
+                }
+            }
+
+        |   
+            // Templated CONSTRUCTOR definition
+            // JEL 4/3/96.. Added predicate that works once the
+            // restriction is added that ctor cannot be virtual
+            (  
+                ctor_decl_spec                            
+                /*{qualifiedItemIsOneOf(qiCtor)}?*/
+                ctor_declarator[true]
+            )=>
+            {if (statementTrace>=1) 
+                printf("declaration_template_impl_11b[%d]: Template constructor " +
+                    "definition\n", LT(1).getLine());
+            }
+            // TODO: use ctor_definition here
+            friend = ctor_decl_spec
+            ctrName = ctor_declarator[true]
+            (ctor_body | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
+            {
+                if (ctrName && !friend) {
+                    #declaration_template_impl= #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"],  #declaration_template_impl); //end_of_stmt();
+                } else {
+                    #declaration_template_impl= #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"],  #declaration_template_impl); //end_of_stmt();
+                }
+            }
+        |  
+            // User-defined type cast
+            {isCPlusPlus()}?
+            ((literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
+            {if (statementTrace>=1) 
+                    printf("external_declaration_6[%d]: Operator function\n",
+                            LT(1).getLine());
+            }
+            (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
+            { if( definition ) #declaration_template_impl = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #declaration_template_impl);
+                else           #declaration_template_impl = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #declaration_template_impl); }
+        |
+            // Templated function declaration
+            (declaration_specifiers[false, false] function_declarator[false, false, false] SEMICOLON)=> 
+            {if (statementTrace>=1) 
+                printf("declaration_template_impl_11c[%d]: Function template " +
+                    "declaration\n", LT(1).getLine());
+            }
+            declaration[declOther]
+            { #declaration_template_impl = #(#[CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION"], #declaration_template_impl); }
+        |
+            // Templated function definition
+            (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
+            {if (statementTrace>=1) printf("declaration_template_impl_11d[%d]: Function template " + "definition\n", LT(1).getLine());}
+            function_definition
+            { #declaration_template_impl = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #declaration_template_impl); }
+        |
+            // Destructor DEFINITION (templated)
+            (   dtor_head[true] 
+                (   LCURLY
+                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                )
+            )=>
                 {if (statementTrace>=1) 
-                    printf("declaration_template_impl_1b[%d]: Class template definition\n",
+                    printf("external_declaration_4[%d]: Destructor definition\n",
                         LT(1).getLine());
                 }
-                declaration[declOther]
-                { #declaration_template_impl = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #declaration_template_impl); }
-            |
-                // Templated FUNCTIONS and CONSTRUCTORS matched here.
-                // Templated CONSTRUCTOR declaration
-                (	
-                        ctor_decl_spec
-                        /*{qualifiedItemIsOneOf(qiCtor)}?*/
-                        ctor_declarator[false] (EOF|SEMICOLON)
-                )=>
-                {if (statementTrace>=1) 
-                        printf("declaration_template_impl_11a[%d]: Constructor or no-ret type fun declarator\n",
-                                LT(1).getLine());
-                }
-                friend = ctor_decl_spec
-//                {ctrName = qualifiedItemIsOneOf(qiCtor);}
-                ctrName = ctor_declarator[false]
-                (
-                        EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                    |   
-                        SEMICOLON  // Constructor declarator
+                dtor_head[true] 
+                (   
+                    dtor_body
+                |   
+                    ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
                 )
-                {
-                    // below is a workaround for know infinite loop bug in ANTLR 
-                    // see http://www.jguru.com/faq/view.jsp?EID=271922
-                    //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                    if (ctrName && !friend) {
-                        #declaration_template_impl= #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #declaration_template_impl); //end_of_stmt();
-                    } else {
-                        #declaration_template_impl= #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"],  #declaration_template_impl); //end_of_stmt();
-                    }
-                }
-
-            |   
-                // Templated CONSTRUCTOR definition
-                // JEL 4/3/96.. Added predicate that works once the
-                // restriction is added that ctor cannot be virtual
-                (  
-                    ctor_decl_spec                            
-                    /*{qualifiedItemIsOneOf(qiCtor)}?*/
-                    ctor_declarator[true]
-                )=>
-                {if (statementTrace>=1) 
-                    printf("declaration_template_impl_11b[%d]: Template constructor " +
-                        "definition\n", LT(1).getLine());
-                }
-                // TODO: use ctor_definition here
-                friend = ctor_decl_spec
-                ctrName = ctor_declarator[true]
-                (ctor_body | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
-                {
-                    if (ctrName && !friend) {
-                        #declaration_template_impl= #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"],  #declaration_template_impl); //end_of_stmt();
-                    } else {
-                        #declaration_template_impl= #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"],  #declaration_template_impl); //end_of_stmt();
-                    }
-                }
-            |  
-                // User-defined type cast
-                {isCPlusPlus()}?
-                ((literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
-                {if (statementTrace>=1) 
-                        printf("external_declaration_6[%d]: Operator function\n",
-                                LT(1).getLine());
-                }
-                (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
-                { if( definition ) #declaration_template_impl = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #declaration_template_impl);
-                    else	   #declaration_template_impl = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #declaration_template_impl); }
-            |
-                // Templated function declaration
-                (declaration_specifiers[false, false] function_declarator[false, false, false] SEMICOLON)=> 
-                {if (statementTrace>=1) 
-                    printf("declaration_template_impl_11c[%d]: Function template " +
-                        "declaration\n", LT(1).getLine());
-                }
-                declaration[declOther]
-                { #declaration_template_impl = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #declaration_template_impl); }
-            |
-                // Templated function definition
-                (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | literal_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
-                {if (statementTrace>=1) printf("declaration_template_impl_11d[%d]: Function template " + "definition\n", LT(1).getLine());}
-                function_definition
-                { #declaration_template_impl = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #declaration_template_impl); }
-            |
-                // Destructor DEFINITION (templated)
-                (   dtor_head[true] 
-                    (   LCURLY
-                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                    )
-                )=>
-                    {if (statementTrace>=1) 
-                        printf("external_declaration_4[%d]: Destructor definition\n",
-                            LT(1).getLine());
-                    }
-                    dtor_head[true] 
-                    (   
-                        dtor_body
-                    |   
-                        ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                    )
-                    { #declaration_template_impl = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #declaration_template_impl); }
-            |
-                (LITERAL_using literal_ident ASSIGNEQUAL) => alias_declaration
-                { #declaration_template_impl = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #declaration_template_impl); }
-            |
-                (   (LITERAL___extension__!)?
-                    (   storage_class_specifier
-                    |   cv_qualifier
-                    |   LITERAL_typedef
-                    )*
-                    enum_def_head
-                ) =>
-                (LITERAL___extension__!)?
-                    (   sc = storage_class_specifier
+                { #declaration_template_impl = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #declaration_template_impl); }
+        |
+            (LITERAL_using literal_ident ASSIGNEQUAL) => alias_declaration
+            { #declaration_template_impl = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #declaration_template_impl); }
+        |
+            (   (LITERAL___extension__!)?
+                (   storage_class_specifier
+                |   cv_qualifier
+                |   LITERAL_typedef
+                )*
+                enum_def_head
+            ) =>
+            (LITERAL___extension__!)?
+                (   sc = storage_class_specifier
+                |   tq = cv_qualifier
+                |   LITERAL_typedef
+            )*
+            enum_specifier (init_declarator_list[declOther])? 
+            SEMICOLON
+            { #declaration_template_impl = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #declaration_template_impl); }
+        |
+            (   (LITERAL___extension__!)?
+                (   storage_class_specifier
+                |   cv_qualifier
+                |   LITERAL_typedef
+                )*
+                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
+            ) =>
+            (LITERAL___extension__!)?
+                (   sc = storage_class_specifier
                     |   tq = cv_qualifier
                     |   LITERAL_typedef
                 )*
-                enum_specifier (init_declarator_list[declOther])? 
-                SEMICOLON
-                { #declaration_template_impl = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #declaration_template_impl); }
-            |
-                (   (LITERAL___extension__!)?
-                    (   storage_class_specifier
-                    |   cv_qualifier
-                    |   LITERAL_typedef
-                    )*
-                    LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
-                ) =>
-                (LITERAL___extension__!)?
-                    (   sc = storage_class_specifier
-                        |   tq = cv_qualifier
-                        |   LITERAL_typedef
-                    )*
-                enum_specifier
-                SEMICOLON
-                { #declaration_template_impl = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #declaration_template_impl); }
-            |  
-                // templated forward class decl, init/decl of static member in template
-                            // Changed alternative order as a fix for IZ#138099:
-                            // unresolved identifier for functions' template parameter.
-                            // If this alternative is before function declaration
-                            // then code like "template<T> int foo(T);" incorrectly
-                            // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
+            enum_specifier
+            SEMICOLON
+            { #declaration_template_impl = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #declaration_template_impl); }
+        |  
+            // templated forward class decl, init/decl of static member in template
+                        // Changed alternative order as a fix for IZ#138099:
+                        // unresolved identifier for functions' template parameter.
+                        // If this alternative is before function declaration
+                        // then code like "template<T> int foo(T);" incorrectly
+                        // becomes a CSM_TEMPL_FWD_CL_OR_STAT_MEM.
 
-                (declaration_specifiers[true, false]
-                    (init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
-                //{beginTemplateDeclaration();}
-                { if (statementTrace>=1) 
-                    printf("declaration_template_impl_10[%d]: Class template declaration\n",
-                        LT(1).getLine());
-                }
-                declaration_specifiers[true, false]
-                    (init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
-                {/*endTemplateDeclaration();*/ #declaration_template_impl = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #declaration_template_impl);}
+            (declaration_specifiers[true, false]
+                (init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
+            //{beginTemplateDeclaration();}
+            { if (statementTrace>=1) 
+                printf("declaration_template_impl_10[%d]: Class template declaration\n",
+                    LT(1).getLine());
+            }
+            declaration_specifiers[true, false]
+                (init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
+            {/*endTemplateDeclaration();*/ #declaration_template_impl = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #declaration_template_impl);}
         )
         {endTemplateDefinition();}
     ;
@@ -1216,37 +1226,37 @@ typedef_enum
         ;
 
 external_declaration {String s; K_and_R = false; boolean definition;StorageClass sc;TypeQualifier tq; int ts = 0;}
-	:  
-	(
+        :  
+        (
                 {isCPlusPlus()}?
-		// Suppressed instantiation of the following declaration
-		{if (statementTrace>=1) 
-			printf("external_declaration_0[%d]: Suppressed instantiation of the following declaration\n",
-				LT(1).getLine());
-		}
+                // Suppressed instantiation of the following declaration
+                {if (statementTrace>=1) 
+                        printf("external_declaration_0[%d]: Suppressed instantiation of the following declaration\n",
+                                LT(1).getLine());
+                }
                 ((LITERAL___extension__)? LITERAL_extern LITERAL_template)=>
-		(LITERAL___extension__!)? LITERAL_extern LITERAL_template external_declaration
-		{ #external_declaration = #(#[CSM_EXTERN_TEMPLATE, "CSM_EXTERN_TEMPLATE"], #external_declaration); }
+                (LITERAL___extension__!)? LITERAL_extern LITERAL_template external_declaration
+                { #external_declaration = #(#[CSM_EXTERN_TEMPLATE, "CSM_EXTERN_TEMPLATE"], #external_declaration); }
         |
-	    {isCPlusPlus()}? ((LITERAL___extension__)? (LITERAL_export)? LITERAL_template) => external_declaration_template
+            {isCPlusPlus()}? ((LITERAL___extension__)? (LITERAL_export)? LITERAL_template) => external_declaration_template
         |
-	// Class definition (templates too)
-	// This is separated out otherwise the next alternative
-	// would look for "class A { ... } f() {...}" which is
-	// an unacceptable level of backtracking.
+        // Class definition (templates too)
+        // This is separated out otherwise the next alternative
+        // would look for "class A { ... } f() {...}" which is
+        // an unacceptable level of backtracking.
 
-	// JEL Note:  Rule body does not need typedef, because
-	// that is internal to "declaration", and it is invalid
-	// to say "typedef template..."
-	 	// Class definition
+        // JEL Note:  Rule body does not need typedef, because
+        // that is internal to "declaration", and it is invalid
+        // to say "typedef template..."
+                 // Class definition
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #106652
 
-//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+//                ((LITERAL_typedef | LITERAL_static)? class_head)=>
         ((LITERAL___extension__!)? (decl_specifiers_before_type)? class_head) =>
         {action.simple_declaration(LT(1));}
         {action.class_declaration(LT(1));}
-		(LITERAL___extension__!)? declaration[declOther]
-		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
+                (LITERAL___extension__!)? declaration[declOther]
+                { #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
     |
         // Enum definition (don't want to backtrack over this in other alts)
         ((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_def_head) =>
@@ -1268,47 +1278,47 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {action.end_simple_declaration(LT(1));}
         { #external_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration); }
     |
-		// Destructor DEFINITION (templated or non-templated)
-		{isCPlusPlus()}?
-		(   (template_head)? 
-                    dtor_head[true] 
-                    (   LCURLY
-                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                    )
-                )=>
-		{if (statementTrace>=1) 
-			printf("external_declaration_4[%d]: Destructor definition\n",
-				LT(1).getLine());
-		}
-		(template_head)? 
-                dtor_head[true]
-                (   dtor_body
-                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                )
-		{ #external_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration); }
-	|
-		// Constructor DEFINITION (non-templated)
-		{isCPlusPlus()}?
-		(	(options {warnWhenFollowAmbig = false;}: ctor_decl_spec)?
-			{qualifiedItemIsOneOf(qiCtor)}?
-		)=>
-		{if (statementTrace>=1) 
-			printf("external_declaration_5[%d]: Constructor definition\n",
-				LT(1).getLine());
-		}
-		ctor_definition
-		{ #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
-	|  
-		// User-defined type cast
-		{isCPlusPlus()}?
-		((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
-		{if (statementTrace>=1) 
-			printf("external_declaration_6[%d]: Operator function\n",
-				LT(1).getLine());
-		}
-		(template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
-		{ if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
-		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #external_declaration); }
+        // Destructor DEFINITION (templated or non-templated)
+        {isCPlusPlus()}?
+        (   (template_head)? 
+            dtor_head[true] 
+            (   LCURLY
+            |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+            )
+        )=>
+        {if (statementTrace>=1) 
+                printf("external_declaration_4[%d]: Destructor definition\n",
+                        LT(1).getLine());
+        }
+        (template_head)? 
+        dtor_head[true]
+        (   dtor_body
+        |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+        )
+        { #external_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration); }
+    |
+        // Constructor DEFINITION (non-templated)
+        {isCPlusPlus()}?
+        ((options {warnWhenFollowAmbig = false;}: ctor_decl_spec)?
+                {qualifiedItemIsOneOf(qiCtor)}?
+        )=>
+        {if (statementTrace>=1) 
+                printf("external_declaration_5[%d]: Constructor definition\n",
+                        LT(1).getLine());
+        }
+        ctor_definition
+        { #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
+    |  
+        // User-defined type cast
+        {isCPlusPlus()}?
+        ((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
+        {if (statementTrace>=1) 
+                printf("external_declaration_6[%d]: Operator function\n",
+                        LT(1).getLine());
+        }
+        (template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
+        { if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
+            else           #external_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #external_declaration); }
     |
         // Function declaration
         (   (LITERAL___extension__)?
@@ -1376,196 +1386,196 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         // FIXUP: Function definition without return value
         // till not correct hanlding in function_definition (external_declaration_7)
         // functions without return type
-		(function_declarator[true, false, false] (function_K_R_parameter_list)? LCURLY)=>
-		{if (statementTrace>=1) 
-			printf("external_declaration_8a[%d]: Function definition without ret value\n",
-				LT(1).getLine());
-		}
-		function_definition_no_ret_type
-		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
-	|
-		// K & R Function definition
-		(declaration_specifiers[false, false]	function_declarator[true, false, false] declaration[declOther])=>
-		{K_and_R = true;
-		 if (statementTrace>=1) 
-			printf("external_declaration_9[%d]: K & R function definition\n",
-				LT(1).getLine());
-		}
-		function_definition
-		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
+                (function_declarator[true, false, false] (function_K_R_parameter_list)? LCURLY)=>
+                {if (statementTrace>=1) 
+                        printf("external_declaration_8a[%d]: Function definition without ret value\n",
+                                LT(1).getLine());
+                }
+                function_definition_no_ret_type
+                { #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
+        |
+                // K & R Function definition
+                (declaration_specifiers[false, false]        function_declarator[true, false, false] declaration[declOther])=>
+                {K_and_R = true;
+                 if (statementTrace>=1) 
+                        printf("external_declaration_9[%d]: K & R function definition\n",
+                                LT(1).getLine());
+                }
+                function_definition
+                { #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
         |       // function declaration with function as return type
-		((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
-		{if (statementTrace>=1) 
-			printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
-				LT(1).getLine());
-		}
-		function_declaration_with_fun_as_ret_type
-		{ #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #external_declaration); }
+                ((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
+                {if (statementTrace>=1) 
+                        printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
+                                LT(1).getLine());
+                }
+                function_declaration_with_fun_as_ret_type
+                { #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #external_declaration); }
                 
         |       // function definition with function as return type
                 ((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[true] LCURLY)=> 
-		{if (statementTrace>=1) 
-			printf("external_declaration_8b[%d]: Function definition with function as return type\n",
-				LT(1).getLine());
-		}
-		function_definition_with_fun_as_ret_type
-		{ #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #external_declaration); }
-	|
+                {if (statementTrace>=1) 
+                        printf("external_declaration_8b[%d]: Function definition with function as return type\n",
+                                LT(1).getLine());
+                }
+                function_definition_with_fun_as_ret_type
+                { #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #external_declaration); }
+        |
                 asm_block
         |
-		{isCPlusPlus()}?
-		{if (statementTrace>=1) 
-			printf("external_declaration_12[%d]: Namespace declaration\n",
-				LT(1).getLine());
-		}
-		decl_namespace
-		// moved to decl_namespace { #external_declaration = #(#[, ""], #external_declaration); }
+                {isCPlusPlus()}?
+                {if (statementTrace>=1) 
+                        printf("external_declaration_12[%d]: Namespace declaration\n",
+                                LT(1).getLine());
+                }
+                decl_namespace
+                // moved to decl_namespace { #external_declaration = #(#[, ""], #external_declaration); }
         |
-		{isCPlusPlus()}?
+                {isCPlusPlus()}?
             // Constructor definition with initializer
             (   ctor_decl_spec ctor_declarator[true] COLON ) =>
             ctor_definition
             { #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
-	|	
-		// everything else (except templates)
-		{if (statementTrace>=1) 
-			printf("external_declaration_13[%d]: Declaration\n",LT(1).getLine());
-		}
+        |        
+                // everything else (except templates)
+                {if (statementTrace>=1) 
+                        printf("external_declaration_13[%d]: Declaration\n",LT(1).getLine());
+                }
                 // VV: 23/05/06 support for gcc's "__extension__"
-		(LITERAL___extension__!)?  declaration[declGeneric]
-		{ 
-		    // if declaration itself returned proper type, don't wrap it into generic declaration
-		    if( #external_declaration != null ) {
-			int type = #external_declaration.getType(); 
-			int childrenCnt = #external_declaration.getNumberOfChildren();
-			if( childrenCnt > 0 || type < CSM_START || CSM_END < type ) {
-			    #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration);
-			}
-		    }
-		}
-	|	
-		{if (statementTrace>=1) 
-			printf("external_declaration_14[%d]: Semicolon\n",LT(1).getLine());
-		}
-		SEMICOLON! //{end_of_stmt();}
-	)
-	;	// end of external_declaration
+                (LITERAL___extension__!)?  declaration[declGeneric]
+                { 
+                    // if declaration itself returned proper type, don't wrap it into generic declaration
+                    if( #external_declaration != null ) {
+                        int type = #external_declaration.getType(); 
+                        int childrenCnt = #external_declaration.getNumberOfChildren();
+                        if( childrenCnt > 0 || type < CSM_START || CSM_END < type ) {
+                            #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration);
+                        }
+                    }
+                }
+        |        
+                {if (statementTrace>=1) 
+                        printf("external_declaration_14[%d]: Semicolon\n",LT(1).getLine());
+                }
+                SEMICOLON! //{end_of_stmt();}
+        )
+        ;        // end of external_declaration
 
 decl_namespace
-	{String qid; String name = "";}
-	:	
-		(literal_inline)? token:LITERAL_namespace
-		(
+        {String qid; String name = "";}
+        :        
+                (literal_inline)? token:LITERAL_namespace
+                (
                         {action.namespace_declaration(token);}
-			(name = literal_ident{_td = true; /*declaratorID(name,qiType);} {action.namespace_name(name);*/})?
+                        (name = literal_ident{_td = true; /*declaratorID(name,qiType);} {action.namespace_name(name);*/})?
 
-			// The following statement can be invoked to trigger selective
-			// antlr trace. Also see below
-			//{
-			//	if (strcmp((ns.getText()),"xyz")==0) {
-			//	    antlrTrace(true);
-			//	 }	// Used for diagnostic trigger
-			//}
-			(options {greedy=true;} : namespace_attribute_specification)?
+                        // The following statement can be invoked to trigger selective
+                        // antlr trace. Also see below
+                        //{
+                        //        if (strcmp((ns.getText()),"xyz")==0) {
+                        //            antlrTrace(true);
+                        //         }        // Used for diagnostic trigger
+                        //}
+                        (options {greedy=true;} : namespace_attribute_specification)?
                         {action.namespace_body(LT(1));}
-			LCURLY
-			//{enterNewLocalScope();}
-			((external_declaration)*)
-			{/*exitLocalScope();*/{ #decl_namespace = #(#[CSM_NAMESPACE_DECLARATION, name], #decl_namespace); }}
+                        LCURLY
+                        //{enterNewLocalScope();}
+                        ((external_declaration)*)
+                        {/*exitLocalScope();*/{ #decl_namespace = #(#[CSM_NAMESPACE_DECLARATION, name], #decl_namespace); }}
                         {action.end_namespace_body(LT(1));}
-			token2:RCURLY {action.end_namespace_declaration(token2);}
-			// The following should be implemented to match the optional
-			// statement above
-			//{antlrTrace(false);}
-		|
-			name = literal_ident{_td = true;declaratorID((name),qiType);}
-			ASSIGNEQUAL qid = qualified_id SEMICOLON! 
-			{/*end_of_stmt();*/#decl_namespace = #(#[CSM_NAMESPACE_ALIAS, name], #decl_namespace);} 
-		)                
-	;
+                        token2:RCURLY {action.end_namespace_declaration(token2);}
+                        // The following should be implemented to match the optional
+                        // statement above
+                        //{antlrTrace(false);}
+                |
+                        name = literal_ident{_td = true;declaratorID((name),qiType);}
+                        ASSIGNEQUAL qid = qualified_id SEMICOLON! 
+                        {/*end_of_stmt();*/#decl_namespace = #(#[CSM_NAMESPACE_ALIAS, name], #decl_namespace);} 
+                )                
+        ;
 
 namespace_alias_definition
-	{String qid; String name = "";}
-	:
-		lns:LITERAL_namespace
-		name = literal_ident{_td = true;declaratorID((name),qiType);}
-		lae:ASSIGNEQUAL 
+        {String qid; String name = "";}
+        :
+                lns:LITERAL_namespace
+                name = literal_ident{_td = true;declaratorID((name),qiType);}
+                lae:ASSIGNEQUAL 
         /*{action.namespace_alias_definition(lns, ns2, lae);}*/
         qid = qualified_id 
         /*{action.end_namespace_alias_definition(LT(1));}*/
         SEMICOLON!
-		{#namespace_alias_definition = #(#[CSM_NAMESPACE_ALIAS, name], #namespace_alias_definition);}
-	;
+                {#namespace_alias_definition = #(#[CSM_NAMESPACE_ALIAS, name], #namespace_alias_definition);}
+        ;
 
 //
 // it's a caller's responsibility to check isCPlusPlus
 //
 member_declaration_template
-	{String q; boolean definition=false; boolean friend = false; boolean ctorName = false;}
-	:
-		{beginTemplateDefinition();}
-		template_head
- 		(     
-			(class_head)=>
-			{if (statementTrace>=1) 
-				printf("member_declaration_12[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}                           
-			declaration[declOther]
-			{ #member_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #member_declaration_template); }
-		|  
-			// Templated FUNCTIONS and CONSTRUCTORS matched here.
-			// DW 27/06/03 Copied here from external_declaration since templates
-			// can now be nested
+    {String q; boolean definition=false; boolean friend = false; boolean ctorName = false;}
+    :
+    {beginTemplateDefinition();}
+    template_head
+    (     
+            (class_head)=>
+            {if (statementTrace>=1) 
+                    printf("member_declaration_12[%d]: Class template declaration\n",
+                            LT(1).getLine());
+            }                           
+            declaration[declOther]
+            { #member_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #member_declaration_template); }
+    |  
+            // Templated FUNCTIONS and CONSTRUCTORS matched here.
+            // DW 27/06/03 Copied here from external_declaration since templates
+            // can now be nested
 
-			// Templated CONSTRUCTOR declaration
-                        (	ctor_decl_spec
-                                {qualifiedItemIsOneOf(qiCtor)}?
-                                ctor_declarator[false] (EOF|SEMICOLON)
-                        )=>
-                        {if (statementTrace>=1) 
-                                printf("member_declaration_13[%d]: Constructor declarator\n",
-                                        LT(1).getLine());
-                        }
-                        friend = ctor_decl_spec
-                        ctorName = ctor_declarator[false] 	
-                        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                        | SEMICOLON ) // Constructor declarator
-                        {
-                        // below is a workaround for know infinite loop bug in ANTLR 
-                        // see http://www.jguru.com/faq/view.jsp?EID=271922
-                        //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                        #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #member_declaration_template); //end_of_stmt();
-                        }   
+            // Templated CONSTRUCTOR declaration
+            (        ctor_decl_spec
+                    {qualifiedItemIsOneOf(qiCtor)}?
+                    ctor_declarator[false] (EOF|SEMICOLON)
+            )=>
+            {if (statementTrace>=1) 
+                    printf("member_declaration_13[%d]: Constructor declarator\n",
+                            LT(1).getLine());
+            }
+            friend = ctor_decl_spec
+            ctorName = ctor_declarator[false]         
+            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+            | SEMICOLON ) // Constructor declarator
+            {
+            // below is a workaround for know infinite loop bug in ANTLR 
+            // see http://www.jguru.com/faq/view.jsp?EID=271922
+            //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
+            #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #member_declaration_template); //end_of_stmt();
+            }   
 
-                  |
+      |
 
-			// Templated CONSTRUCTOR definition
-			// JEL 4/3/96 Added predicate that works once the
-			// restriction is added that ctor cannot be virtual
-			(ctor_decl_spec
-			 {qualifiedItemIsOneOf(qiCtor)}?
-			 ctor_declarator[true]
-			 ( COLON        // DEFINITION :ctor_initializer
-			  |LCURLY       // DEFINITION (compound Statement) ?
-                          | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-			 )
-			)=>
-			{if (statementTrace>=1) 
-				printf("member_declaration_13a[%d]: Template constructor " +
-					"definition\n", LT(1).getLine());
-			}
-			ctor_definition
-			{ #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #member_declaration_template); }
-		|
-			// Templated function declaration
-			(declaration_specifiers[false, false] function_declarator[false, false, false] SEMICOLON)=>
-			{if (statementTrace>=1) 
-				printf("member_declaration_13b[%d]: Function template " +
-					"declaration\n", LT(1).getLine());
-			}
-			declaration[declOther]
-			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #member_declaration_template); }
+            // Templated CONSTRUCTOR definition
+            // JEL 4/3/96 Added predicate that works once the
+            // restriction is added that ctor cannot be virtual
+            (ctor_decl_spec
+             {qualifiedItemIsOneOf(qiCtor)}?
+             ctor_declarator[true]
+             ( COLON        // DEFINITION :ctor_initializer
+              |LCURLY       // DEFINITION (compound Statement) ?
+              | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+             )
+            )=>
+            {if (statementTrace>=1) 
+                    printf("member_declaration_13a[%d]: Template constructor " +
+                            "definition\n", LT(1).getLine());
+            }
+            ctor_definition
+            { #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #member_declaration_template); }
+    |
+            // Templated function declaration
+            (declaration_specifiers[false, false] function_declarator[false, false, false] SEMICOLON)=>
+            {if (statementTrace>=1) 
+                    printf("member_declaration_13b[%d]: Function template " +
+                            "declaration\n", LT(1).getLine());
+            }
+            declaration[declOther]
+            { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #member_declaration_template); }
     |
         // Templated function definition
         // Function definition DW 2/6/97
@@ -1587,86 +1597,86 @@ member_declaration_template
         { #member_declaration_template = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration_template); }
     |
                         // this rule must be after handling functions 
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers[true, false]
-				(init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("member_declaration_12a[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers[true, false]
-				(init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); } 		
-		)
-		{endTemplateDefinition();}
+                        // templated forward class decl, init/decl of static member in template
+                        (declaration_specifiers[true, false]
+                                (init_declarator_list[declOther])? SEMICOLON /*{end_of_stmt();}*/)=>
+                        //{beginTemplateDeclaration();}
+                        { if (statementTrace>=1) 
+                                printf("member_declaration_12a[%d]: Class template declaration\n",
+                                        LT(1).getLine());
+                        }
+                        declaration_specifiers[true, false]
+                                (init_declarator_list[declOther])? SEMICOLON //{end_of_stmt();}
+                        {/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); }                 
+                )
+                {endTemplateDefinition();}
 
-	;
+        ;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;boolean friend = false;}
-	:
-	(
-		// Class definition
-		// This is separated out otherwise the next alternative
-		// would look for "class A { ... } f() {...}" which is
-		// an unacceptable level of backtracking.
+        {String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;boolean friend = false;}
+        :
+        (
+                // Class definition
+                // This is separated out otherwise the next alternative
+                // would look for "class A { ... } f() {...}" which is
+                // an unacceptable level of backtracking.
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #135149
 
-//		((LITERAL_typedef | LITERAL_static)? class_head)=>
+//                ((LITERAL_typedef | LITERAL_static)? class_head)=>
         ((LITERAL___extension__!)? (decl_specifiers_before_type)? class_head) =>
         {action.simple_declaration(LT(1));}
         {action.class_declaration(LT(1));}
-		{if (statementTrace>=1) 
-			printf("member_declaration_1[%d]: Class definition\n",
-				LT(1).getLine());
-		}
-		(LITERAL___extension__!)? declaration[declOther]
-		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
-	|  
-		// Enum definition (don't want to backtrack over this in other alts)
-		((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_def_head)=>
+                {if (statementTrace>=1) 
+                        printf("member_declaration_1[%d]: Class definition\n",
+                                LT(1).getLine());
+                }
+                (LITERAL___extension__!)? declaration[declOther]
+                { #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
+        |  
+                // Enum definition (don't want to backtrack over this in other alts)
+                ((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_def_head)=>
         {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));} 
-		{if (statementTrace>=1) 
-			printf("member_declaration_2[%d]: Enum definition\n",
-				LT(1).getLine());
-		}
-		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
+                {if (statementTrace>=1) 
+                        printf("member_declaration_2[%d]: Enum definition\n",
+                                LT(1).getLine());
+                }
+                (LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
         {action.end_enum_declaration(LT(1));}
         {action.end_simple_declaration(LT(1));}
-        SEMICOLON	//{end_of_stmt();}
-		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
-	|
-		// Enum forward declaration (don't want to backtrack over this in other alts)
-		((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_fwd_head)=>
+        SEMICOLON        //{end_of_stmt();}
+                { #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
+        |
+                // Enum forward declaration (don't want to backtrack over this in other alts)
+                ((LITERAL___extension__!)? (decl_specifiers_before_type)? enum_fwd_head)=>
         {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)? 
         (decl_specifiers_before_type)?
-		{if (statementTrace>=1)
-			printf("member_declaration_2b[%d]: Enum forward declaration\n",
-				LT(1).getLine());
-		}
-		enum_specifier
+                {if (statementTrace>=1)
+                        printf("member_declaration_2b[%d]: Enum forward declaration\n",
+                                LT(1).getLine());
+                }
+                enum_specifier
         {action.end_enum_declaration(LT(1));}
         {action.end_simple_declaration(LT(1));}
-        SEMICOLON	//{end_of_stmt();}
-		{ #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
-	|	
-		// Constructor declarator
-		(	ctor_decl_spec
-			/*{qualifiedItemIsOneOf(qiCtor)}?*/
-			ctor_declarator[false] (EOF|SEMICOLON)
-		)=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_3[%d]: Constructor or no-ret type fun declarator\n",
-				LT(1).getLine());
-		}
-		friend = cds:ctor_decl_spec
+        SEMICOLON        //{end_of_stmt();}
+                { #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
+        |        
+                // Constructor declarator
+                (        ctor_decl_spec
+                        /*{qualifiedItemIsOneOf(qiCtor)}?*/
+                        ctor_declarator[false] (EOF|SEMICOLON)
+                )=>
+                {if (statementTrace>=1) 
+                        printf("member_declaration_3[%d]: Constructor or no-ret type fun declarator\n",
+                                LT(1).getLine());
+                }
+                friend = cds:ctor_decl_spec
 //                {ctrName = qualifiedItemIsOneOf(qiCtor);}
-		ctrName = cd:ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
-		{
+                ctrName = cd:ctor_declarator[false]         (EOF!|SEMICOLON) // Constructor declarator
+                {
                     // below is a workaround for know infinite loop bug in ANTLR 
                     // see http://www.jguru.com/faq/view.jsp?EID=271922
                     if( #cds != null ) { #cds.setNextSibling(null); }; 
@@ -1716,7 +1726,7 @@ member_declaration
             EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | 
             SEMICOLON 
-        ) //{end_of_stmt();}	// Declaration        
+        ) //{end_of_stmt();}        // Declaration        
         {
             if (!friend) {
                 #member_declaration = #(#[CSM_DTOR_DECLARATION, "CSM_DTOR_DECLARATION"], #member_declaration); //end_of_stmt();
@@ -1737,11 +1747,11 @@ member_declaration
                 printf("member_declaration_5b[%d]: Destructor definition\n",
                         LT(1).getLine());
         }
-		dtor_head[true] 
+                dtor_head[true] 
         (   dtor_body
         |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
         )
-	{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
+        { #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
     |
         // Function declaration
         (   (LITERAL___extension__)?
@@ -1765,50 +1775,50 @@ member_declaration
     |
         // Member without a type (I guess it can only be a function declaration or definition)
         ((LITERAL_static)? function_declarator[false, false, false] (EOF|SEMICOLON))=>
-		{beginFieldDeclaration();
+                {beginFieldDeclaration();
                 if( reportOddWarnings ) {
                     printf("member_declaration[%d]: Warning Function declaration found without typename\n", LT(1).getLine());
                 }
-		if (statementTrace>=1) 
-			printf("member_declaration_11a[%d]: Function declaration\n",
-				LT(1).getLine());
-		}
-		(LITERAL_static)? function_declarator[false, false, false] 
+                if (statementTrace>=1) 
+                        printf("member_declaration_11a[%d]: Function declaration\n",
+                                LT(1).getLine());
+                }
+                (LITERAL_static)? function_declarator[false, false, false] 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON ) //{end_of_stmt();}
-		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
-	|
-		// Member without a type (I guess it can only be a function definition)
-		((LITERAL_static)? function_declarator[true, false, false] LCURLY)=>
-		{
+                { #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
+        |
+                // Member without a type (I guess it can only be a function definition)
+                ((LITERAL_static)? function_declarator[true, false, false] LCURLY)=>
+                {
                     if( reportOddWarnings ) {
                         printf("member_function[%d]: Warning Function definition found without typename\n", LT(1).getLine());
                     }
-		    if (statementTrace>=1) {
-			printf("member_declaration_11b[%d]: Function definition\n",
-				LT(1).getLine());
-		    }
-		}
-		(LITERAL_static)? function_declarator[true, false, false] compound_statement //{endFunctionDefinition();}
-		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+                    if (statementTrace>=1) {
+                        printf("member_declaration_11b[%d]: Function definition\n",
+                                LT(1).getLine());
+                    }
+                }
+                (LITERAL_static)? function_declarator[true, false, false] compound_statement //{endFunctionDefinition();}
+                { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
         |       
                 // function declaration with function as return type
-		((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
-		{if (statementTrace>=1) 
-			printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
-				LT(1).getLine());
-		}
-		function_declaration_with_fun_as_ret_type
-		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #member_declaration); }
+                ((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
+                {if (statementTrace>=1) 
+                        printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
+                                LT(1).getLine());
+                }
+                function_declaration_with_fun_as_ret_type
+                { #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #member_declaration); }
                 
         |       // function definition with function as return type
                 ((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[true] LCURLY)=> 
-		{if (statementTrace>=1) 
-			printf("external_declaration_8b[%d]: Function definition with function as return type\n",
-				LT(1).getLine());
-		}
-		function_definition_with_fun_as_ret_type
-		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
+                {if (statementTrace>=1) 
+                        printf("external_declaration_8b[%d]: Function definition with function as return type\n",
+                                LT(1).getLine());
+                }
+                function_definition_with_fun_as_ret_type
+                { #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
     |
         // User-defined type cast
         (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr|LITERAL_explicit)*
@@ -1826,56 +1836,56 @@ member_declaration
         {if (statementTrace>=1) printf("member_declaration_9[%d]: Qualified literal_ident\n", LT(1).getLine());}
         visibility_redef_declaration
     |
-		// Member with a type or just a type def
-		// A::T a(), ::T a, ::B a, void a, E a (where E is the enclosing class)
-		((LITERAL___extension__)? declaration_specifiers[true, false])=>
-		{beginFieldDeclaration();
-		 if (statementTrace>=1) 
-			printf("member_declaration_10[%d]: Declaration(s)\n",
-				LT(1).getLine());
-		}
-		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
+                // Member with a type or just a type def
+                // A::T a(), ::T a, ::B a, void a, E a (where E is the enclosing class)
+                ((LITERAL___extension__)? declaration_specifiers[true, false])=>
+                {beginFieldDeclaration();
+                 if (statementTrace>=1) 
+                        printf("member_declaration_10[%d]: Declaration(s)\n",
+                                LT(1).getLine());
+                }
+                (LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON) //{end_of_stmt();}
                 // now member typedefs are placed under CSM_FIELD, so we do this here as well
                 // TODO: separate imaginery AST nodes for typedefs and fields
-		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
-	|  
-		{isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => member_declaration_template
-	|  
-		{if (statementTrace>=1) 
-			printf("member_declaration_14[%d]: Access specifier\n",
-			    LT(1).getLine());
-		}
-		access_specifier COLON!
-	|  
-		{if (statementTrace>=1) 
-			printf("member_declaration_15[%d]: Semicolon\n",
-				LT(1).getLine());
-		}
-		SEMICOLON! //{end_of_stmt();}
+                { #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
+        |  
+                {isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => member_declaration_template
+        |  
+                {if (statementTrace>=1) 
+                        printf("member_declaration_14[%d]: Access specifier\n",
+                            LT(1).getLine());
+                }
+                access_specifier COLON!
+        |  
+                {if (statementTrace>=1) 
+                        printf("member_declaration_15[%d]: Semicolon\n",
+                                LT(1).getLine());
+                }
+                SEMICOLON! //{end_of_stmt();}
         |       (LITERAL_using literal_ident ASSIGNEQUAL) => alias_declaration
                 { #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
-	|	using_declaration
+        |        using_declaration
         |       static_assert_declaration
-	)
-	;	// end member_declaration
+        )
+        ;        // end member_declaration
 
 // FIXUP: till qualifiedItemIsOneOf(qiType | qiCtor) is not correct in function_definition
 function_definition_no_ret_type
-	:	// don't want next action as an init-action due to (...)=> caller
-	//{ beginFunctionDefinition(); }
-	(	// Next line is equivalent to guarded predicate in PCCTS
-		function_declarator[true, false, false]
-		(	options{warnWhenFollowAmbig = false;}:
-			//(declaration)*	// Possible for K & R definition
+        :        // don't want next action as an init-action due to (...)=> caller
+        //{ beginFunctionDefinition(); }
+        (        // Next line is equivalent to guarded predicate in PCCTS
+                function_declarator[true, false, false]
+                (        options{warnWhenFollowAmbig = false;}:
+                        //(declaration)*        // Possible for K & R definition
                         (function_K_R_parameter_list)?
-			{in_parameter_list = false;}
-		)
-		compound_statement
-	)
-	//{endFunctionDefinition();}
-	;
+                        {in_parameter_list = false;}
+                )
+                compound_statement
+        )
+        //{endFunctionDefinition();}
+        ;
 
 function_declarator_with_fun_as_ret_type  [boolean definition]
         :
@@ -1897,13 +1907,13 @@ function_declaration_with_fun_as_ret_type
 
 function_definition_with_fun_as_ret_type
         :
-		declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[true]
-		(	options{warnWhenFollowAmbig = false;}:
-			//(declaration)*	// Possible for K & R definition
+                declaration_specifiers[false, false] function_declarator_with_fun_as_ret_type[true]
+                (        options{warnWhenFollowAmbig = false;}:
+                        //(declaration)*        // Possible for K & R definition
                         (function_K_R_parameter_list)?
-			{in_parameter_list = false;}
-		)?
-		compound_statement
+                        {in_parameter_list = false;}
+                )?
+                compound_statement
 
         ;
 
@@ -1925,15 +1935,15 @@ function_definition
     :
     // don't want next action as an init-action due to (...)=> caller
     // IZ 132404 : Parser failed on code taken from boost
-    //	//{ beginFunctionDefinition(); }
-    //	(	// Next line is equivalent to guarded predicate in PCCTS
-    //		// (SCOPE | literal_ident)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
+    //        //{ beginFunctionDefinition(); }
+    //        (        // Next line is equivalent to guarded predicate in PCCTS
+    //                // (SCOPE | literal_ident)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
     //              {( !(LA(1)==SCOPE || LA(1)==literal_ident) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
     declaration_specifiers[false, false]
     (options {greedy=true;} :function_attribute_specification!)?
     function_declarator[true, false, false]
     (   options{warnWhenFollowAmbig = false;}:
-        //(declaration)*	// Possible for K & R definition
+        //(declaration)*        // Possible for K & R definition
         (function_K_R_parameter_list)?
         {in_parameter_list = false;}
     )?
@@ -1941,17 +1951,17 @@ function_definition
     |   compound_statement
     |   function_try_block[false]
     )
-    //	|	// Next line is equivalent to guarded predicate in PCCTS
-    //		// (SCOPE | literal_ident)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
-    //		//{( !(LA(1)==SCOPE||LA(1)==literal_ident) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
-    //		function_declarator[true]
-    //		(	options{warnWhenFollowAmbig = false;}:
-    //			(declaration)*	// Possible for K & R definition
-    //			{in_parameter_list = false;}
-    //		)?
+    //        |        // Next line is equivalent to guarded predicate in PCCTS
+    //                // (SCOPE | literal_ident)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
+    //                //{( !(LA(1)==SCOPE||LA(1)==literal_ident) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
+    //                function_declarator[true]
+    //                (        options{warnWhenFollowAmbig = false;}:
+    //                        (declaration)*        // Possible for K & R definition
+    //                        {in_parameter_list = false;}
+    //                )?
     //                compound_statement
-    //	)
-    //	//{endFunctionDefinition();}
+    //        )
+    //        //{endFunctionDefinition();}
     ;
 
 // rule for predicting "declaration"
@@ -1997,7 +2007,7 @@ declaration[int kind]
     |
         (LITERAL_using literal_ident ASSIGNEQUAL) => alias_declaration
     |
-        using_declaration	// DW 19/04/04
+        using_declaration        // DW 19/04/04
     |
         namespace_alias_definition
     |
@@ -2005,12 +2015,12 @@ declaration[int kind]
     ;
 
 linkage_specification
-	:	LITERAL_extern STRING_LITERAL
-		(	LCURLY (external_declaration)* RCURLY
-		|	external_declaration
-		)
-		{ #linkage_specification = #(#[CSM_LINKAGE_SPECIFICATION,"CSM_LINKAGE_SPECIFICATION"], #linkage_specification);}
-	;
+        :        LITERAL_extern STRING_LITERAL
+                (        LCURLY (external_declaration)* RCURLY
+                |        external_declaration
+                )
+                { #linkage_specification = #(#[CSM_LINKAGE_SPECIFICATION,"CSM_LINKAGE_SPECIFICATION"], #linkage_specification);}
+        ;
 
 declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 {
@@ -2047,8 +2057,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             (options {greedy=true;} : LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
         |
             (   options {warnWhenFollowAmbig = false;} : 
-                {isCPlusPlus11()}? sc = cpp11_storage_class_specifier
-            |   {!isCPlusPlus11()}? sc = storage_class_specifier
+                {isCpp11OrLater()}? sc = cpp11_storage_class_specifier
+            |   {!isCpp11OrLater()}? sc = storage_class_specifier
             |   tq = cv_qualifier 
             |   literal_inline {ds = dsINLINE;}
             |   LITERAL__Noreturn
@@ -2087,7 +2097,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             // fix for unknown specifiers
             unknown_posttype_declaration_specifiers
 
-    //  |   LITERAL_typename	{td=true;}	direct_declarator 
+    //  |   LITERAL_typename        {td=true;}        direct_declarator 
         |   literal_typeof LPAREN typeof_param RPAREN
         )
     )
@@ -2200,11 +2210,11 @@ common_storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     ;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
-	:  (literal_const|LITERAL_const_cast)	        {tq = tqCONST;} 
-	|  literal_volatile			        {tq = tqVOLATILE;}
-	|  LITERAL__TYPE_QUALIFIER__                    {tq = tqOTHER;}
+        :  (literal_const|LITERAL_const_cast)                {tq = tqCONST;} 
+        |  literal_volatile                                {tq = tqVOLATILE;}
+        |  LITERAL__TYPE_QUALIFIER__                    {tq = tqOTHER;}
         |  (LITERAL__Atomic ~LPAREN)=>LITERAL__Atomic   {tq = tqAtomic;}
-	;
+        ;
 
 // C11 rule
 type_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid]
@@ -2231,23 +2241,23 @@ type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int
 ;
 
 simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
-	:	(	{!noTypeId && qualifiedItemIsOneOf(qiType|qiCtor)}? 
-			qualified_type {ts=tsTYPEID;}	
-			{ #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
-		|	
+        :        (        {!noTypeId && qualifiedItemIsOneOf(qiType|qiCtor)}? 
+                        qualified_type {ts=tsTYPEID;}        
+                        { #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
+                |        
                         ts = builtin_cv_type_specifier[ts]
-			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
-		|
+                        { #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
+                |
                         {!noTypeId}?
-			// Fix towards allowing us to parse *.cpp files directly
-			
+                        // Fix towards allowing us to parse *.cpp files directly
+                        
                         // IZ 132404 : Parser failed on code taken from boost
                         //(qualified_type qualified_id)=> qualified_type { ts=tsTYPEID; }
                         (qualified_type) => qualified_type { ts=tsTYPEID; }
-			
+                        
                         { #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
-		)
-	;
+                )
+        ;
 
 builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
 {TypeQualifier tq;StorageClass sc;}
@@ -2263,7 +2273,7 @@ builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*
 
 builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
     :
-	  LITERAL_char          {ts |= tsCHAR;}
+          LITERAL_char          {ts |= tsCHAR;}
         | LITERAL_wchar_t       {ts |= tsWCHAR_T;}  
         | LITERAL_char16_t      {ts |= tsOTHER;}
         | LITERAL_char32_t      {ts |= tsOTHER;}
@@ -2289,24 +2299,24 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
     ;
 
 qualified_type
-	{String s;}
-	: 
-		// JEL 3/29/96 removed this predicate and moved it upwards to
-		// simple_type_specifier.  This was done to allow parsing of ~literal_ident to 
-		// be a unary_expression, which was never reached with this 
-		// predicate on
-		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
+        {String s;}
+        : 
+                // JEL 3/29/96 removed this predicate and moved it upwards to
+                // simple_type_specifier.  This was done to allow parsing of ~literal_ident to 
+                // be a unary_expression, which was never reached with this 
+                // predicate on
+                // {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
-		s = scope_override
+                s = scope_override
         
         (s = literal_ident | type_decltype)
         
 //                {if(s.isEmpty()) {action.simple_type_id(id);} }
 //                {if(s.isEmpty()) {action.id(id);} }
-		(options {warnWhenFollowAmbig = false;}:
-		 LESSTHAN template_argument_list GREATERTHAN
-		)?
-	;
+                (options {warnWhenFollowAmbig = false;}:
+                 LESSTHAN template_argument_list GREATERTHAN
+                )?
+        ;
 
 class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
     {String saveClass = ""; String id = ""; StorageClass sc = scInvalid;}
@@ -2458,16 +2468,16 @@ enumerator_list
                     enumerator 
                 )*  
                 (COMMA!)?
-		{ #enumerator_list = #(#[CSM_ENUMERATOR_LIST, "CSM_ENUMERATOR_LIST"], #enumerator_list); }           
+                { #enumerator_list = #(#[CSM_ENUMERATOR_LIST, "CSM_ENUMERATOR_LIST"], #enumerator_list); }           
     | 
     ;
 
 enumerator
     {String id = "";}
-	:	id = literal_ident (ASSIGNEQUAL constant_expression)?
+        :        id = literal_ident (ASSIGNEQUAL constant_expression)?
         /*{action.enumerator(id);}*/
-//		{enumElement(id.getText());}
-	;
+//                {enumElement(id.getText());}
+        ;
 
 /* This matches a generic qualified identifier ::T::B::foo
  * (including LITERAL_OPERATOR).
@@ -2477,47 +2487,47 @@ enumerator
  * How about a 'qualified_complex_id'?
  */
 qualified_id returns [String q = ""]
-	{
-	    String so, id;
-	    StringBuilder qitem = new StringBuilder();
-	}
-	:
+        {
+            String so, id;
+            StringBuilder qitem = new StringBuilder();
+        }
+        :
     (literal_cdecl)?
-	so = scope_override { qitem.append(so); }
-	(  
-		id = literal_ident	(options{warnWhenFollowAmbig = false;}:
-				 LESSTHAN template_argument_list GREATERTHAN)?
+        so = scope_override { qitem.append(so); }
+        (  
+                id = literal_ident        (options{warnWhenFollowAmbig = false;}:
+                                 LESSTHAN template_argument_list GREATERTHAN)?
                 //{action.simple_template_id_or_ident(id);}
                 //{action.using_directive(action.USING_DIRECTIVE__IDENT, id);}
-		{qitem.append(id);}
-		|  
-		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
-				 LESSTHAN template_argument_list GREATERTHAN)?
-		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
-		|
-		LITERAL_OPERATOR STRING_LITERAL id=literal_ident (options{warnWhenFollowAmbig = false;}:
-				 LESSTHAN template_argument_list GREATERTHAN)?
-		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
-		|
-		LITERAL_this  // DW 21/07/03 fix to pass test8.i
-		|
-		(LITERAL_true|LITERAL_false)	// DW 21/07/03 fix to pass test8.i
-	)
-	{q = qitem.toString(); #qualified_id = #(#[CSM_QUALIFIED_ID, q], #qualified_id);}
-	;
+                {qitem.append(id);}
+                |  
+                LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
+                                 LESSTHAN template_argument_list GREATERTHAN)?
+                {qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+                |
+                LITERAL_OPERATOR STRING_LITERAL id=literal_ident (options{warnWhenFollowAmbig = false;}:
+                                 LESSTHAN template_argument_list GREATERTHAN)?
+                {qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+                |
+                LITERAL_this  // DW 21/07/03 fix to pass test8.i
+                |
+                (LITERAL_true|LITERAL_false)        // DW 21/07/03 fix to pass test8.i
+        )
+        {q = qitem.toString(); #qualified_id = #(#[CSM_QUALIFIED_ID, q], #qualified_id);}
+        ;
 
 unqualified_id returns [String q = ""]
-	{
-	    String so, id;
-	    StringBuilder qitem = new StringBuilder();
-	}
-	:
-	so = scope_override {qitem.append(so);}
-	(  
-		id = literal_ident (options{warnWhenFollowAmbig = false;}:
+        {
+            String so, id;
+            StringBuilder qitem = new StringBuilder();
+        }
+        :
+        so = scope_override {qitem.append(so);}
+        (  
+                id = literal_ident (options{warnWhenFollowAmbig = false;}:
                  LESSTHAN template_argument_list GREATERTHAN)?
         //{action.simple_template_id_or_ident(id);}
-		{qitem.append(id);}
+                {qitem.append(id);}
     |  
         LITERAL_OPERATOR 
         (
@@ -2537,12 +2547,12 @@ unqualified_id returns [String q = ""]
             {qitem.append("operator"); qitem.append("NYI");} // TODO: understand            
         )
     |
-		LITERAL_this  // DW 21/07/03 fix to pass test8.i
+                LITERAL_this  // DW 21/07/03 fix to pass test8.i
     |
-		(LITERAL_true|LITERAL_false)	// DW 21/07/03 fix to pass test8.i
-	)
-	{q = qitem.toString(); #unqualified_id = #(#[CSM_QUALIFIED_ID, q], #unqualified_id);}
-	;
+                (LITERAL_true|LITERAL_false)        // DW 21/07/03 fix to pass test8.i
+        )
+        {q = qitem.toString(); #unqualified_id = #(#[CSM_QUALIFIED_ID, q], #unqualified_id);}
+        ;
 
 
 class_qualified_id returns [String q = ""]
@@ -2573,25 +2583,25 @@ class_qualified_id returns [String q = ""]
 
 typeID
     {String s;}
-	:	{isTypeName((LT(1).getText()))}?
-		s=literal_ident
-	;
+        :        {isTypeName((LT(1).getText()))}?
+                s=literal_ident
+        ;
 
 init_declarator_list[int kind]
-	:	init_declarator[kind] (COMMA init_declarator[declNotFirst])*
-	;
+        :        init_declarator[kind] (COMMA init_declarator[declNotFirst])*
+        ;
 
 init_declarator[int kind]
-	:	declarator[kind, 0]
-		(	
-			ASSIGNEQUAL 
+        :        declarator[kind, 0]
+                (        
+                        ASSIGNEQUAL 
             (cast_array_initializer_head) => initializer
-        |	
+        |        
             LPAREN cpp11_expression_list RPAREN
         |
             array_initializer
-		)?
-	;
+                )?
+        ;
 
 initializer
     {String s;}
@@ -2612,7 +2622,7 @@ initializer
         |
             lazy_expression[false, false, 0]
         )
-        (options {greedy=true;}:	
+        (options {greedy=true;}:        
             ( ASSIGNEQUAL
             | TIMESEQUAL
             | DIVIDEEQUAL
@@ -2657,7 +2667,7 @@ cast_array_initializer_head
 // so far this one is used in predicates only
 class_head     
     { String s; StorageClass sc = scInvalid; }
-    :	// Used only by predicates	
+    :        // Used only by predicates        
         (   LITERAL_struct  
         |   LITERAL_union 
         |   LITERAL_class)
@@ -2665,7 +2675,7 @@ class_head
         (sc = storage_class_specifier)?
         (
             s = scope_override  
-            s = literal_ident	
+            s = literal_ident        
             (LESSTHAN template_argument_list GREATERTHAN)?
             (LITERAL_final | LITERAL_explicit)? 
         )? 
@@ -2700,66 +2710,66 @@ enum_fwd_head
 // so far this one is used in predicates only
 class_forward_declaration
         { String s; }
-	:	// Used only by predicates
-	(   LITERAL_struct
-	|	LITERAL_union
-	|	LITERAL_class)
+        :        // Used only by predicates
+        (   LITERAL_struct
+        |        LITERAL_union
+        |        LITERAL_class)
     (options {greedy=true;} : type_attribute_specification)?
-	(
+        (
         s = scope_override
         s = literal_ident
-		(LESSTHAN template_argument_list GREATERTHAN)?
+                (LESSTHAN template_argument_list GREATERTHAN)?
         (LITERAL_final | LITERAL_explicit)?
-		(base_clause)?
-	)? SEMICOLON
-	;
+                (base_clause)?
+        )? SEMICOLON
+        ;
 
 protected
 typedef_class_fwd
 { String id = "", td = ""; }
     :
     LITERAL_typedef
-	(
-		LITERAL_struct
-	|	LITERAL_union
-	|	LITERAL_class
-	)
+        (
+                LITERAL_struct
+        |        LITERAL_union
+        |        LITERAL_class
+        )
     id = qualified_id
     td = qualified_id
     SEMICOLON
 ;
 
 base_clause
-	:	COLON base_specifier (ELLIPSIS)? (COMMA base_specifier (ELLIPSIS)? )*
-	;
+        :        COLON base_specifier (ELLIPSIS)? (COMMA base_specifier (ELLIPSIS)? )*
+        ;
 
 base_specifier
-	:	// DW 13/08/03 Should check qualified_type for class-name?
-	(	LITERAL_virtual (access_specifier)? qualified_type 
-	|	access_specifier (LITERAL_virtual)? qualified_type
-	|	qualified_type
-	)
-	{#base_specifier=#(#[CSM_BASE_SPECIFIER,"CSM_BASE_SPECIFIER"], #base_specifier);}
-	;
+        :        // DW 13/08/03 Should check qualified_type for class-name?
+        (        LITERAL_virtual (access_specifier)? qualified_type 
+        |        access_specifier (LITERAL_virtual)? qualified_type
+        |        qualified_type
+        )
+        {#base_specifier=#(#[CSM_BASE_SPECIFIER,"CSM_BASE_SPECIFIER"], #base_specifier);}
+        ;
 
 access_specifier
-	:	LITERAL_public
-	|	LITERAL_protected
-	|	LITERAL_private
-	;
+        :        LITERAL_public
+        |        LITERAL_protected
+        |        LITERAL_private
+        ;
 
 member_declarator_list
-	:	member_declarator
-		(COMMA member_declarator)*
-	;
+        :        member_declarator
+                (COMMA member_declarator)*
+        ;
 
 member_declarator
     {String s;}
-	:	
-		((literal_ident)? COLON constant_expression)=>(s=literal_ident)? COLON constant_expression
+        :        
+                ((literal_ident)? COLON constant_expression)=>(s=literal_ident)? COLON constant_expression
     |
-		init_declarator[declOther] 
-	;
+                init_declarator[declOther] 
+        ;
 
 conversion_function_head
     {CPPParser.TypeQualifier tq; }
@@ -2767,7 +2777,7 @@ conversion_function_head
         LITERAL_OPERATOR declaration_specifiers[true, false]
         (ptr_operator)*
         (LESSTHAN template_parameter_list GREATERTHAN)?
-        LPAREN (parameter_list[false])? RPAREN	
+        LPAREN (parameter_list[false])? RPAREN        
         (tq = cv_qualifier)*
         (ref_qualifier)?
         (exception_specification)?
@@ -2781,14 +2791,14 @@ conversion_function_decl
     ;
 
 conversion_function_decl_or_def returns [boolean definition = false]
-	:	// DW 01/08/03 Use type_specifier here? see syntax
-		conversion_function_head
-		(	compound_statement { definition = true; }
-                    |	
+        :        // DW 01/08/03 Use type_specifier here? see syntax
+                conversion_function_head
+                (        compound_statement { definition = true; }
+                    |        
                         ((conversion_function_special_definition)=> definition = conversion_function_special_definition)?
                         SEMICOLON! //{end_of_stmt();}
-		)
-	;
+                )
+        ;
 
 protected
 conversion_function_special_definition returns [boolean definition = false]
@@ -2816,10 +2826,10 @@ fun_cv_qualifier_seq
 
 // JEL note:  does not use (const|volatile)* to avoid lookahead problems
 cv_qualifier_seq
-	{TypeQualifier tq;}
-	:
-	(options {warnWhenFollowAmbig = false;}:tq = cv_qualifier)*
-	;
+        {TypeQualifier tq;}
+        :
+        (options {warnWhenFollowAmbig = false;}:tq = cv_qualifier)*
+        ;
 
 declarator[int kind, int level]
     :
@@ -2891,7 +2901,7 @@ direct_declarator[int kind, int level]
     |
         (options {greedy=true;} : variable_attribute_specification)?
         (
-            ((ELLIPSIS)? qualified_id LSQUARE)=>	// Must be array declaration
+            ((ELLIPSIS)? qualified_id LSQUARE)=>        // Must be array declaration
             (ELLIPSIS)? id = qualified_id 
             {
                  if (_td==true) {
@@ -2927,18 +2937,18 @@ direct_declarator[int kind, int level]
         (options {greedy=true;} :variable_attribute_specification)?
         (asm_block!)?
         (options {greedy=true;} :variable_attribute_specification)?
-	|	
-		// DW 24/05/04 This block probably never entered as dtor selected out earlier
-		//	Note 1: In fact no dictionary entries for ctor or dtor	
-		//	Note 2: 2: "class" not recorded in CPPSymbol
-		TILDE id = literal_ident {declaratorID(id,qiDtor);}
-		{
+        |        
+                // DW 24/05/04 This block probably never entered as dtor selected out earlier
+                //        Note 1: In fact no dictionary entries for ctor or dtor        
+                //        Note 2: 2: "class" not recorded in CPPSymbol
+                TILDE id = literal_ident {declaratorID(id,qiDtor);}
+                {
             if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(id));
-		}
-		LPAREN //{declaratorParameterList(false);}
-		(parameter_list[false])?
-		RPAREN //{declaratorEndParameterList(false);}
-	|	
+                }
+                LPAREN //{declaratorParameterList(false);}
+                (parameter_list[false])?
+                RPAREN //{declaratorEndParameterList(false);}
+        |        
         LPAREN declarator[kind, level+1] RPAREN
         (options {greedy=true;} :variable_attribute_specification)?
         (
@@ -2958,7 +2968,7 @@ direct_declarator[int kind, int level]
                    | 
                 ) 
 ** */
-	;
+        ;
 
 function_like_var_declarator
 {String id; TypeQualifier tq;}
@@ -2984,20 +2994,20 @@ function_like_var_declarator
     ;
 
 declarator_suffixes
-	{TypeQualifier tq;}  
-	:
-	(
+        {TypeQualifier tq;}  
+        :
+        (
         (options {warnWhenFollowAmbig = false;}: LSQUARE (constant_expression)? RSQUARE)+
-		{declaratorArray();}
+                {declaratorArray();}
     |
         (LPAREN RPAREN) => declarator_param_list
-	|	
+        |        
         {(!((LA(1)==LPAREN)&&(LA(2)==IDENT||LA(2)==LITERAL_final))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
         declarator_param_list
-//	|	// DW 28/06/04 deleted Assume either following bracketed declaration
-//		// empty
-	)
-	;
+//        |        // DW 28/06/04 deleted Assume either following bracketed declaration
+//                // empty
+        )
+        ;
 
 /* I think something is weird with the context-guards for predicates;
  * as a result I manually hoist the appropriate pred from ptr_to_member
@@ -3008,7 +3018,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
     :
         //{( !(LA(1)==SCOPE||LA(1)==literal_ident) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator function_declarator[definition, allowParens, symTabCheck]
-    |	
+    |        
         // int (i);
         {_td || (_ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN is_post_declarator_token) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
@@ -3017,7 +3027,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
-	{String q;}
+        {String q;}
     :
         (options {greedy=true;} : function_attribute_specification)?
         (function_direct_declarator_2[definition, symTabCheck])
@@ -3033,7 +3043,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         (options {greedy = true;} : virt_specifiers)?
 
         //{functionEndParameterList(definition);}
-        (( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
+        (( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?        // The value of the octal must be 0
         (options {greedy=true;} :function_attribute_specification)?
         (options {greedy=true;} :asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
@@ -3082,11 +3092,11 @@ function_direct_declarator_2 [boolean definition, boolean symTabCheck]
      * would imply that literal_ident can be a type name OR a plain literal_ident.
      */
 /*
-		(	// fix prompted by (isdigit)() in xlocnum
-			LPAREN q = qualified_id { declaratorID(q, qiFun); } RPAREN
-		|
-			q = qualified_id { declaratorID(q, qiFun);}
-		)
+                (        // fix prompted by (isdigit)() in xlocnum
+                        LPAREN q = qualified_id { declaratorID(q, qiFun); } RPAREN
+                |
+                        q = qualified_id { declaratorID(q, qiFun);}
+                )
 */
         q = idInBalanceParensHard { declaratorID(q, qiFun);}
         (function_attribute_specification)?
@@ -3118,22 +3128,22 @@ function_parameters [boolean symTabCheck]
 protected
 function_params
         :
-		LPAREN
-		{
-		    //functionParameterList();
-		    if (K_and_R == false) {
-			    in_parameter_list = true;
-		    }
-		}
-		(parameter_list[false])? 
-		{
-		    if (K_and_R == false) {
-	  		in_parameter_list = false;
-		    } else {
-			in_parameter_list = true;
-		    }
-		}
-		RPAREN
+                LPAREN
+                {
+                    //functionParameterList();
+                    if (K_and_R == false) {
+                            in_parameter_list = true;
+                    }
+                }
+                (parameter_list[false])? 
+                {
+                    if (K_and_R == false) {
+                          in_parameter_list = false;
+                    } else {
+                        in_parameter_list = true;
+                    }
+                }
+                RPAREN
         ;
 
 ctor_definition 
@@ -3147,15 +3157,15 @@ ctor_definition
 
 ctor_head 
 {boolean friend = false; boolean ctorName = false;}
-	:
-	friend = ctor_decl_spec
-	ctorName = ctor_declarator[true]
-	;
+        :
+        friend = ctor_decl_spec
+        ctorName = ctor_declarator[true]
+        ;
 
 ctor_decl_spec returns [boolean friend = false]
-	:
+        :
     ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit|LITERAL_friend {friend = true;} | LITERAL_constexpr )*
-	;
+        ;
 
 ctor_declarator[boolean definition] returns [boolean isCtor = false]
     :
@@ -3168,14 +3178,14 @@ ctor_declarator[boolean definition] returns [boolean isCtor = false]
 ctor_direct_declarator[boolean definition] returns [boolean isCtor = false]
     {String q;}
     : 
-	// JEL 4/3/96 qualified_id too broad DW 10/06/03 ?
+        // JEL 4/3/96 qualified_id too broad DW 10/06/03 ?
         {isCtor = qualifiedItemIsOneOf(qiCtor);}
 
-	q = qualified_ctor_id
+        q = qualified_ctor_id
         // VV: 06/06/06 handle constructor of class template explicite specialization
         (LESSTHAN template_argument_list GREATERTHAN)?
-	//{declaratorParameterList(definition);}
-	LPAREN (parameter_list[false])? RPAREN
+        //{declaratorParameterList(definition);}
+        LPAREN (parameter_list[false])? RPAREN
 
         (options{greedy = true;} : cv_qualifier_seq)?
 
@@ -3185,7 +3195,7 @@ ctor_direct_declarator[boolean definition] returns [boolean isCtor = false]
 
         (options {greedy = true;} : virt_specifiers)?
 
-	//{declaratorEndParameterList(definition);}
+        //{declaratorEndParameterList(definition);}
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
         (function_attribute_specification)?
@@ -3205,24 +3215,24 @@ qualified_ctor_id returns [String q = ""]
 // This matches a generic qualified identifier ::T::B::foo
 // that is satisfactory for a ctor (no operator, no trailing <>)
 qualified_ctor_direct_id returns [String q = ""]
-	{
-	    String str;
-	    StringBuilder  qitem = new StringBuilder();
-	}
-	: 
-	str = scope_override
-	{qitem.append(str);}
-	str = literal_ident	// DW 24/05/04 Note. Neither Ctor or Dtor recorded in dictionary
+        {
+            String str;
+            StringBuilder  qitem = new StringBuilder();
+        }
+        : 
+        str = scope_override
+        {qitem.append(str);}
+        str = literal_ident        // DW 24/05/04 Note. Neither Ctor or Dtor recorded in dictionary
 /* ****        
 //       Issue 86695 "Parser incorrect build CSM_QUALIFIED_ID branch for templated constructors"
 
         (options{warnWhenFollowAmbig = false;}:
-				 LESSTHAN template_argument_list GREATERTHAN)? 
+                                 LESSTHAN template_argument_list GREATERTHAN)? 
 **** */
-	{qitem.append(str);        
-	 q = qitem.toString();
-	#qualified_ctor_direct_id = #(#[CSM_QUALIFIED_ID, q], #qualified_ctor_direct_id);} 
-	;
+        {qitem.append(str);        
+         q = qitem.toString();
+        #qualified_ctor_direct_id = #(#[CSM_QUALIFIED_ID, q], #qualified_ctor_direct_id);} 
+        ;
 
 ctor_body
     :
@@ -3231,16 +3241,16 @@ ctor_body
     ;
 
 ctor_initializer
-	:
-	COLON! superclass_init (ELLIPSIS)? (COMMA! superclass_init (ELLIPSIS)? )*
+        :
+        COLON! superclass_init (ELLIPSIS)? (COMMA! superclass_init (ELLIPSIS)? )*
 
         {#ctor_initializer = #(#[CSM_CTOR_INITIALIZER_LIST, "CSM_CTOR_INITIALIZER_LIST"], #ctor_initializer);}
-	;
+        ;
 
 superclass_init
-	{String q;} 
-	: 
-	q = qualified_id 
+        {String q;} 
+        : 
+        q = qualified_id 
         (
             LPAREN (cpp11_expression_list)? RPAREN
         |
@@ -3248,13 +3258,13 @@ superclass_init
         )
 
         {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
-	;
+        ;
 
 dtor_definition
-	:
-	dtor_head[true]
-	dtor_body
-	;
+        :
+        dtor_head[true]
+        dtor_body
+        ;
 
 
 dtor_head[boolean definition] 
@@ -3265,26 +3275,26 @@ dtor_head[boolean definition]
     ;
 
 dtor_decl_spec returns [boolean friend = false]
-	:
+        :
         // TODO: think about flag if destructor is friend
-	((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_friend {friend = true;} |LITERAL_virtual)*
-	;
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_friend {friend = true;} |LITERAL_virtual)*
+        ;
 
 /* ********
 
 // Issue 86683 "Parser incorrect build CSM_QUALIFIED_ID branch for destructors"
 
 dtor_declarator[boolean definition]
-	:	
-	//({definition}? dtor_scope_override)
-        dtor_scope_override	
-	//{declaratorParameterList(definition);}
+        :        
+        //({definition}? dtor_scope_override)
+        dtor_scope_override        
+        //{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
-	LPAREN (LITERAL_void)? RPAREN
+        LPAREN (LITERAL_void)? RPAREN
         //{declaratorEndParameterList(definition);}
-        (ASSIGNEQUAL OCTALINT)?	
-	(exception_specification)?      
-	;
+        (ASSIGNEQUAL OCTALINT)?        
+        (exception_specification)?      
+        ;
 
 protected
 dtor_scope_override
@@ -3295,7 +3305,7 @@ dtor_scope_override
         TILDE 
         id:literal_ident
         (options{warnWhenFollowAmbig = false;}:
-				 LESSTHAN template_argument_list GREATERTHAN)?
+                                 LESSTHAN template_argument_list GREATERTHAN)?
         { qitem.append('~').append(id.getText()); 
           q = qitem.toString();  
         }        
@@ -3314,16 +3324,16 @@ dtor_declarator[boolean definition]
 
 dtor_direct_declarator[boolean definition]
 {String q;}
-	:	
-	//({definition}? dtor_scope_override)
+        :        
+        //({definition}? dtor_scope_override)
 //        dtor_scope_override
-//	TILDE literal_ident
+//        TILDE literal_ident
         q = qualified_dtor_id
 
        (LESSTHAN template_argument_list GREATERTHAN)?
-	//{declaratorParameterList(definition);}
+        //{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
-	LPAREN (LITERAL_void)? RPAREN
+        LPAREN (LITERAL_void)? RPAREN
         //{declaratorEndParameterList(definition);}
         (options{greedy = true;} : cv_qualifier_seq)?
 
@@ -3338,7 +3348,7 @@ dtor_direct_declarator[boolean definition]
         (options {greedy=true;} : function_attribute_specification)?
 
         unknown_postfunction_declarator_specifiers
-	;
+        ;
 
 qualified_dtor_id returns [String q = ""]
     :
@@ -3352,13 +3362,13 @@ qualified_dtor_id returns [String q = ""]
 // This matches a generic qualified identifier ::T::B::foo
 // that is satisfactory for a ctor (no operator, no trailing <>)
 qualified_dtor_direct_id returns [String q = ""]
-	{
-	    String str;
-	    StringBuilder  qitem = new StringBuilder();
-	}
-	:
-	str = scope_override
-	{qitem.append(str);}	
+        {
+            String str;
+            StringBuilder  qitem = new StringBuilder();
+        }
+        :
+        str = scope_override
+        {qitem.append(str);}        
     TILDE
     str = literal_ident
     {   
@@ -3367,7 +3377,7 @@ qualified_dtor_direct_id returns [String q = ""]
         q = qitem.toString();
         #qualified_dtor_direct_id = #(#[CSM_QUALIFIED_ID, q], #qualified_dtor_direct_id);
     }
-	;
+        ;
 
 
 //protected
@@ -3381,58 +3391,58 @@ qualified_dtor_direct_id returns [String q = ""]
       
 
 dtor_body
-	:
-	compound_statement
-	//{endDestructorDefinition();}
-	;
+        :
+        compound_statement
+        //{endDestructorDefinition();}
+        ;
 
 parameter_list [boolean symTabCheck]
-	:	
-	parameter_declaration_list[symTabCheck] (ELLIPSIS)?
-	{ #parameter_list = #(#[CSM_PARMLIST, "CSM_PARMLIST"], #parameter_list); }
-	;
+        :        
+        parameter_declaration_list[symTabCheck] (ELLIPSIS)?
+        { #parameter_list = #(#[CSM_PARMLIST, "CSM_PARMLIST"], #parameter_list); }
+        ;
 
 parameter_declaration_list [boolean symTabCheck]
-	:	
-	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration[false]
-		(// Have not been able to find way of stopping warning of
-		 // non-determinism between alt 1 and exit branch of block
-		 COMMA! parameter_declaration[false]
-		)*
-	)
-	;
+        :        
+        ({!symTabCheck || action.isType(LT(1).getText())}?        parameter_declaration[false]
+                (// Have not been able to find way of stopping warning of
+                 // non-determinism between alt 1 and exit branch of block
+                 COMMA! parameter_declaration[false]
+                )*
+        )
+        ;
 
 parameter_declaration[boolean inTemplateParams]
     { int oldTs = _ts; }
-	:	({beginParameterDeclaration()}?)
-		(
-			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
-			    (!(LA(1)==SCOPE||LA(1)==IDENT||LA(1)==LITERAL_final) ||
-			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
-			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
-			(  
-				(declarator[declFunctionParam, 0])=> declarator[declFunctionParam, 0]        // if arg name given
-			| 
-				abstract_declarator  // if arg name not given  // can be empty
-			)
-		|
-			(declarator[declOther, 0])=> declarator[declOther, 0]	// DW 24/3/98 Mods for K & R
-		|
-			ELLIPSIS
-		)
-		(ASSIGNEQUAL 
+        :        ({beginParameterDeclaration()}?)
+                (
+                        {!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
+                            (!(LA(1)==SCOPE||LA(1)==IDENT||LA(1)==LITERAL_final) ||
+                            qualifiedItemIsOneOf(qiType|qiCtor) )}?
+                        declaration_specifiers[true, false]        // DW 24/3/98 Mods for K & R
+                        (  
+                                (declarator[declFunctionParam, 0])=> declarator[declFunctionParam, 0]        // if arg name given
+                        | 
+                                abstract_declarator  // if arg name not given  // can be empty
+                        )
+                |
+                        (declarator[declOther, 0])=> declarator[declOther, 0]        // DW 24/3/98 Mods for K & R
+                |
+                        ELLIPSIS
+                )
+                (ASSIGNEQUAL 
                     (   
                         {inTemplateParams}? template_param_expression
                     |
                         cpp11_assignment_expression
                     )
-		)?
+                )?
         ({endParameterDeclaration(oldTs)}?)
-		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
-	;
+                { #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
+        ;
 
 simple_parameter_list
-    :	
+    :        
     simple_parameter_declaration
     (COMMA! simple_parameter_declaration)*
     ;
@@ -3466,7 +3476,7 @@ is_abstract_declarator
  *    int (*[])();   // array of ptr to func
  */
 abstract_declarator
-    :	
+    :        
         ptr_operator (literal_restrict!)? abstract_declarator 
     |
         (abstract_declarator_suffix)+
@@ -3489,7 +3499,7 @@ greedy_abstract_declarator
     ;
 
 abstract_declarator_suffix
-	:	
+        :        
             LSQUARE (constant_expression)? RSQUARE
             {declaratorArray();}
         |   
@@ -3498,7 +3508,7 @@ abstract_declarator_suffix
             (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
         |
             declarator_param_list
-	;
+        ;
 
 declarator_param_list
     :
@@ -3533,11 +3543,11 @@ virt_specifiers
 // simplified version of type_id that is used in exception specification
 protected 
 exception_type_id
-	{ /*TypeSpecifier*/int ts; String so; }
-	:
-	//( (so = scope_override literal_ident) | built_in_type ) (STAR | AMPERSAND)*
+        { /*TypeSpecifier*/int ts; String so; }
+        :
+        //( (so = scope_override literal_ident) | built_in_type ) (STAR | AMPERSAND)*
         parameter_declaration[false]
-	;
+        ;
 
 protected
 function_attribute_specification! 
@@ -3572,16 +3582,16 @@ namespace_attribute_specification!
 
 protected
 attribute_specification_list
-	:
-	    attribute_specification (options {greedy=true;} : attribute_specification_list)?
-	;
+        :
+            attribute_specification (options {greedy=true;} : attribute_specification_list)?
+        ;
 
 attribute_specification
     :
         literal_attribute
         LPAREN balanceParens RPAREN
     |
-        ({isCPlusPlus11()}? LSQUARE balanceSquares RSQUARE)
+        ({isCpp11OrLater()}? LSQUARE balanceSquares RSQUARE)
     ;
 
 protected
@@ -3652,19 +3662,19 @@ idInBalanceParensHard returns [String id = ""]
         ;
 
 template_head
-	:	
+        :        
                (LITERAL_export!)? 
-		LITERAL_template^
-		LESSTHAN! tpl:template_parameter_list GREATERTHAN!
-		//{ #template_head = #(#[CSM_TEMPLATE_PARMLIST, "CSM_TEMPLATE_PARMLIST"], #tpl); }
-	;
+                LITERAL_template^
+                LESSTHAN! tpl:template_parameter_list GREATERTHAN!
+                //{ #template_head = #(#[CSM_TEMPLATE_PARMLIST, "CSM_TEMPLATE_PARMLIST"], #tpl); }
+        ;
 
 template_parameter_list
-	:	
-		//{beginTemplateParameterList();}
-		template_parameter (COMMA template_parameter)*
-		//{endTemplateParameterList();}
-	;
+        :        
+                //{beginTemplateParameterList();}
+                template_parameter (COMMA template_parameter)*
+                //{endTemplateParameterList();}
+        ;
 
 /* Rule requires >2 lookahead tokens. The ambiguity is resolved 
  * correctly, however. According to the manual "...A template argument
@@ -3676,66 +3686,66 @@ template_parameter_list
  */
 template_parameter
     {String id = "";}
-	:
-	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (literal_ident (ELLIPSIS)? )? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
+        :
+        (   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (literal_ident (ELLIPSIS)? )? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
                 (LITERAL_class|LITERAL_typename) 
                 (ELLIPSIS)? // support for variadic template params
-		(id = literal_ident (ELLIPSIS)? )? (ASSIGNEQUAL assigned_type_name)?
-		{templateTypeParameter((id == null) ? "" : id);}
-	|
-		template_template_parameter
-	|	
-		parameter_declaration[true]	// DW 30/06/03 This doesn't seem to match the
-					// current standard
-	)
-	;
+                (id = literal_ident (ELLIPSIS)? )? (ASSIGNEQUAL assigned_type_name)?
+                {templateTypeParameter((id == null) ? "" : id);}
+        |
+                template_template_parameter
+        |        
+                parameter_declaration[true]        // DW 30/06/03 This doesn't seem to match the
+                                        // current standard
+        )
+        ;
 
 protected template_template_parameter
     {String s;}
     :
     template_head
-	LITERAL_class (ELLIPSIS)? (s=literal_ident)? (ASSIGNEQUAL assigned_type_name)?
-	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
+        LITERAL_class (ELLIPSIS)? (s=literal_ident)? (ASSIGNEQUAL assigned_type_name)?
+        { #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 
     ;
 
 /* This is to allow an assigned type_name in a template parameter
- *	list to be defined previously in the same parameter list,
- *	as type setting is ineffective whilst guessing
+ *        list to be defined previously in the same parameter list,
+ *        as type setting is ineffective whilst guessing
  */
 assigned_type_name
-	{/*TypeSpecifier*/int ts;
+        {/*TypeSpecifier*/int ts;
          TypeQualifier tq;
          DeclSpecifier ds = dsInvalid;}
-	:
+        :
             (options {greedy=true;}: tq=cv_qualifier)? (LITERAL_typename)?
             ts = type_specifier[ds, false] (postfix_cv_qualifier)?
             abstract_declarator
-	;
+        ;
 
 // This rule refers to an instance of a template class or function
-template_id	// aka template_class_name
+template_id        // aka template_class_name
     {String s;}
-	:	s=literal_ident LESSTHAN template_argument_list GREATERTHAN
-	;
+        :        s=literal_ident LESSTHAN template_argument_list GREATERTHAN
+        ;
 
 template_argument_list
-	:	template_argument (ELLIPSIS)? (COMMA template_argument (ELLIPSIS)? )*
+        :        template_argument (ELLIPSIS)? (COMMA template_argument (ELLIPSIS)? )*
         |    
-	;
+        ;
 
 // lazy_template_argument_list skips types and 
 // works faster then template_argument_list,
 // but it does not make correct AST.
 // It's used in predicates only.
 lazy_template_argument_list
-	:	
+        :        
         lazy_template_argument
         (   
             COMMA 
             lazy_template_argument
         )*
-	;
+        ;
 
 lazy_template_argument
     :
@@ -3812,9 +3822,9 @@ templateDepthChecker[int i]
 ///////////////////////////////////////////////////////////////////////
 
 statement_list
-	:	(statement)+
-		//{#statement_list = #(#[CSM_STATEMENT_LIST, "CSM_STATEMENT_LIST"], #statement_list);}
-	;
+        :        (statement)+
+                //{#statement_list = #(#[CSM_STATEMENT_LIST, "CSM_STATEMENT_LIST"], #statement_list);}
+        ;
 
 single_statement
     :
@@ -3824,47 +3834,47 @@ single_statement
     ;
 
 statement
-	{StorageClass sc = scInvalid; int ts = 0;}
-	:
-	(	
+        {StorageClass sc = scInvalid; int ts = 0;}
+        :
+        (        
                 // Issue 83496   C++ parser does not allow class definition inside function
                 ((  storage_class_specifier
-		|   cv_qualifier 
-		|   LITERAL_typedef
-		)* class_head) =>
-		{if (statementTrace>=1) 
-			printf("statement_1[%d]: Class definition\n",
-				LT(1).getLine());
-		}
-		declaration[declOther]
-		{ #statement = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #statement); }
-	|  
+                |   cv_qualifier 
+                |   LITERAL_typedef
+                )* class_head) =>
+                {if (statementTrace>=1) 
+                        printf("statement_1[%d]: Class definition\n",
+                                LT(1).getLine());
+                }
+                declaration[declOther]
+                { #statement = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #statement); }
+        |  
                 ((  storage_class_specifier
-		|   cv_qualifier
-		|   LITERAL_typedef
-		)* class_forward_declaration) =>
-		{if (statementTrace>=1)
-			printf("statement_1[%d]: Class forward declaration\n",
-				LT(1).getLine());
-		}
-		declaration[declOther]
-		{ #statement = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #statement); }
-	|
+                |   cv_qualifier
+                |   LITERAL_typedef
+                )* class_forward_declaration) =>
+                {if (statementTrace>=1)
+                        printf("statement_1[%d]: Class forward declaration\n",
+                                LT(1).getLine());
+                }
+                declaration[declOther]
+                { #statement = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #statement); }
+        |
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
-		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (literal_ident)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
+                // Enum definition (don't want to backtrack over this in other alts)
+                ((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (literal_ident)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
                 (sc = storage_class_specifier)?
-		{if (statementTrace>=1) 
-			printf("statement_2[%d]: Enum definition\n",
-				LT(1).getLine());
-		}
-		enum_specifier (member_declarator_list)? SEMICOLON!	//{end_of_stmt();}
-		{ #statement = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #statement); }
-	|
-		( LITERAL_typedef ) =>
-		// TODO: external_declaration is too generic here. Refactor this!
-		external_declaration
-	|
+                {if (statementTrace>=1) 
+                        printf("statement_2[%d]: Enum definition\n",
+                                LT(1).getLine());
+                }
+                enum_specifier (member_declarator_list)? SEMICOLON!        //{end_of_stmt();}
+                { #statement = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #statement); }
+        |
+                ( LITERAL_typedef ) =>
+                // TODO: external_declaration is too generic here. Refactor this!
+                external_declaration
+        |
                 // Function definition in C language
                 {isC()}?
                 ((LITERAL___extension__)?
@@ -3877,8 +3887,8 @@ statement
         |
                 { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (literal_ident literal_ident) => pro_c_statement
                 {if (statementTrace>=1)
-			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
-		}
+                        printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
+                }
         |
                 ( is_known_typename LPAREN literal_ident RPAREN) => // declaration like "int(a);"
                 {if (statementTrace>=1) 
@@ -3890,68 +3900,68 @@ statement
                 // This alternative is greedy and must be after pro_c alternative
                 ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert | LITERAL__Static_assert) =>
                 {if (statementTrace>=1) 
-			printf("statement_1[%d]: declaration\n", LT(1).getLine());
-		}
+                        printf("statement_1[%d]: declaration\n", LT(1).getLine());
+                }
                 declaration[declStatement]  {#statement = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #statement);}
-	|	
+        |        
                 {if (statementTrace>=1) 
-			printf("statement_2[%d]: labeled_statement\n", LT(1).getLine());
-		}                
+                        printf("statement_2[%d]: labeled_statement\n", LT(1).getLine());
+                }                
                 (literal_ident COLON) => labeled_statement
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_3[%d]: case_statement\n", LT(1).getLine());
-		}	
+                        printf("statement_3[%d]: case_statement\n", LT(1).getLine());
+                }        
                 case_statement
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_4[%d]: default_statement\n", LT(1).getLine());
-		}	
+                        printf("statement_4[%d]: default_statement\n", LT(1).getLine());
+                }        
                 default_statement
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_5[%d]: expression\n", LT(1).getLine());
-		}	
+                        printf("statement_5[%d]: expression\n", LT(1).getLine());
+                }        
                 expression SEMICOLON! {/*end_of_stmt();*/#statement = #(#[CSM_EXPRESSION_STATEMENT, "CSM_EXPRESSION_STATEMENT"], #statement);}
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_6[%d]: compound_statement\n", LT(1).getLine());
-		}	
+                        printf("statement_6[%d]: compound_statement\n", LT(1).getLine());
+                }        
                 compound_statement
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_7[%d]: selection_statement\n", LT(1).getLine());
-		}	
+                        printf("statement_7[%d]: selection_statement\n", LT(1).getLine());
+                }        
                 selection_statement
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_8[%d]: iteration_statement\n", LT(1).getLine());
-		}	
+                        printf("statement_8[%d]: iteration_statement\n", LT(1).getLine());
+                }        
                 iteration_statement
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_9[%d]: jump_statement\n", LT(1).getLine());
-		}	
+                        printf("statement_9[%d]: jump_statement\n", LT(1).getLine());
+                }        
                 jump_statement
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_10[%d]: SEMICOLON\n", LT(1).getLine());
-		}	
+                        printf("statement_10[%d]: SEMICOLON\n", LT(1).getLine());
+                }        
                 SEMICOLON! //{end_of_stmt();}
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_11[%d]: try_block\n", LT(1).getLine());
-		}	
+                        printf("statement_11[%d]: try_block\n", LT(1).getLine());
+                }        
                 try_block[false]
-	|
+        |
                 {if (statementTrace>=1) 
-			printf("statement_13[%d]: asm_block\n", LT(1).getLine());
-		}	
+                        printf("statement_13[%d]: asm_block\n", LT(1).getLine());
+                }        
                 asm_block
-//	|	preprocDirective
+//        |        preprocDirective
 //        |       member_declaration
 )
-	;
+        ;
 
 labeled_statement
     :
@@ -3981,47 +3991,47 @@ is_va_list_type : id:IDENT {"va_list".contentEquals(id.getText())}?;
 protected
 label
     {String s;}
-	:
-	s=literal_ident
-	{#label = #([CSM_LABELED_STATEMENT, "CSM_LABELED_STATEMENT"], #label);}
-	;
+        :
+        s=literal_ident
+        {#label = #([CSM_LABELED_STATEMENT, "CSM_LABELED_STATEMENT"], #label);}
+        ;
 
 case_statement
-	:	LITERAL_case
-		case_expression COLON single_statement
-	;
+        :        LITERAL_case
+                case_expression COLON single_statement
+        ;
 
 default_statement
-	:	default_label COLON single_statement
-	;
+        :        default_label COLON single_statement
+        ;
 
 protected
 default_label
-	:	
-	LITERAL_default
-		{#default_label = #(#[CSM_DEFAULT_STATEMENT, "CSM_DEFAULT_STATEMENT"], #default_label);}
-	;
+        :        
+        LITERAL_default
+                {#default_label = #(#[CSM_DEFAULT_STATEMENT, "CSM_DEFAULT_STATEMENT"], #default_label);}
+        ;
 
 compound_statement
-	:                    
+        :                    
             {isLazyCompound()}? balanceCurlies             
             {#compound_statement = #(#[CSM_COMPOUND_STATEMENT_LAZY, "CSM_COMPOUND_STATEMENT_LAZY"], #compound_statement);}
         |   {!isLazyCompound()}?
             (
                 {action.compound_statement(LT(1));}
                 LCURLY
-		/*{
-		    //end_of_stmt();
-		    //enterNewLocalScope();
-		}*/
-		(statement_list)?
+                /*{
+                    //end_of_stmt();
+                    //enterNewLocalScope();
+                }*/
+                (statement_list)?
                 {action.end_compound_statement(LT(1));}
-		( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                 | RCURLY )
-		//{exitLocalScope();}
-		{#compound_statement = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_statement);}
+                //{exitLocalScope();}
+                {#compound_statement = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_statement);}
             )                      
-	;
+        ;
 
 function_try_block[boolean constructor]
     :
@@ -4056,9 +4066,9 @@ condition
 
 protected 
 condition_expression
-	:
-	expression
-	;
+        :
+        expression
+        ;
 
 protected 
 condition_declaration {int ts = tsInvalid;}
@@ -4070,49 +4080,49 @@ condition_declaration {int ts = tsInvalid;}
         )
     ;
 
-//	(declaration)=> declaration|	expression
+//        (declaration)=> declaration|        expression
 
 
 /* NOTE: cannot remove ELSE ambiguity, but it parses correctly.
  * The warning is removed with the options statement
  */
 selection_statement
-	:	
-		LITERAL_if LPAREN 
-		condition RPAREN
-		single_statement
-		(options {warnWhenFollowAmbig = false;}:
-		 LITERAL_else single_statement)?
-		{#selection_statement = #(#[CSM_IF_STATEMENT, "CSM_IF_STATEMENT"], #selection_statement);}
-	|	
-		LITERAL_switch LPAREN  condition RPAREN single_statement
-		{#selection_statement = #(#[CSM_SWITCH_STATEMENT, "CSM_SWITCH_STATEMENT"], #selection_statement);}
-	;
+        :        
+                LITERAL_if LPAREN 
+                condition RPAREN
+                single_statement
+                (options {warnWhenFollowAmbig = false;}:
+                 LITERAL_else single_statement)?
+                {#selection_statement = #(#[CSM_IF_STATEMENT, "CSM_IF_STATEMENT"], #selection_statement);}
+        |        
+                LITERAL_switch LPAREN  condition RPAREN single_statement
+                {#selection_statement = #(#[CSM_SWITCH_STATEMENT, "CSM_SWITCH_STATEMENT"], #selection_statement);}
+        ;
 
 iteration_statement
-	:
-	while_statement | do_while_statement | for_statement
-	;
+        :
+        while_statement | do_while_statement | for_statement
+        ;
 
 protected
 while_statement
-	:
-		LITERAL_while	
-		LPAREN! condition RPAREN! 
-		single_statement
-		{#while_statement = #(#[CSM_WHILE_STATEMENT, "CSM_WHILE_STATEMENT"], #while_statement);}
-	;
+        :
+                LITERAL_while        
+                LPAREN! condition RPAREN! 
+                single_statement
+                {#while_statement = #(#[CSM_WHILE_STATEMENT, "CSM_WHILE_STATEMENT"], #while_statement);}
+        ;
 
 protected
 do_while_statement
-	:
-		LITERAL_do 
-		single_statement LITERAL_while
-		LPAREN! expression RPAREN! 
-		( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        :
+                LITERAL_do 
+                single_statement LITERAL_while
+                LPAREN! expression RPAREN! 
+                ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON ) //{end_of_stmt();}
-		{#do_while_statement = #(#[CSM_DO_WHILE_STATEMENT, "CSM_DO_WHILE_STATEMENT"], #do_while_statement);}
-	;
+                {#do_while_statement = #(#[CSM_DO_WHILE_STATEMENT, "CSM_DO_WHILE_STATEMENT"], #do_while_statement);}
+        ;
 
 protected
 for_statement
@@ -4157,42 +4167,42 @@ for_range_init_statement
 
 jump_statement
     {String s;}
-	:	
-	(	LITERAL_goto 
+        :        
+        (        LITERAL_goto 
                 ((literal_ident (EOF | SEMICOLON)) => s=literal_ident
                 | expression)
                 (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
-	|	LITERAL_continue (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+        |        LITERAL_continue (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
-	|	LITERAL_break (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+        |        LITERAL_break (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_BREAK_STATEMENT, "CSM_BREAK_STATEMENT"], #jump_statement);}
-		// DW 16/05/03 May be problem here if return is followed by a cast expression 
-	|	LITERAL_return {in_return = true;}
-		(	
+                // DW 16/05/03 May be problem here if return is followed by a cast expression 
+        |        LITERAL_return {in_return = true;}
+                (        
                         // VV 22/05/06: commented out alternatives, 
                         // because "return (a)==(b);" incorrectly handled
 /*                        
                         options{warnWhenFollowAmbig = false;}:
-			(LPAREN {(qualifiedItemIsOneOf(qiType) )}? literal_ident RPAREN)=> 
-			LPAREN literal_ident RPAREN (expression)?
-			// This is an unsatisfactory fix
-			// for problem in xstring re
-			// "return (allocator);"
-			//  and in xlocale re 
-			// "return (_E)(_Tolower((unsigned char)_C, &_Ctype));'
-			//{printf("jump_statement[%d]: Return fix used\n",
-			//		LT(1).getLine());}
-		|	expression 
+                        (LPAREN {(qualifiedItemIsOneOf(qiType) )}? literal_ident RPAREN)=> 
+                        LPAREN literal_ident RPAREN (expression)?
+                        // This is an unsatisfactory fix
+                        // for problem in xstring re
+                        // "return (allocator);"
+                        //  and in xlocale re 
+                        // "return (_E)(_Tolower((unsigned char)_C, &_Ctype));'
+                        //{printf("jump_statement[%d]: Return fix used\n",
+                        //                LT(1).getLine());}
+                |        expression 
 */
                 (   ((LITERAL___extension__)? cast_array_initializer_head) => initializer
                 |   expression
                 )
-	)?	
+        )?        
         (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {in_return = false; /*end_of_stmt();*/ #jump_statement = #(#[CSM_RETURN_STATEMENT, "CSM_RETURN_STATEMENT"], #jump_statement);}
-	)
-	;
+        )
+        ;
 
 try_block[boolean constructor]
     :
@@ -4204,56 +4214,56 @@ try_block[boolean constructor]
 
 
 handler
-	:	
+        :        
                 (  
                     LITERAL_catch LPAREN exception_declaration RPAREN
                 |
                     literal_finally
                 )
-		compound_statement
-		{/*exceptionEndHandler();*/{#handler = #(#[CSM_CATCH_CLAUSE, "CSM_CATCH_CLAUSE"], #handler);}}
-	;
+                compound_statement
+                {/*exceptionEndHandler();*/{#handler = #(#[CSM_CATCH_CLAUSE, "CSM_CATCH_CLAUSE"], #handler);}}
+        ;
 
 exception_declaration
-	:	parameter_declaration_list[false]
-	;
+        :        parameter_declaration_list[false]
+        ;
 
 /* This is an expression of type void according to the ARM, which
  * to me means "statement"; it removes some ambiguity to put it in
  * as a statement also.
  */
 throw_expression
-	:	LITERAL_throw (options {greedy=true;}: assignment_expression) ? 
-	;
+        :        LITERAL_throw (options {greedy=true;}: assignment_expression) ? 
+        ;
 
 using_declaration
-	{String qid="";}
-	:	u:LITERAL_using
-		(ns:LITERAL_namespace 
+        {String qid="";}
+        :        u:LITERAL_using
+                (ns:LITERAL_namespace 
                     {action.using_directive(u, ns);}
                     {if(LA(1) == SCOPE) {action.using_directive(action.USING_DIRECTIVE__SCOPE, LT(1));}} 
-                    qid = qualified_id	// Using-directive
+                    qid = qualified_id        // Using-directive
                     {action.end_using_directive(LT(0));}
-		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
-		|
+                    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
+                |
                     {action.using_declaration(u);}
                     {if(LA(1) == SCOPE) {action.using_declaration(action.USING_DECLARATION__SCOPE, LT(1));}} 
                     (LITERAL_typename)?
-                    qid = unqualified_id				// Using-declaration
+                    qid = unqualified_id                                // Using-declaration
                     {action.end_using_declaration(LT(1));}
-		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
-		)
+                    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
+                )
                 
-		SEMICOLON! //{end_of_stmt();}
-	;
+                SEMICOLON! //{end_of_stmt();}
+        ;
 
 alias_declaration
     {String s="";}
-	:	LITERAL_using
-		s=literal_ident ASSIGNEQUAL alias_declaration_type
-		SEMICOLON //{end_of_stmt();}
+        :        LITERAL_using
+                s=literal_ident ASSIGNEQUAL alias_declaration_type
+                SEMICOLON //{end_of_stmt();}
         {#alias_declaration = #(#[CSM_TYPE_ALIAS, s], #alias_declaration);}
-	;
+        ;
 
 // Rule to catch class definition inside type alias
 alias_declaration_type
@@ -4283,7 +4293,7 @@ alias_type_name
         :
             type_name
             (trailing_type)?
-	;
+        ;
 
 visibility_redef_declaration
 {String qid="";}
@@ -4294,14 +4304,14 @@ visibility_redef_declaration
         {#visibility_redef_declaration = #(#[CSM_VISIBILITY_REDEF, qid], #visibility_redef_declaration);}
     ;
 
-asm_block 	
+asm_block         
     :
     (
         literal_asm LCURLY (~RCURLY)*
         (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |RCURLY)
     |
         literal_asm (literal_volatile | LITERAL_goto)? ({LA(1)==LPAREN}? balanceParens) // (gcc_asm_expr)* (EOF|RPAREN)
-//		{balanceBraces(CPPTokenTypes.LPAREN, CPPTokenTypes.RPAREN);}
+//                {balanceBraces(CPPTokenTypes.LPAREN, CPPTokenTypes.RPAREN);}
     )
     {#asm_block = #(#[CSM_ASM_BLOCK, "CSM_ASM_BLOCK"], #asm_block);}
     ;
@@ -4339,15 +4349,15 @@ pro_c_statement
 ///////////////////////////////////////////////////////////////////////
 
 expression_list
-	:	
+        :        
         assignment_expression (COMMA assignment_expression)*
-	;
+        ;
 
 expression
-	:	
+        :        
         assignment_expression (COMMA assignment_expression)*
-		{#expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #expression);}
-	;
+                {#expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #expression);}
+        ;
 
 cpp11_expression_list
     :
@@ -4362,7 +4372,7 @@ cpp11_assignment_expression
     ;
 
 assignment_expression
-	:
+        :
         (
             // IZ#152872: parser error in VLC on cast expression
             // #191198 -  Parser error in buf.c
@@ -4374,7 +4384,7 @@ assignment_expression
         |
             throw_expression
         )
-        (options {greedy=true;}:	
+        (options {greedy=true;}:        
             ( ASSIGNEQUAL              
             | TIMESEQUAL
             | DIVIDEEQUAL
@@ -4393,16 +4403,16 @@ assignment_expression
     ;
 
 constant_expression
-	:	
-		lazy_expression[false, false, 0]
-		{#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
-	;
+        :        
+                lazy_expression[false, false, 0]
+                {#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
+        ;
 
 case_expression
-	:
+        :
         constant_expression
         {#case_expression = #(#[CSM_CASE_STATEMENT, "CSM_CASE_STATEMENT"], #case_expression);}
-	;
+        ;
 
 template_param_expression
     :
@@ -4559,7 +4569,7 @@ protected
 lazy_assignment_expression[boolean inTemplateParams, boolean searchingGreaterthen, int templateLevel]
     :
         lazy_expression[inTemplateParams, searchingGreaterthen, templateLevel]
-        (options {greedy=true;}:	
+        (options {greedy=true;}:        
             ( ASSIGNEQUAL              
             | TIMESEQUAL
             | DIVIDEEQUAL
@@ -4790,7 +4800,7 @@ postfix_cv_qualifier
 
 protected
 unnamed_ptr_operator
-	:	(   AMPERSAND 	{is_address = true;}
+        :        (   AMPERSAND         {is_address = true;}
         |   AND {is_address = true;} // r-value reference
         |   literal_cdecl 
         |   literal_near
@@ -4800,11 +4810,11 @@ unnamed_ptr_operator
         |   literal_stdcall
         |   literal_clrcall
         |   STAR 
-        )	
+        )        
    ;
 
 ptr_operator
-	:	(   AMPERSAND 	{is_address = true;}
+        :        (   AMPERSAND         {is_address = true;}
         |   AND {is_address = true;} // r-value reference
         |   literal_cdecl 
         |   literal_near
@@ -4813,17 +4823,17 @@ ptr_operator
         |   literal_pascal 
         |   literal_stdcall
         |   literal_clrcall
-        |   ptr_to_member	// e.g. STAR 
-        )	
-		{#ptr_operator=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #ptr_operator);}
+        |   ptr_to_member        // e.g. STAR 
+        )        
+                {#ptr_operator=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #ptr_operator);}
    ;
 
 // Match A::B::*
 ptr_to_member
-	{String s;}
-	:
-		s = scope_override STAR  {is_pointer = true;} cv_qualifier_seq
-	;
+        {String s;}
+        :
+                s = scope_override STAR  {is_pointer = true;} cv_qualifier_seq
+        ;
 
 // Match the A::B::C:: or nothing
 scope_override returns [String s = ""]
@@ -4832,7 +4842,7 @@ scope_override returns [String s = ""]
         String sp = "";
     }
     :
-    	(
+            (
             SCOPE { sitem.append("::");} 
             (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         )?
@@ -4931,32 +4941,32 @@ constant
     ;
 
 optor 
-	:
-		LITERAL_new
-		(options {warnWhenFollowAmbig = false;}:
-			LSQUARE RSQUARE | )		// check syntax
-	|   
-		LITERAL_delete
-		(options {warnWhenFollowAmbig = false;}:
-			LSQUARE RSQUARE | )		// check syntax
-	|	LPAREN RPAREN
-	|	LSQUARE RSQUARE
-	|	optor_simple_tokclass	//OPTOR_SIMPLE_TOKCLASS
-	;
+        :
+                LITERAL_new
+                (options {warnWhenFollowAmbig = false;}:
+                        LSQUARE RSQUARE | )                // check syntax
+        |   
+                LITERAL_delete
+                (options {warnWhenFollowAmbig = false;}:
+                        LSQUARE RSQUARE | )                // check syntax
+        |        LPAREN RPAREN
+        |        LSQUARE RSQUARE
+        |        optor_simple_tokclass        //OPTOR_SIMPLE_TOKCLASS
+        ;
 
 //Zuo 5/11/2001
 // This is the equivalent to "#tokclass OPTOR_SIMPLE_TOKCLASS" in cplusplus.g
 
 optor_simple_tokclass
-	:
+        :
     (PLUS|MINUS|STAR|DIVIDE|MOD|BITWISEXOR|AMPERSAND|BITWISEOR|TILDE|NOT|
-	 SHIFTLEFT|SHIFTRIGHT|
-	 ASSIGNEQUAL|TIMESEQUAL|DIVIDEEQUAL|MODEQUAL|PLUSEQUAL|MINUSEQUAL|
-	 SHIFTLEFTEQUAL|SHIFTRIGHTEQUAL|BITWISEANDEQUAL|BITWISEXOREQUAL|BITWISEOREQUAL|
+         SHIFTLEFT|SHIFTRIGHT|
+         ASSIGNEQUAL|TIMESEQUAL|DIVIDEEQUAL|MODEQUAL|PLUSEQUAL|MINUSEQUAL|
+         SHIFTLEFTEQUAL|SHIFTRIGHTEQUAL|BITWISEANDEQUAL|BITWISEXOREQUAL|BITWISEOREQUAL|
          EQUAL|NOTEQUAL|LESSTHAN|GREATERTHAN (options {greedy=true;}: GREATERTHAN)?|LESSTHANOREQUALTO|GREATERTHANOREQUALTO|OR|AND|
-	 PLUSPLUS|MINUSMINUS|COMMA|POINTERTO|POINTERTOMBR         
-	)
-	;
+         PLUSPLUS|MINUSMINUS|COMMA|POINTERTO|POINTERTOMBR         
+        )
+        ;
 
 /*
 // VV: some rules extracted from prev. optor_simple_tokclass, 
@@ -4967,7 +4977,7 @@ optor_simple_tokclass
 // This is the equivalent to "#tokclass OPTOR_SIMPLE_TOKCLASS" in cplusplus.g
 
 optor_simple_tokclass
-	:
+        :
             expression_unambig_optor
         |
             assign_unambig_optor
@@ -4976,28 +4986,28 @@ optor_simple_tokclass
         |
             // ambiguous operators
             (AMPERSAND | STAR | PLUS | MINUS | PLUSPLUS | MINUSMINUS)
-	;
+        ;
 
 // this rule garantees, that on left is not casting for expressions like "(A) optor expr"
 protected
 expression_unambig_optor
-	:
+        :
         (DIVIDE|MOD|BITWISEXOR|BITWISEOR|
-	 SHIFTLEFT|SHIFTRIGHT|
-	 EQUAL|NOTEQUAL|LESSTHAN|GREATERTHAN|LESSTHANOREQUALTO|GREATERTHANOREQUALTO|OR|AND|
-	 COMMA|POINTERTO|POINTERTOMBR
-	)
-	;
+         SHIFTLEFT|SHIFTRIGHT|
+         EQUAL|NOTEQUAL|LESSTHAN|GREATERTHAN|LESSTHANOREQUALTO|GREATERTHANOREQUALTO|OR|AND|
+         COMMA|POINTERTO|POINTERTOMBR
+        )
+        ;
 
 // this rule garantees, that on left is not casting for expressions like "(A) optor expr" 
 protected
 assign_unambig_optor
-	:
+        :
         (
-	 ASSIGNEQUAL|TIMESEQUAL|DIVIDEEQUAL|MODEQUAL|PLUSEQUAL|MINUSEQUAL|
-	 SHIFTLEFTEQUAL|SHIFTRIGHTEQUAL|BITWISEANDEQUAL|BITWISEXOREQUAL|BITWISEOREQUAL 
-	)
-	;
+         ASSIGNEQUAL|TIMESEQUAL|DIVIDEEQUAL|MODEQUAL|PLUSEQUAL|MINUSEQUAL|
+         SHIFTLEFTEQUAL|SHIFTRIGHTEQUAL|BITWISEANDEQUAL|BITWISEXOREQUAL|BITWISEOREQUAL 
+        )
+        ;
 
 // this rule garantees, that on left is casting for expressions like "(A) optor expr"
 protected

@@ -53,6 +53,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.lookup.Lookups;
 
@@ -445,14 +447,31 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
     private static Filter<CppTokenId> FILTER_OMP;
     private static Filter<FortranTokenId> FILTER_FORTRAN;
+    
+    public static Filter<?> getDefaultFilter(Language<?> language, Document doc) {
+        if (language == CppTokenId.languageHeader()) {
+            return CndLexerUtilities.getHeaderCppFilter();
+        } else if (language == CppTokenId.languageC()) {
+            return CndLexerUtilities.getGccCFilter();
+        } else if (language == CppTokenId.languagePreproc()) {
+            return CndLexerUtilities.getPreprocFilter();
+        } else if (language == FortranTokenId.languageFortran()) {
+            return CndLexerUtilities.getFortranFilter();
+        } else if (language == CppTokenId.languageCpp()) {
+            return CndLexerUtilities.getGccCppFilter();
+        }
+        return null;
+    }
 
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
-        return cpp ? getStdCppFilter() : getStdCFilter();
+        return (Filter<CppTokenId>) (cpp ? 
+                getDefaultFilter(CppTokenId.languageCpp(), null) : 
+                getDefaultFilter(CppTokenId.languageC(), null));
     }
 
     public synchronized static Filter<CppTokenId> getPreprocFilter() {
         if (FILTER_PREPRPOCESSOR == null) {
-            FILTER_PREPRPOCESSOR = new Filter<CppTokenId>();
+            FILTER_PREPRPOCESSOR = new Filter<CppTokenId>("PreprocFilter"); // NOI18N
             addPreprocKeywords(FILTER_PREPRPOCESSOR);
         }
         return FILTER_PREPRPOCESSOR;
@@ -460,7 +479,7 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getOmpFilter() {
         if (FILTER_OMP == null) {
-            FILTER_OMP = new Filter<CppTokenId>();
+            FILTER_OMP = new Filter<CppTokenId>("OmpFilter"); // NOI18N
             addOmpKeywords(FILTER_OMP);
         }
         return FILTER_OMP;
@@ -468,7 +487,7 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getStdCFilter() {
         if (FILTER_STD_C == null) {
-            FILTER_STD_C = new Filter<CppTokenId>();
+            FILTER_STD_C = new Filter<CppTokenId>("StdCFilter"); // NOI18N
             addCommonCCKeywords(FILTER_STD_C);
             addCOnlyKeywords(FILTER_STD_C);
         }
@@ -477,7 +496,7 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getGccCFilter() {
         if (FILTER_GCC_C == null) {
-            FILTER_GCC_C = new Filter<CppTokenId>();
+            FILTER_GCC_C = new Filter<CppTokenId>("GccCFilter"); // NOI18N
             addCommonCCKeywords(FILTER_GCC_C);
             addCOnlyKeywords(FILTER_GCC_C);
             addGccOnlyCommonCCKeywords(FILTER_GCC_C);
@@ -488,7 +507,7 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getStdCppFilter() {
         if (FILTER_STD_CPP == null) {
-            FILTER_STD_CPP = new Filter<CppTokenId>();
+            FILTER_STD_CPP = new Filter<CppTokenId>("StdCppFilter"); // NOI18N
             addCommonCCKeywords(FILTER_STD_CPP);
             addCppOnlyKeywords(FILTER_STD_CPP);
         }
@@ -497,7 +516,7 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getGccCppFilter() {
         if (FILTER_GCC_CPP == null) {
-            FILTER_GCC_CPP = new Filter<CppTokenId>();
+            FILTER_GCC_CPP = new Filter<CppTokenId>("GccCppFilter"); // NOI18N
             addCommonCCKeywords(FILTER_GCC_CPP);
             addCppOnlyKeywords(FILTER_GCC_CPP);
             addGccOnlyCommonCCKeywords(FILTER_GCC_CPP);
@@ -508,7 +527,7 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getStdCpp11Filter() {
         if (FILTER_STD_CPP11 == null) {
-            FILTER_STD_CPP11 = new Filter<CppTokenId>();
+            FILTER_STD_CPP11 = new Filter<CppTokenId>("StdCpp11Filter"); // NOI18N
             addCommonCCKeywords(FILTER_STD_CPP11);
             addCppOnlyKeywords(FILTER_STD_CPP11);
             addCpp11OnlyKeywords(FILTER_STD_CPP11);
@@ -518,7 +537,7 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getGccCpp11Filter() {
         if (FILTER_GCC_CPP11 == null) {
-            FILTER_GCC_CPP11 = new Filter<CppTokenId>();
+            FILTER_GCC_CPP11 = new Filter<CppTokenId>("GccCpp11Filter"); // NOI18N
             addCommonCCKeywords(FILTER_GCC_CPP11);
             addCppOnlyKeywords(FILTER_GCC_CPP11);
             addCpp11OnlyKeywords(FILTER_GCC_CPP11);
@@ -530,7 +549,7 @@ public final class CndLexerUtilities {
     
     public synchronized static Filter<CppTokenId> getHeaderCFilter() {
         if (FILTER_HEADER_C == null) {
-            FILTER_HEADER_C = new Filter<CppTokenId>();
+            FILTER_HEADER_C = new Filter<CppTokenId>("HeaderCFilter"); // NOI18N
             addCommonCCKeywords(FILTER_HEADER_C);
             addGccOnlyCommonCCKeywords(FILTER_HEADER_C);
             addCOnlyKeywords(FILTER_HEADER_C);
@@ -540,7 +559,7 @@ public final class CndLexerUtilities {
     
     public synchronized static Filter<CppTokenId> getHeaderCppFilter() {
         if (FILTER_HEADER_CPP == null) {
-            FILTER_HEADER_CPP = new Filter<CppTokenId>();
+            FILTER_HEADER_CPP = new Filter<CppTokenId>("HeaderCppFilter"); // NOI18N
             addCommonCCKeywords(FILTER_HEADER_CPP);
             addCppOnlyKeywords(FILTER_HEADER_CPP);
             addGccOnlyCommonCCKeywords(FILTER_HEADER_CPP);
@@ -553,11 +572,12 @@ public final class CndLexerUtilities {
 
     public synchronized static Filter<CppTokenId> getHeaderCpp11Filter() {
         if (FILTER_HEADER_CPP11 == null) {
-            FILTER_HEADER_CPP11 = new Filter<CppTokenId>();
+            FILTER_HEADER_CPP11 = new Filter<CppTokenId>("HeaderCpp11Filter"); // NOI18N
             addCommonCCKeywords(FILTER_HEADER_CPP11);
             addCppOnlyKeywords(FILTER_HEADER_CPP11);
             addGccOnlyCommonCCKeywords(FILTER_HEADER_CPP11);
             addGccOnlyCppOnlyKeywords(FILTER_HEADER_CPP11);
+            // C++11 specific
             addCpp11OnlyKeywords(FILTER_HEADER_CPP11);
         }
         return FILTER_HEADER_CPP11;
@@ -565,7 +585,7 @@ public final class CndLexerUtilities {
     
     public synchronized static Filter<FortranTokenId> getFortranFilter() {
         if (FILTER_FORTRAN == null) {
-            FILTER_FORTRAN = new Filter<FortranTokenId>();
+            FILTER_FORTRAN = new Filter<FortranTokenId>("FortranFilter"); // NOI18N
             addFortranKeywords(FILTER_FORTRAN);
         }
         return FILTER_FORTRAN;

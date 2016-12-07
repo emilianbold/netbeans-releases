@@ -716,7 +716,7 @@ public class CppLexerBatchTestCase extends TestCase {
     private T[] getAllKW() {
         return new T[] {
             T.T(CppTokenId.ALIGNAS, "alignas", L.CPP11),
-            T.T(CppTokenId.ALIGNOF, "alignof", L.CPP11),
+            T.T(CppTokenId.ALIGNOF, "alignof", L.CPP),
             T.T(CppTokenId.ALTERNATE_AND, "and", L.CPP),
             T.T(CppTokenId.ALTERNATE_AND_EQ, "and_eq", L.CPP),
             //T.T(CppTokenId.ASM, "asm", L.BOTH), // failed for C
@@ -794,7 +794,7 @@ public class CppLexerBatchTestCase extends TestCase {
             T.T(CppTokenId.TYPEDEF, "typedef", L.BOTH),
             T.T(CppTokenId.TYPEID, "typeid", L.CPP),
             T.T(CppTokenId.TYPENAME, "typename", L.CPP),
-            T.T( CppTokenId.TYPEOF, "typeof", L.CPP),
+            T.T(CppTokenId.TYPEOF, "typeof", L.BOTH),
             T.T(CppTokenId.UNION, "union", L.BOTH),
             T.T(CppTokenId.UNSIGNED, "unsigned", L.BOTH),
             T.T(CppTokenId.USING, "using", L.CPP),

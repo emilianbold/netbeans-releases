@@ -47,9 +47,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
@@ -185,6 +187,9 @@ public class MakeSampleProjectGenerator {
         try {
             // Change project name in 'project.xml'
             FileObject fo = prjLoc.getFileObject(MakeProjectHelper.PROJECT_XML_PATH);
+            if (fo == null) {
+                throw new FileNotFoundException("" + prjLoc + '/' + MakeProjectHelper.PROJECT_XML_PATH);
+            }
             Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
             if (name != null) {
                 //changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
@@ -522,6 +527,16 @@ public class MakeSampleProjectGenerator {
 
     private static void unzip(InputStream source, FileObject targetFolder) throws IOException {
         //installation
+        if (FileSystemProvider.getExecutionEnvironment(targetFolder).isRemote()) {
+            try {
+                FileSystemProvider.uploadAndUnzip(source, targetFolder);
+            } catch (InterruptedException ex) {
+                InterruptedIOException ex2 = new InterruptedIOException();
+                ex2.setStackTrace(ex.getStackTrace());
+                throw ex2;
+            }
+            return;
+        }        
         ZipInputStream zip = new ZipInputStream(source);
         try {
             ZipEntry ent;

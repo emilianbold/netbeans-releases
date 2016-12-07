@@ -87,28 +87,27 @@ import org.openide.util.CharSequences;
  *
  * @author Alexander Simon
  */
-public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition, CsmTemplate {
+public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition {
     
     private CsmUID<CsmVariable> declarationUID;
     private CharSequence qualifiedName;
     private final CharSequence[] classOrNspNames;
-    private final TemplateDescriptor templateDescriptor;
 
     /** Creates a new instance of VariableDefinitionImpl */
     private VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
         super(ast, file, type, name, null,_static, _extern);
-        templateDescriptor = createTemplateDescriptor(ast, file, null, null, true);
         classOrNspNames = getClassOrNspNames(ast);
     }
 
     private VariableDefinitionImpl(CharSequence name, CharSequence[] classOrNspNames, CsmType type, TemplateDescriptor templateDescriptor, boolean _static, boolean _extern, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {
         super(type, name, null, _static, _extern, initExpr, file, startOffset, endOffset);
-        this.templateDescriptor = templateDescriptor;
+        setTemplateDescriptor(templateDescriptor);
         this.classOrNspNames = classOrNspNames;
     }
     
     public static VariableDefinitionImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
         VariableDefinitionImpl variableDefinitionImpl = new VariableDefinitionImpl(ast, file, type, name, _static, _extern);
+        variableDefinitionImpl.setTemplateDescriptor(createTemplateDescriptor(ast, file, null, null, true));
         postObjectCreateRegistration(true, variableDefinitionImpl);
         return variableDefinitionImpl;
     }
@@ -317,32 +316,6 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         }
         return null;
     }
-
-    @Override
-    public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
-    }
-    
-    @Override
-    public boolean isTemplate() {
-        return templateDescriptor != null;
-    }
-
-    @Override
-    public boolean isSpecialization() {
-        return false;
-    }
-
-    @Override
-    public boolean isExplicitSpecialization() {
-        return false;
-    }
-
-    @Override
-    public List<CsmTemplateParameter> getTemplateParameters() {
-        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
-    }    
-
     
     public static class VariableDefinitionBuilder extends VariableBuilder implements CsmObjectBuilder {
 
@@ -369,7 +342,6 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         super.write(output);    
         PersistentUtils.writeUTF(this.qualifiedName, output);
         PersistentUtils.writeStrings(this.classOrNspNames, output);
-        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }  
     
@@ -377,7 +349,6 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         super(input);
         this.qualifiedName = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
-        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 

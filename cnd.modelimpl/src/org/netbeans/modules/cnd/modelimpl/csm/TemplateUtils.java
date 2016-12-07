@@ -380,7 +380,11 @@ public class TemplateUtils {
     }
     
     public static CsmType checkTemplateType(CsmType type, CsmObject scope) {
-        return checkTemplateType(type, scope, null);
+        return checkTemplateType(type, scope, (List<CsmTemplateParameter>) null);
+    }
+    
+    public static CsmType checkTemplateType(CsmType type, CsmObject scope, TemplateDescriptor templateDescriptor) {
+        return checkTemplateType(type, scope, templateDescriptor != null ? templateDescriptor.getTemplateParameters() : null);
     }
     
     public static CsmType checkTemplateType(CsmType type, CsmObject scope, List<CsmTemplateParameter> additionalParams) {

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
 import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp11Test;
+import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp14Test;
 
 /**
  *
@@ -59,6 +60,7 @@ public class SelectModelTestCase extends SelectTestBase {
     @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.tests.cpp11directories", FileModelCpp11Test.class.getSimpleName()); // NOI18N
+        System.setProperty("cnd.tests.cpp14directories", FileModelCpp14Test.class.getSimpleName()); // NOI18N
         super.setUp(); 
     }
 
