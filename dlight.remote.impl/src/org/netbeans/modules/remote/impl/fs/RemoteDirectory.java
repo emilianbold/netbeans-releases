@@ -530,6 +530,13 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     @Override
     public RemoteFileObject[] getChildren() {
+        if (getFlag(MASK_SUSPENDED_DUMMY)) {
+            SuspendInfo suspendInfo = getFileSystem().removeSuspendInfo(this);
+            if (suspendInfo != null) {
+                return suspendInfo.getDirectDummyChildren(this);
+            }
+            return new RemoteFileObject[0];
+        }        
         try {
             DirectoryStorage storage = getDirectoryStorage(null);
             List<DirEntry> entries = storage.listValid();

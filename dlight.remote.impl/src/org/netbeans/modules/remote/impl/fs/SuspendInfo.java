@@ -73,9 +73,14 @@ public class SuspendInfo {
      * Gets *dummy* children for the given directory.
      * Note that there might be non-dummy children as well
      */
-    public List<RemoteFileObjectBase> getDirectDummyChildren(RemoteDirectory dir) {
+    public RemoteFileObject[] getDirectDummyChildren(RemoteDirectory dir) {
         synchronized(lock) {
-            return new ArrayList(dummyChildren.get(dir));
+            List<RemoteFileObjectBase> children = dummyChildren.get(dir);
+            RemoteFileObject[] result = new RemoteFileObject[children.size()];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = children.get(i).getOwnerFileObject();
+            }
+            return result;
         }
     }
     
