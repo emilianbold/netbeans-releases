@@ -104,7 +104,7 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
     @Override
     protected boolean isFailed() {
-        return Arrays.asList("moveFileTree_DO","moveFileToIgnoredFolder_DO","moveFileToIgnoredFolder_FO").contains(testName);
+        return Arrays.asList("moveFileTree_DO").contains(testName);
     }
 
     @Override
@@ -1175,7 +1175,32 @@ else    getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fileA)));
         assertTrue(toFile.exists());
         getCache().refreshAllRoots(fromFile, toFile);
         assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.REMOVED_HEAD_INDEX));
-        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED)); // it is a problem with git version 1.8.3.1
+        if (version.compareTo(new Version(1,8,3)) < 0)
+        assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+        else
+// it is a problem with git version 1.8.3.1
+//========git version 1.7.9.3==================
+//{2} bash-4.1#ssh tester@enum
+//#git status --short --ignored --untracked-files=all -- .
+//D  file
+//?? .gitignore
+//!! ignoredFolder/
+//#git diff --raw --name-status HEAD -- .
+//D       file
+//#git ls-files --cached --others -t -- .
+//? .gitignore
+//? ignoredFolder/toFolder/file
+//========git version 1.8.3.1================
+//#git status --short --ignored --untracked-files=all -- .
+//R  file -> ignoredFolder/toFolder/file
+//?? .gitignore
+//#git diff --raw --name-status HEAD -- .
+//D       file
+//A       ignoredFolder/toFolder/file
+//#git ls-files --cached --others -t -- .
+//? .gitignore
+//H ignoredFolder/toFolder/file
+        assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile).getStatus());
     }
     
     public void moveFileToIgnoredFolder_FO () throws Exception {
@@ -1200,7 +1225,10 @@ else    getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fileA)));
         assertTrue(toFile.exists());
         getCache().refreshAllRoots(fromFile, toFile);
         assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.REMOVED_HEAD_INDEX));
+        if (version.compareTo(new Version(1,8,3)) < 0)
         assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED)); // it is a problem with git version 1.8.3.1
+        else
+        assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(toFile).getStatus());
     }
 
 }
