@@ -180,6 +180,12 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
     void noteSignalList(String source) {
 	ignoreSettingsChange = true;
         String[] signals = source.split("\\\\n"); // NOI18N
+        //fix for bz#268306 - NegativeArraySizeException at org.netbeans.modules.cnd.debugger.gdb2.GdbDebuggerSettingsBridge.noteSignalLis
+        if (signals.length < 4) {
+            currentDbgProfile().signals().setDefaultSignals(new Signals.InitialSignalInfo[0]);
+            ignoreSettingsChange = false;
+            return;
+        }
 	Signals.InitialSignalInfo isi[] =
 	    new Signals.InitialSignalInfo[signals.length - 4];
 	for (int sx = 2; sx < signals.length -2 ; sx++) {
