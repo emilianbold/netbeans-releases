@@ -2812,23 +2812,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     return;
                 }
                if ( editorPane != null) {                   
-                    EditorUI eui = Utilities.getEditorUI(editorPane);
-                    if (eui == null) {
-                        //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
-                        return;
-                    }
-                    ToolTipUI.Expandable expandable = !(variable.isLeaf())
-                            ? new ToolTipUI.Expandable(variable.getAsText(), variable)
-                            : null;
-                    ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
-                            variable.getVariableName(),
-                            lp.getLine().getLineNumber(),
-                            "NativePinWatchValueProvider");   // NOI18N
-                    final String toolTip = variable.getVariableName()+ "=" + variable.getAsText();//NOI18N
-                    ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);                                
-                    ToolTipSupport tts = toolTipUI.show(editorPane);
-                    variable.getUpdater().removeListener(this);
-                    //variable.getUpdater().setListener(null);
+                   SwingUtilities.invokeLater(new Runnable() {
+                       public void run() {
+                           EditorUI eui = Utilities.getEditorUI(editorPane);
+                           if (eui == null) {
+                               //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
+                               return;
+                           }
+                           ToolTipUI.Expandable expandable = !(variable.isLeaf())
+                                   ? new ToolTipUI.Expandable(variable.getAsText(), variable)
+                                   : null;
+                           ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                                   variable.getVariableName(),
+                                   lp.getLine().getLineNumber(),
+                                   "NativePinWatchValueProvider");   // NOI18N
+                           final String toolTip = variable.getVariableName() + "=" + variable.getAsText();//NOI18N
+                           ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
+                           ToolTipSupport tts = toolTipUI.show(editorPane);
+                           variable.getUpdater().removeListener(ModelChangeListenerTooltipImpl.this);
+                           //variable.getUpdater().setListener(null);
+                       }
+                   });
                }
             }
         }
