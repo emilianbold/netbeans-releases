@@ -319,6 +319,16 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug262586.cpp", 82, 20, "bug262586.cpp", 59, 9);
     }
     
+    public void testBug269272() throws Exception {
+        // Bug 269272 - Wrong name lookup results when template parameters are omitted
+        performTest("bug269272.cpp", 19, 43, "bug269272.cpp", 11, 9);
+        performTest("bug269272.cpp", 29, 43, "bug269272.cpp", 11, 9);
+        performTest("bug269272.cpp", 16, 21, "bug269272.cpp", 24, 5);
+        performTest("bug269272.cpp", 26, 21, "bug269272.cpp", 14, 5);
+        performTest("bug269272.cpp", 19, 25, "bug269272.cpp", 14, 5);
+        performTest("bug269272.cpp", 29, 29, "bug269272.cpp", 24, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
