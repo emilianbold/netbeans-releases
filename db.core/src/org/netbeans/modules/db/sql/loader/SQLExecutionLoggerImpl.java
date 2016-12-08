@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.openide.cookies.LineCookie;
@@ -144,7 +146,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
                 if (e instanceof SQLException) {
                     writeSQLException((SQLException)e, writer);
                 } else {
-                    Exceptions.printStackTrace(e);
+                    writeGenericException(e, writer);
                 }
             }
             
@@ -180,6 +182,18 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
             e = e.getNextException();
         }
     }
+    
+    @NbBundle.Messages({
+        "# {0} - error message",
+        "# {1} - exception class",
+        "LBL_ExceptionMessage=[Exception] {1}: {0}"})
+    private void writeGenericException(Throwable e, OutputWriter writer) {
+        LOG.log(Level.INFO, "Exception in SQL Execution", e);
+        writer.println(LBL_ExceptionMessage(
+                e.getMessage(),
+                e.getClass().getName()));
+    }
+    private static final Logger LOG = Logger.getLogger(SQLExecutionLoggerImpl.class.getName());
 
     @NbBundle.Messages({
         "# {0} - fetchtime in seconds", 
