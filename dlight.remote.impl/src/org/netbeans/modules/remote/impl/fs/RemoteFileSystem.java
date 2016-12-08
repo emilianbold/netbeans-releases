@@ -61,15 +61,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -148,6 +145,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final RemoteFileZipper remoteFileZipper;
     private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
     private final ThreadLocal<Boolean> isGettingDirectoryStorage = new ThreadLocal<>();
+
+    private final Map<RemoteDirectory, SuspendInfo> suspendInfo = new HashMap<>();
 
     private final RequestProcessor.Task connectionTask;
 
@@ -1149,6 +1148,34 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             return null;
         } else {
             return fo.lastModified().getTime();
+        }
+    }
+    
+    /**
+     * Gets suspend info for this directory or one of its parents
+     */
+    /*package*/ SuspendInfo getSuspendInfo(RemoteDirectory dir) {
+        for(RemoteDirectory d = dir; d != null; d = d.getParentImpl()) {
+            if (d.getFlag(RemoteFileObjectBase.MASK_SUSPEND_WRITES)) {
+                synchronized (suspendInfo) {
+                    SuspendInfo info = suspendInfo.get(d);
+                    if (info == null) {
+                        info = new SuspendInfo(d);
+                        suspendInfo.put(d, info);
+                    }
+                    return info;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets and removes suspend info for exactly this directory
+     */
+    /*package*/ SuspendInfo removeSuspendInfo(RemoteDirectory dir) {
+        synchronized(suspendInfo) {
+            return suspendInfo.remove(dir);
         }
     }
 

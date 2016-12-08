@@ -114,4 +114,6 @@ public interface FileSystemProviderImplementation {
     FileSystemProvider.Stat getStat(FileObject fo);
     void uploadAndUnzip(InputStream zipStream, FileObject targetFolder) 
             throws FileNotFoundException, ConnectException, IOException, InterruptedException;
+    void suspendWritesUpload(FileObject folder) throws IOException;
+    void resumeWritesUpload(FileObject folder) throws IOException, InterruptedException, ConnectException;
 }

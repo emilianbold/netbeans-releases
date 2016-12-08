@@ -504,7 +504,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     @Override
     public boolean isSpecialization() {
-        return false;
+        return templateDescriptor != null && templateDescriptor.isSpecialization();
     }
 
     @Override

@@ -93,16 +93,18 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    private volatile byte flags;
+    private volatile short flags;
 
     private final RemoteFileObject fileObject;
 
-    private static final byte MASK_VALID = 1;
-    private static final byte CHECK_CAN_WRITE = 2;
-    private static final byte BEING_UPLOADED = 4;
-    protected static final byte CONNECTION_ISSUES = 8;
-    protected static final byte MASK_WARMUP = 16;
-    protected static final byte MASK_CYCLIC_LINK = 32;
+    private static final short MASK_VALID = 1;
+    private static final short CHECK_CAN_WRITE = 2;
+    private static final short BEING_UPLOADED = 4;
+    protected static final short CONNECTION_ISSUES = 8;
+    protected static final short MASK_WARMUP = 16;
+    protected static final short MASK_CYCLIC_LINK = 32;
+    protected static final short MASK_SUSPEND_WRITES = 64;
+    protected static final short MASK_SUSPENDED_DUMMY = 128;
 
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath) {
@@ -158,11 +160,11 @@ public abstract class RemoteFileObjectBase {
         getOwnerFileObject().fireFileRenamedEvent(en, fe);
     }
 
-    protected boolean getFlag(byte mask) {
+    protected boolean getFlag(short mask) {
         return (flags & mask) == mask;
     }
 
-    protected final void setFlag(byte mask, boolean value) {
+    protected final void setFlag(short mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
@@ -502,6 +504,9 @@ public abstract class RemoteFileObjectBase {
     }
 
     protected boolean canWriteImpl(RemoteFileObjectBase orig) {
+        if (getFlag(MASK_SUSPENDED_DUMMY)) {
+            return true;
+        }
         setFlag(CHECK_CAN_WRITE, true);
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addReadOnlyConnectNotification(this);
@@ -980,5 +985,5 @@ public abstract class RemoteFileObjectBase {
 
     protected RemoteLockSupport getLockSupport() {
         return fileSystem.getLockSupport();
-    }
+    }    
 }

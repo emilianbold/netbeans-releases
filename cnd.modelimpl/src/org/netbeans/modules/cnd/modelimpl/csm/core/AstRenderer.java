@@ -2078,7 +2078,7 @@ public class AstRenderer {
                     case CPPTokenTypes.CSM_QUALIFIED_ID:
                         if (inParamsLevel == 0) {
                             qn = token;
-                            name = NameHolder.createSimpleName(AstUtil.getLastChild(token));
+                            name = NameHolder.createSimpleName(getVarNameNode(token));
                         }
                         break;
                     case CPPTokenTypes.IDENT:
@@ -2667,6 +2667,32 @@ public class AstRenderer {
             return l.toArray(new CharSequence[l.size()]);
         }
         return null;
+    }
+    
+    private static AST getVarNameNode(AST token) {
+        if (token == null) {
+            return null;
+        }
+        int templateLevel = 0;
+        AST id = null;
+        AST child = token.getFirstChild();
+        while (child != null) {
+            switch (child.getType()) {
+                case CPPTokenTypes.IDENT:
+                    if (templateLevel == 0) {
+                        id = child;
+                    }   
+                    break;
+                case CPPTokenTypes.LESSTHAN:
+                    ++templateLevel;
+                    break;
+                case CPPTokenTypes.GREATERTHAN:
+                    --templateLevel;
+                    break;
+            }
+            child = child.getNextSibling();
+        }
+        return id;
     }
 
     private static NamespaceImpl findClosestNamespace(CsmScope scope) {

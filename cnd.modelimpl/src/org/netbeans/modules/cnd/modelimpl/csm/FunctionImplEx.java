@@ -128,7 +128,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         FunctionImplEx<T> functionImplEx = new FunctionImplEx<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
-        functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION);
+        functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION 
+                || ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION);
         temporaryRepositoryRegistration(ast, global, functionImplEx);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
