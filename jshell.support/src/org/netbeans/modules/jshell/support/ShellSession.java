@@ -117,6 +117,7 @@ import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
 import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
 import org.netbeans.modules.jshell.support.ShellHistory.Item;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -565,20 +566,20 @@ public class ShellSession  {
     }
     
     private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
-        ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
-        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
-        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
-        
-        String cp = addRoots("", bcp);
-        cp = addRoots(cp, compile);
-        
+        String cp = createProjectClasspath();
         JShellAccessor.resetCompileClasspath(jshell, cp);
     }
     
     private boolean initializing;
     
-    public  String getClasspath() {
-        return createClasspathString();
+    private String createProjectClasspath() {
+        //ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
+        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
+        
+        String cp = addRoots("", compile);
+        //cp = addRoots(cp, compile);
+        return cp;
     }
     
     private class GenProxy implements JShellGenerator {
@@ -906,73 +907,51 @@ public class ShellSession  {
     }
     
     private void writeToShellDocument(String text) {
-        /*
-        try {
-            documentWriter.append(text);
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Could not report console message: {0}", text);
-        }
-        */
         model.writeToShellDocument(text);
     }
     
     private Set<Snippet>    excludedSnippets = new HashSet<>();
     
     private String createClasspathString() {
-        File remoteProbeJar = InstalledFileLocator.getDefault().locate(
-                "modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.libs.jshell", false);
-        File replJar = InstalledFileLocator.getDefault().locate("modules/ext/nb-jshell.jar", "org.netbeans.libs.jshell", false);
-        File toolsJar = null;
-
-        for (FileObject jdkInstallDir : platform.getInstallFolders()) {
-            FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
-
-            if (toolsJarFO == null) {
-                toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
-            }
-            if (toolsJarFO != null) {
-                toolsJar = FileUtil.toFile(toolsJarFO);
-            }
-        }
-        ClassPath compilePath = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        String sep = System.getProperty("path.separator");
+        boolean modular = ShellProjectUtils.isModularJDK(platform);
+        String agentJar = 
+                modular ?
+                    "modules/ext/nb-mod-jshell-probe.jar" :
+                    "modules/ext/nb-custom-jshell-probe.jar";
         
-        FileObject[] roots = compilePath.getRoots();
-        File[] urlFiles = new File[roots.length];
-        int index = 0;
-        for (FileObject fo : roots) {
-            File f = FileUtil.toFile(fo);
-            if (f != null) {
-                urlFiles[index++] = f;
+                
+        File remoteProbeJar = InstalledFileLocator.getDefault().locate(agentJar, 
+                "org.netbeans.libs.jshell", false);
+        StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
+        
+        if (!modular) {
+            File replJar = 
+                    InstalledFileLocator.getDefault().locate(
+                            "modules/ext/nb-jshell.jar", 
+                            "org.netbeans.libs.jshell", false);
+            sb.append(sep).append(replJar.getAbsolutePath());
+
+            File toolsJar = null;
+            for (FileObject jdkInstallDir : platform.getInstallFolders()) {
+                FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
+
+                if (toolsJarFO == null) {
+                    toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
+                }
+                if (toolsJarFO != null) {
+                    toolsJar = FileUtil.toFile(toolsJarFO);
+                    break;
+                }
+            }
+            if (toolsJar != null) {
+                sb.append(sep).append(toolsJar);
             }
         }
-        String cp = addClassPath(
-                toolsJar != null ? toClassPath(remoteProbeJar, replJar, toolsJar) : 
-                                   toClassPath(remoteProbeJar, replJar),
-                urlFiles) + System.getProperty("path.separator") + " "; // NOI18N avoid REPL bug
         
-        return cp;
-    }
-
-    private static String addClassPath(String prefix, File... files) {
-        String suffix = toClassPath(files);
-        if (prefix != null && !prefix.isEmpty()) {
-            return prefix + System.getProperty("path.separator") + suffix;
-        }
-        return suffix;
-    }
-
-    private static String toClassPath(File... files) {
-        String sep = "";
-        StringBuilder cp = new StringBuilder();
-
-        for (File f : files) {
-            if (f == null) continue;
-            cp.append(sep);
-            cp.append(f.getAbsolutePath());
-            sep = System.getProperty("path.separator");
-        }
-
-        return cp.toString();
+        String projectCp = createProjectClasspath();
+        sb.append(sep).append(projectCp);
+        return sb.toString();
     }
 
     private void closed() {
