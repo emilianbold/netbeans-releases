@@ -50,6 +50,7 @@ import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.model.Rng;
 import org.netbeans.modules.jshell.model.SnippetHandle;
+import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -94,7 +95,7 @@ public abstract class ModelAccessor {
     
     public abstract void installSnippets(ConsoleContents contents, ConsoleSection s, List<SnippetHandle> snippets);
     
-    public abstract ConsoleContents copyModel(ConsoleModel m, Snapshot snapshot);
+    public abstract ConsoleContents copyModel(ShellSession session, ConsoleModel m, Snapshot snapshot);
     
     public abstract SnippetHandle createHandle(SnippetRegistry r, ConsoleSection s, Rng[] fragments, SnippetWrapping wrap, boolean transientSnippet);
     

@@ -42,6 +42,7 @@
 package org.netbeans.modules.jshell.env;
 
 import java.util.EventObject;
+import jdk.jshell.JShell;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jshell.support.ShellSession;
@@ -56,6 +57,7 @@ public final class ShellEvent extends EventObject {
     private ShellSession    replacedSession;
     private ShellStatus     status;
     private boolean         remote;
+    private JShell          engine;
     
     ShellEvent(JShellEnvironment source) {
         super(source);
@@ -87,7 +89,8 @@ public final class ShellEvent extends EventObject {
     }
 
     /**
-     * The former session, if the JShell was restarted.
+     * The former session, if the JShell was restarted. Will report the <b>current session</b>
+     * in the case the JShell engine has been recycled within the same session.
      * @return the former session or {@code null} for first start
      */
     public @CheckForNull ShellSession getReplacedSession() {
@@ -101,5 +104,11 @@ public final class ShellEvent extends EventObject {
         return (JShellEnvironment)getSource();
     }
     
+    public JShell getEngine() {
+        return session.getShell();
+    }
     
+    public boolean isEngineRestart() {
+        return session == replacedSession;
+    }
 }

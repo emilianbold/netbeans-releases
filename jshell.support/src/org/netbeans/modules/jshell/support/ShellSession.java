@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.support;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.jshell.tool.JShellLauncher;
 import org.netbeans.modules.jshell.tool.JShellTool;
 import org.netbeans.modules.jshell.parsing.ModelAccessor;
@@ -166,6 +167,7 @@ public class ShellSession  {
     private static Logger LOG = Logger.getLogger(ShellSession.class.getName());
     
     public static final String PROP_ACTIVE = "active";
+    public static final String PROP_ENGINE = "active";
 
     /**
      * Work root, contains console file and snippet files
@@ -233,6 +235,7 @@ public class ShellSession  {
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
+    // @GuardedBy(this)
     private SnippetRegistry     snippetRegistry;
         
     public ShellSession(JShellEnvironment env) {
@@ -281,6 +284,14 @@ public class ShellSession  {
 
                     })
         );
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.addPropertyChangeListener(pcl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.removePropertyChangeListener(pcl);
     }
     
     public boolean isActive() {
@@ -661,10 +672,17 @@ public class ShellSession  {
                 Exceptions.printStackTrace(ex);
             }
             synchronized (ShellSession.this) {
-                snippetRegistry = new SnippetRegistry(shell, bridgeImpl, workRoot, editorWorkRoot);
+                snippetRegistry = new SnippetRegistry(
+                        shell, bridgeImpl, workRoot, editorWorkRoot, 
+                        snippetRegistry);
                 // replace for fresh instance !
-                // TODO: should fire an event ?
+                JShell oldShell = ShellSession.this.shell;
                 ShellSession.this.shell = shell;
+                if (oldShell != null) {
+                    FORCE_CLOSE_RP.post(() -> {
+                        propSupport.firePropertyChange(PROP_ENGINE, oldShell, shell);
+                    });
+                }
             }
             this.subscription = shell.onSnippetEvent(this);
             // it's possible that the shell's startup will terminate the session
@@ -786,7 +804,7 @@ public class ShellSession  {
         @Override
         public SourceCodeAnalysis.CompletionInfo analyzeInput(String input) {
             try {
-                return execute(() -> getShell().sourceCodeAnalysis().analyzeCompletion(input));
+                return execute(() -> ensureShell().sourceCodeAnalysis().analyzeCompletion(input));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -799,7 +817,7 @@ public class ShellSession  {
         
     };
     
-    public SnippetRegistry getSnippetRegistry() {
+    public synchronized SnippetRegistry getSnippetRegistry() {
         return snippetRegistry;
     }
 
@@ -1061,9 +1079,13 @@ public class ShellSession  {
     public ClasspathInfo getClasspathInfo() {
         return cpInfo;
     }
+    
+    public JShell ensureShell() {
+        initJShell();
+        return shell;
+    }
 
     public JShell getShell() {
-        initJShell();
         return shell;
     }
 

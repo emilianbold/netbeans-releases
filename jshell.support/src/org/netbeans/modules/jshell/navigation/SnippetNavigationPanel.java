@@ -39,42 +39,79 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.navigation;
 
-import java.util.EventListener;
+import javax.swing.JComponent;
+import org.netbeans.modules.jshell.env.JShellEnvironment;
+import org.netbeans.modules.jshell.env.ShellRegistry;
+import org.netbeans.modules.jshell.model.SnippetHandle;
+import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * Listener which receives basic state events from running Shell. Attach the listener
- * to {@link JShellEnvironment}.
- * 
+ *
  * @author sdedic
  */
-public interface ShellListener extends EventListener {
-    /**
-     * JShellEnvironment was crated and put alive. This event is the only one
-     * broadcasted to listeners registered through 
-     * @param ev 
-     */
-    public void shellCreated(ShellEvent ev);
+@NbBundle.Messages("LBL_PanelRegisteredName=Snippets")
+@NavigatorPanel.Registration(displayName = "#LBL_PanelRegisteredName", mimeType = "text/x-repl")
+public class SnippetNavigationPanel implements NavigatorPanel {
+    private SnippetPanelUI ui;
     
-    /**
-     * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance. The event will
-     * fire also in case the ShellSession has recycled the JShell engine.
-     * of ShellSession.
-     * @param ev 
-     */
-    public void shellStarted(ShellEvent ev);
+    private static SnippetNavigationPanel INSTANCE = null;
     
-    /**
-     * The status of the shell has been changed
-     * @param ev 
-     */
-    public void shellStatusChanged(ShellEvent ev);
     
-    /**
-     * The entire JShellEnvironment has been shut down.
-     * @param ev 
-     */
-    public void shellShutdown(ShellEvent ev);
+    public static void navigate(SnippetHandle h) {
+        if (INSTANCE != null) {
+            INSTANCE.getUI().navigateToHandle(h);
+        }
+    }
+    
+    @NbBundle.Messages("LBL_NavigatorPanel=Snippets")
+    @Override
+    public String getDisplayName() {
+        return Bundle.LBL_NavigatorPanel();
+    }
+
+    @NbBundle.Messages("HINT_NavigatorPanel=Navigates among the snippets in the current editor window")
+    @Override
+    public String getDisplayHint() {
+        return Bundle.HINT_NavigatorPanel();
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return getUI();
+    }
+
+    @Override
+    public void panelActivated(Lookup context) {
+        FileObject file = context.lookup(FileObject.class);
+        JShellEnvironment env = ShellRegistry.get().get(file);
+        if (env == null) {
+            return;
+        }
+        getUI().navigate(env);
+        
+        INSTANCE = this;
+    }
+    
+    private SnippetPanelUI getUI() {
+        if (ui == null) {
+            ui = new SnippetPanelUI();
+        }
+        return ui;
+    }
+
+    @Override
+    public void panelDeactivated() {
+        INSTANCE = null;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
+    
 }
