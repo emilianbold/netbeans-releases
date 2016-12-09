@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
@@ -88,7 +89,11 @@ public final class LibraryManager {
     private final int repositoryId;
 
     public  static LibraryManager getInstance(int sourceUnitId) {
-        int repositoryId = Repository.getLayeringSupport(sourceUnitId).getStorageID();
+        LayeringSupport layeringSupport = Repository.getLayeringSupport(sourceUnitId);
+        if (layeringSupport == null) {
+            return null;
+        }
+        int repositoryId = layeringSupport.getStorageID();
         return getInstanceByRepositoryId(repositoryId);
     }
 

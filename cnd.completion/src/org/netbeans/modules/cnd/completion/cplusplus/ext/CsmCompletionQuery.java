@@ -2002,6 +2002,27 @@ abstract public class CsmCompletionQuery {
                                                 }
                                             }
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                        } else if (openingSource) {
+                                            Result lookupSet = compResolver.getResult();
+                                            if (!lookupSet.getFileLocalFunctions().isEmpty()
+                                                    || !lookupSet.getLibFunctions().isEmpty()
+                                                    || !lookupSet.getGlobalProjectFunctions().isEmpty()
+                                                    || !lookupSet.getClassMethods().isEmpty()) {
+                                                List<CsmObject> filtered = new ArrayList<>();
+                                                lookupSet.addResulItemsToCol(filtered);
+                                                Iterator<CsmObject> iter = filtered.iterator();
+                                                while (iter.hasNext()) {
+                                                    CsmObject obj = iter.next();
+                                                    if (CsmKindUtilities.isFunction(obj)) {
+                                                        iter.remove();
+                                                    }
+                                                }
+                                                if (!filtered.isEmpty()) {
+                                                    result = new CsmCompletionResult(component, getBaseDocument(), filtered, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                                    break;
+                                                }
+                                            }
+                                            result = new CsmCompletionResult(component, getBaseDocument(), compResolver.getResult(), var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                         } else {
                                             result = new CsmCompletionResult(component, getBaseDocument(), compResolver.getResult(), var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                         }

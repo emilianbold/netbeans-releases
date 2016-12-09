@@ -1623,7 +1623,8 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             CommonTasksSupport.rmFile(env, remoteZipPath, null);
             throw new IOException(errorMessage + " when uploading " + localZipFile + " to " + remoteZipPath); //NOI18N
         }
-        StringBuilder script = new StringBuilder("unzip -q -o ").append(remoteZipPath).append(" && rm ").append(remoteZipPath); //NOI18N
+        StringBuilder script = new StringBuilder("unzip -q -o \"").append(remoteZipPath);
+        script.append("\" && rm \"").append(remoteZipPath).append("\""); //NOI18N
 //            if (adjustLineEndings && Utils.isWindows()) {
 //                script.append(" && (which dos2unix > /dev/null; if [ $? = 0 ]; then find . -name \"*[Mm]akefile*\" -exec dos2unix {}  \\; ; else echo \"no_dos2unix\"; fi)"); //NOI18N
 //            }

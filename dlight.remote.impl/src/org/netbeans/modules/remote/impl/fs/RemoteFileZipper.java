@@ -145,7 +145,7 @@ public class RemoteFileZipper {
             }
             
             if (all) {
-                script.append("zip -rq $F ").append(path); // NOI18N
+                script.append("zip -rq $F \"").append(path).append("\""); // NOI18N
             } else {
                 script.append("find ").append(path); // NOI18N
                 boolean first = true;
