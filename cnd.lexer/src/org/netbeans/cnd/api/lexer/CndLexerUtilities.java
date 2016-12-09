@@ -484,12 +484,7 @@ public final class CndLexerUtilities {
                         throw new AssertionError(preferred.name());
                 }
             }
-            // TODO: switch to better default when fix known cases in #269199
-            if (false) {
-                return CndLexerUtilities.getHeaderCpp11Filter();
-            } else {
-                return CndLexerUtilities.getHeaderCppFilter();
-            }
+            return CndLexerUtilities.getHeaderCpp11Filter();
         } else if (language == CppTokenId.languageCpp()) {
             if (preferred != null) {
                 switch (preferred) {
@@ -507,12 +502,7 @@ public final class CndLexerUtilities {
                         throw new AssertionError(preferred.name());
                 }
             }
-            // TODO: switch to better default when fix known cases in #269199
-            if (false) {
-                return CndLexerUtilities.getGccCpp11Filter();
-            } else {
-                return CndLexerUtilities.getGccCppFilter();
-            }
+            return CndLexerUtilities.getGccCpp11Filter();
         } else if (language == CppTokenId.languageC()) {
             if (preferred != null) {
                 switch (preferred) {
