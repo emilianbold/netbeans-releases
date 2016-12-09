@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -240,34 +241,28 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
         Filter<?> filter = null;
         Language<?> language = null;
+        CndLanguageStandard preferredStd = null;
         switch (itemLang) {
             case C:
                 language = CppTokenId.languageC();
-                filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 break;
             case C_HEADER:
-                language = CppTokenId.languageHeader();
-                if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
-                        flavor == NativeFileItem.LanguageFlavor.CPP14) {
-                    filter = CndLexerUtilities.getHeaderCpp11Filter();
-                } else {
-                    filter = CndLexerUtilities.getDefaultFilter(language, doc);
-                }
+                language = CppTokenId.languageHeader();                
                 break;
             case CPP:
-                language = CppTokenId.languageCpp();                
-                if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
-                        flavor == NativeFileItem.LanguageFlavor.CPP14) {
-                    filter = CndLexerUtilities.getGccCpp11Filter();
-                } else {
-                    filter = CndLexerUtilities.getDefaultFilter(language, doc);
-                }
+                language = CppTokenId.languageCpp();
                 break;
             case FORTRAN:
             case OTHER:
                 return false;
         }
         assert language != null;
+        if (flavor == NativeFileItem.LanguageFlavor.CPP11) {
+            preferredStd = CndLanguageStandard.CPP11;
+        } else if (flavor == NativeFileItem.LanguageFlavor.CPP14) {
+            preferredStd = CndLanguageStandard.CPP14;
+        }
+        filter = CndLexerUtilities.getFilter(language, preferredStd, doc);
         assert filter != null;
         doc.putProperty(Language.class, language);
         InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
