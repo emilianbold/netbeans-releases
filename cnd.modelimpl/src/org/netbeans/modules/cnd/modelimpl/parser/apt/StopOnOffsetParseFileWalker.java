@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -87,7 +88,7 @@ final class StopOnOffsetParseFileWalker extends APTParseFileWalker {
       assert !APTTraceFlags.USE_CLANK;
       APTFile aptLight = null;
       try {
-        aptLight = APTDriver.findAPTLight(fileImpl.getBuffer());
+        aptLight = APTDriver.findAPTLight(fileImpl.getBuffer(), APTHandlersSupport.getAPTFileKind(handler));
       } catch (IOException ex) {
         Exceptions.printStackTrace(ex);
       }

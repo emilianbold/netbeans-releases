@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
@@ -481,6 +482,10 @@ public final class FileImpl implements CsmFile,
         }
     }
 
+    public APTFile.Kind getAPTFileKind() {
+        return APTDriver.langFlavorToAPTFileKind(getFileLanguage(), getFileLanguageFlavor());
+    }
+    
     // Returns language for current context (compilation unit)
     public String getContextLanguage(PreprocHandler.State ppState) {
         FileImpl startFile = ppState == null ? null : Utils.getStartFile(ppState);

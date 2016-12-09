@@ -48,6 +48,8 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.support.CsmTypes;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -113,7 +115,8 @@ public class TypesProviderImpl implements TypesProvider {
     }    
     
     private static CPPParserEx createParser(CharSequence sequence, String lang, String langFlavour, CsmTypes.OffsetDescriptor offs) {
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), lang);
+        APTFile.Kind aptKind = APTDriver.langFlavorToAPTFileKind(lang, langFlavour);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), aptKind);
         if (ts != null) {
             if (offs.getStartOffset() != 0) {
                 ts = new ShiftedTokenStream(ts, offs.getStartOffset());
