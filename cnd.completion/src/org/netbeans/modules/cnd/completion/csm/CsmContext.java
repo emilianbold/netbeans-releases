@@ -66,6 +66,10 @@ public class CsmContext {
 
     // path of context as ordered list of context entries
     private ArrayList<CsmContextEntry> context;
+    
+    // possible not null
+    // an object who's part is csmLastObject, but it is not a scope
+    private CsmObject csmLastOwner;
 
     // possible not null
     // when context was found for exact inner object under offset
@@ -129,6 +133,14 @@ public class CsmContext {
         } else {
             return null;
         }
+    }
+    
+    public CsmObject getLastOwner() {
+        return csmLastOwner;
+    }
+
+    public void setLastOwner(CsmObject obj) {
+        this.csmLastOwner = obj;
     }
 
     public CsmObject getLastObject() {

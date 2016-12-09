@@ -116,6 +116,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmRangeForStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
@@ -146,7 +147,9 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
+import org.netbeans.modules.cnd.completion.csm.CsmStatementResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -160,6 +163,7 @@ import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.ConstantPredicate;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
+import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
  *
@@ -1398,12 +1402,53 @@ abstract public class CsmCompletionQuery {
             return resolveType;
         }
 
-        private CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
+        /*package*/ CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
             CsmType objType = CsmCompletion.getObjectType(obj, _constIfClassifier);
             if (CsmKindUtilities.isVariable(obj) && isAutoType(objType)) {
                 objType = findAutoVariableType((CsmVariable) obj, objType);
+            } else if (CsmKindUtilities.isFunction(obj) && isAutoType(objType)) {
+                CsmType funAutoType = findAutoType(objType.getContainingFile(), objType.getStartOffset(), null);
+                if (funAutoType != null) {
+                    objType = funAutoType;
+                }
             }
             return objType;
+        }
+        
+        private CsmType findAutoType(CsmFile file, int startOffset, MutableObject<Boolean> wasDeduced) {
+            if (wasDeduced != null) {
+                wasDeduced.value = true;
+            }
+            FileReferencesContext fileRefs = (file == contextFile) ? getFileReferencesContext() : null;
+            CsmContext ctx = CsmOffsetResolver.findContext(file, startOffset, fileRefs);
+            CsmObject contextObject = ctx.getLastObject();
+            if (CsmKindUtilities.isType(contextObject)) {
+                contextObject = ctx.getLastOwner();
+            }
+            if (CsmKindUtilities.isVariable(contextObject)) {
+                CsmVariable contextVar = (CsmVariable) contextObject;
+                if (isAutoType(contextVar.getType())) {
+                    return findAutoVariableType(contextVar, contextVar.getType());
+                }
+            } else if (CsmKindUtilities.isFunction(contextObject)) {
+                CsmFunction contextFunc  = (CsmFunction) contextObject;
+                if (isAutoType(contextFunc.getReturnType())) {
+                    // C++14 function without trailing type specifier
+                    CsmReturnStatement retStmt = CsmStatementResolver.findStatement(contextFunc.getDefinition().getBody(), CsmReturnStatement.class);
+                    if (retStmt != null) {
+                        CsmType exprType = findExpressionType(retStmt.getReturnExpression());
+                        if (exprType != null) {
+                            return exprType;
+                        }
+                    }
+                } else {
+                    if (wasDeduced != null) {
+                        wasDeduced.value = false;
+                    }
+                    return contextFunc.getReturnType();
+                }
+            }
+            return null;
         }
 
         private CsmType findAutoVariableType(CsmVariable var, CsmType varType) {
@@ -2641,45 +2686,22 @@ abstract public class CsmCompletionQuery {
                             int varPos = item.getTokenOffset(nrTokens - 1);
                             if (item.getTokenID(nrTokens - 1) == CppTokenId.AUTO) {
                                 if (CsmFileInfoQuery.getDefault().isCpp11OrLater(contextFile)) {
-                                    CsmObject contextObject = CsmOffsetResolver.findObject(contextFile, item.getTokenOffset(0), getFileReferencesContext());
-                                    if (CsmKindUtilities.isVariable(contextObject)) {
-                                        CsmVariable contextVar = (CsmVariable) contextObject;
-                                        if (isAutoType(contextVar.getType())) {
-                                            CsmType autoVarType = findAutoVariableType(contextVar, contextVar.getType());
-                                            if (findType) {
-                                                lastType = autoVarType;
-                                            } else if (autoVarType != null) {
-                                                CsmType userFriendlyType = CsmUtilities.iterateTypeChain(autoVarType, new CsmUtilities.SmartTypeUnrollPredicate());
-                                                CsmClassifier autoVarCls = userFriendlyType.getClassifier();
-                                                if (CsmBaseUtilities.isValid(autoVarCls) && !CsmKindUtilities.isBuiltIn(autoVarCls)) {
-                                                    result = new CsmCompletionResult(
-                                                            component,
-                                                            getBaseDocument(),
-                                                            Arrays.asList(autoVarCls),
-                                                            varName,
-                                                            item,
-                                                            varPos,
-                                                            0,
-                                                            0,
-                                                            isProjectBeeingParsed(),
-                                                            contextElement,
-                                                            instantiateTypes
-                                                    );
-                                                }
-                                            }
-                                        }
-                                    } else if (CsmKindUtilities.isFunction(contextObject)) {
-                                        CsmFunction contextFunc  = (CsmFunction) contextObject;
-                                        CsmType returnType = contextFunc.getReturnType();
+                                    MutableObject<Boolean> wasDeduced = new MutableObject<>();
+                                    CsmType autoType = findAutoType(contextFile, item.getTokenOffset(0), wasDeduced);
+                                    if (autoType != null) {
                                         if (findType) {
-                                            lastType = returnType;
-                                        } else if (returnType != null) {
-                                            CsmClassifier returnCls = returnType.getClassifier();
-                                            if (CsmBaseUtilities.isValid(returnCls)) {
+                                            lastType = autoType;
+                                        } else {
+                                            CsmType userFriendlyType = autoType;
+                                            if (wasDeduced.value) {
+                                                userFriendlyType = CsmUtilities.iterateTypeChain(autoType, new CsmUtilities.SmartTypeUnrollPredicate());
+                                            }
+                                            CsmClassifier autoVarCls = userFriendlyType.getClassifier();
+                                            if (CsmBaseUtilities.isValid(autoVarCls) && !CsmKindUtilities.isBuiltIn(autoVarCls)) {
                                                 result = new CsmCompletionResult(
                                                         component,
                                                         getBaseDocument(),
-                                                        Arrays.asList(returnCls),
+                                                        Arrays.asList(autoVarCls),
                                                         varName,
                                                         item,
                                                         varPos,

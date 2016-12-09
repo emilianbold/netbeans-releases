@@ -129,6 +129,7 @@ public class CsmOffsetResolver {
             // check if offset in return value
             CsmType retType = fun.getReturnType();
             if (!CsmOffsetUtilities.sameOffsets(fun, retType) && CsmOffsetUtilities.isInObject(retType, offset)) {
+                context.setLastOwner(fun);
                 context.setLastObject(retType);
                 return retType;
             }
@@ -225,6 +226,7 @@ public class CsmOffsetResolver {
                 // Function pointer type contains the whole declaration (except initilizer)
                 // and will be handled later.
                 if (!CsmKindUtilities.isFunctionPointerType(type) && !CsmUtilities.isAutoType(type)) {
+                    context.setLastOwner(lastObj);
                     context.setLastObject(type);
                     last = type;
                 }
@@ -261,6 +263,7 @@ public class CsmOffsetResolver {
             if (param != null && !CsmOffsetUtilities.sameOffsets(fun, param)) {
                 CsmType type = param.getType();
                 if (CsmOffsetUtilities.isInObject(type, offset)) {
+                    context.setLastOwner(fun);
                     context.setLastObject(type);
                     return type;
                 }
