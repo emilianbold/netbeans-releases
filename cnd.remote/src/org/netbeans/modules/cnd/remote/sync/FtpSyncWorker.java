@@ -181,7 +181,9 @@ import org.openide.util.RequestProcessor;
         RemoteLogger.fine("Uploading {0} to {1} ...\n", getLocalFilesString(), executionEnvironment); // NOI18N
         long time = System.currentTimeMillis();
 
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_GatherFiles"));
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_GatherFiles"));
+        }
         fileCollector.gatherFiles();
         if (cancelled) {
             return;
@@ -192,7 +194,9 @@ import org.openide.util.RequestProcessor;
         long time2;
 
         time2 = System.currentTimeMillis();
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckDirs"));
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckDirs"));
+        }
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckDirs"));
         createDirs();
         RemoteLogger.fine("Creating directories at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
@@ -202,7 +206,9 @@ import org.openide.util.RequestProcessor;
 
         if (CndUtils.getBoolean("cnd.remote.sftp.check.existence", true)) {
             time2 = System.currentTimeMillis();
-            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckExistence"));
+            if (out != null) {
+                out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckExistence"));
+            }
             progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckExistence"));
             checkExistence();
             RemoteLogger.fine("Checking file existence at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
@@ -212,7 +218,9 @@ import org.openide.util.RequestProcessor;
         }
 
         time2 = System.currentTimeMillis();
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
+        }
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckLinks"));
         createLinks();
         RemoteLogger.fine("Creating links at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
@@ -240,16 +248,19 @@ import org.openide.util.RequestProcessor;
         }
 
         time2 = System.currentTimeMillis();
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckExecPerm"));
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckExecPerm"));
+        }
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckExecPerm"));
         addExecPermissions();
         RemoteLogger.fine("Checkinrg exec permissions at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
         if (cancelled) {
             return;
         }
-
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Done"));
-        out.println();
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Done"));
+            out.println();
+        }
 
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
@@ -342,7 +353,9 @@ import org.openide.util.RequestProcessor;
                         if (outProcessor != null) {
                             outProcessor.processLine(errLine);
                         } else {
-                            out.println(errLine); // local println is OK
+                            if (out != null) {
+                                out.println(errLine); // local println is OK
+                            }
                         }
                     }
                 } catch (IOException ex) {
@@ -579,11 +592,14 @@ import org.openide.util.RequestProcessor;
         }
 
         if (toCopy.isEmpty()) {
-            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_NoFilesToUpload"));
+            if (out != null) {
+                out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_NoFilesToUpload"));
+            }
             return;
         }
-
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain", toCopy.size()));
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain", toCopy.size()));
+        }
         for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
             if (cancelled) {
                 return;
@@ -621,8 +637,9 @@ import org.openide.util.RequestProcessor;
     }
 
     private void uploadPlainFilesInZip(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
-
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesInZip"));
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesInZip"));
+        }
 
         List<FileCollector.FileCollectorInfo> toCopy = new ArrayList<>();
 
@@ -641,7 +658,9 @@ import org.openide.util.RequestProcessor;
             return;
         }
 
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping", toCopy.size()));
+        if (out != null) {
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Zipping", toCopy.size()));
+        }
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Zipping"));
         File zipFile = null;
         String remoteFile = null;
@@ -686,7 +705,9 @@ import org.openide.util.RequestProcessor;
                 throw new InterruptedException();
             }
 
-            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadingZip", executionEnvironment));
+            if (out != null) {
+                out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadingZip", executionEnvironment));
+            }
             progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_UploadingZip"));
             remoteFile = remoteRoot + '/' + zipFile.getName(); //NOI18N
             {
@@ -705,7 +726,9 @@ import org.openide.util.RequestProcessor;
                 throw new InterruptedException();
             }
 
-            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Unzipping", executionEnvironment));
+            if (out != null) {
+                out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Unzipping", executionEnvironment));
+            }
             progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_Unzipping"),
                     (uploadCount += (toCopy.size()/3)));
             {
