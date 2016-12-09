@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -320,6 +321,8 @@ abstract public class CsmCompletion {
             } else {
                 type = fun.getReturnType();
             }
+        } else if (CsmKindUtilities.isFunctional(obj)) {
+            type = ((CsmFunctional) obj).getReturnType();
         } else if (CsmKindUtilities.isVariable(obj)) {
             type = ((CsmVariable) obj).getType();
         } else if (CsmKindUtilities.isEnumerator(obj)) {

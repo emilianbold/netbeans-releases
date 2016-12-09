@@ -53,10 +53,14 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.DeclTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
@@ -189,7 +193,17 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     public boolean isUnresolved(Object obj) {
         return Unresolved.isUnresolved(obj);
     }
-    
+
+    @Override
+    public CsmExpression getDecltypeExpression(CsmType type) {
+        if (Instantiation.isInstantiatedType(type)) {
+            type = Instantiation.unfoldInstantiatedType(type);
+        }
+        if (type instanceof DeclTypeImpl) {
+            return ((DeclTypeImpl) type).getTypeExpression();
+        }
+        return null;
+    }
         
     public static BaseUtilitiesProviderImpl getImpl() {
         return IMPL;

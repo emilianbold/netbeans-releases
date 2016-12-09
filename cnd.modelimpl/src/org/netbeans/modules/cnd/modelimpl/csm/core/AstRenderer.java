@@ -2806,11 +2806,21 @@ public class AstRenderer {
             if(planB) {
                 AST token = getTypeToken(node.getFirstChild());
                 if( token != null ) {
+                    AST autoToken = null;
                     if (token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
+                        autoToken = token;
                         token = AstUtil.findSiblingOfType(token.getNextSibling(), CPPTokenTypes.POINTERTO);
                         token = getTypeToken(token);
                     }
                     ret = AstRenderer.renderType(token, file, null, false); // last two params just dummy ones
+                    if (ret == null && autoToken != null) {
+                        ret = TypeFactory.createSimpleType(
+                                BuiltinTypes.getBuiltIn("auto"), // NOI18N
+                                file, 
+                                OffsetableBase.getStartOffset(autoToken), 
+                                OffsetableBase.getEndOffset(autoToken)
+                        );
+                    }
                 }
                 if( ret == null ) {
                     ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, file); // NOI18N

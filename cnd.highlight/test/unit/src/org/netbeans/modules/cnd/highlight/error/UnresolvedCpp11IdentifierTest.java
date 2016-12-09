@@ -54,6 +54,7 @@ import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
@@ -170,13 +171,9 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         @Override
         public void addProperty(DataObject dob, StyledDocument doc) {
             Language<?> language = (Language<?>) doc.getProperty(Language.class);
-            Filter<?> filter = null;
-            if (language == CppTokenId.languageCpp()) {
-                filter = CndLexerUtilities.getGccCpp11Filter();
-            } else if (language == CppTokenId.languageHeader()) {
-                filter = CndLexerUtilities.getHeaderCpp11Filter();
-            }
-            if (filter != null) {
+            if (language == CppTokenId.languageCpp() || language == CppTokenId.languageHeader()) {
+                Filter<?> filter = CndLexerUtilities.getFilter(language, CndLanguageStandards.CndLanguageStandard.CPP11, doc);            
+                assert filter != null;
                 InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
                 lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
             }
