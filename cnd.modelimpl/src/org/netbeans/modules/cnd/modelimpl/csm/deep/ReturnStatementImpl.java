@@ -94,6 +94,8 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
                     CsmFunction func = (CsmFunction) current;
                     if (CsmUtilities.isAutoType(func.getReturnType())) {
                         shouldCreateReturnExpression = true;
+                    } else if (CsmUtilities.isDecltypeAutoType(func.getReturnType())) {
+                        shouldCreateReturnExpression = true;
                     }
                 }
             }
