@@ -78,6 +78,7 @@ import org.netbeans.editor.JumpList;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -121,6 +122,9 @@ public class CsmUtilities {
 
     // Default classifier text for auto type
     public static final String AUTO_KEYWORD = "auto"; // NOI18N
+    
+    // Default classifier text for decltype type
+    public static final String DECLTYPE_KEYWORD = "decltype"; // NOI18N
 
     /* ------------------ MODIFIERS ---------------------- */
     /**
@@ -250,7 +254,18 @@ public class CsmUtilities {
     public static boolean isAutoType(CsmType varType) {
         return varType != null &&
                varType.getClassifierText() != null &&
-               varType.getClassifierText().toString().equals(AUTO_KEYWORD); // NOI18N
+               AUTO_KEYWORD.contentEquals(varType.getClassifierText()); // NOI18N
+    }
+    
+    private static final String DECLTYPE_AUTO_EXPRESSION = "(" + AUTO_KEYWORD + ")"; // NOI18N
+    
+    public static boolean isDecltypeAutoType(CsmType varType) {
+        if (varType != null && varType.getClassifierText() != null &&
+               DECLTYPE_KEYWORD.contentEquals(varType.getClassifierText())) {
+            CsmExpression expr = CsmBaseUtilities.tryGetDecltypeExpression(varType);
+            return expr != null && DECLTYPE_AUTO_EXPRESSION.contentEquals(expr.getExpandedText());
+        }
+        return false;
     }
 
     public static boolean isPrimitiveClass(CsmClassifier c) {

@@ -163,6 +163,7 @@ import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.ConstantPredicate;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.isDecltypeAutoType;
 import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
@@ -1404,10 +1405,8 @@ abstract public class CsmCompletionQuery {
 
         /*package*/ CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
             CsmType objType = CsmCompletion.getObjectType(obj, _constIfClassifier);
-            if (CsmKindUtilities.isVariable(obj) && isAutoType(objType)) {
-                objType = findAutoVariableType((CsmVariable) obj, objType);
-            } else if (CsmKindUtilities.isFunction(obj) && isAutoType(objType)) {
-                CsmType funAutoType = findAutoType(objType.getContainingFile(), objType.getStartOffset(), null);
+            if (isAutoType(objType) || isDecltypeAutoType(objType)) {
+                CsmType funAutoType = findAutoOrDecltypeAutoType(obj, null);
                 if (funAutoType != null) {
                     objType = funAutoType;
                 }
@@ -1415,31 +1414,45 @@ abstract public class CsmCompletionQuery {
             return objType;
         }
         
-        private CsmType findAutoType(CsmFile file, int startOffset, MutableObject<Boolean> wasDeduced) {
-            if (wasDeduced != null) {
-                wasDeduced.value = true;
-            }
+        private CsmType findAutoOrDecltypeAutoType(CsmFile file, int startOffset, MutableObject<Boolean> wasDeduced) {
             FileReferencesContext fileRefs = (file == contextFile) ? getFileReferencesContext() : null;
             CsmContext ctx = CsmOffsetResolver.findContext(file, startOffset, fileRefs);
             CsmObject contextObject = ctx.getLastObject();
             if (CsmKindUtilities.isType(contextObject)) {
                 contextObject = ctx.getLastOwner();
             }
+            return findAutoOrDecltypeAutoType(contextObject, wasDeduced);
+        }
+        
+        private CsmType findAutoOrDecltypeAutoType(CsmObject contextObject, MutableObject<Boolean> wasDeduced) {
+            if (wasDeduced != null) {
+                wasDeduced.value = true;
+            }
             if (CsmKindUtilities.isVariable(contextObject)) {
                 CsmVariable contextVar = (CsmVariable) contextObject;
                 if (isAutoType(contextVar.getType())) {
                     return findAutoVariableType(contextVar, contextVar.getType());
+                } else if (isDecltypeAutoType(contextVar.getType())) {
+                    return findExpressionType(contextVar.getInitialValue());
+                } else {
+                    if (wasDeduced != null) {
+                        wasDeduced.value = false;
+                    }
+                    contextVar.getType();
                 }
             } else if (CsmKindUtilities.isFunction(contextObject)) {
                 CsmFunction contextFunc  = (CsmFunction) contextObject;
                 if (isAutoType(contextFunc.getReturnType())) {
-                    // C++14 function without trailing type specifier
+                    // C++14 auto function without trailing type specifier
                     CsmReturnStatement retStmt = CsmStatementResolver.findStatement(contextFunc.getDefinition().getBody(), CsmReturnStatement.class);
                     if (retStmt != null) {
-                        CsmType exprType = findExpressionType(retStmt.getReturnExpression());
-                        if (exprType != null) {
-                            return exprType;
-                        }
+                        return findExpressionType(retStmt.getReturnExpression());
+                    }
+                } else if (isDecltypeAutoType(contextFunc.getReturnType())) {
+                    // C++14 decltype(auto) function 
+                    CsmReturnStatement retStmt = CsmStatementResolver.findStatement(contextFunc.getDefinition().getBody(), CsmReturnStatement.class);
+                    if (retStmt != null) {
+                        return findExpressionType(retStmt.getReturnExpression());
                     }
                 } else {
                     if (wasDeduced != null) {
@@ -2687,7 +2700,7 @@ abstract public class CsmCompletionQuery {
                             if (item.getTokenID(nrTokens - 1) == CppTokenId.AUTO) {
                                 if (CsmFileInfoQuery.getDefault().isCpp11OrLater(contextFile)) {
                                     MutableObject<Boolean> wasDeduced = new MutableObject<>();
-                                    CsmType autoType = findAutoType(contextFile, item.getTokenOffset(0), wasDeduced);
+                                    CsmType autoType = findAutoOrDecltypeAutoType(contextFile, item.getTokenOffset(0), wasDeduced);
                                     if (autoType != null) {
                                         if (findType) {
                                             lastType = autoType;
