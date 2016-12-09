@@ -165,8 +165,8 @@ public class DownloadBinaries extends Task {
                                 throw new BuildException("Bad line '" + line + "' in " + manifest, getLocation());
                             }
 
-                            if (hashAndFile[0].contains(":")) {
-                                mavenFile(hashAndFile[0], hashAndFile[1], manifest);
+                            if (isMavenFile(hashAndFile)) {
+                                mavenFile(hashAndFile, manifest);
                             } else {
                                 hashedFile(hashAndFile[0], hashAndFile[1], manifest);
                             }
@@ -181,14 +181,17 @@ public class DownloadBinaries extends Task {
         }
     }
     
-    private void mavenFile(String id, String baseName, File manifest) throws BuildException {
+    private void mavenFile(String[] hashAndId, File manifest) throws BuildException {
+        String id = hashAndId[1];
         String[] ids = id.split(":");
         if (ids.length != 3) {
             throw new BuildException("Expecting groupId:artifactId:version, but was " + id + " in " + manifest);
         }
-        
+
+        String baseName = mavenFileName(hashAndId);
         File f = new File(manifest.getParentFile(), baseName);
         if (clean || !f.exists()) {
+            log("Creating " + f);
             String cacheName = ids[0].replace('.', '/') + "/" +
                     ids[1] + "/" + ids[2] + "/" + ids[1] + "-" + ids[2] + ".jar";
             
@@ -201,7 +204,7 @@ public class DownloadBinaries extends Task {
             }
             try {
                 URL u = new URL(url);
-                downloadFromServer(u, cacheName, f, null);
+                downloadFromServer(u, cacheName, f, hashAndId[0]);
             } catch (IOException ex) {
                 String msg = "Could not download " + url + " to " + f + ": " + cacheName;
                 log(msg, Project.MSG_WARN);
@@ -278,6 +281,7 @@ public class DownloadBinaries extends Task {
     
     private boolean downloadFromServer(URL url, String cacheName, File destination, String expectedHash) 
     throws IOException {
+        log("Downloading: " + url);
         URLConnection conn = url.openConnection();
         conn.connect();
         int code = HttpURLConnection.HTTP_OK;
@@ -288,7 +292,6 @@ public class DownloadBinaries extends Task {
             log("Skipping download from " + url + " due to response code " + code, Project.MSG_VERBOSE);
             return false;
         }
-        log("Downloading: " + url);
         InputStream is = conn.getInputStream();
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -351,6 +354,16 @@ public class DownloadBinaries extends Task {
         }
         return String.format("%040X", new BigInteger(1, digest.digest()));
     }
+
+    static boolean isMavenFile(String... hashAndId) {
+        return hashAndId[1].split(":").length > 2;
+    }
+    static String mavenFileName(String... hashAndId) {
+        assert isMavenFile(hashAndId);
+        String[] artifactGroupVersion = hashAndId[1].split(":");
+        return artifactGroupVersion[1] + "-" + artifactGroupVersion[2] + ".jar";
+    }
+
 
 }
 
