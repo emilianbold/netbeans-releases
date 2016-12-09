@@ -55,21 +55,27 @@ public final class ShellEvent extends EventObject {
     private ShellSession    session;
     private ShellSession    replacedSession;
     private ShellStatus     status;
+    private boolean         remote;
     
     ShellEvent(JShellEnvironment source) {
         super(source);
     }
     
-    ShellEvent(JShellEnvironment source, ShellSession session, ShellStatus status) {
+    ShellEvent(JShellEnvironment source, ShellSession session, ShellStatus status, boolean remote) {
         super(source);
         this.session = session;
         this.status = status;
+        this.remote = remote;
     }
     
     ShellEvent(JShellEnvironment source, ShellSession session, ShellSession replaced) {
         super(source);
         this.session = session;
         this.replacedSession = replaced;
+    }
+    
+    public boolean isRemoteEvent() {
+        return remote;
     }
 
     /**
