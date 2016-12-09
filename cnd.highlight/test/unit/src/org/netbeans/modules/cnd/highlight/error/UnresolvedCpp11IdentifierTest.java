@@ -171,8 +171,9 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         @Override
         public void addProperty(DataObject dob, StyledDocument doc) {
             Language<?> language = (Language<?>) doc.getProperty(Language.class);
-            Filter<?> filter = CndLexerUtilities.getFilter(language, CndLanguageStandards.CndLanguageStandard.CPP11, doc);            
-            if (filter != null) {
+            if (language == CppTokenId.languageCpp() || language == CppTokenId.languageHeader()) {
+                Filter<?> filter = CndLexerUtilities.getFilter(language, CndLanguageStandards.CndLanguageStandard.CPP11, doc);            
+                assert filter != null;
                 InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
                 lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
             }
