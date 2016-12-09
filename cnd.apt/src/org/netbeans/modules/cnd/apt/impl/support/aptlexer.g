@@ -50,7 +50,7 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 }
 
 options {
@@ -581,21 +581,8 @@ tokens {
 }
 {
     private boolean reportErrors;
-    private Language lang;
-    private Flavor flavor;
+    private APTFile.Kind aptKind;
     private APTLexerCallback callback;
-    public static enum Language {
-        C,
-        CPP,
-        FORTRAN
-    };
-    public static enum Flavor {
-        UNKNOWN,
-        FORTRAN_FIXED,
-        FORTRAN_FREE,
-        CPP11,
-        CPP14
-    };
 
     public interface APTLexerCallback {
         void onMakeToken(int tokType, int startColumn, int startLine);
@@ -605,30 +592,14 @@ tokens {
         this.callback = callback;
     }
 
-    public void init(String filename, int flags, String language, String flavor) {
+    public void init(String filename, int flags, APTFile.Kind aptKind) {
         preprocPossible = true;
         preprocPending = false;
         reportErrors = true;
 
         setFilename(filename);
-
-        if(language.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
-            this.lang = Language.FORTRAN;
-        } else {
-            this.lang = Language.CPP;
-        }
-
-        if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FIXED)) {
-            this.flavor = Flavor.FORTRAN_FIXED;
-        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FREE)) {
-            this.flavor = Flavor.FORTRAN_FREE;
-        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_CPP11)) {
-            this.flavor = Flavor.CPP11;
-        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_CPP14)) {
-            this.flavor = Flavor.CPP14;
-        } else {
-            this.flavor = Flavor.UNKNOWN;
-        }
+        
+        this.aptKind = aptKind;
 
 //        if ((flags & CPPParser.CPP_SUPPRESS_ERRORS) > 0) {
 //            reportErrors = false;
@@ -689,17 +660,16 @@ tokens {
         errorCount++;
     }
 
-    private boolean isCPlusPlus() {
-        return lang == Language.CPP;
+    private boolean isCOrCPP() {
+        return aptKind == APTFile.Kind.C_CPP;
     }
 
-    private boolean isCpp11OrLater() {
-        return isCPlusPlus() && 
-            (flavor == Flavor.CPP11 || flavor == Flavor.CPP14);
+    private boolean isFortran() {
+        return aptKind == APTFile.Kind.FORTRAN_FIXED || aptKind == APTFile.Kind.FORTRAN_FREE;
     }
 
-    private boolean isCpp14OrLater() {
-        return isCPlusPlus() && flavor == Flavor.CPP14;
+    private boolean isFreeFormFortran() {
+        return aptKind == APTFile.Kind.FORTRAN_FREE;
     }
 
 /*
@@ -915,7 +885,7 @@ tokens {
 /* Comments: */
 
 FORTRAN_COMMENT options { constText=true; } :
-    {lang == Language.FORTRAN && (inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ') || (flavor == Flavor.FORTRAN_FREE && LA(1) == '!') )}?
+    {isFortran() && (inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ') || (isFreeFormFortran() && LA(1) == '!') )}?
     ('!' | ('c'|'C') | '*')
     (~('\n' | '\r'))*
     {$setType(FORTRAN_COMMENT);}
@@ -958,8 +928,8 @@ FIRST_ASSIGN options { constText=true; } :
 FIRST_DIVIDE :
     '/' ( {$setType(DIVIDE);}               //DIVIDE          : '/' ;
     | '=' {$setType(DIVIDEEQUAL);} )        //DIVIDEEQUAL     : "/=" ;
-    | {(lang == Language.CPP || lang == Language.C)}? COMMENT {$setType(COMMENT);}
-    | {lang == Language.CPP}? CPP_COMMENT {$setType(CPP_COMMENT);};
+    | {isCOrCPP()}? COMMENT {$setType(COMMENT);}
+    | {isCOrCPP()}? CPP_COMMENT {$setType(CPP_COMMENT);};
 
 FIRST_STAR options { constText=true; } :
     '*' ( {$setType(STAR);}                 //STAR            : '*' ;
@@ -1044,7 +1014,7 @@ FIRST_COLON options { constText=true; } :
 FIRST_LESS :
     ( 
         // C++11 standard - 2.5 p3, bullet 2
-        ({isCpp11OrLater()}? "<::" ~(':'|'>')) => '<' {$setType(LESSTHAN);}
+        ("<::" ~(':'|'>')) => '<' {$setType(LESSTHAN);}
     | 
         ('<' (options{generateAmbigWarnings = false;}:
             {isAfterInclude()}? H_char_sequence ('>')? {$setType(SYS_INCLUDE_STRING);setAfterInclude(false);}
