@@ -45,7 +45,10 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import jdk.jshell.DeclarationSnippet;
+import jdk.jshell.ImportSnippet;
 import jdk.jshell.Snippet;
+import jdk.jshell.JShell;
 import org.netbeans.lib.nbjshell.SnippetWrapping;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
 import org.openide.filesystems.FileObject;
@@ -97,6 +100,10 @@ public final class SnippetHandle {
         this.fragments = fragments;
         this.wrapping = wrapping;
         this.transientSnippet = true;
+    }
+    
+    public JShell getState() {
+        return registry.getState();
     }
     
     public boolean isTransient() {
@@ -179,5 +186,32 @@ public final class SnippetHandle {
     
     public String toString() {
         return "SH[" + section + ": " + Arrays.asList(fragments) + ", wrap: " + wrapping + "]";
+    }
+    
+    public String text() {
+        Snippet sn = wrapping.getSnippet();
+        if (sn == null) {
+            return null;
+        }
+        switch (getKind()) {
+            case IMPORT:
+                return ((ImportSnippet)sn).fullname();
+            case METHOD:
+            case TYPE_DECL:
+            case VAR:
+                return ((DeclarationSnippet)sn).name();
+            case EXPRESSION:
+            case STATEMENT:
+                return sn.source();
+            case ERRONEOUS:
+                return null;
+            default:
+                throw new AssertionError(getKind().name());
+            
+        }
+    }
+
+    public boolean contains(int position) {
+        return fragments[0].start <= position && fragments[fragments.length -1].end >= position;
     }
 }

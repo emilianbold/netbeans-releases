@@ -48,8 +48,10 @@ import java.io.OutputStreamWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -100,7 +102,7 @@ public final class SnippetRegistry {
      * Registered snippets, and their handles. For each snippet produced by the JShell
      * will return the relevant handle which is used throughout NB support.
      */
-    private final Map<Snippet, SnippetHandle> snippets = new HashMap<>();
+    private final Map<Snippet, SnippetHandle> snippets = new LinkedHashMap<>();
     
     /**
      * For each ConsoleSection registers processed snippets. Does not contain snippets for active input
@@ -116,17 +118,31 @@ public final class SnippetRegistry {
     /**
      * Monotonic counter used to generate classnames.
      */
-    private final AtomicInteger counter = new AtomicInteger(0);
+    private final AtomicInteger counter;
     
     private final Map<Reference<SnippetHandle>, FileObject> cleanupTransientFiles = new HashMap<>();
     
     private final ShellAccessBridge    shellExecutor;
     
-    public SnippetRegistry(JShell state, ShellAccessBridge shellExecutor, FileObject persistentRoot, FileObject transientRoot) {
+    private SnippetRegistry currentDelegate;
+    
+    public SnippetRegistry(JShell state, ShellAccessBridge shellExecutor, FileObject persistentRoot, FileObject transientRoot, 
+            SnippetRegistry previousRegistry) {
         this.state = state;
         this.persistentSnippetsRoot = persistentRoot;
         this.transientSnippetsRoot = transientRoot;
         this.shellExecutor = shellExecutor;
+        this.counter = previousRegistry == null ?  
+                new AtomicInteger(0) :
+                previousRegistry.counter;
+        
+        if (previousRegistry != null) {
+            copyFrom(previousRegistry);
+        }
+    }
+    
+    public JShell getState() {
+        return state;
     }
     
     /**
@@ -194,6 +210,15 @@ public final class SnippetRegistry {
         }
     }
     
+    private void copyFrom(SnippetRegistry other) {
+        synchronized (other) {
+            this.snippets.putAll(other.snippets);
+            this.sectionHandles.putAll(other.sectionHandles);
+            
+            other.currentDelegate = this;
+        }
+    }
+    
     private SnippetWrapping wrap(Snippet s) {
         try {
             return shellExecutor.execute(new Callable<SnippetWrapping>() {
@@ -234,11 +259,21 @@ public final class SnippetRegistry {
         return snippets.get(snip);
     }
     
+    public synchronized Collection<Snippet>  getSnippets() {
+        return new ArrayList<>(snippets.keySet());
+    }
+    
     public synchronized List<SnippetHandle> getSectionSnippets(ConsoleSection s) {
+        return getSectionSnippets(s, true);
+    }
+    
+    synchronized List<SnippetHandle> getSectionSnippets(ConsoleSection s, boolean allowTransient) {
         List<SnippetHandle> snips;
-        snips = transientHandles.get(s);
-        if (snips != null) {
-            return snips;
+        if (allowTransient) {
+            snips = transientHandles.get(s);
+            if (snips != null) {
+                return snips;
+            }
         }
         snips = sectionHandles.get(s);
         if (snips == null) {
@@ -258,6 +293,10 @@ public final class SnippetRegistry {
      * @return 
      */
     public FileObject   snippetFile(SnippetHandle snippet, int editedSnippetIndex) {
+        // delegate to the most current registry, so that the counter does not become ambiguous.
+        if (currentDelegate != null) {
+            return currentDelegate.snippetFile(snippet, editedSnippetIndex);
+        }
 //        String resName = snippetFileName(snippet, editedSnippetIndex);
 //        FileObject fob = workRoot.getFileObject(resName);
 //        if (fob != null && fob.isValid()) {

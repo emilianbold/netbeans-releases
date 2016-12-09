@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.support;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.jshell.tool.JShellLauncher;
 import org.netbeans.modules.jshell.tool.JShellTool;
 import org.netbeans.modules.jshell.parsing.ModelAccessor;
@@ -117,6 +118,7 @@ import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
 import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
 import org.netbeans.modules.jshell.support.ShellHistory.Item;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -165,6 +167,7 @@ public class ShellSession  {
     private static Logger LOG = Logger.getLogger(ShellSession.class.getName());
     
     public static final String PROP_ACTIVE = "active";
+    public static final String PROP_ENGINE = "active";
 
     /**
      * Work root, contains console file and snippet files
@@ -232,6 +235,7 @@ public class ShellSession  {
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
+    // @GuardedBy(this)
     private SnippetRegistry     snippetRegistry;
         
     public ShellSession(JShellEnvironment env) {
@@ -280,6 +284,14 @@ public class ShellSession  {
 
                     })
         );
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.addPropertyChangeListener(pcl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.removePropertyChangeListener(pcl);
     }
     
     public boolean isActive() {
@@ -565,20 +577,20 @@ public class ShellSession  {
     }
     
     private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
-        ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
-        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
-        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
-        
-        String cp = addRoots("", bcp);
-        cp = addRoots(cp, compile);
-        
+        String cp = createProjectClasspath();
         JShellAccessor.resetCompileClasspath(jshell, cp);
     }
     
     private boolean initializing;
     
-    public  String getClasspath() {
-        return createClasspathString();
+    private String createProjectClasspath() {
+        //ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
+        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
+        
+        String cp = addRoots("", compile);
+        //cp = addRoots(cp, compile);
+        return cp;
     }
     
     private class GenProxy implements JShellGenerator {
@@ -660,10 +672,17 @@ public class ShellSession  {
                 Exceptions.printStackTrace(ex);
             }
             synchronized (ShellSession.this) {
-                snippetRegistry = new SnippetRegistry(shell, bridgeImpl, workRoot, editorWorkRoot);
+                snippetRegistry = new SnippetRegistry(
+                        shell, bridgeImpl, workRoot, editorWorkRoot, 
+                        snippetRegistry);
                 // replace for fresh instance !
-                // TODO: should fire an event ?
+                JShell oldShell = ShellSession.this.shell;
                 ShellSession.this.shell = shell;
+                if (oldShell != null) {
+                    FORCE_CLOSE_RP.post(() -> {
+                        propSupport.firePropertyChange(PROP_ENGINE, oldShell, shell);
+                    });
+                }
             }
             this.subscription = shell.onSnippetEvent(this);
             // it's possible that the shell's startup will terminate the session
@@ -785,7 +804,7 @@ public class ShellSession  {
         @Override
         public SourceCodeAnalysis.CompletionInfo analyzeInput(String input) {
             try {
-                return execute(() -> getShell().sourceCodeAnalysis().analyzeCompletion(input));
+                return execute(() -> ensureShell().sourceCodeAnalysis().analyzeCompletion(input));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -798,7 +817,7 @@ public class ShellSession  {
         
     };
     
-    public SnippetRegistry getSnippetRegistry() {
+    public synchronized SnippetRegistry getSnippetRegistry() {
         return snippetRegistry;
     }
 
@@ -906,73 +925,51 @@ public class ShellSession  {
     }
     
     private void writeToShellDocument(String text) {
-        /*
-        try {
-            documentWriter.append(text);
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Could not report console message: {0}", text);
-        }
-        */
         model.writeToShellDocument(text);
     }
     
     private Set<Snippet>    excludedSnippets = new HashSet<>();
     
     private String createClasspathString() {
-        File remoteProbeJar = InstalledFileLocator.getDefault().locate(
-                "modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.libs.jshell", false);
-        File replJar = InstalledFileLocator.getDefault().locate("modules/ext/nb-jshell.jar", "org.netbeans.libs.jshell", false);
-        File toolsJar = null;
-
-        for (FileObject jdkInstallDir : platform.getInstallFolders()) {
-            FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
-
-            if (toolsJarFO == null) {
-                toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
-            }
-            if (toolsJarFO != null) {
-                toolsJar = FileUtil.toFile(toolsJarFO);
-            }
-        }
-        ClassPath compilePath = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        String sep = System.getProperty("path.separator");
+        boolean modular = ShellProjectUtils.isModularJDK(platform);
+        String agentJar = 
+                modular ?
+                    "modules/ext/nb-mod-jshell-probe.jar" :
+                    "modules/ext/nb-custom-jshell-probe.jar";
         
-        FileObject[] roots = compilePath.getRoots();
-        File[] urlFiles = new File[roots.length];
-        int index = 0;
-        for (FileObject fo : roots) {
-            File f = FileUtil.toFile(fo);
-            if (f != null) {
-                urlFiles[index++] = f;
+                
+        File remoteProbeJar = InstalledFileLocator.getDefault().locate(agentJar, 
+                "org.netbeans.libs.jshell", false);
+        StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
+        
+        if (!modular) {
+            File replJar = 
+                    InstalledFileLocator.getDefault().locate(
+                            "modules/ext/nb-jshell.jar", 
+                            "org.netbeans.libs.jshell", false);
+            sb.append(sep).append(replJar.getAbsolutePath());
+
+            File toolsJar = null;
+            for (FileObject jdkInstallDir : platform.getInstallFolders()) {
+                FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
+
+                if (toolsJarFO == null) {
+                    toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
+                }
+                if (toolsJarFO != null) {
+                    toolsJar = FileUtil.toFile(toolsJarFO);
+                    break;
+                }
+            }
+            if (toolsJar != null) {
+                sb.append(sep).append(toolsJar);
             }
         }
-        String cp = addClassPath(
-                toolsJar != null ? toClassPath(remoteProbeJar, replJar, toolsJar) : 
-                                   toClassPath(remoteProbeJar, replJar),
-                urlFiles) + System.getProperty("path.separator") + " "; // NOI18N avoid REPL bug
         
-        return cp;
-    }
-
-    private static String addClassPath(String prefix, File... files) {
-        String suffix = toClassPath(files);
-        if (prefix != null && !prefix.isEmpty()) {
-            return prefix + System.getProperty("path.separator") + suffix;
-        }
-        return suffix;
-    }
-
-    private static String toClassPath(File... files) {
-        String sep = "";
-        StringBuilder cp = new StringBuilder();
-
-        for (File f : files) {
-            if (f == null) continue;
-            cp.append(sep);
-            cp.append(f.getAbsolutePath());
-            sep = System.getProperty("path.separator");
-        }
-
-        return cp.toString();
+        String projectCp = createProjectClasspath();
+        sb.append(sep).append(projectCp);
+        return sb.toString();
     }
 
     private void closed() {
@@ -1082,9 +1079,13 @@ public class ShellSession  {
     public ClasspathInfo getClasspathInfo() {
         return cpInfo;
     }
+    
+    public JShell ensureShell() {
+        initJShell();
+        return shell;
+    }
 
     public JShell getShell() {
-        initJShell();
         return shell;
     }
 

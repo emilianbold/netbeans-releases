@@ -42,6 +42,7 @@
 package org.netbeans.modules.jshell.env;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
@@ -67,13 +68,17 @@ public class ShellClasspathProvider implements ClassPathProvider {
         if (ss == null) {
             return null;
         }
+        ClasspathInfo cpi = ss.getClasspathInfo();
+        if (cpi == null) {
+            return null;
+        }
         switch (type) {
             case ClassPath.COMPILE:
-                return ss.getClasspathInfo().getClassPath(PathKind.COMPILE);
+                return cpi.getClassPath(PathKind.COMPILE);
             case ClassPath.SOURCE:
-                return ss.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                return cpi.getClassPath(PathKind.SOURCE);
             case ClassPath.BOOT:
-                return ss.getClasspathInfo().getClassPath(PathKind.BOOT);
+                return cpi.getClassPath(PathKind.BOOT);
         }
         return null;
     }

@@ -302,7 +302,7 @@ public class JShellLauncher extends JShellTool {
         String cpString = versionInfo.get("nb.class.path"); // NOI18N
         String[] cpItems = cpString.split(":"); // NOI18N
         if (cpItems.length > 0) {
-            hard("Classpath:");
+            hard(Bundle.MSG_Classpath());
             for (String item : cpItems) {
                 if (item.isEmpty()) {
                     continue;

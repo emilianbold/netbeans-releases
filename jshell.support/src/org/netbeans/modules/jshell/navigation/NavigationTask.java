@@ -39,42 +39,68 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.navigation;
 
-import java.util.EventListener;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.jshell.model.ConsoleContents;
+import org.netbeans.modules.jshell.model.SnippetHandle;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
- * Listener which receives basic state events from running Shell. Attach the listener
- * to {@link JShellEnvironment}.
- * 
+ *
  * @author sdedic
  */
-public interface ShellListener extends EventListener {
-    /**
-     * JShellEnvironment was crated and put alive. This event is the only one
-     * broadcasted to listeners registered through 
-     * @param ev 
-     */
-    public void shellCreated(ShellEvent ev);
+public final class NavigationTask extends ParserResultTask<ConsoleContents>{
+    private AtomicBoolean cancel = new AtomicBoolean(false);
     
-    /**
-     * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance. The event will
-     * fire also in case the ShellSession has recycled the JShell engine.
-     * of ShellSession.
-     * @param ev 
-     */
-    public void shellStarted(ShellEvent ev);
+    @Override
+    public void run(ConsoleContents result, SchedulerEvent event) {
+        if (!(event instanceof CursorMovedSchedulerEvent)) {
+            return;
+        }
+        cancel.set(false);
+        CursorMovedSchedulerEvent ev = (CursorMovedSchedulerEvent)event;
+        int of = ev.getCaretOffset();
+        Optional<SnippetHandle> handle = result.findSnippetAt(of);
+        if (!handle.isPresent()) {
+            return;
+        }
+        SnippetNavigationPanel.navigate(handle.get());
+    }
+
+    @Override
+    public int getPriority() {
+        return 1000;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    @Override
+    public void cancel() {
+        cancel.set(true);
+    }
     
-    /**
-     * The status of the shell has been changed
-     * @param ev 
-     */
-    public void shellStatusChanged(ShellEvent ev);
+    @MimeRegistration(service = TaskFactory.class, mimeType = "text/x-repl")
+    public final static class Factory extends TaskFactory {
+
+        @Override
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            return Collections.singleton(new NavigationTask());
+        }
     
-    /**
-     * The entire JShellEnvironment has been shut down.
-     * @param ev 
-     */
-    public void shellShutdown(ShellEvent ev);
+    }
+    
 }

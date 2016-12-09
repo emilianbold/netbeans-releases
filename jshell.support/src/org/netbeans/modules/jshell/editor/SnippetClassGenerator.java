@@ -171,7 +171,7 @@ public class SnippetClassGenerator implements Runnable {
         candidates.add(snip);
         while (!candidates.isEmpty()) {
             Snippet c = candidates.poll();
-            Collection<Snippet> deps = JShellAccessor.getDependents(shellSession.getShell(), c);
+            Collection<Snippet> deps = JShellAccessor.getDependents(shellSession.ensureShell(), c);
             for (Snippet s : deps) {
                 if (!s.kind().isPersistent()) {
                     continue;
