@@ -1585,7 +1585,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             right == null && left instanceof PrimitiveValue) {
             Throwable ex = new NullPointerException("");
             ex.setStackTrace(new StackTraceElement[] {});
-            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
             throw new IllegalStateException(ex.getLocalizedMessage(), ieex);
         }
         switch (kind) {
