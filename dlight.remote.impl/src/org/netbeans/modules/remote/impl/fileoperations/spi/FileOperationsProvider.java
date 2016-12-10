@@ -306,9 +306,7 @@ abstract public class FileOperationsProvider {
         }
 
         private boolean isKnownSniffingExtension(FileProxyO file) {
-            String path = file.getPath();
-            // TODO: change hardcoded extensions by registration
-            return path.endsWith(".svn") || path.endsWith(".git") || path.endsWith(".hg"); //NOI18N
+            return RemoteFileSystem.isSniffing(file.getPath());
         }
 
         protected boolean exists(FileProxyO file) {
