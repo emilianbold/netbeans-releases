@@ -656,8 +656,8 @@ public final class CndLexerUtilities {
             // C++11 specific
             addCpp11OnlyKeywords(FILTER_HEADER_CPP11);
             // for header add all C keywords as well
-            addCOnlyKeywords(FILTER_HEADER_CPP);
-            addC11OnlyKeywords(FILTER_HEADER_CPP);            
+            addCOnlyKeywords(FILTER_HEADER_CPP11);
+            addC11OnlyKeywords(FILTER_HEADER_CPP11);            
         }
         return FILTER_HEADER_CPP11;
     }
