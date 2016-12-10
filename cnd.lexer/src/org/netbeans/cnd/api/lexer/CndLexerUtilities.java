@@ -625,6 +625,7 @@ public final class CndLexerUtilities {
             FILTER_HEADER_C = new Filter<CppTokenId>("HeaderCFilter"); // NOI18N
             addCommonCCKeywords(FILTER_HEADER_C);
             addGccOnlyCommonCCKeywords(FILTER_HEADER_C);
+            // for header add all C keywords as well
             addCOnlyKeywords(FILTER_HEADER_C);
             addC11OnlyKeywords(FILTER_HEADER_C);
         }
@@ -654,6 +655,9 @@ public final class CndLexerUtilities {
             addGccOnlyCppOnlyKeywords(FILTER_HEADER_CPP11);
             // C++11 specific
             addCpp11OnlyKeywords(FILTER_HEADER_CPP11);
+            // for header add all C keywords as well
+            addCOnlyKeywords(FILTER_HEADER_CPP);
+            addC11OnlyKeywords(FILTER_HEADER_CPP);            
         }
         return FILTER_HEADER_CPP11;
     }
