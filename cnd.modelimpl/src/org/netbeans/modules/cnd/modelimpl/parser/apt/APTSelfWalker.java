@@ -39,6 +39,7 @@ import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
@@ -72,8 +73,8 @@ public class APTSelfWalker extends APTAbstractWalker {
             FileObject fileObject = resolvedPath.getFileObject();
             if (fileObject != null) {
                 try {
-                    APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(fileObject));
                     PreprocHandler preprocHandler = getPreprocHandler();
+                    APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(fileObject), APTHandlersSupport.getAPTFileKind(preprocHandler));
                     APTFileCacheEntry cache = APTFileCacheManager.getInstance(resolvedPath.getFileSystem()).getEntry(path, preprocHandler.getState(), null);
                     createIncludeWalker(apt, this, path, cache).visit();
                     // does not remember walk to safe memory

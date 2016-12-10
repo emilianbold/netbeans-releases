@@ -99,27 +99,46 @@ public final class APTDriver {
         }
         return impl;
     }
+    
+    public static APTFile.Kind langFlavorToAPTFileKind(String lang) {
+        return langFlavorToAPTFileKind(lang, APTLanguageSupport.FLAVOR_UNKNOWN);
+    }
+    public static APTFile.Kind langFlavorToAPTFileKind(String lang, String flavor) {
+        // flavor is important only for Fortran
+        // for C and C++ we need the same output, because created APT is reused by both language contexts
+        if(lang.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
+            if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FREE)) {
+                return APTFile.Kind.FORTRAN_FREE;
+            } else {
+                return APTFile.Kind.FORTRAN_FIXED;
+            }
+        } else {
+            // for C and C++ we use C++ mode when lex source files
+            // because i.e. created APT is reused by both language contexts
+            return APTFile.Kind.C_CPP;
+        }        
+    }
 
-    public static APTFile findAPTLight(APTFileBuffer buffer) throws IOException {
+    public static APTFile findAPTLight(APTFileBuffer buffer, APTFile.Kind aptKind) throws IOException {
         assert !APTTraceFlags.USE_CLANK;
         APTFile out = null;
         if (buffer instanceof APTFileCache) {
             out = ((APTFileCache)buffer).getCachedAPTLight();
         }
         if (out == null) {
-            out = getInstance(buffer).findAPT(buffer, false, APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
+            out = getInstance(buffer).findAPT(buffer, false, aptKind);
         }
         return out;
     }
     
-    public static APTFile findAPT(APTFileBuffer buffer, String lang, String flavor) throws IOException {
+    public static APTFile findAPT(APTFileBuffer buffer, APTFile.Kind aptKind) throws IOException {
         assert !APTTraceFlags.USE_CLANK;
         APTFile out = null;
         if (buffer instanceof APTFileCache) {
             out = ((APTFileCache) buffer).getCachedAPT();
         }
         if (out == null) {
-            out = getInstance(buffer).findAPT(buffer, true, lang, flavor);
+            out = getInstance(buffer).findAPT(buffer, true, aptKind);
         }
         return out;
     }
