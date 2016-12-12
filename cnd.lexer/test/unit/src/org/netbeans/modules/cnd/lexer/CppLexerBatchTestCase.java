@@ -44,7 +44,10 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import java.util.Collections;
 import junit.framework.TestCase;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -54,7 +57,9 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 
 /**
  * Test several lexer inputs.
@@ -701,7 +706,8 @@ public class CppLexerBatchTestCase extends TestCase {
             LexerTestUtilities.assertNextTokenEquals(ts, t.id, t.t);
         } else {
             if (current == L.CPP11 && t.id == CppTokenId.IDENTIFIER) {
-                Filter<CppTokenId> keywordsFilter = CndLexerUtilities.getStdCpp11Filter();
+                Filter<CppTokenId> keywordsFilter = (Filter<CppTokenId>) 
+                        CndLexerUtilities.getFilter(CppTokenId.languageCpp(), CndLanguageStandard.CPP11);
                 CppTokenId filtered = keywordsFilter.check(t.t);
                 if (filtered == null) {
                     filtered = CppTokenId.IDENTIFIER;
@@ -829,7 +835,11 @@ public class CppLexerBatchTestCase extends TestCase {
             buf.append(t.t).append(' ');
         }
         String text = buf.toString();
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        InputAttributes attrs = new InputAttributes();
+        Language<CppTokenId> language = CppTokenId.languageCpp(); 
+        attrs.setValue(language, CndLexerUtilities.LEXER_FILTER, CndLexerUtilities.getFilter(language, CndLanguageStandard.CPP98), true);  // NOI18N
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, language, 
+                Collections.<CppTokenId>emptySet(), attrs);
         TokenSequence<?> ts = hi.tokenSequence();
         for(T t : getAllKW()) {
             assertNextTokenEquals(ts, t, L.CPP);
@@ -843,7 +853,11 @@ public class CppLexerBatchTestCase extends TestCase {
             buf.append(t.t).append(' ');
         }
         String text = buf.toString();
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageC());
+        InputAttributes attrs = new InputAttributes();
+        Language<CppTokenId> language = CppTokenId.languageC(); 
+        attrs.setValue(language, CndLexerUtilities.LEXER_FILTER, CndLexerUtilities.getFilter(language, CndLanguageStandard.C89), true);  // NOI18N
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, language, 
+                Collections.<CppTokenId>emptySet(), attrs);
         TokenSequence<?> ts = hi.tokenSequence();
         for(T t : getAllKW()) {
             assertNextTokenEquals(ts, t, L.C);

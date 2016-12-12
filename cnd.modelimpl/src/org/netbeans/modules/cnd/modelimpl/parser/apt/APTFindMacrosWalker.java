@@ -434,7 +434,7 @@ import org.openide.filesystems.FileSystem;
     
     /*package*/ static List<CsmReference> getAPTMacroUsagesImpl(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
       List<CsmReference> out = Collections.<CsmReference>emptyList();
-      APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+      APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getAPTFileKind());
       if (apt != null) {
         Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
         if (interrupter.cancelled()) {
@@ -471,7 +471,7 @@ import org.openide.filesystems.FileSystem;
     
     /*package*/ static boolean hasGuardBlockImpl(FileImpl fileImpl) {
         try {
-            APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+            APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getAPTFileKind());
             if (apt.getGuardMacro().length() > 0) {
                 return true;
             }
@@ -486,7 +486,7 @@ import org.openide.filesystems.FileSystem;
     /*package*/ static CsmOffsetable getGuardOffsetImpl(FileImpl fileImpl) {
       assert !APTTraceFlags.USE_CLANK;
         try {
-            APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+            APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getAPTFileKind());
 
             GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
             TokenStream ts = guardWalker.getTokenStream();

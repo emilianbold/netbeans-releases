@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -502,7 +503,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
     }    
     
     private static CPPParserEx createParser(CharSequence sequence) {
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), APTLanguageSupport.GNU_CPP);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), APTFile.Kind.C_CPP);
         if (ts != null) {
             int flags = CPPParserEx.CPP_CPLUSPLUS;
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;            
