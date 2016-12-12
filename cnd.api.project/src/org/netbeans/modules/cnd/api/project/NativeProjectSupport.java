@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.spi.project.NativeFileSearchProvider;
 import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -124,6 +125,61 @@ public final class NativeProjectSupport {
         };
     }
     
+    public static NativeFileItem.LanguageFlavor cndStandardToItemFlavor(CndLanguageStandard defaultStandard) {
+        NativeFileItem.LanguageFlavor flavor = NativeFileItem.LanguageFlavor.UNKNOWN;
+        switch (defaultStandard) {
+            case C89:
+                flavor =NativeFileItem.LanguageFlavor.C89;
+                break;
+            case C99:
+                flavor =NativeFileItem.LanguageFlavor.C99;
+                break;
+            case C11:
+                flavor =NativeFileItem.LanguageFlavor.C11;
+                break;
+            case CPP98:
+                flavor =NativeFileItem.LanguageFlavor.CPP98;
+                break;
+            case CPP11:
+                flavor =NativeFileItem.LanguageFlavor.CPP11;
+                break;
+            case CPP14:
+                flavor =NativeFileItem.LanguageFlavor.CPP14;
+                break;
+        }
+        return flavor;
+    }
+
+    public static CndLanguageStandard itemFlavorToCndStandard(NativeFileItem.LanguageFlavor flavor) {
+        if (flavor == null) {
+            return CndLanguageStandard.UNKNOWN;
+        }
+        switch (flavor) {
+            case UNKNOWN:
+            case DEFAULT:
+            case C:
+                return CndLanguageStandard.UNKNOWN;
+            case C89:
+                return CndLanguageStandard.C89;
+            case C99:
+                return CndLanguageStandard.C99;
+            case C11:
+                return CndLanguageStandard.C11;
+            case CPP98:
+                return CndLanguageStandard.CPP98;
+            case CPP11:
+                return CndLanguageStandard.CPP11;
+            case CPP14:
+                return CndLanguageStandard.CPP14;
+            case F77:
+            case F90:
+            case F95:
+                return CndLanguageStandard.UNKNOWN;
+            default:
+                throw new AssertionError(flavor.name());
+        }
+    }
+    
     /**
      *  Default standard for language.
      *  See Tools->Options->C++/Other->Default Standard.
@@ -163,7 +219,7 @@ public final class NativeProjectSupport {
                 case CPP14:
                     return NativeFileItem.LanguageFlavor.CPP14;
                 case CPP98:
-                    return NativeFileItem.LanguageFlavor.CPP;
+                    return NativeFileItem.LanguageFlavor.CPP98;
             }
         }
         return NativeFileItem.LanguageFlavor.UNKNOWN;
@@ -185,7 +241,7 @@ public final class NativeProjectSupport {
                 case CPP14:
                     return NativeFileItem.LanguageFlavor.CPP14;
                 case CPP98:
-                    return NativeFileItem.LanguageFlavor.CPP;
+                    return NativeFileItem.LanguageFlavor.CPP98;
             }
         }
         return NativeFileItem.LanguageFlavor.UNKNOWN;

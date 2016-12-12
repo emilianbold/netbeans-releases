@@ -1087,7 +1087,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
                     if (ccCompilerConfiguration != null) {
                         switch (ccCompilerConfiguration.getCppStandard().getValue()) {
                             case CCCompilerConfiguration.STANDARD_CPP98:
-                                return NativeFileItem.LanguageFlavor.CPP;
+                                return NativeFileItem.LanguageFlavor.CPP98;
                             case CCCompilerConfiguration.STANDARD_CPP11:
                                 return NativeFileItem.LanguageFlavor.CPP11;
                             case CCCompilerConfiguration.STANDARD_CPP14:

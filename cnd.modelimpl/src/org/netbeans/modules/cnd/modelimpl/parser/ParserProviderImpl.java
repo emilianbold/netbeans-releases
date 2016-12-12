@@ -103,6 +103,20 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
     }
 
+    public static int adjustAntlr2ParserFlagsForLanguage(int flags, String lang, String langFlavour) {
+        if (APTLanguageSupport.GNU_CPP.equals(lang)) {
+            flags |= CPPParserEx.CPP_CPLUSPLUS;
+        } else {
+            flags |= CPPParserEx.CPP_ANSI_C;
+        }
+        if (APTLanguageSupport.FLAVOR_CPP11.equals(langFlavour)) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
+        } else if (APTLanguageSupport.FLAVOR_CPP14.equals(langFlavour)) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP14;
+        }
+        return flags;
+    }
+    
     private final static class Antlr2CppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
         private CPPParserEx parser;
@@ -127,15 +141,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
             this.file = (FileImpl) params.getMainFile();
             this.language = params.getLanguage();
             this.languageFlavor = params.getLanguageFlavor();
-            int aFlags = APTLanguageSupport.getInstance().isLanguageC(language) ? CPPParserEx.CPP_ANSI_C : CPPParserEx.CPP_CPLUSPLUS;
-            if (!TraceFlags.REPORT_PARSING_ERRORS) {
-                aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-            }
-            if (APTLanguageSupport.FLAVOR_CPP11.equals(languageFlavor)) {
-                aFlags |= CPPParserEx.CPP_FLAVOR_CPP11;
-            } else if (APTLanguageSupport.FLAVOR_CPP14.equals(languageFlavor)) {
-                aFlags |= CPPParserEx.CPP_FLAVOR_CPP14;
-            }
+            int aFlags = TraceFlags.REPORT_PARSING_ERRORS ? 0 : CPPParserEx.CPP_SUPPRESS_ERRORS;
+            aFlags = ParserProviderImpl.adjustAntlr2ParserFlagsForLanguage(aFlags, language, languageFlavor);
             this.flags = aFlags;
             csmCorePackageAccessor = CsmCorePackageAccessor.get();
         }

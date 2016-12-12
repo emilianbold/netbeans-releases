@@ -756,9 +756,9 @@ public class ProjectBridge {
             }
         } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
             switch (languageStandard) {
-                case CPP:
-                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.CPP) {
-                        itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
+                case CPP98:
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.CPP98) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP98);
                         isChanged = true;
                     }
                     break;
