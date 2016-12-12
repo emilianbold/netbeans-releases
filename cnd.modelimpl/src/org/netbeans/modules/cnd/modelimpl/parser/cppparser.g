@@ -2112,7 +2112,7 @@ unknown_pretype_declaration_specifiers
     unknown_pretype_declaration_specifiers_list
     ((literal_ident 
         (
-            LITERAL_typedef | LITERAL_explicit | LITERAL_final 
+            LITERAL_typedef | LITERAL_explicit 
         |   LITERAL_enum | LITERAL_typename | literal_stdcall | literal_clrcall
         |   (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* literal_ident 
             (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* literal_ident
