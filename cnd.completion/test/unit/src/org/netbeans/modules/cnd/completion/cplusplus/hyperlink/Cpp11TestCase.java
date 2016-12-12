@@ -482,4 +482,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug247031.cpp", 56, 48, "bug247031.cpp", 25, 9);
         performTest("bug247031.cpp", 57, 32, "bug247031.cpp", 5, 9);
     }
+    
+    public void testBug269199() throws Exception {
+        // Bug 269199 - Editor ignore C++11 standard in standard headers
+        performTest("bug269199.cpp", 10, 18, "bug269199.cpp", 3, 9);
+        performTest("bug269199.cpp", 11, 21, "bug269199.cpp", 3, 9);
+    }
 }
