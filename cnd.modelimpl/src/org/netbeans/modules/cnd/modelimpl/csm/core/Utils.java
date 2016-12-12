@@ -175,11 +175,18 @@ public class Utils {
     }
 
     public static String getLanguageFlavor(NativeFileItem.LanguageFlavor flavor) {
-        if (flavor == NativeFileItem.LanguageFlavor.CPP14) {
-            return APTLanguageSupport.FLAVOR_CPP14;
-        } else if (flavor == NativeFileItem.LanguageFlavor.CPP11) {
-            return APTLanguageSupport.FLAVOR_CPP11;
-        } 
+        if (null != flavor) {
+            switch (flavor) {
+                case CPP14:
+                    return APTLanguageSupport.FLAVOR_CPP14;
+                case CPP11:
+                    return APTLanguageSupport.FLAVOR_CPP11;
+                case CPP98:
+                    return APTLanguageSupport.FLAVOR_CPP98;
+                default:
+                    break;
+            }
+        }
         return APTLanguageSupport.FLAVOR_UNKNOWN;
     }
     

@@ -185,7 +185,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     private enum LanguageFlavor {
         UNKNOWN(0),
         C(1), C89(2), C99(3),
-        CPP(4), CPP11(8),
+        CPP98(4), CPP11(8),
         F77(5), F90(6), F95(7),
         DEFAULT(9),
         C11(10), CPP14(11);
@@ -210,7 +210,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 case 3:
                     return C99;
                 case 4:
-                    return CPP;
+                    return CPP98;
                 case 5:
                     return F77;
                 case 6:
@@ -254,7 +254,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             case C99:
                 out_lang_std = LangStandard.Kind.lang_gnu99;
                 break;
-            case CPP:
+            case CPP98:
+                // we don't have flavor for C++98 in APT, but C++03 is used in fact
                 out_lang_std = LangStandard.Kind.lang_cxx03;
                 break;
             case CPP11:
@@ -265,7 +266,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 break;
             case CPP14:
                 // FIXME
-                out_lang_std = LangStandard.Kind.lang_gnucxx1y;
+                out_lang_std = LangStandard.Kind.lang_gnucxx14;
                 break;
             case F77:
             case F90:

@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.ShiftedTokenStream;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.spi.model.TypesProvider;
 
@@ -129,17 +130,6 @@ public class TypesProviderImpl implements TypesProvider {
     }
     
     private static int getParserFlags(String lang, String langFlavour) {
-        int flags = CPPParserEx.CPP_SUPPRESS_ERRORS;
-        if (APTLanguageSupport.GNU_CPP.equals(lang)) {
-            flags |= CPPParserEx.CPP_CPLUSPLUS;
-        } else {
-            flags |= CPPParserEx.CPP_ANSI_C;
-        }
-        if (APTLanguageSupport.FLAVOR_CPP11.equals(langFlavour)) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
-        } else if (APTLanguageSupport.FLAVOR_CPP14.equals(langFlavour)) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP14;
-        }
-        return flags;
+        return ParserProviderImpl.adjustAntlr2ParserFlagsForLanguage(CPPParserEx.CPP_SUPPRESS_ERRORS, lang, langFlavour);
     }
 }

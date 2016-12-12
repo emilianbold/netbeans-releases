@@ -469,7 +469,7 @@ public final class CndLexerUtilities {
             }
         }
         if (language == CppTokenId.languageHeader()) {
-            if (preferred != null) {
+            if (preferred != null && preferred != CndLanguageStandard.UNKNOWN) {
                 switch (preferred) {
                     case C89:
                     case C99:
@@ -486,7 +486,7 @@ public final class CndLexerUtilities {
             }
             return CndLexerUtilities.getHeaderCpp11Filter();
         } else if (language == CppTokenId.languageCpp()) {
-            if (preferred != null) {
+            if (preferred != null && preferred != CndLanguageStandard.UNKNOWN) {
                 switch (preferred) {
                     case C89:
                     case C99:
@@ -504,7 +504,7 @@ public final class CndLexerUtilities {
             }
             return CndLexerUtilities.getGccCpp11Filter();
         } else if (language == CppTokenId.languageC()) {
-            if (preferred != null) {
+            if (preferred != null && preferred != CndLanguageStandard.UNKNOWN) {
                 switch (preferred) {
                     case C89:
                     case C99:

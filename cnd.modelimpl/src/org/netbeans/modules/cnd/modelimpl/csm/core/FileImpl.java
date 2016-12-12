@@ -121,6 +121,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
@@ -1467,16 +1468,10 @@ public final class FileImpl implements CsmFile,
             System.err.printf("%n%n>>> Start parsing (getting errors) %s %n", getName());
         }
         long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
-        int flags = APTLanguageSupport.getInstance().isLanguageC(getFileLanguage()) ? CPPParserEx.CPP_ANSI_C : CPPParserEx.CPP_CPLUSPLUS;
-        if (!TraceFlags.TRACE_ERROR_PROVIDER) {
-            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-        }
+        int flags = TraceFlags.TRACE_ERROR_PROVIDER ? 0 : CPPParserEx.CPP_SUPPRESS_ERRORS;
+        String fileLanguage = getFileLanguage();
         String fileLanguageFlavor = getFileLanguageFlavor();
-        if (APTLanguageSupport.FLAVOR_CPP11.equals(fileLanguageFlavor)) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
-        } else if (APTLanguageSupport.FLAVOR_CPP14.equals(fileLanguageFlavor)) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP14;
-        }
+        flags = ParserProviderImpl.adjustAntlr2ParserFlagsForLanguage(flags, fileLanguage, fileLanguageFlavor);
         try {
             // use cached TS
             TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);

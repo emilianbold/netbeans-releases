@@ -1018,7 +1018,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
-                            return LanguageFlavor.CPP;
+                            return LanguageFlavor.CPP98;
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
                             for(String macro : getCompilerPreprocessorSymbols()) {
                                 if (macro.startsWith("__cplusplus=")) { //NOI18N
@@ -1030,11 +1030,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                                             return LanguageFlavor.CPP11;
                                         }
                                     } else {
-                                        return LanguageFlavor.CPP;
+                                        return LanguageFlavor.CPP98;
                                     }
                                 }
                             }
-                            return LanguageFlavor.CPP;
+                            return LanguageFlavor.DEFAULT;
                     }
                 }
             }            
@@ -1049,7 +1049,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                             return LanguageFlavor.CPP11;
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
-                }
+                    }
                 }
             }
         }
