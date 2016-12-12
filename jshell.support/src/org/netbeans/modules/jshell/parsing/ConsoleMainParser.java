@@ -135,7 +135,7 @@ public final class ConsoleMainParser extends Parser {
     }
     
     private ConsoleContents buildConsoleContents(ShellSession session, Snapshot snapshot) {
-        ConsoleContents c = ModelAccessor.INSTANCE.copyModel(session.getModel(), snapshot);
+        ConsoleContents c = ModelAccessor.INSTANCE.copyModel(session, session.getModel(), snapshot);
         Document doc = snapshot.getSource().getDocument(false);
         if (doc == null) {
             return null;

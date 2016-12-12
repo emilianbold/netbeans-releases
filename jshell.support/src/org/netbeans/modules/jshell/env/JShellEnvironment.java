@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.FilterReader;
-import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -64,7 +63,6 @@ import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -123,11 +121,11 @@ public class JShellEnvironment {
     
     private boolean           closed;
     
-    private PropertyChangeSupport supp = new PropertyChangeSupport(this);
-    
     private List<ShellListener>   shellListeners = new ArrayList<>();
     
     private Lookup            envLookup;
+    
+    private final ShellL            shellL = new ShellL();
     
     protected JShellEnvironment(Project project, String displayName) {
         this.project = project;
@@ -136,14 +134,6 @@ public class JShellEnvironment {
     
     public void appendClassPath(FileObject f) {
         userClassPathImpl.append(f);
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        this.supp.addPropertyChangeListener(pcl);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        this.supp.removePropertyChangeListener(pcl);
     }
     
     public Project getProject() {
@@ -369,7 +359,7 @@ public class JShellEnvironment {
             return;
         }
         ShellEvent e = new ShellEvent(this, session, 
-                start ? ShellStatus.EXECUTE : ShellStatus.READY);
+                start ? ShellStatus.EXECUTE : ShellStatus.READY, false);
         ll.stream().forEach(l -> l.shellStatusChanged(e));
     }
     
@@ -393,9 +383,13 @@ public class JShellEnvironment {
             public void closed(ConsoleEvent e) {}
         });
         ShellSession previous = res.first();
+        if (previous != null) {
+            previous.removePropertyChangeListener(shellL);
+        }
+        nss.addPropertyChangeListener(shellL);
         ShellEvent event = new ShellEvent(this, nss, previous);
         fireShellStatus(event);
-
+        
         res.second().addTaskListener(e -> {
             starting = false;
             fireShellStarted(event);
@@ -528,7 +522,7 @@ public class JShellEnvironment {
         inputOutput.select();
     }
     
-    public void notifyDisconnected(ShellSession old) {
+    public void notifyDisconnected(ShellSession old, boolean remoteClose) {
         List<ShellListener> ll;
         ShellSession s;
         synchronized (this) {
@@ -538,12 +532,12 @@ public class JShellEnvironment {
             }
             ll = new ArrayList<>(shellListeners);
         }
-        old.notifyClosed(this);
-        ShellEvent e = new ShellEvent(this, s, ShellStatus.DISCONNECTED);
+        old.notifyClosed(this, remoteClose);
+        ShellEvent e = new ShellEvent(this, s, ShellStatus.DISCONNECTED, remoteClose);
         ll.stream().forEach(l -> l.shellStatusChanged(e));
     }
     
-    protected void notifyShutdown() {
+    protected void notifyShutdown(boolean remote) {
         List<ShellListener> ll;
         ShellSession s;
         
@@ -556,7 +550,7 @@ public class JShellEnvironment {
             s = this.shellSession;
         }
         if (s != null) {
-            s.notifyClosed(this);
+            s.notifyClosed(this, remote);
         }
         ShellEvent e = new ShellEvent(this);
         ll.stream().forEach(l -> l.shellShutdown(e));
@@ -612,5 +606,22 @@ public class JShellEnvironment {
     
     public String getMode() {
         return "launch"; // NOI18N
+    }
+    
+    public JShell getShell() {
+        ShellSession s = shellSession;
+        return s == null ? null : s.getShell();
+    }
+    
+    class ShellL implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ShellSession.PROP_ENGINE.equals(evt.getPropertyName())) {
+                ShellEvent ev = new ShellEvent(JShellEnvironment.this, shellSession, shellSession);
+                fireShellStarted(ev);
+            }
+        }
+        
     }
 }

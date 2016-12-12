@@ -1447,14 +1447,24 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     */
     public void runAtomicAsUser(Runnable r) {
         boolean completed = false;
+        RuntimeException rEx = null;
         atomicLockImpl ();
         try {
             r.run();
             completed = true;
+        } catch (RuntimeException ex) {
+            rEx = ex;
+            // Debug runtime exceptions which might otherwise be lost in case
+            // the breakAtomicLock() throws an exception.
+            LOG.log(Level.INFO, "Runtime exception thrown in BaseDocument.runAtomicAsUser() leading to breakAtomicLock()", ex);
+
         } finally {
             try {
                 if (!completed) {
                     breakAtomicLock();
+                }
+                if (rEx != null) {
+                    throw rEx;
                 }
             } finally {
                 atomicUnlockImpl ();

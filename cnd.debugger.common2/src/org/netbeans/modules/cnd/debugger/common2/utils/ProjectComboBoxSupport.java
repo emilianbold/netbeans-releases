@@ -39,59 +39,56 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.model;
+package org.netbeans.modules.cnd.debugger.common2.utils;
 
-import java.util.List;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 
 /**
  *
- * @author sdedic
+ * @author masha
  */
-public final class ConsoleResult extends Parser.Result {
-    private final ConsoleModel model;
-    private volatile boolean invalid;
-    private ConsoleContents    contents;
-    
-    private void checkValid() {
-        if (invalid) {
-            throw new IllegalArgumentException();
+public class ProjectComboBoxSupport {
+
+    public static void fillProjectsCombo(javax.swing.JComboBox comboBox, Project selectedProject) {
+        if (selectedProject == null) {
+            selectedProject = OpenProjects.getDefault().getMainProject();
+        }
+        for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
+            // include only cnd projects (see IZ 164690)
+            if (proj.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
+                ProjectInformation pinfo = ProjectUtils.getInformation(proj);
+                ProjectCBItem pi = new ProjectCBItem(pinfo);
+                comboBox.addItem(pi);
+                if (selectedProject != null && proj == selectedProject) {
+                    comboBox.setSelectedItem(pi);
+                }
+            }
         }
     }
-    
-    public ConsoleResult(ConsoleModel model, Snapshot _snapshot) {
-        super(_snapshot);
-        this.model = model;
-    }
 
-    public int getWritablePos() {
-        checkValid();
-        return model.getWritablePos();
-    }
+    public static class ProjectCBItem {
 
-    public int getInputOffset() {
-        checkValid();
-        return model.getInputOffset();
-    }
+        private ProjectInformation pinfo;
 
-    public synchronized ConsoleSection getInputSection() {
-        checkValid();
-        return model.getInputSection();
-    }
+        public ProjectCBItem(ProjectInformation pinfo) {
+            this.pinfo = pinfo;
+        }
 
-    public List<ConsoleSection> getSections() {
-        checkValid();
-        return model.getSections();
-    }
+        @Override
+        public String toString() {
+            return pinfo.getDisplayName();
+        }
 
-    public String getInputText() {
-        checkValid();
-        return model.getInputText();
-    }
+        public Project getProject() {
+            return pinfo.getProject();
+        }
 
-    @Override
-    protected void invalidate() {
-        invalid = true;
+        public ProjectInformation getProjectInformation() {
+            return pinfo;
+        }
     }
 }

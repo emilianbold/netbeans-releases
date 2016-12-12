@@ -350,16 +350,26 @@ public class GuardedDocument extends BaseDocument
 
         boolean completed = false;
         atomicLockImpl ();
+        RuntimeException rEx = null;
         boolean origAtomicAsUser = atomicAsUser;
         try {
             atomicAsUser = true;
             r.run();
             completed = true;
+        } catch (RuntimeException ex) {
+            rEx = ex;
+            // Debug runtime exceptions which might otherwise be lost in case
+            // the breakAtomicLock() throws an exception.
+            LOG.log(Level.INFO, "Runtime exception thrown in GuardedDocument.runAtomicAsUser() leading to breakAtomicLock()", ex);
+
         } finally {
             atomicAsUser = origAtomicAsUser;
             try {
                 if (!completed) {
                     breakAtomicLock();
+                }
+                if (rEx != null) {
+                    throw rEx;
                 }
             } finally {
                 atomicUnlockImpl ();

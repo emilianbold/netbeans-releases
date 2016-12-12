@@ -516,6 +516,8 @@ public final class FileImpl implements CsmFile,
         } else {
             if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
                 return APTLanguageSupport.FLAVOR_CPP11;
+            } else if (CndTraceFlags.LANGUAGE_FLAVOR_CPP14) {
+                return APTLanguageSupport.FLAVOR_CPP14;
             }
             NativeFileItem nativeFileItem = getNativeFileItem();
             if(nativeFileItem != null) {
@@ -1464,8 +1466,11 @@ public final class FileImpl implements CsmFile,
         if (!TraceFlags.TRACE_ERROR_PROVIDER) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }
-        if (APTLanguageSupport.FLAVOR_CPP11.equals(getFileLanguageFlavor())) {
+        String fileLanguageFlavor = getFileLanguageFlavor();
+        if (APTLanguageSupport.FLAVOR_CPP11.equals(fileLanguageFlavor)) {
             flags |= CPPParserEx.CPP_FLAVOR_CPP11;
+        } else if (APTLanguageSupport.FLAVOR_CPP14.equals(fileLanguageFlavor)) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP14;
         }
         try {
             // use cached TS
@@ -2383,6 +2388,12 @@ public final class FileImpl implements CsmFile,
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s%n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d%n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N
+        String fileLanguage = this.getFileLanguage();
+        String fileLanguageFlavor = this.getFileLanguageFlavor();
+        if (fileLanguageFlavor.isEmpty()) {
+            fileLanguageFlavor = "FLAVOR_UNKNOWN"; // NOI18N
+        }
+        printOut.printf("\tfileImplLanguage=%s fileImplLanguageFlavor=%s%n", fileLanguage, fileLanguageFlavor);// NOI18N
     }
 
     public void dumpIndex(PrintWriter printOut) {

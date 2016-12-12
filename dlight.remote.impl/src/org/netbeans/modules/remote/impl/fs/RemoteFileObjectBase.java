@@ -58,7 +58,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -94,16 +93,18 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    private volatile byte flags;
+    private volatile short flags;
 
     private final RemoteFileObject fileObject;
 
-    private static final byte MASK_VALID = 1;
-    private static final byte CHECK_CAN_WRITE = 2;
-    private static final byte BEING_UPLOADED = 4;
-    protected static final byte CONNECTION_ISSUES = 8;
-    protected static final byte MASK_WARMUP = 16;
-    protected static final byte MASK_CYCLIC_LINK = 32;
+    private static final short MASK_VALID = 1;
+    private static final short CHECK_CAN_WRITE = 2;
+    private static final short BEING_UPLOADED = 4;
+    protected static final short CONNECTION_ISSUES = 8;
+    protected static final short MASK_WARMUP = 16;
+    protected static final short MASK_CYCLIC_LINK = 32;
+    protected static final short MASK_SUSPEND_WRITES = 64;
+    protected static final short MASK_SUSPENDED_DUMMY = 128;
 
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath) {
@@ -159,11 +160,11 @@ public abstract class RemoteFileObjectBase {
         getOwnerFileObject().fireFileRenamedEvent(en, fe);
     }
 
-    protected boolean getFlag(byte mask) {
+    protected boolean getFlag(short mask) {
         return (flags & mask) == mask;
     }
 
-    protected final void setFlag(byte mask, boolean value) {
+    protected final void setFlag(short mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
@@ -503,6 +504,9 @@ public abstract class RemoteFileObjectBase {
     }
 
     protected boolean canWriteImpl(RemoteFileObjectBase orig) {
+        if (getFlag(MASK_SUSPENDED_DUMMY)) {
+            return true;
+        }
         setFlag(CHECK_CAN_WRITE, true);
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addReadOnlyConnectNotification(this);
@@ -540,7 +544,7 @@ public abstract class RemoteFileObjectBase {
 
     protected void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop,
             boolean expected, RefreshMode refreshMode, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
     }
 
     public static enum RefreshMode {
@@ -551,7 +555,7 @@ public abstract class RemoteFileObjectBase {
         DEFAULT
     }
 
-    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, ExecutionException {
         try {
             refreshImpl(recursive, antiLoop, expected, refreshMode, 0);
         } catch (TimeoutException ex) {
@@ -561,13 +565,13 @@ public abstract class RemoteFileObjectBase {
 
     public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected,
             RefreshMode refreshMode, int timeout)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
     }
 
     /*package*/ void nonRecursiveRefresh() {
         try {
             refreshImpl(false, null, true, RefreshMode.DEFAULT);
-        } catch (ConnectException | InterruptedException | CancellationException ex) {
+        } catch (ConnectException | InterruptedException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
@@ -579,7 +583,7 @@ public abstract class RemoteFileObjectBase {
     public final void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected, RefreshMode.DEFAULT);
-        } catch (ConnectException | InterruptedException | CancellationException ex) {
+        } catch (ConnectException | InterruptedException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
@@ -711,9 +715,6 @@ public abstract class RemoteFileObjectBase {
             } catch (InterruptedException ex) {
                 throw RemoteExceptions.createInterruptedIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
                         "EXC_CanNotRenameIn", p.getDisplayName()), ex); // NOI18N
-            } catch (CancellationException ex) {
-                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
-                        "EXC_CanNotRenameInCancelled", p.getDisplayName()), ex); // NOI18N
             } catch (ExecutionException ex) {
                 throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
                         "EXC_CanNotRenameExecutionException", newNameExt, ex.getLocalizedMessage()), ex); // NOI18N
@@ -855,7 +856,7 @@ public abstract class RemoteFileObjectBase {
                         }
                     }
                     return movedFO;
-                } catch (InterruptedException | CancellationException ex) {
+                } catch (InterruptedException ex) {
                     throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (ExecutionException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
@@ -909,7 +910,7 @@ public abstract class RemoteFileObjectBase {
     }
 
     protected abstract void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+            throws ConnectException, IOException, InterruptedException, ExecutionException;
 
     final void renamePath(String newPath) {
         this.remotePath = newPath;
@@ -984,5 +985,5 @@ public abstract class RemoteFileObjectBase {
 
     protected RemoteLockSupport getLockSupport() {
         return fileSystem.getLockSupport();
-    }
+    }    
 }

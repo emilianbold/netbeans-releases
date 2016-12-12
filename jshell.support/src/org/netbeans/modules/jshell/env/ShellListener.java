@@ -41,13 +41,15 @@
  */
 package org.netbeans.modules.jshell.env;
 
+import java.util.EventListener;
+
 /**
  * Listener which receives basic state events from running Shell. Attach the listener
  * to {@link JShellEnvironment}.
  * 
  * @author sdedic
  */
-public interface ShellListener {
+public interface ShellListener extends EventListener {
     /**
      * JShellEnvironment was crated and put alive. This event is the only one
      * broadcasted to listeners registered through 
@@ -57,7 +59,8 @@ public interface ShellListener {
     
     /**
      * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance
+     * The JShellEnvironment instance will already contain a new instance. The event will
+     * fire also in case the ShellSession has recycled the JShell engine.
      * of ShellSession.
      * @param ev 
      */

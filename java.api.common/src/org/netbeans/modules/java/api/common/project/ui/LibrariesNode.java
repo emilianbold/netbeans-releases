@@ -747,7 +747,7 @@ public final class LibrariesNode extends AbstractNode {
             Node[] result = null;
             switch (key.getType()) {
                 case Key.TYPE_PLATFORM:
-                    result = new Node[] {PlatformNode.create(eval, boot, cs)};
+                    result = new Node[] {PlatformNode.create(project, eval, boot, cs)};
                     break;
                 case Key.TYPE_PROJECT:
                     result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),

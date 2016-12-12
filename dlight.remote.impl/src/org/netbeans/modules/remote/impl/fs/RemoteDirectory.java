@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -58,7 +59,6 @@ import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -67,18 +67,18 @@ import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystem.FileInfo;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -147,19 +147,23 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         } catch (InterruptedIOException | ExecutionException | InterruptedException | TimeoutException ex) {
             RemoteLogger.finest(ex, this);
             return null; // don't report
-        } catch (CancellationException ex) {
-            return null; // don't report
         }
     }
 
     /*package*/ boolean canWrite(String childNameExt) throws IOException, ConnectException {
-            DirEntry entry = getEntry(childNameExt);
-            return entry != null && entry.canWrite(); //TODO:rfs - check groups
+        DirEntry entry = getEntry(childNameExt);
+        if (entry == null) {
+            return isSuspendedWritesUpload();
+        }
+        return entry.canWrite();
     }
 
     /*package*/ boolean canRead(String childNameExt) throws IOException {
         DirEntry entry = getEntry(childNameExt);
-        return entry != null && entry.canRead();
+        if (entry == null) {
+            return isSuspendedWritesUpload();
+        }
+        return entry.canRead();
     }
 
     /*package*/ boolean canExecute(String childNameExt) throws IOException {
@@ -239,8 +243,6 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 RemoteLogger.finest(ex, this);
-            } catch (CancellationException ex) {
-                // too late
             }
         }
     }
@@ -251,6 +253,23 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private RemoteFileObject create(String name, boolean directory, RemoteFileObjectBase orig) throws IOException {
+        SuspendInfo suspendInfo = getFileSystem().getSuspendInfo(this);
+        if(suspendInfo != null) {
+            FileType type = directory ? FileType.Directory : FileType.Regular;
+            DirEntry entry = DirEntryImpl.create(name, 0, System.currentTimeMillis(), true, true, true, type.toChar(), -1, -1, null);
+            final RemoteFileObjectBase fo = getFileSystem().getFactory().createFileObject(this, entry, true);
+            if (fo.getFlag(MASK_SUSPENDED_DUMMY)) {                
+                if (fo instanceof RemotePlainFile) {
+                    suspendInfo.addDummyChild((RemotePlainFile) fo); // in turn calls addSuspendsd()
+                    fo.setPendingRemoteDelivery(true);
+                    fo.getCache().createNewFile();
+                } else if (fo instanceof RemoteDirectory) {
+                    suspendInfo.addDummyChild((RemoteDirectory) fo); // in turn calls addSuspendsd()
+                    fo.getCache().mkdirs();
+                }
+            }
+            return fo.getOwnerFileObject();
+        }
         // Have to comment this out since NB does lots of stuff in the UI thread and I have no way to control this :(
         // RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
         String path = getPath() + '/' + name;
@@ -267,9 +286,11 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             if (interceptor != null) {
                 try {
                     getFileSystem().setInsideVCS(true);
-                    interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);
+                    getFileSystem().setBeingCreated(new FileInfo(path, directory ? FileType.Directory : FileType.Regular));
+                    interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);                    
                 } finally {
                     getFileSystem().setInsideVCS(false);
+                    getFileSystem().setBeingCreated(null);
                 }
             }
         }
@@ -297,7 +318,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 if (USE_VCS) {
                     try {
                         getFileSystem().setInsideVCS(true);
-                        getFileSystem().setBeingCreated(fo.getImplementor());
+                        getFileSystem().setBeingCreated(new FileInfo(fo.getImplementor()));
                         FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                         if (interceptor != null) {
                             if (this == orig) {
@@ -341,10 +362,6 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 creationFalure(name, directory, orig);
                 throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
                         "EXC_CannotCreateFileWithReason", getDisplayName(path), "interrupted"), ex); // NOI18N
-            } catch (CancellationException ex) {
-                creationFalure(name, directory, orig);
-                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
-                        "EXC_CannotCreateFileWithReason", getDisplayName(path), "cancelled"), ex); // NOI18N
             }
         } else {
             creationFalure(name, directory, orig);
@@ -406,6 +423,21 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             }
         }
         RemoteLogger.assertTrue(slashPos == -1);
+        SuspendInfo suspendInfo = getFileSystem().getSuspendInfo(this);
+        if (suspendInfo != null) {
+            RemoteFileObjectBase dummyChild = suspendInfo.getDirectDummyChild(this, relativePath);
+            if (dummyChild == null) {
+                dummyChild = suspendInfo.getDirectDummyChild(this, relativePath);
+                if (dummyChild == null) {
+                    dummyChild = suspendInfo.getDirectDummyChild(this, relativePath);
+                }
+            }
+            if (dummyChild != null) {
+                return dummyChild.getOwnerFileObject();
+            } else if(this.getFlag(MASK_SUSPENDED_DUMMY)) {
+                return null;
+            }
+        }
         try {
             DirectoryStorage storage = getDirectoryStorage(relativePath);
             DirEntry entry = storage.getValidEntry(relativePath);
@@ -413,7 +445,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 return null;
             }
             return getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
-        } catch (InterruptedException | InterruptedIOException | CancellationException 
+        } catch (InterruptedException | InterruptedIOException
                 | ExecutionException | FileNotFoundException | TimeoutException ex) {
             RemoteLogger.finest(ex, this);
             return null;
@@ -498,6 +530,13 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     @Override
     public RemoteFileObject[] getChildren() {
+        if (getFlag(MASK_SUSPENDED_DUMMY)) {
+            SuspendInfo suspendInfo = getFileSystem().removeSuspendInfo(this);
+            if (suspendInfo != null) {
+                return suspendInfo.getDirectDummyChildren(this);
+            }
+            return new RemoteFileObject[0];
+        }        
         try {
             DirectoryStorage storage = getDirectoryStorage(null);
             List<DirEntry> entries = storage.listValid();
@@ -508,7 +547,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             }
             return childrenFO;
         } catch (InterruptedException | InterruptedIOException | 
-                FileNotFoundException | CancellationException | ExecutionException | TimeoutException ex ) {
+                FileNotFoundException | ExecutionException | TimeoutException ex ) {
             // InterruptedException:
             //      don't report, this just means that we aren't connected
             //      or just interrupted (for example by FileChooser UI)
@@ -526,7 +565,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private DirectoryStorage getDirectoryStorage(String childName) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(false, null, childName, false);
@@ -542,7 +581,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private DirectoryStorage refreshDirectoryStorage(String expectedName, boolean expected) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
             return getDirectoryStorageImpl(true, expectedName, null, expected);
@@ -560,7 +599,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     /** just a conveniency shortcut that allows not to cast each time */
-    private RemoteDirectory getParentImpl() {
+    /*package*/ RemoteDirectory getParentImpl() {
         return (RemoteDirectory) getParent(); // see constructor
     }
 
@@ -605,7 +644,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) 
-            throws TimeoutException, IOException, InterruptedException, ExecutionException, CancellationException {
+            throws TimeoutException, IOException, InterruptedException, ExecutionException {
         if (getFileSystem().isProhibitedToEnter(getPath())) {
             return Collections.<String, DirEntry>emptyMap();
         }
@@ -715,7 +754,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     @Override
     protected final void renameChild(FileLock lock, RemoteFileObjectBase directChild2Rename, String newNameExt, RemoteFileObjectBase orig) throws
-            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            ConnectException, IOException, InterruptedException, ExecutionException {
         String nameExt2Rename = directChild2Rename.getNameExt();
         String name2Rename = directChild2Rename.getName();
         String ext2Rename = directChild2Rename.getExt();
@@ -1008,7 +1047,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     private DirectoryStorage getDirectoryStorageImpl(final boolean forceRefresh, final String expectedName, final String childName, final boolean expected) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             //RemoteLogger.getInstance().warning("refreshDirectoryStorage is called while host is not connected");
@@ -1359,11 +1398,13 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             if (interceptor != null && !Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable")) {
                 try {
                     getFileSystem().setInsideVCS(true);
+                    getFileSystem().setGettingDirectoryStorage(true);
                     interceptor.refreshRecursively(FilesystemInterceptorProvider.toFileProxy(getOwnerFileObject()), 
                             lastModified().getTime(), new LinkedList<>()); // Collections.emptyList() does not suite - implementor can add elements
 
                 } finally {
                     getFileSystem().setInsideVCS(false);
+                    getFileSystem().setGettingDirectoryStorage(false);
                 }
             }
             //fireFileChangedEvent(getListeners(), new FileEvent(this));
@@ -1463,6 +1504,145 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                 File zipPartFile = new File(getCache(), RemoteFileSystem.CACHE_ZIP_PART_NAME);
                 getFileSystem().getZipper().schedule(zipFile, zipPartFile, getPath(), extensions);
             }
+        }
+    }
+
+    boolean isSuspendedWritesUpload() {
+        //return getFileSystem().getSuspendInfo(this) != null;
+        for(RemoteFileObjectBase fo = this; fo != null; fo = fo.getParent()) {
+            if (fo.getFlag(MASK_SUSPEND_WRITES)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void suspendWritesUpload() {
+        setFlag(MASK_SUSPEND_WRITES, true);
+    }
+
+    /**
+     * NB: there are several flaws in the implementation:
+     * #1: it does NOT support links inside directory
+     * #2: it does NOT file and caches names transformation, they will be exactly the same, 
+     * so you can get into trouble it 2 situations:
+     *  a) if your local file system is case insensitive and there are files that differ only in case, 
+     *  b) if your file name is forbidden on the local file system (like COM1, etc on Windows)
+     * #3: it's callers responsibility to call resume in finally block 
+     * and to call it on the same directory suspend was called
+     * #4: Weird usages such as "suspend and never resume", "suspend twice", "resume twicw" lead to unpredictable results,
+     * However, this works well when creating projects - and that was the main goal of introducing this
+     */
+    void resumeWritesUpload() throws IOException, InterruptedException, ConnectException {
+        SuspendInfo suspendInfo = getFileSystem().removeSuspendInfo(this);
+        setFlag(MASK_SUSPEND_WRITES, false);
+        if (suspendInfo == null) {
+            return;
+        }
+        try {
+            final ExecutionEnvironment env = getExecutionEnvironment();
+            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+            }
+            List<RemoteFileObjectBase> files = suspendInfo.getAllSuspended();
+            if (files == null || files.isEmpty()) {
+                return;
+            }
+            File zipFile = File.createTempFile("rfs_local", ".zip"); // NOI18N
+            try {
+                try (ZipOutputStream zipStream = new ZipOutputStream(new FileOutputStream(zipFile))) {
+                    for (RemoteFileObjectBase fo : files) {
+                        if (fo instanceof RemotePlainFile) {
+                            String path = fo.getPath();
+                            if (path.startsWith(getPath()) && path.length() > getPath().length() + 1 && path.charAt(getPath().length()) == '/') {
+                                String relPath = path.substring(getPath().length() + 1);
+                                ZipEntry entry = new ZipEntry(relPath);
+                                //entry.setTime(file.lastModified());
+                                zipStream.putNextEntry(entry);
+                                try (FileInputStream fis = new FileInputStream(fo.getCache())) {
+                                    FileUtil.copy(fis, zipStream);
+                                }
+                            } else {
+                                // TODO: log it!
+                            }
+                        }
+                    }
+                }
+                uploadAndUnzip(zipFile);
+            } finally {
+                zipFile.delete();
+                this.refresh(true);
+            }
+        } finally {
+            suspendInfo.dispose();
+        }
+    }
+
+    void uploadAndUnzip(InputStream zipStream) throws ConnectException, InterruptedException, IOException {        
+        final ExecutionEnvironment env = getExecutionEnvironment();        
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            zipStream.close();
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+        }        
+        // we have to copy the content into temporary local file, since we need to use it twice:
+        // 1) to copy to remote and 2) to unzip into local cache
+        File localZipFile = File.createTempFile(".rfs_local", ".zip"); // NOI18N
+        try {
+            // copy zip stream to local zip file
+            try (FileOutputStream os = new FileOutputStream(localZipFile)) {
+                FileUtil.copy(zipStream, os);
+            } finally {
+                zipStream.close();
+            }
+            uploadAndUnzip(localZipFile);            
+        } finally {
+            if (localZipFile != null) {
+                localZipFile.delete();
+            }
+        }        
+    }
+
+    @SuppressWarnings("ReplaceStringBufferByString")
+    private void uploadAndUnzip(File localZipFile) throws InterruptedException, IOException  {
+        final ExecutionEnvironment env = getExecutionEnvironment();
+        // Copy local zip file to remote
+        String remoteZipPath = getPath() + '/' + ".rfs_tmp_" + System.currentTimeMillis() + ".zip"; // NOI18N
+        boolean success;
+        String errorMessage = null;
+        try {
+            CommonTasksSupport.UploadStatus uploadStatus = CommonTasksSupport.uploadFile(localZipFile, env, remoteZipPath, 0600).get();
+            success = uploadStatus.isOK();
+            if (!success) {
+                errorMessage = uploadStatus.getError();
+            }
+        } catch (ExecutionException ex) {
+            success = false;
+            errorMessage = ex.getMessage();
+        }
+        if (!success) {
+            CommonTasksSupport.rmFile(env, remoteZipPath, null);
+            throw new IOException(errorMessage + " when uploading " + localZipFile + " to " + remoteZipPath); //NOI18N
+        }
+        StringBuilder script = new StringBuilder("unzip -q -o \"").append(remoteZipPath);
+        script.append("\" && rm \"").append(remoteZipPath).append("\""); //NOI18N
+//            if (adjustLineEndings && Utils.isWindows()) {
+//                script.append(" && (which dos2unix > /dev/null; if [ $? = 0 ]; then find . -name \"*[Mm]akefile*\" -exec dos2unix {}  \\; ; else echo \"no_dos2unix\"; fi)"); //NOI18N
+//            }
+        ProcessUtils.ExitStatus rc = ProcessUtils.executeInDir(getPath(), env,
+                "sh", "-c", script.toString()); //NOI18N
+        if (!rc.isOK()) {
+            throw new IOException(rc.getErrorString() + " when unzipping and removing " + remoteZipPath + " in " + this); //NOI18N
+        }
+        getCache().mkdirs();
+        try (InputStream is = new FileInputStream(localZipFile)) {
+            RemoteFileSystemUtils.unpackZipFile(is, getCache());
+        }
+        try {
+            refreshImpl(trace, null, true, RefreshMode.DEFAULT, 0);
+        } catch (TimeoutException ex) {
+            RemoteFileSystemUtils.reportUnexpectedTimeout(ex, this);
+        } catch (ExecutionException ex) {
+            throw new IOException(ex);
         }
     }
 
@@ -1571,7 +1751,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
     
     /*package*/ void ensureChildSync(RemotePlainFile child) throws
-            TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         if (cacheExists(child)) {
             if(isLoadingInEditor() && ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
@@ -1689,7 +1869,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     @Override
     public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         if (antiLoop != null) {
             if (antiLoop.contains(getPath())) {
                 return;
@@ -1747,7 +1927,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             }
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
-        } catch (IOException | ExecutionException | InterruptedException | CancellationException | TimeoutException ex) {
+        } catch (IOException | ExecutionException | InterruptedException | TimeoutException ex) {
             RemoteLogger.finest(ex, this);
         }
         return null;

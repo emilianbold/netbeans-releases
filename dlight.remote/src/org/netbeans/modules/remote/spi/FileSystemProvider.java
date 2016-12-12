@@ -44,8 +44,11 @@ package org.netbeans.modules.remote.spi;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -418,12 +421,7 @@ public final class FileSystemProvider {
             }
         }
         noProvidersWarning(fileObject);
-        try {
-            return fileObject.getURL().toExternalForm();
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+        return fileObject.toURL().toExternalForm();
     }
 
     public static void refresh(FileObject fileObject, boolean recursive) {
@@ -649,6 +647,78 @@ public final class FileSystemProvider {
         }
         noProvidersWarning(execEnv);
         return null;
+    }
+
+    /**
+     * Uploads zip to a temporary file on the remote host, unzips it into the given directory, then removes the uploaded zip.
+     * Also unzip its content into remote file system caches
+     */
+    public static void uploadAndUnzip(File zipFile, FileObject targetFolder) 
+            throws FileNotFoundException, ConnectException, IOException, InterruptedException {
+        uploadAndUnzip(new FileInputStream(zipFile), targetFolder);
+    }
+
+    /**
+     * Uploads zip to a temporary file on the remote host, unzips it into the given directory, then removes the uploaded zip.
+     * Also unzip its content into remote file system caches
+     */
+    public static void uploadAndUnzip(InputStream zipStream, FileObject targetFolder) 
+            throws FileNotFoundException, ConnectException, IOException, InterruptedException {
+        DLightLibsCommonLogger.assertTrue(targetFolder.isFolder(), "Not a folder: " + targetFolder); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(targetFolder)) {
+                provider.uploadAndUnzip(zipStream, targetFolder);
+                return;
+            }
+        }
+        noProvidersWarning(targetFolder);
+    }
+
+    /**
+     * NB: there are several flaws in the implementation:
+     * #1: it does NOT support links inside directory
+     * #2: it does NOT file and caches names transformation, they will be exactly the same, 
+     * so you can get into trouble it 2 situations:
+     *  a) if your local file system is case insensitive and there are files that differ only in case, 
+     *  b) if your file name is forbidden on the local file system (like COM1, etc on Windows)
+     * #3: it's callers responsibility to call resume in finally block 
+     * and to call it on the same directory suspend was called
+     * #4: Weird usages such as "suspend and never resume", "suspend twice", "resume twicw" lead to unpredictable results,
+     * However, this works well when creating projects - and that was the main goal of introducing this
+     */
+    public static void suspendWritesUpload(FileObject folder) throws IOException {
+        DLightLibsCommonLogger.assertTrue(folder.isFolder(), "Not a folder: " + folder); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(folder)) {
+                provider.suspendWritesUpload(folder);
+                return;
+            }
+        }
+        noProvidersWarning(folder);
+    }
+
+    /**
+     * NB: there are several flaws in the implementation:
+     * #1: it does NOT support links inside directory
+     * #2: it does NOT file and caches names transformation, they will be exactly the same, 
+     * so you can get into trouble it 2 situations:
+     *  a) if your local file system is case insensitive and there are files that differ only in case, 
+     *  b) if your file name is forbidden on the local file system (like COM1, etc on Windows)
+     * #3: it's callers responsibility to call resume in finally block 
+     * and to call it on the same directory suspend was called
+     * #4: Weird usages such as "suspend and never resume", "suspend twice", "resume twicw" lead to unpredictable results,
+     * However, this works well when creating projects - and that was the main goal of introducing this
+     */
+    public static void resumeWritesUpload(FileObject folder) 
+            throws IOException, InterruptedException, ConnectException {
+        DLightLibsCommonLogger.assertTrue(folder.isFolder(), "Not a folder: " + folder); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(folder)) {
+                provider.resumeWritesUpload(folder);
+                return;
+            }
+        }
+        noProvidersWarning(folder);
     }
 
     private static void noProvidersWarning(Object object) {

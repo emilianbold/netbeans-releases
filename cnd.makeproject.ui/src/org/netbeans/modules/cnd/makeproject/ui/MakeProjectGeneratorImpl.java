@@ -48,8 +48,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -114,16 +116,27 @@ public class MakeProjectGeneratorImpl extends ProjectGenerator {
         }
 
         FileObject dirFO = createProjectDir(prjParams);
-        prjParams.setConfigurations(copyConfs);
-        createProject(dirFO, prjParams, true);
-        MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
-        ProjectManager.getDefault().saveProject(p);
+        try {
+            FileSystemProvider.suspendWritesUpload(dirFO);
+            prjParams.setConfigurations(copyConfs);
+            createProject(dirFO, prjParams, true);
+            MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
+            ProjectManager.getDefault().saveProject(p);
 
-        if (prjParams.getOpenFlag()) {
-            OpenProjects.getDefault().open(new Project[]{p}, false);
+            if (prjParams.getOpenFlag()) {
+                OpenProjects.getDefault().open(new Project[]{p}, false);
+            }
+
+            return p;
+        } finally {
+            try {
+                FileSystemProvider.resumeWritesUpload(dirFO);
+            } catch (InterruptedException ex) {
+                InterruptedIOException iie = new InterruptedIOException(ex.getMessage());
+                iie.setStackTrace(ex.getStackTrace());
+                throw iie;
+            }            
         }
-
-        return p;
     }
 
     /**
@@ -136,15 +149,26 @@ public class MakeProjectGeneratorImpl extends ProjectGenerator {
     @Override
     public MakeProject createProject(ProjectParameters prjParams) throws IOException {
         FileObject dirFO = createProjectDir(prjParams);
-        createProject(dirFO, prjParams, false); //NOI18N
-        MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
-        ProjectManager.getDefault().saveProject(p);
-        if(prjParams.getDatabaseConnection() != null) {
-            Preferences prefs = ProjectUtils.getPreferences(p, ProjectSupport.class, true);
-            prefs.put(PROP_DBCONN, prjParams.getDatabaseConnection());
+        try {
+            FileSystemProvider.suspendWritesUpload(dirFO);
+            createProject(dirFO, prjParams, false); //NOI18N
+            MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
+            ProjectManager.getDefault().saveProject(p);
+            if(prjParams.getDatabaseConnection() != null) {
+                Preferences prefs = ProjectUtils.getPreferences(p, ProjectSupport.class, true);
+                prefs.put(PROP_DBCONN, prjParams.getDatabaseConnection());
+            }
+            //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
+            return p;
+        } finally {
+            try {
+                FileSystemProvider.resumeWritesUpload(dirFO);
+            } catch (InterruptedException ex) {
+                InterruptedIOException iie = new InterruptedIOException(ex.getMessage());
+                iie.setStackTrace(ex.getStackTrace());
+                throw iie;
+            }
         }
-        //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-        return p;
     }
 
     private MakeProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {

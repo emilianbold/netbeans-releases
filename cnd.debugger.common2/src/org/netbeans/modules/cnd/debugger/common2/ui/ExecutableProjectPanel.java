@@ -56,24 +56,19 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.ProjectUtils;
 
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import java.awt.event.ItemEvent;
-import java.util.Collection;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfo;
-import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.ProcessInfoDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.debugger.common2.utils.ProjectComboBoxSupport;
+import org.netbeans.modules.cnd.debugger.common2.utils.ProjectComboBoxSupport.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -84,9 +79,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -331,43 +323,6 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
 
-    public static class ProjectCBItem {
-        private ProjectInformation pinfo;
-
-        public ProjectCBItem(ProjectInformation pinfo) {
-            this.pinfo = pinfo;
-        }
-
-        @Override
-        public String toString() {
-            return pinfo.getDisplayName();
-        }
-
-        public Project getProject() {
-            return pinfo.getProject();
-        }
-
-        public ProjectInformation getProjectInformation() {
-            return pinfo;
-        }
-    }
-
-    public static void fillProjectsCombo(javax.swing.JComboBox comboBox, Project selectedProject) {
-        if (selectedProject == null) {
-            selectedProject = OpenProjects.getDefault().getMainProject();
-        }
-        for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
-            // include only cnd projects (see IZ 164690)
-            if (proj.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
-                ProjectInformation pinfo = ProjectUtils.getInformation(proj);
-                ProjectCBItem pi = new ProjectCBItem(pinfo);
-                comboBox.addItem(pi);
-                if (selectedProject != null && proj == selectedProject) {
-                    comboBox.setSelectedItem(pi);
-                }
-            }
-        }
-    }
 
     public void initGui() {
         projectComboBox.removeAllItems();
@@ -376,7 +331,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         projectComboBox.addItem(getString("NO_PROJECT"));
         projectComboBox.addItem(getString("NEW_PROJECT"));
 
-        fillProjectsCombo(projectComboBox, lastSelectedProject);
+        ProjectComboBoxSupport.fillProjectsCombo(projectComboBox, lastSelectedProject);
 
         // clear executable
         executableField.setText("");

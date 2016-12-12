@@ -224,4 +224,10 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
     public void suppressClasspathChanges(boolean b) {
         this.suppressClasspath = b;
     }
+
+    @Override
+    public ExecutionControlException getBrokenException() {
+        return null;
+    }
+
 }

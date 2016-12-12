@@ -205,7 +205,11 @@ public class JShellLauncher extends JShellTool {
         
     }
     
-    private void ensureLive() {
+    public boolean isLive() {
+        return super.isLive();
+    }
+    
+    public void ensureLive() {
         if (!isLive()) {
             resetState();
         }
@@ -283,7 +287,7 @@ public class JShellLauncher extends JShellTool {
         NbExecutionControl ctrl = shellExecControl;
         Map<String, String> versionInfo = ctrl.commandVersionInfo();
         
-        if (versionInfo.isEmpty()) {
+        if (versionInfo == null || versionInfo.isEmpty()) {
             // some error ?
             return;
         }
@@ -298,7 +302,7 @@ public class JShellLauncher extends JShellTool {
         String cpString = versionInfo.get("nb.class.path"); // NOI18N
         String[] cpItems = cpString.split(":"); // NOI18N
         if (cpItems.length > 0) {
-            hard("Classpath:");
+            hard(Bundle.MSG_Classpath());
             for (String item : cpItems) {
                 if (item.isEmpty()) {
                     continue;

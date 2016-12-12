@@ -94,7 +94,7 @@ public class GoToSupportTest extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         TreeLoader.DISABLE_ARTIFICAL_PARAMETER_NAMES = true;
-        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = false;
     }
     
     public void testGoToMethod() throws Exception {

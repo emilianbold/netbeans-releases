@@ -2173,6 +2173,7 @@ public class JShellTool implements MessageHandler {
 
     private boolean cmdReset() {
         live = false;
+        closeState();
         fluffmsg("jshell.msg.resetting.state");
         return true;
     }

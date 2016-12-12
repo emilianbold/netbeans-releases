@@ -189,6 +189,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     protected static TemplateDescriptor createTemplateDescriptor(AST node, CsmFile file, CsmScope scope, StringBuilder classTemplateSuffix, boolean global) {
         boolean _template = false, specialization = false;
         switch(node.getType()) {
+            case CPPTokenTypes.CSM_VARIABLE_TEMPLATE_DECLARATION:
+            case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION:
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION: 
             case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION: 

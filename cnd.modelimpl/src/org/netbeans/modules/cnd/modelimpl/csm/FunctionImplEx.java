@@ -128,7 +128,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         FunctionImplEx<T> functionImplEx = new FunctionImplEx<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
-        functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION);
+        functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION 
+                || ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION);
         temporaryRepositoryRegistration(ast, global, functionImplEx);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -372,7 +373,16 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);
                         boolean _extern = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_extern);                        
                         NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
-                        VariableImpl var = VariableImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, this.getScope(), _static, _extern, true);
+                        VariableImpl var = VariableImpl.create(
+                                fixFakeRegistrationAst, 
+                                getContainingFile(), 
+                                getReturnType(), 
+                                nameHolder, 
+                                this.getScope(), 
+                                _static, 
+                                _extern, 
+                                true
+                        );
                         nameHolder.addReference(fileContent, var); // TODO: move into VariableImpl.create()
                         CndUtils.assertTrueInConsole(!CsmKindUtilities.isClass(this.getScope()), "Cannot be class!"); // NOI18N
                         isGloballyVisibleInNamespace = NamespaceImpl.isNamespaceScope(var, CsmKindUtilities.isFile(getScope())) && CsmKindUtilities.isNamespace(this.getScope());

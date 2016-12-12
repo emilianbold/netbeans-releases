@@ -53,7 +53,6 @@ import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -134,7 +133,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
     }
 
     /** just a conveniency shortcut that allows not to cast each time */
-    private RemoteDirectory getParentImpl() {
+    /*package*/ RemoteDirectory getParentImpl() {
         return (RemoteDirectory) getParent(); // cast guaranteed by constructor
     }
 
@@ -285,9 +284,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             }
 
             //getParent().ensureChildSync(this);
-        } catch (ConnectException | CancellationException ex) {
-            // TODO: do we need this with CancelletionException? 
-            // unfortunately CancellationException is RuntimeException, so I'm not sure
+        } catch (ConnectException ex) {
             return new ByteArrayInputStream(new byte[]{});
         } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw newFileNotFoundException(ex);
@@ -350,7 +347,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
 
     @Override
     protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException {
         // plain file can not be container of children
         RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
     }
@@ -375,7 +372,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
     }
 
     @Override
-    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, ExecutionException {
         try {
             refreshImpl(recursive, antiLoop, expected, refreshMode, REFRESH_TIMEOUT);
         } catch (TimeoutException ex) {
@@ -386,7 +383,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
     @Override
     public void refreshImpl(boolean recursive, Set<String> antiLoop, 
             boolean expected, RefreshMode refreshMode, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
             long time = System.currentTimeMillis();
             final DirEntry oldEntry = getParentImpl().getDirEntry(getNameExt());
@@ -461,7 +458,7 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             }
         }
     }
-
+    
     private class DelegateOutputStream extends OutputStream {
 
         private final FileOutputStream delegate;
@@ -502,7 +499,11 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             try {
                 delegate.close();
                 RemotePlainFile.this.setPendingRemoteDelivery(true);
-
+                SuspendInfo suspendInfo = getParentImpl().getFileSystem().getSuspendInfo(getParentImpl());
+                if (suspendInfo != null) {
+                    suspendInfo.addSuspended(RemotePlainFile.this);
+                    return;
+                }
                 String pathToRename, pathToUpload;
 
                 if (RemotePlainFile.this.getParent().canWrite()) {

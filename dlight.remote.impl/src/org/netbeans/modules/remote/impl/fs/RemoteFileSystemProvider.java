@@ -47,6 +47,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -525,5 +526,67 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
             return rfo.getStat();
         }
         return FileSystemProvider.Stat.createInvalid();
+    }
+
+    @Override
+    public void uploadAndUnzip(InputStream zipStream, final FileObject targetFolder) 
+            throws FileNotFoundException, IOException, InterruptedException, ConnectException {
+        if (targetFolder instanceof RemoteFileObject) {
+            RemoteFileObjectBase impl = ((RemoteFileObject) targetFolder).getImplementor();            
+            while (impl instanceof RemoteLinkBase) {
+                RemoteFileObjectBase delegate = ((RemoteLinkBase) impl).getCanonicalDelegate();
+                if (delegate != null) {
+                    impl = delegate;
+                }
+            }
+            if (impl instanceof RemoteDirectory) {
+                ((RemoteDirectory) impl).uploadAndUnzip(zipStream);
+            } else {
+                throw new IOException("Unexpected file object class for " + impl + //NOI18N
+                        ", expected " + RemoteDirectory.class.getSimpleName() + //NOI18N
+                        " initial FileObject " + targetFolder); //NOI18N
+            }
+        }
+    }
+
+    @Override
+    public void suspendWritesUpload(FileObject folder) throws IOException {
+        if (folder instanceof RemoteFileObject) {
+            RemoteFileObjectBase impl = ((RemoteFileObject) folder).getImplementor();            
+            while (impl instanceof RemoteLinkBase) {
+                RemoteFileObjectBase delegate = ((RemoteLinkBase) impl).getCanonicalDelegate();
+                if (delegate != null) {
+                    impl = delegate;
+                }
+            }
+            if (impl instanceof RemoteDirectory) {
+                ((RemoteDirectory) impl).suspendWritesUpload();
+            } else {
+                throw new IOException("Unexpected file object class for " + impl + //NOI18N
+                        ", expected " + RemoteDirectory.class.getSimpleName() + //NOI18N
+                        " initial FileObject " + folder); //NOI18N
+            }
+        }
+    }
+
+    @Override
+    public void resumeWritesUpload(FileObject folder) 
+        throws IOException, InterruptedException, ConnectException {
+        if (folder instanceof RemoteFileObject) {
+            RemoteFileObjectBase impl = ((RemoteFileObject) folder).getImplementor();            
+            while (impl instanceof RemoteLinkBase) {
+                RemoteFileObjectBase delegate = ((RemoteLinkBase) impl).getCanonicalDelegate();
+                if (delegate != null) {
+                    impl = delegate;
+                }
+            }
+            if (impl instanceof RemoteDirectory) {
+                ((RemoteDirectory) impl).resumeWritesUpload();
+            } else {
+                throw new IOException("Unexpected file object class for " + impl + //NOI18N
+                        ", expected " + RemoteDirectory.class.getSimpleName() + //NOI18N
+                        " initial FileObject " + folder); //NOI18N
+            }
+        }
     }
 }

@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -431,7 +430,7 @@ public class RemoteVcsSupportUtil {
             for (RemoteDirectory impl : refreshSet) {
                 try {
                     RemoteFileSystemTransport.refreshFast(impl, false);
-                } catch (InterruptedException | CancellationException | TimeoutException ex) {
+                } catch (InterruptedException | TimeoutException ex) {
                     InterruptedIOException ie = new InterruptedIOException(ex.getMessage());
                     ie.initCause(ex);
                     throw ie;
@@ -453,16 +452,15 @@ public class RemoteVcsSupportUtil {
             return true;
         } else if(rfs.isProhibitedToEnter(path)) {
             return true;
-        } else if (path.equals("/tmp")) { //NOI18N
-            // 1) It just does not make sense to support versioning in tmp.
-            // 2) It mutes too frequently, this produces tremendous amount of noise
-            return true;
         }
         return false;
     }
 
     public static boolean isForbiddenFolder(FileSystem fs, String path) {
         if (fs instanceof RemoteFileSystem) {
+            if (path.isEmpty() || path.equals("/tmp") && RemoteFileSystemUtils.isUnitTestMode()) { // NOI18N
+                return false;
+            }            
             RemoteFileSystem rfs = (RemoteFileSystem) fs;
             if (isForbiddenFolderImpl(rfs, path)) {
                 return true;
@@ -470,12 +468,13 @@ public class RemoteVcsSupportUtil {
             int pos = path.lastIndexOf('/');
             if (pos >= 0) {
                 String parent = path.substring(0, pos);
+                // if we decide to remove this check, then at least return "true" for /tmp
+                // (except for unit tests!)
                 if (isForbiddenFolderImpl(rfs, parent)) {
                     return true;
                 }
             }
             return false;
-            //return rfs.isAutoMount(path);
         }
         return false;
     }
