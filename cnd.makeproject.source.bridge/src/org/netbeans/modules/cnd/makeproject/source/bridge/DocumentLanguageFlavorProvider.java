@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards;
@@ -156,52 +157,30 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
         CndLanguageStandards.CndLanguageStandard defaultStandard = ee.getDefaultStandard();
         if (defaultStandard != null) {
+            NativeFileItem.Language lang;
             switch (defaultStandard) {
                 case C89:
-                    if (MIMENames.isHeader(mime)) {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.C89, null, doc);
-                    } else {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C, LanguageFlavor.C89, null, doc);
-                    }
-                    break;
                 case C99:
-                    if (MIMENames.isHeader(mime)) {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.C99, null, doc);
-                    } else {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C, LanguageFlavor.C99, null, doc);
-                    }
-                    break;
                 case C11:
                     if (MIMENames.isHeader(mime)) {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.C11, null, doc);
+                        lang = NativeFileItem.Language.C_HEADER;
                     } else {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C, LanguageFlavor.C11, null, doc);
+                        lang = NativeFileItem.Language.C;
                     }
-                    break;
                 case CPP98:
-                    if (MIMENames.isHeader(mime)) {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.CPP, null, doc);
-                    } else {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.CPP, LanguageFlavor.CPP, null, doc);
-                    }
-                    break;
                 case CPP11:
-                    if (MIMENames.isHeader(mime)) {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.CPP11, null, doc);
-                    } else {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.CPP, LanguageFlavor.CPP11, null, doc);
-                    }
-                    break;
                 case CPP14:
                     if (MIMENames.isHeader(mime)) {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.CPP14, null, doc);
+                        lang = NativeFileItem.Language.C_HEADER;
                     } else {
-                        tryToSetDocumentLanguage(NativeFileItem.Language.CPP, LanguageFlavor.CPP14, null, doc);
-                    }
+                        lang = NativeFileItem.Language.CPP;
+                    }                    
                     break;
                 default:
                     return;
             }
+            NativeFileItem.LanguageFlavor flavor = NativeProjectSupport.cndStandardToItemFlavor(defaultStandard);
+            tryToSetDocumentLanguage(lang, flavor, null, doc);
             rebuildTH(doc);
         }
         return;
@@ -240,8 +219,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             flavor = getLanguageFlavor(nfi);
         }
         Filter<?> filter = null;
-        Language<?> language = null;
-        CndLanguageStandard preferredStd = null;
+        Language<?> language = null;        
         switch (itemLang) {
             case C:
                 language = CppTokenId.languageC();
@@ -257,11 +235,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 return false;
         }
         assert language != null;
-        if (flavor == NativeFileItem.LanguageFlavor.CPP11) {
-            preferredStd = CndLanguageStandard.CPP11;
-        } else if (flavor == NativeFileItem.LanguageFlavor.CPP14) {
-            preferredStd = CndLanguageStandard.CPP14;
-        }
+        CndLanguageStandard preferredStd = NativeProjectSupport.itemFlavorToCndStandard(flavor);
         filter = CndLexerUtilities.getFilter(language, preferredStd, doc);
         assert filter != null;
         doc.putProperty(Language.class, language);
