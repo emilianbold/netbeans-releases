@@ -422,6 +422,14 @@ Hg ID:    ${hg.id}
           <property name="cluster.config" value="platform"/>
       </ant>
   </target>
+
+  <target name="test-platform" description="Test the NetBeans Platform modules.">
+      <mkdir dir="${netbeans.dest.dir}"/>
+      <ant dir="." target="test" inheritAll="false">
+          <property name="cluster.config" value="platform"/>
+          <property name="test-unit-sys-prop.ignore.random.failures" value="true"/>
+      </ant>
+  </target>
   
   <target name="build-cluster" depends="init">
     <run-depend-build clusters-to-build="${cluster-name}"/>
@@ -1806,7 +1814,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </optionsimport>
     </target>
 
-    <target name="test" description="Runs ${test.type} target in modules specified by ${test.modules}.">
+    <target name="test" depends="init" description="Runs ${test.type} target in modules specified by ${test.modules}.">
+        <property name="test.modules" value="${allmodules}"/>
+        <property name="test.type" value="test"/>
         <subant target="${test.type}" >
             <property name="continue.after.failing.tests" value="true"/>
             <dirset dir=".." includes="${test.modules}"/>
