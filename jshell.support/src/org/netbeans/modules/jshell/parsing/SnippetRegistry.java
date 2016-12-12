@@ -54,15 +54,22 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import jdk.jshell.ExpressionSnippet;
+import jdk.jshell.ImportSnippet;
 import jdk.jshell.JShell;
+import jdk.jshell.MethodSnippet;
 import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
+import jdk.jshell.TypeDeclSnippet;
+import jdk.jshell.VarSnippet;
 import org.netbeans.lib.nbjshell.SnippetWrapping;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.openide.filesystems.FileObject;
@@ -86,12 +93,17 @@ import org.openide.util.Exceptions;
  * Lifecycle of all handles/wrappers are tied to their respective ConsoleSection. If the
  * section is GCed, its handles should be GCed as well. For transient handles, the 
  * SnippetRegistry will erase their file (if it exists) upon Section/Handle GC.
- * 
+ * <p/>
+ * SnippetHandle can be trashed out, if the ShellSession replays the history (/reload command).
+ * If a source-less Snippet executes, whose Key and source matches a previously executed snippet,
+ * that SnippetHandle will be dropped from SnippetRegistry.
  * @author sdedic
  */
 public final class SnippetRegistry {
     private static final Logger LOG = Logger.getLogger(SnippetRegistry.class.getName());
     private static final String JSHELL_TRANSIENT_SNIPPET_CLASS = "$JShell$DOESNOTMATTER"; // NOI18N
+    
+    private List<ChangeListener>    listeners = new ArrayList<>();
     
     /**
      * The JShell state
@@ -103,6 +115,11 @@ public final class SnippetRegistry {
      * will return the relevant handle which is used throughout NB support.
      */
     private final Map<Snippet, SnippetHandle> snippets = new LinkedHashMap<>();
+    
+    /**
+     * Map of seen snippets, for possible replaces. 
+     */
+    private final Map<Key, Collection<SnippetHandle>> snippetsLookup = new HashMap<>();
     
     /**
      * For each ConsoleSection registers processed snippets. Does not contain snippets for active input
@@ -161,6 +178,20 @@ public final class SnippetRegistry {
      */
     private final Map<Snippet, Long>    snippetTimeStamps = new WeakHashMap<>();
 
+    private void fireStateChanged() {
+        Collection<ChangeListener> ll;
+        
+        synchronized (this) {
+            if (listeners.isEmpty()) {
+                return;
+            }
+            ll = new ArrayList<>(listeners);
+        }
+        ChangeEvent e = new ChangeEvent(this);
+        for (ChangeListener l : ll) {
+            l.stateChanged(e);
+        }
+    }
     /**
      * Installs a new snippet and binds it with a ConsoleSection.
      * 
@@ -171,8 +202,9 @@ public final class SnippetRegistry {
      */
     public SnippetHandle installSnippet(Snippet s, ConsoleSection section, int sectionOffset, boolean nontransient) {
         SnippetWrapping wrap = wrap(s); //JShellAccessor.snippetWrap(state, s);
-        SnippetHandle handle;
+        SnippetHandle handle = null;
         synchronized (this) {
+            Key sk = Key.create(s);
             if (section != null) {
                 List<SnippetHandle> sectionSnippets = sectionHandles.get(section);
                 if (sectionSnippets == null) {
@@ -199,19 +231,70 @@ public final class SnippetRegistry {
                 sectionSnippets.add(handle);
                 sectionHandles.put(section, sectionSnippets);
             } else {
-                handle = ModelAccessor.INSTANCE.createHandle(
-                        this, null, null, wrap, !nontransient);
+                // attempt to lookup a relevant snippet present in the editor:
+                Collection<SnippetHandle> handles = snippetsLookup.get(sk);
+                if (handles != null) {
+                    for (SnippetHandle toCompare : handles) {
+                        if (toCompare.getSource().equals(wrap.getSource())) {
+                            // associate the snippet with the section, remove the old snippet
+                            if ((handle = replaceSnippetHandle(sk, wrap, toCompare, nontransient)) != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (handle == null) {
+                    handle = ModelAccessor.INSTANCE.createHandle(
+                            this, null, null, wrap, !nontransient);
+                }
             }
             if (wrap.getSnippet() != null) {
                 snippets.put(wrap.getSnippet(), handle);
+                Collection<SnippetHandle> handles = snippetsLookup.get(sk);
+                if (handles == null) {
+                    handles = new ArrayList<>();
+                    snippetsLookup.put(sk, handles);
+                }
+                handles.add(handle);
             }
             clearTransientSnippets();
-            return handle;
         }
+        fireStateChanged();
+        return handle;
     }
+    
+    private SnippetHandle replaceSnippetHandle(Key sk, SnippetWrapping wrap, SnippetHandle replaced, boolean nonTransient) {
+        SnippetHandle handle = ModelAccessor.INSTANCE.createHandle(
+            this, 
+            replaced.getSection(), 
+            replaced.getFragments(), 
+            wrap, 
+            !nonTransient
+        );
+        ConsoleSection section = replaced.getSection();
+        if (section != null) {
+            List<SnippetHandle> sectionSnippets = sectionHandles.get(section);
+            if (sectionSnippets == null) {
+                return null;
+            }
+            int index = sectionSnippets.indexOf(replaced);
+            if (index == -1) {
+                return null;
+            } 
+            sectionSnippets = new ArrayList<>(sectionSnippets);
+            sectionSnippets.set(index, handle);
+            sectionHandles.put(section, sectionSnippets);
+        }
+        // remove the replaced snippet handle from maps:
+        snippetsLookup.get(sk).remove(replaced);
+        snippets.remove(replaced.getSnippet());
+        return handle;
+    }
+    
     
     private void copyFrom(SnippetRegistry other) {
         synchronized (other) {
+            this.snippetsLookup.putAll(other.snippetsLookup);
             this.snippets.putAll(other.snippets);
             this.sectionHandles.putAll(other.sectionHandles);
             
@@ -571,6 +654,71 @@ public final class SnippetRegistry {
         
         public String toString() {
             return "Transient(" + original + ")";
+        }
+    }
+    
+    /**
+     * Key of the snippet. A replica of SnippetKey, which is not public
+     */
+    public static class Key {
+        private final String    keyValue;
+        
+        private Key(String value) {
+            this.keyValue = value;
+        }
+        
+        public static Key create(Snippet snip) {
+            switch (snip.kind()) {
+                case IMPORT: 
+                    ImportSnippet imp = ((ImportSnippet)snip);
+                    return new Key("I_" + imp.fullname() + (imp.isStatic() ? "*" : ""));
+                case TYPE_DECL:
+                    TypeDeclSnippet tdecl = ((TypeDeclSnippet)snip);
+                    return new Key("T_" + tdecl.name());
+                case METHOD:
+                    MethodSnippet method = ((MethodSnippet)snip);
+                    return new Key("M_" + method.name() + ":" + method.signature());
+                case VAR:
+                    VarSnippet var = (VarSnippet)snip;
+                    return new Key("V_" + var.name() + ":" + var.typeName());
+                case EXPRESSION:
+                    ExpressionSnippet expr = (ExpressionSnippet)snip;
+                    return new Key("E_" + (expr.name()) + ":" + (expr.typeName()));
+                case STATEMENT:
+                case ERRONEOUS:
+                    return new Key("C_" + snip.source());
+                default:
+                    throw new AssertionError(snip.kind().name());
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 37 * hash + Objects.hashCode(this.keyValue);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Key other = (Key) obj;
+            if (!Objects.equals(this.keyValue, other.keyValue)) {
+                return false;
+            }
+            return true;
+        }
+        
+        public String toString() {
+            return keyValue;
         }
     }
 }

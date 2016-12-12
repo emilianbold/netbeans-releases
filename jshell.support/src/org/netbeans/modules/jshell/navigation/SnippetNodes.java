@@ -117,7 +117,7 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     /**
      * The active session
      */
-    private ShellSession              session;
+    private volatile ShellSession     session;
     
     /**
      * 
@@ -243,8 +243,10 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
 
     @Override
     public void shellStarted(ShellEvent ev) {
-        this.session = ev.getSession();
-        attachTo(ev.getEngine());
+        synchronized (this) {
+            this.session = ev.getSession();
+            attachTo(ev.getEngine());
+        }
         update();
         refreshNodeNames();
     }
@@ -299,12 +301,13 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     @Override
     public void shellShutdown(ShellEvent ev) {
     }
+    
+    private static final DropAction dropAction = new DropAction();
  
     @NbBundle.Messages({
         "# {0} - html node name/description",
         "NodeName_Obsoleted=<s>{0}</s>"
     })
-            
     class N extends AbstractNode {
         private final JShellEnvironment env;
         private final ElementKind       nodeKind;
@@ -313,7 +316,14 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
         private String htmlDisplayName;
 
         public N(JShellEnvironment env, SnippetHandle handle) {
-            super(Children.LEAF, Lookups.fixed(env, handle, env.getConsoleFile()));
+            super(Children.LEAF, 
+                    Lookups.fixed(
+                            env, 
+                            handle, 
+                            env, 
+                            env.getConsoleFile()
+                    )
+            );
             this.snipHandle = handle;
             this.env = env;
             
@@ -374,7 +384,9 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
         
         public Action[] getActions( boolean context ) {
             return new Action[] { 
-                getOpenAction()
+                getOpenAction(),
+                null,
+                dropAction
             };
         }
         
