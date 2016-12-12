@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author sdedic
  */
-@MimeRegistration(mimeType = "text/x-repl", service = FoldTypeProvider.class)
+@MimeRegistration(mimeType = "text/x-repl", service = FoldTypeProvider.class, position = 200)
 public final class ConsoleFoldsProvider implements FoldTypeProvider {
     private static final Collection<FoldType>   types = new ArrayList<FoldType>(5);
     
