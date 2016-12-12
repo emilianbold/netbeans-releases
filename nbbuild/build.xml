@@ -427,6 +427,7 @@ Hg ID:    ${hg.id}
       <mkdir dir="${netbeans.dest.dir}"/>
       <ant dir="." target="test" inheritAll="false">
           <property name="cluster.config" value="platform"/>
+          <property name="test.type" value="test-unit"/>
           <property name="test-unit-sys-prop.ignore.random.failures" value="true"/>
       </ant>
   </target>
