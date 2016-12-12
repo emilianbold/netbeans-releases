@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.test.utilities.operators;
+package org.netbeans.test.modules.search;
 
 import java.awt.Component;
 import org.netbeans.jellytools.TopComponentOperator;
