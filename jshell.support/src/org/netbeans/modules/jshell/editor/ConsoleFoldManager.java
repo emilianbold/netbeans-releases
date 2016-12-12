@@ -363,7 +363,7 @@ public class ConsoleFoldManager implements FoldManager {
         
     }
 
-    @MimeRegistration(mimeType = "text/x-repl", service = FoldManagerFactory.class)
+    @MimeRegistration(mimeType = "text/x-repl", service = FoldManagerFactory.class, position = 250)
     public static class Factory implements FoldManagerFactory {
         @Override
         public FoldManager createFoldManager() {
