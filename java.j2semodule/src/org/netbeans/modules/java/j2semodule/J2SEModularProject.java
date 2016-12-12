@@ -347,10 +347,6 @@ public final class J2SEModularProject implements Project {
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
             LookupProviderSupport.createActionProviderMerger(),
-
-
-            //UNKNOWN FOR MODULAR PROJECT
-            refHelper.createSubprojectProvider(),
             LogicalViewProviders.createBuilder(
                 this,
                 eval,
@@ -358,6 +354,10 @@ public final class J2SEModularProject implements Project {
                 setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2semodule.ui.J2SEModularLogicalViewProvider.J2SEModularLogicalViewRootNode")).    //NOI18N
 //                setCompileOnSaveBadge(newCoSBadge()).
                 build(),
+
+
+            //UNKNOWN FOR MODULAR PROJECT
+            refHelper.createSubprojectProvider(),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 //            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
 //            new AntArtifactProviderImpl(),
