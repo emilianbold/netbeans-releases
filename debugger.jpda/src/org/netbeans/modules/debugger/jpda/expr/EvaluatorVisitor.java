@@ -1590,6 +1590,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             String s2 = (right instanceof StringReference) ? ((StringReference) right).value() : toString(arg0, right, evaluationContext);
             return createStringMirrorWithDisabledCollection(s1 + s2, vm, evaluationContext);
         }
+        if (left == null && right instanceof PrimitiveValue ||
+            right == null && left instanceof PrimitiveValue) {
+            Throwable ex = new NullPointerException("");
+            ex.setStackTrace(new StackTraceElement[] {});
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
+            throw new IllegalStateException(ex.getLocalizedMessage(), ieex);
+        }
         switch (kind) {
             case EQUAL_TO:
                 return mirrorOf(vm, left == right || (left != null && left.equals(right)));

@@ -350,6 +350,8 @@ class NIOStreams {
          */
         private boolean eof;
         
+        private boolean localClose;
+        
         private final ByteBuffer singleBuffer = ByteBuffer.allocate(1);
 
         public Input(SocketChannel channel, Consumer<SocketChannel> closeCallback) throws IOException {
@@ -447,6 +449,7 @@ class NIOStreams {
         public void close() throws IOException {
             synchronized (this) {
                 eof = true;
+                localClose = true;
                 selector.wakeup();
             }
             super.close();

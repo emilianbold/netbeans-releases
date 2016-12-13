@@ -39,59 +39,80 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.model;
+package org.netbeans.modules.jshell.navigation;
 
-import java.util.List;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
+import javax.swing.JComponent;
+import org.netbeans.modules.jshell.env.JShellEnvironment;
+import org.netbeans.modules.jshell.env.ShellRegistry;
+import org.netbeans.modules.jshell.model.SnippetHandle;
+import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author sdedic
  */
-public final class ConsoleResult extends Parser.Result {
-    private final ConsoleModel model;
-    private volatile boolean invalid;
-    private ConsoleContents    contents;
+@NbBundle.Messages("LBL_PanelRegisteredName=Snippets")
+@NavigatorPanel.Registration(displayName = "#LBL_PanelRegisteredName", mimeType = "text/x-repl")
+public class SnippetNavigationPanel implements NavigatorPanel {
+    private SnippetPanelUI ui;
     
-    private void checkValid() {
-        if (invalid) {
-            throw new IllegalArgumentException();
+    private static SnippetNavigationPanel INSTANCE = null;
+    
+    
+    public static void navigate(SnippetHandle h) {
+        if (INSTANCE != null) {
+            INSTANCE.getUI().navigateToHandle(h);
         }
     }
     
-    public ConsoleResult(ConsoleModel model, Snapshot _snapshot) {
-        super(_snapshot);
-        this.model = model;
+    @NbBundle.Messages("LBL_NavigatorPanel=Snippets")
+    @Override
+    public String getDisplayName() {
+        return Bundle.LBL_NavigatorPanel();
     }
 
-    public int getWritablePos() {
-        checkValid();
-        return model.getWritablePos();
-    }
-
-    public int getInputOffset() {
-        checkValid();
-        return model.getInputOffset();
-    }
-
-    public synchronized ConsoleSection getInputSection() {
-        checkValid();
-        return model.getInputSection();
-    }
-
-    public List<ConsoleSection> getSections() {
-        checkValid();
-        return model.getSections();
-    }
-
-    public String getInputText() {
-        checkValid();
-        return model.getInputText();
+    @NbBundle.Messages("HINT_NavigatorPanel=Navigates among the snippets in the current editor window")
+    @Override
+    public String getDisplayHint() {
+        return Bundle.HINT_NavigatorPanel();
     }
 
     @Override
-    protected void invalidate() {
-        invalid = true;
+    public JComponent getComponent() {
+        return getUI();
     }
+
+    @Override
+    public void panelActivated(Lookup context) {
+        FileObject file = context.lookup(FileObject.class);
+        JShellEnvironment env = ShellRegistry.get().get(file);
+        if (env == null) {
+            return;
+        }
+        getUI().navigate(env);
+        
+        INSTANCE = this;
+    }
+    
+    private SnippetPanelUI getUI() {
+        if (ui == null) {
+            ui = new SnippetPanelUI();
+        }
+        return ui;
+    }
+
+    @Override
+    public void panelDeactivated() {
+        INSTANCE = null;
+        getUI().unselectAll();
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getUI().getLookup();
+    }
+    
 }

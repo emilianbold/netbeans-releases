@@ -81,9 +81,19 @@ abstract class AgentGenerator implements RemoteJShellAccessor, ShellLaunchListen
 
     @Override
     public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-        JShellConnection c = getConnection();
-        OutputStream out = c.getAgentInput();
-        InputStream in = c.getAgentOutput();
+        InputStream in;
+        OutputStream out;
+        JShellConnection c;
+        try {
+            c = getConnection();
+            out = c.getAgentInput();
+            in = c.getAgentOutput();
+        } catch (IOException iOException) {
+            ExecutionControl.EngineTerminationException x = 
+                    new ExecutionControl.EngineTerminationException(iOException.getLocalizedMessage());
+            x.initCause(iOException);
+            return new BrokenExecutionControl(x);
+        }
         
         Map<String, OutputStream> io = new HashMap<>();
         io.put("out", ee.userOut()); // NOI18N
@@ -155,7 +165,7 @@ abstract class AgentGenerator implements RemoteJShellAccessor, ShellLaunchListen
     @Override
     public synchronized void connectionClosed(ShellLaunchEvent ev) {
         if (shellConnection == ev.getConnection()) {
-            closed = true;
+            shellConnection = null;
         }
     }
 

@@ -1366,6 +1366,9 @@ public class JShellTool implements MessageHandler {
         if (space != (-1)) {
             String cmd = code.substring(0, space);
             Command command = commands.get(cmd);
+            if (command == null) {
+                return null;
+            }
             if (command != null) {
                 return getResourceString(command.helpKey + (shortDescription ? ".summary" : ""));
             }
@@ -2173,6 +2176,7 @@ public class JShellTool implements MessageHandler {
 
     private boolean cmdReset() {
         live = false;
+        closeState();
         fluffmsg("jshell.msg.resetting.state");
         return true;
     }

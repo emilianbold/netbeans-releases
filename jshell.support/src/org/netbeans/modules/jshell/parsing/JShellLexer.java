@@ -72,7 +72,7 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
         "vars", "methods", "types", "imports",
         "exit", "reset", "reload",
         
-        "feedback", "prompt", 
+        "prompt", 
         
         "classpath", "history",
             

@@ -75,6 +75,7 @@ import org.netbeans.modules.jshell.parsing.JShellParser;
 import org.netbeans.modules.jshell.parsing.ModelAccessor;
 import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
+import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -856,8 +857,6 @@ public class ConsoleModel {
         }
     }
     
-    private JShell.Subscription snippetSubscription;
-
     /**
      * Provides mapping between snippets and individual input sections
      */
@@ -1090,8 +1089,8 @@ public class ConsoleModel {
         }
 
         @Override
-        public ConsoleContents copyModel(ConsoleModel m,Snapshot snapshot) {
-            ConsoleContents c = new ConsoleContents(m.snapshot(snapshot.getText()), snapshot);
+        public ConsoleContents copyModel(ShellSession session, ConsoleModel m,Snapshot snapshot) {
+            ConsoleContents c = new ConsoleContents(session, m.snapshot(snapshot.getText()), snapshot);
             return c;
         }
         

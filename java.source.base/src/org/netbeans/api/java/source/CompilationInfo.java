@@ -242,7 +242,10 @@ public class CompilationInfo {
             assert elements != null;
             assert this.impl.getRoot() != null;
             final String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(this.impl.getRoot(), this.impl.getFileObject())));
-            final TypeElement e = Optional.ofNullable(SourceUtils.getModuleName(impl.getRoot().toURL(), true))
+            final TypeElement e = Optional.ofNullable(
+                    SourceVersion.RELEASE_9.compareTo(getSourceVersion()) <= 0 ?
+                            SourceUtils.getModuleName(impl.getRoot().toURL(), true) :
+                            null)
                     .map(elements::getModuleElement)
                     .map((module) -> elements.getTypeElementByBinaryName(module, name))
                     .orElseGet(() -> elements.getTypeElementByBinaryName(name));

@@ -39,42 +39,57 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.editor;
 
-import java.util.EventListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.api.editor.fold.FoldTemplate;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.spi.editor.fold.FoldTypeProvider;
+import org.openide.util.NbBundle;
 
 /**
- * Listener which receives basic state events from running Shell. Attach the listener
- * to {@link JShellEnvironment}.
- * 
+ *
  * @author sdedic
  */
-public interface ShellListener extends EventListener {
-    /**
-     * JShellEnvironment was crated and put alive. This event is the only one
-     * broadcasted to listeners registered through 
-     * @param ev 
-     */
-    public void shellCreated(ShellEvent ev);
+@MimeRegistration(mimeType = "text/x-repl", service = FoldTypeProvider.class, position = 200)
+public final class ConsoleFoldsProvider implements FoldTypeProvider {
+    private static final Collection<FoldType>   types = new ArrayList<FoldType>(5);
     
-    /**
-     * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance. The event will
-     * fire also in case the ShellSession has recycled the JShell engine.
-     * of ShellSession.
-     * @param ev 
-     */
-    public void shellStarted(ShellEvent ev);
+    @NbBundle.Messages("FoldType_InitialInfo=Greeting Message")
+    public static final FoldType    INITIAL_INFO = FoldType.INITIAL_COMMENT.derive(
+            FoldType.INITIAL_COMMENT.code(), 
+            Bundle.FoldType_InitialInfo(), 
+            FoldType.INITIAL_COMMENT.getTemplate());
     
-    /**
-     * The status of the shell has been changed
-     * @param ev 
-     */
-    public void shellStatusChanged(ShellEvent ev);
+    @NbBundle.Messages("FoldType_ClasspathInfo=Classpath Info")
+    public static final FoldType    CLASSPATH_INFO = FoldType.INITIAL_COMMENT.derive("classpath-info", 
+            Bundle.FoldType_ClasspathInfo(), new
+            FoldTemplate(0, 0, "{ ... }"));
     
-    /**
-     * The entire JShellEnvironment has been shut down.
-     * @param ev 
-     */
-    public void shellShutdown(ShellEvent ev);
+    @NbBundle.Messages("FoldType_CommandOutput=Command output")
+    public static final FoldType    OUTPUT  = FoldType.create("command-output", Bundle.FoldType_CommandOutput(),
+                                    new FoldTemplate(0, 0, "..."));
+    
+    @NbBundle.Messages("FoldType_Message=Message")
+    public static final FoldType    MESSAGE  = FoldType.create("message", Bundle.FoldType_Message(),
+                                    new FoldTemplate(0, 0, "[...]"));
+
+    static {
+        types.add(INITIAL_INFO);
+        types.add(CLASSPATH_INFO);
+        types.add(OUTPUT);
+        types.add(MESSAGE);
+    }
+    
+    @Override
+    public Collection getValues(Class type) {
+        return types;
+    }
+
+    @Override
+    public boolean inheritable() {
+        return false;
+    }
 }

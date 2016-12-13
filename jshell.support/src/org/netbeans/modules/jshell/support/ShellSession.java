@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.support;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.jshell.tool.JShellLauncher;
 import org.netbeans.modules.jshell.tool.JShellTool;
 import org.netbeans.modules.jshell.parsing.ModelAccessor;
@@ -117,6 +118,7 @@ import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
 import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
 import org.netbeans.modules.jshell.parsing.SnippetRegistry;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
 import org.netbeans.modules.jshell.support.ShellHistory.Item;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -165,6 +167,7 @@ public class ShellSession  {
     private static Logger LOG = Logger.getLogger(ShellSession.class.getName());
     
     public static final String PROP_ACTIVE = "active";
+    public static final String PROP_ENGINE = "active";
 
     /**
      * Work root, contains console file and snippet files
@@ -208,7 +211,7 @@ public class ShellSession  {
      * should not receive anything from the JShell. Detached ShellSession
      * MAY receive something, but should not reflect it in the document.
      */
-    private volatile boolean closed;
+    private volatile boolean ignoreClose;
     
     private FileObject consoleFile;
     private JShellEnvironment env;
@@ -232,6 +235,7 @@ public class ShellSession  {
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
+    // @GuardedBy(this)
     private SnippetRegistry     snippetRegistry;
         
     public ShellSession(JShellEnvironment env) {
@@ -282,6 +286,14 @@ public class ShellSession  {
         );
     }
     
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.addPropertyChangeListener(pcl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.removePropertyChangeListener(pcl);
+    }
+    
     public boolean isActive() {
         return !detached;
     }
@@ -327,7 +339,8 @@ public class ShellSession  {
     }
     
     public boolean isValid() {
-        return !closed && !detached;
+        Launcher l = this.launcher;
+        return l != null && l.isLive() && !detached;
     }
     
     /**
@@ -564,20 +577,20 @@ public class ShellSession  {
     }
     
     private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
-        ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
-        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
-        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
-        
-        String cp = addRoots("", bcp);
-        cp = addRoots(cp, compile);
-        
+        String cp = createProjectClasspath();
         JShellAccessor.resetCompileClasspath(jshell, cp);
     }
     
     private boolean initializing;
     
-    public  String getClasspath() {
-        return createClasspathString();
+    private String createProjectClasspath() {
+        //ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
+        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
+        
+        String cp = addRoots("", compile);
+        //cp = addRoots(cp, compile);
+        return cp;
     }
     
     private class GenProxy implements JShellGenerator {
@@ -659,10 +672,24 @@ public class ShellSession  {
                 Exceptions.printStackTrace(ex);
             }
             synchronized (ShellSession.this) {
-                snippetRegistry = new SnippetRegistry(shell, bridgeImpl, workRoot, editorWorkRoot);
+                snippetRegistry = new SnippetRegistry(
+                        shell, bridgeImpl, workRoot, editorWorkRoot, 
+                        snippetRegistry);
+                // replace for fresh instance !
+                JShell oldShell = ShellSession.this.shell;
                 ShellSession.this.shell = shell;
+                if (oldShell != null) {
+                    FORCE_CLOSE_RP.post(() -> {
+                        propSupport.firePropertyChange(PROP_ENGINE, oldShell, shell);
+                    });
+                }
             }
             this.subscription = shell.onSnippetEvent(this);
+            // it's possible that the shell's startup will terminate the session
+            if (!detached) {
+                shell.onShutdown(sh -> closedDelayed());
+                ignoreClose = false;
+            }
             return shell;
         }
 
@@ -754,18 +781,12 @@ public class ShellSession  {
             }
             reportErrorMessage(t);
             closed();
-            env.notifyDisconnected(this);
+            env.notifyDisconnected(this, false);
             return;
         } finally {
             initializing = false;
             if (l != null && l.subscription != null && shell != null) {
                 shell.unsubscribe(l.subscription);
-            }
-        }
-        synchronized (this) {
-            // it's possible that the shell's startup will terminate the session
-            if (isValid()) {
-                shell.onShutdown(sh -> closedDelayed());
             }
         }
     }
@@ -783,7 +804,7 @@ public class ShellSession  {
         @Override
         public SourceCodeAnalysis.CompletionInfo analyzeInput(String input) {
             try {
-                return execute(() -> getShell().sourceCodeAnalysis().analyzeCompletion(input));
+                return execute(() -> ensureShell().sourceCodeAnalysis().analyzeCompletion(input));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -796,7 +817,7 @@ public class ShellSession  {
         
     };
     
-    public SnippetRegistry getSnippetRegistry() {
+    public synchronized SnippetRegistry getSnippetRegistry() {
         return snippetRegistry;
     }
 
@@ -843,16 +864,19 @@ public class ShellSession  {
         "MSG_JShellCannotStart=The Java Shell VM is not reachable. You may only use shell commands, or re-run the target process.",
         "MSG_JShellDisconnected=The remote Java Shell has terminated. Restart the Java Shell to continue"
     })
-    public void notifyClosed(JShellEnvironment env) {
+    public void notifyClosed(JShellEnvironment env, boolean remote) {
         synchronized (this) {
-            if (closed) {
+            if (ignoreClose) {
                 return;
             }
-            closed = true;
+            ignoreClose = true;
         }
         String s;
         if (initializing) {
             s = Bundle.MSG_JShellCannotStart();
+        } else if (!remote) {
+            // somewhat expected, do not report
+            return;
         } else if (env.isClosed()) {
             s = Bundle.MSG_JShellClosed();
         } else {
@@ -901,82 +925,60 @@ public class ShellSession  {
     }
     
     private void writeToShellDocument(String text) {
-        /*
-        try {
-            documentWriter.append(text);
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Could not report console message: {0}", text);
-        }
-        */
         model.writeToShellDocument(text);
     }
     
     private Set<Snippet>    excludedSnippets = new HashSet<>();
     
     private String createClasspathString() {
-        File remoteProbeJar = InstalledFileLocator.getDefault().locate(
-                "modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.libs.jshell", false);
-        File replJar = InstalledFileLocator.getDefault().locate("modules/ext/nb-jshell.jar", "org.netbeans.libs.jshell", false);
-        File toolsJar = null;
-
-        for (FileObject jdkInstallDir : platform.getInstallFolders()) {
-            FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
-
-            if (toolsJarFO == null) {
-                toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
-            }
-            if (toolsJarFO != null) {
-                toolsJar = FileUtil.toFile(toolsJarFO);
-            }
-        }
-        ClassPath compilePath = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        String sep = System.getProperty("path.separator");
+        boolean modular = ShellProjectUtils.isModularJDK(platform);
+        String agentJar = 
+                modular ?
+                    "modules/ext/nb-mod-jshell-probe.jar" :
+                    "modules/ext/nb-custom-jshell-probe.jar";
         
-        FileObject[] roots = compilePath.getRoots();
-        File[] urlFiles = new File[roots.length];
-        int index = 0;
-        for (FileObject fo : roots) {
-            File f = FileUtil.toFile(fo);
-            if (f != null) {
-                urlFiles[index++] = f;
+                
+        File remoteProbeJar = InstalledFileLocator.getDefault().locate(agentJar, 
+                "org.netbeans.libs.jshell", false);
+        StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
+        
+        if (!modular) {
+            File replJar = 
+                    InstalledFileLocator.getDefault().locate(
+                            "modules/ext/nb-jshell.jar", 
+                            "org.netbeans.libs.jshell", false);
+            sb.append(sep).append(replJar.getAbsolutePath());
+
+            File toolsJar = null;
+            for (FileObject jdkInstallDir : platform.getInstallFolders()) {
+                FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
+
+                if (toolsJarFO == null) {
+                    toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
+                }
+                if (toolsJarFO != null) {
+                    toolsJar = FileUtil.toFile(toolsJarFO);
+                    break;
+                }
+            }
+            if (toolsJar != null) {
+                sb.append(sep).append(toolsJar);
             }
         }
-        String cp = addClassPath(
-                toolsJar != null ? toClassPath(remoteProbeJar, replJar, toolsJar) : 
-                                   toClassPath(remoteProbeJar, replJar),
-                urlFiles) + System.getProperty("path.separator") + " "; // NOI18N avoid REPL bug
         
-        return cp;
-    }
-
-    private static String addClassPath(String prefix, File... files) {
-        String suffix = toClassPath(files);
-        if (prefix != null && !prefix.isEmpty()) {
-            return prefix + System.getProperty("path.separator") + suffix;
-        }
-        return suffix;
-    }
-
-    private static String toClassPath(File... files) {
-        String sep = "";
-        StringBuilder cp = new StringBuilder();
-
-        for (File f : files) {
-            if (f == null) continue;
-            cp.append(sep);
-            cp.append(f.getAbsolutePath());
-            sep = System.getProperty("path.separator");
-        }
-
-        return cp.toString();
+        String projectCp = createProjectClasspath();
+        sb.append(sep).append(projectCp);
+        return sb.toString();
     }
 
     private void closed() {
         synchronized (this) {
-            if (closed) {
+            if (ignoreClose) {
                 return;
             }
         }
-        env.notifyDisconnected(this);
+        env.notifyDisconnected(this, false);
         propSupport.firePropertyChange(PROP_ACTIVE, true, false);
         
         // save the history
@@ -1077,9 +1079,13 @@ public class ShellSession  {
     public ClasspathInfo getClasspathInfo() {
         return cpInfo;
     }
+    
+    public JShell ensureShell() {
+        initJShell();
+        return shell;
+    }
 
     public JShell getShell() {
-        initJShell();
         return shell;
     }
 
@@ -1229,7 +1235,7 @@ public class ShellSession  {
         // rely on JShell's own parsing from the input section
         // just for case:
         ModelAccessor.INSTANCE.execute(model, cmd != null, () -> {
-            Executor executor = new Executor(cmd, model.getExecutingSection(), shell);
+            Executor executor = new Executor(cmd, model.getExecutingSection());
             executor.execute();
         }, this::getPromptAfterError);
     }
@@ -1237,16 +1243,14 @@ public class ShellSession  {
     private class Executor implements Runnable, Consumer<SnippetEvent> {
         private final String          cmd;
         private final ConsoleSection  exec;
-        private final JShell          shell;
         
         private List<String>    toExec = new ArrayList<>();
         private boolean         erroneous;
         private int             execOffset;
 
-        public Executor(String cmd, ConsoleSection exec, JShell shell) {
+        public Executor(String cmd, ConsoleSection exec) {
             this.cmd = cmd;
             this.exec = exec;
-            this.shell = shell;
         }
         
         private boolean isExternal() {
@@ -1307,13 +1311,26 @@ public class ShellSession  {
                 int index = 0;
                 execOffset = 0;
                 Subscription sub = null;
-                
+                JShell sh = null;
                 try {
                     for (String s : toExec) {
+                            launcher.ensureLive();
+                            if (!launcher.isLive()) {
+                                RemoteJShellService ec = ShellSession.this.exec;
+                                if (ec != null) {
+                                    ExecutionControlException ee = 
+                                            ec.getBrokenException();
+                                    if (ee != null) {
+                                        throw ee;
+                                    }
+                                }
+                                break;
+                            }
+                            sh = launcher.getJShell();
                             if (sub == null) {
                                 String t = s.trim();
                                 if (!t.isEmpty() && t.charAt(0) != '/') { // shell commands
-                                    sub = shell.onSnippetEvent(this);
+                                    sub = sh.onSnippetEvent(this);
                                 }
                             }
                             if (ranges != null) {
@@ -1325,14 +1342,14 @@ public class ShellSession  {
                             }
                         index++;
                     }
-                } catch (IllegalStateException ex) {
+                } catch (IllegalStateException | ExecutionControlException ex) {
                     reportShellMessage(Bundle.MSG_JShellCannotExecute());
                 } catch (RuntimeException | IOException ex) {
                     reportErrorMessage(ex);
                     reportShellMessage(Bundle.MSG_ErrorExecutingCommand());
                 } finally {
                     if (sub != null) {
-                        shell.unsubscribe(sub);
+                        sh.unsubscribe(sub);
                     }
                     ensureInputSectionAvailable();
                 }

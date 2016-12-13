@@ -245,6 +245,7 @@ public class CommandCompletionProvider implements CompletionProvider{
                     return;
                 }
             }
+
             List<SourceCodeAnalysis.Suggestion> suggestions = session.getJShellTool().commandCompletionSuggestions(
                     sectionContents,
                     sectionOffset,
@@ -284,7 +285,7 @@ public class CommandCompletionProvider implements CompletionProvider{
                         break;
                     }
                     default:
-                        otherItems.add(new ToolCompletionItem(/*prefix + */text, insertAt, deleteLen, session));
+                        otherItems.add(new ToolCompletionItem(/*prefix + */text, insertAt, deleteLen, session, false));
                         break;
                         
                 }
@@ -298,7 +299,7 @@ public class CommandCompletionProvider implements CompletionProvider{
             }
             List<String>    candidates = JShellLexer.getCommandsFromPrefix(prefix);
             for (String s : candidates) {
-                resultSet.addItem(new CommandCompletionItem(session, startAt, s));
+                resultSet.addItem(new CommandCompletionItem(session, startAt, s, prefix.length() < 2));
             }
         }
     }
@@ -309,7 +310,7 @@ public class CommandCompletionProvider implements CompletionProvider{
         private ImageIcon icon;
         
         public FileCompletionItem(String insertText, int insertAt, int delete, ShellSession session, String fileResource, Path basePath) {
-            super(insertText, insertAt, delete, session);
+            super(insertText, insertAt, delete, session, false);
             this.fileResource = fileResource;
             this.basePath = basePath;
         }
@@ -523,7 +524,7 @@ public class CommandCompletionProvider implements CompletionProvider{
         private final String command;
         
         public OptionCompletionItem(String insertText, int insertAt, int delete, ShellSession session, String command) {
-            super(insertText, insertAt, delete, session);
+            super(insertText, insertAt, delete, session, false);
             this.command = command;
         }
 
@@ -545,12 +546,14 @@ public class CommandCompletionProvider implements CompletionProvider{
         private final int   insertAt;
         private final int   delete;
         protected final ShellSession session;
+        protected final boolean lowerPriority;
 
-        public ToolCompletionItem(String insertText, int insertAt, int delete, ShellSession session) {
+        public ToolCompletionItem(String insertText, int insertAt, int delete, ShellSession session, boolean empty) {
             this.insertText = insertText;
             this.insertAt = insertAt;
             this.delete = delete;
             this.session = session;
+            this.lowerPriority = empty;
         }
         
         protected boolean closeCompletion() {
@@ -610,7 +613,7 @@ public class CommandCompletionProvider implements CompletionProvider{
 
         @Override
         public int getSortPriority() {
-            return 100;
+            return lowerPriority ? 3000 : 500;
         }
 
         @Override
@@ -628,11 +631,12 @@ public class CommandCompletionProvider implements CompletionProvider{
         private final int       fromOffset;
         private final String    command;
         private final ShellSession session;
-
-        public CommandCompletionItem(ShellSession session, int fromOffset, String command) {
+        private final boolean lowerPriority;
+        public CommandCompletionItem(ShellSession session, int fromOffset, String command, boolean lowerPriority) {
             this.fromOffset = fromOffset;
             this.command = command;
             this.session = session;
+            this.lowerPriority = lowerPriority;
         }
         
         @Override
@@ -699,7 +703,7 @@ public class CommandCompletionProvider implements CompletionProvider{
 
         @Override
         public int getSortPriority() {
-            return 100;
+            return lowerPriority ? 3000 : 500;
         }
 
         @Override

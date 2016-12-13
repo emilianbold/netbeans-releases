@@ -67,4 +67,6 @@ public interface RemoteJShellService extends ExecutionControl {
     public String getTargetSpec();
 
     public void suppressClasspathChanges(boolean b);
+    
+    public ExecutionControlException getBrokenException();
 }
