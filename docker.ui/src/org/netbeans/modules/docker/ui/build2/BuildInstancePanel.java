@@ -45,6 +45,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -88,7 +89,8 @@ public class BuildInstancePanel implements WizardDescriptor.Panel<WizardDescript
 
     @Override
     public boolean isFinishPanel() {
-        return BuildImageWizard.isFinishable((String) wizard.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY),
+        return BuildImageWizard.isFinishable((FileSystem)wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY),
+                (String)wizard.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY),
                 (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY));
     }
 
