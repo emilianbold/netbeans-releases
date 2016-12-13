@@ -51,21 +51,24 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 public final class BuildContextVisual extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-
+    private final FileSystem fileSystem;
+    
     /**
      * Creates new form BuildVisualPanel1
      */
-    public BuildContextVisual() {
+    public BuildContextVisual(FileSystem fileSystem) {
         initComponents();
-
+        
+        this.fileSystem = fileSystem;
         DefaultDocumentListener listener = new DefaultDocumentListener();
         buildContextTextField.getDocument().addDocumentListener(listener);
         ((JTextComponent) repositoryComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
@@ -210,14 +213,20 @@ public final class BuildContextVisual extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void buildContextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildContextButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        FileChooserBuilder builder = FileChooserBuilder.create(fileSystem);
+        JFileChooser fileChooser = builder.createFileChooser();
+        fileChooser.setApproveButtonText(NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.fileChooser.button")); // NOI18M
+        fileChooser.setDialogTitle(NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.fileChooser.dialogTitle")); // NOI18M
+        fileChooser.setFileSelectionMode(0);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        
         String buildText = UiUtils.getValue(buildContextTextField);
         if (buildText != null) {
-            chooser.setSelectedFile(new File(buildText));
+            fileChooser.setSelectedFile(new File(buildText));
+            
         }
-        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
-            buildContextTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+        if (fileChooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            buildContextTextField.setText(fileChooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_buildContextButtonActionPerformed
 

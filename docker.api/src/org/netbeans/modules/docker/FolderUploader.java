@@ -58,7 +58,6 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.BuildEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -83,7 +82,7 @@ public class FolderUploader {
         this.os = os;
     }
 
-    public Future<Void> upload(final File folder, final IgnoreFileFilter filter, final Listener listener) {
+    public Future<Void> upload(final FileObject folder, final IgnoreFileFilter filter, final Listener listener) {
         return RP.submit(new Callable<Void>() {
             @Override
             public Void call() throws IOException, ArchiveException {
@@ -95,7 +94,7 @@ public class FolderUploader {
                                 ArchiveStreamFactory.TAR, gzos);
                         try {
                             // FIXME exclude dockerignored files
-                            FileObject context = FileUtil.toFileObject(FileUtil.normalizeFile(folder));
+                            FileObject context = folder;
                             for (Enumeration<? extends FileObject> e = context.getChildren(true); e.hasMoreElements();) {
                                 FileObject child = e.nextElement();
                                 if (child.isFolder()) {
@@ -105,7 +104,7 @@ public class FolderUploader {
                                 if (filter.accept(path)) {
                                     listener.onUpload(path);
                                     LOGGER.log(Level.FINE, "Uploading {0}", path);
-                                    TarArchiveEntry entry = new TarArchiveEntry(FileUtil.toFile(child),
+                                    TarArchiveEntry entry = new TarArchiveEntry(new FileObjectAdapter(child),
                                             path);
                                     aos.putArchiveEntry(entry);
                                     try (InputStream is = new BufferedInputStream(child.getInputStream())) {
@@ -135,5 +134,28 @@ public class FolderUploader {
 
         void onUpload(String path);
 
+    }
+    private static final class FileObjectAdapter extends File {
+        private final FileObject fo;
+
+        public FileObjectAdapter(FileObject fo) {
+            super(fo.getPath());
+            this.fo = fo;
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return fo.isFolder();
+        }
+
+        @Override
+        public long lastModified() {
+            return fo.lastModified().getTime();
+        }
+
+        @Override
+        public long length() {
+            return fo.getSize();
+        }
     }
 }

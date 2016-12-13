@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
-import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -103,20 +103,19 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         String buildContext = (String) wizard.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY);
         String dockerfile = component.getDockerfile();
         if (dockerfile == null) {
-            dockerfile = DockerAction.DOCKER_FILE;
+            dockerfile = buildContext+"/"+DockerAction.DOCKER_FILE;
+        } else {
+            dockerfile = buildContext+"/"+dockerfile;
         }
-        File file = new File(dockerfile);
-        if (!file.isAbsolute()) {
-            file = new File(buildContext, dockerfile);
-        }
+        FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
+        FileObject fo = fs.getRoot().getFileObject(dockerfile);
 
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         // the last check avoids entires like Dockerfile/ to be considered valid files
         if (fo == null || !fo.isData() || !dockerfile.endsWith(fo.getNameExt())) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingDockerfile());
             return false;
         }
-        FileObject build = FileUtil.toFileObject(FileUtil.normalizeFile(new File(buildContext)));
+        FileObject build = fs.getRoot().getFileObject(buildContext);
         if (build == null || !FileUtil.isParentOf(build, fo)) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonRelativeDockerfile());
             return false;

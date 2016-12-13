@@ -46,7 +46,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -59,11 +63,12 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
      * component from this class, just use getComponent().
      */
     private BuildContextVisual component;
-
+    private final FileSystem fileSystem;
     private WizardDescriptor wizard;
 
-    public BuildContextPanel() {
+    public BuildContextPanel(FileSystem fileSystem) {
         super();
+        this.fileSystem = fileSystem;
     }
 
     // Get the visual component for the panel. In this template, the component
@@ -73,7 +78,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public BuildContextVisual getComponent() {
         if (component == null) {
-            component = new BuildContextVisual();
+            component = new BuildContextVisual(fileSystem);
             component.addChangeListener(this);
         }
         return component;
@@ -89,7 +94,8 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public boolean isFinishPanel() {
-        return BuildImageWizard.isFinishable(component.getBuildContext(),
+        return BuildImageWizard.isFinishable((FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY),
+                component.getBuildContext(),
                 (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY));
     }
 
@@ -105,7 +111,8 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
         String buildContext = component.getBuildContext();
-        if (buildContext == null || !new File(buildContext).isDirectory()) {
+        FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
+        if (buildContext == null || !fs.getRoot().getFileObject(buildContext).isFolder()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingBuildContext());
             return false;
         }
