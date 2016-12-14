@@ -41,6 +41,11 @@ package org.netbeans.modules.java.api.common.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,23 +53,32 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Tomas Zezula
  */
 public final class MultiModuleNodeFactory implements NodeFactory {
+    private static final RequestProcessor RP = new RequestProcessor(MultiModuleNodeFactory.class);
     private final MultiModule sourceModules;
     private final MultiModule testModules;
 
@@ -79,17 +93,23 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
     @Override
     public NodeList<?> createNodes(@NonNull final Project project) {
-        return new Nodes(sourceModules, testModules);
+        return new Nodes(project, sourceModules, testModules);
     }
 
     private static final class Nodes implements NodeList<ModuleKey>, PropertyChangeListener {
+        private final Project project;
         private final MultiModule sourceModules;
         private final MultiModule testModules;
         private final ChangeSupport listeners;
 
         Nodes(
+                @NonNull final Project project,
                 @NonNull final MultiModule sourceModules,
                 @NonNull final MultiModule testModules) {
+            Parameters.notNull("project", project);     //NOI18N
+            Parameters.notNull("sourceModules", sourceModules); //NOI18N
+            Parameters.notNull("testModules", testModules);     //NOI18N
+            this.project = project;
             this.sourceModules = sourceModules;
             this.testModules = testModules;
             this.listeners = new ChangeSupport(this);
@@ -100,7 +120,9 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return Stream.concat(
                     this.sourceModules.getModuleNames().stream(),
                     this.testModules.getModuleNames().stream())
-                .map((name) -> new ModuleKey(name, sourceModules, testModules))
+                .sorted()
+                .distinct()
+                .map((name) -> new ModuleKey(project, name, sourceModules, testModules))
                 .collect(Collectors.toList());
         }
 
@@ -133,22 +155,28 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            if (MultiModule.PROP_MODULES.equals(evt.getPropertyName())) {
+                this.listeners.fireChange();
+            }
         }
     }
 
     private static final class ModuleKey {
+        private final Project project;
         private final MultiModule sourceModules;
         private final MultiModule testModules;
         private final String moduleName;
 
         ModuleKey(
+                @NonNull final Project project,
                 @NonNull final String moduleName,
                 @NonNull final MultiModule sourceModules,
                 @NonNull final MultiModule testModules) {
+            Parameters.notNull("project", project);
             Parameters.notNull("moduleName", moduleName);       //NOI18N
             Parameters.notNull("sourceModules", sourceModules); //NOI18N
             Parameters.notNull("testModules", testModules);     //NOI18N
+            this.project = project;
             this.moduleName = moduleName;
             this.sourceModules = sourceModules;
             this.testModules = testModules;
@@ -167,6 +195,11 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         @NonNull
         MultiModule getTestModules() {
             return testModules;
+        }
+
+        @NonNull
+        Project getProject() {
+            return project;
         }
 
         @Override
@@ -194,7 +227,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         private final String moduleName;
 
         ModuleNode(@NonNull final ModuleKey key) {
-            super(Children.LEAF, Lookup.EMPTY);
+            super(ModuleChildren.create(key), Lookup.EMPTY);
             this.modules = key.getSourceModules();
             this.testModules = key.getTestModules();
             this.moduleName = key.getModuleName();
@@ -213,5 +246,86 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         final MultiModule mods = MultiModule.getOrCreate(sourceModules, srcRoots);
         final MultiModule testMods = MultiModule.getOrCreate(testModules, testRoots);
         return new MultiModuleNodeFactory(mods, testMods);
+    }
+
+    private static final class ModuleChildren extends Children.Keys<SourceGroup> implements PropertyChangeListener {
+        private final Sources sources;
+        private final ClassPath src;
+        private final ClassPath tests;
+        private final RequestProcessor.Task refresh;
+
+        private ModuleChildren(
+                @NonNull final Sources sources,
+                @NonNull final ClassPath src,
+                @NonNull final ClassPath tests) {
+            Parameters.notNull("sources", sources); //NOI18N
+            Parameters.notNull("src", src);         //NOI18N
+            Parameters.notNull("tests", tests);     //NOI18N
+            this.sources = sources;
+            this.src = src;
+            this.tests = tests;
+            refresh = RP.create(()->setKeys(createKeys()));
+        }
+
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            this.src.addPropertyChangeListener(this);
+            this.tests.addPropertyChangeListener(this);
+            setKeys(createKeys());
+        }
+
+        @Override
+        protected void removeNotify() {
+            super.removeNotify();
+            this.src.removePropertyChangeListener(this);
+            this.tests.removePropertyChangeListener(this);
+            setKeys(Collections.emptySet());
+        }
+
+        @Override
+        @NonNull
+        protected Node[] createNodes(@NonNull final SourceGroup key) {
+            return new Node[] {PackageView.createPackageView(key)};
+        }
+
+        @NonNull
+        private Collection<? extends SourceGroup> createKeys() {
+            final java.util.Map<FileObject,SourceGroup> grpsByRoot = new HashMap<>();
+            for (SourceGroup g : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                grpsByRoot.put(g.getRootFolder(), g);
+            }
+            final Comparator<FileObject> foc = (a,b) -> a.getNameExt().compareTo(b.getNameExt());
+            return Stream.concat(
+                    Arrays.stream(src.getRoots())
+                        .sorted(),
+                    Arrays.stream(tests.getRoots())
+                        .sorted())
+                    .map((fo) -> grpsByRoot.get(fo))
+                    .filter((g) -> g != null)
+                    .collect(Collectors.toList());
+        }
+
+        @NonNull
+        static ModuleChildren create(@NonNull final ModuleKey key) {
+            final String modName = key.getModuleName();
+            ClassPath scp = key.getSourceModules().getModuleSources(modName);
+            if (scp == null) {
+                scp = ClassPath.EMPTY;
+            }
+            ClassPath tcp = key.getTestModules().getModuleSources(modName);
+            if (tcp == null) {
+                tcp = ClassPath.EMPTY;
+            }
+            final Sources sources = key.getProject().getLookup().lookup(Sources.class);
+            return new ModuleChildren(sources, scp, tcp);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
+                refresh.schedule(100);
+            }
+        }
     }
 }

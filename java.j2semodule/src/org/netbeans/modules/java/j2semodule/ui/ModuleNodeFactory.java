@@ -78,7 +78,6 @@ public final class ModuleNodeFactory implements NodeFactory {
     private NodeFactory getDelegate(@NonNull final J2SEModularProject mp) {
         NodeFactory res = delegate.get();
         if (res == null) {
-            //res = new JavaSourceNodeFactory();
             res = MultiModuleNodeFactory.create(
                     mp.getModuleRoots(),
                     mp.getSourceRoots(), mp.getTestModuleRoots(), mp.getTestSourceRoots());

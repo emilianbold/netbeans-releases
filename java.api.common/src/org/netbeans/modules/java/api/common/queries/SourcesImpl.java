@@ -239,11 +239,9 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
 
             List<String> locations;
             List<String> names;
-            Icon icon = null;
             String loc = evaluator.evaluate(locProp);
             int idx = loc.indexOf("/*/"); //NOI18N
             if (idx >= 0) {
-                icon = ImageUtilities.loadImageIcon(MODULE_ICON, false);
                 locations = new ArrayList<>();
                 names = new ArrayList<>();
                 final String basePath = loc.substring(0, idx + 1);
@@ -252,8 +250,10 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                 if (file.isDirectory()) {
                     for (File f : file.listFiles()) {
                         if (f.isDirectory()) {
-                            locations.add(basePath + f.getName() + srcPath);
-                            names.add(f.getName());
+                            final String resolvedSrcPath = basePath + f.getName() + srcPath;
+                            final File resolvedSrc = helper.resolveFile(resolvedSrcPath);
+                            locations.add(resolvedSrcPath);
+                            names.add(resolvedSrc.getName());
                         }
                     }
                 }
@@ -278,9 +278,6 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                 }
                 if (hint != null) {
                     cfg.hint(hint);
-                }
-                if (icon != null) {
-                    cfg.icon(icon).openedIcon(icon);
                 }
                 cfg.add();  // principal root
                 if (type != null) {
