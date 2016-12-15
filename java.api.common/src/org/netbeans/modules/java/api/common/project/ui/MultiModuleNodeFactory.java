@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.event.ChangeListener;
@@ -71,7 +72,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -249,37 +249,63 @@ public final class MultiModuleNodeFactory implements NodeFactory {
     }
 
     private static final class ModuleChildren extends Children.Keys<SourceGroup> implements PropertyChangeListener {
+        private final String moduleName;
         private final Sources sources;
-        private final ClassPath src;
-        private final ClassPath tests;
+        private final MultiModule srcModule;
+        private final MultiModule testModule;
         private final RequestProcessor.Task refresh;
+        private final AtomicReference<ClassPath> srcPath;
+        private final AtomicReference<ClassPath> testPath;
 
         private ModuleChildren(
+                @NonNull final String moduleName,
                 @NonNull final Sources sources,
-                @NonNull final ClassPath src,
-                @NonNull final ClassPath tests) {
-            Parameters.notNull("sources", sources); //NOI18N
-            Parameters.notNull("src", src);         //NOI18N
-            Parameters.notNull("tests", tests);     //NOI18N
+                @NonNull final MultiModule srcModule,
+                @NonNull final MultiModule testModule) {
+            Parameters.notNull("moduleName", moduleName);   //NOI18N
+            Parameters.notNull("sources", sources);         //NOI18N
+            Parameters.notNull("srcModule", srcModule);     //NOI18N
+            Parameters.notNull("testModule", testModule);   //NOI18N
+            this.moduleName = moduleName;
             this.sources = sources;
-            this.src = src;
-            this.tests = tests;
+            this.srcModule = srcModule;
+            this.testModule = testModule;
+            this.srcPath = new AtomicReference<>();
+            this.testPath = new AtomicReference<>();
             refresh = RP.create(()->setKeys(createKeys()));
         }
 
         @Override
         protected void addNotify() {
             super.addNotify();
-            this.src.addPropertyChangeListener(this);
-            this.tests.addPropertyChangeListener(this);
+            ClassPath cp = srcModule.getModuleSources(moduleName);
+            if (cp == null) {
+                cp = ClassPath.EMPTY;
+            }
+            if (srcPath.compareAndSet(null, cp)) {
+                cp.addPropertyChangeListener(this);
+            }
+            cp = testModule.getModuleSources(moduleName);
+            if (cp == null) {
+                cp = ClassPath.EMPTY;
+            }
+            if (testPath.compareAndSet(null, cp)) {
+                cp.addPropertyChangeListener(this);
+            }
             setKeys(createKeys());
         }
 
         @Override
         protected void removeNotify() {
             super.removeNotify();
-            this.src.removePropertyChangeListener(this);
-            this.tests.removePropertyChangeListener(this);
+            ClassPath cp = srcPath.get();
+            if (cp != null && srcPath.compareAndSet(cp, null)) {
+                cp.removePropertyChangeListener(this);
+            }
+            cp = testPath.get();
+            if (cp != null && testPath.compareAndSet(cp, null)) {
+                cp.removePropertyChangeListener(this);
+            }
             setKeys(Collections.emptySet());
         }
 
@@ -297,10 +323,10 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             }
             final Comparator<FileObject> foc = (a,b) -> a.getNameExt().compareTo(b.getNameExt());
             return Stream.concat(
-                    Arrays.stream(src.getRoots())
-                        .sorted(),
-                    Arrays.stream(tests.getRoots())
-                        .sorted())
+                    Arrays.stream(srcPath.get().getRoots())
+                        .sorted(foc),
+                    Arrays.stream(testPath.get().getRoots())
+                        .sorted(foc))
                     .map((fo) -> grpsByRoot.get(fo))
                     .filter((g) -> g != null)
                     .collect(Collectors.toList());
@@ -308,17 +334,11 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
         @NonNull
         static ModuleChildren create(@NonNull final ModuleKey key) {
-            final String modName = key.getModuleName();
-            ClassPath scp = key.getSourceModules().getModuleSources(modName);
-            if (scp == null) {
-                scp = ClassPath.EMPTY;
-            }
-            ClassPath tcp = key.getTestModules().getModuleSources(modName);
-            if (tcp == null) {
-                tcp = ClassPath.EMPTY;
-            }
-            final Sources sources = key.getProject().getLookup().lookup(Sources.class);
-            return new ModuleChildren(sources, scp, tcp);
+            return new ModuleChildren(
+                    key.getModuleName(),
+                    key.getProject().getLookup().lookup(Sources.class),
+                    key.getSourceModules(),
+                    key.getTestModules());
         }
 
         @Override
