@@ -446,27 +446,6 @@ public class SQLEditorSupport extends DataEditorSupport
                 
                 if (editor != null) {
                     editor.setResults(components);
-                    if( results != null ) {
-                        for (SQLExecutionResult result : results.getResults()) {
-                            if (result.hasExceptions()) {
-                                // If an exception happend - move editor to that
-                                // location, if driver supplied enough information,
-                                // the exact location is targettet, else the start
-                                // of the statement
-                                //
-                                // The first error is focused
-                                int[] errorCoords = result.getRawErrorLocation();
-                                int errLine = errorCoords[0];
-                                int errCol = errorCoords[1];
-                                getLineSet()
-                                        .getCurrent(errLine)
-                                        .show(Line.ShowOpenType.OPEN,
-                                                Line.ShowVisibilityType.FOCUS,
-                                                errCol);
-                                break;
-                            }
-                        }
-                    }
                 } else {
                 Enumeration editors = allEditors.getComponents();
                 while (editors.hasMoreElements()) {
