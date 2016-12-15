@@ -187,7 +187,7 @@ class SQLExecutionHelper {
                             break;
                         }
                     }
-                } catch (final SQLException sqlEx) {
+                } catch (final SQLException | RuntimeException sqlEx) {
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {
                             @Override
@@ -202,8 +202,6 @@ class SQLExecutionHelper {
                 } catch (InterruptedException ex) {
                     // Expected when interrupted while waiting to get enter to
                     // the swing EDT
-                } catch (RuntimeException e) {
-                  LOGGER.log(Level.WARNING, null, e);
                 } finally {
                     loaderThread = null;
                     DataViewUtils.closeResources(stmt);
