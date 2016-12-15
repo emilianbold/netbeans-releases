@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.java.api.common.project.ui;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -49,7 +50,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,11 +69,15 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -281,7 +285,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         return new MultiModuleNodeFactory(mods, testMods);
     }
 
-    private static final class ModuleChildren extends Children.Keys<SourceGroup> implements PropertyChangeListener {
+    private static final class ModuleChildren extends Children.Keys<Pair<SourceGroup,Boolean>> implements PropertyChangeListener {
         private final String moduleName;
         private final Sources sources;
         private final MultiModule srcModule;
@@ -344,12 +348,16 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
         @Override
         @NonNull
-        protected Node[] createNodes(@NonNull final SourceGroup key) {
-            return new Node[] {PackageView.createPackageView(key)};
+        protected Node[] createNodes(@NonNull final Pair<SourceGroup,Boolean> key) {
+            Node n = PackageView.createPackageView(key.first());
+            if (key.second()) {
+                n = new TestRootNode(n);
+            }
+            return new Node[] {n};
         }
 
         @NonNull
-        private Collection<? extends SourceGroup> createKeys() {
+        private Collection<? extends Pair<SourceGroup,Boolean>> createKeys() {
             final java.util.Map<FileObject,SourceGroup> grpsByRoot = new HashMap<>();
             for (SourceGroup g : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 grpsByRoot.put(g.getRootFolder(), g);
@@ -357,11 +365,18 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             final Comparator<FileObject> foc = (a,b) -> a.getNameExt().compareTo(b.getNameExt());
             return Stream.concat(
                     Arrays.stream(srcPath.get().getRoots())
-                        .sorted(foc),
+                        .sorted(foc)
+                        .map((fo) -> Pair.of(fo,false)),
                     Arrays.stream(testPath.get().getRoots())
-                        .sorted(foc))
-                    .map((fo) -> grpsByRoot.get(fo))
-                    .filter((g) -> g != null)
+                        .sorted(foc)
+                        .map((fo) -> Pair.of(fo,true)))
+                    .map((p) -> {
+                        final SourceGroup g = grpsByRoot.get(p.first());
+                        return g == null ?
+                                null :
+                                Pair.of(g,p.second());
+                     })
+                    .filter((p) -> p != null)
                     .collect(Collectors.toList());
         }
 
@@ -379,6 +394,51 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
                 refresh.schedule(100);
             }
+        }
+    }
+
+    private static final class TestRootNode extends FilterNode {
+        @StaticResource
+        private static final String TEST_BADGE = "org/netbeans/modules/java/api/common/project/ui/resources/test-badge.png";
+
+        TestRootNode(@NonNull final Node original) {
+            super(original);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return computeIcon(false, type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return computeIcon(true, type);
+        }
+
+        private Image computeIcon(boolean opened, int type) {
+            Image image = opened ?
+                    getDataFolderNodeDelegate().getOpenedIcon(type) :
+                    getDataFolderNodeDelegate().getIcon(type);
+            image = ImageUtilities.mergeImages(
+                    image,
+                    ImageUtilities.loadImage(TEST_BADGE),
+                    4, 5);
+            return image;
+        }
+
+        @NonNull
+        private Node getDataFolderNodeDelegate() {
+            final DataFolder df = getLookup().lookup(DataFolder.class);
+            try {
+                if (df.isValid()) {
+                    return df.getNodeDelegate();
+                }
+            } catch (IllegalStateException e) {
+                if (df.isValid()) {
+                    throw e;
+                }
+            }
+            return new AbstractNode(Children.LEAF);
         }
     }
 }
