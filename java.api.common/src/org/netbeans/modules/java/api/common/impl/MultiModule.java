@@ -89,7 +89,8 @@ public final class MultiModule implements PropertyChangeListener {
 
     private final SourceRoots moduleRoots;
     private final SourceRoots srcRoots;
-    private final AtomicReference<Map<String,Pair<ClassPath,CPImpl>>> cache;
+    private final AtomicReference<Map<String,Pair<ClassPath,CPImpl>>> cpCache;
+    private final AtomicReference<ClassPath> mpCache;
     private final PropertyChangeSupport listeners;
 
     private MultiModule(
@@ -99,7 +100,8 @@ public final class MultiModule implements PropertyChangeListener {
         Parameters.notNull("srcRoots", srcRoots);       //NOI18N
         this.moduleRoots = moduleRoots;
         this.srcRoots = srcRoots;
-        this.cache = new AtomicReference<>(Collections.emptyMap());
+        this.cpCache = new AtomicReference<>(Collections.emptyMap());
+        this.mpCache = new AtomicReference<>();
         this.listeners = new PropertyChangeSupport(this);
         this.moduleRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, this.moduleRoots));
         this.srcRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, this.srcRoots));
@@ -134,6 +136,18 @@ public final class MultiModule implements PropertyChangeListener {
         return null;
     }
 
+    @NonNull
+    public ClassPath getModulePath() {
+        ClassPath mp = mpCache.get();
+        if (mp == null) {
+            mp = ClassPathFactory.createClassPath(new MPImpl(moduleRoots));
+            if (!mpCache.compareAndSet(null, mp)) {
+                mp = mpCache.get();
+            }
+        }
+        return mp;
+    }
+
     public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
         this.listeners.addPropertyChangeListener(listener);
     }
@@ -152,11 +166,11 @@ public final class MultiModule implements PropertyChangeListener {
 
     @NonNull
     private Map<String,Pair<ClassPath,CPImpl>> getCache() {
-        return cache.get();
+        return cpCache.get();
     }
 
     private void updateCache() {
-        final Map<String,Pair<ClassPath,CPImpl>> prev = cache.get();
+        final Map<String,Pair<ClassPath,CPImpl>> prev = cpCache.get();
         final Map<String,Collection<URL>> modulesByName = new HashMap<>();
         for (FileObject moduleRoot : moduleRoots.getRoots()) {
             collectModuleRoots(moduleRoot, srcRoots.getRootURLs(), modulesByName);
@@ -180,7 +194,7 @@ public final class MultiModule implements PropertyChangeListener {
                     modName,
                     Pair.of(cp,impl));
         }
-        if (cache.compareAndSet(prev, next)) {
+        if (cpCache.compareAndSet(prev, next)) {
             if (fire) {
                 this.listeners.firePropertyChange(PROP_MODULES, prev.keySet(), next.keySet());
             }
@@ -358,6 +372,49 @@ public final class MultiModule implements PropertyChangeListener {
             }
             if (dirty && cache.compareAndSet(current, next)) {
                 this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
+            }
+        }
+    }
+
+    private static final class MPImpl implements ClassPathImplementation, PropertyChangeListener {
+        private final SourceRoots roots;
+        private final PropertyChangeSupport listeners;
+        private final AtomicReference<List<PathResourceImplementation>> cache;
+
+        MPImpl(@NonNull final SourceRoots roots) {
+            this.roots = roots;
+            this.listeners = new PropertyChangeSupport(this);
+            this.cache = new AtomicReference<>();
+            this.roots.addPropertyChangeListener(WeakListeners.propertyChange(this, this.roots));
+        }
+
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = cache.get();
+            if (res == null) {
+                res = Collections.unmodifiableList(Arrays.stream(roots.getRootURLs())
+                        .map((url) -> ClassPathSupport.createResource(url))
+                        .collect(Collectors.toList()));
+                cache.set(res);
+            }
+            return res;
+        }
+
+        @Override
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            this.listeners.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            this.listeners.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
+                cache.set(null);
+                listeners.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
             }
         }
     }

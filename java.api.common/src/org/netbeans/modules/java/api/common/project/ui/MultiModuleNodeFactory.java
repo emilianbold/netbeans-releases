@@ -41,12 +41,15 @@ package org.netbeans.modules.java.api.common.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,6 +68,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -225,6 +229,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         private final MultiModule modules;
         private final MultiModule testModules;
         private final String moduleName;
+        private volatile String shortDesc;
 
         ModuleNode(@NonNull final ModuleKey key) {
             super(ModuleChildren.create(key), Lookup.EMPTY);
@@ -233,6 +238,34 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             this.moduleName = key.getModuleName();
             setIconBaseWithExtension(ICON);
             setName(moduleName);
+        }
+
+        @Override
+        public String getShortDescription() {
+            String res = shortDesc;
+            if (res == null) {
+                Collection<FileObject> locs = new HashSet<>();
+                locs.addAll(modules.getModulePath().findAllResources(moduleName));
+                locs.addAll(testModules.getModulePath().findAllResources(moduleName));
+                if (locs.size() > 1) {
+                    locs = new ArrayList<>(locs);
+                    Collections.sort(
+                            (List<FileObject>)locs,
+                            (a,b)->a.getPath().compareTo(b.getPath()));
+                }
+                final StringBuilder sb = new StringBuilder();
+                boolean cadr = false;
+                for (FileObject fo : locs) {
+                    if (cadr) {
+                        sb.append('\n');    //NOI18N
+                    } else {
+                        cadr = true;
+                    }
+                    sb.append(FileUtil.getFileDisplayName(fo));
+                }
+                res = shortDesc = sb.toString();
+            }
+            return res;
         }
     }
 
