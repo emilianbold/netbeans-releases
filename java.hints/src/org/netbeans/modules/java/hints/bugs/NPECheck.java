@@ -74,12 +74,19 @@ import org.openide.util.Lookup;
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "", "NullableProblems"})
+@Hint(displayName="#DN_NPECheck", 
+        description="#DESC_NPECheck", 
+        category="bugs", options=Options.QUERY, suppressWarnings = {"null", "", "NullableProblems"}
+)
 public class NPECheck {
 
     static final boolean DEF_ENABLE_FOR_FIELDS = false;
     @BooleanOption(displayName = "#LBL_NPECheck.ENABLE_FOR_FIELDS", tooltip = "#TP_NPECheck.ENABLE_FOR_FIELDS", defaultValue=DEF_ENABLE_FOR_FIELDS)
-    static final String KEY_ENABLE_FOR_FIELDS = "enable-for-fields";
+    static final String KEY_ENABLE_FOR_FIELDS = "enable-for-fields"; // NOI18N
+    
+    static final boolean DEF_UNBOXING_UNKNOWN_VALUES = true;
+    @BooleanOption(displayName = "#LBL_NPECheck.UNBOXING_UNKNOWN_VALUES", tooltip = "#TP_NPECheck.UNBOXING_UNKNOWN_VALUES", defaultValue=DEF_UNBOXING_UNKNOWN_VALUES)
+    static final String KEY_UNBOXING_UNKNOWN_VALUES = "unboxing-unknown"; // NOI18N
     
     @TriggerPatterns({
         @TriggerPattern("$mods$ $type $var = $expr;"),
@@ -116,6 +123,116 @@ public class NPECheck {
         return null;
     }
     
+    
+    @TriggerPatterns({
+        @TriggerPattern(value = "$expr ? $trueExpr : $falseExpr", constraints = {
+            @ConstraintVariableType(variable = "$trueExpr", type = "double"),
+            @ConstraintVariableType(variable = "$falseExpr", type = "java.lang.Number")
+        }),
+        
+        @TriggerPattern(value = "$expr ? $trueExpr : $falseExpr", constraints = {
+            @ConstraintVariableType(variable = "$falseExpr", type = "double"),
+            @ConstraintVariableType(variable = "$trueExpr", type = "java.lang.Number")
+        }),
+
+        @TriggerPattern(value = "$expr ? $trueExpr : $falseExpr", constraints = {
+            @ConstraintVariableType(variable = "$trueExpr", type = "boolean"),
+            @ConstraintVariableType(variable = "$falseExpr", type = "java.lang.Boolean")
+        }),
+        
+        @TriggerPattern(value = "$expr ? $trueExpr : $falseExpr", constraints = {
+            @ConstraintVariableType(variable = "$falseExpr", type = "boolean"),
+            @ConstraintVariableType(variable = "$trueExpr", type = "java.lang.Boolean")
+        }),
+        
+        @TriggerPattern(value = "$expr ? $trueExpr : $falseExpr", constraints = {
+            @ConstraintVariableType(variable = "$trueExpr", type = "char"),
+            @ConstraintVariableType(variable = "$falseExpr", type = "java.lang.Character")
+        }),
+        
+        @TriggerPattern(value = "$expr ? $trueExpr : $falseExpr", constraints = {
+            @ConstraintVariableType(variable = "$falseExpr", type = "char"),
+            @ConstraintVariableType(variable = "$trueExpr", type = "java.lang.Character")
+        }),
+    })
+    public static ErrorDescription unboxingConditional(HintContext ctx) {
+        CompilationInfo ci = ctx.getInfo();
+        TypeMirror leftType = ci.getTrees().getTypeMirror(ctx.getVariables().get("$trueExpr")); // NOI18N
+        TypeMirror rightType = ci.getTrees().getTypeMirror(ctx.getVariables().get("$falseExpr")); // NOI18N
+        TypeMirror resType = ci.getTrees().getTypeMirror(ctx.getPath()); // NOI18N
+        
+        if (!Utilities.isValidType(leftType) || !Utilities.isValidType(rightType) || !Utilities.isValidType(resType)) {
+            return null;
+        }
+        if (!resType.getKind().isPrimitive()) {
+            return null;
+        }
+        TreePath npPath;
+        TypeMirror np;
+        
+        if (leftType.getKind().isPrimitive()) {
+            if (rightType.getKind().isPrimitive()) {
+                npPath = null;
+                np = null;
+            } else {
+                np = rightType;
+                npPath = ctx.getVariables().get("$falseExpr"); // NOI18N
+            }
+        } else if (!rightType.getKind().isPrimitive()) {
+            // one more check: if BOTh are declared and BOTH are primitive wrappers and they
+            // are not SAME, then unboxing still occurs.
+            if (!Utilities.isPrimitiveWrapperType(leftType) ||
+                !Utilities.isPrimitiveWrapperType(rightType) ||
+                 ci.getTypes().isSameType(leftType, rightType)) {
+                return null;
+            }
+            Object o = ci.getCachedValue(KEY_CONDITIONAL_PARAMETER);
+            if (o == null) {
+                np = leftType;
+                npPath = ctx.getVariables().get("$trueExpr"); // NOI18N
+                ci.putCachedValue(KEY_CONDITIONAL_PARAMETER, Boolean.TRUE, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+            } else {
+                np = rightType;
+                npPath = ctx.getVariables().get("$falseExpr"); // NOI18N
+            }
+        } else {
+            np = leftType;
+            npPath = ctx.getVariables().get("$trueExpr"); // NOI18N
+        }
+        if (np == null || !ci.getTypes().isAssignable(np, resType)) {
+            return null;
+        }
+
+        Map<Tree, State> expressionsState = computeExpressionsState(ctx);
+        State s = expressionsState.get(npPath.getLeaf());
+        String k;
+        
+        if (s == null || s == POSSIBLE_NULL) {
+            boolean report = ctx.getPreferences().getBoolean(KEY_UNBOXING_UNKNOWN_VALUES, DEF_UNBOXING_UNKNOWN_VALUES);
+            if (!report) {
+                return null;
+            }
+            k =  "ERR_UnboxingPotentialNullValue"; // NOI18N
+        } else switch (s) {
+            case NULL:
+            case NULL_HYPOTHETICAL:
+                k = "ERR_UnboxingNullValue"; // NOI18N
+                break;
+            case POSSIBLE_NULL_REPORT:
+            case POSSIBLE_NULL:
+                k = "ERR_UnboxingPotentialNullValue"; // NOI18N
+                break;
+            case NOT_NULL_BE_NPE:
+            case NOT_NULL:
+            case NOT_NULL_HYPOTHETICAL:
+                return null;
+            default:
+                throw new AssertionError(s.name());
+            
+        }
+        return ErrorDescriptionFactory.forTree(ctx, npPath, 
+                NbBundle.getMessage(NPECheck.class, k));
+    }
     
     
     @TriggerPattern("switch ($select) { case $cases$; }")
@@ -355,6 +472,7 @@ public class NPECheck {
     }
     
     private static final Object KEY_EXPRESSION_STATE = new Object();
+    private static final Object KEY_CONDITIONAL_PARAMETER = new Object();
     
     private static Map<Tree, State> computeExpressionsState(CompilationInfo info, HintContext ctx) {
         Map<Tree, State> result = (Map<Tree, State>) info.getCachedValue(KEY_EXPRESSION_STATE);
@@ -848,32 +966,81 @@ public class NPECheck {
                 return State.POSSIBLE_NULL;
             } else {
                 recordResumeOnExceptionHandler((ExecutableElement) e);
-                
-                if (!node.getArguments().isEmpty()) {
-                    String ownerFQN = ((TypeElement) e.getEnclosingElement()).getQualifiedName().toString();
-                    Tree argument = null;
-                    State targetState = null;
-
-                    switch (e.getSimpleName().toString()) {
-                        case "assertNotNull": targetState = State.NOT_NULL; break;
-                        case "assertNull": targetState = State.NULL; break;
-                    }
-
-                    switch (ownerFQN) {
-                        case "org.testng.Assert": argument = node.getArguments().get(0); break;
-                        case "junit.framework.Assert":
-                        case "org.junit.Assert": argument = node.getArguments().get(node.getArguments().size() - 1); break;
-                    }
-
-                    Element param = argument != null && targetState != null ? info.getTrees().getElement(new TreePath(getCurrentPath(), argument)) : null;
-
-                    if (param != null && isVariableElement(param)) {
-                        variable2State.put((VariableElement) param, targetState);
-                    }
+                visitAssertMethods(node, e);
+                State s = visitPrimitiveWrapperMethods(node, e);
+                if (s != null) {
+                    return s;
                 }
             }
             
             return getStateFromAnnotations(info, e);
+        }
+        
+        private State visitPrimitiveWrapperMethods(MethodInvocationTree node, Element e) {
+            if (!Utilities.isPrimitiveWrapperType(e.getEnclosingElement().asType())) {
+                return null;
+            }
+            switch (e.getSimpleName().toString()) {
+                case "toString": // NOI18N
+                case "toUnsignedString":// NOI18N
+                    
+                case "toHexString":case "toOctalString": case "toBinaryString": // NOI18N
+                case "valueOf":// NOI18N
+                case "decode":// NOI18N
+                    return NOT_NULL;
+                    
+                case "getLong": // NOI18N
+                case "getShort": // NOI18N
+                case "getInteger": // NOI18N
+                case "getBoolean": // NOI18N
+                case "getFloat": // NOI18N
+                case "getDouble": // NOI18N
+                case "getCharacter": { // NOI18N
+                    // non-null if 2nd argument is primitive
+                    if (node.getArguments().size() != 2) {
+                        return null;
+                    }
+                    TreePath parPath = new TreePath(getCurrentPath(), node.getArguments().get(1));
+                    TypeMirror m = ctx.getInfo().getTrees().getTypeMirror(parPath);
+                    if (!Utilities.isValidType(m)) {
+                        return null;
+                    }
+                    if (m.getKind().isPrimitive()) {
+                        return NOT_NULL;
+                    } else if (NPECheck.isSafeToDereference(ctx.getInfo(), parPath)) {
+                        return NOT_NULL;
+                    } else {
+                        return null;
+                    }
+                }
+                default:
+                    return null;
+            }
+        }
+        
+        private void visitAssertMethods(MethodInvocationTree node, Element e) {
+            if (!node.getArguments().isEmpty()) {
+                String ownerFQN = ((TypeElement) e.getEnclosingElement()).getQualifiedName().toString();
+                Tree argument = null;
+                State targetState = null;
+
+                switch (e.getSimpleName().toString()) {
+                    case "assertNotNull": targetState = State.NOT_NULL; break;
+                    case "assertNull": targetState = State.NULL; break;
+                }
+
+                switch (ownerFQN) {
+                    case "org.testng.Assert": argument = node.getArguments().get(0); break;
+                    case "junit.framework.Assert":
+                    case "org.junit.Assert": argument = node.getArguments().get(node.getArguments().size() - 1); break;
+                }
+
+                Element param = argument != null && targetState != null ? info.getTrees().getElement(new TreePath(getCurrentPath(), argument)) : null;
+
+                if (param != null && isVariableElement(param)) {
+                    variable2State.put((VariableElement) param, targetState);
+                }
+            }
         }
 
         @Override
