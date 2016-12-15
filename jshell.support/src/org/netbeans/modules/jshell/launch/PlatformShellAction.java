@@ -66,10 +66,11 @@ import org.openide.util.NbBundle;
 )
 @ActionRegistration(
         displayName = "#DN_PlatformShell",
-        iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png"
+        iconInMenu = false
 )
 @ActionReference(
-        path = "UI/ToolActions/Java"
+        position = 180, 
+        name = "PlatformShellAction", path = "Menu/Tools"
 )
 @NbBundle.Messages({
     "DN_PlatformShell=Open Java Platform Shell",
