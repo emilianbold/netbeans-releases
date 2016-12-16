@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
         iconInMenu = false
 )
 @ActionReference(
-        position = 180, 
+        position = 190, 
         name = "PlatformShellAction", path = "Menu/Tools"
 )
 @NbBundle.Messages({
