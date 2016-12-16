@@ -51,6 +51,7 @@ import org.openide.util.HelpCtx;
 /**
  * Based on PHP editor.
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"SE_BAD_FIELD_STORE"})
 public class CodeCompletionPanel extends javax.swing.JPanel {
 
     private static final long serialVersionUID = -3783460333563884705L;
