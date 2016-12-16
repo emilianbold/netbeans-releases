@@ -66,7 +66,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.java.api.common.impl;
+package org.netbeans.modules.java.api.common.util;
 
 import java.io.File;
 import java.net.URL;
@@ -62,12 +62,16 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 
 /**
- *
+ * Various Java 9 module system utilities.
  * @author Tomas Zezula
- * @since 1.91
+ * @since 1.96
  */
 public final class CommonModuleUtils {
+    /**
+     * Java 9 specification version.
+     */
     public static final SpecificationVersion JDK9 = new SpecificationVersion("9");  //NOI18N
+
     private static final String ARG_ADDMODS = "--add-modules";       //NOI18N
     private static final String ARG_PATCH_MOD = "--patch-module";   //NOI18N
     private static final String ARG_XMODULE = "-Xmodule";      //NOI18N
@@ -139,6 +143,11 @@ public final class CommonModuleUtils {
         return patches;
     }
 
+    /**
+     * Evaluates the module source path element to all variants.
+     * @param pathEntry the module source path entry
+     * @return the path alternatives
+     */
     @NonNull
     public static Collection<? extends String> parseSourcePathVariants(@NonNull final String pathEntry) {
         final Set<String> res = new LinkedHashSet<>();

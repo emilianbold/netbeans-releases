@@ -92,7 +92,7 @@ import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;

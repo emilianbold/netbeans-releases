@@ -37,8 +37,9 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.java.api.common.impl;
+package org.netbeans.modules.java.api.common.util;
 
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;

@@ -128,7 +128,7 @@ import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactItem;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;

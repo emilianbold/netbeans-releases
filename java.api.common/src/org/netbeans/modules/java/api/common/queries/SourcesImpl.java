@@ -69,7 +69,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;

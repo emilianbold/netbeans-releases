@@ -40,9 +40,12 @@
 package org.netbeans.modules.java.j2semodule.ui.wizards;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -54,7 +57,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -92,35 +97,41 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
         FileObject dir = Templates.getTargetFolder(wiz);        
         String targetName = Templates.getTargetName(wiz);
         FileObject template = Templates.getTemplate(wiz);
-        
-        FileObject createdFolder = FileUtil.createFolder(dir, targetName);
+
+        final List<FileObject> createdFolders = new ArrayList<>();
+        final FileObject moduleFoder = FileUtil.createFolder(dir, targetName);
+        createdFolders.add(moduleFoder);
 
         Project p = Templates.getProject(wiz);
         J2SEModularProject project = p != null ? p.getLookup().lookup(J2SEModularProject.class) : null;
         if (project != null) {
             for (String rootProp : project.getSourceRoots().getRootProperties()) {
                 String rootPath = project.evaluator().getProperty(rootProp);
-                int idx = rootPath.indexOf("/*/");
-                if (idx >= 0) {
-                    FileObject root = project.getAntProjectHelper().resolveFileObject(rootPath.substring(0, idx));
-                    if (root == dir) {
-                        String path = rootPath.substring(idx + 3);
-                        if (!path.isEmpty()) {
-                            createdFolder = createdFolder.createFolder(path);
+                for (String rootPathEntry : PropertyUtils.tokenizePath(rootPath)) {
+                    if (rootPathEntry.contains("/*/")) {
+                        for (String variant : CommonModuleUtils.parseSourcePathVariants(rootPathEntry)) {
+                            final int idx = variant.indexOf("/*/");
+                            FileObject root = project.getAntProjectHelper().resolveFileObject(variant.substring(0, idx));
+                            if (root == dir) {
+                                String path = variant.substring(idx + 3);
+                                if (!path.isEmpty()) {
+                                    createdFolders.add(FileUtil.createFolder(moduleFoder, path.replace(File.separatorChar, '/')));
+                                }
+                            }
                         }
-                        break;
                     }
                 }
             }
         }
 
-        DataFolder df = DataFolder.findFolder(createdFolder);
-        DataObject dTemplate = DataObject.find(template);                
+        final DataFolder df = DataFolder.findFolder(createdFolders.get(
+                createdFolders.size() > 1 ? 1 : 0));
+        DataObject dTemplate = DataObject.find(template);
         DataObject dobj = dTemplate.createFromTemplate(df, null, Collections.singletonMap("moduleName", targetName)); //NOI18N
         FileObject createdFile = dobj.getPrimaryFile();
 
         final Set<FileObject> res = new HashSet<>();
-        res.add(createdFolder);
+        res.addAll(createdFolders);
         res.add(createdFile);
         return Collections.unmodifiableSet(res);
     }
