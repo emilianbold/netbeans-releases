@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -76,6 +77,7 @@ import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -243,7 +245,10 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
             final List<String> locations;
             final List<String> names;
             if (loc.contains("/*/")) {  //NOI18N
-                Collection<? extends String> spVariants = new ArrayList<>(CommonModuleUtils.parseSourcePathVariants(loc));
+                final Collection<? extends String> spVariants = Arrays.stream(PropertyUtils.tokenizePath(loc))
+                        .map((p) -> CommonModuleUtils.parseSourcePathVariants(p))
+                        .flatMap((lv) -> lv.stream())
+                        .collect(Collectors.toList());
                 locations = new ArrayList<>();
                 names = new ArrayList<>();
                 for (String variant : spVariants) {
