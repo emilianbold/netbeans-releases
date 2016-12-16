@@ -55,7 +55,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -74,7 +73,15 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
     private transient WizardDescriptor.Panel panel;
     private transient WizardDescriptor wiz;
 
-    @TemplateRegistration(folder = "J2SEModule", position = 1, content = "../resources/module-info.java.template", scriptEngine = "freemarker", displayName = "#moduleWizard", iconBase = JavaTemplates.JAVA_ICON, description = "../resources/module.html", category = {"java-modules"})
+    @TemplateRegistration(
+            folder = "J2SEModule",
+            position = 1,
+            content = "../resources/module-info.java.template",
+            scriptEngine = "freemarker",
+            displayName = "#moduleWizard",
+            iconBase = "org/netbeans/modules/java/j2semodule/ui/resources/module.png",
+            description = "../resources/module.html",
+            category = {"java-modules"})
     @NbBundle.Messages("moduleWizard=Module")
     public static NewModuleWizardIterator moduleWizard() {
         return new NewModuleWizardIterator();
