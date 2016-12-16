@@ -48,10 +48,12 @@ import test.pkg.not.in.junit.NbModuleSuiteIns;
 import test.pkg.not.in.junit.NbModuleSuiteT;
 import test.pkg.not.in.junit.NbModuleSuiteS;
 import java.io.File;
+import java.net.URL;
 import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
 import java.util.Properties;
 import java.util.Set;
 import junit.framework.Test;
+import org.openide.util.Utilities;
 import test.pkg.not.in.junit.NbModuleSuiteClusters;
 import test.pkg.not.in.junit.NbModuleSuiteTUserDir;
 
@@ -257,7 +259,11 @@ public class NbModuleSuiteTest extends NbTestCase {
         assertEquals("No", System.getProperty("en.one"));
     }
 
-    public void testClustersCanBeCumulated() {
+    public void testClustersCanBeCumulated() throws Exception {
+        if (!isExtIDE()) {
+            // skip
+            return;
+        }
         System.setProperty("clusters", "No");
 
         Test instance =
@@ -272,7 +278,11 @@ public class NbModuleSuiteTest extends NbTestCase {
         assertProperty("clusters", "ide:extide");
     }
 
-    public void testClustersCanBeCumulatedInReverseOrder() {
+    public void testClustersCanBeCumulatedInReverseOrder() throws Exception {
+        if (!isExtIDE()) {
+            // skip
+            return;
+        }
         System.setProperty("clusters", "No");
 
         Test instance =
@@ -336,6 +346,20 @@ public class NbModuleSuiteTest extends NbTestCase {
         conf = conf.addTest(TS.class).gui(false);
         junit.textui.TestRunner.run(conf.suite());
         assertProperty("t.one", "OK");
+    }
+
+    private static boolean isExtIDE() throws URISyntaxException {
+        return isCluster("extide");
+    }
+
+    static boolean isCluster(String name) throws URISyntaxException {
+        URL where = NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation();
+        File nbjunitJAR = Utilities.toFile(where.toURI());
+        assertTrue(nbjunitJAR.exists());
+        File harness = nbjunitJAR.getParentFile().getParentFile();
+        assertEquals("harness", harness.getName());
+        File root = harness.getParentFile();
+        return new File(root, "extide").isDirectory();
     }
 
     public static class TS extends NbTestSuite{
