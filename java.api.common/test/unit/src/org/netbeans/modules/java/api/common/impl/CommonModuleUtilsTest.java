@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.java.api.common;
+package org.netbeans.modules.java.api.common.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,11 +49,11 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Tomas Zezula
  */
-public class SourceRootsTest extends NbTestCase {
+public class CommonModuleUtilsTest extends NbTestCase {
 
     private boolean print;
 
-    public SourceRootsTest(final String name) {
+    public CommonModuleUtilsTest(final String name) {
         super(name);
     }
 
@@ -162,7 +162,7 @@ public class SourceRootsTest extends NbTestCase {
     private void testPattern(
             @NonNull final String pattern,
             @NonNull String... expected) {
-        final Collection<? extends String> roots = SourceRoots.parsePathVariants(pattern);
+        final Collection<? extends String> roots = CommonModuleUtils.parseSourcePathVariants(pattern);
         if (print) {
             roots.forEach(System.out::println);
         }

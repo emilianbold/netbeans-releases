@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -67,6 +68,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
@@ -237,23 +239,30 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
             final String prop = propNames[i];
             final String locProp = "${" + prop + "}"; // NOI18N
 
-            List<String> locations;
-            List<String> names;
-            String loc = evaluator.evaluate(locProp);
-            int idx = loc.indexOf("/*/"); //NOI18N
-            if (idx >= 0) {
+            final String loc = evaluator.evaluate(locProp);
+            final List<String> locations;
+            final List<String> names;
+            if (loc.contains("/*/")) {  //NOI18N
+                Collection<? extends String> spVariants = new ArrayList<>(CommonModuleUtils.parseSourcePathVariants(loc));
                 locations = new ArrayList<>();
                 names = new ArrayList<>();
-                final String basePath = loc.substring(0, idx + 1);
-                final String srcPath = loc.substring(idx + 2);
-                final File file = helper.resolveFile(basePath);
-                if (file.isDirectory()) {
-                    for (File f : file.listFiles()) {
-                        if (f.isDirectory()) {
-                            final String resolvedSrcPath = basePath + f.getName() + srcPath;
-                            final File resolvedSrc = helper.resolveFile(resolvedSrcPath);
-                            locations.add(resolvedSrcPath);
-                            names.add(resolvedSrc.getName());
+                for (String variant : spVariants) {
+                    final int idx = variant.indexOf("/*/"); //NOI18N
+                    final String pathInModule = variant.substring(idx + 3);
+                    final String pathToModules = variant.substring(0, idx);
+                    final File file = helper.resolveFile(pathToModules);
+                    if (file.isDirectory()) {
+                        for (File f : file.listFiles()) {
+                            if (f.isDirectory()) {
+                                final String resolvedSrcPath = String.format(
+                                        "%s/%s/%s", //NOI18N
+                                        pathToModules,
+                                        f.getName(),
+                                        pathInModule);
+                                final File resolvedSrc = helper.resolveFile(resolvedSrcPath);
+                                locations.add(resolvedSrcPath); //Todo: Should be unevaluated
+                                names.add(resolvedSrc.getName());
+                            }
                         }
                     }
                 }

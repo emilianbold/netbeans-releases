@@ -66,6 +66,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -330,7 +331,7 @@ public final class SourceRoots extends Roots {
                                     final Collection<? extends String> pathElements;
                                     final boolean modulePath;
                                     if (propElement.contains("/*/")) {  //NOI18N
-                                        pathElements = parsePathVariants(propElement);
+                                        pathElements = CommonModuleUtils.parseSourcePathVariants(propElement);
                                         modulePath = true;
                                     } else {
                                         pathElements = Collections.singleton(propElement);
@@ -391,92 +392,6 @@ public final class SourceRoots extends Roots {
                 }
             }
         });
-    }
-
-    @NonNull
-    /*test*/ static Collection<? extends String> parsePathVariants(@NonNull final String path) {
-        final Set<String> res = new LinkedHashSet<>();
-        parsePathVariantsImpl(path, res);
-        return res;
-    }
-
-    private static void parsePathVariantsImpl(
-            @NonNull final String path,
-            @NonNull final Collection<? super String> collector) {
-        final int[] index = findGroup(path);
-        if (index == null) {
-            collector.add(path);
-        } else {
-            final String prefix = path.substring(0, index[0]);
-            final String suffix = path.substring(index[1]);
-            for (String variant : expandGroup(path, index[0], index[1])) {
-                parsePathVariantsImpl(new StringBuilder()
-                    .append(prefix)
-                    .append(variant)
-                    .append(suffix)
-                    .toString(),
-                    collector);
-            }
-        }
-    }
-
-    private static int[] findGroup(@NonNull final String path) {
-        final int start = path.indexOf('{');  //NOI18N
-        if (start == -1) {
-            return null;
-        }
-        int depth = 1;
-        int end = start + 1;
-        while (end < path.length() && depth > 0) {
-            char c = path.charAt(end++);
-            switch (c) {
-                case '{':   //NOI18N
-                    depth++;
-                    break;
-                case '}':   //NOI18N
-                    depth--;
-                    break;
-            }
-        }
-        return new int[] {start, end};
-    }
-
-    private static Collection<? extends String> expandGroup(
-            @NonNull final String path,
-            final int start,
-            final int end) {
-        final Collection<String> res = new ArrayList<>();
-        int depth = 0;
-        final StringBuilder current = new StringBuilder();
-        for (int i=start; i<end; i++) {
-            final char c = path.charAt(i);
-            switch (c) {
-                case '{':   //NOI18N
-                    if (depth > 0) {
-                        current.append(c);
-                    }
-                    depth++;
-                    break;
-                case '}':   //NOI18N
-                    depth--;
-                    if (depth > 0) {
-                        current.append(c);
-                    }
-                    break;
-                case ',':   //NOI18N
-                    if (depth == 1) {
-                        res.add(current.toString());
-                        current.delete(0, current.length());
-                    } else {
-                        current.append(c);
-                    }
-                    break;
-                default:
-                    current.append(c);
-            }
-        }
-        res.add(current.toString());
-        return res;
     }
 
     private Map<URL, String> getRootsToProps() {

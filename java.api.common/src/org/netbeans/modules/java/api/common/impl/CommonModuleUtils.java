@@ -41,9 +41,12 @@ package org.netbeans.modules.java.api.common.impl;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -134,5 +137,91 @@ public final class CommonModuleUtils {
             patch = ARG_PATCH_MOD.equals(arg);
         }
         return patches;
+    }
+
+    @NonNull
+    public static Collection<? extends String> parseSourcePathVariants(@NonNull final String pathEntry) {
+        final Set<String> res = new LinkedHashSet<>();
+        parseSourcePathVariantsImpl(pathEntry, res);
+        return res;
+    }
+
+    private static void parseSourcePathVariantsImpl(
+            @NonNull final String path,
+            @NonNull final Collection<? super String> collector) {
+        final int[] index = findGroup(path);
+        if (index == null) {
+            collector.add(path);
+        } else {
+            final String prefix = path.substring(0, index[0]);
+            final String suffix = path.substring(index[1]);
+            for (String variant : expandGroup(path, index[0], index[1])) {
+                parseSourcePathVariantsImpl(new StringBuilder()
+                    .append(prefix)
+                    .append(variant)
+                    .append(suffix)
+                    .toString(),
+                    collector);
+            }
+        }
+    }
+
+    private static int[] findGroup(@NonNull final String path) {
+        final int start = path.indexOf('{');  //NOI18N
+        if (start == -1) {
+            return null;
+        }
+        int depth = 1;
+        int end = start + 1;
+        while (end < path.length() && depth > 0) {
+            char c = path.charAt(end++);
+            switch (c) {
+                case '{':   //NOI18N
+                    depth++;
+                    break;
+                case '}':   //NOI18N
+                    depth--;
+                    break;
+            }
+        }
+        return new int[] {start, end};
+    }
+
+    private static Collection<? extends String> expandGroup(
+            @NonNull final String path,
+            final int start,
+            final int end) {
+        final Collection<String> res = new ArrayList<>();
+        int depth = 0;
+        final StringBuilder current = new StringBuilder();
+        for (int i=start; i<end; i++) {
+            final char c = path.charAt(i);
+            switch (c) {
+                case '{':   //NOI18N
+                    if (depth > 0) {
+                        current.append(c);
+                    }
+                    depth++;
+                    break;
+                case '}':   //NOI18N
+                    depth--;
+                    if (depth > 0) {
+                        current.append(c);
+                    }
+                    break;
+                case ',':   //NOI18N
+                    if (depth == 1) {
+                        res.add(current.toString());
+                        current.delete(0, current.length());
+                    } else {
+                        current.append(c);
+                    }
+                    break;
+                default:
+                    current.append(c);
+            }
+        }
+        res.add(current.toString());
+        return res;
     }
 }
