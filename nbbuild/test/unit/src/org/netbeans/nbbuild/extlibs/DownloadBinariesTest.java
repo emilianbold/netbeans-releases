@@ -106,6 +106,19 @@ public class DownloadBinariesTest extends NbTestCase {
         assertEquals(7, new File(workdir, "hello").length());
     }
 
+    public void testIsNormalDownload() {
+        boolean is = DownloadBinaries.isMavenFile("5C372AB96C721258C5C12BB8EAD291BBBA5DACE6", "hello");
+        assertFalse("This is hg.netbeans.org hashed file", is);
+    }
+
+    public void testIsMavenDownload() {
+        final String[] hashAndId = new String[] { "CEC2829EC391CB404AD32EB2D08F879C418B745B", "org.netbeans.html:xhr4j:1.3" };
+        boolean is = DownloadBinaries.isMavenFile(hashAndId);
+        assertTrue("Contains co-ordinates", is);
+        String targetName = DownloadBinaries.mavenFileName(hashAndId);
+        assertEquals("xhr4j-1.3.jar", targetName);
+    }
+
     public void testCorruptDownload() throws Exception {
         write(list, "F572D396FAE9206628714FB2CE00F72E94F2258F hello");
         File serverFile = new File(server, "F572D396FAE9206628714FB2CE00F72E94F2258F-hello");

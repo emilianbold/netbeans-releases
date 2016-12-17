@@ -51,8 +51,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.utilities.operators.SearchResultsOperator;
-import org.netbeans.test.utilities.testcase.Utilities;
 
 /**
  * Some search tests
