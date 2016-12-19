@@ -50,9 +50,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -70,6 +73,8 @@ import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -80,6 +85,10 @@ import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -102,6 +111,17 @@ public final class MultiModuleNodeFactory implements NodeFactory {
     @Override
     public NodeList<?> createNodes(@NonNull final Project project) {
         return new Nodes(project, sourceModules, testModules);
+    }
+
+    @NonNull
+    public static MultiModuleNodeFactory create(
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule mods = MultiModule.getOrCreate(sourceModules, srcRoots);
+        final MultiModule testMods = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleNodeFactory(mods, testMods);
     }
 
     private static final class Nodes implements NodeList<ModuleKey>, PropertyChangeListener {
@@ -227,62 +247,168 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         }
     }
 
-    private static final class ModuleNode extends AbstractNode {
+    private static final class ModuleNode extends AbstractNode implements PropertyChangeListener {
         @StaticResource
         private static final String ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png";
         private final MultiModule modules;
         private final MultiModule testModules;
         private final String moduleName;
-        private volatile String shortDesc;
+        private final AtomicBoolean listensOnFos;
+        private volatile Collection<? extends FileObject> fosCache;
 
         ModuleNode(@NonNull final ModuleKey key) {
-            super(ModuleChildren.create(key), Lookup.EMPTY);
+            this(
+                    key,
+                    new DynLkp());
+        }
+
+        private ModuleNode(@NonNull final ModuleKey key, @NonNull final DynLkp lookup) {
+            super(ModuleChildren.create(key), lookup);
+            this.listensOnFos = new AtomicBoolean();
             this.modules = key.getSourceModules();
             this.testModules = key.getTestModules();
             this.moduleName = key.getModuleName();
             setIconBaseWithExtension(ICON);
             setName(moduleName);
+            lookup.update(new ContentLkp(this, key.getProject()));
         }
 
         @Override
         public String getShortDescription() {
-            String res = shortDesc;
+            final Collection<? extends FileObject> locs = getFileObjects();
+            final StringBuilder sb = new StringBuilder();
+            boolean cadr = false;
+            for (FileObject fo : locs) {
+                if (cadr) {
+                    sb.append('\n');    //NOI18N
+                } else {
+                    cadr = true;
+                }
+                sb.append(FileUtil.getFileDisplayName(fo));
+            }
+            return sb.toString();
+        }
+
+        @NonNull
+        @Override
+        public Action[] getActions(final boolean context) {
+            //Todo:
+            return super.getActions(context);
+        }
+
+        @Override
+        public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+            if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
+                fosCache = null;
+                fireShortDescriptionChange(null, null);
+            }
+        }
+
+        @NonNull
+        private Collection<? extends FileObject> getFileObjects() {
+            //Todo: listen on modulepath & fileobjects
+            Collection<? extends FileObject> res = fosCache;
             if (res == null) {
-                Collection<FileObject> locs = new HashSet<>();
-                locs.addAll(modules.getModulePath().findAllResources(moduleName));
-                locs.addAll(testModules.getModulePath().findAllResources(moduleName));
-                if (locs.size() > 1) {
-                    locs = new ArrayList<>(locs);
-                    Collections.sort(
-                            (List<FileObject>)locs,
-                            (a,b)->a.getPath().compareTo(b.getPath()));
-                }
-                final StringBuilder sb = new StringBuilder();
-                boolean cadr = false;
-                for (FileObject fo : locs) {
-                    if (cadr) {
-                        sb.append('\n');    //NOI18N
-                    } else {
-                        cadr = true;
+                final Comparator<FileObject> pathComparator = (a,b)->a.getPath().compareTo(b.getPath());
+                final Set<FileObject> allLocs = new HashSet<>();
+                final List<FileObject> srcLocs = new ArrayList<>();
+                final List<FileObject> testLocs = new ArrayList<>();
+                for (FileObject loc : modules.getModulePath().findAllResources(moduleName)) {
+                    if (!allLocs.contains(loc)) {
+                        srcLocs.add(loc);
+                        allLocs.add(loc);
                     }
-                    sb.append(FileUtil.getFileDisplayName(fo));
                 }
-                res = shortDesc = sb.toString();
+                Collections.sort(srcLocs, pathComparator);
+                for (FileObject loc : testModules.getModulePath().findAllResources(moduleName)) {
+                    if (!allLocs.contains(loc)) {
+                        testLocs.add(loc);
+                        allLocs.add(loc);
+                    }
+                }
+                Collections.sort(testLocs, pathComparator);
+                srcLocs.addAll(testLocs);
+                fosCache = res = srcLocs;
             }
             return res;
         }
-    }
 
+        private static final class DynLkp extends ProxyLookup {
+            void update(Lookup... lkps) {
+                setLookups(lkps);
+            }
+        }
 
-    @NonNull
-    public static MultiModuleNodeFactory create(
-            @NonNull final SourceRoots sourceModules,
-            @NonNull final SourceRoots srcRoots,
-            @NonNull final SourceRoots testModules,
-            @NonNull final SourceRoots testRoots) {
-        final MultiModule mods = MultiModule.getOrCreate(sourceModules, srcRoots);
-        final MultiModule testMods = MultiModule.getOrCreate(testModules, testRoots);
-        return new MultiModuleNodeFactory(mods, testMods);
+        private static final class ContentLkp extends ProxyLookup {
+            private final AtomicReference<Pair<InstanceContent,Collection<? extends FileObject>>> fos;
+            private final AtomicReference<Pair<InstanceContent,Collection<? extends FileObject>>> dos;
+            private final ModuleNode node;
+
+            ContentLkp(
+                    @NonNull final ModuleNode node,
+                    @NonNull final Object... fixedContent) {
+                Parameters.notNull("node", node);                 //NOI18N
+                Parameters.notNull("fixedContent", fixedContent); //NOI18N
+                this.node = node;
+                this.fos = new AtomicReference<>(Pair.of(new InstanceContent(),Collections.emptyList()));
+                this.dos = new AtomicReference<>(Pair.of(new InstanceContent(),Collections.emptyList()));
+                this.setLookups(
+                        new AbstractLookup(fos.get().first()),
+                        new AbstractLookup(dos.get().first()),
+                        Lookups.fixed(fixedContent));
+            }
+
+            @Override
+            protected void beforeLookup(Template<?> template) {
+                super.beforeLookup(template);
+                final Class<?> clz = template.getType();
+                if (clz == FileObject.class) {
+                    final Pair<InstanceContent,Collection<? extends FileObject>> p = fos.get();
+                    Collection<? extends FileObject> currentFos = p.second();
+                    Collection<? extends FileObject> newFos = node.getFileObjects();
+                    if (currentFos != newFos) {
+                        p.first().set(newFos, null);
+                        fos.set(Pair.of(p.first(),newFos));
+                    }
+                } else if (clz == DataObject.class) {
+                    final Pair<InstanceContent,Collection<? extends FileObject>> p = dos.get();
+                    Collection<? extends FileObject> currentFos = p.second();
+                    Collection<? extends FileObject> newFos = node.getFileObjects();
+                    if (currentFos != newFos) {
+                        p.first().set(
+                                new ArrayList<>(newFos),
+                                new DObjConvertor());
+                    }
+                }
+            }
+
+            private static  final class DObjConvertor implements InstanceContent.Convertor<FileObject, DataObject> {
+
+                @Override
+                public DataObject convert(FileObject obj) {
+                    try {
+                        return DataObject.find(obj);
+                    } catch (DataObjectNotFoundException e) {
+                        return null;
+                    }
+                }
+
+                @Override
+                public Class<? extends DataObject> type(FileObject obj) {
+                    return DataObject.class;
+                }
+
+                @Override
+                public String id(FileObject obj) {
+                    return obj.getPath();
+                }
+
+                @Override
+                public String displayName(FileObject obj) {
+                    return FileUtil.getFileDisplayName(obj);
+                }
+            }
+        }
     }
 
     private static final class ModuleChildren extends Children.Keys<Pair<SourceGroup,Boolean>> implements PropertyChangeListener {
