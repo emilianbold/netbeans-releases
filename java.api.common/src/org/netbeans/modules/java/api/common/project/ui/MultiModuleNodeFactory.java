@@ -40,8 +40,11 @@
 package org.netbeans.modules.java.api.common.project.ui;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,7 +54,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,9 +70,18 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -80,11 +91,16 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -247,14 +263,22 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         }
     }
 
-    private static final class ModuleNode extends AbstractNode implements PropertyChangeListener {
+    private static final class ModuleNode extends AbstractNode implements PropertyChangeListener, FileChangeListener {
         @StaticResource
         private static final String ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png";
+        private final Project prj;
         private final MultiModule modules;
         private final MultiModule testModules;
         private final String moduleName;
-        private final AtomicBoolean listensOnFos;
-        private volatile Collection<? extends FileObject> fosCache;
+        //@GuardedBy("this")
+        private ClassPath srcModPath;
+        //@GuardedBy("this")
+        private ClassPath testModPath;
+        //@GuardedBy("this")
+        private Set<? extends File> fosListensOn;
+        //@GuardedBy("this")
+        private Collection<? extends FileObject> fosCache;
+        private Action[] actions;
 
         ModuleNode(@NonNull final ModuleKey key) {
             this(
@@ -264,10 +288,13 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
         private ModuleNode(@NonNull final ModuleKey key, @NonNull final DynLkp lookup) {
             super(ModuleChildren.create(key), lookup);
-            this.listensOnFos = new AtomicBoolean();
+            this.prj = key.getProject();
             this.modules = key.getSourceModules();
             this.testModules = key.getTestModules();
             this.moduleName = key.getModuleName();
+            synchronized (this) {
+                fosListensOn = Collections.emptySet();
+            }
             setIconBaseWithExtension(ICON);
             setName(moduleName);
             lookup.update(new ContentLkp(this, key.getProject()));
@@ -276,11 +303,11 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         @Override
         public String getShortDescription() {
             final Collection<? extends FileObject> locs = getFileObjects();
-            final StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder("<html>");   //NOI18N
             boolean cadr = false;
             for (FileObject fo : locs) {
                 if (cadr) {
-                    sb.append('\n');    //NOI18N
+                    sb.append("<br>\n");    //NOI18N
                 } else {
                     cadr = true;
                 }
@@ -292,43 +319,162 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         @NonNull
         @Override
         public Action[] getActions(final boolean context) {
-            //Todo:
-            return super.getActions(context);
+            if (context) {
+                return super.getActions(context);
+            } else {
+                if (actions == null) {
+                    actions = new Action[] {
+                        CommonProjectActions.newFileAction(),
+                        null,
+                        SystemAction.get(FindAction.class),
+                        null,
+                        SystemAction.get(PasteAction.class ),
+                        null,
+                        SystemAction.get(FileSystemAction.class ),
+                        null,
+                        SystemAction.get(ToolsAction.class )
+                    };
+                }
+                return actions;
+            }
+        }
+
+        @Override
+        protected void createPasteTypes(
+                @NonNull final Transferable t,
+                @NonNull final List<PasteType> s) {
+            final List<Pair<FileObject,PasteType[]>> res = new ArrayList<>();
+            for (FileObject fo : getFileObjects()) {
+                if (fo.canWrite()) {
+                    res.add(Pair.of(
+                            fo,
+                            DataFolder.findFolder(fo).getNodeDelegate().getPasteTypes(t)));
+                }
+            }
+            switch (res.size()) {
+                case 0:
+                    break;
+                case 1:
+                    Collections.addAll(s, res.iterator().next().second());
+                    break;
+                default:
+                    for (Pair<FileObject,PasteType[]> ptByFo : res) {
+                        final FileObject fo = ptByFo.first();
+                        for (PasteType pt : ptByFo.second()) {
+                            final FileObject pdir = prj.getProjectDirectory();
+                            String name = FileUtil.getRelativePath(pdir, fo);
+                            if (name != null) {
+                                name.replace('/', File.separatorChar);  //NOI18N
+                            } else {
+                                name = FileUtil.getFileDisplayName(fo);
+                            }
+                            name = NbBundle.getMessage(
+                                    MultiModuleNodeFactory.class,
+                                    "TXT_PasteInto",
+                                    name);
+                            s.add(new PasteInto(pt, name));
+                        }
+                    }
+            }
         }
 
         @Override
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
             if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
-                fosCache = null;
-                fireShortDescriptionChange(null, null);
+                reset();
             }
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+        private void reset() {
+            synchronized (this) {
+                fosCache = null;
+            }
+            fireShortDescriptionChange(null, null);
         }
 
         @NonNull
         private Collection<? extends FileObject> getFileObjects() {
-            //Todo: listen on modulepath & fileobjects
-            Collection<? extends FileObject> res = fosCache;
+            Collection<? extends FileObject> res;
+            ClassPath smp, tmp;
+            synchronized(this) {
+                res = fosCache;
+                smp = srcModPath;
+                if (smp == null) {
+                    smp = srcModPath = modules.getModulePath();
+                    smp.addPropertyChangeListener(WeakListeners.propertyChange(this, smp));
+                }
+                tmp = testModPath;
+                if (tmp == null) {
+                    tmp = testModPath = testModules.getModulePath();
+                    tmp.addPropertyChangeListener(WeakListeners.propertyChange(this, tmp));
+                }
+            }
             if (res == null) {
+                final Set<? extends File> newFosListensOn = Stream.concat(
+                        smp.entries().stream(),
+                        tmp.entries().stream())
+                        .map((e)->FileUtil.archiveOrDirForURL(e.getURL()))
+                        .filter((f) -> f != null)
+                        .map((f) -> new File(f, moduleName))
+                        .collect(Collectors.toSet());
                 final Comparator<FileObject> pathComparator = (a,b)->a.getPath().compareTo(b.getPath());
                 final Set<FileObject> allLocs = new HashSet<>();
                 final List<FileObject> srcLocs = new ArrayList<>();
                 final List<FileObject> testLocs = new ArrayList<>();
-                for (FileObject loc : modules.getModulePath().findAllResources(moduleName)) {
-                    if (!allLocs.contains(loc)) {
+                for (FileObject loc : smp.findAllResources(moduleName)) {
+                    if (!allLocs.contains(loc) && loc.isFolder()) {
                         srcLocs.add(loc);
                         allLocs.add(loc);
                     }
                 }
                 Collections.sort(srcLocs, pathComparator);
-                for (FileObject loc : testModules.getModulePath().findAllResources(moduleName)) {
-                    if (!allLocs.contains(loc)) {
+                for (FileObject loc : tmp.findAllResources(moduleName)) {
+                    if (!allLocs.contains(loc) && loc.isFolder()) {
                         testLocs.add(loc);
                         allLocs.add(loc);
                     }
                 }
                 Collections.sort(testLocs, pathComparator);
                 srcLocs.addAll(testLocs);
-                fosCache = res = srcLocs;
+                res = srcLocs;
+                synchronized (this) {
+                    fosCache = res;
+                    for (File fosl : fosListensOn) {
+                        FileUtil.removeFileChangeListener(this, fosl);
+                    }
+                    for (File fosl : newFosListensOn) {
+                        FileUtil.addFileChangeListener(this, fosl);
+                    }
+                    fosListensOn = newFosListensOn;
+                }
             }
             return res;
         }
@@ -407,6 +553,33 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 public String displayName(FileObject obj) {
                     return FileUtil.getFileDisplayName(obj);
                 }
+            }
+        }
+
+        private static final class PasteInto extends PasteType {
+            private final PasteType delegate;
+            private final String name;
+
+            PasteInto(
+                    @NonNull final PasteType delegate,
+                    @NonNull final String name) {
+                this.delegate = delegate;
+                this.name = name;
+            }
+
+            @Override
+            public HelpCtx getHelpCtx() {
+                return delegate.getHelpCtx();
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public Transferable paste() throws IOException {
+                return delegate.paste();
             }
         }
     }
