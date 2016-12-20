@@ -55,10 +55,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -82,6 +85,11 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUIUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -111,6 +119,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Tomas Zezula
  */
 public final class MultiModuleNodeFactory implements NodeFactory {
+    private static final Logger LOG = Logger.getLogger(MultiModuleNodeFactory.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(MultiModuleNodeFactory.class);
     private final MultiModule sourceModules;
     private final MultiModule testModules;
@@ -263,13 +272,14 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         }
     }
 
-    private static final class ModuleNode extends AbstractNode implements PropertyChangeListener, FileChangeListener {
+    private static final class ModuleNode extends AbstractNode implements PropertyChangeListener, FileChangeListener, FileStatusListener {
         @StaticResource
         private static final String ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png";
         private final Project prj;
         private final MultiModule modules;
         private final MultiModule testModules;
         private final String moduleName;
+        private final RequestProcessor.Task annotationChangeTask;
         //@GuardedBy("this")
         private ClassPath srcModPath;
         //@GuardedBy("this")
@@ -278,7 +288,11 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         private Set<? extends File> fosListensOn;
         //@GuardedBy("this")
         private Collection<? extends FileObject> fosCache;
+        //@GuardedBy("this")
+        private Collection<? extends Pair<FileSystem,FileStatusListener>> fsListensOn;
         private Action[] actions;
+        private volatile boolean iconChanged;
+        private volatile boolean nameChanged;
 
         ModuleNode(@NonNull final ModuleKey key) {
             this(
@@ -292,12 +306,15 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             this.modules = key.getSourceModules();
             this.testModules = key.getTestModules();
             this.moduleName = key.getModuleName();
+            this.annotationChangeTask = RP.create(this::processAnnotationChange);
             synchronized (this) {
                 fosListensOn = Collections.emptySet();
+                fsListensOn = Collections.emptySet();
             }
             setIconBaseWithExtension(ICON);
             setName(moduleName);
             lookup.update(new ContentLkp(this, key.getProject()));
+            updateFileStatusListeners();
         }
 
         @Override
@@ -314,6 +331,53 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 sb.append(FileUtil.getFileDisplayName(fo));
             }
             return sb.toString();
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            Image res = super.getIcon(type);
+            final Collection<? extends FileObject> fos = new HashSet<>(getFileObjects());
+            if (!fos.isEmpty()) {
+                final Pair<FileSystem,Set<? extends FileObject>> p = findAnnotableFiles(fos);
+                if (p != null) {
+                    res = FileUIUtils.getImageDecorator(p.first()).annotateIcon(res, type, p.second());
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public  Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+
+        @Override
+        public  String getDisplayName() {
+            String dn = super.getDisplayName ();
+            final Collection<? extends FileObject> fos = new HashSet<>(getFileObjects());
+            if (!fos.isEmpty()) {
+                final Pair<FileSystem,Set<? extends FileObject>> p = findAnnotableFiles(fos);
+                if (p != null) {
+                    dn = p.first().getDecorator ().annotateName (dn, p.second());
+                }
+            }
+            return dn;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String dn = super.getDisplayName ();
+            final Collection<? extends FileObject> fos = new HashSet<>(getFileObjects());
+            if (!fos.isEmpty()) {
+                final Pair<FileSystem,Set<? extends FileObject>> p = findAnnotableFiles(fos);
+                if (p != null) {
+                    dn = p.first().getDecorator ().annotateNameHtml(dn, p.second());
+                }
+            }
+            if (dn != null && !super.getDisplayName().equals(dn)) {
+                return dn;
+            }
+            return super.getHtmlDisplayName();
         }
 
         @NonNull
@@ -413,10 +477,37 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        @Override
+        public void annotationChanged(final FileStatusEvent ev) {
+            if ((!iconChanged && ev.isIconChange())  || (!nameChanged && ev.isNameChange())) {
+                for (FileObject fo : getFileObjects()) {
+                    if (ev.hasChanged(fo)) {
+                        iconChanged |= ev.isIconChange();
+                        nameChanged |= ev.isNameChange();
+                        break;
+                    }
+                }
+            }
+            annotationChangeTask.schedule(100);  // batch by 100 ms
+        }
+
+        private void processAnnotationChange() {
+            if (iconChanged) {
+                iconChanged = false;
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+            if (nameChanged) {
+                nameChanged = false;
+                fireDisplayNameChange(null, null);
+            }
+        }
+
         private void reset() {
             synchronized (this) {
                 fosCache = null;
             }
+            updateFileStatusListeners();
             fireShortDescriptionChange(null, null);
         }
 
@@ -477,6 +568,57 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 }
             }
             return res;
+        }
+
+        private void updateFileStatusListeners() {
+            final Collection<FileSystem> fileSystems = new HashSet<>();
+            for (FileObject fo : getFileObjects()) {
+                try {
+                    fileSystems.add(fo.getFileSystem());
+                } catch (FileStateInvalidException e) {
+                    LOG.log(
+                            Level.WARNING,
+                            "Ignoring invalid file: {0}",   //NOI18N
+                            FileUtil.getFileDisplayName(fo));
+                }
+            }
+            synchronized (this) {
+                for (Pair<FileSystem,FileStatusListener> p : fsListensOn) {
+                    p.first().removeFileStatusListener(p.second());
+                }
+                final List<Pair<FileSystem,FileStatusListener>> newFsListensOn = new ArrayList<>();
+                for (FileSystem fs : fileSystems) {
+                    FileStatusListener l = FileUtil.weakFileStatusListener(this, fs);
+                    fs.addFileStatusListener(l);
+                    newFsListensOn.add(Pair.of(fs,l));
+                }
+                fsListensOn = newFsListensOn;
+            }
+        }
+
+        @CheckForNull
+        private static Pair<FileSystem,Set<? extends FileObject>> findAnnotableFiles(Collection<? extends FileObject> fos) {
+            FileSystem fs = null;
+            final Set<FileObject> toAnnotate = new HashSet<>();
+            for (FileObject fo : fos) {
+                try {
+                    FileSystem tmp = fo.getFileSystem();
+                    if (fs == null) {
+                        fs = tmp;
+                        toAnnotate.add(fo);
+                    } else if (fs.equals(tmp)) {
+                        toAnnotate.add(fo);
+                    }
+                } catch (FileStateInvalidException e) {
+                LOG.log(
+                    Level.WARNING,
+                    "Cannot determine annotations for invalid file: {0}",   //NOI18N
+                    FileUtil.getFileDisplayName(fo));
+                }
+            }
+            return fs == null ?
+                    null :
+                    Pair.of(fs, toAnnotate);
         }
 
         private static final class DynLkp extends ProxyLookup {
