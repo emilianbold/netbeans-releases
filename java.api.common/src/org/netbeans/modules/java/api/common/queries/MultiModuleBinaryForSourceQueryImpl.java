@@ -291,7 +291,7 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
                     }
                     this.listeners.fireChange();
                 }
-            } else if (source == Optional.of(scp.get()).map((p)->p.first()).orElse(null) && ClassPath.PROP_ENTRIES.equals(propName)) {
+            } else if (source == Optional.ofNullable(scp.get()).map((p)->p.first()).orElse(null) && ClassPath.PROP_ENTRIES.equals(propName)) {
                 if (!isSourceRoot()) {
                     cache.set(null);
                     MultiModuleBinaryForSourceQueryImpl.this.propertyChange(new PropertyChangeEvent(this.modules, ClassPath.PROP_ENTRIES, null, null));
