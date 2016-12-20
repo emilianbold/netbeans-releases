@@ -39,10 +39,8 @@
  */
 package org.netbeans.modules.java.j2semodule.ui;
 
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.api.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.java.api.common.project.ui.MultiModuleNodeFactory;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -55,10 +53,8 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class ModuleNodeFactory implements NodeFactory {
-    private final AtomicReference<NodeFactory> delegate;
 
     public ModuleNodeFactory() {
-        this.delegate = new AtomicReference<>();
     }
 
     @Override
@@ -76,15 +72,11 @@ public final class ModuleNodeFactory implements NodeFactory {
 
     @NonNull
     private NodeFactory getDelegate(@NonNull final J2SEModularProject mp) {
-        NodeFactory res = delegate.get();
-        if (res == null) {
-            res = MultiModuleNodeFactory.create(
-                    mp.getModuleRoots(),
-                    mp.getSourceRoots(), mp.getTestModuleRoots(), mp.getTestSourceRoots());
-            if (!delegate.compareAndSet(null, res)) {
-                res = delegate.get();
-            }
-        }
+        final NodeFactory res = MultiModuleNodeFactory.create(
+                mp.getModuleRoots(),
+                mp.getSourceRoots(),
+                mp.getTestModuleRoots(),
+                mp.getTestSourceRoots());
         return res;
     }
 }
