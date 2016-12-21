@@ -65,7 +65,11 @@ public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
         super(testName);
     }
 
-    public void testClusterPathFinal() throws Exception{
+    public void testClusterPathFinal() throws Exception {
+        if (!NbModuleSuiteTest.isCluster("ide")) {
+            // skip
+            return;
+        }
         LinkedList<File> clusters = new LinkedList<File>();
         NbModuleSuite.S.findClusters(clusters, Collections.singletonList("ide"));
         assertFalse("Something found", clusters.isEmpty());
