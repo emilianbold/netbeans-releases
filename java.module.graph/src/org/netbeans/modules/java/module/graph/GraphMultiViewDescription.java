@@ -81,7 +81,7 @@ class GraphMultiViewDescription implements MultiViewDescription {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass().getName());
+        return new HelpCtx(ID);
     }
 
     @Override
