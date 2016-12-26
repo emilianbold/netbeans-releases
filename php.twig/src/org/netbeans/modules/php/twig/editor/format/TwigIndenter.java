@@ -47,14 +47,15 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.twig.editor.TwigSyntax;
 import org.netbeans.modules.php.twig.editor.lexer.TwigBlockTokenId;
+import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigVariableTokenId;
 import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
@@ -184,7 +185,7 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
                 } else if (start == ts.offset()) {
                     if (end < commentEndOffset) {
                         // if comment ends on next line put formatter to IN_COMMENT state
-                        int lineStart = Utilities.getRowStart(getDocument(), ts.offset());
+                        int lineStart = LineDocumentUtils.getLineStart(getDocument(), ts.offset());
                         preservedLineIndentation = start - lineStart;
                     }
                 } else if (end == commentEndOffset) {
@@ -265,13 +266,23 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
         }
         if (sequence != null) {
             while (sequence.moveNext()) {
-                if (sequence.token().id() != TwigBlockTokenId.T_TWIG_WHITESPACE && sequence.token().id() != TwigVariableTokenId.T_TWIG_WHITESPACE) {
+                if (sequence.token().id() != TwigBlockTokenId.T_TWIG_WHITESPACE
+                        && sequence.token().id() != TwigVariableTokenId.T_TWIG_WHITESPACE
+                        && !isWhitespaceControlModifier(sequence.token())) { // "-" is used for whitespace control
                     result = sequence.token().text().toString();
                     break;
                 }
             }
         }
         return result;
+    }
+
+    private boolean isWhitespaceControlModifier(Token<? extends TokenId> token) {
+        TokenId id = token.id();
+        if (id == TwigBlockTokenId.T_TWIG_OPERATOR || id == TwigVariableTokenId.T_TWIG_OPERATOR) {
+            return TwigLexerUtils.textEquals(token.text(), '-');
+        }
+        return false;
     }
 
     private boolean isCommentToken(Token<TwigTopTokenId> token) {
