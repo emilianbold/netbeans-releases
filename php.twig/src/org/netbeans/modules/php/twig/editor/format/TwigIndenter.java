@@ -71,6 +71,8 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
     private static final Logger LOGGER = Logger.getLogger(TwigIndenter.class.getName());
     private Stack<TwigStackItem> stack = null;
     private int preservedLineIndentation = -1;
+    private static final String SET_TAG = "set"; // NOI18N
+    private static final String TRANS_TAG = "trans"; // NOI18N
 
     public TwigIndenter(Context context) {
         super(TwigTopTokenId.language(), context);
@@ -96,12 +98,14 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
         boolean nonControlMacro = false;
         int embeddingLevel = 0;
         String lastMacro = "";
+        Token<TwigTopTokenId> lastToken = null; // #243184 for checking this case {% %}{% %}
         // iterate over tokens on the line and push to stack any changes
         while (!context.isBlankLine() && ts.moveNext()
                  && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
                 || ts.offset() <= context.getLineEndOffset())) {
             Token<TwigTopTokenId> token = ts.token();
             if (token == null) {
+                lastToken = null;
                 continue;
             } else if (ts.embedded() != null) {
                 // indent for latte macro of the zero embedding level
@@ -124,10 +128,14 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
                         nonControlMacro = true;
                     }
                 }
+                lastToken = token;
                 continue;
             }
 
             if (token.id() == TwigTopTokenId.T_TWIG_BLOCK_START) {
+                if (lastToken != null && lastToken.id() == TwigTopTokenId.T_TWIG_BLOCK_END) {
+                     nonControlMacro = true;
+                }
                 afterDelimiter = true;
                 embeddingLevel++;
                 TwigStackItem state = new TwigStackItem(StackItemState.IN_RULE);
@@ -194,6 +202,7 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
                     iis.add(ic);
                 }
             }
+            lastToken = token;
         }
         if (context.isBlankLine() && iis.isEmpty()) {
             IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
@@ -222,7 +231,26 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
 
     private static boolean isShortedBlockMacro(Token<TwigTopTokenId> token) {
         String tokenText = token.text().toString();
-        return tokenText.endsWith("/") || (tokenText.contains("set") && tokenText.contains("=")); //NOI18N
+        return tokenText.endsWith("/") // NOI18N
+                || isSetBlock(tokenText)
+                || isShortedTransBlock(tokenText);
+    }
+
+    private static boolean isSetBlock(String tokenText){
+        // e.g. {% set foo = 'foo' %}
+        return tokenText.contains(SET_TAG) && tokenText.contains("="); // NOI18N
+    }
+
+    private static boolean isShortedTransBlock(String tokenText) {
+        // e.g. {% trans "something" %}
+        int indexOfTrans = tokenText.indexOf(TRANS_TAG);
+        if (indexOfTrans != -1) {
+            String substring = tokenText.substring(indexOfTrans + TRANS_TAG.length()).trim();
+            if (!substring.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getMarkupTokenName(Token<TwigTopTokenId> token) {

@@ -108,4 +108,25 @@ public class TwigIndenterTest extends TwigIndenterTestBase {
         indent("testIssue244434");
     }
 
+    // #243184
+    public void testNoBlockContents() throws Exception {
+        indent("testNoBlockContents");
+    }
+
+    public void testSetBlock() throws Exception {
+        indent("testSetBlock");
+    }
+
+    public void testTransBlock() throws Exception {
+        indent("testTransBlock");
+    }
+
+    public void testShortedTransBlock_01() throws Exception {
+        indent("testShortedTransBlock_01");
+    }
+
+    public void testShortedTransBlock_02() throws Exception {
+        indent("testShortedTransBlock_02");
+    }
+
 }
