@@ -246,6 +246,10 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
         // e.g. {% trans "something" %}
         int indexOfTrans = tokenText.indexOf(TRANS_TAG);
         if (indexOfTrans != -1) {
+            String prefix = tokenText.substring(0, indexOfTrans).trim();
+            if (!prefix.isEmpty()) {
+                return false;
+            }
             String substring = tokenText.substring(indexOfTrans + TRANS_TAG.length()).trim();
             if (!substring.isEmpty()) {
                 return true;
