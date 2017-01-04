@@ -386,7 +386,7 @@ is divided into following sections:
                     <attribute>
                         <xsl:attribute name="name">modulesourcepath</xsl:attribute>
                         <xsl:attribute name="default">
-                            <xsl:call-template name="createPath">
+                            <xsl:call-template name="createPath2">
                                 <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
                             </xsl:call-template>
                         </xsl:attribute>
@@ -1388,6 +1388,87 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
+            <scriptdef name="modsource_regexp" language="javascript" uri="http://www.netbeans.org/ns/j2se-modular-project/1">
+                <attribute name="property"/>
+                <attribute name="filePattern"/>
+                <attribute name="modsource"/><![CDATA[
+        function expandGroup(grp) {
+            var exp = [];
+            var item = "";
+            var depth = 0;
+
+            for (i = 0; i < grp.length; i++) {
+                var c = grp[i];
+                switch (c) {
+                    case '{':
+                        if (depth++ === 0) {
+                            continue;
+                        }
+                        break;
+                    case '}':
+                        if (--depth === 0) {
+                            exp.push(item);
+                            continue;
+                        }
+                        break;
+                    case ',':
+                        if (depth === 1) {
+                            exp.push(item);
+                            item = "";
+                            continue;
+                        }
+                    default:
+                        break;
+                }
+                item = item + c;
+            }
+            return exp;
+        }
+
+        function pathVariants(spec, res) {
+            res = res || [];
+            var start  = spec.indexOf('{');
+            if (start === -1) {
+                res.push(spec);
+                return res;
+            }
+            var depth = 1;
+            var end;
+            for (end = start + 1; end < spec.length && depth > 0; end++) {
+                var c = spec[end];
+                switch (c) {
+                    case '{': depth++; break;
+                    case '}': depth--; break;
+                }
+            }
+            var prefix = spec.substring(0, start);
+            var suffix = spec.substring(end);
+            expandGroup(spec.slice(start, end)).forEach(function (item) {
+                pathVariants(prefix + item + suffix, res);
+            })
+            return res;
+        }
+
+        function toRegexp2(spec, filepattern) {
+            var prefixes = [];
+            var suffixes = [];
+            pathVariants(spec).forEach(function(item) {
+                var parts = item.split("/*/");
+                prefixes.push(parts[0]);
+                suffixes.push(parts[1]);
+            });
+            var tail = "";
+            if (filepattern != tail) {
+                tail = "/" + filepattern;
+            }
+            return /* "(" + prefixes.join("|") + ")" */ "([^/]+)/(" + suffixes.join("|") + ")" + tail;
+        }
+                self.project.setProperty(attributes.get("property"), 
+                    toRegexp2(attributes.get("modsource"), attributes.get("filepattern")));
+            ]]>
+            </scriptdef>
+            
+            
             <target name="-compile-depend" if="do.depend.true">
                 <pathconvert property="build.generated.subdirs">
                     <dirset dir="${{build.generated.sources.dir}}" erroronmissingdir="false">
@@ -1407,13 +1488,11 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2semodularproject1:javac gensrcdir="${{build.generated.sources.dir}}"/>
-                <copy todir="${{build.classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
-                        <!-- XXX should perhaps use ${includes} and ${excludes} -->
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                </copy>
+                <xsl:call-template name="copyResources">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
+                    <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    <xsl:with-param name="todir">${{build.classes.dir}}</xsl:with-param>
+                </xsl:call-template>
             </target>
 
             <target name="-copy-persistence-xml" if="has.persistence.xml"><!-- see eclipselink issue https://bugs.eclipse.org/bugs/show_bug.cgi?id=302450, need to copy persistence.xml before build -->
@@ -1445,11 +1524,13 @@ is divided into following sections:
                 <xsl:element name="j2semodularproject1:javac">
                     <xsl:attribute name="includes">${javac.includes}, module-info.java</xsl:attribute>
                     <xsl:attribute name="excludes"/>
-                    <xsl:attribute name="sourcepath"> <!-- #115918 -->
+                    <!--
+                    <xsl:attribute name="sourcepath"> <!- - #115918 - ->
                         <xsl:call-template name="createPath">
                             <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
+                    -->
                     <xsl:attribute name="gensrcdir">${build.generated.sources.dir}</xsl:attribute>
                 </xsl:element>
             </target>
@@ -1543,8 +1624,11 @@ is divided into following sections:
                 =================
             </xsl:comment>
             
+            <target name="-check-main-class">
+                <fail unless="main.class">No main class specified</fail>
+            </target>
             <target name="run">
-                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-check-main-class</xsl:attribute>
                 <xsl:attribute name="description">Run a main class.</xsl:attribute>
                 <j2semodularproject1:java>
                     <customize>
@@ -1960,12 +2044,11 @@ is divided into following sections:
                         <compilerarg line="${{javac.test.compilerargs}}"/>
                     </customize>
                 </xsl:element>
-                <copy todir="${{build.test.classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                </copy>
+                <xsl:call-template name="copyResources">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
+                    <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    <xsl:with-param name="todir">${{build.test.classes.dir}}</xsl:with-param>
+                </xsl:call-template>
             </target>
             
             <target name="-post-compile-test">
@@ -2012,12 +2095,11 @@ is divided into following sections:
                         <compilerarg line="${{javac.test.compilerargs}}"/>
                     </customize>
                 </xsl:element>
-                <copy todir="${{build.test.classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                </copy>
+                <xsl:call-template name="copyResources">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
+                    <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    <xsl:with-param name="todir">${{build.test.classes.dir}}</xsl:with-param>
+                </xsl:call-template>
             </target>
             
             <target name="-post-compile-test-single">
@@ -2364,9 +2446,12 @@ is divided into following sections:
             <xsl:attribute name="property"><xsl:value-of select="$propName"/></xsl:attribute>
             <or>
                 <xsl:for-each select="$roots/j2semodularproject1:root">
-                    <xsl:element name="available">
-                        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                    </xsl:element>
+                    <resourcecount when="greater" count="0">
+                        <xsl:element name="dirset">
+                            <xsl:attribute name="dir">${basedir}</xsl:attribute>
+                            <xsl:attribute name="includes">${<xsl:value-of select="@id"/>.path}</xsl:attribute>
+                        </xsl:element>
+                    </resourcecount>
                 </xsl:for-each>
             </or>
         </xsl:element>
@@ -2379,6 +2464,41 @@ is divided into following sections:
                 <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
                 <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
             </xsl:element>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <!-- Each file root has its own pattern for 'source' files, and must be copied
+         with root-specific regexpmapper -->
+    <xsl:template name="copyResources">
+        <xsl:param name="todir"/>
+        <xsl:param name="roots"/>
+        <xsl:param name="includes" select="'${includes}'"/>
+        <xsl:param name="includes2"/>
+        <xsl:param name="excludes"/>
+        <xsl:param name="condition"/>
+        <xsl:param name="regexp"/>
+        <xsl:for-each select="$roots/j2semodularproject1:root">
+            <j2semodularproject1:modsource_regexp property="{@id}.path.regexp" modsource="${{{@id}.path}}" filePattern="(.*$)"/>
+            <echo message="Copying resources from {$todir}"/>
+            <copy todir="{$todir}">
+                <xsl:element name="fileset">
+                    <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                    <xsl:choose>
+                        <xsl:when test="$excludes">
+                            <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:if test="$includes2">
+                        <filename name="{$includes2}"/>
+                        <xsl:copy-of select="$condition"/>
+                    </xsl:if>
+                </xsl:element>
+                <regexpmapper from="${{{@id}.path.regexp}}" to="\1/\3"/>
+            </copy>
         </xsl:for-each>
     </xsl:template>
     
@@ -2446,6 +2566,18 @@ is divided into following sections:
             <xsl:text>${</xsl:text>
             <xsl:value-of select="@id"/>
             <xsl:text>}</xsl:text>
+        </xsl:for-each>						
+    </xsl:template>
+
+    <xsl:template name="createPath2">
+        <xsl:param name="roots"/>
+        <xsl:for-each select="$roots/j2semodularproject1:root">
+            <xsl:if test="position() != 1">
+                <xsl:text>:</xsl:text>
+            </xsl:if>
+            <xsl:text>${</xsl:text>
+            <xsl:value-of select="@id"/>
+            <xsl:text>.path}</xsl:text>
         </xsl:for-each>						
     </xsl:template>
 </xsl:stylesheet>
