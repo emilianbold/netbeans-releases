@@ -1488,15 +1488,11 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2semodularproject1:javac gensrcdir="${{build.generated.sources.dir}}"/>
-                <j2semodularproject1:modsource_regexp property="src.dir.path.regexp" modsource="${{src.dir.path}}" filePattern="(.*$)"/>
-                <copy todir="${{build.classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
-                        <!-- XXX should perhaps use ${includes} and ${excludes} -->
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                    <regexpmapper from="${{src.dir.path.regexp}}" to="\1/\3"/>
-                </copy>
+                <xsl:call-template name="copyResources">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
+                    <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    <xsl:with-param name="todir">${{build.classes.dir}}</xsl:with-param>
+                </xsl:call-template>
             </target>
 
             <target name="-copy-persistence-xml" if="has.persistence.xml"><!-- see eclipselink issue https://bugs.eclipse.org/bugs/show_bug.cgi?id=302450, need to copy persistence.xml before build -->
@@ -2048,12 +2044,11 @@ is divided into following sections:
                         <compilerarg line="${{javac.test.compilerargs}}"/>
                     </customize>
                 </xsl:element>
-                <copy todir="${{build.test.classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                </copy>
+                <xsl:call-template name="copyResources">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
+                    <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    <xsl:with-param name="todir">${{build.test.classes.dir}}</xsl:with-param>
+                </xsl:call-template>
             </target>
             
             <target name="-post-compile-test">
@@ -2100,12 +2095,11 @@ is divided into following sections:
                         <compilerarg line="${{javac.test.compilerargs}}"/>
                     </customize>
                 </xsl:element>
-                <copy todir="${{build.test.classes.dir}}">
-                    <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
-                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    </xsl:call-template>
-                </copy>
+                <xsl:call-template name="copyResources">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
+                    <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    <xsl:with-param name="todir">${{build.test.classes.dir}}</xsl:with-param>
+                </xsl:call-template>
             </target>
             
             <target name="-post-compile-test-single">
@@ -2470,6 +2464,41 @@ is divided into following sections:
                 <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
                 <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
             </xsl:element>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <!-- Each file root has its own pattern for 'source' files, and must be copied
+         with root-specific regexpmapper -->
+    <xsl:template name="copyResources">
+        <xsl:param name="todir"/>
+        <xsl:param name="roots"/>
+        <xsl:param name="includes" select="'${includes}'"/>
+        <xsl:param name="includes2"/>
+        <xsl:param name="excludes"/>
+        <xsl:param name="condition"/>
+        <xsl:param name="regexp"/>
+        <xsl:for-each select="$roots/j2semodularproject1:root">
+            <j2semodularproject1:modsource_regexp property="{@id}.path.regexp" modsource="${{{@id}.path}}" filePattern="(.*$)"/>
+            <echo message="Copying resources from {$todir}"/>
+            <copy todir="{$todir}">
+                <xsl:element name="fileset">
+                    <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                    <xsl:choose>
+                        <xsl:when test="$excludes">
+                            <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:if test="$includes2">
+                        <filename name="{$includes2}"/>
+                        <xsl:copy-of select="$condition"/>
+                    </xsl:if>
+                </xsl:element>
+                <regexpmapper from="${{{@id}.path.regexp}}" to="\1/\3"/>
+            </copy>
         </xsl:for-each>
     </xsl:template>
     
