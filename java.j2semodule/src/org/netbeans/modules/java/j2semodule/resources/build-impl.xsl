@@ -1491,7 +1491,7 @@ is divided into following sections:
                 <xsl:call-template name="copyResources">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
                     <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    <xsl:with-param name="todir">${{build.classes.dir}}</xsl:with-param>
+                    <xsl:with-param name="todir">${build.classes.dir}</xsl:with-param>
                 </xsl:call-template>
             </target>
 
@@ -2047,7 +2047,7 @@ is divided into following sections:
                 <xsl:call-template name="copyResources">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
                     <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    <xsl:with-param name="todir">${{build.test.classes.dir}}</xsl:with-param>
+                    <xsl:with-param name="todir">${build.test.classes.dir}</xsl:with-param>
                 </xsl:call-template>
             </target>
             
@@ -2098,7 +2098,7 @@ is divided into following sections:
                 <xsl:call-template name="copyResources">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
                     <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
-                    <xsl:with-param name="todir">${{build.test.classes.dir}}</xsl:with-param>
+                    <xsl:with-param name="todir">${build.test.classes.dir}</xsl:with-param>
                 </xsl:call-template>
             </target>
             
@@ -2479,7 +2479,7 @@ is divided into following sections:
         <xsl:param name="regexp"/>
         <xsl:for-each select="$roots/j2semodularproject1:root">
             <j2semodularproject1:modsource_regexp property="{@id}.path.regexp" modsource="${{{@id}.path}}" filePattern="(.*$)"/>
-            <echo message="Copying resources from {$todir}"/>
+            <echo message="Copying resources from ${{{@id}}}"/>
             <copy todir="{$todir}">
                 <xsl:element name="fileset">
                     <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
