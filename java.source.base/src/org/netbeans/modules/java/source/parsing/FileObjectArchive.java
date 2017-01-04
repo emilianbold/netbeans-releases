@@ -44,12 +44,17 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import org.netbeans.api.annotations.common.NonNull;
@@ -58,6 +63,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.util.Enumerations;
 
 /**
@@ -65,8 +71,10 @@ import org.openide.util.Enumerations;
  * @author tom
  */
 public class FileObjectArchive implements Archive {
+    private static final Logger LOG = Logger.getLogger(FileObjectArchive.class.getName());
     
     private final FileObject root;
+    private volatile Boolean multiRelease;
     
     /** Creates a new instance of FileObjectArchive */
     public FileObjectArchive (final FileObject root) {
@@ -88,7 +96,13 @@ public class FileObjectArchive implements Archive {
         final Enumeration<? extends FileObject> children;
         final List<JavaFileObject> result;
         if (recursive) {
-            children = folder.getChildren(recursive);
+            children = Enumerations.filter(
+                    folder.getChildren(recursive),
+                    (p,x)->{
+                        return  !p.isFolder() && isInJavaPackage(folder,p) ?
+                                p :
+                                null;
+                    });
             result = new ArrayList<>(/*unknown size*/);
         } else {
             final FileObject[] chlds = folder.getChildren();
@@ -120,6 +134,7 @@ public class FileObjectArchive implements Archive {
 
     @Override
     public void clear() {
+        multiRelease = null;
     }
 
     @Override
@@ -129,11 +144,49 @@ public class FileObjectArchive implements Archive {
     }
 
     @Override
+    public boolean isMultiRelease() {
+        Boolean res = multiRelease;
+        if (res == null) {
+            res = Boolean.FALSE;
+            try {
+                if (root.getFileSystem() instanceof JarFileSystem) {
+                    final FileObject manifest = root.getFileObject("META-INF/MANIFEST.MF"); //NOI18N
+                    if (manifest != null) {
+                        try(InputStream in = new BufferedInputStream(manifest.getInputStream())) {
+                            res = FileObjects.isMultiVersionArchive(in);
+                        }
+                    }
+                }
+            } catch (IOException ioe) {
+                LOG.log(
+                        Level.WARNING,
+                        "Cannot read: {0} manifest",    //NOI18N
+                        FileUtil.getFileDisplayName(root));
+            }
+            multiRelease = res;
+        }
+        return res;
+    }
+
+    @Override
     public String toString() {
         return String.format(
             "%s[folder: %s]",   //NOI18N
             getClass().getSimpleName(),
             FileUtil.getFileDisplayName(root));
+    }
+
+    private static boolean isInJavaPackage(
+            @NonNull final FileObject root,
+            @NonNull final FileObject file) {
+        FileObject fld = file.getParent();
+        while (fld != null && !fld.equals(root)) {
+            if (!SourceVersion.isIdentifier(fld.getNameExt())) {
+                return false;
+            }
+            fld = fld.getParent();
+        }
+        return true;
     }
 
 }

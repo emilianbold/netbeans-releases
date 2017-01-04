@@ -100,7 +100,7 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
             local = locals.poll();
         }
         if (local == null) {
-            local = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
+            local = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
         }
         JavaFileManager old = localDelegate.get();
         localDelegate.set(local);
@@ -125,7 +125,7 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
         }
         synchronized (this) {
             if (delegate == null) {
-                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
+                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
             }
             return delegate;
         }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
 import java.io.File;
 import java.io.IOException;
@@ -88,6 +89,7 @@ final class ModuleFileManager implements JavaFileManager {
     private final CachingArchiveProvider cap;
     private final ClassPath modulePath;
     private final Function<URL,Collection<? extends URL>> peers;
+    private final Source sourceLevel;
     private final boolean cacheFile;
     private final Map<String,List<URL>> patches;
 
@@ -96,6 +98,7 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final CachingArchiveProvider cap,
             @NonNull final ClassPath modulePath,
             @NonNull final Function<URL,Collection<? extends URL>> peers,
+            @NullAllowed final Source sourceLevel,
             final boolean cacheFile) {
         assert cap != null;
         assert modulePath != null;
@@ -103,6 +106,7 @@ final class ModuleFileManager implements JavaFileManager {
         this.cap = cap;
         this.modulePath = modulePath;
         this.peers = peers;
+        this.sourceLevel = sourceLevel;
         this.cacheFile = cacheFile;
         this.patches = new HashMap<>();
     }
