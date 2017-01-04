@@ -94,7 +94,7 @@ public class OutputFileManager extends CachingFileManager {
             @NonNull final ClassPath aptPath,
             @NonNull final SiblingProvider siblings,
             @NonNull final FileManagerTransaction tx) {
-        super (provider, outputClassPath, false, true);
+        super (provider, outputClassPath, null, false, true);
         assert outputClassPath != null;
         assert sourcePath != null;
         assert siblings != null;

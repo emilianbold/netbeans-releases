@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
+import com.sun.tools.javac.code.Source;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -653,6 +654,7 @@ public final class ProxyFileManager implements JavaFileManager {
         private JavaFileFilterImplementation filter;
         private boolean ignoreExcludes;
         private Function<JavaFileManager.Location, JavaFileManager> jfmProvider;
+        private Source sourceLevel;
 
         private Configuration(
                 @NonNull final ClassPath moduleBoot,
@@ -726,6 +728,12 @@ public final class ProxyFileManager implements JavaFileManager {
         
         public void setCustomFileManagerProvider(@NullAllowed final Function<JavaFileManager.Location, JavaFileManager> jfmProvider) {
             this.jfmProvider = jfmProvider;
+        }
+        
+        public void setSourceLevel(@NullAllowed final String sourceLevel) {
+            this.sourceLevel = sourceLevel == null ?
+                    null :
+                    Source.lookup(sourceLevel);
         }
 
         @NonNull
@@ -836,7 +844,7 @@ public final class ProxyFileManager implements JavaFileManager {
         @NonNull
         private JavaFileManager createBootFileManager() {
             if (emitted[BOOT] == null) {
-                emitted[BOOT] = new CachingFileManager (cap, bootCached, true, true);
+                emitted[BOOT] = new CachingFileManager (cap, bootCached, sourceLevel, true, true);
             }
             return emitted[BOOT];
         }
@@ -844,7 +852,7 @@ public final class ProxyFileManager implements JavaFileManager {
         @NonNull
         private JavaFileManager createCompileFileManager() {
             if (emitted[COMPILE] == null) {
-                emitted[COMPILE] = new CachingFileManager (cap, compiledCached, false, true);
+                emitted[COMPILE] = new CachingFileManager (cap, compiledCached, sourceLevel, false, true);
             }
             return emitted[COMPILE];
         }
@@ -855,7 +863,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 final boolean hasSources = this.srcCached != ClassPath.EMPTY;
                 emitted[SRC] = hasSources ?
                     (!useModifiedFiles ?
-                        new CachingFileManager (cap, srcCached, filter, false, ignoreExcludes) :
+                        new CachingFileManager (cap, srcCached, filter, null, false, ignoreExcludes) :
                         new SourceFileManager (srcCached, ignoreExcludes)) :
                     null;
             }
@@ -923,6 +931,7 @@ public final class ProxyFileManager implements JavaFileManager {
                     cap,
                     moduleBoot,
                     peersMap.getOrDefault(moduleBoot, ROOT_TO_COLLECTION),
+                    sourceLevel,
                     true);
             }
             return emitted[SYS_MODULES];
@@ -935,6 +944,7 @@ public final class ProxyFileManager implements JavaFileManager {
                     cap,
                     moduleCompile,
                     peersMap.getOrDefault(moduleCompile, ROOT_TO_COLLECTION),
+                    sourceLevel,
                     true);
             }
             return emitted[USER_MODULES];

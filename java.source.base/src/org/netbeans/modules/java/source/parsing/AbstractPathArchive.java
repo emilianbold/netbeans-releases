@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,79 +36,71 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.source.parsing;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 
 /**
  *
  * @author Tomas Zezula
  */
-public final class PathArchive extends AbstractPathArchive {
+public abstract class AbstractPathArchive implements Archive {
+    private static final Logger LOG = Logger.getLogger(AbstractPathArchive.class.getName());
+    protected final Path root;
+    protected final String rootURI;
+    protected final char separator;
+    private volatile Boolean multiRelease;
 
-    
-
-    PathArchive(
+    protected AbstractPathArchive(
             @NonNull final Path root,
             @NullAllowed final URI rootURI) {
-        super(root, rootURI);
+        assert root != null;
+        this.root = root;
+        this.rootURI = rootURI == null ? null : rootURI.toString();
+        final String separator = root.getFileSystem().getSeparator();
+        if (separator.length() != 1) {
+            throw new IllegalArgumentException("Multi character separators are unsupported");
+        }
+        this.separator = separator.charAt(0);
     }
 
     @Override
-    @NonNull
-    public Iterable<JavaFileObject> getFiles(
-            @NonNull String folderName,
-            @NullAllowed final ClassPath.Entry entry,
-            @NullAllowed final Set<JavaFileObject.Kind> kinds,
-            @NullAllowed final JavaFileFilterImplementation filter,
-            final boolean recursive) throws IOException {
-        if (separator != FileObjects.NBFS_SEPARATOR_CHAR) {
-            folderName = folderName.replace(FileObjects.NBFS_SEPARATOR_CHAR, separator);
-        }
-        final Path target = root.resolve(folderName);
-        final List<JavaFileObject> res = new ArrayList<>();
-        try (final Stream<Path> s = recursive ? Files.walk(target, FileVisitOption.FOLLOW_LINKS) : Files.list(target)) {
-            s.filter((p)->{
-                return (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(p.getFileName().toString()))))
-                    && Files.isRegularFile(p);
-            })
-            .forEach((p)->{res.add(FileObjects.pathFileObject(p, root, rootURI, null));});
-        }
-        return Collections.unmodifiableCollection(res);
+    public void clear() {
+        multiRelease = null;
     }
 
     @Override
-    @CheckForNull
-    public JavaFileObject getFile(@NonNull String name) throws IOException {
-        if (separator != FileObjects.NBFS_SEPARATOR_CHAR) {
-            name = name.replace(FileObjects.NBFS_SEPARATOR_CHAR, separator);
+    public boolean isMultiRelease() {
+        Boolean res = multiRelease;
+        if (res == null) {
+            res = Boolean.FALSE;
+            if (FileObjects.JAR.equals(root.getFileSystem().provider().getScheme())) {
+                try {
+                    final JavaFileObject jfo = getFile("META-INF/MANIFEST.MF"); //NOI18N
+                    if (jfo != null) {
+                        try(final InputStream in = new BufferedInputStream(jfo.openInputStream())) {
+                            res = FileObjects.isMultiVersionArchive(in);
+                        }
+                    }
+                } catch (IOException ioe) {
+                    LOG.log(
+                            Level.WARNING,
+                            "Cannot read: {0} manifest",    //NOI18N
+                            rootURI.toString());
+                }
+            }
+            multiRelease = res;
         }
-        final Path target = root.resolve(name);
-        return Files.exists(target) ?
-                FileObjects.pathFileObject(target, root, rootURI, null) :
-                null;
-    }
-
-    @Override
-    public JavaFileObject create(String relativeName, JavaFileFilterImplementation filter) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("Write not supported");   //NOI18N
+        return res;
     }
 }
