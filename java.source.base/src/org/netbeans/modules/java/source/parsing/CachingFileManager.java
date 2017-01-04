@@ -146,7 +146,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
                     final Iterable<JavaFileObject> entries;
                     if (supportsMultiRelease && archive.isMultiRelease()) {
                         if (prefixes == null) {
-                            prefixes = multiReleaseRelecations();
+                            prefixes = multiReleaseRelocations();
                         }
                         final java.util.Map<String,JavaFileObject> fqn2f = new HashMap<>();
                         final Set<String> seenPackages = new HashSet<>();
@@ -207,7 +207,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
                     final List<? extends String> prefixes;
                     if (supportsMultiRelease && archive.isMultiRelease()) {
                         if (reloc == null) {
-                            reloc = multiReleaseRelecations();
+                            reloc = multiReleaseRelocations();
                         }
                         prefixes = reloc;
                     } else {
@@ -338,7 +338,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
                     final List<? extends String> prefixes;
                     if (supportsMultiRelease && archive.isMultiRelease()) {
                         if (reloc == null) {
-                            reloc = multiReleaseRelecations();
+                            reloc = multiReleaseRelocations();
                         }
                         prefixes = reloc;
                     } else {
@@ -362,7 +362,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     }
 
     @NonNull
-    private List<? extends String> multiReleaseRelecations() {
+    private List<? extends String> multiReleaseRelocations() {
         final List<String> prefixes = new ArrayList<>();
         prefixes.add("");   //NOI18N
         final Source[] sources = Source.values();
