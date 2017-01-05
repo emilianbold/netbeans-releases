@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JDK9">
+            <api name="general"/>
+            <summary>U</summary>
+            <version major="1" minor="52"/>
+            <date day="5" month="1" year="2017"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Updated ClassFile to recent JDK 9 JLS.
+            </description>
+            <class package="org.netbeans.modules.classfile" name="Access"/>
+            <class package="org.netbeans.modules.classfile" name="Module"/>
+            <class package="org.netbeans.modules.classfile" name="CPModuleInfo"/>
+            <class package="org.netbeans.modules.classfile" name="CPPackageInfo"/>
+	</change>
         <change id="classfile-isModule">
             <api name="general"/>
             <summary>Added isModule method into ClassFile</summary>

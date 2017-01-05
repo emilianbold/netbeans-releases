@@ -64,15 +64,31 @@ public class ModuleTest extends TestCase {
     private static final Logger LOG = Logger.getLogger(ModuleTest.class.getName());
 
     public void testJavaBaseModule() throws IOException {
-        doTest("java.base");    //NOI18N
+        doTest("java.base", Level.FINER);    //NOI18N
     }
 
     public void testJavaDesktopModule() throws IOException {
-        doTest("java.desktop");    //NOI18N
+        doTest("java.desktop", Level.FINER);    //NOI18N
+    }
+
+    public void testAll() throws IOException {
+        final Path root = getModulesRoot();
+        if (root != null) {
+            Files.list(root)
+                    .filter((p) -> Files.isDirectory(p))
+                    .forEach((p) -> {
+                        try {
+                            doTest(p.getName(p.getNameCount()-1).toString(), Level.FINE);
+                        } catch (IOException ioe) {
+                            throw new RuntimeException(ioe);
+                        }
+                    });
+        }
     }
     
-    private void doTest(String moduleName) throws IOException {
-        System.out.println(moduleName);
+    private void doTest(
+            final String moduleName,
+            final Level logLevel) throws IOException {
         final Path modulesRoot = getModulesRoot();
         if (modulesRoot != null) {
             final Path javaBase = modulesRoot.resolve(String.format("%s/module-info.class", moduleName));   //NOI18N
@@ -83,18 +99,26 @@ public class ModuleTest extends TestCase {
                 assertTrue(cf.isModule());
                 final Module mod = cf.getModule();
                 assertNotNull(mod);
-
-                for (Module.RequiresEntry req : mod.getRequiresEntries()) {
-                    System.out.printf("%s%n", req);
+                if (Level.FINE.intValue() >= logLevel.intValue()) {
+                    System.out.println(mod.getName() + " " + Integer.toBinaryString(mod.getFlags()) + " " + mod.getVersion());
                 }
-                for (Module.ExportsEntry exp : mod.getExportsEntries()) {
-                    System.out.printf("%s%n", exp);
-                }
-                for (CPClassInfo u : mod.getUses()) {
-                    System.out.printf("uses: %s%n", u.getClassName());
-                }
-                for (Module.ProvidesEntry p : mod.getProvidesEntries()) {
-                    System.out.printf("%s%n", p);
+                assertEquals(moduleName, mod.getName());
+                if (Level.FINER.intValue() >= logLevel.intValue()) {
+                    for (Module.RequiresEntry req : mod.getRequiresEntries()) {
+                        System.out.printf("%s%n", req);
+                    }
+                    for (Module.ExportsEntry exp : mod.getExportsEntries()) {
+                        System.out.printf("%s%n", exp);
+                    }
+                    for (Module.OpensEntry exp : mod.getOpensEntries()) {
+                        System.out.printf("%s%n", exp);
+                    }
+                    for (ClassName u : mod.getUses()) {
+                        System.out.printf("uses %s%n", u.getExternalName());
+                    }
+                    for (Module.ProvidesEntry p : mod.getProvidesEntries()) {
+                        System.out.printf("%s%n", p);
+                    }
                 }
             }
         }
@@ -103,7 +127,7 @@ public class ModuleTest extends TestCase {
     private static Path getModulesRoot() {
         try {
             final File javaHome = new File(JDK9_HOME == null ? System.getProperty("java.home") : JDK9_HOME);    //NOI18N
-            final File jrtProvider = new File(javaHome, "jrt-fs.jar");  //NOI18N
+            final File jrtProvider = new File(new File(javaHome, "lib"), "jrt-fs.jar");  //NOI18N
             if (!jrtProvider.exists()) {
                 return null;
             }
