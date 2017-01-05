@@ -50,6 +50,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,15 +86,89 @@ public class ModuleTest extends TestCase {
                     });
         }
     }
-    
+
+    public void testModulePackages() throws IOException {
+        final Path root = getModulesRoot();
+        if (root != null) {
+            Files.list(root)
+                    .filter((p) -> Files.isDirectory(p))
+                    .forEach((p) -> {
+                        try {
+                            final String moduleName = p.getName(p.getNameCount()-1).toString();
+                            final Path moduleInfo = root.resolve(String.format("%s/module-info.class", moduleName));   //NOI18N
+                            assertTrue(Files.exists(moduleInfo));
+                            try (InputStream in = Files.newInputStream(moduleInfo)) {
+                                final ClassFile cf = new ClassFile(in, true);
+                                assertNotNull(cf);
+                                assertTrue(cf.isModule());
+                                final List<String> pkgs = cf.getModulePackages();
+                                assertNotNull("No module packages for: " + moduleName, pkgs);   //NOI18N
+                            }
+                        } catch (IOException ioe) {
+                            throw new RuntimeException(ioe);
+                        }
+                    });
+        }
+    }
+
+    public void testModuleTarget() throws IOException {
+        final Path root = getModulesRoot();
+        if (root != null) {
+            Files.list(root)
+                    .filter((p) -> Files.isDirectory(p))
+                    .forEach((p) -> {
+                        try {
+                            final String moduleName = p.getName(p.getNameCount()-1).toString();
+                            final Path moduleInfo = root.resolve(String.format("%s/module-info.class", moduleName));   //NOI18N
+                            assertTrue(Files.exists(moduleInfo));
+                            try (InputStream in = Files.newInputStream(moduleInfo)) {
+                                final ClassFile cf = new ClassFile(in, true);
+                                assertNotNull(cf);
+                                assertTrue(cf.isModule());
+                                final ModuleTarget target = cf.getModuleTarget();
+                                assertNotNull(target);
+                            }
+                        } catch (IOException ioe) {
+                            throw new RuntimeException(ioe);
+                        }
+                    });
+        }
+    }
+
+    public void testModuleMainClass() throws IOException {
+        final Path root = getModulesRoot();
+        if (root != null) {
+            Files.list(root)
+                    .filter((p) -> Files.isDirectory(p))
+                    .forEach((p) -> {
+                        try {
+                            final String moduleName = p.getName(p.getNameCount()-1).toString();
+                            final Path moduleInfo = root.resolve(String.format("%s/module-info.class", moduleName));   //NOI18N
+                            assertTrue(Files.exists(moduleInfo));
+                            try (InputStream in = Files.newInputStream(moduleInfo)) {
+                                final ClassFile cf = new ClassFile(in, true);
+                                assertNotNull(cf);
+                                assertTrue(cf.isModule());
+                                final ClassName main = cf.getModuleMainClass();
+                                if (main != null) {
+                                    System.out.println(moduleName + "/" + main.getExternalName());
+                                }
+                            }
+                        } catch (IOException ioe) {
+                            throw new RuntimeException(ioe);
+                        }
+                    });
+        }
+    }
+
     private void doTest(
             final String moduleName,
             final Level logLevel) throws IOException {
         final Path modulesRoot = getModulesRoot();
         if (modulesRoot != null) {
-            final Path javaBase = modulesRoot.resolve(String.format("%s/module-info.class", moduleName));   //NOI18N
-            assertTrue(Files.exists(javaBase));
-            try (InputStream in = Files.newInputStream(javaBase)) {
+            final Path moduleInfo = modulesRoot.resolve(String.format("%s/module-info.class", moduleName));   //NOI18N
+            assertTrue(Files.exists(moduleInfo));
+            try (InputStream in = Files.newInputStream(moduleInfo)) {
                 final ClassFile cf = new ClassFile(in, true);
                 assertNotNull(cf);
                 assertTrue(cf.isModule());
