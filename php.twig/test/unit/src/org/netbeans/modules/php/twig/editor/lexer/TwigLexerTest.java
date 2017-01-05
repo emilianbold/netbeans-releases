@@ -113,6 +113,19 @@ public class TwigLexerTest extends TwigLexerTestBase {
         performTest("expressions-unary");
     }
 
+    // #246638
+    public void testExpressionsNestedArray_01() throws Exception {
+        performTest("expressions-nested-array_01");
+    }
+
+    public void testExpressionsNestedArray_02() throws Exception {
+        performTest("expressions-nested-array_02");
+    }
+
+    public void testExpressionsNestedArray_03() throws Exception {
+        performTest("expressions-nested-array_03");
+    }
+
     public void testFiltersConvertEncoding() throws Exception {
         performTest("filters-convert_encoding");
     }
