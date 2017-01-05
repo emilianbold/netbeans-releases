@@ -180,6 +180,9 @@ public class TwigParser extends Parser {
                                 do {
 
                                     moved = sequence.moveNext();
+                                    if (!moved) { // #247434
+                                        break;
+                                    }
                                     token = (Token<TwigBlockTokenId>) sequence.token();
 
                                     if (token.id() == TwigBlockTokenId.T_TWIG_NAME || token.id() == TwigBlockTokenId.T_TWIG_STRING) {
