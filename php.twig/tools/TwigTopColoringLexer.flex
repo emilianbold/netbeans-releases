@@ -213,6 +213,7 @@ COMMENT_START="{#"
 COMMENT_END=([^#] | #[^}])*"#}"
 D_STRING_DELIM=\"
 S_STRING_DELIM='
+PRECEDED_STRING="\\\'"|"\\\""|"\\\\"
 
 %state ST_RAW_START
 %state ST_RAW_END
@@ -363,6 +364,8 @@ S_STRING_DELIM='
 }
 
 <ST_VAR> {
+    {PRECEDED_STRING} {
+    }
     {D_STRING_DELIM} {
         if (!probablyInSString) {
             probablyInDString = !probablyInDString;

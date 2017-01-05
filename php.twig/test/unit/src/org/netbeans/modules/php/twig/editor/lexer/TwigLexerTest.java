@@ -629,6 +629,67 @@ public class TwigLexerTest extends TwigLexerTestBase {
         performTest("issue242400_02");
     }
 
+    // #248316
+    // variable
+    public void testPrecededSingleQuoteByBackslash_01() throws Exception {
+        performTest("preceded-single-quote-by-backslash_01");
+    }
+
+    public void testPrecededSingleQuoteByBackslash_02() throws Exception {
+        performTest("preceded-single-quote-by-backslash_02");
+    }
+
+    public void testPrecededSingleQuoteByBackslash_03() throws Exception {
+        performTest("preceded-single-quote-by-backslash_03");
+    }
+
+    public void testPrecededSingleQuoteByBackslash_04() throws Exception {
+        performTest("preceded-single-quote-by-backslash_04");
+    }
+
+    // block
+    public void testPrecededSingleQuoteByBackslash_05() throws Exception {
+        performTest("preceded-single-quote-by-backslash_05");
+    }
+
+    public void testPrecededSingleQuoteByBackslash_06() throws Exception {
+        performTest("preceded-single-quote-by-backslash_06");
+    }
+
+    public void testPrecededSingleQuoteByBackslash_07() throws Exception {
+        performTest("preceded-single-quote-by-backslash_07");
+    }
+
+    // variable
+    public void testPrecededDoubleQuoteByBackslash_01() throws Exception {
+        performTest("preceded-double-quote-by-backslash_01");
+    }
+
+    public void testPrecededDoubleQuoteByBackslash_02() throws Exception {
+        performTest("preceded-double-quote-by-backslash_02");
+    }
+
+    public void testPrecededDoubleQuoteByBackslash_03() throws Exception {
+        performTest("preceded-double-quote-by-backslash_03");
+    }
+
+    public void testPrecededDoubleQuoteByBackslash_04() throws Exception {
+        performTest("preceded-double-quote-by-backslash_04");
+    }
+
+    // block
+    public void testPrecededDoubleQuoteByBackslash_05() throws Exception {
+        performTest("preceded-double-quote-by-backslash_05");
+    }
+
+    public void testPrecededDoubleQuoteByBackslash_06() throws Exception {
+        performTest("preceded-double-quote-by-backslash_06");
+    }
+
+    public void testPrecededDoubleQuoteByBackslash_07() throws Exception {
+        performTest("preceded-double-quote-by-backslash_07");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/twig/" + filename + ".twig"));
