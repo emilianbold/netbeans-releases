@@ -365,6 +365,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
                 final CachingFileManager fm = new CachingFileManager(
                         CachingArchiveProvider.getDefault(),
                         ClassPathSupport.createClassPath(BaseUtilities.toURI(classes).toURL()),
+                        null,
                         false,
                         true);
                 this.delegate = fm;

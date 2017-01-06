@@ -69,6 +69,9 @@ public class ClassFile {
     InnerClass[] innerClasses;
     BootstrapMethod[] bootstrapMethods;
     Module module;
+    List<String> modulePackages;
+    ClassName moduleMainClz;
+    ModuleTarget moduleTarget;
     private AttributeMap attributes;
     private Map<ClassName,Annotation> annotations;
     short majorVersion;
@@ -461,11 +464,85 @@ public class ClassFile {
                         in.close();
                     }
                 } catch (IOException e) {
-                    throw new InvalidClassFileAttributeException("invalid InnerClasses attribute", e);
+                    throw new InvalidClassFileAttributeException("invalid Module attribute", e);
                 }
             }
         }
         return module;
+    }
+
+    /**
+       Returns the content of the <code>ModulePackages</code> attribute.
+     * @return the {@link List> of packages or null when there is no <code>ModulePackages</code> attribute.
+     * @since 1.53
+     */
+    public final List<String> getModulePackages() {
+        if (modulePackages == null) {
+            final DataInputStream in = attributes.getStream("ModulePackages");  //NOI18N
+            if (in != null) {
+                try {
+                    try {
+                        int cnt = in.readUnsignedShort();
+                        String[] pkgs = new String[cnt];
+                        for (int i=0; i < cnt; i++) {
+                            pkgs[i] = ((CPPackageInfo)constantPool.get(in.readUnsignedShort())).getName();
+                        }
+                        modulePackages = Collections.unmodifiableList(Arrays.asList(pkgs));
+                    } finally {
+                        in.close();
+                    }
+                } catch (IOException e) {
+                    throw new InvalidClassFileAttributeException("invalid ModulePackages attribute", e);
+                }
+            }
+        }
+        return modulePackages;
+    }
+
+    /**
+       Returns the content of the <code>ModuleMainClass</code> attribute.
+     * @return the module main class or null when there is no <code>ModuleMainClass</code> attribute.
+     * @since 1.53
+     */
+    public final ClassName getModuleMainClass() {
+        if (moduleMainClz == null) {
+            final DataInputStream in = attributes.getStream("ModuleMainClass");  //NOI18N
+            if (in != null) {
+                try {
+                    try {
+                        moduleMainClz = ((CPClassInfo)constantPool.get(in.readUnsignedShort())).getClassName();
+                    } finally {
+                        in.close();
+                    }
+                } catch (IOException e) {
+                    throw new InvalidClassFileAttributeException("invalid ModuleMainClass attribute", e);
+                }
+            }
+        }
+        return moduleMainClz;
+    }
+
+    /**
+     * Returns the content of the <code>ModuleTarget</code> attribute.
+     * @return the {@link ModuleTarget} or null when there is no <code>ModuleTarget</code> attribute.
+     * @since 1.53
+     */
+    public final ModuleTarget getModuleTarget() {
+        if (moduleTarget == null) {
+            final DataInputStream in = attributes.getStream("ModuleTarget");  //NOI18N
+            if (in != null) {
+                try {
+                    try {
+                        moduleTarget = new ModuleTarget (in, constantPool);
+                    } finally {
+                        in.close();
+                    }
+                } catch (IOException e) {
+                    throw new InvalidClassFileAttributeException("invalid ModuleTarget attribute", e);
+                }
+            }
+        }
+        return moduleTarget;
     }
 
     /**

@@ -45,8 +45,10 @@
 package org.netbeans.modules.java.source.parsing;
 
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +64,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipError;
 import java.util.zip.ZipFile;
+import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -90,7 +93,8 @@ public class CachingArchive implements Archive, FileChangeListener {
     private int nameOffset = 0;
     final static int[] EMPTY = new int[0];
     //@GuardedBy("this")
-    private Map<String, Folder> folders; // = new HashMap<String, Folder>();
+    private Map<String, Folder> folders;
+    private volatile Boolean multiRelease;
 
         // Constructors ------------------------------------------------------------
 
@@ -142,14 +146,29 @@ public class CachingArchive implements Archive, FileChangeListener {
         assert !keepOpened || zipFile != null;
         if (recursive) {
             final List<JavaFileObject> collector = new ArrayList<>();
+            final Predicate<String> isPkg = (folder) -> {
+                int start=folderName.length();
+                for (int i=start; i<folder.length(); i++) {
+                    if (FileObjects.NBFS_SEPARATOR_CHAR == folder.charAt(i)) {
+                        final String name = folder.substring(start, i);
+                        if (!name.isEmpty() && !SourceVersion.isIdentifier(name)) {
+                            return false;
+                        }
+                        start = i+1;
+                    }
+                }
+                final String name = folder.substring(start);
+                return name.isEmpty() || SourceVersion.isIdentifier(name);
+            };
             folders.entrySet().stream()
                     .filter((e) -> {
-                        if (folderName.isEmpty()) {
+                        final String fld = e.getKey();
+                        if (folderName.isEmpty() && isPkg.test(fld)) {
                             return true;
                         }
-                        final String fld = e.getKey();
                         return fld.startsWith(folderName) &&
-                            (fld.length() == folderName.length() || fld.charAt(folderName.length()) == FileObjects.NBFS_SEPARATOR_CHAR);
+                            (fld.length() == folderName.length() || fld.charAt(folderName.length()) == FileObjects.NBFS_SEPARATOR_CHAR) &&
+                            isPkg.test(fld);
                     })
                     .forEach((e) -> {
                         listFolder(e.getValue(), e.getKey(), kinds, collector);
@@ -173,6 +192,7 @@ public class CachingArchive implements Archive, FileChangeListener {
         folders = null;
         names = null;
         nameOffset = 0;
+        multiRelease = null;
     }
 
     @Override
@@ -211,6 +231,30 @@ public class CachingArchive implements Archive, FileChangeListener {
             getClass().getSimpleName(),
             archiveFile.getAbsolutePath());
     }
+
+    @Override
+    public boolean isMultiRelease() {
+        Boolean res = multiRelease;
+        if (res == null) {
+            res = Boolean.FALSE;
+            final JavaFileObject jfo = getFile("META-INF/MANIFEST.MF"); //NOI18N
+            if (jfo != null) {
+                try {
+                    try(final InputStream in = new BufferedInputStream(jfo.openInputStream())) {
+                        res = FileObjects.isMultiVersionArchive(in);
+                    }
+                } catch (IOException ioe) {
+                    LOGGER.log(
+                            Level.WARNING,
+                            "Cannot read: {0} manifest",    //NOI18N
+                            archiveFile.getAbsolutePath());
+                }
+            }
+            multiRelease = res;
+        }
+        return res;
+    }
+
     //Protected methods --------------------------------------------------------
     protected void beforeInit() throws IOException {
     }
