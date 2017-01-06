@@ -67,7 +67,7 @@ import javax.swing.event.AncestorListener;
  */
 class ServersContainer extends JPanel implements Scrollable {
 
-    private static final int MAX_VISIBLE_COLUMNS = 3;
+    private static final int MAX_VISIBLE_COLUMNS = 5;
     private final JComponent[] servers;
     private final JComponent[] separators;
 

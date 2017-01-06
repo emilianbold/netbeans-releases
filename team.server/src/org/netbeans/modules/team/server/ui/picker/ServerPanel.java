@@ -49,8 +49,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -72,7 +70,6 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.server.ui.common.ErrorNode;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.netbeans.modules.team.server.ui.common.EditInstanceAction;
@@ -93,31 +90,28 @@ import org.openide.util.RequestProcessor;
  */
 class ServerPanel extends JPanel {
 
-    private static final int MAX_COLUMN_WIDTH = 300;
     private final TeamServer server;
     private final SelectionModel selModel;
     private final static RequestProcessor RP = new RequestProcessor( "ProjectsLoader" ); //NOI18N
     private final Object LOADER_LOCK = new Object();
     private Object loadingToken = null;
+    private boolean justLoggedIn;
+
+    private JLabel title;
+    private JButton dropDownButton;
+    private JPopupMenu popupMenu;
     private final JPanel panelProjects;
     private SelectionList currentProjects;
 
-    private JLabel title;
-    
     private final PropertyChangeListener serverListener = new PropertyChangeListener() {
         @Override
         public void propertyChange( PropertyChangeEvent evt ) {
             switch (evt.getPropertyName()) {
                 case TeamServer.PROP_NAME:
-                    UIUtils.runInAWT(new Runnable(){
-                        @Override
-                        public void run() {
-                            title.setText(server.getDisplayName());
-                        }
-                    });
+                    MegaMenu.showAgain(); // rebuild entire menu - the server name appears on various places (title, tooltip, accessibility context, ...)
                     break;
                 case TeamServer.PROP_LOGIN:
-                    rebuild();
+                    rebuildAndPack();
                     break;
             }
         }
@@ -155,16 +149,6 @@ class ServerPanel extends JPanel {
         @Override 
         public void contentsChanged(ListDataEvent e) { }
         
-        private void rebuildAndPack() {
-            runInAWT(new Runnable() {
-                @Override
-                public void run() {                        
-                    rebuild();
-                    PopupWindow.pack();
-                }
-            });
-        }
-        
         private void pack() {
             runInAWT(new Runnable() {
                 @Override
@@ -189,8 +173,14 @@ class ServerPanel extends JPanel {
         this.server = server;
         this.selModel = selModel;
 
-        panelProjects = new JPanel( new BorderLayout() );
-        panelProjects.setOpaque( false );
+        add(createHeader(), BorderLayout.NORTH);
+
+        panelProjects = new JPanel(new BorderLayout());
+        panelProjects.setOpaque(false);
+        JPanel centerPanel = new JPanel(new BorderLayout(5, 5));
+        centerPanel.setOpaque(false);
+        centerPanel.add(panelProjects, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
 
         rebuild();
     }
@@ -215,7 +205,9 @@ class ServerPanel extends JPanel {
             }
         }
     }
-    
+
+    @NbBundle.Messages({"# {0} - name of team server",
+                        "A11Y_Settings=Settings for server {0}"})
     private JComponent createHeader() {
         JPanel res = new JPanel( new BorderLayout(10,10) );
         res.setOpaque( false );
@@ -230,26 +222,18 @@ class ServerPanel extends JPanel {
         title.setFont( f );
         panelTitle.add( title, BorderLayout.CENTER );
 
-        final JPopupMenu menu = createPopupMenu();
         IconWithArrow icon = new IconWithArrow(ImageUtilities.loadImageIcon( "org/netbeans/modules/team/server/resources/gear.png", true));
-        final JButton dropDownButton = new JButton( icon );
-        dropDownButton.addMouseListener(new MouseAdapter() {
+        dropDownButton = new JButton(icon);
+        dropDownButton.addActionListener(new ActionListener() {
             @Override
-            public void mousePressed(MouseEvent e) {
-                e.consume();
-            }
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                e.consume();
-            }
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                menu.show( dropDownButton, 0, dropDownButton.getHeight() );
+            public void actionPerformed(ActionEvent e) {
+                popupMenu.show(dropDownButton, 0, dropDownButton.getHeight());
             }
         });
-        
+        dropDownButton.getAccessibleContext().setAccessibleName(Bundle.A11Y_Settings(server.getDisplayName()));
+
         JToolBar toolbar = new ServerToolbar();
-        
+
         toolbar.add( dropDownButton );
         panelTitle.add( toolbar, BorderLayout.EAST );
 
@@ -275,20 +259,10 @@ class ServerPanel extends JPanel {
                                 @Override
                                 public void run() {
                                     server.logout();
-                                    if( PopupWindow.isShowing() ) {
-                                        runInAWT( new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                removeAll();
-                                                rebuild();
-                                                PopupWindow.pack();
-                                            }
-                                        });
-                                    }
                                 }
                             });
-                        } else {
-                            doLogin();
+                        } else if (TeamUIUtils.showLogin(server)) {
+                            justLoggedIn = true;
                         }
                     }
                 });
@@ -361,51 +335,34 @@ class ServerPanel extends JPanel {
         }
     }
 
-    private void doLogin() {
-        final MegaMenu menu = MegaMenu.getCurrent();
-        if( TeamUIUtils.showLogin( server ) ) {
-            if( null != menu )
-                menu.showAgain();
+    private void rebuild() {
+        title.setText(server.getDisplayName());
+        title.setToolTipText(getTooltipText(server));
+
+        popupMenu = createPopupMenu();
+
+        Action openProjectAction = server.getOpenProjectAction();
+        if (isOnline() || openProjectAction != null) {
+            startLoadingProjects(false);
+        } else {
+            rebuildButtonPanel();
         }
+        invalidate();
+        revalidate();
+        doLayout();
     }
 
-    private void rebuild() {
+    private void rebuildAndPack() {
         runInAWT(new Runnable() {
             @Override
             public void run() {
-                removeAll();
-                
-                add(createHeader(), BorderLayout.NORTH);
-                
-                Action openProjectAction = server.getOpenProjectAction();
-                openProjectAction = server.getOpenProjectAction();
-                if (isOnline() || openProjectAction != null) {
-                    add(createProjects(), BorderLayout.CENTER);
-                } else {
-                    add(createButtonPanel(), BorderLayout.CENTER);
-                }
-                invalidate();
-                revalidate();
-                doLayout();
+                rebuild();
+                PopupWindow.pack();
             }
         });
     }
 
-    private JComponent createProjects() {
-        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
-        res.setOpaque( false );
-
-        res.add( panelProjects, BorderLayout.CENTER );
-
-        startLoadingProjects( false );
-
-        return res;
-    }
-
-    private JPanel createButtonPanel() throws MissingResourceException {
-        JPanel res = new JPanel( new BorderLayout( 5, 5 ) );
-        res.setOpaque( false );
-        
+    private void rebuildButtonPanel() throws MissingResourceException {
         panelProjects.removeAll();
         
         JPanel buttonPanel = new JPanel(new GridBagLayout());
@@ -415,14 +372,13 @@ class ServerPanel extends JPanel {
             JButton btnLogin = new LinkButton( NbBundle.getMessage(ServerPanel.class, "Btn_LOGIN"), new AbstractAction() {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    TeamUIUtils.showLogin( server );
+                    if (TeamUIUtils.showLogin(server)) {
+                        justLoggedIn = true;
+                        dropDownButton.requestFocus(); // to have something focused when the login button goes away
+                    }
                 }
             });
             btnLogin.setFocusable( true );
-            btnLogin.setFocusPainted( true );
-
-            btnLogin.setFocusable( true );
-            btnLogin.setFocusPainted( true );
 
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridy = 0;
@@ -447,8 +403,6 @@ class ServerPanel extends JPanel {
         }
         
         panelProjects.add( buttonPanel, BorderLayout.CENTER );
-        res.add( panelProjects, BorderLayout.CENTER );
-        return res;
     }
 
     private boolean isOnline() {
@@ -473,6 +427,9 @@ class ServerPanel extends JPanel {
         return sb.toString();
     }
 
+    @NbBundle.Messages({"# {0} - name of a team server",
+                        "A11Y_ServerProjectsList=List of member projects from {0}",
+                        "A11Y_SelectProjectToOpen=Select project to open"})
     private final class ProjectLoader implements Runnable {
         
         private final Object loaderToken;
@@ -500,6 +457,8 @@ class ServerPanel extends JPanel {
                 content.add( node );
                 projects.setItems( content );
             }
+            projects.getAccessibleContext().setAccessibleName(Bundle.A11Y_ServerProjectsList(server.getDisplayName()));
+            projects.getAccessibleContext().setAccessibleDescription(Bundle.A11Y_SelectProjectToOpen());
             final SelectionList res = projects;
             final boolean error = wasError;
             SwingUtilities.invokeLater( new Runnable() {
@@ -520,7 +479,7 @@ class ServerPanel extends JPanel {
             if( !wasError ) {
                 currentProjects = projects;
             }
-            
+
             ListModel<ListNode> model = projects.getModel();
             if(model.getSize() > 0) {
                 panelProjects.removeAll();
@@ -528,15 +487,25 @@ class ServerPanel extends JPanel {
                 sc.setBorder( BorderFactory.createEmptyBorder(0,10,0,0) );
                 panelProjects.add( sc, BorderLayout.CENTER );
                 if( !wasError ) {
-                    selModel.add( projects );
+                    if (justLoggedIn && selModel.getInitialSelection() == null) {
+                        ListNode project = MegaMenu.getPreSelectedProject(); // could be the restored selected project after login
+                        if (project != null) {
+                            selModel.setInitialSelection(project);
+                        }
+                    }
+                    if (selModel.add(projects) || justLoggedIn) {
+                        projects.requestFocus();
+                        PopupWindow.setFocusedComponent(projects);
+                    }
                 }
             } else {
-                add( createButtonPanel(), BorderLayout.CENTER );
+                rebuildButtonPanel();
             }
-            
+            justLoggedIn = false;
+
             this.currentProjects.getModel().removeListDataListener(modelListener);
             this.currentProjects.getModel().addListDataListener(modelListener);
-                
+
             invalidate();
             revalidate();
             PopupWindow.pack();

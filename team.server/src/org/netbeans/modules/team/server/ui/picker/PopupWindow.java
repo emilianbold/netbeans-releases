@@ -49,6 +49,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -58,6 +59,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import javax.swing.AbstractAction;
@@ -88,13 +90,14 @@ final class PopupWindow  {
     private static JComponent invokerComponent;
     private static Frame owner;
     private static HideAWTListener hideListener = new HideAWTListener();
+    private static Component focusAfterOpen;
     
     // Singleton
     private PopupWindow() {
     }
     
     
-    public static void showPopup( JComponent content, JComponent invoker ) {
+    public static void showPopup(final JComponent content, JComponent invoker) {
         if (popupWindow != null ) {
             return; // Content already showing
         }
@@ -140,12 +143,23 @@ final class PopupWindow  {
             popupWindow.setSize(popupWindow.getWidth(), popupWindow.getHeight() - yAdjustment);
         }
         popupWindow.setLocation(p.x, p.y);
-        
+        popupWindow.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                Component focus = focusAfterOpen;
+                if (focus == null) {
+                    focus = content;
+                }
+                focus.requestFocus();
+                focus.requestFocusInWindow();
+                if (focus == content) { // the content component itself (a panel) is not focusable
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(content);
+                }
+            }
+        });
         popupWindow.setVisible( true );
-        content.requestFocus();
-        content.requestFocusInWindow();
     }
-    
+
     public static void hidePopup() {
         if (popupWindow != null) {
             Toolkit.getDefaultToolkit().removeAWTEventListener(hideListener);
@@ -158,6 +172,11 @@ final class PopupWindow  {
         popupWindow = null;
         owner = null;
         invokerComponent = null;
+        focusAfterOpen = null;
+    }
+
+    static void setFocusedComponent(Component comp) {
+        focusAfterOpen = comp;
     }
 
     static boolean isShowing() {
