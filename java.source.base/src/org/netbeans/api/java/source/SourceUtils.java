@@ -1241,7 +1241,7 @@ public class SourceUtils {
             }
             try {
                 for (JavaFileManager.Location searchLocation : toSearch) {
-                    for (Set<JavaFileManager.Location> locations : jfm.listModuleLocations(searchLocation)) {
+                    for (Set<JavaFileManager.Location> locations : jfm.listLocationsForModules(searchLocation)) {
                         for (JavaFileManager.Location location : locations) {
                             ret.add(jfm.inferModuleName(location));
                         }

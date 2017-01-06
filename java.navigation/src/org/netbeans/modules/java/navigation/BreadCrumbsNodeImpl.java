@@ -57,6 +57,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
@@ -206,15 +207,20 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("exports "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
-                    sb.append(escape(((ExportsTree) leaf).getExportName().toString()));
+                    sb.append(escape(((ExportsTree) leaf).getPackageName().toString()));
+                    sb.append("</font>"); //NOI18N
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), sb.toString(), info.getFileObject(), pos);
+                case OPENS:
+                    tph = TreePathHandle.create(path, info);
+                    sb = new StringBuilder("opens "); //NOI18N
+                    sb.append("<font color=").append(COLOR).append(">"); // NOI18N
+                    sb.append(escape(((OpensTree) leaf).getPackageName().toString()));
                     sb.append("</font>"); //NOI18N
                     return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), sb.toString(), info.getFileObject(), pos);
                 case PROVIDES:
                     tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("provides "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
-                    sb.append(simpleName(((ProvidesTree) leaf).getImplementationName()));
-                    sb.append(" :: "); //NOI18N
                     sb.append(simpleName(((ProvidesTree) leaf).getServiceName()));
                     sb.append("</font>"); //NOI18N
                     return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), sb.toString(), info.getFileObject(), pos);

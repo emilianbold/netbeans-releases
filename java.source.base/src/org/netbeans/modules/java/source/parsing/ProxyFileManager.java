@@ -58,7 +58,6 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -332,13 +331,13 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     @CheckForNull
-    public Location getModuleLocation(Location location, String moduleName) throws IOException {
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
             return jfms.length == 0 ?
                     null :
-                    jfms[0].getModuleLocation(location, moduleName);
+                    jfms[0].getLocationForModule(location, moduleName);
         } finally {
             clearOwnerThread();
         }
@@ -346,13 +345,13 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     @CheckForNull
-    public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
             return jfms.length == 0 ?
                     null :
-                    jfms[0].getModuleLocation(location, fo, pkgName);
+                    jfms[0].getLocationForModule(location, fo, pkgName);
         } finally {
             clearOwnerThread();
         }
@@ -374,13 +373,13 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     @NonNull
-    public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
+    public Iterable<Set<Location>> listLocationsForModules(@NonNull final Location location) throws IOException {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
             return jfms.length == 0 ?
                     Collections.<Set<Location>>emptySet() :
-                    jfms[0].listModuleLocations(location);
+                    jfms[0].listLocationsForModules(location);
         } finally {
             clearOwnerThread();
         }

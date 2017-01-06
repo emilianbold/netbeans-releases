@@ -105,7 +105,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        JavaFileManager.Location l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);
@@ -120,7 +120,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);
@@ -138,7 +138,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        JavaFileManager.Location l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);
@@ -153,7 +153,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);
@@ -171,7 +171,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        JavaFileManager.Location l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);
@@ -186,7 +186,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);
@@ -204,7 +204,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        JavaFileManager.Location l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);
@@ -219,7 +219,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
                 false);
-        l = StreamSupport.stream(fm.listModuleLocations(StandardLocation.MODULE_PATH).spliterator(), true)
+        l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
                 .findFirst()
                 .orElse(null);

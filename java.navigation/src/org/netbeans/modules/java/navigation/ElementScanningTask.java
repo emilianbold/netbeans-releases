@@ -428,7 +428,11 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if (directive instanceof ModuleElement.RequiresDirective) {
             try {
                 final Set<?> flags = (Set) directive.getClass().getField("flags").get(directive);   //NOI18N
-                final int expectedSize = ((ModuleElement.RequiresDirective)directive).isPublic() ? 1 : 0;
+                int expectedSize = 0;
+                if (((ModuleElement.RequiresDirective)directive).isStatic())
+                    expectedSize++;
+                if (((ModuleElement.RequiresDirective)directive).isTransitive())
+                    expectedSize++;
                 return flags.size() == expectedSize;
             } catch (ReflectiveOperationException e) {
                 throw new IllegalStateException(e);
@@ -447,6 +451,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             case EXPORTS:
                 sb.append(((ModuleElement.ExportsDirective)directive).getPackage().getQualifiedName());
                 break;
+            case OPENS:
+                sb.append(((ModuleElement.OpensDirective)directive).getPackage().getQualifiedName());
+                break;
             case REQUIRES:
                 sb.append(((ModuleElement.RequiresDirective)directive).getDependency().getQualifiedName());
                 break;
@@ -455,7 +462,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 sb.append(fqn ? service.getQualifiedName() : service.getSimpleName());
                 break;
             case PROVIDES:
-                final TypeElement impl = ((ModuleElement.ProvidesDirective)directive).getImplementation();
+                final TypeElement impl = ((ModuleElement.ProvidesDirective)directive).getService();
                 sb.append(fqn ? impl.getQualifiedName() : impl.getSimpleName());
                 break;
             default:
@@ -555,16 +562,16 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             case EXPORTS:
                 sb.append(((ModuleElement.ExportsDirective)directive).getPackage().getQualifiedName());
                 break;
+            case OPENS:
+                sb.append(((ModuleElement.OpensDirective)directive).getPackage().getQualifiedName());
+                break;
             case USES:
                 final TypeElement service = ((ModuleElement.UsesDirective)directive).getService();
                 sb.append((fqn ? service.getQualifiedName() : service.getSimpleName()));
                 break;
             case PROVIDES:
-                final TypeElement impl = ((ModuleElement.ProvidesDirective)directive).getImplementation();
                 final TypeElement intf = ((ModuleElement.ProvidesDirective)directive).getService();
-                sb.append(fqn ? impl.getQualifiedName() : impl.getSimpleName())
-                    .append(" :: ") // NOI18N
-                    .append(fqn ? intf.getQualifiedName() : intf.getSimpleName());
+                sb.append(fqn ? intf.getQualifiedName() : intf.getSimpleName());
                 break;
             default:
                 throw new IllegalArgumentException(directive.toString());

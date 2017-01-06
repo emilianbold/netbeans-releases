@@ -360,6 +360,20 @@ public final class CodeStyle {
         return preferences.getBoolean(alignMultilineExports, getDefaultAsBoolean(alignMultilineExports));
     }
 
+    /**
+     * @since 2.25 
+     */
+    public boolean alignMultilineOpens() {
+        return preferences.getBoolean(alignMultilineOpens, getDefaultAsBoolean(alignMultilineOpens));
+    }
+
+    /**
+     * @since 2.25
+     */
+    public boolean alignMultilineProvides() {
+        return preferences.getBoolean(alignMultilineProvides, getDefaultAsBoolean(alignMultilineProvides));
+    }
+
     public boolean alignMultilineMethodParams() {
         return preferences.getBoolean(alignMultilineMethodParams, getDefaultAsBoolean(alignMultilineMethodParams));
     }
@@ -453,6 +467,14 @@ public final class CodeStyle {
     }
 
     /**
+     * @since 2.25 
+     */
+    public WrapStyle wrapProvidesWithList() {
+        String wrap = preferences.get(wrapProvidesWithList, getDefaultAsString(wrapProvidesWithList));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    /**
      * @since 2.23 
      */
     public WrapStyle wrapExportsToKeyword() {
@@ -465,6 +487,22 @@ public final class CodeStyle {
      */
     public WrapStyle wrapExportsToList() {
         String wrap = preferences.get(wrapExportsToList, getDefaultAsString(wrapExportsToList));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    /**
+     * @since 2.25
+     */
+    public WrapStyle wrapOpensToKeyword() {
+        String wrap = preferences.get(wrapOpensToKeyword, getDefaultAsString(wrapOpensToKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    /**
+     * @since 2.25
+     */
+    public WrapStyle wrapOpensToList() {
+        String wrap = preferences.get(wrapOpensToList, getDefaultAsString(wrapOpensToList));
         return WrapStyle.valueOf(wrap);
     }
 

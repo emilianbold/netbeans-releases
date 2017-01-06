@@ -264,7 +264,7 @@ class ModuleInfoSupport {
                     ModuleTree modle = (ModuleTree) copy.getCompilationUnit().getTypeDecls().get(0);
                     ModuleTree newModle = modle;
                     for (String mName : mNames) {
-                        newModle = tm.addModuleDirective(newModle, tm.Requires(false, tm.QualIdent(mName)));
+                        newModle = tm.addModuleDirective(newModle, tm.Requires(false, false, tm.QualIdent(mName)));
                     }
                     copy.rewrite(modle, newModle);
                 }).commit();

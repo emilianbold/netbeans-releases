@@ -70,46 +70,42 @@ import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
-import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
-import com.sun.tools.javac.code.Type.ErrorType;
-import com.sun.tools.javac.model.JavacElements;
-import com.sun.tools.javac.util.Names;
-import javax.lang.model.util.Elements;
 import com.sun.source.tree.*;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
+import static com.sun.tools.javac.code.Flags.*;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.code.Type.WildcardType;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.jvm.ClassReader;
+import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
+import com.sun.tools.javac.tree.DocTreeMaker;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
+import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Context;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.tools.JavaFileObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
-import static com.sun.tools.javac.code.Flags.*;
-import com.sun.tools.javac.code.TypeTag;
-import com.sun.tools.javac.tree.DCTree;
-import com.sun.tools.javac.tree.DCTree.DCIdentifier;
-import com.sun.tools.javac.tree.DCTree.DCReference;
-import com.sun.tools.javac.tree.DCTree.DCText;
-import com.sun.tools.javac.tree.DocTreeMaker;
-import com.sun.tools.javac.util.DiagnosticSource;
 
 /**
  * Factory for creating new com.sun.source.tree instances.
@@ -568,11 +564,11 @@ public class TreeFactory {
         return make.at(NOPOS).Reference(refMode, names.fromString(name.toString()), (JCExpression) expression, targs != null ? targs.toList() : null);
     }
     
-    public ModuleTree Module(ExpressionTree qualid, List<? extends DirectiveTree> directives) {
+    public ModuleTree Module(ModifiersTree modifiers, ModuleTree.ModuleKind kind, ExpressionTree qualid, List<? extends DirectiveTree> directives) {
         ListBuffer<JCDirective> dircts = new ListBuffer<>();
         for (DirectiveTree t : directives)
             dircts.append((JCDirective)t);
-        return make.at(NOPOS).ModuleDef((JCExpression)qualid, dircts.toList());
+        return make.at(NOPOS).ModuleDef((JCModifiers)modifiers, kind, (JCExpression)qualid, dircts.toList());
     }
     
     public ModifiersTree Modifiers(Set<Modifier> flagset, List<? extends AnnotationTree> annotations) {
@@ -650,6 +646,17 @@ public class TreeFactory {
                              (JCClassDecl)classBody);
     }
     
+    public OpensTree Opens(ExpressionTree qualId, List<? extends ExpressionTree> moduleNames) {
+        ListBuffer<JCExpression> names = null;
+        if (moduleNames != null) {
+            names = new ListBuffer<>();
+            for (ExpressionTree name : moduleNames) {
+                names.add((JCExpression) name);
+            }
+        }
+        return make.at(NOPOS).Opens((JCExpression) qualId, names != null ? names.toList() : null);
+    }
+
     public PackageTree Package(List<? extends AnnotationTree> annotations, ExpressionTree pid) {
         ListBuffer<JCAnnotation> anns = new ListBuffer<JCAnnotation>();
         for (AnnotationTree t : annotations)
@@ -705,12 +712,15 @@ public class TreeFactory {
         return make.at(NOPOS).TypeIdent(typetag);
     }
 
-    public ProvidesTree Provides(ExpressionTree serviceName, ExpressionTree implName) {
-        return make.at(NOPOS).Provides((JCExpression) serviceName, (JCExpression)implName);
+    public ProvidesTree Provides(ExpressionTree serviceName, List<? extends ExpressionTree> implNames) {
+        ListBuffer<JCExpression> impls = new ListBuffer<>();
+        for (ExpressionTree implName : implNames)
+            impls.append((JCExpression)implName);
+        return make.at(NOPOS).Provides((JCExpression) serviceName, impls.toList());
     }
 
-    public RequiresTree Requires(boolean isPublic, ExpressionTree qualId) {
-        return make.at(NOPOS).Requires(isPublic, (JCExpression)qualId);
+    public RequiresTree Requires(boolean isTransitive, boolean isStatic, ExpressionTree qualId) {
+        return make.at(NOPOS).Requires(isTransitive, isStatic, (JCExpression)qualId);
     }
 
     public ExpressionTree QualIdentImpl(Element element) {
@@ -979,10 +989,9 @@ public class TreeFactory {
     }
     
     private ModuleTree modifyModuleDirective(ModuleTree modle, int index, DirectiveTree directive, Operation op) {
-        ModuleTree copy = Module(
-            modle.getName(),
-            c(modle.getDirectives(), index, directive, op)
-        );
+        ModuleTree copy = Module(Modifiers(0, modle.getAnnotations()),
+                modle.getModuleType(), modle.getName(),
+                c(modle.getDirectives(), index, directive, op));
         return copy;
     }
     
@@ -1738,6 +1747,10 @@ public class TreeFactory {
         return docMake.at(NOPOS).newParamTree(isTypeParameter, name, description);
     }
     
+    public com.sun.source.doctree.ProvidesTree Provides(ReferenceTree name, List<? extends DocTree> description) {
+        return docMake.at(NOPOS).newProvidesTree(name, description);
+    }
+    
     public LinkTree Link(ReferenceTree ref, List<? extends DocTree> label) {
         return docMake.at(NOPOS).newLinkTree(ref, label);
     }
@@ -1788,6 +1801,10 @@ public class TreeFactory {
 
     public UnknownInlineTagTree UnknownInlineTag(CharSequence name, List<? extends DocTree> content) {
         return docMake.at(NOPOS).newUnknownInlineTagTree(names.fromString(name.toString()), content);
+    }
+    
+    public com.sun.source.doctree.UsesTree Uses(ReferenceTree name, List<? extends DocTree> description) {
+        return docMake.at(NOPOS).newUsesTree(name, description);
     }
     
     public ValueTree Value(ReferenceTree ref) {
