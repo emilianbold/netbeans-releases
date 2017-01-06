@@ -141,6 +141,9 @@ public final class ConsoleMainParser extends Parser {
             return null;
         }
         SnippetRegistry reg = session.getSnippetRegistry();
+        if (reg == null) {
+            return null;
+        }
         // populate with 
         ConsoleSection input = c.getSectionModel().getInputSection();
         ConsoleSection executing = c.getSectionModel().getExecutingSection();
