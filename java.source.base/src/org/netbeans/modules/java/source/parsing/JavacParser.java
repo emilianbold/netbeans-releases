@@ -868,7 +868,7 @@ public class JavacParser extends Parser {
         //need to preregister the Messages here, because the getTask below requires Log instance:
         NBMessager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         JavacTaskImpl task = (JavacTaskImpl)JavacTool.create().getTask(null,
-                ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
+                ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, validatedSourceLevel.name),
                 diagnosticListener, options, null, Collections.<JavaFileObject>emptySet(),
                 context);
         if (aptEnabled) {
@@ -910,9 +910,21 @@ public class JavacParser extends Parser {
             @NullAllowed String sourceLevel,
             @NonNull final ClasspathInfo cpInfo,
             final boolean isModuleInfo) {
-        ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
-        ClassPath classPath = null;
-        ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
+        return validateSourceLevel(
+                sourceLevel,
+                cpInfo.getClassPath(PathKind.BOOT),
+                cpInfo.getClassPath(PathKind.COMPILE),
+                cpInfo.getClassPath(PathKind.SOURCE),
+                isModuleInfo);
+    }
+
+    @NonNull
+    public static com.sun.tools.javac.code.Source validateSourceLevel(
+            @NullAllowed String sourceLevel,
+            @NullAllowed final ClassPath bootClassPath,
+            @NullAllowed final ClassPath classPath,
+            @NullAllowed final ClassPath srcClassPath,
+            final boolean isModuleInfo) {
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         Level warnLevel;
         if (sourceLevel == null) {
@@ -929,15 +941,12 @@ public class JavacParser extends Parser {
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
-                        if (bootClassPath.findResource("java/lang/Object.class") == null) { // NOI18N
-                            // empty bootClassPath also check classpath
-                            classPath = cpInfo.getClassPath(PathKind.COMPILE);
-                        }
-                        if (!hasResource("java/lang/AssertionError", ClassPath.EMPTY, classPath, srcClassPath)) { // NOI18N
+                        final boolean checkCp = bootClassPath.findResource("java/lang/Object.class") == null;
+                        if (!hasResource("java/lang/AssertionError", ClassPath.EMPTY, checkCp ? classPath : ClassPath.EMPTY, srcClassPath)) { // NOI18N
                             LOGGER.log(warnLevel,
                                        "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
                                        "Changing source level to 1.3",
-                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                                       new Object[]{srcClassPath, sourceLevel, bootClassPath}); //NOI18N
                             return com.sun.tools.javac.code.Source.JDK1_3;
                         }
                     }
@@ -947,7 +956,7 @@ public class JavacParser extends Parser {
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
                                "Changing source level to 1.4",
-                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                               new Object[]{srcClassPath, sourceLevel, bootClassPath}); //NOI18N
                     return com.sun.tools.javac.code.Source.JDK1_4;
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_7) >= 0 &&
@@ -955,14 +964,14 @@ public class JavacParser extends Parser {
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.lang.AutoCloseable cannot be found on the bootclasspath: {2}\n" +   //NOI18N
                                "Try with resources is unsupported.",  //NOI18N
-                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                               new Object[]{srcClassPath, sourceLevel, bootClassPath}); //NOI18N
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_8) >= 0 &&
                     !hasResource("java/util/stream/Streams", bootClassPath, classPath, srcClassPath)) { //NOI18N
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.util.stream.Streams cannot be found on the bootclasspath: {2}\n" +   //NOI18N
                                "Changing source level to 1.7",  //NOI18N
-                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                               new Object[]{srcClassPath, sourceLevel, bootClassPath}); //NOI18N
                     return com.sun.tools.javac.code.Source.JDK1_7;
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_9) >= 0 &&
@@ -970,7 +979,7 @@ public class JavacParser extends Parser {
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.util.zip.CRC32C cannot be found on the bootclasspath: {2}\n" +   //NOI18N
                                "Changing source level to 1.8",  //NOI18N
-                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                               new Object[]{srcClassPath, sourceLevel, bootClassPath}); //NOI18N
                     return com.sun.tools.javac.code.Source.JDK1_8;
                 }
                 return source;
