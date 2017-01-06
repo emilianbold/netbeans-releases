@@ -105,6 +105,8 @@ final public  class ListRendererPanel extends JPanel {
             //workaround for 175940
             Logger.getLogger( ListRendererPanel.class.getName() ).log( Level.INFO, "Bug #175940", npe );
         }
+
+        RendererPanel.configureAccessibility(this, false);
     }
 
     @Override

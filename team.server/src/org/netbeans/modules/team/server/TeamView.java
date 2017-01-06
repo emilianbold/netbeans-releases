@@ -64,6 +64,7 @@ import static org.netbeans.modules.team.server.Bundle.*;
 import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
+import org.netbeans.modules.team.server.ui.picker.MegaMenu;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
@@ -85,7 +86,6 @@ public final class TeamView {
     
     private static TeamView theInstance;
     
-    @Messages("A11Y_TeamProjects=Team Projects")
     private TeamView() {
         serverManagerListener = new PropertyChangeListener() {
             @Override
@@ -230,6 +230,8 @@ public final class TeamView {
         return c;
     }
     
+    @Messages({"A11Y_TeamProjects=Team Projects",
+               "A11Y_TeamProjectView=Team Project View"})
     private synchronized JComponent getComponentIntern() {
         if(dashboardPanel == null) {
             dashboardPanel = new JPanel();
@@ -263,7 +265,7 @@ public final class TeamView {
             dashboardPanel.add(dashboardScrollPane, BorderLayout.CENTER);
 
             AccessibleContext accessibleContext = dashboardScrollPane.getAccessibleContext();
-            String a11y = A11Y_TeamProjects();
+            String a11y = Utilities.isMoreProjectsDashboard() ? A11Y_TeamProjects() : A11Y_TeamProjectView();
             accessibleContext.setAccessibleName(a11y);
             accessibleContext.setAccessibleDescription(a11y);
         }      
@@ -297,7 +299,7 @@ public final class TeamView {
                     // hack: ensure the dashboard component has focus (when
                     // added to already visible and activated TopComponent)
                     TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardScrollPane);
-                    if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
+                    if (tc != null && TopComponent.getRegistry().getActivated() == tc && !MegaMenu.isShowing()) {
                         comp.requestFocus();
                     }
                 }

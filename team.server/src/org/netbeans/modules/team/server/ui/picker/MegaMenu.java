@@ -43,27 +43,20 @@
 package org.netbeans.modules.team.server.ui.picker;
 
 import java.awt.BorderLayout;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.team.server.ui.common.TeamServerComparator;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.commons.treelist.ListNode;
 import org.netbeans.modules.team.server.api.TeamServerManager;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -71,32 +64,37 @@ import org.openide.util.WeakListeners;
  */
 public class MegaMenu {
 
-    private final SelectionModel selModel = new SelectionModel();
-    private JComponent invoker;
-    private final TeamServerManager serverManager = TeamServerManager.getDefault();
-
-    private static WeakReference<MegaMenu> current;
-    private TeamServer selectedServer;
-    private PropertyChangeListener serverManagerListener;
-    private PropertyChangeListener wServerManagerListener;
-
-    private MegaMenu() {
+    public interface Invoker {
+        JComponent getInvokingComponent();
+        TeamServer getSelectedServer();
+        ListNode getSelectedNode();
     }
 
-    public static MegaMenu create() {
-        return new MegaMenu();
-    }
+    private static WeakReference<Invoker> invokerRef;
 
-    public void show( JComponent invoker ) {
+    private static PropertyChangeListener serverManagerListener;
+
+    public static void show(Invoker invoker) {
+        SelectionModel selModel = new SelectionModel();
+        TeamServer selectedServer = invoker.getSelectedServer();
+        ListNode selectedProjectNode = invoker.getSelectedNode();
+        if (selectedServer != null && selectedProjectNode != null) {
+            selModel.setInitialSelection(selectedProjectNode);
+        } else {
+            selectedServer = null;
+        }
+
         if( isShowing() ) {
             PopupWindow.hidePopup();
         }
-        this.invoker = invoker;
         JPanel content = new JPanel( new BorderLayout() );
 
-        List<JComponent> serverPanels = new ArrayList<>( 3 );
+        List<JComponent> serverPanels = new ArrayList<>(5);
         JComponent selectedComponent = null;
-        for( TeamServer server : getServers() ) {
+        TeamServerManager serverManager = TeamServerManager.getDefault();
+        List<TeamServer> servers = new ArrayList<>(serverManager.getTeamServers());
+        Collections.sort(servers, new TeamServerComparator());
+        for (TeamServer server : servers) {
             JComponent c = ServerPanel.create( server, selModel );
             if(server == selectedServer) {
                 selectedComponent = c;
@@ -113,9 +111,9 @@ public class MegaMenu {
                                          "PopupMenu.foreground", //NOI18N
                                          "PopupMenu.font"); //NOI18N
 
-        current = new WeakReference<>( this );  
+        MegaMenu.invokerRef = new WeakReference<>(invoker);
 
-        PopupWindow.showPopup( content, invoker );
+        PopupWindow.showPopup(content, invoker.getInvokingComponent());
         
         if(serverManagerListener == null) {
             serverManagerListener = new PropertyChangeListener() {
@@ -130,63 +128,41 @@ public class MegaMenu {
                     }
                 }
             };
-            wServerManagerListener = WeakListeners.propertyChange(serverManagerListener, serverManager);        
-            serverManager.addPropertyChangeListener(wServerManagerListener);                    
+            serverManager.addPropertyChangeListener(serverManagerListener);
         }
     }
  
-    public static MegaMenu getCurrent() {
-        return current != null ? current.get() : null;
-    }
-
     public static boolean isShowing() {
         return PopupWindow.isShowing();
     }
     
-    public void showAgain() {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                if( null != invoker && invoker.isShowing() ) {
-                    PopupWindow.hidePopup();
-                    show( invoker );
+    public static void showAgain() {
+        if (PopupWindow.isShowing()) {
+            Runnable hideShow = new Runnable() {
+                @Override
+                public void run() {
+                    if (PopupWindow.isShowing()) {
+                        PopupWindow.hidePopup();
+                        SwingUtilities.invokeLater(this);
+                    } else {
+                        Invoker invoker = MegaMenu.invokerRef != null ? MegaMenu.invokerRef.get() : null;
+                        if (invoker != null && invoker.getInvokingComponent().isShowing()) {
+                            show(invoker);
+                        }
+                    }
                 }
-            }
-        };
-        if(SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-    }
-    }
-
-    public void addChangeListener(ChangeListener l) {
-        selModel.addChangeListener(l);
-    }
-    
-    public ListNode getSelectedItem() {
-        return selModel.getSelectedItem();
-    }
-
-    public void remove(ListNode node) {
-        selModel.remove(node);
-    }
-        
-    public void setInitialSelection( TeamServer server, ListNode selNode ) {
-        selModel.setInitialSelection( selNode );
-        if( selNode != null ) {
-            this.selectedServer = server;
+            };
+            SwingUtilities.invokeLater(hideShow);
         }
     }
 
-    private Collection<TeamServer> getServers() {
-        List<TeamServer> servers = new ArrayList<>(serverManager.getTeamServers());
-        Collections.sort(servers, new TeamServerComparator());
-        return servers;
+    public static void hide() {
+        PopupWindow.hidePopup();
+        invokerRef = null;
     }
 
-    public void hide() {
-        PopupWindow.hidePopup();
-    }
-    
+    static ListNode getPreSelectedProject() {
+        Invoker invoker = invokerRef != null ? invokerRef.get() : null;
+        return invoker != null ? invoker.getSelectedNode() : null;
+    }    
 }

@@ -88,7 +88,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     
     @Override
     public JComponent createProjectLinksComponent(ProjectHandle<ODCSProject> project) {
-        return new ProjectLinksPanel(project, this);
+        return new DashboardProjectLinksPanel(project, this);
     }    
 
     @Override
