@@ -43,6 +43,9 @@ package org.netbeans.api.templates;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.templates.CreateDescriptor;
+import org.netbeans.api.templates.CreateFromTemplateAttributes;
+import org.netbeans.api.templates.FileBuilder;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.templates.ScriptingCreateFromTemplateHandler;
 import org.openide.filesystems.FileObject;

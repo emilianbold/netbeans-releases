@@ -47,14 +47,15 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.twig.editor.TwigSyntax;
 import org.netbeans.modules.php.twig.editor.lexer.TwigBlockTokenId;
+import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigVariableTokenId;
 import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
@@ -71,6 +72,8 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
     private static final Logger LOGGER = Logger.getLogger(TwigIndenter.class.getName());
     private Stack<TwigStackItem> stack = null;
     private int preservedLineIndentation = -1;
+    private static final String SET_TAG = "set"; // NOI18N
+    private static final String TRANS_TAG = "trans"; // NOI18N
 
     public TwigIndenter(Context context) {
         super(TwigTopTokenId.language(), context);
@@ -96,12 +99,14 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
         boolean nonControlMacro = false;
         int embeddingLevel = 0;
         String lastMacro = "";
+        Token<TwigTopTokenId> lastToken = null; // #243184 for checking this case {% %}{% %}
         // iterate over tokens on the line and push to stack any changes
         while (!context.isBlankLine() && ts.moveNext()
                  && ((ts.isCurrentTokenSequenceVirtual() && ts.offset() < context.getLineEndOffset())
                 || ts.offset() <= context.getLineEndOffset())) {
             Token<TwigTopTokenId> token = ts.token();
             if (token == null) {
+                lastToken = null;
                 continue;
             } else if (ts.embedded() != null) {
                 // indent for latte macro of the zero embedding level
@@ -124,10 +129,14 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
                         nonControlMacro = true;
                     }
                 }
+                lastToken = token;
                 continue;
             }
 
             if (token.id() == TwigTopTokenId.T_TWIG_BLOCK_START) {
+                if (lastToken != null && lastToken.id() == TwigTopTokenId.T_TWIG_BLOCK_END) {
+                     nonControlMacro = true;
+                }
                 afterDelimiter = true;
                 embeddingLevel++;
                 TwigStackItem state = new TwigStackItem(StackItemState.IN_RULE);
@@ -176,7 +185,7 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
                 } else if (start == ts.offset()) {
                     if (end < commentEndOffset) {
                         // if comment ends on next line put formatter to IN_COMMENT state
-                        int lineStart = Utilities.getRowStart(getDocument(), ts.offset());
+                        int lineStart = LineDocumentUtils.getLineStart(getDocument(), ts.offset());
                         preservedLineIndentation = start - lineStart;
                     }
                 } else if (end == commentEndOffset) {
@@ -194,6 +203,7 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
                     iis.add(ic);
                 }
             }
+            lastToken = token;
         }
         if (context.isBlankLine() && iis.isEmpty()) {
             IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
@@ -222,7 +232,30 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
 
     private static boolean isShortedBlockMacro(Token<TwigTopTokenId> token) {
         String tokenText = token.text().toString();
-        return tokenText.endsWith("/") || (tokenText.contains("set") && tokenText.contains("=")); //NOI18N
+        return tokenText.endsWith("/") // NOI18N
+                || isSetBlock(tokenText)
+                || isShortedTransBlock(tokenText);
+    }
+
+    private static boolean isSetBlock(String tokenText){
+        // e.g. {% set foo = 'foo' %}
+        return tokenText.contains(SET_TAG) && tokenText.contains("="); // NOI18N
+    }
+
+    private static boolean isShortedTransBlock(String tokenText) {
+        // e.g. {% trans "something" %}
+        int indexOfTrans = tokenText.indexOf(TRANS_TAG);
+        if (indexOfTrans != -1) {
+            String prefix = tokenText.substring(0, indexOfTrans).trim();
+            if (!prefix.isEmpty()) {
+                return false;
+            }
+            String substring = tokenText.substring(indexOfTrans + TRANS_TAG.length()).trim();
+            if (!substring.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getMarkupTokenName(Token<TwigTopTokenId> token) {
@@ -237,13 +270,23 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
         }
         if (sequence != null) {
             while (sequence.moveNext()) {
-                if (sequence.token().id() != TwigBlockTokenId.T_TWIG_WHITESPACE && sequence.token().id() != TwigVariableTokenId.T_TWIG_WHITESPACE) {
+                if (sequence.token().id() != TwigBlockTokenId.T_TWIG_WHITESPACE
+                        && sequence.token().id() != TwigVariableTokenId.T_TWIG_WHITESPACE
+                        && !isWhitespaceControlModifier(sequence.token())) { // "-" is used for whitespace control
                     result = sequence.token().text().toString();
                     break;
                 }
             }
         }
         return result;
+    }
+
+    private boolean isWhitespaceControlModifier(Token<? extends TokenId> token) {
+        TokenId id = token.id();
+        if (id == TwigBlockTokenId.T_TWIG_OPERATOR || id == TwigVariableTokenId.T_TWIG_OPERATOR) {
+            return TwigLexerUtils.textEquals(token.text(), '-');
+        }
+        return false;
     }
 
     private boolean isCommentToken(Token<TwigTopTokenId> token) {

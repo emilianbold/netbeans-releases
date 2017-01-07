@@ -48,6 +48,8 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.support.CsmTypes;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -55,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.ShiftedTokenStream;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.spi.model.TypesProvider;
 
@@ -113,7 +116,8 @@ public class TypesProviderImpl implements TypesProvider {
     }    
     
     private static CPPParserEx createParser(CharSequence sequence, String lang, String langFlavour, CsmTypes.OffsetDescriptor offs) {
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), lang);
+        APTFile.Kind aptKind = APTDriver.langFlavorToAPTFileKind(lang, langFlavour);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), aptKind);
         if (ts != null) {
             if (offs.getStartOffset() != 0) {
                 ts = new ShiftedTokenStream(ts, offs.getStartOffset());
@@ -126,17 +130,6 @@ public class TypesProviderImpl implements TypesProvider {
     }
     
     private static int getParserFlags(String lang, String langFlavour) {
-        int flags = CPPParserEx.CPP_SUPPRESS_ERRORS;
-        if (APTLanguageSupport.GNU_CPP.equals(lang)) {
-            flags |= CPPParserEx.CPP_CPLUSPLUS;
-        } else {
-            flags |= CPPParserEx.CPP_ANSI_C;
-        }
-        if (APTLanguageSupport.FLAVOR_CPP11.equals(langFlavour)) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
-        } else if (APTLanguageSupport.FLAVOR_CPP14.equals(langFlavour)) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP14;
-        }
-        return flags;
+        return ParserProviderImpl.adjustAntlr2ParserFlagsForLanguage(CPPParserEx.CPP_SUPPRESS_ERRORS, lang, langFlavour);
     }
 }

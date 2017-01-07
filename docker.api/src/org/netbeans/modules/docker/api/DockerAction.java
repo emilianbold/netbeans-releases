@@ -99,6 +99,7 @@ import org.netbeans.modules.docker.DockerConfig;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.Endpoint;
 import org.netbeans.modules.docker.StreamResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.io.NullInputStream;
@@ -648,7 +649,7 @@ public class DockerAction {
        }
     }
 
-    public FutureTask<DockerImage> createBuildTask(@NonNull File buildContext, @NullAllowed File dockerfile,
+    public FutureTask<DockerImage> createBuildTask(@NonNull FileObject buildContext, @NullAllowed FileObject dockerfile,
             String repository, String tag, boolean pull, boolean noCache,
             final BuildEvent.Listener buildListener, final StatusEvent.Listener statusListener) {
 
@@ -659,10 +660,10 @@ public class DockerAction {
             public DockerImage call() throws Exception {
                 assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-                if (!buildContext.isDirectory()) {
+                if (!buildContext.isFolder()) {
                     throw new IllegalArgumentException("Build context has to be a directory");
                 }
-                if (dockerfile != null && !dockerfile.isFile()) {
+                if (dockerfile != null && !dockerfile.isData()) {
                     throw new IllegalArgumentException("Dockerfile has to be a file");
                 }
                 if (repository == null && tag != null) {

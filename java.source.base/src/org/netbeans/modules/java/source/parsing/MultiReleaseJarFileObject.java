@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,55 +34,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
  */
-package org.netbeans.test.utilities.operators;
+package org.netbeans.modules.java.source.parsing;
 
-import java.awt.Component;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * This Operator operates Search Results Window
- * @author Max Sauer
+ *
+ * @author Tomas Zezula
  */
-public class SearchResultsOperator extends TopComponentOperator {
-    
-//    private static Action invokeAction;// = new SearchResultsViewAction();
-    
-    /**
-     * Creates a new instance of SearchResultsOperator
-     */
-    public SearchResultsOperator() {
-        /* In IDE ResultWindow top component is singleton but in sense of
-         * jellytools, it is not singleton. It can be closed/hidden and
-         * again opened/shown, so it make sense to wait for OutputWindow
-         * top component again.
-         */
-        super(waitTopComponent(null, null, 0, resultsSubchooser));
+final class MultiReleaseJarFileObject extends ForwardingInferableJavaFileObject {
+    private final int start;
+    MultiReleaseJarFileObject(
+            @NonNull final InferableJavaFileObject ifo,
+            @NonNull final String prefix) {
+        super(ifo);
+        assert prefix != null;
+        this.start = prefix.length()+1;
     }
-    
-    /**
-     *
-     * Opens JUnit Test Results from main menu Window|Search Results and
-     * returns SearchResultsOperator.
-     *
-     * @return instance of ResultsWindowOperatorOperator
-     */
-    public static SearchResultsOperator invoke() {
-//        invokeAction.perform();
-        return new SearchResultsOperator();
+
+    @Override
+    public String inferBinaryName() {
+        return super.inferBinaryName().substring(this.start);
     }
-    
-    /**
-     * SubChooser to determine ResultsWindow TopComponent
-     * Used in constructor.
-     */
-    private static final ComponentChooser resultsSubchooser = new ComponentChooser() {
-        public boolean checkComponent(Component comp) {
-            return comp.getClass().getName().endsWith("ResultView"); //NOI18N
-        }
-        public String getDescription() {
-            return "component instanceof org.netbeans.modules.search.ResultView";// NOI18N
-        }
-    };
 }

@@ -111,6 +111,9 @@ public class TwigParser extends Parser {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme) throws ParseException {
         result = new TwigParserResult(snapshot);
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
+        if (tokenHierarchy == null) {
+            return;
+        }
         LanguagePath twigPath = null;
         for (LanguagePath path : tokenHierarchy.languagePaths()) {
             if (path.mimePath().endsWith(TwigBlockTokenId.language().mimeType())) {

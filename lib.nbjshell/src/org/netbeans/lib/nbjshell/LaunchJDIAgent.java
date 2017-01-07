@@ -65,8 +65,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jdk.jshell.execution.JDIExecutionControl;
-import jdk.jshell.execution.JDIInitiator;
+import jdk.jshell.execution.JdiDefaultExecutionControl;
+import jdk.jshell.execution.JdiExecutionControl;
+import jdk.jshell.execution.JdiInitiator;
 import jdk.jshell.execution.Util;
 import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionEnv;
@@ -81,7 +82,7 @@ import org.netbeans.api.project.Project;
  */
 // PENDING: JDIExecutionControl does not bring that much - copy over and derive
 // from NbExecutionControlBase to provide an uniform API
-public class LaunchJDIAgent extends JDIExecutionControl
+public class LaunchJDIAgent extends JdiExecutionControl
     implements ExecutionControl, RemoteJShellService, NbExecutionControl{
 
     private static final Logger LOG = Logger.getLogger(LaunchJDIAgent.class.getName());
@@ -207,7 +208,7 @@ public class LaunchJDIAgent extends JDIExecutionControl
      * @return the channel
      * @throws IOException if there are errors in set-up
      */
-    private static JDIExecutionControl create(JavaPlatform platform, ExecutionEnv env, boolean isLaunch) throws IOException {
+    private static JdiExecutionControl create(JavaPlatform platform, ExecutionEnv env, boolean isLaunch) throws IOException {
         try (final ServerSocket listener = new ServerSocket(0)) {
             // timeout after 60 seconds
             listener.setSoTimeout(60000);
@@ -222,8 +223,8 @@ public class LaunchJDIAgent extends JDIExecutionControl
                 customArguments.put("home", jHome);
             }
             // Set-up the JDI connection
-            JDIInitiator jdii = new JDIInitiator(port,
-                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch, null, customArguments);
+            JdiInitiator jdii = new JdiInitiator(port,
+                    env.extraRemoteVMOptions(), REMOTE_AGENT, isLaunch, null, JdiDefaultExecutionControl.defaultTimeout(), customArguments);
             VirtualMachine vm = jdii.vm();
             Process process = jdii.process();
             
@@ -271,7 +272,7 @@ public class LaunchJDIAgent extends JDIExecutionControl
                         (ObjectInput cmdIn, ObjectOutput cmdOut) ->
                                 new LaunchJDIAgent(cmdOut, cmdIn, vm, process, deathListeners)
                     );
-            Util.detectJDIExitEvent(vm, s -> {
+            Util.detectJdiExitEvent(vm, s -> {
                 for (Consumer<String> h : deathListeners) {
                     h.accept(s);
                 }

@@ -78,11 +78,15 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.lang.model.SourceVersion;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
@@ -912,6 +916,28 @@ public class FileObjects {
                 case '<':   //NOI18N
                 case '>':   //NOI18N
                     return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isMultiVersionArchive(@NonNull final InputStream in) throws IOException {
+        final Manifest mf = new Manifest(in);
+        return Optional.ofNullable(mf.getMainAttributes().getValue("Multi-Release"))
+                .map((s) -> Boolean.valueOf(s.toLowerCase(Locale.ENGLISH)))
+                .orElse(Boolean.FALSE);
+    }
+
+    public static boolean isJavaPackage(@NonNull final String pkg) {
+        return isJavaPath(pkg, '.');    //NOI18N
+    }
+
+    public static boolean isJavaPath(
+            @NonNull final String path,
+            final char separator) {
+        for (String name : path.split(Pattern.quote(Character.toString(separator)))) {
+            if (!SourceVersion.isIdentifier(name)) {
+                return false;
             }
         }
         return true;

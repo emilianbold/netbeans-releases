@@ -162,7 +162,7 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testGetPackageDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
-        JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().createFileManager(ci);
+        JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().createFileManager(ci, null);
         JarFile jf = new JarFile( rtJar );
         for( Enumeration entries = jf.entries(); entries.hasMoreElements(); ) {
             JarEntry je = (JarEntry)entries.nextElement();
@@ -220,7 +220,7 @@ public class ClasspathInfoTest extends NbTestCase {
         TransactionContext tx = TransactionContext.beginStandardTransaction(scp.getRoots()[0].toURL(), true, true, false);
         try {
             final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, ClassPath.EMPTY, classPath, ClassPath.EMPTY, ClassPath.EMPTY, scp, ClassPath.EMPTY, null, true, true, true, false, null);
-            final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
+            final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
             Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
             assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
             ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, FileObjects.memoryFileObject("org.me","Main.java",

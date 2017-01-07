@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.jshell.navigation;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.model.SnippetHandle;
@@ -48,16 +50,22 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author sdedic
  */
-final class SnippetPanelUI extends javax.swing.JPanel implements ExplorerManager.Provider {
+final class SnippetPanelUI extends javax.swing.JPanel implements Lookup.Provider, ExplorerManager.Provider, PropertyChangeListener {
     private BeanTreeView    treeView;
     private ExplorerManager manager = new ExplorerManager();
     private JShellEnvironment   env;
     private SnippetNodes    nodesFactory;
+    private final InstanceContent selectedObjects = new InstanceContent();
+    private final Lookup lkp =  new AbstractLookup(selectedObjects);
     
     /**
      * Creates new form SnippetPanelUI
@@ -67,6 +75,32 @@ final class SnippetPanelUI extends javax.swing.JPanel implements ExplorerManager
 
         initComponents();
         treeView.setRootVisible(false);
+        
+        manager.addPropertyChangeListener(this);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            return;
+        }
+        for (Node n : (Node[])evt.getOldValue()) {
+            selectedObjects.remove(n);
+        }
+        for (Node n : (Node[])evt.getNewValue()) {
+            selectedObjects.add(n);
+        }
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lkp;
+    }
+    
+    void unselectAll() {
+        for (Node n : manager.getSelectedNodes()) {
+            selectedObjects.remove(n);
+        }
     }
 
     /**
@@ -116,9 +150,17 @@ final class SnippetPanelUI extends javax.swing.JPanel implements ExplorerManager
         if (this.env == env) {
             return;
         }
+        if (this.env != null) {
+            this.selectedObjects.remove(this.env);
+        }
+        this.selectedObjects.add(env);
         this.env = env;
         this.nodesFactory = new SnippetNodes(env);
         manager.setRootContext(new AbstractNode(nodesFactory));
+        try {
+            manager.setSelectedNodes(new Node[0]);
+        } catch (PropertyVetoException ex) {
+        }
     }
 
 }

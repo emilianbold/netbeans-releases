@@ -1580,7 +1580,13 @@ public final class CompletionSupport implements DocumentListener {
                 entity = ((CsmConstructor) entity).getContainingClass();
             }
 
-            if (CsmKindUtilities.isFunctional(entity)) {
+            if (CsmKindUtilities.isFunction(entity)) {
+                if (context != null) {
+                    out = context.getObjectType(entity, false);
+                } else {
+                    out = ((CsmFunction) entity).getReturnType();
+                }
+            } else if (CsmKindUtilities.isFunctional(entity)) {
                 out = ((CsmFunctional) entity).getReturnType();
             } else if (CsmKindUtilities.isClassifier(entity)) {
                 out = CsmCompletion.createType((CsmClassifier) entity, 0, 0, 0, false, false);

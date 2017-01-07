@@ -107,11 +107,12 @@ public class SnippetNavigationPanel implements NavigatorPanel {
     @Override
     public void panelDeactivated() {
         INSTANCE = null;
+        getUI().unselectAll();
     }
 
     @Override
     public Lookup getLookup() {
-        return Lookup.EMPTY;
+        return getUI().getLookup();
     }
     
 }

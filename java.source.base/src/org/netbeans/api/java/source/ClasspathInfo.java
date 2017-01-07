@@ -541,7 +541,7 @@ public final class ClasspathInfo {
     // Package private methods -------------------------------------------------
 
     @NonNull
-    private synchronized JavaFileManager createFileManager() {
+    private synchronized JavaFileManager createFileManager(@NullAllowed final String sourceLevel) {
         final SiblingSource siblings = SiblingSupport.create();
         final ProxyFileManager.Configuration cfg = ProxyFileManager.Configuration.create(
             moduleBootPath,
@@ -562,6 +562,7 @@ public final class ClasspathInfo {
         for (Map.Entry<ClassPath,Function<URL,Collection<? extends URL>>> e : peerProviders.entrySet()) {
             cfg.setPeers(e.getKey(), e.getValue());
         }
+        cfg.setSourceLevel(sourceLevel);
         return new ProxyFileManager(cfg);
     }
 
@@ -675,8 +676,10 @@ public final class ClasspathInfo {
 
         @Override
         @NonNull
-        public JavaFileManager createFileManager(@NonNull final ClasspathInfo cpInfo) {
-            return cpInfo.createFileManager();
+        public JavaFileManager createFileManager(
+                @NonNull final ClasspathInfo cpInfo,
+                @NullAllowed final String sourceLevel) {
+            return cpInfo.createFileManager(sourceLevel);
         }
 
         @Override

@@ -106,11 +106,27 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
         return null;
     }
 
+    static String getStdFlagsForFlavor(NativeFileItem.LanguageFlavor languageFlavor) {
+        switch(languageFlavor) {
+            case C11:
+                // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.C11
+                return "-std=c11"; //NOI18N
+            case CPP11:
+                // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP11
+                return "-std=c++11"; //NOI18N
+            case CPP14:
+                // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
+                return "-std=c++14"; //NOI18N
+            default:
+                return ""; // NOI18N
+        }
+    }
+
     @Override
-    public List<String> getSystemIncludes(NativeFileItem.Language language, NativeProject project) {
+    public List<String> getSystemIncludes(NativeFileItem.Language language, NativeFileItem.LanguageFlavor flavor, NativeProject project) {
         AbstractCompiler compiler = getDefaultCompiler(language, project);
         if (compiler != null) {            
-            return Collections.unmodifiableList(compiler.getSystemIncludeDirectories());
+            return Collections.unmodifiableList(compiler.getSystemIncludeDirectories(getStdFlagsForFlavor(flavor)));
         } else {
             return Collections.emptyList();
         }
@@ -124,20 +140,20 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
      * @return list <String> of pre-included system headers
      */
     @Override
-    public List<String> getSystemIncludeHeaders(NativeFileItem.Language language, NativeProject project) {
+    public List<String> getSystemIncludeHeaders(NativeFileItem.Language language, NativeFileItem.LanguageFlavor flavor, NativeProject project) {
         AbstractCompiler compiler = getDefaultCompiler(language, project);
         if (compiler != null) {
-            return Collections.unmodifiableList(compiler.getSystemIncludeHeaders());
+            return Collections.unmodifiableList(compiler.getSystemIncludeHeaders(getStdFlagsForFlavor(flavor)));
         } else {
             return Collections.emptyList();
         }
     }
 
     @Override
-    public List<String> getSystemMacros(NativeFileItem.Language language, NativeProject project) {
+    public List<String> getSystemMacros(NativeFileItem.Language language, NativeFileItem.LanguageFlavor flavor, NativeProject project) {
         AbstractCompiler compiler = getDefaultCompiler(language, project);
         if (compiler != null) {            
-            return Collections.unmodifiableList(compiler.getSystemPreprocessorSymbols());
+            return Collections.unmodifiableList(compiler.getSystemPreprocessorSymbols(getStdFlagsForFlavor(flavor)));
         } else {
             return Collections.emptyList();
         }

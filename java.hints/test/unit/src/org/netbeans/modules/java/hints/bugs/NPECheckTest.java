@@ -1478,6 +1478,154 @@ public class NPECheckTest extends NbTestCase {
                 .run(NPECheck.class)
                 .assertWarnings();
     }
+    
+    public void testUnboxingInTernaryOperator269269() throws Exception {
+        HintTest.create()
+                .sourceLevel("8")
+                .input("package test;\n"
+                        + "import java.util.ArrayList;\n"
+                        + "import java.util.List;\n"
+                        + "public class Test {\n"
+                        + "    static int test() {\n"
+                        + "        List<Integer> maxStepS = new ArrayList<>(); \n"
+                        + "        maxStepS.add(null);\n"
+                        + "        Integer maxStepId = maxStepS.isEmpty() ? 0 : maxStepS.get(0);\n"
+                        + "        return maxStepId == null ? 0 : maxStepId;\n"
+                        + "    }\n"
+                        + "}")
+                .run(NPECheck.class)
+                .assertWarnings(
+                    "7:53-7:68:verifier:ERR_UnboxingPotentialNullValue", 
+                    "8:15-8:32:verifier:ERR_NotNull"
+                );
+    }
+
+    /**
+     * The fetched value is first dereferenced, so unboxing happens, but on known-not-null value.
+     * @throws Exception 
+     */
+    public void testUnboxingOKI0nTernaryOperator() throws Exception {
+        HintTest.create()
+                .sourceLevel("8")
+                .input("package test;\n"
+                        + "import java.util.ArrayList;\n"
+                        + "import java.util.List;\n"
+                        + "public class Test {\n"
+                        + "    static int test() {\n"
+                        + "        List<Integer> maxStepS = new ArrayList<>(); \n"
+                        + "        maxStepS.add(null);\n"
+                        + "        Integer a = maxStepS.get(0);\n"
+                        + "        a.intValue();\n"
+                        + "        Integer maxStepId = maxStepS.isEmpty() ? 0 : a;\n"
+                        + "        return maxStepId == null ? 0 : maxStepId;\n"
+                        + "    }\n"
+                        + "}")
+                .run(NPECheck.class)
+                .assertWarnings(
+                    "10:15-10:32:verifier:ERR_NotNull"
+                );
+    }
+    
+    /**
+     * Wrappes are unboxed in order to promote smaller type. The true branch is 
+     * known to be non-nul, so just the false branch is reported.
+     * @throws Exception 
+     */
+    public void testUnboxingInTernaryOperatorWrapperPromotionOne() throws Exception {
+        HintTest.create()
+                .sourceLevel("8")
+                .input("package test;\n"
+                        + "import java.util.ArrayList;\n"
+                        + "import java.util.List;\n"
+                        + "public class Test {\n"
+                        + "    static int test() {\n"
+                        + "        List<Integer> maxStepS = new ArrayList<>(); \n"
+                        + "        maxStepS.add(null);\n"
+                        + "        Integer maxStepId = maxStepS.isEmpty() ? Short.valueOf((short)0) : maxStepS.get(0);\n"
+                        + "        return maxStepId == null ? 0 : maxStepId;\n"
+                        + "    }\n"
+                        + "}")
+                .run(NPECheck.class)
+                .assertWarnings(
+                        "7:75-7:90:verifier:ERR_UnboxingPotentialNullValue", 
+                        "8:15-8:32:verifier:ERR_NotNull"
+                );
+    }
+
+    /**
+     * Wrappes are unboxed in order to promote smaller type.
+     * @throws Exception 
+     */
+    public void testUnboxingInTernaryOperatorWrapperPromotionTwo() throws Exception {
+        HintTest.create()
+                .sourceLevel("8")
+                .input("package test;\n"
+                        + "import java.util.ArrayList;\n"
+                        + "import java.util.List;\n"
+                        + "public class Test {\n"
+                        + "    static int test(Short s) {\n"
+                        + "        List<Integer> maxStepS = new ArrayList<>(); \n"
+                        + "        maxStepS.add(null);\n"
+                        + "        Integer maxStepId = maxStepS.isEmpty() ? s : maxStepS.get(0);\n"
+                        + "        return maxStepId == null ? 0 : maxStepId;\n"
+                        + "    }\n"
+                        + "}")
+                .run(NPECheck.class)
+                .assertWarnings(
+                        "7:49-7:50:verifier:ERR_UnboxingPotentialNullValue", 
+                        "7:53-7:68:verifier:ERR_UnboxingPotentialNullValue", 
+                        "8:15-8:32:verifier:ERR_NotNull"
+                );
+    }
+
+    /**
+     * Check that option disables the unboxing warnings
+     */
+    public void testUnboxingInTernaryOperatorWrapperDisabledByOption() throws Exception {
+        HintTest.create()
+                .sourceLevel("8")
+                .preference(NPECheck.KEY_UNBOXING_UNKNOWN_VALUES, false)
+                .input("package test;\n"
+                        + "import java.util.ArrayList;\n"
+                        + "import java.util.List;\n"
+                        + "public class Test {\n"
+                        + "    static int test(Short s) {\n"
+                        + "        List<Integer> maxStepS = new ArrayList<>(); \n"
+                        + "        maxStepS.add(null);\n"
+                        + "        Integer maxStepId = maxStepS.isEmpty() ? s : maxStepS.get(0);\n"
+                        + "        return maxStepId == null ? 0 : maxStepId;\n"
+                        + "    }\n"
+                        + "}")
+                .run(NPECheck.class)
+                .assertWarnings(
+                        "8:15-8:32:verifier:ERR_NotNull"
+                );
+    }
+
+    /**
+     */
+    public void testUnboxingInTernaryPossibleNullWorksWithOption() throws Exception {
+        HintTest.create()
+                .sourceLevel("8")
+                .preference(NPECheck.KEY_UNBOXING_UNKNOWN_VALUES, false)
+                .input("package test;\n"
+                        + "import java.util.ArrayList;\n"
+                        + "import java.util.List;\n"
+                        + "public class Test {\n"
+                        + "    static int test(Short s) {\n"
+                        + "        if (s == null) {} \n"
+                        + "        List<Integer> maxStepS = new ArrayList<>(); \n"
+                        + "        maxStepS.add(null);\n"
+                        + "        Integer maxStepId = maxStepS.isEmpty() ? s : maxStepS.get(0);\n"
+                        + "        return maxStepId == null ? 0 : maxStepId;\n"
+                        + "    }\n"
+                        + "}")
+                .run(NPECheck.class)
+                .assertWarnings(
+                        "8:49-8:50:verifier:ERR_UnboxingPotentialNullValue",
+                        "9:15-9:32:verifier:ERR_NotNull"
+                );
+    }
 
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()

@@ -84,7 +84,7 @@ public abstract class ClasspathInfoAccessor {
     private static volatile ClasspathInfoAccessor INSTANCE;
 
     @NonNull
-    public abstract JavaFileManager createFileManager(@NonNull ClasspathInfo cpInfo);
+    public abstract JavaFileManager createFileManager(@NonNull ClasspathInfo cpInfo, @NullAllowed String sourceLevel);
     
     @NonNull
     public abstract FileManagerTransaction getFileManagerTransaction(@NonNull ClasspathInfo cpInfo);

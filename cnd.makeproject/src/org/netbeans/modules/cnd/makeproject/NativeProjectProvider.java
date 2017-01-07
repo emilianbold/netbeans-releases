@@ -1001,21 +1001,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             // important flags were lost or user set language standard
             // try to restore right important flag by standard
             NativeFileItem.LanguageFlavor languageFlavor = getLanguageFlavor(language);
-            switch(languageFlavor) {
-                case C11:
-                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.C11
-                    res = "-std=c11"; //NOI18N
-                    break;
-                case CPP11:
-                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP11
-                    res = "-std=c++11"; //NOI18N
-                    break;
-                case CPP14:
-                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
-                    res = "-std=c++14"; //NOI18N
-                    break;
-                default:
-            }
+            res = DefaultSystemSettingsImpl.getStdFlagsForFlavor(languageFlavor);
         } 
         return res;
     }
@@ -1101,7 +1087,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
                     if (ccCompilerConfiguration != null) {
                         switch (ccCompilerConfiguration.getCppStandard().getValue()) {
                             case CCCompilerConfiguration.STANDARD_CPP98:
-                                return NativeFileItem.LanguageFlavor.CPP;
+                                return NativeFileItem.LanguageFlavor.CPP98;
                             case CCCompilerConfiguration.STANDARD_CPP11:
                                 return NativeFileItem.LanguageFlavor.CPP11;
                             case CCCompilerConfiguration.STANDARD_CPP14:

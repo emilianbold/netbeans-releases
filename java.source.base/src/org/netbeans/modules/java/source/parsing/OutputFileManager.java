@@ -106,7 +106,7 @@ public class OutputFileManager extends CachingFileManager {
             @NonNull final SiblingProvider siblings,
             @NonNull final FileManagerTransaction tx,
             @NullAllowed final JavaFileManager moduleSFileManager) {
-        super (provider, outputClassPath, false, true);
+        super (provider, outputClassPath, null, false, true);
         assert outputClassPath != null;
         assert sourcePath != null;
         assert siblings != null;
@@ -127,7 +127,7 @@ public class OutputFileManager extends CachingFileManager {
         } else {
             //List module
             final ModuleLocation.WithExcludes ml = ModuleLocation.WithExcludes.cast(l);
-            sr = listImpl(ml.getModuleEntries(), packageName, kinds, recursive);
+            sr = listImpl(l, ml.getModuleEntries(), packageName, kinds, recursive);
         }
         return tx.filter(l, packageName, sr);
     }
@@ -248,7 +248,7 @@ public class OutputFileManager extends CachingFileManager {
     }
 
     @Override
-    public Iterable<Set<Location>> listModuleLocations(Location location) throws IOException {
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
         if (location != StandardLocation.CLASS_OUTPUT) {
             throw new IllegalStateException(String.format("Unsupported location: %s", location));
         }
@@ -257,7 +257,7 @@ public class OutputFileManager extends CachingFileManager {
                 final Map<URL,ClassPath.Entry> entriesByUrl = new HashMap<>();
                 getClassPath().entries().forEach((e) -> entriesByUrl.put(e.getURL(), e));
                 cachedModuleLocations = StreamSupport.stream(
-                        moduleSourceFileManager.listModuleLocations(StandardLocation.MODULE_SOURCE_PATH).spliterator(),
+                        moduleSourceFileManager.listLocationsForModules(StandardLocation.MODULE_SOURCE_PATH).spliterator(),
                         false)
                         .map((e) -> {
                             final ModuleLocation ml = ModuleLocation.cast(e.iterator().next());
@@ -293,9 +293,9 @@ public class OutputFileManager extends CachingFileManager {
     }
 
     @Override
-    public Location getModuleLocation(Location location, String moduleName) throws IOException {
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
         return StreamSupport.stream(
-                listModuleLocations(location).spliterator(),
+                listLocationsForModules(location).spliterator(),
                 false)
                 .flatMap((c) -> c.stream())
                 .filter((l) -> moduleName.equals(ModuleLocation.cast(l).getModuleName()))
@@ -304,9 +304,9 @@ public class OutputFileManager extends CachingFileManager {
     }
 
     @Override
-    public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
         final URL foUrl = fo.toUri().toURL();
-        for (Set<Location> s :  listModuleLocations(location)) {
+        for (Set<Location> s :  listLocationsForModules(location)) {
             for (Location l : s) {
                 ModuleLocation ml = ModuleLocation.cast(l);
                 for (URL root : ml.getModuleRoots()) {

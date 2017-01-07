@@ -61,7 +61,6 @@ import org.netbeans.modules.team.server.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.server.ui.spi.SourceHandle;
 import org.netbeans.modules.team.commons.treelist.LeafNode;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
-import org.netbeans.modules.team.server.ui.common.RemoteMachineListNode;
 import org.netbeans.modules.team.server.ui.spi.RemoteMachineAccessor;
 import org.openide.util.Exceptions;
 
@@ -90,7 +89,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
     
     @Override
     public JComponent createProjectLinksComponent(ProjectHandle<ODCSProject> project) {
-        return new ProjectLinksPanel(project, this);
+        return new DashboardProjectLinksPanel(project, this);
     }    
 
     @Override

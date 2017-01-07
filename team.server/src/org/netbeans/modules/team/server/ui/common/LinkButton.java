@@ -42,9 +42,14 @@
 
 package org.netbeans.modules.team.server.ui.common;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Stroke;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultButtonModel;
@@ -159,6 +164,22 @@ public class LinkButton extends JButton {
             setForeground(ColorManager.getDefault().getDisabledColor());
         }
         setFont(UIManager.getFont("Tree.font"));//NOI18N
+    }
+
+    private static final Stroke LINK_IN_FOCUS_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
+                BasicStroke.JOIN_BEVEL, 0, new float[] {0, 2}, 0);
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (hasFocus() && isEnabled()) {
+            Graphics2D g2 = (Graphics2D) g;
+            Dimension size = getSize();
+            g2.setStroke(LINK_IN_FOCUS_STROKE);
+            g2.setColor(getForeground());
+            g2.drawRect(0, 0, size.width - 1, size.height - 1);
+        }
     }
 
     private static class Model extends DefaultButtonModel {

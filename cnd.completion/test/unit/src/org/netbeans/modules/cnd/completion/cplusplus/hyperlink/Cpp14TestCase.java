@@ -67,7 +67,22 @@ public class Cpp14TestCase extends HyperlinkBaseTestCase {
     }
 
     public void testBug268671() throws Exception {
+        // Bug 268671 - C++14: IDE parser fails on "Variable templates"
         performTest("bug268671.cpp", 15, 32, "bug268671.cpp", 6, 9);
         performTest("bug268671.cpp", 16, 39, "bug268671.cpp", 6, 9);
+    }
+    
+    public void testBug269290() throws Exception {
+        // Bug 269290 - C++14: unresolved return type of function with auto type
+        performTest("bug269290.cpp", 25, 23, "bug269290.cpp", 3, 9);
+        performTest("bug269290.cpp", 27, 21, "bug269290.cpp", 3, 9);
+    }
+    
+    public void testBug269292() throws Exception {
+        // Bug 269292 - С++14: decltype(auto) is not supported
+        performTest("bug269292.cpp", 17, 23, "bug269292.cpp", 3, 9);
+        performTest("bug269292.cpp", 18, 23, "bug269292.cpp", 3, 9);
+        performTest("bug269292.cpp", 19, 23, "bug269292.cpp", 7, 9);
+        performTest("bug269292.cpp", 21, 15, "bug269292.cpp", 7, 9);
     }
 }

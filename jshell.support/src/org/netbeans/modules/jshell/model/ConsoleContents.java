@@ -95,7 +95,7 @@ public final class ConsoleContents extends Parser.Result {
     
     public List<SnippetHandle> getHandles(ConsoleSection s) {
         if (!s.getType().java) {
-            return null;
+            return Collections.emptyList();
         }
         List<SnippetHandle> res = snippets.get(s);
         if (res != null) {

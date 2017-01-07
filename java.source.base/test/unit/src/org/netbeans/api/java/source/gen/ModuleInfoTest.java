@@ -170,7 +170,7 @@ public class ModuleInfoTest extends GeneratorTestMDRCompat {
                     if (typeDecl.getKind() == Tree.Kind.MODULE) {
                         ModuleTree moduleTree = (ModuleTree) typeDecl;
                         ExpressionTree name = make.QualIdent("java.base");
-                        ModuleTree copy = make.insertModuleDirective(moduleTree, 0, make.Requires(false, name));
+                        ModuleTree copy = make.insertModuleDirective(moduleTree, 0, make.Requires(false, false, name));
                         workingCopy.rewrite(moduleTree, copy);
                     }
                 }

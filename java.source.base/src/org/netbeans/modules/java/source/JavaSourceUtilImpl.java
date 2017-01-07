@@ -176,7 +176,7 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
             }   
             ClassPath moduleBoot = ClassPath.getClassPath(srcRoot, JavaClassPathConstants.MODULE_BOOT_PATH);
             if (moduleBoot == null) {
-                moduleBoot = boot;
+                moduleBoot = ClassPath.EMPTY;
             }
             ClassPath compile = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
             if (compile == null) {
@@ -191,12 +191,20 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                 moduleClass = ClassPath.EMPTY;
             }
             final ClassPath srcFin = src;
+            final SourceLevelQuery.Result r = SourceLevelQuery.getSourceLevel2(file);
+            final com.sun.tools.javac.code.Source sourceLevel = JavacParser.validateSourceLevel(
+                    r.getSourceLevel(),
+                    boot,
+                    compile,
+                    src,
+                    FileObjects.MODULE_INFO.equals(file.getName()));
             final Function<JavaFileManager.Location,JavaFileManager> jfmProvider =
                     (loc) -> {
                         return loc == StandardLocation.CLASS_OUTPUT ?
                                 new OutputFileManager(
                                         CachingArchiveProvider.getDefault(),
-                                        srcFin) :
+                                        srcFin,
+                                        sourceLevel) :
                                 null;
                     };
             
@@ -215,7 +223,6 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                     false,
                     jfmProvider);
             final APTUtils aptUtils = APTUtils.get(srcRoot);
-            final SourceLevelQuery.Result r = SourceLevelQuery.getSourceLevel2(file);            
             final JavacTaskImpl  jt = JavacParser.createJavacTask(
                     cpInfo,
                     diagnostics != null ?
@@ -353,15 +360,16 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
     
     private static final class OutputFileManager implements JavaFileManager {
         private final JavaFileManager readDelegate;
-        
+
         OutputFileManager(
                 @NonNull final CachingArchiveProvider cap,
-                @NonNull final ClassPath srcPath) {
+                @NonNull final ClassPath srcPath,
+                @NullAllowed final com.sun.tools.javac.code.Source sourceLevel) {
             final ClassPathImplementation srcNoApt = AptSourcePath.sources(srcPath);
             final ClassPath out = CacheClassPath.forSourcePath (
                     ClassPathFactory.createClassPath(srcNoApt),
                     true);
-            readDelegate = new CachingFileManager(cap, out, false, true);
+            readDelegate = new CachingFileManager(cap, out, sourceLevel, false, true);
         }
 
         @Override

@@ -236,7 +236,7 @@ final class TreeLoaderOutputFileManager implements JavaFileManager {
 
     //Modules
     @Override
-    public Location getModuleLocation(Location location, String moduleName) throws IOException {
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
         if (!hasLocation(location)) {
             throw new IllegalArgumentException(String.valueOf(location));
         }

@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui.build2;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -67,7 +68,10 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -89,6 +93,8 @@ public class BuildImageWizard {
 
     public static final String DOCKERFILE_PROPERTY = "dockerfile";
 
+    public static final String FILESYSTEM_PROPERTY = "filesystem";
+
     public static final String PULL_PROPERTY = "pull";
 
     public static final String NO_CACHE_PROPERTY = "noCache";
@@ -101,22 +107,35 @@ public class BuildImageWizard {
 
     private DockerInstance instance;
 
-    private File dockerfile;
+    private FileObject dockerfile;
+    private FileSystem fileSystem;
 
     public DockerInstance getInstance() {
         return instance;
     }
 
     public void setInstance(DockerInstance instance) {
-        this.instance = instance;
+        try {
+            this.instance = instance;
+            File tmpFile = File.createTempFile("test", "test");
+            this.fileSystem = FileUtil.toFileObject(tmpFile).getFileSystem();
+            tmpFile.delete();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    public File getDockerfile() {
+    public FileObject getDockerfile() {
         return dockerfile;
     }
 
-    public void setDockerfile(File dockerfile) {
+    public void setDockerfile(FileObject dockerfile) {
         this.dockerfile = dockerfile;
+        try {
+            this.fileSystem = dockerfile.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @NbBundle.Messages("LBL_BuildImage=Build Image")
@@ -125,7 +144,7 @@ public class BuildImageWizard {
         if (instance == null) {
             panels.add(new BuildInstancePanel());
         }
-        panels.add(new BuildContextPanel());
+        panels.add(new BuildContextPanel(fileSystem));
         panels.add(new BuildOptionsPanel());
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
@@ -147,9 +166,10 @@ public class BuildImageWizard {
         if (instance != null) {
             wiz.putProperty(INSTANCE_PROPERTY, instance);
         }
-        if (dockerfile != null && dockerfile.isFile()) {
-            wiz.putProperty(BUILD_CONTEXT_PROPERTY, dockerfile.getParentFile().getAbsolutePath());
+        if (dockerfile != null && dockerfile.isData()) {
+            wiz.putProperty(BUILD_CONTEXT_PROPERTY, dockerfile.getParent().getPath());
             wiz.putProperty(DOCKERFILE_PROPERTY, dockerfile.getName());
+            wiz.putProperty(FILESYSTEM_PROPERTY, fileSystem);
         }
 
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
@@ -165,25 +185,22 @@ public class BuildImageWizard {
         }
     }
 
-    static boolean isFinishable(String buildContext, String dockerfile) {
+    static boolean isFinishable(FileSystem fs, String buildContext, String dockerfile) {
         if (buildContext == null) {
             return false;
         }
-        String realDockerfile = dockerfile;
-        if (realDockerfile == null) {
-            realDockerfile = DockerAction.DOCKER_FILE;
+        String realDockerfile;
+        if (dockerfile == null) {
+            realDockerfile = buildContext+"/"+DockerAction.DOCKER_FILE;
+        } else {
+            realDockerfile = buildContext+"/"+dockerfile;
         }
-        File file = new File(realDockerfile);
-        if (!file.isAbsolute()) {
-            file = new File(buildContext, realDockerfile);
-        }
-
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        FileObject build = fs.getRoot().getFileObject(buildContext);
+        FileObject fo = fs.getRoot().getFileObject(realDockerfile);
         // the last check avoids entires like Dockerfile/ to be considered valid files
         if (fo == null || !fo.isData() || !realDockerfile.endsWith(fo.getNameExt())) {
             return false;
         }
-        FileObject build = FileUtil.toFileObject(FileUtil.normalizeFile(new File(buildContext)));
         if (build == null) {
             return false;
         }
@@ -215,14 +232,11 @@ public class BuildImageWizard {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
-                File file;
+                String file;
                 if (dockerfile != null) {
-                    file = new File(dockerfile);
-                    if (!file.isAbsolute()) {
-                        file = new File(buildContext, dockerfile);
-                    }
+                    file = buildContext+"/"+dockerfile;
                 } else {
-                    file = new File(buildContext, DockerAction.DOCKER_FILE);
+                    file = buildContext+"/"+DockerAction.DOCKER_FILE;
                 }
 
                 BuildTask.Hook hook = new BuildTask.Hook() {
@@ -252,8 +266,8 @@ public class BuildImageWizard {
                     }
                 };
 
-                BuildTask task = new BuildTask(instance, io, hook, FileUtil.normalizeFile(new File(buildContext)),
-                        FileUtil.normalizeFile(file), repository, tag, pull, noCache);
+                BuildTask task = new BuildTask(instance, io, hook, fileSystem.getRoot().getFileObject(buildContext),
+                        fileSystem.getRoot().getFileObject(file), repository, tag, pull, noCache);
                 rerun.configure(task);
                 task.run();
             }
@@ -306,7 +320,7 @@ public class BuildImageWizard {
         }
 
         public synchronized void attach(BuildTask buildTask) {
-            FileObject fo = FileUtil.toFileObject(buildTask.getDockerfile());
+            FileObject fo = buildTask.getDockerfile();
 
             this.buildTask = buildTask;
             this.listener = new ActionStateListener(this, buildTask.getInstance(), fo);

@@ -192,7 +192,8 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
             case C99:
                 lang_std = LangStandard.Kind.lang_gnu99;
                 break;
-            case CPP:
+            case CPP98:
+                // we don't have flavor for C++98 in APT, but C++03 is used in fact
                 lang_std = LangStandard.Kind.lang_cxx03;
                 break;
             case CPP11:
@@ -203,7 +204,7 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
                 break;
             case CPP14:
                 // FIXME
-                lang_std = LangStandard.Kind.lang_gnucxx1y;
+                lang_std = LangStandard.Kind.lang_gnucxx14;
                 break;
             case F77:
             case F90:

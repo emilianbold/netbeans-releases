@@ -1057,7 +1057,7 @@ final class ModuleClassPaths {
                 for (ModuleElement.Directive d : module.getDirectives()) {
                     if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         final ModuleElement.RequiresDirective rd = (ModuleElement.RequiresDirective) d;
-                        if (topLevel || (transitive && rd.isPublic())) {
+                        if (topLevel || (transitive && rd.isTransitive())) {
                             if (dependsOnUnnamed(rd.getDependency(), transitive, false, seen)) {
                                 return true;
                             }
@@ -1097,7 +1097,7 @@ final class ModuleClassPaths {
                 for (ModuleElement.Directive directive : module.getDirectives()) {
                     if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
-                        if (topLevel || req.isPublic() || isMandated(req)) {
+                        if (topLevel || req.isTransitive()|| isMandated(req)) {
                             final ModuleElement dependency = req.getDependency();
                             boolean add = true;
                             if (transitive) {

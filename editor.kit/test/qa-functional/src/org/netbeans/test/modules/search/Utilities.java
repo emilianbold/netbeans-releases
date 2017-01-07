@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.test.utilities.testcase;
+package org.netbeans.test.modules.search;
 
 import java.io.File;
 import java.io.IOException;

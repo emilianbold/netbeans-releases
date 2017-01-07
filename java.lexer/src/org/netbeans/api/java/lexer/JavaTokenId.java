@@ -106,6 +106,10 @@ public enum JavaTokenId implements TokenId {
     MODULE("module", "keyword"),
     NATIVE("native", "keyword"),
     NEW("new", "keyword"),
+    /**@since 1.35*/
+    OPEN("open", "keyword"),
+    /**@since 1.35*/
+    OPENS("opens", "keyword"),
     PACKAGE("package", "keyword"),
     PRIVATE("private", "keyword"),
     PROTECTED("protected", "keyword"),
@@ -127,6 +131,8 @@ public enum JavaTokenId implements TokenId {
     /**@since 1.34*/
     TO("to", "keyword"),
     TRANSIENT("transient", "keyword"),
+    /**@since 1.35*/
+    TRANSITIVE("transitive", "keyword"),
     TRY("try", "keyword-directive"),
     /**@since 1.30*/
     UNDERSCORE("_", "keyword"),

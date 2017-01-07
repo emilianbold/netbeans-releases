@@ -185,7 +185,11 @@ public final class SnippetHandle {
     }
     
     public String toString() {
-        return "SH[" + section + ": " + Arrays.asList(fragments) + ", wrap: " + wrapping + "]";
+        if (section == null) {
+            return "SH[ <none>, wrap: " + wrapping + "]";
+        } else {
+            return "SH[" + section + ": " + (fragments == null ? "<none>" : Arrays.asList(fragments).toString()) + ", wrap: " + wrapping + "]";
+        }
     }
     
     public String text() {

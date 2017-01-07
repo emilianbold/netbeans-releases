@@ -57,6 +57,7 @@ import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.ui.output.StatusOutputListener;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -75,9 +76,9 @@ public class BuildTask implements Runnable {
 
     private final Hook hook;
 
-    private final File buildContext;
+    private final FileObject buildContext;
 
-    private final File dockerfile;
+    private final FileObject dockerfile;
 
     private final String repository;
 
@@ -87,8 +88,8 @@ public class BuildTask implements Runnable {
 
     private final boolean noCache;
 
-    public BuildTask(DockerInstance instance, InputOutput inputOutput, Hook hook, File buildContext,
-            File dockerfile, String repository, String tag, boolean pull, boolean noCache) {
+    public BuildTask(DockerInstance instance, InputOutput inputOutput, Hook hook, FileObject buildContext,
+            FileObject dockerfile, String repository, String tag, boolean pull, boolean noCache) {
         this.instance = new WeakReference<>(instance);
         this.inputOutput = new WeakReference<>(inputOutput);
         this.hook = hook;
@@ -108,11 +109,11 @@ public class BuildTask implements Runnable {
         return inputOutput;
     }
 
-    public File getBuildContext() {
+    public FileObject getBuildContext() {
         return buildContext;
     }
 
-    public File getDockerfile() {
+    public FileObject getDockerfile() {
         return dockerfile;
     }
 

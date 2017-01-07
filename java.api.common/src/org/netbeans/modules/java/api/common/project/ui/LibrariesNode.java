@@ -1221,6 +1221,8 @@ public final class LibrariesNode extends AbstractNode {
                                                     }
                                                 }
                                                 final ModuleTree newModule = wc.getTreeMaker().Module(
+                                                        wc.getTreeMaker().Modifiers(0, module[0].getAnnotations()),
+                                                        module[0].getModuleType(),
                                                         module[0].getName(),
                                                         newDirectives);
                                                 wc.rewrite(module[0], newModule);
@@ -1815,7 +1817,7 @@ public final class LibrariesNode extends AbstractNode {
                         moduleNames.removeAll(knownModules);
                         final TreeMaker tm = wc.getTreeMaker();
                         final List<RequiresTree> newRequires = moduleNames.stream()
-                                .map((name) -> tm.Requires(false, tm.QualIdent(name)))
+                                .map((name) -> tm.Requires(false, false, tm.QualIdent(name)))
                                 .collect(Collectors.toList());
 
                         final List<DirectiveTree> newDirectives = new ArrayList<>(
@@ -1829,7 +1831,11 @@ public final class LibrariesNode extends AbstractNode {
                                 newDirectives.addAll(newRequires);
                             }
                         }
-                        final ModuleTree newModule = tm.Module(module[0].getName(), newDirectives);
+                        final ModuleTree newModule = tm.Module(
+                                tm.Modifiers(0, module[0].getAnnotations()),
+                                module[0].getModuleType(),
+                                module[0].getName(),
+                                newDirectives);
                         wc.rewrite(module[0], newModule);
                     }                    
                 })

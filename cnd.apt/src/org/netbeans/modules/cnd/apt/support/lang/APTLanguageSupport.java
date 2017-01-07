@@ -66,6 +66,7 @@ public final class APTLanguageSupport {
 
     public static final String FLAVOR_CPP14  = "C++14"; // NOI18N
     public static final String FLAVOR_CPP11  = "C++11"; // NOI18N
+    public static final String FLAVOR_CPP98  = "C++98"; // NOI18N
     public static final String FLAVOR_UNKNOWN  = ""; // NOI18N
     public static final String FLAVOR_FORTRAN_FIXED  = "Fortran Fixed"; // NOI18N
     public static final String FLAVOR_FORTRAN_FREE  = "Fortran Free"; // NOI18N
@@ -85,13 +86,13 @@ public final class APTLanguageSupport {
         return STD_CPP.equals(language) || GNU_CPP.equals(language);
     }
     
-    public boolean isFlavourSufficient(String actualFlavour, String necessaryFlavour) {
+    public boolean isCppFlavourSufficient(String actualFlavour, String necessaryFlavour) {
         if (FLAVOR_CPP14.equals(necessaryFlavour)) {
             return FLAVOR_CPP14.equals(actualFlavour);
         } else if (FLAVOR_CPP11.equals(necessaryFlavour)) {
             return FLAVOR_CPP11.equals(actualFlavour) 
                     || FLAVOR_CPP14.equals(actualFlavour);
-        } else if (FLAVOR_UNKNOWN.equals(necessaryFlavour)) {
+        } else if (FLAVOR_CPP98.equals(necessaryFlavour)) {
             return true;
         }
         return false;
@@ -136,6 +137,8 @@ public final class APTLanguageSupport {
                 filter = new APTGnuCpp14Filter();
             } else if (flavor.equalsIgnoreCase(FLAVOR_CPP11)) {
                 filter = new APTGnuCpp11Filter();
+            } else if (flavor.equalsIgnoreCase(FLAVOR_CPP98)) {
+                filter = new APTGnuCppFilter();
             } else {
                 filter = new APTGnuCppFilter();
             }

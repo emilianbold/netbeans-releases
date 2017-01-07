@@ -121,6 +121,9 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
         String repository = activity.getProperty(PROP_COMMIT_REPOSITORY);
         if (repository != null) {
             String type = activity.getProperty(PROP_TYPE);
+            if (type == null) {
+                type = OPERATION_UPDATE;
+            }
             int size = Integer.parseInt(activity.getProperty(PROP_SIZE));
             boolean tag = Boolean.parseBoolean(activity.getProperty(PROP_TAG));
             switch (type) {

@@ -52,6 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.parsing.Archive;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.util.Parameters;
 
@@ -98,6 +99,17 @@ abstract class ProxyArchive implements Archive {
         }
         throw new UnsupportedOperationException("Create operation s not supported by delegates");   //NOI18N
     }
+
+    @Override
+    public boolean isMultiRelease() {
+        for (Archive delegate : delegates) {
+            if (delegate.isMultiRelease()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     @NonNull
     static ProxyArchive createComposite(@NonNull final Archive... delegates) {

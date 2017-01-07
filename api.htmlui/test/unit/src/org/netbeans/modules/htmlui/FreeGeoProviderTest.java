@@ -43,6 +43,7 @@ package org.netbeans.modules.htmlui;
 
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -100,7 +101,7 @@ public class FreeGeoProviderTest {
                 query.start();
             }
         });
-        done.await();
+        done.await(15, TimeUnit.SECONDS);
         if (error != null) {
             return;
         }

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ParserThreadManager;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -190,6 +192,10 @@ public class DeclTypeImpl extends TypeImpl {
     
     private CsmType resolve(List<CsmInstantiation> instantiations) {
         CsmType type = null;
+        
+        if (ParserThreadManager.instance().isParserThread()) {
+            return type;
+        }
 
         if (canUseCache(instantiations)) {
             type = cachedType;
