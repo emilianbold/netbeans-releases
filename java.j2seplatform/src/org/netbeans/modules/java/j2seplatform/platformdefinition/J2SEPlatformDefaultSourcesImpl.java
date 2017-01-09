@@ -104,7 +104,14 @@ public class J2SEPlatformDefaultSourcesImpl implements J2SEPlatformDefaultSource
                 else
                     f = new File (javaHome, "src.zip"); //NOI18N
             } else {
-                f = new File (javaHome, "src.zip");    //NOI18N
+                //1st) ${java.home}/lib/src.zip - JDK 9
+                final File lib = new File(javaHome, "lib");  //NOI18N
+                f = new File (lib, "src.zip");          //NOI18N
+                //2nd) ${java.home}/src.zip - older than JDK 9
+                if (!f.exists()) {
+                    f = new File (javaHome, "src.zip");    //NOI18N
+                }
+                //3rd) ${java.home}/src.jar - Apple JDK 1.6
                 //If src.zip does not exist, try src.jar (it is on some platforms)
                 if (!f.exists()) {
                     f = new File (javaHome, "src.jar");    //NOI18N
