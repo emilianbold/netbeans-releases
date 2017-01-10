@@ -511,9 +511,11 @@ public class ConsoleEditor extends CloneableEditor {
         }
 
         @Override
-        public void shellCreated(ShellEvent ev) {
-        }
+        public void shellCreated(ShellEvent ev) {}
 
+        @Override
+        public void shellSettingsChanged(ShellEvent ev) {}
+        
         @Override
         public void shellStatusChanged(ShellEvent ev) {
             SwingUtilities.invokeLater(ConsoleEditor.this::updateStatusAndActivate);
@@ -530,7 +532,7 @@ public class ConsoleEditor extends CloneableEditor {
         public void shellShutdown(ShellEvent ev) {
             env.removeShellListener(this);
         }
-        
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == session &&

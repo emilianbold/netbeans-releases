@@ -401,7 +401,7 @@ public class ShellSession  {
         return snippetRegistry.snippetFile(snippet, editedSnippetIndex);
     }
     
-    public JShellTool   getJShellTool() {
+    public synchronized JShellTool   getJShellTool() {
         return launcher;
     }
     
@@ -618,21 +618,11 @@ public class ShellSession  {
      * @return 
      */
     private SpecificationVersion findSourceVersion() {
-        Project p = env.getProject();
-        if (p == null) {
-            return findTargetVersion();
-        }
-        Result r = SourceLevelQuery.getSourceLevel2(p.getProjectDirectory());
-        String s = r.getSourceLevel();
-        if (s != null) {
-            return new SpecificationVersion(s);
-        } else {
-            return findTargetVersion();
-        }
+        return env.getSourceLevel();
     }
     
     private SpecificationVersion findTargetVersion() {
-        return env.getPlatform().getSpecification().getVersion();
+        return env.getTargetLevel();
     }
     
     private Preferences createShellPreferences() {
@@ -742,7 +732,7 @@ public class ShellSession  {
         if (v != null) {
             b.compilerOptions("-target", v.toString()); // NOI18N
         }
-        b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
+        b.remoteVMOptions("-classpath", quote(createExecClasspathString())); // NOI18N
         b.fileManager(fileman = new SwitchingJavaFileManger(getClasspathInfo()));
         return getEnv().customizeJShell(b);
     }
@@ -930,7 +920,7 @@ public class ShellSession  {
     
     private Set<Snippet>    excludedSnippets = new HashSet<>();
     
-    private String createClasspathString() {
+    private String createExecClasspathString() {
         String sep = System.getProperty("path.separator");
         boolean modular = ShellProjectUtils.isModularJDK(platform);
         String agentJar = 
@@ -944,11 +934,11 @@ public class ShellSession  {
         StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
         
         if (!modular) {
-            File replJar = 
-                    InstalledFileLocator.getDefault().locate(
-                            "modules/ext/nb-jshell.jar", 
-                            "org.netbeans.libs.jshell", false);
-            sb.append(sep).append(replJar.getAbsolutePath());
+//            File replJar = 
+//                    InstalledFileLocator.getDefault().locate(
+//                            "modules/ext/nb-jshell.jar", 
+//                            "org.netbeans.libs.jshell", false);
+//            sb.append(sep).append(replJar.getAbsolutePath());
 
             File toolsJar = null;
             for (FileObject jdkInstallDir : platform.getInstallFolders()) {

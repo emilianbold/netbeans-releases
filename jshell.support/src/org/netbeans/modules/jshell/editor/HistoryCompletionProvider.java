@@ -203,6 +203,7 @@ public class HistoryCompletionProvider implements CompletionProvider {
             }
             int b = input.getPartBegin();
             if (caretOffset < b) {
+                resultSet.finish();
                 return;
             }
             String prefix = "";

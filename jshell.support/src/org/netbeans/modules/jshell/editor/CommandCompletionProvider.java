@@ -71,6 +71,7 @@ import org.netbeans.modules.jshell.model.JShellToken;
 import org.netbeans.modules.jshell.model.Rng;
 import org.netbeans.modules.jshell.parsing.JShellLexer;
 import org.netbeans.modules.jshell.support.ShellSession;
+import org.netbeans.modules.jshell.tool.JShellTool;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -369,19 +370,19 @@ public class CommandCompletionProvider implements CompletionProvider{
     }
     
     private static class CommandDocumentationTask implements CompletionTask, CompletionDocumentation {
-        final ShellSession session;
+        final JShellTool shellTool;
         final String command;
         String htmlText;
 
-        public CommandDocumentationTask(ShellSession session, String command) {
-            this.session = session;
+        public CommandDocumentationTask(JShellTool shellTool, String command) {
+            this.shellTool = shellTool;
             this.command = command;
         }
 
         @Override
         public void query(CompletionResultSet resultSet) {
             String cmd = "/" + command + " ";
-            String doc = session.getJShellTool().commandDocumentation(cmd, cmd.length(), false);
+            String doc = shellTool.commandDocumentation(cmd, cmd.length(), false);
             String[] lines = doc.split("\n");   // NOI18N
             StringBuilder htmlStringContents = new StringBuilder();
             String match = "^/" + command;
@@ -688,7 +689,8 @@ public class CommandCompletionProvider implements CompletionProvider{
 
         @Override
         public CompletionTask createDocumentationTask() {
-            return new CommandDocumentationTask(session, command);
+            JShellTool tool = session.getJShellTool();
+            return tool == null ? null : new CommandDocumentationTask(tool, command);
         }
 
         @Override

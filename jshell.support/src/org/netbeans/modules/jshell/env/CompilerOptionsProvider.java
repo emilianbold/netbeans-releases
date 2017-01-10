@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
+ * Portions Copyrighted 2017 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.jshell.env;
 
-import java.util.EventListener;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.jshell.support.ShellSession;
+import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Listener which receives basic state events from running Shell. Attach the listener
- * to {@link JShellEnvironment}.
- * 
+ * Configures compiler with modules required by the project. Applies only to jshell sources.
  * @author sdedic
  */
-public interface ShellListener extends EventListener {
-    /**
-     * JShellEnvironment was crated and put alive. This event is the only one
-     * broadcasted to listeners registered through 
-     * @param ev 
-     */
-    public void shellCreated(ShellEvent ev);
+@ServiceProvider(service = CompilerOptionsQueryImplementation.class)
+public final class CompilerOptionsProvider implements CompilerOptionsQueryImplementation {
+    @Override
+    public Result getOptions(FileObject file) {
+        JShellEnvironment jshe = ShellRegistry.get().getOwnerEnvironment(file);
+        if (jshe == null) {
+            return null;
+        }
+        ShellSession ss = jshe.getSession();
+        if (ss == null) {
+            return null;
+        }
+        return new R(jshe);
+    }
     
-    /**
-     * Fired when the shell was started, or restarted.
-     * The JShellEnvironment instance will already contain a new instance. The event will
-     * fire also in case the ShellSession has recycled the JShell engine.
-     * of ShellSession.
-     * @param ev 
-     */
-    public void shellStarted(ShellEvent ev);
+    final static class R extends Result {
+        private final JShellEnvironment env;
+
+        public R(JShellEnvironment env) {
+            this.env = env;
+        }
+        @Override
+        public List<? extends String> getArguments() {
+            List<String> mods = env.getCompilerRequiredModules();
+            if (mods == null) {
+                return Collections.emptyList();
+            }
+            return Arrays.asList("--add-modules", String.join(",", mods)); // NOI18N
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+        }
+    }
     
-    /**
-     * The status of the shell has been changed
-     * @param ev 
-     */
-    public void shellStatusChanged(ShellEvent ev);
-    
-    /**
-     * The entire JShellEnvironment has been shut down.
-     * @param ev 
-     */
-    public void shellShutdown(ShellEvent ev);
-    
-    /**
-     * Fired when shell settings change. This includes library changes, project
-     * change, ... 
-     * @param ev 
-     */
-    public void shellSettingsChanged(ShellEvent ev);
 }
