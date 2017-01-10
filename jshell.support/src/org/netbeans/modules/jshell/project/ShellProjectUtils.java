@@ -59,6 +59,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -67,6 +68,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.jshell.launch.PropertyNames;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -250,6 +252,18 @@ public final class ShellProjectUtils {
         return pkgs;
     }
     
+    public static boolean isModularProject(Project project) {
+        if (project == null) { 
+            return false;
+        }
+        JavaPlatform platform = findPlatform(project);
+        if (platform == null || !isModularJDK(platform)) {
+            return false;
+        }
+        String s = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
+        return (s != null && new SpecificationVersion("9").compareTo(new SpecificationVersion(s)) <= 0);
+    }
+    
     public static boolean isModularJDK(JavaPlatform pl) {
         if (pl != null) {
             Specification plSpec = pl.getSpecification();
@@ -262,20 +276,19 @@ public final class ShellProjectUtils {
     }
     
     public static List<String> launchVMOptions(Project project) {
-        Collection<String> exportMods = ShellProjectUtils.findProjectImportedModules(project, 
-                ShellProjectUtils.findProjectModules(project, null));
+        List<String> exportMods = new ArrayList<>(
+                ShellProjectUtils.findProjectImportedModules(project, 
+                    ShellProjectUtils.findProjectModules(project, null))
+        );
         ShellProjectUtils.findProjectModules(project, null);
         boolean modular = isModularJDK(findPlatform(project));
         if (exportMods.isEmpty() || !modular) {
             return null;
         }
         List<String> addReads = new ArrayList<>();
-        for (String mod : exportMods) {
-            addReads.add(
-                String.format("--add-reads %s=ALL-UNNAMED",mod) // NOI18N
-            );
-        }
-        addReads.add("--add-modules jdk.jshell");
+        exportMods.add("jdk.jshell");
+        Collections.sort(exportMods);
+        addReads.add("--add-modules " + String.join(",", exportMods));
         addReads.add("--add-reads jdk.jshell=ALL-UNNAMED"); // NOI18N
         
         // now export everything from the project:

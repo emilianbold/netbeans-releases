@@ -299,8 +299,9 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     }
 
     @Override
-    public void shellShutdown(ShellEvent ev) {
-    }
+    public void shellShutdown(ShellEvent ev) {}
+    @Override
+    public void shellSettingsChanged(ShellEvent ev) {}
     
     private static final DropAction dropAction = new DropAction();
  
