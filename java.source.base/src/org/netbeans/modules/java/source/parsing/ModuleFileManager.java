@@ -309,7 +309,7 @@ final class ModuleFileManager implements JavaFileManager {
 
     @Override
     @NonNull
-    public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
         final Set<Set<Location>> moduleRoots = new HashSet<>();
         final Set<URL> seen = new HashSet<>();
         for (ClassPath.Entry e : modulePath.entries()) {
@@ -343,14 +343,14 @@ final class ModuleFileManager implements JavaFileManager {
 
     @Override
     @CheckForNull
-    public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
         //todo: Only for Source Module Path & Output Path
         return null;
     }
 
     @Override
     @CheckForNull
-    public Location getModuleLocation(Location location, String moduleName) throws IOException {
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
         //todo: Only for Source Module Path & Output Path
         return null;
     }

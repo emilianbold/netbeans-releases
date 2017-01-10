@@ -36,7 +36,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ModuleElement;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.source.UiUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Parameters;
@@ -48,6 +47,7 @@ import org.openide.util.Parameters;
 public class ElementIcons {
 
     private static final String EXPORTS_ICON = "org/netbeans/modules/java/source/resources/icons/exports.png";
+    private static final String OPENS_ICON = "org/netbeans/modules/java/source/resources/icons/opens.png";
     private static final String REQUIRES_ICON = "org/netbeans/modules/java/source/resources/icons/requires.png";
     private static final String USES_ICON = "org/netbeans/modules/java/source/resources/icons/uses.png";
     private static final String PROVIDES_ICON = "org/netbeans/modules/java/source/resources/icons/provides.png";
@@ -80,6 +80,8 @@ public class ElementIcons {
                 return ImageUtilities.loadImageIcon(USES_ICON, true);
             case PROVIDES:
                 return ImageUtilities.loadImageIcon(PROVIDES_ICON, true);
+            case OPENS:
+                return ImageUtilities.loadImageIcon(OPENS_ICON, true);
             default:
                 throw new IllegalArgumentException(kind.toString());
         }

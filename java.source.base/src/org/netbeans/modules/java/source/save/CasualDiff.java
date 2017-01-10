@@ -101,7 +101,6 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCConditional;
 import com.sun.tools.javac.tree.JCTree.JCContinue;
-import com.sun.tools.javac.tree.JCTree.JCDirective;
 import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCErroneous;
@@ -124,10 +123,12 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCModuleDecl;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCOpens;
 import com.sun.tools.javac.tree.JCTree.JCPackageDecl;
 import com.sun.tools.javac.tree.JCTree.JCParens;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCProvides;
+import com.sun.tools.javac.tree.JCTree.JCRequires;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCSwitch;
@@ -686,7 +687,18 @@ public class CasualDiff {
         int localPointer = bounds[0];
 
         int[] qualBounds = getBounds(oldT.qualId);
-        copyTo(localPointer, qualBounds[0]);
+        if (oldT.getModuleType() == newT.getModuleType()) {
+            copyTo(localPointer, qualBounds[0]);
+        } else {
+            if (oldT.getModuleType() == ModuleTree.ModuleKind.OPEN) {
+                //removing "open":
+                moveFwdToToken(tokenSequence, localPointer, JavaTokenId.OPEN);
+                copyTo(localPointer, tokenSequence.offset());
+            } else {
+                copyTo(localPointer, qualBounds[0]);
+                printer.print("open ");
+            }
+        }
         localPointer = diffTree(oldT.qualId, newT.qualId, qualBounds);
 
         int insertHint = oldT.directives.isEmpty() ? endPos(oldT) - 1 : oldT.directives.get(0).getStartPosition() - 1;
@@ -711,9 +723,72 @@ public class CasualDiff {
         return bounds[1];
     }
     
+    protected int diffRequires(JCRequires oldT, JCRequires newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // module name
+        int[] nameBounds = getBounds(oldT.moduleName);
+        if (oldT.isStaticPhase || oldT.isTransitive) {
+            JavaTokenId id = moveFwdToOneOfTokens(tokenSequence, localPointer, EnumSet.of(JavaTokenId.STATIC, JavaTokenId.TRANSITIVE));
+            switch (id) {
+                case STATIC:
+                    if (!newT.isStaticPhase) {
+                        //removing "static":
+                        copyTo(localPointer, tokenSequence.offset());
+                        tokenSequence.moveNext();
+                        localPointer = tokenSequence.offset() + tokenSequence.token().length();
+                    }
+                    if (oldT.isTransitive == newT.isTransitive) {
+                        copyTo(localPointer, nameBounds[0]);
+                    } else {
+                        if (oldT.isTransitive) {
+                            //removing "transitive":
+                            moveFwdToToken(tokenSequence, localPointer, JavaTokenId.TRANSITIVE);
+                            copyTo(localPointer, tokenSequence.offset());
+                        } else {
+                            copyTo(localPointer, nameBounds[0]);
+                            printer.print("transitive "); //NOI18N
+                        }
+                    }
+                    break;
+                case TRANSITIVE:
+                    if (!newT.isTransitive) {
+                        //removing "transitive":
+                        copyTo(localPointer, tokenSequence.offset());
+                        tokenSequence.moveNext();
+                        localPointer = tokenSequence.offset() + tokenSequence.token().length();
+                    }
+                    if (oldT.isStaticPhase == newT.isStaticPhase) {
+                        copyTo(localPointer, nameBounds[0]);
+                    } else {
+                        if (oldT.isStaticPhase) {
+                            //removing "static":
+                            moveFwdToToken(tokenSequence, localPointer, JavaTokenId.STATIC);
+                            copyTo(localPointer, tokenSequence.offset());
+                        } else {
+                            copyTo(localPointer, nameBounds[0]);
+                            printer.print("static "); //NOI18N
+                        }
+                    }
+                    break;
+            }
+        } else {
+            copyTo(localPointer, nameBounds[0]);
+            if (newT.isStaticPhase) {
+                printer.print("static "); //NOI18N
+            }
+            if (newT.isTransitive) {
+                printer.print("transitive "); //NOI18N
+            }
+        }
+        localPointer = diffTree(oldT.moduleName, newT.moduleName, nameBounds);
+        copyTo(localPointer, bounds[1]);
+
+        return bounds[1];        
+    }
+
     protected int diffExports(JCExports oldT, JCExports newT, int[] bounds) {
         int localPointer = bounds[0];
-        // export name
+        // package name
         int[] expNameBounds = getBounds(oldT.qualid);
         copyTo(localPointer, expNameBounds[0]);
         localPointer = diffTree(oldT.qualid, newT.qualid, expNameBounds);
@@ -726,7 +801,28 @@ public class CasualDiff {
         }
         if (newT.moduleNames != null && !newT.moduleNames.isEmpty()) //do not copy the "to" keyword:
             copyTo(localPointer, localPointer = posHint);
-        PositionEstimator est = EstimatorFactory.exportsTo(oldT.moduleNames, newT.moduleNames, diffContext);
+        PositionEstimator est = EstimatorFactory.exportsOpensTo(oldT.moduleNames, newT.moduleNames, diffContext);
+        localPointer = diffList2(oldT.moduleNames, newT.moduleNames, posHint, est);
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];        
+    }
+
+    protected int diffOpens(JCOpens oldT, JCOpens newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // package name
+        int[] expNameBounds = getBounds(oldT.qualid);
+        copyTo(localPointer, expNameBounds[0]);
+        localPointer = diffTree(oldT.qualid, newT.qualid, expNameBounds);
+        // modules
+        int posHint;
+        if (oldT.moduleNames == null || oldT.moduleNames.isEmpty()) {
+            posHint = endPos(oldT) - 1;
+        } else {
+            posHint = oldT.moduleNames.iterator().next().getStartPosition();
+        }
+        if (newT.moduleNames != null && !newT.moduleNames.isEmpty()) //do not copy the "to" keyword:
+            copyTo(localPointer, localPointer = posHint);
+        PositionEstimator est = EstimatorFactory.exportsOpensTo(oldT.moduleNames, newT.moduleNames, diffContext);
         localPointer = diffList2(oldT.moduleNames, newT.moduleNames, posHint, est);
         copyTo(localPointer, bounds[1]);
         return bounds[1];        
@@ -738,10 +834,17 @@ public class CasualDiff {
         int[] servBounds = getBounds(oldT.serviceName);
         copyTo(localPointer, servBounds[0]);
         localPointer = diffTree(oldT.serviceName, newT.serviceName, servBounds);
-        // implementation
-        int[] implBounds = getBounds(oldT.implName);
-        copyTo(localPointer, implBounds[0]);
-        localPointer = diffTree(oldT.implName, newT.implName, implBounds);
+        // implementations
+        int posHint;
+        if (oldT.implNames == null || oldT.implNames.isEmpty()) {
+            posHint = endPos(oldT) - 1;
+        } else {
+            posHint = oldT.implNames.iterator().next().getStartPosition();
+        }
+        if (newT.implNames != null && !newT.implNames.isEmpty()) //do not copy the "with" keyword:
+            copyTo(localPointer, localPointer = posHint);
+        PositionEstimator est = EstimatorFactory.providesWith(oldT.implNames, newT.implNames, diffContext);
+        localPointer = diffList2(oldT.implNames, newT.implNames, posHint, est);
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
@@ -5090,8 +5193,14 @@ public class CasualDiff {
           case MODULEDEF:
               retVal = diffModuleDef((JCModuleDecl)oldT, (JCModuleDecl)newT, elementBounds);
               break;
+          case REQUIRES:
+              retVal = diffRequires((JCRequires)oldT, (JCRequires)newT, elementBounds);
+              break;
           case EXPORTS:
               retVal = diffExports((JCExports)oldT, (JCExports)newT, elementBounds);
+              break;
+          case OPENS:
+              retVal = diffOpens((JCOpens)oldT, (JCOpens)newT, elementBounds);
               break;
           case PROVIDES:
               retVal = diffProvides((JCProvides)oldT, (JCProvides)newT, elementBounds);

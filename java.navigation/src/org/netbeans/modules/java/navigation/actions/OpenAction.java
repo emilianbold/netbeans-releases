@@ -50,6 +50,7 @@
 package org.netbeans.modules.java.navigation.actions;
 
 import com.sun.source.tree.ExportsTree;
+import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.Tree;
@@ -235,12 +236,14 @@ public final class OpenAction extends AbstractAction {
         switch (dir.getKind()) {
             case EXPORTS:
                 return new Object[] {dir.getKind(), ((ModuleElement.ExportsDirective)dir).getPackage().getQualifiedName().toString()};
+            case OPENS:
+                return new Object[] {dir.getKind(), ((ModuleElement.OpensDirective)dir).getPackage().getQualifiedName().toString()};
             case REQUIRES:
                 return new Object[] {dir.getKind(), ((ModuleElement.RequiresDirective)dir).getDependency().getQualifiedName().toString()};
             case USES:
                 return new Object[] {dir.getKind(), ((ModuleElement.UsesDirective)dir).getService().getQualifiedName().toString()};
             case PROVIDES:
-                return new Object[] {dir.getKind(), ((ModuleElement.ProvidesDirective)dir).getImplementation().getQualifiedName().toString()};
+                return new Object[] {dir.getKind(), ((ModuleElement.ProvidesDirective)dir).getService().getQualifiedName().toString()};
             default:
                 throw new IllegalArgumentException(String.valueOf(dir));
         }
@@ -262,10 +265,18 @@ public final class OpenAction extends AbstractAction {
                     new TreePathScanner<Void, Void>() {
                         @Override
                         public Void visitExports(ExportsTree node, Void p) {
-                            if (matches(handle, ModuleElement.DirectiveKind.EXPORTS, node.getExportName())) {
+                            if (matches(handle, ModuleElement.DirectiveKind.EXPORTS, node.getPackageName())) {
                                 res[0] = TreePathHandle.create(getCurrentPath(), cc);
                             }
                             return super.visitExports(node, p);
+                        }
+
+                        @Override
+                        public Void visitOpens(OpensTree node, Void p) {
+                            if (matches(handle, ModuleElement.DirectiveKind.OPENS, node.getPackageName())) {
+                                res[0] = TreePathHandle.create(getCurrentPath(), cc);
+                            }
+                            return super.visitOpens(node, p);
                         }
 
                         @Override
@@ -286,7 +297,7 @@ public final class OpenAction extends AbstractAction {
 
                         @Override
                         public Void visitProvides(ProvidesTree node, Void p) {
-                            if (matches(handle, ModuleElement.DirectiveKind.PROVIDES, node.getImplementationName())) {
+                            if (matches(handle, ModuleElement.DirectiveKind.PROVIDES, node.getServiceName())) {
                                 res[0] = TreePathHandle.create(getCurrentPath(), cc);
                             }
                             return super.visitProvides(node, p);

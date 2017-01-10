@@ -189,6 +189,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
     private static final String NATIVE_KEYWORD = "native"; //NOI18N
     private static final String NEW_KEYWORD = "new"; //NOI18N
     private static final String NULL_KEYWORD = "null"; //NOI18N
+    private static final String OPEN_KEYWORD = "open"; //NOI18N
+    private static final String OPENS_KEYWORD = "opens"; //NOI18N
     private static final String PACKAGE_KEYWORD = "package"; //NOI18N
     private static final String PRIVATE_KEYWORD = "private"; //NOI18N
     private static final String PROTECTED_KEYWORD = "protected"; //NOI18N
@@ -207,6 +209,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
     private static final String THROWS_KEYWORD = "throws"; //NOI18N
     private static final String TO_KEYWORD = "to"; //NOI18N
     private static final String TRANSIENT_KEYWORD = "transient"; //NOI18N
+    private static final String TRANSITIVE_KEYWORD = "transitive"; //NOI18N
     private static final String TRUE_KEYWORD = "true"; //NOI18N
     private static final String TRY_KEYWORD = "try"; //NOI18N
     private static final String USES_KEYWORD = "uses"; //NOI18N
@@ -239,7 +242,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
     };
 
     private static final String[] MODULE_BODY_KEYWORDS = new String[]{
-        EXPORTS_KEYWORD, REQUIRES_KEYWORD, PROVIDES_KEYWORD, USES_KEYWORD
+        EXPORTS_KEYWORD, OPENS_KEYWORD, REQUIRES_KEYWORD, PROVIDES_KEYWORD, USES_KEYWORD
     };
 
     private static final String[] CLASS_BODY_KEYWORDS = new String[]{
@@ -300,6 +303,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 break;
             case EXPORTS:
                 insideExports(env);
+                break;
+            case OPENS:
+                insideOpens(env);
                 break;
             case PROVIDES:
                 insideProvides(env);
@@ -514,6 +520,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
         int idx = headerText.indexOf('{'); //NOI18N
         if (idx >= 0) {
             addKeywordsForModuleBody(env);
+        } else if (!headerText.contains("module")) {
+            addKeyword(env, MODULE_KEYWORD, SPACE, false);
         }
     }
 
@@ -542,7 +550,48 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 return;
             }
         }
-        Tree name = exp.getExportName();
+        Tree name = exp.getPackageName();
+        if (name != null) {
+            int extPos = (int) sourcePositions.getEndPosition(root, name);
+            if (extPos != Diagnostic.NOPOS && offset > extPos) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, extPos + 1, offset);
+                if (last != null && last.token().id() == JavaTokenId.TO) {
+                    addModuleNames(env, null, true);
+                } else {
+                    addKeyword(env, TO_KEYWORD, SPACE, false);
+                }
+                return;
+            }
+        }
+        addPackages(env, null, true);
+    }
+
+    private void insideOpens(Env env) throws IOException {
+        int offset = env.getOffset();
+        TreePath path = env.getPath();
+        ExportsTree exp = (ExportsTree) path.getLeaf();
+        SourcePositions sourcePositions = env.getSourcePositions();
+        CompilationUnitTree root = env.getRoot();
+        if (exp.getModuleNames() != null) {
+            int startPos = (int) sourcePositions.getStartPosition(root, exp);
+            Tree lastModule = null;
+            for (Tree mdl : exp.getModuleNames()) {
+                int implPos = (int) sourcePositions.getEndPosition(root, mdl);
+                if (implPos == Diagnostic.NOPOS || offset <= implPos) {
+                    break;
+                }
+                lastModule = mdl;
+                startPos = implPos;
+            }
+            if (lastModule != null) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
+                if (last != null && last.token().id() == JavaTokenId.COMMA) {
+                    addModuleNames(env, null, true);
+                }
+                return;
+            }
+        }
+        Tree name = exp.getPackageName();
         if (name != null) {
             int extPos = (int) sourcePositions.getEndPosition(root, name);
             if (extPos != Diagnostic.NOPOS && offset > extPos) {
@@ -564,11 +613,22 @@ public final class JavaCompletionTask<T> extends BaseTask {
         ProvidesTree prov = (ProvidesTree) path.getLeaf();
         SourcePositions sourcePositions = env.getSourcePositions();
         CompilationUnitTree root = env.getRoot();
-        Tree impl = prov.getImplementationName();
-        if (impl != null) {
-            int extPos = (int) sourcePositions.getEndPosition(root, impl);
-            if (extPos != Diagnostic.NOPOS && offset > extPos) {
-                return;
+        if (prov.getImplementationNames() != null) {
+            int startPos = (int) sourcePositions.getStartPosition(root, prov);
+            Tree lastImpl = null;
+            for (Tree impl : prov.getImplementationNames()) {
+                int implPos = (int) sourcePositions.getEndPosition(root, impl);
+                if (implPos == Diagnostic.NOPOS || offset <= implPos) {
+                    break;
+                }
+                lastImpl = impl;
+                startPos = implPos;
+            }
+            if (lastImpl != null) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
+                if (last != null && last.token().id() != JavaTokenId.COMMA) {
+                    return;
+                }
             }
         }
         Tree serv = prov.getServiceName();
@@ -603,8 +663,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 return;
             }
         }
-        if (!req.isPublic()) {
-            addKeyword(env, PUBLIC_KEYWORD, SPACE, false);
+        if (!req.isStatic()) {
+            addKeyword(env, STATIC_KEYWORD, SPACE, false);
+        }
+        if (!req.isTransitive()) {
+            addKeyword(env, TRANSITIVE_KEYWORD, SPACE, false);
         }
         addModuleNames(env, null, false);
     }
@@ -4114,45 +4177,50 @@ public final class JavaCompletionTask<T> extends BaseTask {
         boolean pkgInfo = env.getController().getTreeUtilities().isPackageInfo(cu);
         boolean mdlInfo = env.getController().getTreeUtilities().isModuleInfo(cu);
         SourcePositions sourcePositions = env.getSourcePositions();
-        if (mdlInfo) {
-            kws.add(MODULE_KEYWORD);
-        } else {
-            if (!pkgInfo) {
-                kws.add(ABSTRACT_KEYWORD);
-                kws.add(CLASS_KEYWORD);
-                kws.add(ENUM_KEYWORD);
-                kws.add(FINAL_KEYWORD);
-                kws.add(INTERFACE_KEYWORD);
-            }
-            boolean beforeAnyClass = true;
-            boolean beforePublicClass = true;
-            for (Tree t : cu.getTypeDecls()) {
-                if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
-                    int pos = (int) sourcePositions.getEndPosition(cu, t);
-                    if (pos != Diagnostic.NOPOS && offset >= pos) {
-                        beforeAnyClass = false;
-                        if (((ClassTree) t).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
-                            beforePublicClass = false;
-                            break;
-                        }
+        if (!pkgInfo && !mdlInfo) {
+            kws.add(ABSTRACT_KEYWORD);
+            kws.add(CLASS_KEYWORD);
+            kws.add(ENUM_KEYWORD);
+            kws.add(FINAL_KEYWORD);
+            kws.add(INTERFACE_KEYWORD);
+        }
+        boolean beforeAnyClass = true;
+        boolean beforePublicClass = true;
+        for (Tree t : cu.getTypeDecls()) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
+                int pos = (int) sourcePositions.getEndPosition(cu, t);
+                if (pos != Diagnostic.NOPOS && offset >= pos) {
+                    beforeAnyClass = false;
+                    if (((ClassTree) t).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
+                        beforePublicClass = false;
+                        break;
                     }
                 }
+            } else if (t.getKind() == Tree.Kind.MODULE) {
+                int pos = (int) sourcePositions.getEndPosition(cu, t);
+                if (pos != Diagnostic.NOPOS && offset >= pos) {
+                    beforeAnyClass = false;
+                }                
             }
-            if (beforePublicClass && !pkgInfo) {
-                kws.add(PUBLIC_KEYWORD);
+        }
+        if (beforePublicClass && !pkgInfo && !mdlInfo) {
+            kws.add(PUBLIC_KEYWORD);
+        }
+        if (beforeAnyClass) {
+            if (mdlInfo) {
+                kws.add(MODULE_KEYWORD);
+                kws.add(OPEN_KEYWORD);
             }
-            if (beforeAnyClass) {
-                kws.add(IMPORT_KEYWORD);
-                Tree firstImport = null;
-                for (Tree t : cu.getImports()) {
-                    firstImport = t;
-                    break;
-                }
-                Tree pd = cu.getPackageName();
-                if ((pd != null && offset <= sourcePositions.getStartPosition(cu, cu))
-                        || (pd == null && (firstImport == null || sourcePositions.getStartPosition(cu, firstImport) >= offset))) {
-                    kws.add(PACKAGE_KEYWORD);
-                }
+            kws.add(IMPORT_KEYWORD);
+            Tree firstImport = null;
+            for (Tree t : cu.getImports()) {
+                firstImport = t;
+                break;
+            }
+            Tree pd = cu.getPackageName();
+            if (!mdlInfo && ((pd != null && offset <= sourcePositions.getStartPosition(cu, cu))
+                    || (pd == null && (firstImport == null || sourcePositions.getStartPosition(cu, firstImport) >= offset)))) {
+                kws.add(PACKAGE_KEYWORD);
             }
         }
         for (String kw : kws) {

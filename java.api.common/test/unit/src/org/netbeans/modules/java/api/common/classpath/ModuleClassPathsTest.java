@@ -573,7 +573,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 for (ModuleElement.Directive d : me.getDirectives()) {
                     if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         final ModuleElement.RequiresDirective rd = (ModuleElement.RequiresDirective)d;
-                        if (rd.isPublic() || isMandated(rd)) {
+                        if (rd.isTransitive()|| isMandated(rd)) {
                             collectDeps(rd.getDependency(), modNames);
                         }
                     }

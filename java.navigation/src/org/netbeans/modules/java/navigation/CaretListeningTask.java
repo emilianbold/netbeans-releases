@@ -353,6 +353,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 }
                 case REQUIRES:
                 case EXPORTS:
+                case OPENS:
                 case PROVIDES:
                 case USES:
                 {

@@ -840,13 +840,15 @@ public final class TreeMaker {
     /**
      * Creates a new ModuleTree with a new qualified name and directives.
      *
+     * @param modifiers module modifiers
+     * @param kind module kind
      * @param qualid module name
      * @param directives a list of module directives, or an empty list.
      * @see com.sun.source.tree.ModuleTree
-     * @since 2.23
+     * @since 2.25
      */
-    public ModuleTree Module(ExpressionTree qualid, List<? extends DirectiveTree> directives) {
-        return delegate.Module(qualid, directives);
+    public ModuleTree Module(ModifiersTree modifiers, ModuleTree.ModuleKind kind, ExpressionTree qualid, List<? extends DirectiveTree> directives) {
+        return delegate.Module(modifiers, kind, qualid, directives);
     }
 
     /**
@@ -928,6 +930,18 @@ public final class TreeMaker {
     }
     
     /**
+     * Creates a new OpensTree.
+     *
+     * @param qualId qualified name of the opened package.
+     * @param moduleNames names of the modules the package is opened to.
+     * @see com.sun.source.tree.OpensTree
+     * @since 2.25
+     */
+    public OpensTree Opens(ExpressionTree qualId, List<? extends ExpressionTree> moduleNames) {
+        return delegate.Opens(qualId, moduleNames);
+    }
+    
+    /**
      * Creates a new ParameterizedTypeTree.
      *
      * @param type          the generic type
@@ -965,24 +979,25 @@ public final class TreeMaker {
      * Creates a new ProvidesTree.
      *
      * @param serviceName the name of the provided service
-     * @param implName the qualified name of the implementation class
+     * @param implNames the names of the implementation classes
      * @see com.sun.source.tree.ProvidesTree
-     * @since 2.23
+     * @since 2.25
      */
-    public ProvidesTree Provides(ExpressionTree serviceName, ExpressionTree implName) {
-        return delegate.Provides(serviceName, implName);
+    public ProvidesTree Provides(ExpressionTree serviceName, List<? extends ExpressionTree> implNames) {
+        return delegate.Provides(serviceName, implNames);
     }
     
     /**
      * Creates a new RequiresTree.
      *
-     * @param isPublic 
+     * @param isTransitive
+     * @param isStatic
      * @param qualId the qualified name of the required module
      * @see com.sun.source.tree.RequiresTree
-     * @since 2.23
+     * @since 2.25
      */
-    public RequiresTree Requires(boolean isPublic, ExpressionTree qualId) {
-        return delegate.Requires(isPublic, qualId);
+    public RequiresTree Requires(boolean isTransitive, boolean isStatic, ExpressionTree qualId) {
+        return delegate.Requires(isTransitive, isStatic, qualId);
     }
     
     /**

@@ -439,7 +439,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         }
 
         @Override
-        public Iterable<Set<Location>> listModuleLocations(Location location) throws IOException {
+        public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
             return Collections.emptyList();
         }
     }

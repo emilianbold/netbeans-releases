@@ -52,13 +52,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -178,6 +179,63 @@ final class RendererPanel extends JPanel {
         } catch (NullPointerException npe) {
             //workaround for 175940
             Logger.getLogger(RendererPanel.class.getName()).log(Level.INFO, "Bug #175940", npe);
+        }
+
+        configureAccessibility(this, true);
+    }
+
+    /**
+     * Sets accessibility name and description on renderer component. They are derived from visible
+     * labels and buttons contained in the components hierarchy provided by the node. It's a little
+     * bit rough, but a general solution covering all types of nodes and their renderer composition.
+     * @param combineAll true if accessible name should be combined from all components with visible text,
+     *                   false to use just the first one
+     */
+    static void configureAccessibility(Component rendererComp, boolean combineAll) {
+        StringBuilder accNameBuf = new StringBuilder();
+        String accDesc = null;
+        List<Component> comps = new LinkedList<>();
+        comps.add(rendererComp);
+        do {
+            Component comp = comps.remove(0);
+            if (comp.isVisible()) {
+                if (comp instanceof JPanel) { // JPanel is the only type of container we use in the rendering components hierarchy
+                    Component[] subComps = ((JPanel)comp).getComponents();
+                    for (int i=0; i < subComps.length; i++) {
+                        comps.add(i, subComps[i]);
+                    }
+                } else {
+                    if (accNameBuf.length() == 0 || combineAll) {
+                        String compAccName = comp.getAccessibleContext().getAccessibleName();
+                        if (compAccName != null && compAccName.length() > 0) {
+                            if (accNameBuf.length() > 0 && !compAccName.startsWith(" ")) { // NOI18N
+                                accNameBuf.append(" "); // NOI18N
+                            }
+                            accNameBuf.append(compAccName);
+                        }
+                    }
+                    if (accDesc == null) {
+                        String compAccDesc = comp.getAccessibleContext().getAccessibleDescription();
+                        if (compAccDesc != null && compAccDesc.length() > 0) {
+                            accDesc = compAccDesc;
+                        }
+                    }
+                }
+            }
+        } while (!comps.isEmpty() && (combineAll || accNameBuf.length() == 0 || accDesc == null));
+
+        String accName = accNameBuf.toString();
+        if (accName.length() > 0) {
+            accName = accName.replace("<html>", "").replace("( ", "(").replace(" | ", ", ").replace(" )", ")").replace("...", "").replace("</html>", ""); // NOI18N
+            rendererComp.getAccessibleContext().setAccessibleName(accName);
+        }
+        if (accDesc != null) {
+            accDesc = accDesc.replace("<html>", "").replace("</html>", ""); // NOI18N
+        } else {
+            accDesc = accName;
+        }
+        if (accDesc.length() > 0) {
+            rendererComp.getAccessibleContext().setAccessibleDescription(accDesc);
         }
     }
 
