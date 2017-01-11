@@ -50,6 +50,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import static com.sun.source.tree.Tree.*;
@@ -745,6 +746,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public void visitModuleDef(JCModuleDecl tree) {
 	toLeftMargin();
+        printAnnotations(tree.mods.annotations);
+        if (tree.getModuleType() == ModuleTree.ModuleKind.OPEN) {
+            print("open ");
+        }
         print("module ");
         print(fullName(tree.qualId));
 	int old = cs.indentTopLevelClassMembers() ? indent() : out.leftMargin;
