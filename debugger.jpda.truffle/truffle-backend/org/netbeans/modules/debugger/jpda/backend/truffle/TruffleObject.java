@@ -45,6 +45,7 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.debug.DebugValue;
+import com.oracle.truffle.api.source.SourceSection;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -67,11 +68,27 @@ public class TruffleObject {
     final boolean isArray;
     final Collection<DebugValue> properties;
     final List<DebugValue> array;
+    final SourcePosition valueSourcePosition;
+    final SourcePosition typeSourcePosition;
 
     TruffleObject(DebugValue value) {
         this.name = value.getName();
         //System.err.println("new TruffleObject("+name+")");
-        this.type = ""; // TODO?
+        DebugValue metaObject = null;
+        try {
+            metaObject = value.getMetaObject();
+        } catch (Exception | LinkageError ex) {
+            LangErrors.exception("Value "+name+" .getMetaObject()", ex);
+        }
+        String typeStr = "";
+        if (metaObject != null) {
+            try {
+                typeStr = metaObject.as(String.class);
+            } catch (Exception ex) {
+                LangErrors.exception("Meta object of "+name+" .as(String.class)", ex);
+            }
+        }
+        this.type = typeStr;
         //this.object = value;
         String valueStr = null;
         try {
@@ -124,6 +141,30 @@ public class TruffleObject {
         } else {
             this.array = null;
         }
+        SourcePosition sp = null;
+        try {
+            SourceSection sourceLocation = value.getSourceLocation();
+            //System.err.println("\nSOURCE of "+value.getName()+" is: "+sourceLocation);
+            if (sourceLocation != null) {
+                sp = JPDATruffleDebugManager.getPosition(sourceLocation);
+            }
+        } catch (Exception | LinkageError ex) {
+            LangErrors.exception("Value "+name+" .getSourceLocation()", ex);
+        }
+        this.valueSourcePosition = sp;
+        sp = null;
+        if (metaObject != null) {
+            try {
+                SourceSection sourceLocation = metaObject.getSourceLocation();
+                //System.err.println("\nSOURCE of metaobject "+metaObject+" is: "+sourceLocation);
+                if (sourceLocation != null) {
+                    sp = JPDATruffleDebugManager.getPosition(sourceLocation);
+                }
+            } catch (Exception | LinkageError ex) {
+                LangErrors.exception("Meta object of "+name+" .getSourceLocation()", ex);
+            }
+        }
+        this.typeSourcePosition = sp;
         /*try {
             System.err.println("new TruffleObject("+name+") displayValue = "+displayValue+", leaf = "+leaf+", properties = "+properties);
         } catch (Exception ex) {

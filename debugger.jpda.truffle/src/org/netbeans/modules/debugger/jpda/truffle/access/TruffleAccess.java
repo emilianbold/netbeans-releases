@@ -50,8 +50,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -210,19 +212,9 @@ public class TruffleAccess implements JPDABreakpointListener {
             CallStackFrame csf = thread.getCallStack(0, 1)[0];
             LocalVariable[] localVariables = csf.getLocalVariables();
             ExecutionHaltedInfo haltedInfo = ExecutionHaltedInfo.get(localVariables);
-            JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
+            //JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
             ObjectVariable sourcePositionVar = haltedInfo.sourcePositions;
-            long id = (Long) sourcePositionVar.getField(VAR_SRC_ID).createMirrorObject();
-            int line = (Integer) sourcePositionVar.getField(VAR_SRC_LINE).createMirrorObject();
-            Source src = Source.getExistingSource(debugger, id);
-            if (src == null) {
-                String name = (String) sourcePositionVar.getField(VAR_SRC_NAME).createMirrorObject();
-                String path = (String) sourcePositionVar.getField(VAR_SRC_PATH).createMirrorObject();
-                URI uri = (URI) sourcePositionVar.getField(VAR_SRC_URI).createMirrorObject();
-                StringReference codeRef = (StringReference) ((JDIVariable) sourcePositionVar.getField(VAR_SRC_CODE)).getJDIValue();
-                src = Source.getSource(debugger, id, name, path, uri, codeRef);
-            }
-            SourcePosition sp = new SourcePosition(debugger, id, src, line);
+            SourcePosition sp = getSourcePosition(debugger, sourcePositionVar);
             
             ObjectVariable frameInfoVar = haltedInfo.frameInfo;
             ObjectVariable frame = (ObjectVariable) frameInfoVar.getField(VAR_FRAME);
@@ -240,20 +232,82 @@ public class TruffleAccess implements JPDABreakpointListener {
         }
     }
     
+    public static SourcePosition getSourcePosition(JPDADebugger debugger, ObjectVariable sourcePositionVar) {
+        long id = (Long) sourcePositionVar.getField(VAR_SRC_ID).createMirrorObject();
+        int line = (Integer) sourcePositionVar.getField(VAR_SRC_LINE).createMirrorObject();
+        Source src = Source.getExistingSource(debugger, id);
+        if (src == null) {
+            String name = (String) sourcePositionVar.getField(VAR_SRC_NAME).createMirrorObject();
+            String path = (String) sourcePositionVar.getField(VAR_SRC_PATH).createMirrorObject();
+            URI uri = (URI) sourcePositionVar.getField(VAR_SRC_URI).createMirrorObject();
+            StringReference codeRef = (StringReference) ((JDIVariable) sourcePositionVar.getField(VAR_SRC_CODE)).getJDIValue();
+            src = Source.getSource(debugger, id, name, path, uri, codeRef);
+        }
+        return new SourcePosition(debugger, id, src, line);
+    }
+    
     private static TruffleVariable[] createVars(JPDADebugger debugger, ObjectVariable varsArrVar) {
         Field[] varsArr = varsArrVar.getFields(0, Integer.MAX_VALUE);
-        int n = varsArr.length/5;
+        int n = varsArr.length/9;
         TruffleVariable[] vars = new TruffleVariable[n];
         for (int i = 0; i < n; i++) {
-            int vi = 5*i;
+            int vi = 9*i;
             String name = (String) varsArr[vi].createMirrorObject();
             String type = (String) varsArr[vi + 1].createMirrorObject();
             boolean writable = (Boolean) varsArr[vi + 2].createMirrorObject();
             String valueStr = (String) varsArr[vi + 3].createMirrorObject();
-            ObjectVariable value = (ObjectVariable) varsArr[vi + 4];
-            vars[i] = new TruffleStackVariable(debugger, name, type, writable, valueStr, value);
+            Supplier<SourcePosition> valueSource = parseSourceLazy(debugger,
+                                                                   varsArr[vi + 4],
+                                                                   (JDIVariable) varsArr[vi + 5]);
+            Supplier<SourcePosition> typeSource = parseSourceLazy(debugger,
+                                                                  varsArr[vi + 6],
+                                                                  (JDIVariable) varsArr[vi + 7]);
+            ObjectVariable value = (ObjectVariable) varsArr[vi + 8];
+            vars[i] = new TruffleStackVariable(debugger, name, type, writable, valueStr,
+                                               valueSource, typeSource, value);
         }
         return vars;
+    }
+    
+    private static Supplier<SourcePosition> parseSourceLazy(JPDADebugger debugger, Variable sourceDefVar, JDIVariable codeRefVar) {
+        return () -> parseSource(debugger,
+                                 (String) sourceDefVar.createMirrorObject(),
+                                 (StringReference) codeRefVar.getJDIValue());
+    }
+    
+    private static SourcePosition parseSource(JPDADebugger debugger, String sourceDef, StringReference codeRef) {
+        if (sourceDef == null) {
+            return null;
+        }
+        int sourceId;
+        String sourceName;
+        String sourcePath;
+        URI sourceURI;
+        int sourceLine;
+        try {
+            int i1 = 0;
+            int i2 = sourceDef.indexOf('\n', i1);
+            sourceId = Integer.parseInt(sourceDef.substring(i1, i2));
+            i1 = i2 + 1;
+            i2 = sourceDef.indexOf('\n', i1);
+            sourceName = sourceDef.substring(i1, i2);
+            i1 = i2 + 1;
+            i2 = sourceDef.indexOf('\n', i1);
+            sourcePath = sourceDef.substring(i1, i2);
+            i1 = i2 + 1;
+            i2 = sourceDef.indexOf('\n', i1);
+            try {
+                sourceURI = new URI(sourceDef.substring(i1, i2));
+            } catch (URISyntaxException usex) {
+                throw new IllegalStateException("Bad URI: "+sourceDef.substring(i1, i2), usex);
+            }
+            i1 = i2 + 1;
+            sourceLine = Integer.parseInt(sourceDef.substring(i1));
+        } catch (IndexOutOfBoundsException ioob) {
+            throw new IllegalStateException("var source definition='"+sourceDef+"'", ioob);
+        }
+        Source src = Source.getSource(debugger, sourceId, sourceName, sourcePath, sourceURI, codeRef);
+        return new SourcePosition(debugger, sourceId, src, sourceLine);
     }
     
     public static TruffleVariable[] createFrameVars(final JPDADebugger debugger,

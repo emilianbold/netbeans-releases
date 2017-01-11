@@ -46,6 +46,9 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
+import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
+import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,12 +64,16 @@ public class TruffleVariableImpl implements TruffleVariable {
     private static final String FIELD_DISPLAY_VALUE = "displayValue";           // NOI18N
     private static final String METHOD_GET_CHILDREN = "getProperties";          // NOI18N
     private static final String METHOD_GET_CHILDREN_SIG = "()[Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleObject;";  // NOI18N
+    private static final String FIELD_VALUE_SOURCE = "valueSourcePosition";     // NOI18N
+    private static final String FIELD_TYPE_SOURCE = "typeSourcePosition";       // NOI18N
     
     private final ObjectVariable truffleObject;
     private final String name;
     private final String type;
     private final String displayValue;
     private final boolean leaf;
+    private SourcePosition valueSource;
+    private SourcePosition typeSource;
     
     private TruffleVariableImpl(ObjectVariable truffleObject, String name,
                                 String type, String displayValue,
@@ -106,14 +113,7 @@ public class TruffleVariableImpl implements TruffleVariable {
     }
 
     static boolean isLeaf(ObjectVariable truffleObj) {
-        Field f = truffleObj.getField(FIELD_LEAF);
-        if (f == null) {
-            try {
-                throw new IllegalStateException("No "+FIELD_LEAF+" field in "+truffleObj.getToStringValue());
-            } catch (InvalidExpressionException iex) {
-                throw new IllegalStateException("No "+FIELD_LEAF+" field in "+truffleObj);
-            }
-        }
+        Field f = getFieldChecked(FIELD_LEAF, truffleObj);
         Boolean mirrorLeaf = (Boolean) f.createMirrorObject();
         boolean leaf;
         if (mirrorLeaf == null) {
@@ -141,6 +141,24 @@ public class TruffleVariableImpl implements TruffleVariable {
     @Override
     public Object getValue() {
         return displayValue; // TODO
+    }
+    
+    @Override
+    public synchronized SourcePosition getValueSource() {
+        if (valueSource == null) {
+            Field f = getFieldChecked(FIELD_VALUE_SOURCE, truffleObject);
+            valueSource = TruffleAccess.getSourcePosition(((AbstractVariable) f).getDebugger(), (ObjectVariable) f);
+        }
+        return valueSource;
+    }
+
+    @Override
+    public synchronized SourcePosition getTypeSource() {
+        if (typeSource == null) {
+            Field f = getFieldChecked(FIELD_TYPE_SOURCE, truffleObject);
+            typeSource = TruffleAccess.getSourcePosition(((AbstractVariable) f).getDebugger(), (ObjectVariable) f);
+        }
+        return typeSource;
     }
 
     @Override
@@ -174,5 +192,18 @@ public class TruffleVariableImpl implements TruffleVariable {
             Exceptions.printStackTrace(ex);
         }
         return new Object[] {};
+    }
+    
+    private static Field getFieldChecked(String fieldName, ObjectVariable truffleObject) {
+        Field f = truffleObject.getField(fieldName);
+        if (f == null) {
+            try {
+                throw new IllegalStateException("No "+fieldName+" field in "+truffleObject.getToStringValue());
+            } catch (InvalidExpressionException iex) {
+                throw new IllegalStateException("No "+fieldName+" field in "+truffleObject);
+            }
+        } else {
+            return f;
+        }
     }
 }
