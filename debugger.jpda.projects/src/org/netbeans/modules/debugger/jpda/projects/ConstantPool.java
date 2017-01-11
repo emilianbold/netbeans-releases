@@ -71,7 +71,9 @@ public class ConstantPool {
     private static final byte TAG_NAMETYPE = 12;
     private static final byte TAG_METHODHANDLE = 15;
     private static final byte TAG_METHODTYPE = 16;
-    private static final byte TAG_INVOKEDYNAMIC = 18; 
+    private static final byte TAG_INVOKEDYNAMIC = 18;
+    private static final byte TAG_MODULE = 19;
+    private static final byte TAG_PACKAGE = 20;
 
     private final List<ConstantPool.Entry> entries;
     private final String description;
@@ -168,7 +170,13 @@ public class ConstantPool {
                         break;
                     case TAG_INVOKEDYNAMIC:
                         entry = new EntryInvokeDynamic(in);
-                        break; 
+                        break;
+                    case TAG_MODULE:
+                        entry = new EntryModule(in.readShort());
+                        break;
+                    case TAG_PACKAGE:
+                        entry = new EntryPackage(in.readShort());
+                        break;
                     case 0:
                     default:
                         Logger.getLogger(ConstantPool.class.getName()).warning("Unknown tag byte: "+tagByte);
@@ -287,6 +295,42 @@ public class ConstantPool {
 
         public short getClassRef() {
             return classRef;
+        }
+    }
+
+    /**
+     * @since 1.41
+     */
+    public static final class EntryModule extends Entry {
+
+        /** Reference to TAG_UTF8 entry */
+        private short nameIndex;
+
+        public EntryModule(short nameIndex) {
+            super(TAG_MODULE);
+            this.nameIndex = nameIndex;
+        }
+
+        public short getModuleRef() {
+            return nameIndex;
+        }
+    }
+
+    /**
+     * @since 1.41
+     */
+    public static final class EntryPackage extends Entry {
+
+        /** Reference to TAG_UTF8 entry */
+        private short nameIndex;
+
+        public EntryPackage(short nameIndex) {
+            super(TAG_PACKAGE);
+            this.nameIndex = nameIndex;
+        }
+
+        public short getPackageRef() {
+            return nameIndex;
         }
     }
 
