@@ -511,7 +511,7 @@ public final class SQLExecuteHelper {
          */
         private void checkForDelimiterStmt(int initialOffset, int lastPosToScan) {
             int start = initialOffset;
-            while(Character.isWhitespace(sql.charAt(start)) && start < lastPosToScan) {
+            while(start < lastPosToScan && Character.isWhitespace(sql.charAt(start))) {
                 start++;
             }
             if(start >= lastPosToScan && (lastPosToScan - start + 1) <= DELIMITER_TOKEN.length()) {
