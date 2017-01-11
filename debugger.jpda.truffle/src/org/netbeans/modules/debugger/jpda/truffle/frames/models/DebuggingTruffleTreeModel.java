@@ -45,16 +45,21 @@ package org.netbeans.modules.debugger.jpda.truffle.frames.models;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.truffle.TruffleProperties;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.breakpoints.TruffleLineBreakpoint;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.DebuggingView;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
@@ -68,14 +73,27 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
                              types={ TreeModelFilter.class })
 public class DebuggingTruffleTreeModel implements TreeModelFilter {
     
-    private static final String FILTER1 = "com.oracle.truffle.";                // NOI18N
-    private static final String FILTER2 = "com.oracle.graal.truffle.";          // NOI18N
+    private static final Predicate<String> PREDICATE1 = Pattern.compile("^((com|org)\\.\\p{Alpha}*\\.truffle|(com|org)\\.graalvm)\\..*$").asPredicate();
+    private static final String FILTER1 = "com.[A-z]*.truffle.";                     // NOI18N
+    private static final String FILTER2 = "com.oracle.graal.";                  // NOI18N
     private static final String FILTER3 = "org.netbeans.modules.debugger.jpda.backend.";    // NOI18N
     
     private final JPDADebugger debugger;
+    private final List<ModelListener> listeners = new ArrayList<>();
+    private final TruffleProperties.Disposable propListenerDispose;
     
     public DebuggingTruffleTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        propListenerDispose = TruffleProperties.getInstance().onShowInternalChange(isInternal -> {
+            ModelListener[] mls;
+            synchronized (listeners) {
+                mls = listeners.toArray(new ModelListener[listeners.size()]);
+            }
+            ModelEvent event = new ModelEvent.TreeChanged(TreeModel.ROOT);
+            for (ModelListener ml : mls) {
+                ml.modelChanged(event);
+            }
+        });
     }
 
     @Override
@@ -90,7 +108,8 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
             ((DebuggingView.DVThread) parent).getDVSupport().getCurrentThread() == parent) {
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null) {
-                TruffleStackFrame[] stackFrames = currentPCInfo.getStack().getStackFrames();
+                boolean showInternalFrames = TruffleProperties.getInstance().isShowInternal();
+                TruffleStackFrame[] stackFrames = currentPCInfo.getStack().getStackFrames(showInternalFrames);
                 children = filterAndAppend(children, stackFrames, currentPCInfo.getTopFrame());
             }
         }
@@ -113,10 +132,16 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
 
     @Override
     public void addModelListener(ModelListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
 
     @Override
     public void removeModelListener(ModelListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
 
     private Object[] filterAndAppend(Object[] children, TruffleStackFrame[] stackFrames,
@@ -126,7 +151,7 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
         for (Object ch : children) {
             if (ch instanceof CallStackFrame) {
                 String className = ((CallStackFrame) ch).getClassName();
-                if (className.startsWith(FILTER1) ||
+                if (PREDICATE1.test(className) ||
                     className.startsWith(FILTER2) ||
                     className.startsWith(FILTER3)) {
                     

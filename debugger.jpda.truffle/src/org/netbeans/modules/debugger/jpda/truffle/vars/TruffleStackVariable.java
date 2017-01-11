@@ -42,25 +42,83 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars;
 
+import java.util.function.Supplier;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 
 /**
  *
  * @author Martin
  */
-public interface TruffleVariable {
+public class TruffleStackVariable implements TruffleVariable {
     
-    String getName();
+    private final JPDADebugger debugger;
+    private final String name;
+    private final String type;
+    private final boolean writable;
+    private final String valueStr;
+    private final Supplier<SourcePosition> valueSourceSupp;
+    private final Supplier<SourcePosition> typeSourceSupp;
+    private SourcePosition valueSource;
+    private SourcePosition typeSource;
+    private final ObjectVariable truffleObj;
+    private final boolean leaf;
     
-    String getType();
+    public TruffleStackVariable(JPDADebugger debugger, String name, String type,
+                                boolean writable, String valueStr,
+                                Supplier<SourcePosition> valueSource,
+                                Supplier<SourcePosition> typeSource,
+                                ObjectVariable truffleObj) {
+        this.debugger = debugger;
+        this.name = name;
+        this.type = type;
+        this.writable = writable;
+        this.valueStr = valueStr;
+        this.valueSourceSupp = valueSource;
+        this.typeSourceSupp = typeSource;
+        this.truffleObj = truffleObj;
+        this.leaf = TruffleVariableImpl.isLeaf(truffleObj);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getType() {
+        return type;
+    }
     
-    Object getValue();
+    @Override
+    public Object getValue() {
+        return valueStr;
+    }
+
+    @Override
+    public synchronized SourcePosition getValueSource() {
+        if (valueSource == null) {
+            valueSource = valueSourceSupp.get();
+        }
+        return valueSource;
+    }
+
+    @Override
+    public synchronized SourcePosition getTypeSource() {
+        if (typeSource == null) {
+            typeSource = typeSourceSupp.get();
+        }
+        return typeSource;
+    }
     
-    SourcePosition getValueSource();
+    @Override
+    public boolean isLeaf() {
+        return leaf;
+    }
     
-    SourcePosition getTypeSource();
-    
-    boolean isLeaf();
-    
-    Object[] getChildren();
+    @Override
+    public Object[] getChildren() {
+        return TruffleVariableImpl.getChildren(truffleObj);
+    }
 }

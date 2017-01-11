@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,45 +36,24 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
-
 /**
- *
- * @author Martin
+ * Errors in a language implementation.
+ * 
+ * @author martin
  */
-final class DebuggerVisualizer {
+final class LangErrors {
     
-    private DebuggerVisualizer() {}
+    private static final boolean SUPRESS_EXCEPTIONS = Boolean.getBoolean("truffle.nbdebug.supressLangErrs");
     
-    static String getDisplayName(CallTarget ct) {
-        if (ct instanceof RootCallTarget) {
-            RootNode rn = ((RootCallTarget) ct).getRootNode();
-            return getMethodName(rn);
-        } else {
-            //System.err.println("Unexpected CallTarget: "+ct.getClass());
-            return ct.toString();
+    private LangErrors() {}
+    
+    static void exception(String context, Throwable ex) {
+        if (!SUPRESS_EXCEPTIONS) {
+            System.err.println(context);
+            ex.printStackTrace();
         }
     }
-    
-    static String getMethodName(RootNode rn) {
-        return rn.getName();
-    }
-    
-    /** &lt;File name&gt;:&lt;line number&gt; */
-    static String getSourceLocation(SourceSection ss) {
-        if (ss == null) {
-            //System.err.println("No source section for node "+n);
-            return "unknown";
-        }
-        return ss.getSource().getName() + ":" + ss.getStartLine();
-    }
-
 }
