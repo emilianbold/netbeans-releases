@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Iterator;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
@@ -68,10 +67,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -81,10 +79,10 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.InvalidClassFormatException;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -110,8 +108,8 @@ public class DefaultClassPathProvider implements ClassPathProvider {
     private static final RequestProcessor RP = new RequestProcessor(DefaultClassPathProvider.class);
     private static final Logger LOG = Logger.getLogger(DefaultClassPathProvider.class.getName());
 
-    private /*WeakHash*/Map<FileObject,WeakReference<FileObject>> sourceRootsCache = new WeakHashMap<FileObject,WeakReference<FileObject>>();
-    private /*WeakHash*/Map<FileObject,WeakReference<ClassPath>> sourceClasPathsCache = new WeakHashMap<FileObject,WeakReference<ClassPath>>();
+    private /*WeakHash*/Map<FileObject,WeakReference<FileObject>> sourceRootsCache = new WeakHashMap<>();
+    private /*WeakHash*/Map<FileObject,WeakReference<ClassPath>> sourceClasPathsCache = new WeakHashMap<>();
     private Reference<ClassPath> compiledClassPath;    
     
     /** Creates a new instance of DefaultClassPathProvider */
@@ -150,18 +148,16 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 if (defaultPlatform != null) {
                     return defaultPlatform.getBootstrapLibraries();
                 }
-            }
-            else if (ClassPath.COMPILE.equals(type)) {
+            } else if (ClassPath.COMPILE.equals(type)) {
                 synchronized (this) {
                     ClassPath cp = null;
                     if (this.compiledClassPath == null || (cp = this.compiledClassPath.get()) == null) {
                         cp = ClassPathFactory.createClassPath(new CompileClassPathImpl ());
-                        this.compiledClassPath = new SoftReference<ClassPath> (cp);
+                        this.compiledClassPath = new SoftReference<> (cp);
                     }
                     return cp;
                 }
-            }
-            else if (ClassPath.SOURCE.equals(type)) {
+            } else if (ClassPath.SOURCE.equals(type)) {
 //                synchronized (this) {
 //                    ClassPath cp = null;
 //                    if (file.isFolder()) {
@@ -200,16 +196,19 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 //file inside home folder may cause a scan of the whole home folder.
                 //see issue #75410
                 return null;
+            } else if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+                final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+                if (defaultPlatform != null && Util.JDK9.compareTo(defaultPlatform.getSpecification().getVersion()) <= 0) {
+                    return defaultPlatform.getBootstrapLibraries();
+                }
             }
-        }
-        else if (CLASS_EXT.equals(file.getExt())) {
+        } else if (CLASS_EXT.equals(file.getExt())) {
             if (ClassPath.BOOT.equals (type)) {
                 JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
                 if (defaultPlatform != null) {
                     return defaultPlatform.getBootstrapLibraries();
                 }
-            }
-            else if (ClassPath.EXECUTE.equals(type)) {
+            } else if (ClassPath.EXECUTE.equals(type)) {
                 ClassPath cp = null;
                 Reference<FileObject> foRef = this.sourceRootsCache.get (file);
                 FileObject execRoot = null;
@@ -218,33 +217,34 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                     if (execRoot == null || !execRoot.isFolder()) {
                         return null;
                     }
-                    this.sourceRootsCache.put (file, new WeakReference<FileObject>(execRoot));
+                    this.sourceRootsCache.put (file, new WeakReference<>(execRoot));
                 }
                 if (!execRoot.isValid()) {
                     this.sourceClasPathsCache.remove (execRoot);
                 }
                 else {
-                    try {
-                        Reference<ClassPath> cpRef = this.sourceClasPathsCache.get(execRoot);
-                        if (cpRef == null || (cp = cpRef.get()) == null ) {
-                            final URL url = execRoot.getURL();
-                            if (!execRoot.isValid()) {
-                                //The root is not valid, URL may be broken
-                                return null;
-                            }
-                            cp = ClassPathSupport.createClassPath(url);
-                            this.sourceClasPathsCache.put (execRoot, new WeakReference<ClassPath>(cp));
+                    Reference<ClassPath> cpRef = this.sourceClasPathsCache.get(execRoot);
+                    if (cpRef == null || (cp = cpRef.get()) == null ) {
+                        final URL url = execRoot.toURL();
+                        if (!execRoot.isValid()) {
+                            //The root is not valid, URL may be broken
+                            return null;
                         }
-                        return cp;
-                    } catch (FileStateInvalidException e) {
-                        //Handled by return null;
+                        cp = ClassPathSupport.createClassPath(url);
+                        this.sourceClasPathsCache.put (execRoot, new WeakReference<>(cp));
                     }
+                    return cp;
+                }
+            } else if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+                final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+                if (defaultPlatform != null && Util.JDK9.compareTo(defaultPlatform.getSpecification().getVersion()) <= 0) {
+                    return defaultPlatform.getBootstrapLibraries();
                 }
             }
         }
         return null;
-    }            
-    
+    }
+
     private static FileObject getRootForFile (final FileObject fo, int type) {
         String pkg;
         if (type == TYPE_JAVA) {
@@ -258,7 +258,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             packageRoot = fo.getParent();
         }
         else {
-            List<String> elements = new ArrayList<String> ();
+            List<String> elements = new ArrayList<> ();
             for (StringTokenizer tk = new StringTokenizer(pkg,"."); tk.hasMoreTokens();) {
                 elements.add(tk.nextToken());
             }
@@ -584,7 +584,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
 
         private List<? extends PathResourceImplementation> cachedCompiledClassPath;
         private final PropertyChangeSupport support;
-        private final ThreadLocal<Boolean> active = new ThreadLocal<Boolean> ();
+        private final ThreadLocal<Boolean> active = new ThreadLocal<> ();
         private long eventId;
         private volatile RequestProcessor.Task task;
         private boolean listening;
@@ -612,9 +612,9 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 throw new RecursionException ();
             }
             active.set(true);
-            final List<PathResourceImplementation> l =  new ArrayList<PathResourceImplementation> ();
+            final List<PathResourceImplementation> l =  new ArrayList<> ();
             try {                
-                Set<URL> roots = new HashSet<URL> ();
+                Set<URL> roots = new HashSet<> ();
                 //Add compile classpath
                 Set<ClassPath> paths = regs.getPaths (ClassPath.COMPILE);
                 for (ClassPath cp : paths) {
@@ -695,9 +695,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                                 becomeProjects.get();
                                 support.firePropertyChange(PROP_RESOURCES,null,null);
                                 LOG.log(Level.FINEST, "Fired an event");    //NOI18N
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (ExecutionException ex) {
+                            } catch (InterruptedException | ExecutionException ex) {
                                 Exceptions.printStackTrace(ex);
                             } finally {
                                 task = null;    //Write barrier
@@ -707,7 +705,6 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                     task.schedule(0);
                 }
             }
-                        
         }
 
     }
