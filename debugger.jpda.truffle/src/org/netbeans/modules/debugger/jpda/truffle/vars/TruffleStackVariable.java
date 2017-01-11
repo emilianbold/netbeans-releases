@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars;
 
+import java.util.function.Supplier;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 
 /**
  *
@@ -56,16 +58,25 @@ public class TruffleStackVariable implements TruffleVariable {
     private final String type;
     private final boolean writable;
     private final String valueStr;
+    private final Supplier<SourcePosition> valueSourceSupp;
+    private final Supplier<SourcePosition> typeSourceSupp;
+    private SourcePosition valueSource;
+    private SourcePosition typeSource;
     private final ObjectVariable truffleObj;
     private final boolean leaf;
     
     public TruffleStackVariable(JPDADebugger debugger, String name, String type,
-                                boolean writable, String valueStr, ObjectVariable truffleObj) {
+                                boolean writable, String valueStr,
+                                Supplier<SourcePosition> valueSource,
+                                Supplier<SourcePosition> typeSource,
+                                ObjectVariable truffleObj) {
         this.debugger = debugger;
         this.name = name;
         this.type = type;
         this.writable = writable;
         this.valueStr = valueStr;
+        this.valueSourceSupp = valueSource;
+        this.typeSourceSupp = typeSource;
         this.truffleObj = truffleObj;
         this.leaf = TruffleVariableImpl.isLeaf(truffleObj);
     }
@@ -83,6 +94,22 @@ public class TruffleStackVariable implements TruffleVariable {
     @Override
     public Object getValue() {
         return valueStr;
+    }
+
+    @Override
+    public synchronized SourcePosition getValueSource() {
+        if (valueSource == null) {
+            valueSource = valueSourceSupp.get();
+        }
+        return valueSource;
+    }
+
+    @Override
+    public synchronized SourcePosition getTypeSource() {
+        if (typeSource == null) {
+            typeSource = typeSourceSupp.get();
+        }
+        return typeSource;
     }
     
     @Override

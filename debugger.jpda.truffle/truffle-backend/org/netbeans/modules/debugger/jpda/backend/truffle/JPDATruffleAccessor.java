@@ -350,15 +350,7 @@ public class JPDATruffleAccessor extends Object {
                 *//*
             }*/
             SourcePosition position = JPDATruffleDebugManager.getPosition(sf.getSourceSection());
-            frameInfos.append(position.id);
-            frameInfos.append('\n');
-            frameInfos.append(position.name);
-            frameInfos.append('\n');
-            frameInfos.append(position.path);
-            frameInfos.append('\n');
-            frameInfos.append(position.uri.toString());
-            frameInfos.append('\n');
-            frameInfos.append(position.line);
+            frameInfos.append(createPositionIdentificationString(position));
             if (includeInternal) {
                 frameInfos.append('\n');
                 frameInfos.append(isInternal);
@@ -382,24 +374,47 @@ public class JPDATruffleAccessor extends Object {
         boolean areSkippedInternalFrames = j < n;
         return new Object[] { frameInfos.toString(), codes, thiss, areSkippedInternalFrames };
     }
+    
+    private static String createPositionIdentificationString(SourcePosition position) {
+        StringBuilder str = new StringBuilder();
+        str.append(position.id);
+        str.append('\n');
+        str.append(position.name);
+        str.append('\n');
+        str.append(position.path);
+        str.append('\n');
+        str.append(position.uri.toString());
+        str.append('\n');
+        str.append(position.line);
+        return str.toString();
+    }
 
-    // 5*vars: <name>, <type>, <writable>, <String value>, <DebugValue>
+    // 9*vars: <name>, <type>, <writable>, <String value>,
+    //         <var source>, <VS code>, <type source>, <TS code>, <DebugValue>
     static Object[] getVariables(DebugStackFrame sf) {
         List<DebugValue> values = new ArrayList<>();
         for (Iterator<DebugValue> iterator = sf.iterator(); iterator.hasNext(); ) {
             values.add(iterator.next());
         }
         int numValues = values.size();
-        Object[] vars = new Object[numValues*5];
+        Object[] vars = new Object[numValues*9];
         for (int i = 0; i < numValues; i++) {
             DebugValue value = values.get(i);
-            int vi = 5*i;
+            int vi = 9*i;
             TruffleObject tobj = new TruffleObject(value);
             vars[vi] = tobj.name;
             vars[vi + 1] = tobj.type;
             vars[vi + 2] = tobj.writable;
             vars[vi + 3] = tobj.displayValue;
-            vars[vi + 4] = tobj;
+            if (tobj.valueSourcePosition != null) {
+                vars[vi + 4] = createPositionIdentificationString(tobj.valueSourcePosition);
+                vars[vi + 5] = tobj.valueSourcePosition.code;
+            }
+            if (tobj.typeSourcePosition != null) {
+                vars[vi + 6] = createPositionIdentificationString(tobj.typeSourcePosition);
+                vars[vi + 7] = tobj.typeSourcePosition.code;
+            }
+            vars[vi + 8] = tobj;
         }
         return vars;
     }
