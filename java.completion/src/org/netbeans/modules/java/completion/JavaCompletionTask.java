@@ -569,13 +569,13 @@ public final class JavaCompletionTask<T> extends BaseTask {
     private void insideOpens(Env env) throws IOException {
         int offset = env.getOffset();
         TreePath path = env.getPath();
-        ExportsTree exp = (ExportsTree) path.getLeaf();
+        OpensTree op = (OpensTree) path.getLeaf();
         SourcePositions sourcePositions = env.getSourcePositions();
         CompilationUnitTree root = env.getRoot();
-        if (exp.getModuleNames() != null) {
-            int startPos = (int) sourcePositions.getStartPosition(root, exp);
+        if (op.getModuleNames() != null) {
+            int startPos = (int) sourcePositions.getStartPosition(root, op);
             Tree lastModule = null;
-            for (Tree mdl : exp.getModuleNames()) {
+            for (Tree mdl : op.getModuleNames()) {
                 int implPos = (int) sourcePositions.getEndPosition(root, mdl);
                 if (implPos == Diagnostic.NOPOS || offset <= implPos) {
                     break;
@@ -591,7 +591,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 return;
             }
         }
-        Tree name = exp.getPackageName();
+        Tree name = op.getPackageName();
         if (name != null) {
             int extPos = (int) sourcePositions.getEndPosition(root, name);
             if (extPos != Diagnostic.NOPOS && offset > extPos) {
@@ -697,6 +697,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
     }
 
     private void insideImport(Env env) throws IOException {
+        env.getController().toPhase(Phase.ELEMENTS_RESOLVED);
         int offset = env.getOffset();
         String prefix = env.getPrefix();
         ImportTree im = (ImportTree) env.getPath().getLeaf();
@@ -710,7 +711,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
             addPackages(env, null, false);
         }
         if (options.contains(Options.ALL_COMPLETION)) {
-            env.getController().toPhase(Phase.ELEMENTS_RESOLVED);
             addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE), null);
         } else {
             hasAdditionalClasses = true;
