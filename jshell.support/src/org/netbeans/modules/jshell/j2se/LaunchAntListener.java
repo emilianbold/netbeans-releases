@@ -122,7 +122,7 @@ public class LaunchAntListener extends AntLogger {
     public boolean interestedInSession(AntSession session) {
         LOG.log(Level.FINE, "Checking interestInSession: " + session);
         String s = session.getProperties().get("run.jvmargs");
-        return s != null && s.contains("nb-custom-jshell-probe.jar"); // NOI18N
+        return s != null && s.contains("jshell-probe.jar"); // NOI18N
     }
     
     @Override
