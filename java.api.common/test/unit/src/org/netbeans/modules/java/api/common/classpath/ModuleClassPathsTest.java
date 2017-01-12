@@ -313,7 +313,9 @@ public class ModuleClassPathsTest extends NbTestCase {
         assertNotNull("No MockCompilerOptions in Lookup", opts);
         opts.forRoot(src.getRoots()[0])
                 .apply("--add-reads")    //NOI18N
-                .apply("Modle="+SourceUtils.getModuleName(automaticModuleRoot.toURL()));    //NOI18N
+                .apply("Modle="+SourceUtils.getModuleName(automaticModuleRoot.toURL()))    //NOI18N
+                .apply("--add-modules") //NOI18N
+                .apply(SourceUtils.getModuleName(automaticModuleRoot.toURL()));
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 userModules,
                 src,
