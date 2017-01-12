@@ -84,8 +84,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.text.BadLocationException;
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -98,6 +96,8 @@ import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -240,7 +240,8 @@ public class Reindenter implements IndentTask {
                 JavaCompiler.instance(ctx).genEndPos = true;
                 text = context.document().getText(currentEmbeddingStartOffset, currentEmbeddingLength);
                 if (JavacParser.MIME_TYPE.equals(context.mimePath())) {
-                    cut = javacTask.parse(FileObjects.memoryFileObject("", "", text)).iterator().next(); //NOI18N
+                    FileObject fo = Utilities.getFileObject(context.document());
+                    cut = javacTask.parse(FileObjects.memoryFileObject("", fo != null ? fo.getNameExt() : "", text)).iterator().next(); //NOI18N
                     parsedTree = cut;
                     sp = JavacTrees.instance(ctx).getSourcePositions();
                 } else {

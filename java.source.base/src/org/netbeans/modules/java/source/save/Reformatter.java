@@ -632,6 +632,8 @@ public class Reformatter implements ReformatTask {
                     continue;
                 if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind()))
                     blankLines(cs.getBlankLinesBeforeClass());
+                else
+                    blankLines(1);
                 scan(typeDecl, p);
                 int index = tokens.index();
                 int c = col;
@@ -3177,7 +3179,16 @@ public class Reformatter implements ReformatTask {
                     return null;
                 }
                 JavaTokenId id = tokens.token().id();
-                if (tokenIds.contains(id)) {
+                boolean contains = tokenIds.contains(id);
+                if (!contains && id == IDENTIFIER) {
+                    for (JavaTokenId tokenId : tokenIds) {
+                        if (tokenId.fixedText() != null && tokenId.fixedText().contentEquals(tokens.token().text())) {
+                            contains = true;
+                            break;
+                        }
+                    }
+                }
+                if (contains) {
                     String spaces = after == 1 //after line comment
                             ? getIndent()
                             : after == 2 //after javadoc comment
