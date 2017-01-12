@@ -899,13 +899,16 @@ public class ShellSession  {
     
     private boolean scrollbackEndsWithNewline() {
         boolean[] ret = new boolean[1];
+        ConsoleSection s = model.getInputSection();
+        int end = s == null ? -1 : s.getStart();
         consoleDocument.render(() -> {
             int l = consoleDocument.getLength();
             if (l == 0) {
                 ret[0] = true;
             } else {
+                int e = end == -1 ? consoleDocument.getLength() : end;
                 try {
-                    ret[0] = consoleDocument.getText(consoleDocument.getLength() - 1, 1).charAt(0) == '\n';
+                    ret[0] = consoleDocument.getText(e - 1, 1).charAt(0) == '\n';
                 } catch (BadLocationException ex) {
                     ret[0] = false;
                 }
