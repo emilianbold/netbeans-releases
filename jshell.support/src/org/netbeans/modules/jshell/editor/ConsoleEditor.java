@@ -92,7 +92,7 @@ import org.openide.windows.TopComponent;
 @TopComponent.Description(
         preferredID = "JShellEditor",
         iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png",
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS
+        persistenceType = TopComponent.PERSISTENCE_NEVER
 )
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
 public class ConsoleEditor extends CloneableEditor {
@@ -100,7 +100,7 @@ public class ConsoleEditor extends CloneableEditor {
     private ShellSession session;
     private CL cl;
     private Lookup lookup;
-    
+
     public ConsoleEditor(CloneableEditorSupport support, Lookup lookup) {
         super(support);
         this.lookup = lookup;
