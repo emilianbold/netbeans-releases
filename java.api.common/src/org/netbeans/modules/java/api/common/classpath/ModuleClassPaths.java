@@ -523,27 +523,29 @@ final class ModuleClassPaths {
                     modulesPatches,
                     newActiveProjectSourceRoots);
             Collections.addAll(newActiveProjectSourceRoots, sources.getRootURLs());
-            synchronized (this) {
-                if (activeProjectSourceRoots != null) {
-                    activeProjectSourceRoots.getClassIndex().removeClassIndexListener(this);
-                    activeProjectSourceRoots = null;
+            ProjectManager.mutex().readAccess(() -> {
+                synchronized (this) {
+                    if (activeProjectSourceRoots != null) {
+                        activeProjectSourceRoots.getClassIndex().removeClassIndexListener(this);
+                        activeProjectSourceRoots = null;
+                    }
+                    if (!newActiveProjectSourceRoots.isEmpty()) {
+                        activeProjectSourceRoots = ClasspathInfo.create(
+                                ClassPath.EMPTY,
+                                ClassPath.EMPTY,
+                                org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(newActiveProjectSourceRoots.toArray(new URL[newActiveProjectSourceRoots.size()])));
+                        activeProjectSourceRoots.getClassIndex().addClassIndexListener(this);
+                        LOG.log(
+                            Level.FINER,
+                            "{0} for {1} listening on: {2}",    //NOI18N
+                            new Object[]{
+                                getClass().getSimpleName(),
+                                base,
+                                newActiveProjectSourceRoots
+                            });
+                    }
                 }
-                if (!newActiveProjectSourceRoots.isEmpty()) {
-                    activeProjectSourceRoots = ClasspathInfo.create(
-                            ClassPath.EMPTY,
-                            ClassPath.EMPTY,
-                            org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(newActiveProjectSourceRoots.toArray(new URL[newActiveProjectSourceRoots.size()])));
-                    activeProjectSourceRoots.getClassIndex().addClassIndexListener(this);
-                    LOG.log(
-                        Level.FINER,
-                        "{0} for {1} listening on: {2}",    //NOI18N
-                        new Object[]{
-                            getClass().getSimpleName(),
-                            base,
-                            newActiveProjectSourceRoots
-                        });
-                }
-            }
+            });
             if(supportsModules(
                     systemModules != null ? systemModules : base,
                     systemModules != null ? base : ClassPath.EMPTY,
