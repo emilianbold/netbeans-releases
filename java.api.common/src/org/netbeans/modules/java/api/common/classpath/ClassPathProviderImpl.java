@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -146,7 +147,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      * 26  - JDK8 execute class path for dist.jar   - internal only
      */
     private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[27];
-    private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new HashMap<>();
+    private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new ConcurrentHashMap<>();
 
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
@@ -617,24 +618,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     }
 
-    
-    private FileObject getDir(final String propname) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject>() {
-            public FileObject run() {
-                synchronized (ClassPathProviderImpl.this) {
-                    FileObject fo = ClassPathProviderImpl.this.dirCache.get(propname);
-                    if (fo == null ||  !fo.isValid()) {
-                        String prop = evaluator.getProperty(propname);
-                        if (prop != null) {
-                            fo = helper.resolveFileObject(prop);
-                            ClassPathProviderImpl.this.dirCache.put (propname, fo);
-                        }
-                    }
-                    return fo;
+
+    private FileObject getDir(@NonNull final String propname) {
+        FileObject fo = dirCache.get(propname);
+        if (fo == null || !fo.isValid()) {
+            String prop = evaluator.getProperty(propname);
+            if (prop != null) {
+                fo = helper.resolveFileObject(prop);
+                if (fo != null) {
+                    dirCache.put (propname, fo);
                 }
-            }});
+            }
+        }
+        return fo;
     }
-    
+
     private FileObject[] getPrimarySrcPath() {
         return this.sourceRoots.getRoots();
     }
@@ -719,15 +717,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return this.getCompileTimeClasspath(type);
     }
     
-    private synchronized ClassPath getCompileTimeClasspath(int type) {
-        if (type < 0 || type > 1) {
-            // Not a source file.
-            return null;
-        }
-        ClassPath cp = cache[2+type];
-        if (cp == null) {
-            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(
+    private ClassPath getCompileTimeClasspath(int type) {
+        switch (type) {
+            case 0:
+            case 1:
+                return computeIfAbsent(2+type, () -> {
+                    return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(createSourceLevelSelector(
                             ()->getJava8ClassPath(type),
                             ()->ClassPathFactory.createClassPath(
                                 ModuleClassPaths.createModuleInfoBasedPath(
@@ -736,36 +731,28 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                     getModuleBootPath(),
                                     getJava8ClassPath(type),
                                     null))));
-            cache[2+type] = cp;
+                });
+            default:
+                return null;
         }
-        return cp;
     }
-    
+
     private ClassPath getProcessorClasspath(FileObject file) {
         int type = getType(file);
         return this.getProcessorClasspath(type);
     }
 
-    private synchronized ClassPath getProcessorClasspath(int type) {
-        if (type < 0 || type > 1) {
-            // Not a source file.
-            return null;
+    private ClassPath getProcessorClasspath(int type) {
+        switch (type) {
+            case 0:
+            case 1:
+                return computeIfAbsent(9+type, () -> {
+                    return ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                            projectDirectory, evaluator, type == 0 ? processorClasspath : processorTestClasspath));
+                });
+            default:
+                return null;
         }
-        ClassPath cp = cache[9+type];
-        if ( cp == null) {
-            if (type == 0) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, processorClasspath)); // NOI18N
-            }
-            else {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, processorTestClasspath)); // NOI18N
-            }
-            cache[9+type] = cp;
-        }
-        return cp;
     }
 
     private ClassPath getRunTimeClasspath(FileObject file) {
@@ -780,21 +767,25 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return getRunTimeClasspath(type);
     }
     
-    private synchronized ClassPath getRunTimeClasspath(final int type) {
+    private ClassPath getRunTimeClasspath(final int type) {
         int index;
-        if (type == 0 || type == 2) {
-            index = 4;
-        } else if (type == 1 || type == 3) {
-            index = 5;
-        } else if (type == 4) {
-            index = 6;
-        } else {
-            return null;
+        switch (type) {
+            case 0:
+            case 2:
+                index = 4;
+                break;
+            case 1:
+            case 3:
+                index = 5;
+                break;
+            case 4:
+                index = 6;
+                break;
+            default:
+                return null;
         }
-        
-        ClassPath cp = cache[index];
-        if ( cp == null) {
-            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+        return computeIfAbsent(index, () -> {
+            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                     createSourceLevelSelector(
                             ()->getJava8RunTimeClassPath(type),
                             ()->ClassPathFactory.createClassPath(
@@ -804,54 +795,39 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                     getModuleBootPath(),
                                     getJava8RunTimeClassPath(type),
                                     getFilter(type)))));
-            cache[index] = cp;
-        }
-        return cp;
+        });
     }
-    
-    private synchronized ClassPath getEndorsedClasspath() {
-        ClassPath cp = cache[8];
-        if ( cp == null) {
-            cp = ClassPathFactory.createClassPath(
-                ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, endorsedClasspath)); // NOI18N
-            cache[8] = cp;
-        }
-        return cp;
+
+    private ClassPath getEndorsedClasspath() {
+        return computeIfAbsent(8, () -> {
+            return ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, endorsedClasspath));
+        });
     }
 
     private ClassPath getSourcepath(FileObject file) {
         int type = getType(file);
         return this.getSourcepath(type);
     }
-    
+
     @CheckForNull
-    private synchronized ClassPath getSourcepath(final int type) {
-        if (type < 0 || type > 1) {
-            return null;
+    private ClassPath getSourcepath(final int type) {
+        switch (type) {
+            case 0:
+            case 1:
+                return computeIfAbsent(type, () -> {
+                    return ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (
+                            type == 0 ? this.sourceRoots : this.testSourceRoots, helper, evaluator));
+                });
+            default:
+                return null;
         }
-        ClassPath cp = cache[type];
-        if (cp == null) {
-            switch (type) {
-                case 0:
-                    cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator));
-                    break;
-                case 1:
-                    cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.testSourceRoots, helper, evaluator));
-                    break;
-                default:
-                    throw new IllegalStateException("Invalid classpath type: " + type); //NOI18N
-            }
-            cache[type] = cp;
-        }
-        return cp;
     }
-    
-    private synchronized ClassPath getBootClassPath() {
-        ClassPath cp = cache[7];
-        if ( cp == null ) {
+
+    private ClassPath getBootClassPath() {
+        return computeIfAbsent(7, () -> {
             if (platform.hasFirst()) {
-                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                         createSourceLevelSelector(
                                 ()->ClassPathFactory.createClassPath(
                                     ClassPathSupportFactory.createBootClassPathImplementation(
@@ -865,7 +841,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                     null))));
             } else {
                 assert platform.hasSecond();
-                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
+                return org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
                     getEndorsedClasspath(),
                     ClassPathFactory.createClassPath(
                         ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
@@ -873,17 +849,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             evaluator,
                             platform.second())));
             }
-            cache[7] = cp;
-        }
-        return cp;
+        });
     }
 
     @NonNull
-    private synchronized ClassPath getModuleBootPath() {
-        ClassPath cp = cache[11];
-        if ( cp == null ) {
+    private ClassPath getModuleBootPath() {
+        return computeIfAbsent(11, () -> {
             if (platform.hasFirst()) {
-                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
                         createSourceLevelSelector(
                                 ()->ClassPathFactory.createClassPath(
                                     ClassPathSupportFactory.createBootClassPathImplementation(
@@ -894,11 +867,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                     evaluator,
                                     platform.first()))));
             } else {
-                cp = ClassPath.EMPTY;
+                return ClassPath.EMPTY;
             }
-            cache[11] = cp;
-        }
-        return cp;
+        });
     }
 
     @CheckForNull
@@ -911,20 +882,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     @NonNull
-    private synchronized ClassPath getModuleCompilePath(final int type) {
-        assert type >=0 && type <=1;
-        ClassPath cp = cache[12+type];
-        if ( cp == null ) {
-            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(
+    private ClassPath getModuleCompilePath(final int type) {
+        switch (type) {
+            case 0:
+            case 1:
+                return computeIfAbsent(12+type, () -> {
+                    return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(createSourceLevelSelector(
                             ()->ClassPath.EMPTY,
                             ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
                                 projectDirectory,
                                 evaluator,
                                 type == 0 ? modulePath : testModulePath))));
-            cache[12+type] = cp;
+                });
+            default:
+                throw new IllegalArgumentException(Integer.toString(type));
         }
-        return cp;
     }
 
     @CheckForNull
@@ -937,19 +909,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     @NonNull
-    private synchronized ClassPath getModuleLegacyClassPath(final int type) {
-        assert type >=0 && type <=1;
-        ClassPath cp = cache[14+type];
-        if (cp == null) {
-            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(
+    private ClassPath getModuleLegacyClassPath(final int type) {
+        switch (type) {
+            case 0:
+            case 1:
+                return computeIfAbsent(14+type, () -> {
+                    return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(createSourceLevelSelector(
                             ()->ClassPath.EMPTY,
                             ()->getJava8ClassPath(type)));
-            cache[14+type] = cp;
+                });
+            default:
+                throw new IllegalArgumentException(Integer.toString(type));
         }
-        return cp;
     }
-    
+
     @CheckForNull
     private ClassPath getModuleExecutePath(@NonNull final FileObject fo) {
         final int type = getType(fo);
@@ -960,56 +933,56 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     @NonNull
-    private synchronized ClassPath getModuleExecutePath(final int type) {
-        assert type >= 0 && type <= 4;
+    private ClassPath getModuleExecutePath(final int type) {
         int index;
-        if (type == 0 || type == 2) {
-            index = 16;
-        } else if (type == 1 || type == 3) {
-            index = 17;
-        } else if (type == 4) {
-            index = 18;
-        } else {
-            return null;
+        switch (type) {
+            case 0:
+            case 2:
+                index = 16;
+                break;
+            case 1:
+            case 3:
+                index = 17;
+                break;
+            case 4:
+                index = 18;
+                break;
+            default:
+                throw new IllegalArgumentException(Integer.toString(type));
         }
-        ClassPath cp = cache[index];
-        if (cp == null) {
-            ClassPathImplementation modules;
-            switch (index) {
-                case 16:
-                    modules = ModuleClassPaths.createPropertyBasedModulePath(
+        Supplier<ClassPathImplementation> provider;
+        switch (index) {
+            case 16:
+            case 17:
+                provider = () -> {
+                    return ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
-                        moduleExecutePath);
-                    break;
-                case 17:
-                    modules = ModuleClassPaths.createPropertyBasedModulePath(
-                        projectDirectory,
-                        evaluator,
-                        testModuleExecutePath);
-                    break;
-                case 18:
+                        index == 16 ? moduleExecutePath : testModuleExecutePath);
+                };
+                break;
+            case 18:
+                provider = () -> {
                     String[] props = new String[moduleExecutePath.length+1];
                     props[0] = distJar;
                     System.arraycopy(moduleExecutePath, 0, props, 1, moduleExecutePath.length);
-                    modules = ModuleClassPaths.createPropertyBasedModulePath(
+                    return ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
                         new Filter(null, buildClassesDir),
                         props);
-                    break;
-                default:
-                    throw new IllegalStateException(Integer.toString(index));
-            }
-            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(
-                            ()->ClassPath.EMPTY,
-                            ()->ClassPathFactory.createClassPath(modules)));
-            cache[index] = cp;
+                };
+                break;
+            default:
+                throw new IllegalStateException(Integer.toString(index));
         }
-        return cp;
+        return computeIfAbsent(index, () -> {
+            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(createSourceLevelSelector(
+                    ()->ClassPath.EMPTY,
+                    ()->ClassPathFactory.createClassPath(provider.get())));
+        });
     }
-    
+
     @CheckForNull
     private ClassPath getModuleLegacyExecuteClassPath(@NonNull final FileObject fo) {
         final int type = getType(fo);
@@ -1020,77 +993,85 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
     
     @NonNull
-    private synchronized ClassPath getModuleLegacyExecuteClassPath(final int type) {
-        assert type >= 0 && type <= 4;
+    private ClassPath getModuleLegacyExecuteClassPath(final int type) {
         int index;
-        if (type == 0 || type == 2) {
-            index = 19;
-        } else if (type == 1 || type == 3) {
-            index = 20;
-        } else if (type == 4) {
-            index = 21;
-        } else {
-            return null;
+        switch (type) {
+            case 0:
+            case 2:
+                index = 19;
+                break;
+            case 1:
+            case 3:
+                index = 20;
+                break;
+            case 4:
+                index = 21;
+                break;
+            default:
+                throw new IllegalArgumentException(Integer.toString(type));
         }
-        ClassPath cp = cache[index];
-        if (cp == null) {
-            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
-                    createSourceLevelSelector(
-                            ()->ClassPath.EMPTY,
-                            ()->getJava8RunTimeClassPath(type)));
-            cache[index] = cp;
-        }
-        return cp;
+        return computeIfAbsent(index, () -> {
+            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(createSourceLevelSelector(
+                    ()->ClassPath.EMPTY,
+                    ()->getJava8RunTimeClassPath(type)));
+        });
     }
 
     @NonNull
-    private synchronized ClassPath getJava8ClassPath(int type) {
+    private ClassPath getJava8ClassPath(int type) {
         assert type >= 0 && type <=1;
-        ClassPath cp = cache[22+type];
-        if (cp == null) {
-            cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, type == 0 ? javacClasspath : javacTestClasspath));
-            cache[22+type] = cp;
+        switch (type) {
+            case 0:
+            case 1:
+                return computeIfAbsent(22+type, () -> {
+                    return ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                            projectDirectory, evaluator, type == 0 ? javacClasspath : javacTestClasspath));
+                });
+            default:
+                throw new IllegalArgumentException(Integer.toString(type));
         }
-        return cp;
     }
-    
+
     @NonNull
-    private synchronized ClassPath getJava8RunTimeClassPath(final int type) {
-        assert type >= 0 && type <= 4;
+    private ClassPath getJava8RunTimeClassPath(final int type) {
         int index;
-        if (type == 0 || type == 2) {
-            index = 24;
-        } else if (type == 1 || type == 3) {
-            index = 25;
-        } else if (type == 4) {
-            index = 26;
-        } else {
-            return null;
-        }        
-        ClassPath cp = cache[index];
-        if (cp == null) {
-            if (type == 0 || type == 2) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, runClasspath)); // NOI18N
-            }
-            else if (type == 1 || type == 3) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, runTestClasspath)); // NOI18N
-            } else if (type == 4) {
-                final String[] props = new String[runClasspath.length+1];
-                System.arraycopy(runClasspath, 0, props, 1, runClasspath.length);
-                props[0] = distJar;
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, props));
-            }
-            cache[index] = cp;
+        switch (type) {
+            case 0:
+            case 2:
+                index = 24;
+                break;
+            case 1:
+            case 3:
+                index = 25;
+                break;
+            case 4:
+                index = 26;
+                break;
+            default:
+                throw new IllegalArgumentException(Integer.toString(type));
         }
-        return cp;
+        Supplier<ClassPath> provider;
+        switch (index) {
+            case 24:
+            case 25:
+                provider = () -> {
+                    return ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                            projectDirectory, evaluator, index == 24 ? runClasspath : runTestClasspath));
+                };
+                break;
+            case 26:
+                provider = () -> {
+                    final String[] props = new String[runClasspath.length+1];
+                    System.arraycopy(runClasspath, 0, props, 1, runClasspath.length);
+                    props[0] = distJar;
+                    return ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                        projectDirectory, evaluator, props));
+                };
+                break;
+            default:
+                throw new IllegalStateException(Integer.toString(index));
+        }
+        return computeIfAbsent(index, provider);
     }
 
     @Override
@@ -1331,6 +1312,27 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 evaluator,
                 javacSource,
                 cps);
+    }
+
+    private ClassPath computeIfAbsent(
+            final int cacheIndex,
+            final Supplier<ClassPath> provider) {
+        synchronized (this) {
+            ClassPath cp = cache[cacheIndex];
+            if (cp != null) {
+                return cp;
+            }
+        }
+        return ProjectManager.mutex().readAccess(()-> {
+            synchronized(this) {
+                ClassPath cp = cache[cacheIndex];
+                if (cp == null) {
+                    cp = provider.get();
+                    cache[cacheIndex] = cp;
+                }
+                return cp;
+            }
+        });
     }
     
     private class Filter implements Function<URL, Boolean>{        
