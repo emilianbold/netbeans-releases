@@ -128,11 +128,11 @@ public class ImageViewer extends CloneableTopComponent {
     private static final RequestProcessor RP = new RequestProcessor("Image loader", 1, true);
     
     private RequestProcessor.Task loadImageTask;
-    private String imageHeight = "";
-    private String imageWidth = "";
+    private int imageHeight = 0;
+    private int imageWidth = 0;
     private double imageSizeBinary = 0f;
     private double imageSizeDecimal = 0f;
-    private String imageSizeLabel = "LBL_ImageSizeBytes";
+    private String imageSizeLabel = "LBL_ImageSizeBytes"; // NOI18N
     
     /** Default constructor. Must be here, used during de-externalization */
     public ImageViewer () {
@@ -180,12 +180,12 @@ public class ImageViewer extends CloneableTopComponent {
             if(imageSizeBinary >= (binaryPrefix * binaryPrefix)) {
                 imageSizeDecimal = roundToTwoDecimalPlaces(imageSizeBinary / (decimalPrefix * decimalPrefix));
                 imageSizeBinary = roundToTwoDecimalPlaces(imageSizeBinary / (binaryPrefix * binaryPrefix));
-                imageSizeLabel = "LBL_ImageSizeMb";
+                imageSizeLabel = "LBL_ImageSizeMb"; // NOI18N
               // Bytes to KB
             } else if(imageSizeBinary >= binaryPrefix) {
                 imageSizeDecimal = roundToTwoDecimalPlaces(imageSizeBinary / decimalPrefix);
                 imageSizeBinary = roundToTwoDecimalPlaces(imageSizeBinary / binaryPrefix);
-                imageSizeLabel = "LBL_ImageSizeKb";
+                imageSizeLabel = "LBL_ImageSizeKb"; // NOI18N
             }
         }
             
@@ -498,11 +498,6 @@ public class ImageViewer extends CloneableTopComponent {
         storedImage = image;
         boolean isValid = (storedImage != null);
         
-        imageWidth = Integer.toString(storedImage.getIconWidth());
-        imageHeight = Integer.toString(storedImage.getIconHeight());
-        
-        initToolbar();
-
         if (wasValid && isValid) {
             reloadIcon();
             return;
@@ -512,6 +507,11 @@ public class ImageViewer extends CloneableTopComponent {
         }
         if (isValid) {
             view = createImageView();
+
+            imageWidth = storedImage.getIconWidth();
+            imageHeight = storedImage.getIconHeight();
+            
+            initToolbar();
         } else {
             view = createMessagePanel(errorMessage);
         }
