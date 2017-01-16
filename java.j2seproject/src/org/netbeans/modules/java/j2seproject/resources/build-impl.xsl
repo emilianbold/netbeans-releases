@@ -2130,6 +2130,21 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
+            <target name ="-check-module-main-class" depends="init,compile">
+                <condition property="do.module.main.class">
+                    <and>
+                        <isset property="main.class.available"/>
+                        <available file="${{build.classes.dir}}/module-info.class"/>
+                        <isset property="libs.CopyLibs.classpath"/>
+                        <available classpath="${{libs.CopyLibs.classpath}}" classname="org.netbeans.modules.java.j2seproject.moduletask.ModuleMainClass"/>
+                    </and>
+                </condition>
+            </target>
+            <target name="-set-module-main-class" depends="-check-module-main-class" if="do.module.main.class">
+                <taskdef classname="org.netbeans.modules.java.j2seproject.moduletask.ModuleMainClass" classpath="${{libs.CopyLibs.classpath}}" name="modulemainclass"/>
+                <modulemainclass mainclass="${{main.class}}" moduleinfo="${{build.classes.dir}}/module-info.class"/>
+            </target>
+
             <target name="-do-jar-create-manifest">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
@@ -2242,7 +2257,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-set-module-main-class,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
             </target>
             
             <target name="jar">
