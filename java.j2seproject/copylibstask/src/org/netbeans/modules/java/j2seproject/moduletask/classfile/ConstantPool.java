@@ -1,0 +1,795 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ */
+package org.netbeans.modules.java.j2seproject.moduletask.classfile;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ *
+ * @author Tomas Zezula
+ */
+public final class ConstantPool {
+    public enum ConstantKind {
+        CONSTANT_Class(7),
+        CONSTANT_Fieldref(9),
+        CONSTANT_Methodref(10),
+        CONSTANT_InterfaceMethodref(11),
+        CONSTANT_String(8),
+        CONSTANT_Integer(3),
+        CONSTANT_Float(4),
+        CONSTANT_Long(5),
+        CONSTANT_Double(6),
+        CONSTANT_NameAndType(12),
+        CONSTANT_Utf8(1),
+        CONSTANT_MethodHandle(15),
+        CONSTANT_MethodType(16),
+        CONSTANT_InvokeDynamic(18),
+        CONSTANT_Module(19),
+        CONSTANT_Package(20);
+
+        private static final Map<Integer,ConstantKind> byTag;
+        static {
+            final Map<Integer,ConstantKind> m = new HashMap<>();
+            for (ConstantKind c : values()) {
+                m.put(c.getTag(), c);
+            }
+            byTag = Collections.unmodifiableMap(m);
+        }
+        private final int tag;
+
+        private ConstantKind(final int tag) {
+            this.tag = tag;
+        }
+
+        public int getTag() {
+            return tag;
+        }
+
+        public static ConstantKind fromTag(final int tag) {
+            final ConstantKind k = byTag.get(tag);
+            if (k != null) {
+                return k;
+            } else {
+                throw new IllegalArgumentException("Unknown ConstantPool constant:" + tag); //NOI18N
+            }
+        }
+    }
+
+    private CPInfo[] entries;
+
+    ConstantPool(final Reader in) throws IOException {
+        final int cnt = in.readUnsignedShort();
+        entries = new CPInfo[cnt];
+        final int[] increment = new int[1];
+        for (int i = 1; i < cnt;) {
+            entries[i] = readInfo(in, increment);
+            i+=increment[0];
+        }
+    }
+
+    void write(final Writer out) throws IOException {
+        out.writeUnsignedShort(entries.length);
+        for (int i = 0; i < entries.length; i++) {
+            CPInfo entry = entries[i];
+            if (entry != null) {
+                entry.write(out);
+            }
+        }
+    }
+
+    public int add(CPInfo constant) {
+        for (int i = 0; i < entries.length; i++) {
+            if (constant.equals(entries[i])) {
+                return i;
+            }
+        }
+        entries = Arrays.copyOf(entries, entries.length+1);
+        entries[entries.length-1] = constant;
+        return entries.length-1;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < entries.length; i++) {
+            CPInfo info = entries[i];
+            if (info != null) {
+                sb.append(i)
+                        .append('\t')   //NOI18N
+                        .append(entries[i])
+                        .append('\n');  //NOI18N
+            }
+        }
+        return sb.toString();
+    }
+
+    private CPInfo readInfo(final Reader in, int[] increment) throws IOException {
+        final int tag = in.readUnsignedByte();
+        final ConstantKind c = ConstantKind.fromTag(tag);
+        increment[0] = 1;
+        switch (c) {
+            case CONSTANT_Class:
+                return new CPClass(in);
+            case CONSTANT_Fieldref:
+                return new CPFieldref(in);
+            case CONSTANT_Methodref:
+                return new CPMethodref(in);
+            case CONSTANT_InterfaceMethodref:
+                return new CPInterfaceMethodref(in);
+            case CONSTANT_String:
+                return new CPString(in);
+            case CONSTANT_Integer:
+                return new CPInteger(in);
+            case CONSTANT_Float:
+                return new CPFloat(in);
+            case CONSTANT_Long:
+                increment[0] = 2;
+                return new CPLong(in);
+            case CONSTANT_Double:
+                increment[0] = 2;
+                return new CPDouble(in);
+            case CONSTANT_NameAndType:
+                return new CPNameAndType(in);
+            case CONSTANT_Utf8:
+                return new CPUtf8(in);
+            case CONSTANT_MethodHandle:
+                return new CPMethodHandle(in);
+            case CONSTANT_MethodType:
+                return new CPMethodType(in);
+            case CONSTANT_InvokeDynamic:
+                return new CPInvokeDynamic(in);
+            case CONSTANT_Module:
+                return new CPModule(in);
+            case CONSTANT_Package:
+                return new CPPackage(in);
+            default:
+                throw new IllegalArgumentException("Unknown ConstantPool constant: " + c);    //NOI18N
+        }
+    }
+
+    public static class CPInfo {
+        private final ConstantKind tag;
+
+        CPInfo(ConstantKind tag) {
+            this.tag = tag;
+        }
+
+        public ConstantKind getTag() {
+            return tag;
+        }
+
+        void write(Writer out) throws IOException {
+            out.writeUnsignedByte(getTag().getTag());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof CPInfo)) {
+                return false;
+            }
+            return tag == ((CPInfo)obj).tag;
+        }
+
+        @Override
+        public int hashCode() {
+            return tag.getTag();
+        }
+
+        @Override
+        public String toString() {
+            return tag.toString();
+        }
+    }
+
+    public static final class CPClass extends CPInfo {
+        private final int nameIndex;
+
+        public CPClass(final int nameIndex) {
+            super(ConstantKind.CONSTANT_Class);
+            this.nameIndex = nameIndex;
+        }
+
+        CPClass(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Class);
+            this.nameIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(nameIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPClass)) {
+                return false;
+            }
+            return nameIndex == ((CPClass)obj).nameIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %d",    //NOI18N
+                    super.toString(),
+                    nameIndex);
+        }
+    }
+
+    public static class CPFieldref extends CPInfo {
+        private final int classIndex;
+        private final int nameAndTypeIndex;
+
+        CPFieldref(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Fieldref);
+            this.classIndex = in.readUnsignedShort();
+            this.nameAndTypeIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(classIndex);
+            out.writeUnsignedShort(nameAndTypeIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPFieldref)) {
+                return false;
+            }
+            final CPFieldref fld = (CPFieldref) obj;
+            return classIndex == fld.classIndex &&
+                    nameAndTypeIndex == fld.nameAndTypeIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s class: %d, nameAndType: %d",    //NOI18N
+                    super.toString(),
+                    classIndex,
+                    nameAndTypeIndex);
+        }
+    }
+
+    public static class CPMethodref extends CPInfo {
+        private final int classIndex;
+        private final int nameAndTypeIndex;
+
+        CPMethodref(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Methodref);
+            this.classIndex = in.readUnsignedShort();
+            this.nameAndTypeIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(classIndex);
+            out.writeUnsignedShort(nameAndTypeIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPMethodref)) {
+                return false;
+            }
+            final CPMethodref m = (CPMethodref) obj;
+            return classIndex == m.classIndex &&
+                    nameAndTypeIndex == m.nameAndTypeIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s class: %d, nameAndType: %d",    //NOI18N
+                    super.toString(),
+                    classIndex,
+                    nameAndTypeIndex);
+        }
+    }
+
+    public static class CPInterfaceMethodref extends CPInfo {
+        private final int classIndex;
+        private final int nameAndTypeIndex;
+
+        CPInterfaceMethodref(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_InterfaceMethodref);
+            this.classIndex = in.readUnsignedShort();
+            this.nameAndTypeIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(classIndex);
+            out.writeUnsignedShort(nameAndTypeIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPInterfaceMethodref)) {
+                return false;
+            }
+            final CPInterfaceMethodref m = (CPInterfaceMethodref) obj;
+            return classIndex == m.classIndex &&
+                    nameAndTypeIndex == m.nameAndTypeIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s class: %d, nameAndType: %d",    //NOI18N
+                    super.toString(),
+                    classIndex,
+                    nameAndTypeIndex);
+        }
+    }
+
+    public static class CPString extends CPInfo {
+        private final int stringIndex;
+
+        CPString(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_String);
+            this.stringIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(stringIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPString)) {
+                return false;
+            }
+            return stringIndex == ((CPString)obj).stringIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %d",    //NOI18N
+                    super.toString(),
+                    stringIndex);
+        }
+    }
+
+    public static class CPInteger extends CPInfo {
+        private final int value;
+
+        CPInteger(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Integer);
+            this.value = in.readInt();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeInt(value);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPInteger)) {
+                return false;
+            }
+            return value == ((CPInteger)obj).value;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s 0x%x",    //NOI18N
+                    super.toString(),
+                    value);
+        }
+    }
+
+    public static class CPFloat extends CPInfo {
+        private final int value;
+
+        CPFloat(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Float);
+            this.value = in.readInt();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeInt(value);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPFloat)) {
+                return false;
+            }
+            return value == ((CPFloat)obj).value;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %f",    //NOI18N
+                    super.toString(),
+                    Float.intBitsToFloat(value));
+        }
+    }
+
+    public static class CPLong extends CPInfo {
+        private final int highBytes;
+        private final int lowBytes;
+
+        CPLong(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Long);
+            this.highBytes = in.readInt();
+            this.lowBytes = in.readInt();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeInt(highBytes);
+            out.writeInt(lowBytes);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPLong)) {
+                return false;
+            }
+            final CPLong l = (CPLong) obj;
+            return highBytes == l.highBytes &&
+                    lowBytes == l.lowBytes;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s 0x%x",    //NOI18N
+                    super.toString(),
+                    ((long)highBytes)<<32 | (lowBytes & 0xffffffffL));
+        }
+    }
+
+    public static class CPDouble extends CPInfo {
+        private final int highBytes;
+        private final int lowBytes;
+
+        CPDouble(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Double);
+            this.highBytes = in.readInt();
+            this.lowBytes = in.readInt();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeInt(highBytes);
+            out.writeInt(lowBytes);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPDouble)) {
+                return false;
+            }
+            final CPDouble d = (CPDouble) obj;
+            return highBytes == d.highBytes &&
+                    lowBytes == d.lowBytes;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %f",    //NOI18N
+                    super.toString(),
+                    Double.longBitsToDouble(((long)highBytes)<<32 | (lowBytes & 0xffffffffL)));
+        }
+    }
+
+    public static class CPNameAndType extends CPInfo {
+        private final int nameIndex;
+        private final int descriptorIndex;
+
+        CPNameAndType(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_NameAndType);
+            this.nameIndex = in.readUnsignedShort();
+            this.descriptorIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(nameIndex);
+            out.writeUnsignedShort(descriptorIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPNameAndType)) {
+                return false;
+            }
+            final CPNameAndType l = (CPNameAndType) obj;
+            return nameIndex == l.nameIndex &&
+                    descriptorIndex == l.descriptorIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s name: %d, type: %d",    //NOI18N
+                    super.toString(),
+                    nameIndex,
+                    descriptorIndex);
+        }
+    }
+
+    public static class CPUtf8 extends CPInfo {
+        private final byte[] bytes;
+
+        public CPUtf8(final String str) throws IOException {
+            super(ConstantKind.CONSTANT_Utf8);
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try(final DataOutputStream out = new DataOutputStream(bos)) {
+                out.writeUTF(str);
+            }
+            final byte[] arr = bos.toByteArray();
+            bytes = Arrays.copyOfRange(arr, 2, arr.length);
+        }
+
+        CPUtf8(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Utf8);
+            final int length = in.readUnsignedShort();
+            this.bytes = new byte[length];
+            for (int i = 0; i < length; i++) {
+                bytes[i] = in.readByte();
+            }
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(bytes.length);
+            for (int i = 0; i < bytes.length; i++) {
+                out.writeByte(bytes[i]);
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPUtf8)) {
+                return false;
+            }
+            final CPUtf8 s = (CPUtf8) obj;
+            return Arrays.equals(bytes, s.bytes);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %s",    //NOI18N
+                    super.toString(),
+                    new String(bytes, Charset.forName("UTF-8")));    //NOI18N
+        }
+    }
+
+    public static class CPMethodHandle extends CPInfo {
+        private final int referenceKind;
+        private final int referenceIndex;
+
+        CPMethodHandle(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_MethodHandle);
+            this.referenceKind = in.readUnsignedByte();
+            this.referenceIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedByte(referenceKind);
+            out.writeUnsignedShort(referenceIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPMethodHandle)) {
+                return false;
+            }
+            final CPMethodHandle h = (CPMethodHandle) obj;
+            return referenceKind == h.referenceKind &&
+                    referenceIndex == h.referenceIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s kind: %x, reference: %d",    //NOI18N
+                    super.toString(),
+                    referenceKind,
+                    referenceIndex);
+        }
+    }
+
+    public static class CPMethodType extends CPInfo {
+        private final int descriptorIndex;
+
+        CPMethodType(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_MethodType);
+            this.descriptorIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(descriptorIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPMethodType)) {
+                return false;
+            }
+            return descriptorIndex == ((CPMethodType)obj).descriptorIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %d",    //NOI18N
+                    super.toString(),
+                    descriptorIndex);
+        }
+    }
+
+    public static class CPInvokeDynamic extends CPInfo {
+        private final int bootstrapMethodAttrIndex;
+        private final int nameAndTypeIndex;
+
+        CPInvokeDynamic(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_InvokeDynamic);
+            this.bootstrapMethodAttrIndex = in.readUnsignedShort();
+            this.nameAndTypeIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(bootstrapMethodAttrIndex);
+            out.writeUnsignedShort(nameAndTypeIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPInvokeDynamic)) {
+                return false;
+            }
+            final CPInvokeDynamic i = (CPInvokeDynamic) obj;
+            return bootstrapMethodAttrIndex == i.bootstrapMethodAttrIndex &&
+                    nameAndTypeIndex == i.nameAndTypeIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s bootstrapMethod: %d, nameAndType: %d",    //NOI18N
+                    super.toString(),
+                    bootstrapMethodAttrIndex,
+                    nameAndTypeIndex);
+        }
+    }
+
+    public static class CPModule extends CPInfo {
+        private final int nameIndex;
+
+        CPModule(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Module);
+            this.nameIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(nameIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPModule)) {
+                return false;
+            }
+            return nameIndex == ((CPModule)obj).nameIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %d",    //NOI18N
+                    super.toString(),
+                    nameIndex);
+        }
+    }
+
+    public static class CPPackage extends CPInfo {
+        private final int nameIndex;
+        CPPackage(final Reader in) throws IOException {
+            super(ConstantKind.CONSTANT_Package);
+            this.nameIndex = in.readUnsignedShort();
+        }
+
+        @Override
+        void write(Writer out) throws IOException {
+            super.write(out);
+            out.writeUnsignedShort(nameIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj) || !(obj instanceof CPPackage)) {
+                return false;
+            }
+            return nameIndex == ((CPPackage)obj).nameIndex;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%s %d",    //NOI18N
+                    super.toString(),
+                    nameIndex);
+        }
+    }
+}
