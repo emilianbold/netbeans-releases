@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.java.j2seproject.moduletask.classfile.Attribute;
 import org.netbeans.modules.java.j2seproject.moduletask.classfile.ClassFile;
@@ -58,6 +59,11 @@ public final class ModuleMainClass extends Task {
     private static final String ATTR_MODULE_MAIN_CLZ = "ModuleMainClass";   //NOI18N
     private String mainClass;
     private File moduleInfo;
+    private boolean failOnError;
+
+    public ModuleMainClass() {
+        failOnError = true;
+    }
 
     public String getMainclass() {
         return mainClass;
@@ -75,19 +81,51 @@ public final class ModuleMainClass extends Task {
         this.moduleInfo = moduleInfo;
     }
 
+    public boolean isFailonerror() {
+        return failOnError;
+    }
+
+    public void setFailonerror(final boolean value) {
+        this.failOnError = value;
+    }
+
     @Override
     public void execute() throws BuildException {
         if (mainClass == null) {
-            throw new BuildException("MainClass must be set.");             //NOI18N
+            final String msg = "MainClass must be set.";             //NOI18N
+            if (failOnError) {
+                throw new BuildException(msg);
+            } else {
+                getProject().log(msg, Project.MSG_WARN);
+                return;
+            }
         }
         if (moduleInfo == null) {
-            throw new BuildException("ModuleInfo must be set.");            //NOI18N
+            final String msg = "ModuleInfo must be set.";   //NOI18N
+            if (failOnError) {
+                throw new BuildException(msg);
+            } else {
+                getProject().log(msg, Project.MSG_WARN);
+                return;
+            }
         }
         if (!moduleInfo.canRead()) {
-            throw new BuildException("MainClass must be readable.");        //NOI18N
+            final String msg = "MainClass must be readable.";   //NOI18N
+            if (failOnError) {
+                throw new BuildException(msg);
+            } else {
+                getProject().log(msg, Project.MSG_WARN);
+                return;
+            }
         }
         if (!moduleInfo.canWrite()) {
-            throw new BuildException("MainClass must be writable.");        //NOI18N
+            final String msg = "MainClass must be writable.";   //NOI18N
+            if (failOnError) {
+                throw new BuildException(msg);
+            } else {
+                getProject().log(msg, Project.MSG_WARN);
+                return;
+            }
         }
         try {
             ClassFile cf = null;
@@ -118,8 +156,12 @@ public final class ModuleMainClass extends Task {
                     cf.write(out);
                 }
             }
-        } catch (IOException ioe) {
-            throw new BuildException(ioe);
+        } catch (IOException | IllegalArgumentException ioe) {
+            if (failOnError) {
+                throw new BuildException(ioe);
+            } else {
+                getProject().log(ioe.getMessage(), Project.MSG_WARN);
+            }
         }
     }
 

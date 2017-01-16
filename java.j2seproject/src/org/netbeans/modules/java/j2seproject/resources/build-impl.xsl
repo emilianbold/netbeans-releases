@@ -2142,7 +2142,7 @@ is divided into following sections:
             </target>
             <target name="-set-module-main-class" depends="-check-module-main-class" if="do.module.main.class">
                 <taskdef classname="org.netbeans.modules.java.j2seproject.moduletask.ModuleMainClass" classpath="${{libs.CopyLibs.classpath}}" name="modulemainclass"/>
-                <modulemainclass mainclass="${{main.class}}" moduleinfo="${{build.classes.dir}}/module-info.class"/>
+                <modulemainclass mainclass="${{main.class}}" moduleinfo="${{build.classes.dir}}/module-info.class" failonerror="false"/>
             </target>
 
             <target name="-do-jar-create-manifest">
