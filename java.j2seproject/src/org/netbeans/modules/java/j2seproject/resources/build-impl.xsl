@@ -2206,24 +2206,34 @@ is divided into following sections:
                 <j2seproject1:jar manifest="${{tmp.manifest.file}}"/>
                 <property location="${{build.classes.dir}}" name="build.classes.dir.resolved"/>
                 <property location="${{dist.jar}}" name="dist.jar.resolved"/>
+                <condition property="jar.usage.message.class.path.replacement" value="" else="${{dist.jar.resolved}}">
+                    <isset property="named.module.internal"/>
+                </condition>
                 <pathconvert property="run.classpath.with.dist.jar">
                     <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to="${{jar.usage.message.class.path.replacement}}"/>
                 </pathconvert>
                 <pathconvert property="run.modulepath.with.dist.jar">
+                    <path location="${{dist.jar.resolved}}"/>
                     <path path="${{run.modulepath}}"/>
                     <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
                 </pathconvert>
-                <condition property="jar.usage.message.module.path" value=" --module-path ${{run.modulepath.with.dist.jar}}" else="">
+                <condition property="jar.usage.message.run.modulepath.with.dist.jar" value="${{run.modulepath.with.dist.jar}}" else="${{run.modulepath}}">
+                    <isset property="named.module.internal"/>
+                </condition>
+                <condition property="jar.usage.message.module.path" value=" -p ${{jar.usage.message.run.modulepath.with.dist.jar}}" else="">
                     <and>
                         <isset property="modules.supported.internal"/>
-                        <length length="0" string="${{run.modulepath.with.dist.jar}}" when="greater"/>
+                        <length length="0" string="${{jar.usage.message.run.modulepath.with.dist.jar}}" when="greater"/>
                     </and>
                 </condition>
                 <condition property="jar.usage.message.class.path" value=" -cp ${{run.classpath.with.dist.jar}}" else="">
                     <length length="0" string="${{run.classpath.with.dist.jar}}" when="greater"/>
                 </condition>
-                <condition property="jar.usage.message.main.class" value=" -m ${{module.name}}/${{main.class}}" else=" ${{main.class}}">
+                <condition property="jar.usage.message.main.class.class.selector" value="" else="/${{main.class}}">
+                    <isset property="do.module.main.class"/>
+                </condition>
+                <condition property="jar.usage.message.main.class" value=" -m ${{module.name}}${{jar.usage.message.main.class.class.selector}}" else=" ${{main.class}}">
                     <isset property="named.module.internal"/>
                 </condition>
                 <condition property="jar.usage.message" else="" value="To run this application from the command line without Ant, try:${{line.separator}}${{platform.java}}${{jar.usage.message.module.path}}${{jar.usage.message.class.path}}${{jar.usage.message.main.class}}">
