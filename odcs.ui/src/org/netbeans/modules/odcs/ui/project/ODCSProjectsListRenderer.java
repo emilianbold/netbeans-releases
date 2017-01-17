@@ -92,19 +92,22 @@ public class ODCSProjectsListRenderer extends javax.swing.JPanel {
             projectDescLabel.setFont(projectDescLabel.getFont().deriveFont(Font.ITALIC));
             projectDescLabel.setText(NbBundle.getMessage(ODCSProjectsListRenderer.class, "LBL_NoDescription"));
         } else {
+            projectDescLabel.setFont(projectDescLabel.getFont());
             projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.odcsProject.getDescription().length() / 100 + 1);
         }
         if (isSelected) {
             setBackground(jlist.getSelectionBackground());
+            projectNameLabel.setForeground(jlist.getSelectionForeground());
             projectDescLabel.setBackground(jlist.getSelectionBackground());
             detailsButton.setForeground(jlist.getSelectionForeground());
             projectDescLabel.setForeground(jlist.getSelectionForeground());
         } else {
-            setBackground(new Color(255, 255, 255));
-            projectDescLabel.setBackground(new Color(255, 255, 255));
+            setBackground(jlist.getBackground());
+            projectNameLabel.setForeground(ColorManager.getDefault().getLinkColor());
+            projectDescLabel.setBackground(jlist.getBackground());
             detailsButton.setForeground(ColorManager.getDefault().getLinkColor());
-            projectDescLabel.setForeground(new Color(128, 128, 128));
+            projectDescLabel.setForeground(ColorManager.getDefault().getDisabledColor());
         }
         try {
             this.url = new URL(searchInfo.odcsProject.getWebUrl());
@@ -139,7 +142,6 @@ public class ODCSProjectsListRenderer extends javax.swing.JPanel {
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(153, 153, 153)));
         setLayout(new GridBagLayout());
 
-        projectNameLabel.setForeground(new Color(0, 22, 103));
         projectNameLabel.setText(NbBundle.getMessage(ODCSProjectsListRenderer.class, "ODCSProjectsListRenderer.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -151,8 +153,6 @@ public class ODCSProjectsListRenderer extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(4, 6, 0, 6);
         add(projectNameLabel, gridBagConstraints);
 
-        projectDescLabel.setFont(new Font("Lucida Grande", 0, 12)); // NOI18N
-        projectDescLabel.setForeground(new Color(128, 128, 128));
         projectDescLabel.setLineWrap(true);
         projectDescLabel.setWrapStyleWord(true);
         projectDescLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));

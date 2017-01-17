@@ -119,7 +119,6 @@ public abstract class ActivityDisplayer {
 
     protected LinkButton.MailtoButton createMailtoButton(String text, String mail, String subject, String body) {
         LinkButton.MailtoButton b = new LinkButton.MailtoButton(text, null, mail, subject, body);
-        b.setColors(Color.BLUE, new Color(0, 150, 255), new Color(0, 150, 255), Color.BLUE);
         b.setFocusable(false);
         return b;
     }

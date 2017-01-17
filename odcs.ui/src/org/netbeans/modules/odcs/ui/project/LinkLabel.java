@@ -48,14 +48,13 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
@@ -66,8 +65,8 @@ import org.openide.util.Utilities;
 public abstract class LinkLabel extends JLabel implements MouseListener {
 
     private Map<TextAttribute, Object> underlineFontMap;
-    private static final Color FOREGROUND_COLOR = Color.BLUE;
-    private static final Color FOREGROUND_FOCUS_COLOR = new Color(0, 150, 255);
+    private static final Color FOREGROUND_COLOR = ColorManager.getDefault().getLinkColor();
+    private static final Color FOREGROUND_FOCUS_COLOR = ColorManager.getDefault().getFocusedLinkColor();
     private static final Icon ICON_LINK = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/link.png", true); //NOI18N
     private static final Icon ICON_LINK_FOCUS = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/link_focus.png", true); //NOI18N
     private final boolean showIcon;

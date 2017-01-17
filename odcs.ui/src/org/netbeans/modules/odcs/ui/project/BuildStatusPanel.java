@@ -56,6 +56,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.server.ui.spi.JobHandle;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
@@ -80,6 +81,9 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         this.projectHandle = projectHandle;
         this.buildPropertyListener = new JobPropertyListener();
         initComponents();
+        lblError.setForeground(ColorManager.getDefault().getErrorColor());
+        lblEmptyContent.setForeground(ColorManager.getDefault().getLinkColor());
+        jLabel1.setForeground(ColorManager.getDefault().getLinkColor());
         loadBuildStatuses();
     }
 
@@ -108,15 +112,13 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         pnlStatuses = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
 
-        lblError.setForeground(new java.awt.Color(255, 0, 0));
         lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/ui/resources/error.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(BuildStatusPanel.class, "LBL_ErrorLoading")); // NOI18N
 
-        lblEmptyContent.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        lblEmptyContent.setForeground(new java.awt.Color(102, 102, 102));
+        lblEmptyContent.setFont(lblEmptyContent.getFont().deriveFont((lblEmptyContent.getFont().getStyle() | java.awt.Font.ITALIC)));
         org.openide.awt.Mnemonics.setLocalizedText(lblEmptyContent, org.openide.util.NbBundle.getMessage(BuildStatusPanel.class, "BuildStatusPanel.lblEmptyContent.text")); // NOI18N
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        setBackground(javax.swing.UIManager.getDefaults().getColor("List.background"));
 
         lblTitle.setFont(lblTitle.getFont().deriveFont(lblTitle.getFont().getStyle() | java.awt.Font.BOLD));
         org.openide.awt.Mnemonics.setLocalizedText(lblTitle, org.openide.util.NbBundle.getMessage(BuildStatusPanel.class, "BuildStatusPanel.lblTitle.text")); // NOI18N
@@ -141,8 +143,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         pnlStatuses.setOpaque(false);
         pnlStatuses.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel1.setFont(jLabel1.getFont().deriveFont((jLabel1.getFont().getStyle() | java.awt.Font.ITALIC)));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BuildStatusPanel.class, "BuildStatusPanel.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;

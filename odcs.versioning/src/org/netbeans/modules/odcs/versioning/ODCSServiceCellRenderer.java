@@ -49,6 +49,7 @@
 package org.netbeans.modules.odcs.versioning;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import java.awt.Color;
 import org.netbeans.modules.odcs.versioning.GetSourcesFromODCSPanel.ScmRepositoryListItem;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -143,19 +144,27 @@ public class ODCSServiceCellRenderer extends JPanel implements ListCellRenderer 
             if (index == -1) {
                 projectNameLabel.setText(null);
                 projectRepoLabel.setText(item.getUrl());
-                projectRepoLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-                projectRepoLabel.setForeground(list.getForeground());
+                projectRepoLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
                 repoTypeLabel.setText(null);
+                GridBagConstraints gbc = ((GridBagLayout)getLayout()).getConstraints(projectRepoLabel);
+                if (gbc != null) {
+                    gbc.insets = new Insets(2, 4, 2, 2);
+                    ((GridBagLayout)getLayout()).setConstraints(projectRepoLabel, gbc);
+                }
             } else {
                 projectNameLabel.setText(projectHandle.getDisplayName() + " (" + projectHandle.getId() + ")"); // NOI18N
                 projectNameLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
                 projectNameLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
                 projectRepoLabel.setText(item.getUrl());
-                projectRepoLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
                 projectRepoLabel.setForeground(isSelected ? list.getSelectionForeground() : ColorManager.getDefault().getLinkColor());
                 repoTypeLabel.setText("(" + repository.getType().name() + ")"); // NOI18N
                 repoTypeLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
                 repoTypeLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                GridBagConstraints gbc = ((GridBagLayout)getLayout()).getConstraints(projectRepoLabel);
+                if (gbc != null) {
+                    gbc.insets = new Insets(0, 4, 0, 0);
+                    ((GridBagLayout)getLayout()).setConstraints(projectRepoLabel, gbc);
+                }
             }
         }
 
@@ -166,4 +175,31 @@ public class ODCSServiceCellRenderer extends JPanel implements ListCellRenderer 
 
     }
 
+    @Override
+    public void setForeground(Color fg) {
+        super.setForeground(fg);
+        // Different LaF subclasses of ComboBoxUI set the background and foreground of the renderer
+        // component their own way, not always following the same logic. So we need to correct the
+        // projectRepoLabel foreground accordingly, not to get it e.g. white on white background.
+        if (projectRepoLabel != null) {
+            Color labelFg = projectRepoLabel.getForeground();
+            if (labelFg != null && labelFg.equals(getBackground())) {
+                projectRepoLabel.setForeground(fg);
+            }
+        }
+    }
+
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+        // Different LaF subclasses of ComboBoxUI set the background and foreground of the renderer
+        // component their own way, not always following the same logic. So we need to correct the
+        // projectRepoLabel foreground accordingly, not to get it e.g. white on white background.
+        if (projectRepoLabel != null) {
+            Color labelFg = projectRepoLabel.getForeground();
+            if (labelFg != null && labelFg.equals(bg)) {
+                projectRepoLabel.setForeground(getForeground());
+            }
+        }
+    }
 }

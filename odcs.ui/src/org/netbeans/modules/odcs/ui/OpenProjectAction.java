@@ -77,7 +77,6 @@ public final class OpenProjectAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        org.netbeans.modules.team.server.api.TeamUIUtils.activateTeamDashboard();
         if (server == null) {
             server = Utilities.getActiveServer(true);
         }
