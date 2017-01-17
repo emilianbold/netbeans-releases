@@ -454,6 +454,19 @@ public final class ElementHandle<T extends Element> {
         return new ElementHandle<TypeElement>(kind, binaryName);
     }
 
+    /**
+     * Creates an {@link ElementHandle} representing a {@link ModuleElement}.
+     * @param moduleName the name of the module
+     * @return the created {@link ElementHandle}
+     * @since 2.26
+     */
+    @NonNull
+    public static ElementHandle<ModuleElement> createModuleElementHandle(
+            @NonNull final String moduleName) {
+        Parameters.notNull("moduleName", moduleName); //NOI18N
+        return new ElementHandle<>(ElementKind.MODULE, moduleName);
+    }
+
     private static @NonNull <T extends Element> ElementHandle<T> createImpl (@NonNull final T element) throws IllegalArgumentException {
         Parameters.notNull("element", element);
         ElementKind kind = element.getKind();

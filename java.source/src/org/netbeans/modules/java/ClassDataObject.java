@@ -45,9 +45,11 @@
 package org.netbeans.modules.java;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -102,15 +104,13 @@ public final class ClassDataObject extends MultiDataObject {
         @Override
         public void open() {
             final AtomicBoolean cancel = new AtomicBoolean();
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                @Override
-                public void run() {
+            ProgressUtils.runOffEventDispatchThread(() -> {
                     try {
                         FileObject fo = getPrimaryFile();
                         FileObject binaryRoot = null;
                         String resourceName = null;
                         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-                        if (cp == null || (binaryRoot = cp.findOwnerRoot(fo))==null) {
+                        if (cp == null || (binaryRoot = cp.findOwnerRoot(fo)) == null) {
                             cp = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
                             if (cp != null) {
                                 binaryRoot = cp.findOwnerRoot(fo);
@@ -119,20 +119,28 @@ public final class ClassDataObject extends MultiDataObject {
                         } else if (binaryRoot != null) {
                             resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
                         }
-                        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-                        if (bootPath == null) {
-                            //No boot cp, try the default platform boot cp
-                            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-                        }
                         if (cancel.get()) {
                             return;
                         }
+                        ElementHandle<? extends Element> handle = null;
+                        if (resourceName != null) {
+                            if ("module-info".equals(resourceName)) {   //NOI18N
+                                final String moduleName = SourceUtils.getModuleName(binaryRoot.toURL());
+                                if (moduleName != null) {
+                                    handle = ElementHandle.createModuleElementHandle(moduleName);
+                                }
+                            }
+                            if (handle == null) {
+                                handle = ElementHandle.createTypeElementHandle(ElementKind.CLASS, resourceName.replace('/', '.'));
+                            }
+                        }
                         FileObject resource = null;
-                        final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandle.createTypeElementHandle(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
-                        final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
                         if (binaryRoot != null) {
                             //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
-                            resource = SourceUtils.getFile(handle, cpInfo);
+                            resource = SourceUtils.getFile(handle, ClasspathInfo.create(
+                                    ClassPathSupport.createClassPath(binaryRoot),
+                                    ClassPath.EMPTY,
+                                    ClassPath.EMPTY));
                         }
                         if (cancel.get()) {
                             return;
@@ -146,23 +154,29 @@ public final class ClassDataObject extends MultiDataObject {
                                 Logger.getLogger(ClassDataObject.class.getName()).log(Level.WARNING, "SourceFile: {0} has no OpenCookie", FileUtil.getFileDisplayName (resource)); //NOI18N
                             }
                         } else {
-                            BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
-
-                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle, cancel)) {
-                                if (!cancel.get()) {
-                                    if (resourceName == null) {
-                                        resourceName = fo.getName();
-                                    }
-                                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class, "TXT_NoSources",
-                                            resourceName.replace('/', '.'))); //NOI18N
+                            final BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
+                            if (beo != null && handle != null && cp != null) {
+                                final ClasspathInfo cpInfo = ClasspathInfo.create(
+                                        Optional.ofNullable(ClassPath.getClassPath(fo, ClassPath.BOOT))
+                                            .orElse(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries()),
+                                        cp,
+                                        ClassPath.EMPTY);
+                                if (beo.open(cpInfo, handle, cancel)) {
+                                    return;
                                 }
                             }
+                            if (resourceName == null) {
+                                resourceName = fo.getName();
+                            }
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+                                    ClassDataObject.class,
+                                    "TXT_NoSources",    //NOI18N
+                                    resourceName.replace('/', '.'))); //NOI18N
                         }
                     } catch (DataObjectNotFoundException nf) {
                         Exceptions.printStackTrace(nf);
                     }
-                }
-            },
+                },
             NbBundle.getMessage(ClassDataObject.class, "TXT_OpenClassFile"),
             cancel,
             false);
