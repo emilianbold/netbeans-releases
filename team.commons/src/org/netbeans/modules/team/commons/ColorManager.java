@@ -67,6 +67,7 @@ public class ColorManager {
     private Color defaultForeground = UIManager.getColor("black"); //NOI18N
     private Color disabledColor = Color.gray;
     private Color linkColor = null;
+    private Color focusedLinkColor;
     private Color errorColor = new Color(153, 0, 0);
     private Color stableBuildColor = new Color(0, 153, 0);
     private Color unstableBuildColor = Color.yellow.darker().darker();
@@ -109,6 +110,10 @@ public class ColorManager {
 
     public Color getLinkColor() {
         return linkColor;
+    }
+
+    public Color getFocusedLinkColor() {
+        return focusedLinkColor;
     }
 
     public Color getStableBuildColor() {
@@ -259,6 +264,10 @@ public class ColorManager {
         linkColor = UIManager.getColor("nb.html.link.foreground"); //NOI18N
         if (null == linkColor) {
             linkColor = new Color(0x164B7B);
+        }
+        focusedLinkColor = UIManager.getColor("nb.html.link.foreground.focus"); // NOI18N
+        if (focusedLinkColor == null) {
+            focusedLinkColor = new Color(0xFF8E00);
         }
     }
 

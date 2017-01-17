@@ -64,7 +64,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
@@ -87,16 +86,12 @@ import org.openide.util.WeakListeners;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.odcs.versioning.SourceAccessorImpl.ProjectAndRepository;
-import org.netbeans.modules.team.server.ui.common.LoginHandleImpl;
-import org.netbeans.modules.team.server.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import static org.netbeans.modules.odcs.versioning.Bundle.*;
-import org.netbeans.modules.team.server.ui.common.DashboardSupport;
-import org.netbeans.modules.team.server.ui.spi.DashboardProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
@@ -255,43 +250,34 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(odcsRepoLabel)
                     .addComponent(developerServerLabel))
-                .addGap(4, 4, 4)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(serverLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(usernameLabel)
-                        .addGap(4, 4, 4)
-                        .addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(projectPreviewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(loginButton))
                     .addComponent(odcsRepoComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblError))
-                        .addGap(0, 181, Short.MAX_VALUE))))
+                        .addGap(0, 246, Short.MAX_VALUE))
+                    .addComponent(projectPreviewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(loginButton)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(developerServerLabel)
-                            .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                                .addComponent(usernameLabel)
-                                .addComponent(serverLabel)))))
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(odcsRepoLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addComponent(odcsRepoComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                .addGap(7, 7, 7)
+                    .addComponent(usernameLabel)
+                    .addComponent(serverLabel)
+                    .addComponent(developerServerLabel))
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER)
+                    .addComponent(odcsRepoLabel)
+                    .addComponent(odcsRepoComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
                 .addComponent(projectPreviewLabel, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
