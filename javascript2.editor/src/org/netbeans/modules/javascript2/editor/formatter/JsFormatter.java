@@ -381,7 +381,7 @@ public class JsFormatter implements Formatter {
         if (started) {
             FormatToken indentationEndPrev = indentationEnd.previous();
             // last empty line formatted by html
-            if (indentationEnd.getId() == JsTokenId.JSX_TEXT
+            if (indentationEnd.getId() == JsTokenId.JSX_EXP_END
                     && !(indentationEndPrev != null && indentationEndPrev.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START)) {
                 indentationSize = computeJsxIndentation(formatContext, indentationEnd.getOffset());
             }

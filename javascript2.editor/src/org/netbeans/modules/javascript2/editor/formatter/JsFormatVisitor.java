@@ -181,26 +181,27 @@ public class JsFormatVisitor extends NodeVisitor {
                     TokenUtils.appendTokenAfterLastVirtual(jsxTokenPrev, FormatToken.forFormat(FormatToken.Kind.BEFORE_JSX_BLOCK_START), true);
                 }
             }
-        }
-        jsxToken = tokenUtils.getPreviousToken(getFinish(jsxElementNode) - 1, JsTokenId.JSX_TEXT);
-        if (jsxToken != null && jsxToken.getText().toString().endsWith(">")) {
-            assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
-            TokenUtils.appendTokenAfterLastVirtual(jsxToken, FormatToken.forFormat(FormatToken.Kind.AFTER_JSX_BLOCK_END), true);
+        
+            jsxToken = tokenUtils.getPreviousToken(getFinish(jsxElementNode) - 1, JsTokenId.JSX_TEXT);
+            if (jsxToken != null && jsxToken.getText().toString().endsWith(">")) {
+                assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
+                TokenUtils.appendTokenAfterLastVirtual(jsxToken, FormatToken.forFormat(FormatToken.Kind.AFTER_JSX_BLOCK_END), true);
+            }
         }
 
         for (Expression e : jsxElementNode.getChildren()) {
             if (!(e instanceof LiteralNode) && !(e instanceof JsxElementNode)) {
                 // assignmentExpression
                 int start = getStart(e);
-                FormatToken token = tokenUtils.getPreviousToken(start, JsTokenId.JSX_TEXT);
+                FormatToken token = tokenUtils.getPreviousToken(start, JsTokenId.JSX_EXP_BEGIN);
                 if (token != null) {
                     TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
                 }
                 int finish = getFinish(e);
-                token = tokenUtils.getNextToken(finish, JsTokenId.JSX_TEXT);
+                token = tokenUtils.getNextToken(finish, JsTokenId.JSX_EXP_END);
                 if (token != null) {
                     token = tokenUtils.getPreviousNonWhiteToken(token.getOffset(),
-                            start, JsTokenId.JSX_TEXT, true);
+                            start, JsTokenId.JSX_EXP_END, true);
                     if (token != null) {
                         TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                     }
@@ -216,15 +217,15 @@ public class JsFormatVisitor extends NodeVisitor {
         if (!(e instanceof LiteralNode) && !(e instanceof JsxElementNode)) {
             // assignmentExpression or unaryNode
             int start = getStart(e);
-            FormatToken token = tokenUtils.getPreviousToken(start, JsTokenId.JSX_TEXT);
+            FormatToken token = tokenUtils.getPreviousToken(start, JsTokenId.JSX_EXP_BEGIN);
             if (token != null) {
                 TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             }
             int finish = getFinish(e);
-            token = tokenUtils.getNextToken(finish, JsTokenId.JSX_TEXT);
+            token = tokenUtils.getNextToken(finish, JsTokenId.JSX_EXP_END);
             if (token != null) {
                 token = tokenUtils.getPreviousNonWhiteToken(token.getOffset(),
-                        start, JsTokenId.JSX_TEXT, true);
+                        start, JsTokenId.JSX_EXP_END, true);
                 if (token != null) {
                     TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                 }
