@@ -214,7 +214,7 @@ public class JsFormatVisitor extends NodeVisitor {
     @Override
     public boolean enterJsxAttributeNode(JsxAttributeNode jsxAttributeNode) {
         Expression e = jsxAttributeNode.getValue();
-        if (!(e instanceof LiteralNode) && !(e instanceof JsxElementNode)) {
+        if (e != null && !(e instanceof LiteralNode) && !(e instanceof JsxElementNode)) {
             // assignmentExpression or unaryNode
             int start = getStart(e);
             FormatToken token = tokenUtils.getPreviousToken(start, JsTokenId.JSX_EXP_BEGIN);
