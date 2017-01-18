@@ -859,7 +859,7 @@ public final class ProxyFileManager implements JavaFileManager {
         @CheckForNull
         private JavaFileManager createSrcFileManager() {
             if (emitted[SRC] == null) {
-                final boolean hasSources = this.srcCached != ClassPath.EMPTY;
+                final boolean hasSources = !this.srcCached.entries().isEmpty();
                 emitted[SRC] = hasSources ?
                     (!useModifiedFiles ?
                         new CachingFileManager (cap, srcCached, filter, null, false, ignoreExcludes) :
@@ -872,7 +872,7 @@ public final class ProxyFileManager implements JavaFileManager {
         @CheckForNull
         private JavaFileManager createOutputFileManager() {
             if (emitted[OUTPUT] == null) {
-                final boolean hasSources = this.srcCached != ClassPath.EMPTY;
+                final boolean hasSources = !this.srcCached.entries().isEmpty();
                 final JavaFileManager outFm;
                 if (hasSources) {
                     JavaFileManager tmp;
