@@ -85,20 +85,12 @@ class ProjectShellEnv extends JShellEnvironment {
 
     @Override
     public JShell.Builder customizeJShell(JShell.Builder b) {
+        b = super.customizeJShell(b);
         JavaPlatform pl = ShellProjectUtils.findPlatform(getProject());
         if (!ShellProjectUtils.isModularJDK(pl)) {
             return b;
         }
-        Collection<String> exportMods = ShellProjectUtils.findProjectImportedModules(getProject(), 
-            ShellProjectUtils.findProjectModules(getProject(), null)
-        );
-        if (exportMods.isEmpty()) {
-            return b;
-        }
         List<String> addReads = new ArrayList<>();
-        for (String mod : exportMods) {
-            addReads.add("--add-reads:" + mod + "=ALL-UNNAMED"); // NOI18N
-        }
         addReads.add("--add-reads:java.jshell=ALL-UNNAMED");
         return b.remoteVMOptions(addReads.toArray(new String[addReads.size()]));
     }

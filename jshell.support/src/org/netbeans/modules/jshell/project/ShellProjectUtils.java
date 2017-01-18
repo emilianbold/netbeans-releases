@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.jshell.project;
 
+import com.sun.source.tree.DirectiveTree;
+import com.sun.source.tree.ModuleTree;
+import com.sun.source.tree.RequiresTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,9 +54,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.ModuleElement;
+import javax.lang.model.element.ModuleElement.DirectiveKind;
+import javax.lang.model.element.ModuleElement.RequiresDirective;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -64,13 +73,21 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.jshell.launch.PropertyNames;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -202,7 +219,6 @@ public final class ShellProjectUtils {
      */
     public static Map<String, Collection<String>>   findProjectModulesAndPackages(Project project) {
         Map<String, Collection<String>> result = new HashMap<>();
-        
         for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             if (isNormalRoot(sg)) {
                 URL u = URLMapper.findURL(sg.getRootFolder(), URLMapper.INTERNAL);
@@ -210,19 +226,8 @@ public final class ShellProjectUtils {
                 for (URL u2 : r.getRoots()) {
                     String modName = SourceUtils.getModuleName(u2, true);
                     if (modName != null) {
-                        FileObject root2 = URLMapper.findFileObject(u2);
                         FileObject root = URLMapper.findFileObject(u);
                         Collection<String> pkgs = getPackages(root); //new HashSet<>();
-                        /*
-                        Enumeration en = root.getChildren(true);
-                        while (en.hasMoreElements()) {
-                            FileObject d = (FileObject)en.nextElement();
-                            if (!d.isFolder() || !Utilities.isJavaIdentifier(d.getNameExt())) {
-                                continue;
-                            }
-                            pkgs.add(FileUtil.getRelativePath(root, d).replace("/", "."));
-                        }
-                        */
                         if (!pkgs.isEmpty()) {
                             Collection<String> oldPkgs = result.get(modName);
                             if (oldPkgs != null) {
@@ -240,8 +245,13 @@ public final class ShellProjectUtils {
     
     private static Collection<String> getPackages(FileObject root) {
         ClasspathInfo cpi = ClasspathInfo.create(root);
+        // create CPI from just the single source root, to avoid packages from other
+        // modules
         ClasspathInfo rootCpi = new ClasspathInfo.Builder(
                 cpi.getClassPath(PathKind.BOOT)).
+                setClassPath(cpi.getClassPath(PathKind.COMPILE)).
+                setModuleSourcePath(cpi.getClassPath(PathKind.MODULE_SOURCE)).
+                setModuleCompilePath(cpi.getClassPath(PathKind.MODULE_COMPILE)).
                 setSourcePath(
                     ClassPathSupport.createClassPath(root)
                 ).build();
