@@ -133,11 +133,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     private static boolean canFollowLiteral(JsTokenId token) {
-        if ("operator".equals(token.primaryCategory())) {
-            return true;
-        }
-
         switch (token) {
+            case OPERATOR_INCREMENT:
+            case OPERATOR_DECREMENT:
+                return false;
             case BRACKET_LEFT_CURLY:
             case BRACKET_LEFT_PAREN:
             case BRACKET_LEFT_BRACKET:
@@ -153,6 +152,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             case OPERATOR_DOT:
             case OPERATOR_COLON:
                 return true;
+        }
+
+        if ("operator".equals(token.primaryCategory())) {
+            return true;
         }
         return false;
     }

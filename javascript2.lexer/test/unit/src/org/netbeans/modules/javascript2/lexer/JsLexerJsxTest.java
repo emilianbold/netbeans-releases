@@ -111,4 +111,9 @@ public class JsLexerJsxTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/jsx/styleInJSXissue.js",
                 JsTokenId.javascriptLanguage());
     }
+    
+    public void testIncLess() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/jsx/incLess.js",
+                JsTokenId.javascriptLanguage());
+    }
 }
