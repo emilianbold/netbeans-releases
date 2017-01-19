@@ -953,12 +953,25 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         Supplier<ClassPathImplementation> provider;
         switch (index) {
             case 16:
-            case 17:
                 provider = () -> {
+                    final String[] props = new String[moduleExecutePath.length+1];
+                    props[0] = buildClassesDir;
+                    System.arraycopy(moduleExecutePath, 0, props, 1, moduleExecutePath.length);
                     return ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
-                        index == 16 ? moduleExecutePath : testModuleExecutePath);
+                        props);
+                };
+                break;
+            case 17:
+                provider = () -> {
+                    final String[] props = new String[testModuleExecutePath.length+1];
+                    props[0] = buildTestClassesDir;
+                    System.arraycopy(testModuleExecutePath, 0, props, 1, testModuleExecutePath.length);
+                    return ModuleClassPaths.createPropertyBasedModulePath(
+                        projectDirectory,
+                        evaluator,
+                        props);
                 };
                 break;
             case 18:
