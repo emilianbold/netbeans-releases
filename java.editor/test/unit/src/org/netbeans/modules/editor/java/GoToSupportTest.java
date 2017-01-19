@@ -1015,7 +1015,7 @@ public class GoToSupportTest extends NbTestCase {
         int offset = code.indexOf('|');
         code = code.replaceAll(Pattern.quote("|"), "");
         assertNotSame(-1, offset);
-        String golden = "<html><body><font size='+0'><b><a href='*0'>java.&#x200B;util.&#x200B;ArrayList</a></b></font><p><tt>public <b>ArrayList</b>()</tt>";
+        String golden = "<html><body><font size='+0'><b><a href='*0'>java.&#x200B;util.&#x200B;ArrayList</a></b></font><pre>public <b>ArrayList</b>()</pre>";
 
         String tooltip = performTest(code, offset, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
