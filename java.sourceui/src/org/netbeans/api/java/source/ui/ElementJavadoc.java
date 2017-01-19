@@ -376,20 +376,19 @@ public class ElementJavadoc {
         this.fileObject = compilationInfo.getFileObject();
         this.handle = element == null ? null : ElementHandle.create(element);
         this.cancel = cancel;
-        final CharSequence header = getElementHeader(element, compilationInfo);
+        final StringBuilder header = getElementHeader(element, compilationInfo);
         try {
             //Optimisitic no http
             CharSequence doc = getElementDoc(element, compilationInfo, header, url, true);
             if (doc == null) {
                 computeDocURL(Collections.emptyList(), true, cancel);
-                doc = new StringBuilder(header).append(noJavadocFound());
+                doc = header.append(noJavadocFound());
             }
             this.content = new Now(doc.toString());
         } catch (JavadocHelper.RemoteJavadocException re) {
             if (fileObject == null || JavaSource.forFileObject(fileObject) == null) {
-                final StringBuilder sb = new StringBuilder(header);
-                sb.append(noJavadocFound());
-                this.content = new Now(sb.toString());
+                header.append(noJavadocFound());
+                this.content = new Now(header.toString());
                 return;
             }
             this.content = new FutureTask<>(() -> {
@@ -400,7 +399,7 @@ public class ElementJavadoc {
                 CharSequence doc = getElementDoc(el, c, header, url, false);
                 if (doc == null) {
                     computeDocURL(Collections.emptyList(), false, cancel);
-                    doc = new StringBuilder(header).append(noJavadocFound());
+                    doc = header.append(noJavadocFound());
                 }
                 return doc.toString();
             });
@@ -430,7 +429,7 @@ public class ElementJavadoc {
 
     // Private section ---------------------------------------------------------
     
-    private CharSequence getElementHeader(final Element element, final CompilationInfo info) {
+    private StringBuilder getElementHeader(final Element element, final CompilationInfo info) {
         final StringBuilder sb = new StringBuilder();
         if (element != null) {
             sb.append(getContainingClassOrPackageHeader(element, info.getElements(), info.getElementUtilities()));
@@ -457,7 +456,7 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getContainingClassOrPackageHeader(Element el, Elements elements, ElementUtilities eu) {
+    private StringBuilder getContainingClassOrPackageHeader(Element el, Elements elements, ElementUtilities eu) {
         StringBuilder sb = new StringBuilder();
         TypeElement cls = el.getKind() != ElementKind.PACKAGE ? eu.enclosingTypeElement(el) : null;
         if (cls != null) {
@@ -486,7 +485,7 @@ public class ElementJavadoc {
         return name.replace(".", /* ZERO WIDTH SPACE */".&#x200B;");
     }
     
-    private CharSequence getMethodHeader(ExecutableElement mdoc) {
+    private StringBuilder getMethodHeader(ExecutableElement mdoc) {
         final StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         mdoc.getAnnotationMirrors().forEach((annotationDesc) -> {
@@ -558,7 +557,7 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getFieldHeader(VariableElement fdoc) {
+    private StringBuilder getFieldHeader(VariableElement fdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         fdoc.getAnnotationMirrors().forEach((annotationDesc) -> {
@@ -579,7 +578,7 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getClassHeader(TypeElement cdoc) {
+    private StringBuilder getClassHeader(TypeElement cdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         cdoc.getAnnotationMirrors().forEach((annotationDesc) -> {
@@ -646,7 +645,7 @@ public class ElementJavadoc {
         return sb;
     }
     
-    private CharSequence getPackageHeader(PackageElement pdoc) {
+    private StringBuilder getPackageHeader(PackageElement pdoc) {
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); //NOI18N
         pdoc.getAnnotationMirrors().forEach((annotationDesc) -> {
@@ -711,7 +710,7 @@ public class ElementJavadoc {
         }
     } 
     
-    private CharSequence getElementDoc(final Element element, final CompilationInfo info, final CharSequence header, final URL url, final boolean sync) throws JavadocHelper.RemoteJavadocException {
+    private StringBuilder getElementDoc(final Element element, final CompilationInfo info, final StringBuilder header, final URL url, final boolean sync) throws JavadocHelper.RemoteJavadocException {
         final StringBuilder sb = new StringBuilder();                
         if (element != null) {
             final List<JavadocHelper.TextStream> pages = JavadocHelper.getJavadoc(
@@ -733,7 +732,7 @@ public class ElementJavadoc {
                     remote |= isRemote(ts, docURL);
                 }
                 if (!localized) {
-                    assignSource(element, info, url, sb);
+                    assignSource(element, info, url, header);
                 }
                 sb.append(header);            
                 if (!localized) {
@@ -1575,15 +1574,15 @@ public class ElementJavadoc {
         @NonNull final StringBuilder content) {
         final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
         if (fo != null) {
+            if (docURL == null && goToSource == null) {
+                content.insert(0, "<base href=\"" + fo.toURL() + "\"></base>"); //NOI18N
+            }
             goToSource = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     ElementOpen.open(fo, handle);
                 }
             };
-            if (docURL == null) {
-                content.append("<base href=\"").append(fo.toURL()).append("\"></base>"); //NOI18N
-            }
         }
         if (url != null) {
             docURL = url;
