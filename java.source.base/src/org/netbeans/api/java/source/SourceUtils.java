@@ -113,6 +113,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.Module;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
@@ -1677,7 +1678,10 @@ public class SourceUtils {
     private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
         try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
             final ClassFile clz = new ClassFile(in, false);
-            return clz.getModule().getName();
+            final Module modle = clz.getModule();
+            return modle != null ?
+                    modle.getName() :
+                    null;
         }
     }
 
