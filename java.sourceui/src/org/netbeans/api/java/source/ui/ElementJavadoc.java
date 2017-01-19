@@ -30,6 +30,7 @@
  */
 package org.netbeans.api.java.source.ui;
 
+import com.sun.source.doctree.AttributeTree;
 import com.sun.source.doctree.DeprecatedTree;
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
@@ -148,6 +149,7 @@ public class ElementJavadoc {
     private Map<String, ElementHandle<? extends Element>> links = new HashMap<>();
     private int linkCounter = 0;
     private volatile URL docURL = null;
+    private volatile URL docRoot = null;
     private volatile AbstractAction goToSource = null;
 
     /** Non-normative notes about the API. Usually used for examples. */
@@ -724,6 +726,9 @@ public class ElementJavadoc {
                     if (docURL == null && !ts.getLocations().isEmpty()) {
                         docURL = ts.getLocations().get(0);
                     }
+                    if (docRoot == null) {
+                        docRoot = ts.getDocRoot();
+                    }
                     localized |= isLocalized(ts.getLocations(), element);
                     remote |= isRemote(ts, docURL);
                 }
@@ -1165,7 +1170,7 @@ public class ElementJavadoc {
                 }
             }
         }
-        return NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found");
+        return NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found"); //NOI18N
     }
 
     private StringBuilder inlineTags(List<? extends DocTree> tags, TreePath docPath, DocCommentTree doc, DocTrees trees, CharSequence inherited) {
@@ -1173,7 +1178,8 @@ public class ElementJavadoc {
         for (DocTree tag : tags) {
             switch (tag.getKind()) {
                 case REFERENCE:
-                    appendReference(sb, (ReferenceTree)tag, null, docPath, doc, trees);
+                    ReferenceTree refTag = (ReferenceTree)tag;
+                    appendReference(sb, refTag, null, docPath, doc, trees);
                     break;
                 case LINK_PLAIN:
                     LinkTree linkTag = (LinkTree)tag;
@@ -1218,11 +1224,41 @@ public class ElementJavadoc {
                     break;
                 case START_ELEMENT:
                     StartElementTree startTag = (StartElementTree)tag;
-                    sb.append('<').append(startTag.getName()).append(inlineTags(startTag.getAttributes(), docPath, doc, trees, inherited)).append(startTag.isSelfClosing() ? "/>" : ">"); //NOI18N
+                    List<? extends DocTree> attrs = startTag.getAttributes();
+                    sb.append('<').append(startTag.getName()).append(attrs.isEmpty() ? "" : " ").append(inlineTags(attrs, docPath, doc, trees, null)).append(startTag.isSelfClosing() ? "/>" : ">"); //NOI18N
                     break;
                 case END_ELEMENT:
                     EndElementTree endTag = (EndElementTree)tag;
                     sb.append("</").append(endTag.getName()).append('>'); //NOI18N
+                    break;
+                case ATTRIBUTE:
+                    AttributeTree attrTag = (AttributeTree)tag;
+                    sb.append(attrTag.getName());
+                    String quote;
+                    switch (attrTag.getValueKind()) {
+                        case EMPTY:
+                            quote = null;
+                            break;
+                        case UNQUOTED:
+                            quote = ""; //NOI18N
+                            break;
+                        case SINGLE:
+                            quote = "'"; //NOI18N
+                            break;
+                        case DOUBLE:
+                            quote = "\""; //NOI18N
+                            break;
+                        default:
+                            throw new AssertionError();
+                    }
+                    if (quote != null) {
+                        sb.append("=").append(quote).append(inlineTags(attrTag.getValue(), docPath, doc, trees, null)).append(quote); //NOI18N
+                    }
+                    break;
+                case DOC_ROOT:
+                    if (docRoot != null) {
+                        sb.append(docRoot);
+                    }
                     break;
                 case ENTITY:
                     EntityTree entityTag = (EntityTree)tag;
