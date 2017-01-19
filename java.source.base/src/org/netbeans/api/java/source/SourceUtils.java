@@ -1674,7 +1674,7 @@ public class SourceUtils {
             moduleName;
     }
 
-    @NonNull
+    @CheckForNull
     private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
         try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
             final ClassFile clz = new ClassFile(in, false);
