@@ -81,6 +81,41 @@ public final class ModuleMainClassTest {
     }
 
     @Test
+    public void testClassToString() throws IOException {
+        clearWorkDir();
+        final File testRoot = getTestRoot();
+        if (testRoot == null) {
+            System.err.println("No test root.");
+            return;
+        }
+        final Path from = testRoot.toPath();
+        Files.walk(from)
+                .filter(new Predicate<Path>() {
+                    @Override
+                    public boolean test(Path p) {
+                        return Files.isRegularFile(p) &&
+                                p.getName(p.getNameCount()-1).toString().endsWith(".class") &&
+                                !p.getName(p.getNameCount()-1).toString().contains("$");    //NOI18N
+                    }
+                })
+                .limit(1)
+                .forEach(new Consumer<Path>() {
+                        @Override
+                        public void accept(Path p) {
+                            try {
+                                System.out.println(p);
+                                try(InputStream in = Files.newInputStream(p)) {
+                                    final ClassFile cf = new ClassFile(in);
+                                    System.out.println(cf);
+                                }
+                            } catch (IOException ioe) {
+                                throw new RuntimeException(ioe);
+                            }
+                        }
+                });
+    }
+
+    @Test
     public void testPatchModuleInfo() throws IOException {
         clearWorkDir();
         final Path wd = getWorkDir().toPath();
@@ -121,7 +156,7 @@ public final class ModuleMainClassTest {
                 ConstantPool.CPInfo entry = cp.get(nameIndex);
                 if ("ModuleMainClass".equals(entry.getValue())) {   //NOI18N
                     byte[] value = attr.getValue();
-                    nameIndex = value[0] << 8 | value[1];
+                    nameIndex = (value[0] & 0xff) << 8 | (value[1] & 0xff);
                     entry = cp.get(nameIndex);
                     return ((String)entry.getValue()).replace('/', '.');    //NOI18N
                 }
