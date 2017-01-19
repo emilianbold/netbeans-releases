@@ -1677,8 +1677,7 @@ public class SourceUtils {
     private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
         try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
             final ClassFile clz = new ClassFile(in, false);
-            final String name = clz.getName().getExternalName(true);
-            return name.substring(0, name.length() - (FileObjects.MODULE_INFO.length()+1));
+            return clz.getModule().getName();
         }
     }
 
