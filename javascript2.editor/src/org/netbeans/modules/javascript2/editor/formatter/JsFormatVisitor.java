@@ -174,7 +174,7 @@ public class JsFormatVisitor extends NodeVisitor {
     public boolean enterJsxElementNode(JsxElementNode jsxElementNode) {
         FormatToken jsxToken = tokenStream.getToken(getStart(jsxElementNode));
         if (jsxToken != null) {
-            assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken;
+            assert jsxToken.getId() == JsTokenId.JSX_TEXT : jsxToken.toString() + " from " + jsxElementNode.toString();
             if (jsxToken.getText().toString().startsWith("<")) {
                 FormatToken jsxTokenPrev = jsxToken.previous();
                 if (jsxTokenPrev != null) {
