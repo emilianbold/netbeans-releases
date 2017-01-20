@@ -161,6 +161,15 @@ public class ModuleTest extends TestCase {
         }
     }
 
+    public void testOldModuleInfoCrash() throws IOException {
+        try(final InputStream in = this.getClass().getResourceAsStream("datafiles/old_version_module-info.clz")) {
+            final ClassFile cf = new ClassFile(in);
+            assertNull(cf.getModule());
+            //Check other attributes are not broken
+            assertEquals("module-info.java", cf.getSourceFileName());
+        }
+    }
+
     private void doTest(
             final String moduleName,
             final Level logLevel) throws IOException {

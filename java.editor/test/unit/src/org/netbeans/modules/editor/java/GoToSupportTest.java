@@ -293,8 +293,8 @@ public class GoToSupportTest extends NbTestCase {
         String code = "package test; public class Test {enum EE {A} class CC {} EE a; CC c;}";
         int[] offset = new int[] {82, 88};
         String[] golden = new String[] {
-            "<html><body><base href=\"file:" + getWorkDirPath() + "/src/test/Test.java\"></base><font size='+0'><b><a href='*0'>test.&#x200B;Test</a></b></font><pre>static enum <b>EE</b> extends <a href='*1'>Enum</a>&lt;<a href='*2'>Test.EE</a>&gt;</pre>",
-            "<html><body><base href=\"file:" + getWorkDirPath() + "/src/test/Test.java\"></base><font size='+0'><b><a href='*0'>test.&#x200B;Test</a></b></font><pre> class <b>CC</b> extends <a href='*1'>Object</a></pre>",
+            "<html><body><base href=\"file:" + getWorkDirPath() + "/src/test/Test.java\"></base><font size='+0'><b><a href='*0'>test.&#x200B;Test</a></b></font><pre>static enum <b>EE</b><br>extends <a href='*1'>Enum</a>&lt;<a href='*2'>EE</a>&gt;</pre>",
+            "<html><body><base href=\"file:" + getWorkDirPath() + "/src/test/Test.java\"></base><font size='+0'><b><a href='*0'>test.&#x200B;Test</a></b></font><pre>class <b>CC</b><br>extends <a href='*1'>Object</a></pre>",
         };
         assertEquals(offset.length, golden.length);
         for (int cntr = 0; cntr < offset.length; cntr++) {

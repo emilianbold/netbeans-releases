@@ -64,12 +64,16 @@ public final class Module {
     private final List<ProvidesEntry> provides;
 
     Module(final DataInputStream in, final ConstantPool cp) throws IOException {
-            name = ((CPModuleInfo)cp.get(in.readUnsignedShort())).getName();
-            flags = in.readUnsignedShort();
-            int index = in.readUnsignedShort();
-            version = index == 0 ?
-                    null :
-                    ((CPUTF8Info)cp.get(index)).getName();
+        final CPEntry entry = cp.get(in.readUnsignedShort());
+        if (entry.getTag() != ConstantPool.CONSTANT_Module) {
+            throw new LegacyClassFile("Java 9 older than b148.");   //NOI18N
+        }
+        name = ((CPModuleInfo)entry).getName();
+        flags = in.readUnsignedShort();
+        int index = in.readUnsignedShort();
+        version = index == 0 ?
+                null :
+                ((CPUTF8Info)cp.get(index)).getName();
         final int reqCnt = in.readUnsignedShort();
         final RequiresEntry[] req = new RequiresEntry[reqCnt];
         for (int i=0; i<reqCnt; i++) {

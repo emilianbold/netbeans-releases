@@ -50,6 +50,7 @@ package org.netbeans.modules.classfile;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Class representing a Java class file.
@@ -57,6 +58,7 @@ import java.util.*;
  * @author Thomas Ball
  */
 public class ClassFile {
+    private static final Logger LOG = Logger.getLogger(ClassFile.class.getName());
 
     ConstantPool constantPool;
     int classAccess;
@@ -463,6 +465,8 @@ public class ClassFile {
                     } finally {
                         in.close();
                     }
+                } catch (LegacyClassFile legacy) {
+                    LOG.warning(legacy.getMessage());
                 } catch (IOException e) {
                     throw new InvalidClassFileAttributeException("invalid Module attribute", e);
                 }
