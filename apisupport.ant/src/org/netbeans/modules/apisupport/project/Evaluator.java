@@ -81,6 +81,7 @@ import org.netbeans.modules.apisupport.project.universe.DestDirProvider;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -90,6 +91,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -109,8 +111,10 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     
     public static final String CP = "cp";
     public static final String NBJDK_BOOTCLASSPATH = "nbjdk.bootclasspath";
+    public static final String NBJDK_BOOTCLASSPATH_MODULAR = "nbjdk.bootclasspath.modular"; //NOI18N
     static final String NBJDK_HOME = "nbjdk.home"; // NOI18N
     public static final String RUN_CP = "run.cp";
+    private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
     
     private final NbModuleProject project;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -505,7 +509,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                     }
                 }
             }
-            String bootcp = null;
+            Object bootcp = null;
             if (home != null) {
                 FileObject homeFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
                 if (homeFO != null) {
@@ -515,12 +519,24 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                             ClassPath boot = platform.getBootstrapLibraries();
                             boot.removePropertyChangeListener(weakListener);
                             boot.addPropertyChangeListener(weakListener);
-                            bootcp = boot.toString(ClassPath.PathConversionMode.WARN);
-                            break;
+                            if (JDK9.compareTo(platform.getSpecification().getVersion()) <= 0) {
+                                final Collection<? extends FileObject> loc = platform.getInstallFolders();
+                                if (!loc.isEmpty()) {
+                                    final File locf = FileUtil.toFile(loc.iterator().next());
+                                    if (locf != null) {
+                                        bootcp = locf;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                bootcp = boot.toString(ClassPath.PathConversionMode.WARN);
+                                break;
+                            }
                         }
                     }
                 }
                 if (bootcp == null) {
+                    //TODO: Fixme for JDK9 - ProjectPlatform should be the solution
                     File jHome;
                     if (home != null && (jHome = new File(home, "jre/lib")).isDirectory()) {
                         String[] jars = jHome.list(new FilenameFilter() {
@@ -546,7 +562,13 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 // Real fallback...
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
-            props.put(NBJDK_BOOTCLASSPATH, bootcp); // NOI18N
+            if (bootcp instanceof File) {
+                props.remove(NBJDK_BOOTCLASSPATH);
+                props.put(NBJDK_BOOTCLASSPATH_MODULAR, ((File) bootcp).getAbsolutePath());    //NOI18N
+            } else if (bootcp instanceof String) {
+                props.remove(NBJDK_BOOTCLASSPATH_MODULAR);
+                props.put(NBJDK_BOOTCLASSPATH, (String)bootcp); // NOI18N
+            }
             if (home != null) {
                 String toolsJar = home + "/lib/tools.jar".replace('/', File.separatorChar);
                 if (new File(toolsJar).exists()) { //On Mac OS X with Apple JDK, everything is in classes.jar, there is no tools.jar

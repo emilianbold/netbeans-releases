@@ -109,6 +109,7 @@ public final class JavaRegexpUtils {
     public static final String CALLSTACK_LINE_REGEX
             = "(?:\\t\\t?|  +| *\\t? *\\[catch\\] )"                    //NOI18N
               + CALLSTACK_LINE_PREFIX
+              + "(?:" + JavaRegexpPatterns.JAVA_ID_REGEX_FULL +"/)?"    //NOI18N
               + JavaRegexpPatterns.JAVA_ID_REGEX + "(?:\\."                 //NOI18N
               + JavaRegexpPatterns.JAVA_ID_REGEX + ")+"                     //NOI18N
               + "(?:\\.<init>)?"                                        //NOI18N

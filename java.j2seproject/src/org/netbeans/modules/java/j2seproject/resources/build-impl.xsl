@@ -2130,6 +2130,21 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
+            <target name ="-check-module-main-class" depends="init,compile">
+                <condition property="do.module.main.class">
+                    <and>
+                        <isset property="main.class.available"/>
+                        <available file="${{build.classes.dir}}/module-info.class"/>
+                        <isset property="libs.CopyLibs.classpath"/>
+                        <available classpath="${{libs.CopyLibs.classpath}}" classname="org.netbeans.modules.java.j2seproject.moduletask.ModuleMainClass"/>
+                    </and>
+                </condition>
+            </target>
+            <target name="-set-module-main-class" depends="-check-module-main-class" if="do.module.main.class">
+                <taskdef classname="org.netbeans.modules.java.j2seproject.moduletask.ModuleMainClass" classpath="${{libs.CopyLibs.classpath}}" name="modulemainclass"/>
+                <modulemainclass mainclass="${{main.class}}" moduleinfo="${{build.classes.dir}}/module-info.class" failonerror="false"/>
+            </target>
+
             <target name="-do-jar-create-manifest">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
@@ -2191,24 +2206,34 @@ is divided into following sections:
                 <j2seproject1:jar manifest="${{tmp.manifest.file}}"/>
                 <property location="${{build.classes.dir}}" name="build.classes.dir.resolved"/>
                 <property location="${{dist.jar}}" name="dist.jar.resolved"/>
+                <condition property="jar.usage.message.class.path.replacement" value="" else="${{dist.jar.resolved}}">
+                    <isset property="named.module.internal"/>
+                </condition>
                 <pathconvert property="run.classpath.with.dist.jar">
                     <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to="${{jar.usage.message.class.path.replacement}}"/>
                 </pathconvert>
                 <pathconvert property="run.modulepath.with.dist.jar">
+                    <path location="${{dist.jar.resolved}}"/>
                     <path path="${{run.modulepath}}"/>
                     <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
                 </pathconvert>
-                <condition property="jar.usage.message.module.path" value=" --module-path ${{run.modulepath.with.dist.jar}}" else="">
+                <condition property="jar.usage.message.run.modulepath.with.dist.jar" value="${{run.modulepath.with.dist.jar}}" else="${{run.modulepath}}">
+                    <isset property="named.module.internal"/>
+                </condition>
+                <condition property="jar.usage.message.module.path" value=" -p ${{jar.usage.message.run.modulepath.with.dist.jar}}" else="">
                     <and>
                         <isset property="modules.supported.internal"/>
-                        <length length="0" string="${{run.modulepath.with.dist.jar}}" when="greater"/>
+                        <length length="0" string="${{jar.usage.message.run.modulepath.with.dist.jar}}" when="greater"/>
                     </and>
                 </condition>
                 <condition property="jar.usage.message.class.path" value=" -cp ${{run.classpath.with.dist.jar}}" else="">
                     <length length="0" string="${{run.classpath.with.dist.jar}}" when="greater"/>
                 </condition>
-                <condition property="jar.usage.message.main.class" value=" -m ${{module.name}}/${{main.class}}" else=" ${{main.class}}">
+                <condition property="jar.usage.message.main.class.class.selector" value="" else="/${{main.class}}">
+                    <isset property="do.module.main.class"/>
+                </condition>
+                <condition property="jar.usage.message.main.class" value=" -m ${{module.name}}${{jar.usage.message.main.class.class.selector}}" else=" ${{main.class}}">
                     <isset property="named.module.internal"/>
                 </condition>
                 <condition property="jar.usage.message" else="" value="To run this application from the command line without Ant, try:${{line.separator}}${{platform.java}}${{jar.usage.message.module.path}}${{jar.usage.message.class.path}}${{jar.usage.message.main.class}}">
@@ -2242,7 +2267,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-set-module-main-class,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
             </target>
             
             <target name="jar">

@@ -45,14 +45,18 @@ package org.netbeans.modules.java.platform.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLDecoder;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,8 +64,10 @@ import org.openide.filesystems.URLMapper;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -75,6 +81,8 @@ import org.openide.util.WeakListeners;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=90)
 public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
+
+    private static final Logger LOG = Logger.getLogger(PlatformSourceForBinaryQuery.class.getName());
 
     private static final String JAR_FILE = "jar:file:";                 //NOI18N
     private static final String RTJAR_PATH = "/jre/lib/rt.jar!/";       //NOI18N
@@ -147,6 +155,8 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     }
 
     private static final class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
+        private static final String J2SE = "j2se";  //NOI18N
+        private static final SpecificationVersion JAVA_9 = new SpecificationVersion("9");   //NOI18N
 
         private final JavaPlatformManager jpm;
         private final URL artifact;
@@ -182,6 +192,21 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 final ClassPath sourcePath = platform.getSourceFolders();
                 final FileObject[] sourceRoots = sourcePath.getRoots();
                 if (sourceRoots.length > 0) {
+                    if (isModular(platform)) {
+                        final String moduleName = getModuleName(artifact);
+                        if (moduleName != null) {
+                            FileObject moduleRoot = null;
+                            for (FileObject sourceRoot : sourceRoots) {
+                                if (moduleName.equals(sourceRoot.getNameExt())) {
+                                    moduleRoot = sourceRoot;
+                                    break;
+                                }
+                            }
+                            if (moduleRoot != null) {
+                                return new FileObject[] {moduleRoot};
+                            }
+                        }
+                    }
                     return sourceRoots;
                 }
             }
@@ -238,6 +263,25 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             }
             platforms = newState;
             return affected;
+        }
+
+        //Todo: SPI will be required when more platforms than J2SE will be modular
+        private static boolean isModular(@NonNull final JavaPlatform platform) {
+            final Specification spec = platform.getSpecification();
+            return J2SE.equals(spec.getName()) && JAVA_9.compareTo(spec.getVersion()) <= 0;
+        }
+
+        @CheckForNull
+        private String getModuleName(URL root) {
+            try {
+                final String[] nameComponents = root.getPath().split("/");  //NOI18N
+                if (nameComponents.length > 0) {
+                    return URLDecoder.decode(nameComponents[nameComponents.length-1], "UTF-8");    //NOI18N
+                }
+            } catch (UnsupportedEncodingException e) {
+                LOG.warning(e.getMessage());
+            }
+            return null;
         }
 
     }

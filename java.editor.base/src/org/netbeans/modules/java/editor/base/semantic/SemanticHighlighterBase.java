@@ -57,6 +57,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExportsTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -72,8 +73,11 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.ProvidesTree;
+import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.ThrowTree;
@@ -83,6 +87,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.UnionTypeTree;
+import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -356,6 +361,11 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             }
         }
         
+        Coloring kwc = collection2Coloring(EnumSet.of(ColoringAttributes.KEYWORD));
+        for (Token kw : v.contextKeywords) {
+            newColoring.put(kw, kwc);
+        }
+        
         if (cancel.get())
             return true;
         
@@ -444,12 +454,11 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         
         private org.netbeans.api.java.source.CompilationInfo info;
         private Document doc;
-        private Map<Element, List<Use>> type2Uses;
-        
+        private Map<Element, List<Use>> type2Uses;        
         private Map<Tree, List<Token>> tree2Tokens;
+        private List<Token> contextKeywords;
         private TokenList tl;
-        private long memberSelectBypass = -1;
-        
+        private long memberSelectBypass = -1;        
         private SourcePositions sourcePositions;
         private ExecutableElement recursionDetector;
         
@@ -459,9 +468,9 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             this.info = info;
             this.doc  = doc;
             type2Uses = new HashMap<Element, List<Use>>();
-            
             tree2Tokens = new IdentityHashMap<Tree, List<Token>>();
-            
+            contextKeywords = new ArrayList<>();
+
             tl = new TokenList(info, doc, cancel);
             
             this.sourcePositions = info.getTrees().getSourcePositions();
@@ -470,6 +479,16 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         
         private void firstIdentifier(String name) {
             tl.firstIdentifier(getCurrentPath(), name, tree2Tokens);
+        }
+        
+        private Token firstIdentifierToken(String... names) {
+            for (String name : names) {
+                Token t = tl.firstIdentifier(getCurrentPath(), name);
+                if (t != null) {
+                    return t;
+                }
+            }
+            return null;
         }
         
         @Override
@@ -803,6 +822,20 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
 
         @Override
         public Void visitModule(ModuleTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            scan(tree.getAnnotations(), d);
+            tl.moveToEnd(tree.getAnnotations());
+            if (tree.getModuleType() == ModuleTree.ModuleKind.OPEN) {
+                Token t = firstIdentifierToken("open"); //NOI18N
+                if (t != null) {
+                    contextKeywords.add(t);
+                }
+                tl.moveNext();
+            }
+            Token t = firstIdentifierToken("module"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
             Element e = info.getTrees().getElement(getCurrentPath());
             if (e != null && e.getKind() == ElementKind.MODULE) {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getName()), EnumSet.of(UseTypes.DECLARATION), e, true, false);
@@ -812,6 +845,96 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             return null;
         }
 
+        @Override
+        public Void visitExports(ExportsTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            Token t = firstIdentifierToken("exports"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            scan(tree.getPackageName(), d);
+            tl.moveToOffset(sourcePositions.getEndPosition(info.getCompilationUnit(), tree.getPackageName()));
+            t = firstIdentifierToken("to"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            return scan(tree.getModuleNames(), d);
+        }
+
+        @Override
+        public Void visitOpens(OpensTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            Token t = firstIdentifierToken("opens"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            scan(tree.getPackageName(), d);
+            tl.moveToOffset(sourcePositions.getEndPosition(info.getCompilationUnit(), tree.getPackageName()));
+            t = firstIdentifierToken("to"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            return scan(tree.getModuleNames(), d);
+        }
+
+        @Override
+        public Void visitProvides(ProvidesTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            Token t = firstIdentifierToken("provides"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            scan(tree.getServiceName(), d);
+            tl.moveToOffset(sourcePositions.getEndPosition(info.getCompilationUnit(), tree.getServiceName()));
+            t = firstIdentifierToken("with"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            return scan(tree.getImplementationNames(), d);
+        }
+
+        @Override
+        public Void visitRequires(RequiresTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            Token t = firstIdentifierToken("requires"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+                tl.moveNext();
+                if (tree.isStatic() && tree.isTransitive()) {
+                    t = firstIdentifierToken("static", "transitive"); //NOI18N
+                    if (t != null) {
+                        contextKeywords.add(t);
+                    }
+                    tl.moveNext();
+                    t = firstIdentifierToken("static", "transitive"); //NOI18N
+                    if (t != null) {
+                        contextKeywords.add(t);
+                    }
+                } else if (tree.isStatic()) {
+                    t = firstIdentifierToken("static"); //NOI18N
+                    if (t != null) {
+                        contextKeywords.add(t);
+                    }
+                } else if (tree.isTransitive()) {
+                    t = firstIdentifierToken("transitive"); //NOI18N
+                    if (t != null) {
+                        contextKeywords.add(t);
+                    }
+                }
+            }
+            return super.visitRequires(tree, d);
+        }
+
+        @Override
+        public Void visitUses(UsesTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            Token t = firstIdentifierToken("uses"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            return super.visitUses(tree, d);
+        }
+                
         private long startOf(List<? extends Tree> trees) {
             if (trees.isEmpty()) return -1;
             return sourcePositions.getStartPosition(info.getCompilationUnit(), trees.get(0));

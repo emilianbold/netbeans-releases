@@ -220,6 +220,8 @@ public final class PatchByteCode {
             case 7: // CONSTANT_Class
             case 8: // CONSTANT_String
             case 16:    //CONSTANT_MethodType
+            case 19:    //CONSTANT_Module
+            case 20:    //CONSTANT_Package
                 pos += 2;
                 break;
             case 5: // CONSTANT_Long

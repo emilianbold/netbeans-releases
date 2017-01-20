@@ -314,6 +314,7 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
 
                     @Override
                     public TypeElement readClassFile() throws IOException {
+                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE()
                                 .getCompilationInfoImpl(cc).getJavacTask();
                         final ClassFinder finder = ClassFinder.instance(jt.getContext());

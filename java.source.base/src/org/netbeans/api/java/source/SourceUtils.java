@@ -87,6 +87,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
@@ -112,6 +113,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.Module;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
@@ -516,12 +518,15 @@ public class SourceUtils {
                     createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),                    
                     createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
                 };
-           String pkgName, className = null;
+            String pkgName, className = null;
+            Predicate<FileObject> filter = (p) -> true;
             if (pkg) {
                 pkgName = FileObjects.convertPackage2Folder(signature[0]);
             } else if (handle.getKind() == ElementKind.MODULE) {
                 pkgName = "";   //NOI18N
                 className = FileObjects.MODULE_INFO;
+                final String moduleName = handle.getQualifiedName();
+                filter = (fo) -> moduleName.equals(SourceUtils.getModuleName(fo.toURL()));
             } else {
                 int index = signature[0].lastIndexOf('.');                          //NOI18N
                 if (index<0) {
@@ -533,7 +538,7 @@ public class SourceUtils {
                     className = signature[0].substring(index+1);
                 }
             }
-            final List<Pair<FileObject,ClassPath>> fos = findAllResources(pkgName, cps);
+            final List<Pair<FileObject,ClassPath>> fos = findAllResources(pkgName, filter, cps);
             for (Pair<FileObject,ClassPath> pair : fos) {                
                 FileObject root = pair.second().findOwnerRoot(pair.first());
                 if (root == null) {
@@ -598,16 +603,20 @@ public class SourceUtils {
     @NonNull
     private static List<Pair<FileObject, ClassPath>> findAllResources(
             @NonNull final String resourceName,
-            @NonNull final ClassPath[] cps) {
+            @NonNull final Predicate<? super FileObject> rootsFilter,
+            @NonNull final ClassPath... cps) {
         final List<Pair<FileObject,ClassPath>> result = new ArrayList<>();
         for (ClassPath cp : cps) {
             for (FileObject fo : cp.findAllResources(resourceName)) {
-                result.add(Pair.<FileObject,ClassPath>of(fo, cp));
-            }            
+                final FileObject root = cp.findOwnerRoot(fo);
+                if (root != null && rootsFilter.test(root)) {
+                    result.add(Pair.<FileObject,ClassPath>of(fo, cp));
+                }
+            }
         }
         return result;
     }
-    
+
     private static FileObject findSource (final String binaryName, final FileObject... fos) throws IOException {
         final ClassIndexManager cim = ClassIndexManager.getDefault();
         try {
@@ -1665,12 +1674,14 @@ public class SourceUtils {
             moduleName;
     }
 
-    @NonNull
+    @CheckForNull
     private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
         try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
             final ClassFile clz = new ClassFile(in, false);
-            final String name = clz.getName().getExternalName(true);
-            return name.substring(0, name.length() - (FileObjects.MODULE_INFO.length()+1));
+            final Module modle = clz.getModule();
+            return modle != null ?
+                    modle.getName() :
+                    null;
         }
     }
 

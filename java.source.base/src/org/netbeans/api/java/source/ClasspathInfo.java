@@ -171,7 +171,7 @@ public final class ClasspathInfo {
             this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         }
-        if (srcCp == null) {
+        if (srcCp == null || srcCp == ClassPath.EMPTY) {
             this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = this.cachedAptSrcClassPath = ClassPath.EMPTY;
         } else {
             this.srcClassPath = srcCp;

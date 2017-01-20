@@ -2239,7 +2239,15 @@ public class JsFormatterTest extends JsFormatterTestBase {
     public void testVar4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/var4.js");
     }
-
+    
+    public void testImportsWithoutSemi() throws Exception {
+        reformatFileContents("testfiles/formatter/importsWithoutSemi.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testImportsWithoutSemiTokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/importsWithoutSemi.js");
+    }
+    
     public void testCodeTemplate1() throws Exception {
         reformatFileContents("testfiles/formatter/codeTemplate1.js",
                 Collections.<String, Object>emptyMap(), null, true);
