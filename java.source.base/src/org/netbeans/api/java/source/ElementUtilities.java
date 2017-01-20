@@ -46,6 +46,7 @@ package org.netbeans.api.java.source;
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
@@ -222,7 +223,10 @@ public final class ElementUtilities {
     }
     
     /**Get javadoc for given element.
+     * @deprecated The new DocTree API should be used to traverse Javadoc comments.
+     * Use {@link DocTrees#getDocCommentTree(javax.lang.model.element.Element)} instead.
      */
+    @Deprecated
     public Doc javaDocFor(Element element) {
         if (element != null) {
             DocEnv env = DocEnv.instance(ctx);
@@ -249,7 +253,10 @@ public final class ElementUtilities {
     }
     
     /**Find a {@link Element} corresponding to a given {@link Doc}.
+     * @deprecated The new DocTree API should be used to traverse Javadoc comments.
+     * Use {@link DocTrees#getElement(com.sun.source.util.DocTreePath)} instead.
      */
+    @Deprecated
     public Element elementFor(Doc doc) {
         return (doc instanceof JavadocEnv.ElementHolder) ? ((JavadocEnv.ElementHolder)doc).getElement() : null;
     }

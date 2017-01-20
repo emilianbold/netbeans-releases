@@ -63,6 +63,7 @@ import org.netbeans.modules.odcs.ui.project.activity.RssActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.ScmActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.TaskActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.WikiActivityDisplayer;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
@@ -72,7 +73,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 public class ActivityPanel extends javax.swing.JPanel implements Expandable, ActivityTypes {
 
     private static final Border NORMAL_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(153, 153, 153));
-    private static final Border EXPAND_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 255));
+    private static final Border EXPAND_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, ColorManager.getDefault().getLinkColor());
     private boolean detailsExpanded;
     private ActivityDisplayer activityAccessor;
 

@@ -47,7 +47,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  *
@@ -122,6 +121,13 @@ public final class ConstantPool {
         }
     }
 
+    public CPInfo get(int index) {
+        if (index < 0 || index >= entries.length) {
+            throw new IndexOutOfBoundsException(String.valueOf(index));
+        }
+        return entries[index];
+    }
+
     public int add(CPInfo constant) {
         for (int i = 0; i < entries.length; i++) {
             if (constant.equals(entries[i])) {
@@ -154,53 +160,65 @@ public final class ConstantPool {
         increment[0] = 1;
         switch (c) {
             case CONSTANT_Class:
-                return new CPClass(in);
+                return new CPClass(this, in);
             case CONSTANT_Fieldref:
-                return new CPFieldref(in);
+                return new CPFieldref(this, in);
             case CONSTANT_Methodref:
-                return new CPMethodref(in);
+                return new CPMethodref(this, in);
             case CONSTANT_InterfaceMethodref:
-                return new CPInterfaceMethodref(in);
+                return new CPInterfaceMethodref(this, in);
             case CONSTANT_String:
-                return new CPString(in);
+                return new CPString(this, in);
             case CONSTANT_Integer:
-                return new CPInteger(in);
+                return new CPInteger(this, in);
             case CONSTANT_Float:
-                return new CPFloat(in);
+                return new CPFloat(this, in);
             case CONSTANT_Long:
                 increment[0] = 2;
-                return new CPLong(in);
+                return new CPLong(this, in);
             case CONSTANT_Double:
                 increment[0] = 2;
-                return new CPDouble(in);
+                return new CPDouble(this, in);
             case CONSTANT_NameAndType:
-                return new CPNameAndType(in);
+                return new CPNameAndType(this, in);
             case CONSTANT_Utf8:
-                return new CPUtf8(in);
+                return new CPUtf8(this, in);
             case CONSTANT_MethodHandle:
-                return new CPMethodHandle(in);
+                return new CPMethodHandle(this, in);
             case CONSTANT_MethodType:
-                return new CPMethodType(in);
+                return new CPMethodType(this, in);
             case CONSTANT_InvokeDynamic:
-                return new CPInvokeDynamic(in);
+                return new CPInvokeDynamic(this, in);
             case CONSTANT_Module:
-                return new CPModule(in);
+                return new CPModule(this, in);
             case CONSTANT_Package:
-                return new CPPackage(in);
+                return new CPPackage(this, in);
             default:
                 throw new IllegalArgumentException("Unknown ConstantPool constant: " + c);    //NOI18N
         }
     }
 
-    public static class CPInfo {
+    public abstract static class CPInfo {
+        private final ConstantPool owner;
         private final ConstantKind tag;
 
-        CPInfo(ConstantKind tag) {
+        CPInfo(
+                final ConstantPool owner,
+                final ConstantKind tag) {
+            this.owner = owner;
             this.tag = tag;
         }
 
         public ConstantKind getTag() {
             return tag;
+        }
+
+        public Object getValue() {
+            return null;
+        }
+
+        ConstantPool getOwner() {
+            return owner;
         }
 
         void write(Writer out) throws IOException {
@@ -229,17 +247,25 @@ public final class ConstantPool {
         }
     }
 
-    public static final class CPClass extends CPInfo {
+    public abstract static class CPUTF8Ref extends CPInfo {
         private final int nameIndex;
 
-        public CPClass(final int nameIndex) {
-            super(ConstantKind.CONSTANT_Class);
+        public CPUTF8Ref(
+                final ConstantPool owner,
+                final ConstantKind kind,
+                final int nameIndex) {
+            super(owner, kind);
             this.nameIndex = nameIndex;
         }
 
-        CPClass(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Class);
-            this.nameIndex = in.readUnsignedShort();
+        public int getNameIndex() {
+            return nameIndex;
+        }
+
+        @Override
+        public Object getValue() {
+            final CPInfo info = getOwner().get(nameIndex);
+            return info == null ? null : info.getValue();
         }
 
         @Override
@@ -250,10 +276,10 @@ public final class ConstantPool {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj) || !(obj instanceof CPClass)) {
+            if (!super.equals(obj) || !(obj instanceof CPUTF8Ref)) {
                 return false;
             }
-            return nameIndex == ((CPClass)obj).nameIndex;
+            return nameIndex == ((CPUTF8Ref)obj).nameIndex;
         }
 
         @Override
@@ -265,12 +291,29 @@ public final class ConstantPool {
         }
     }
 
+    public static final class CPClass extends CPUTF8Ref {
+
+        public CPClass(
+                final ConstantPool owner,
+                final int nameIndex) {
+            super(owner, ConstantKind.CONSTANT_Class, nameIndex);
+        }
+
+        CPClass(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Class, in.readUnsignedShort());
+        }
+    }
+
     public static class CPFieldref extends CPInfo {
         private final int classIndex;
         private final int nameAndTypeIndex;
 
-        CPFieldref(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Fieldref);
+        CPFieldref(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Fieldref);
             this.classIndex = in.readUnsignedShort();
             this.nameAndTypeIndex = in.readUnsignedShort();
         }
@@ -306,8 +349,10 @@ public final class ConstantPool {
         private final int classIndex;
         private final int nameAndTypeIndex;
 
-        CPMethodref(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Methodref);
+        CPMethodref(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Methodref);
             this.classIndex = in.readUnsignedShort();
             this.nameAndTypeIndex = in.readUnsignedShort();
         }
@@ -343,8 +388,10 @@ public final class ConstantPool {
         private final int classIndex;
         private final int nameAndTypeIndex;
 
-        CPInterfaceMethodref(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_InterfaceMethodref);
+        CPInterfaceMethodref(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_InterfaceMethodref);
             this.classIndex = in.readUnsignedShort();
             this.nameAndTypeIndex = in.readUnsignedShort();
         }
@@ -376,43 +423,28 @@ public final class ConstantPool {
         }
     }
 
-    public static class CPString extends CPInfo {
-        private final int stringIndex;
+    public static class CPString extends CPUTF8Ref {
 
-        CPString(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_String);
-            this.stringIndex = in.readUnsignedShort();
-        }
-
-        @Override
-        void write(Writer out) throws IOException {
-            super.write(out);
-            out.writeUnsignedShort(stringIndex);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!super.equals(obj) || !(obj instanceof CPString)) {
-                return false;
-            }
-            return stringIndex == ((CPString)obj).stringIndex;
-        }
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "%s %d",    //NOI18N
-                    super.toString(),
-                    stringIndex);
+        CPString(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_String, in.readUnsignedShort());
         }
     }
 
     public static class CPInteger extends CPInfo {
         private final int value;
 
-        CPInteger(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Integer);
+        CPInteger(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Integer);
             this.value = in.readInt();
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
         }
 
         @Override
@@ -441,9 +473,16 @@ public final class ConstantPool {
     public static class CPFloat extends CPInfo {
         private final int value;
 
-        CPFloat(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Float);
+        CPFloat(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Float);
             this.value = in.readInt();
+        }
+
+        @Override
+        public Object getValue() {
+            return Float.intBitsToFloat(value);
         }
 
         @Override
@@ -465,7 +504,7 @@ public final class ConstantPool {
             return String.format(
                     "%s %f",    //NOI18N
                     super.toString(),
-                    Float.intBitsToFloat(value));
+                    (Float)getValue());
         }
     }
 
@@ -473,10 +512,17 @@ public final class ConstantPool {
         private final int highBytes;
         private final int lowBytes;
 
-        CPLong(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Long);
+        CPLong(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Long);
             this.highBytes = in.readInt();
             this.lowBytes = in.readInt();
+        }
+
+        @Override
+        public Object getValue() {
+            return ((long)highBytes)<<32 | (lowBytes & 0xffffffffL);
         }
 
         @Override
@@ -501,7 +547,7 @@ public final class ConstantPool {
             return String.format(
                     "%s 0x%x",    //NOI18N
                     super.toString(),
-                    ((long)highBytes)<<32 | (lowBytes & 0xffffffffL));
+                    (Long)getValue());
         }
     }
 
@@ -509,10 +555,17 @@ public final class ConstantPool {
         private final int highBytes;
         private final int lowBytes;
 
-        CPDouble(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Double);
+        CPDouble(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Double);
             this.highBytes = in.readInt();
             this.lowBytes = in.readInt();
+        }
+
+        @Override
+        public Object getValue() {
+            return Double.longBitsToDouble(((long)highBytes)<<32 | (lowBytes & 0xffffffffL));
         }
 
         @Override
@@ -537,7 +590,7 @@ public final class ConstantPool {
             return String.format(
                     "%s %f",    //NOI18N
                     super.toString(),
-                    Double.longBitsToDouble(((long)highBytes)<<32 | (lowBytes & 0xffffffffL)));
+                    (Double)getValue());
         }
     }
 
@@ -545,8 +598,10 @@ public final class ConstantPool {
         private final int nameIndex;
         private final int descriptorIndex;
 
-        CPNameAndType(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_NameAndType);
+        CPNameAndType(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_NameAndType);
             this.nameIndex = in.readUnsignedShort();
             this.descriptorIndex = in.readUnsignedShort();
         }
@@ -581,8 +636,10 @@ public final class ConstantPool {
     public static class CPUtf8 extends CPInfo {
         private final byte[] bytes;
 
-        public CPUtf8(final String str) throws IOException {
-            super(ConstantKind.CONSTANT_Utf8);
+        public CPUtf8(
+                final ConstantPool owner,
+                final String str) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Utf8);
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             try(final DataOutputStream out = new DataOutputStream(bos)) {
                 out.writeUTF(str);
@@ -591,13 +648,20 @@ public final class ConstantPool {
             bytes = Arrays.copyOfRange(arr, 2, arr.length);
         }
 
-        CPUtf8(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Utf8);
+        CPUtf8(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Utf8);
             final int length = in.readUnsignedShort();
             this.bytes = new byte[length];
             for (int i = 0; i < length; i++) {
                 bytes[i] = in.readByte();
             }
+        }
+
+        @Override
+        public Object getValue() {
+            return new String(bytes, Charset.forName("UTF-8")); //NOI18N
         }
 
         @Override
@@ -623,7 +687,7 @@ public final class ConstantPool {
             return String.format(
                     "%s %s",    //NOI18N
                     super.toString(),
-                    new String(bytes, Charset.forName("UTF-8")));    //NOI18N
+                    getValue());
         }
     }
 
@@ -631,8 +695,10 @@ public final class ConstantPool {
         private final int referenceKind;
         private final int referenceIndex;
 
-        CPMethodHandle(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_MethodHandle);
+        CPMethodHandle(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_MethodHandle);
             this.referenceKind = in.readUnsignedByte();
             this.referenceIndex = in.readUnsignedShort();
         }
@@ -667,8 +733,10 @@ public final class ConstantPool {
     public static class CPMethodType extends CPInfo {
         private final int descriptorIndex;
 
-        CPMethodType(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_MethodType);
+        CPMethodType(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_MethodType);
             this.descriptorIndex = in.readUnsignedShort();
         }
 
@@ -699,8 +767,10 @@ public final class ConstantPool {
         private final int bootstrapMethodAttrIndex;
         private final int nameAndTypeIndex;
 
-        CPInvokeDynamic(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_InvokeDynamic);
+        CPInvokeDynamic(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_InvokeDynamic);
             this.bootstrapMethodAttrIndex = in.readUnsignedShort();
             this.nameAndTypeIndex = in.readUnsignedShort();
         }
@@ -732,64 +802,20 @@ public final class ConstantPool {
         }
     }
 
-    public static class CPModule extends CPInfo {
-        private final int nameIndex;
+    public static class CPModule extends CPUTF8Ref {
 
-        CPModule(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Module);
-            this.nameIndex = in.readUnsignedShort();
-        }
-
-        @Override
-        void write(Writer out) throws IOException {
-            super.write(out);
-            out.writeUnsignedShort(nameIndex);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!super.equals(obj) || !(obj instanceof CPModule)) {
-                return false;
-            }
-            return nameIndex == ((CPModule)obj).nameIndex;
-        }
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "%s %d",    //NOI18N
-                    super.toString(),
-                    nameIndex);
+        CPModule(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Module, in.readUnsignedShort());
         }
     }
 
-    public static class CPPackage extends CPInfo {
-        private final int nameIndex;
-        CPPackage(final Reader in) throws IOException {
-            super(ConstantKind.CONSTANT_Package);
-            this.nameIndex = in.readUnsignedShort();
-        }
-
-        @Override
-        void write(Writer out) throws IOException {
-            super.write(out);
-            out.writeUnsignedShort(nameIndex);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!super.equals(obj) || !(obj instanceof CPPackage)) {
-                return false;
-            }
-            return nameIndex == ((CPPackage)obj).nameIndex;
-        }
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "%s %d",    //NOI18N
-                    super.toString(),
-                    nameIndex);
+    public static class CPPackage extends CPUTF8Ref {
+        CPPackage(
+                final ConstantPool owner,
+                final Reader in) throws IOException {
+            super(owner, ConstantKind.CONSTANT_Package, in.readUnsignedShort());
         }
     }
 }

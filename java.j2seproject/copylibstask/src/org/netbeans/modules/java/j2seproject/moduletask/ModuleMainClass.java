@@ -132,9 +132,9 @@ public final class ModuleMainClass extends Task {
             try (InputStream in = Files.newInputStream(moduleInfo.toPath())) {
                 cf = new ClassFile(in);
                 final ConstantPool cp = cf.getConstantPool();
-                final int attrNameIndex = cp.add(new ConstantPool.CPUtf8(ATTR_MODULE_MAIN_CLZ));
-                final int classNameIndex = cp.add(new ConstantPool.CPUtf8(internalName(mainClass)));
-                final int classIndex = cp.add(new ConstantPool.CPClass(classNameIndex));
+                final int attrNameIndex = cp.add(new ConstantPool.CPUtf8(cp, ATTR_MODULE_MAIN_CLZ));
+                final int classNameIndex = cp.add(new ConstantPool.CPUtf8(cp, internalName(mainClass)));
+                final int classIndex = cp.add(new ConstantPool.CPClass(cp, classNameIndex));
                 final byte[] data = new byte[2];
                 data[0] = (byte) (classIndex >>> 8);
                 data[1] = (byte) classIndex;

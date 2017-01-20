@@ -91,6 +91,8 @@ final class ModuleFileManager implements JavaFileManager {
     private final Source sourceLevel;
     private final boolean cacheFile;
     private final Map<String,List<URL>> patches;
+    private Set<ModuleLocation> moduleLocations;
+    private Location forLocation;
 
 
     public ModuleFileManager(
@@ -310,28 +312,9 @@ final class ModuleFileManager implements JavaFileManager {
     @Override
     @NonNull
     public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
-        final Set<Set<Location>> moduleRoots = new HashSet<>();
-        final Set<URL> seen = new HashSet<>();
-        for (ClassPath.Entry e : modulePath.entries()) {
-            final URL root = e.getURL();
-            if (!seen.contains(root)) {
-                final String moduleName = SourceUtils.getModuleName(root);
-                if (moduleName != null) {
-                    Collection<? extends URL> p = peers.apply(root);
-                    final List<? extends URL> x = patches.get(moduleName);
-                    if (x != null) {
-                        final List<URL> tmp = new ArrayList(x.size() + p.size());
-                        tmp.addAll(x);
-                        tmp.addAll(p);
-                        p = tmp;
-                    }
-                    moduleRoots.add(Collections.singleton(
-                            ModuleLocation.create(location, p, moduleName)));
-                    seen.addAll(p);
-                }
-            }
-        }
-        return moduleRoots;
+        return moduleLocations(location).stream()
+                .map((ml) -> Collections.<Location>singleton(ml))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -351,8 +334,43 @@ final class ModuleFileManager implements JavaFileManager {
     @Override
     @CheckForNull
     public Location getLocationForModule(Location location, String moduleName) throws IOException {
-        //todo: Only for Source Module Path & Output Path
-        return null;
+        return moduleLocations(location).stream()
+                .filter((ml) -> moduleName != null && moduleName.equals(ml.getModuleName()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Set<ModuleLocation> moduleLocations(final Location baseLocation) {
+        if (moduleLocations == null) {
+            final Set<ModuleLocation> moduleRoots = new HashSet<>();
+            final Set<URL> seen = new HashSet<>();
+            for (ClassPath.Entry e : modulePath.entries()) {
+                final URL root = e.getURL();
+                if (!seen.contains(root)) {
+                    final String moduleName = SourceUtils.getModuleName(root);
+                    if (moduleName != null) {
+                        Collection<? extends URL> p = peers.apply(root);
+                        final List<? extends URL> x = patches.get(moduleName);
+                        if (x != null) {
+                            final List<URL> tmp = new ArrayList(x.size() + p.size());
+                            tmp.addAll(x);
+                            tmp.addAll(p);
+                            p = tmp;
+                        }
+                        moduleRoots.add(ModuleLocation.create(baseLocation, p, moduleName));
+                        seen.addAll(p);
+                    }
+                }
+            }
+            moduleLocations = moduleRoots;
+            forLocation = baseLocation;
+        } else if (!forLocation.equals(baseLocation)) {
+                throw new IllegalStateException(String.format(
+                        "Locations computed for: %s, but queried for: %s",  //NOI18N
+                        forLocation,
+                        baseLocation));
+        }
+        return moduleLocations;
     }
 
     private JavaFileObject findFile(

@@ -67,6 +67,7 @@ import org.netbeans.modules.odcs.client.api.ODCSFactory;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.settings.OdcsSettings;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -125,7 +126,13 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         this.project = projectHandle.getTeamProject();
         this.refresher = new DashboardRefresher();
         project.getServer().addPropertyChangeListener(this);
+
+        setBackground(javax.swing.UIManager.getDefaults().getColor("List.background")); // NOI18N
         initComponents();
+        lblError.setForeground(ColorManager.getDefault().getErrorColor());
+        if (project.getDescription() == null || project.getDescription().length() == 0) {
+            pnlDetails.remove(lblDescription);
+        }
     }
 
     /**
@@ -175,11 +182,8 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         jLabel3 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
 
-        lblError.setForeground(new java.awt.Color(255, 0, 0));
         lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/ui/resources/error.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.lblError.text")); // NOI18N
-
-        setBackground(java.awt.Color.white);
 
         pnlContent.setBackground(getBackgroundColor());
         pnlContent.setRequestFocusEnabled(false);
@@ -225,7 +229,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         scrollPanelMain.setBorder(null);
         scrollPanelMain.setOpaque(false);
 
-        pnlMainContent.setBackground(new java.awt.Color(255, 255, 255));
+        pnlMainContent.setBackground(getBackground());
         pnlMainContent.setLayout(new java.awt.GridBagLayout());
         scrollPanelMain.setViewportView(pnlMainContent);
 
@@ -241,7 +245,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         scrollPanelDetails.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1, borderColor));
         scrollPanelDetails.setOpaque(false);
 
-        pnlDetails.setBackground(new java.awt.Color(255, 255, 255));
+        pnlDetails.setBackground(getBackground());
         pnlDetails.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(lblDescription, "<html>" + project.getDescription() + "</html>");
@@ -319,7 +323,6 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         pnlMaven.add(jLabel5, gridBagConstraints);
 
         textMaven.setEditable(false);
-        textMaven.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -340,7 +343,6 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         pnlMaven.add(jLabel6, gridBagConstraints);
 
         textArtifacts.setEditable(false);
-        textArtifacts.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -574,14 +576,14 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     @Override
     public void mouseEnteredExpandable() {
         ProjectDetailsTopComponent.this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        lblProjectName.setForeground(Color.BLUE);
+        lblProjectName.setForeground(ColorManager.getDefault().getLinkColor());
         lblExpandIcon.setEnabled(true);
     }
 
     @Override
     public void mouseExitedExpandable() {
         ProjectDetailsTopComponent.this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        lblProjectName.setForeground(Color.BLACK);
+        lblProjectName.setForeground(lblExpandIcon.getForeground());
         lblExpandIcon.setEnabled(false);
     }
 

@@ -72,6 +72,7 @@ import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.ui.utils.Utils;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
@@ -112,6 +113,9 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
         this.projectHandle = projectHandle;
         buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
         initComponents();
+        lblError.setForeground(ColorManager.getDefault().getErrorColor());
+        lblEmptyContent.setForeground(ColorManager.getDefault().getLinkColor());
+        lblLoading.setForeground(ColorManager.getDefault().getLinkColor());
         createShowButtons();
         loadRecentActivities(activities.size(), COUNT);
     }
@@ -142,15 +146,14 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
         pnlContent = new javax.swing.JPanel();
         lblLoading = new javax.swing.JLabel();
 
-        lblError.setForeground(new java.awt.Color(255, 0, 0));
         lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/ui/resources/error.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(RecentActivitiesPanel.class, "RecentActivitiesPanel.lblError.text")); // NOI18N
 
-        lblEmptyContent.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        lblEmptyContent.setForeground(new java.awt.Color(102, 102, 102));
+        lblEmptyContent.setFont(lblEmptyContent.getFont().deriveFont((lblEmptyContent.getFont().getStyle() | java.awt.Font.ITALIC)));
         org.openide.awt.Mnemonics.setLocalizedText(lblEmptyContent, org.openide.util.NbBundle.getMessage(RecentActivitiesPanel.class, "RecentActivitiesPanel.lblEmptyContent.text")); // NOI18N
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        setBackground(javax.swing.UIManager.getDefaults().getColor("List.background"));
+        setLayout(new java.awt.BorderLayout());
 
         lblTitle.setFont(lblTitle.getFont().deriveFont(lblTitle.getFont().getStyle() | java.awt.Font.BOLD));
         org.openide.awt.Mnemonics.setLocalizedText(lblTitle, org.openide.util.NbBundle.getMessage(RecentActivitiesPanel.class, "RecentActivitiesPanel.lblTitle.text")); // NOI18N
@@ -173,7 +176,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
             .addGroup(pnlTitleLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lblTitle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(pnlShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         pnlTitleLayout.setVerticalGroup(
@@ -181,15 +184,16 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
             .addGroup(pnlTitleLayout.createSequentialGroup()
                 .addGap(5, 5, 5)
                 .addComponent(lblTitle)
-                .addGap(3, 3, 3))
+                .addGap(5, 5, 5))
             .addComponent(pnlShow, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
+
+        add(pnlTitle, java.awt.BorderLayout.PAGE_START);
 
         pnlContent.setOpaque(false);
         pnlContent.setLayout(new java.awt.GridBagLayout());
 
-        lblLoading.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        lblLoading.setForeground(new java.awt.Color(102, 102, 102));
+        lblLoading.setFont(lblLoading.getFont().deriveFont((lblLoading.getFont().getStyle() | java.awt.Font.ITALIC)));
         org.openide.awt.Mnemonics.setLocalizedText(lblLoading, org.openide.util.NbBundle.getMessage(RecentActivitiesPanel.class, "RecentActivitiesPanel.lblLoading.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -198,24 +202,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
         gridBagConstraints.insets = new java.awt.Insets(100, 0, 0, 0);
         pnlContent.add(lblLoading, gridBagConstraints);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnlTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(pnlTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 333, Short.MAX_VALUE))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addGap(24, 24, 24)
-                    .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)))
-        );
+        add(pnlContent, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblEmptyContent;

@@ -224,6 +224,14 @@ public class JsFormatterEmbeddedTest extends JsFormatterTestBase {
     public void testJsx9Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/jsx9.js");
     }
+    
+    public void testJsx10() throws Exception {
+        reformatFileContents("testfiles/formatter/jsx10.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testJsx10Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/jsx10.js");
+    }
 
     public void testBroken1() throws Exception {
         reformatFileContents("testfiles/formatter/broken1.js",new IndentPrefs(4, 4));

@@ -191,12 +191,21 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
 
     private static final class Context {
+        private final FileObject file;
         private final boolean isSource;
         private final Map<Object/*Element | Directive*/,Long> pos = new HashMap<>();
         private final Map<ModuleElement.Directive, DirectiveTree> directives = new HashMap<>();
 
-        Context(boolean isSource) {
+        Context(
+                @NonNull final FileObject file,
+                final boolean isSource) {
+            this.file = file;
             this.isSource = isSource;
+        }
+
+        @NonNull
+        FileObject getFileObject() {
+            return file;
         }
 
         boolean isSourceFile() {
@@ -238,7 +247,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             this.trees = info.getTrees();
             this.sourcePositions = trees.getSourcePositions();
             this.canceled = canceled;
-            this.ctx = new Context(info.getCompilationUnit() != null);
+            this.ctx = new Context(
+                    info.getFileObject(),
+                    info.getCompilationUnit() != null);
         }
 
         @Override
@@ -393,7 +404,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                         dir.getKind(),
                         cpInfo,
                         ctx.getStartPosition(dir),
-                        OpenAction.openable(treePathHandle, ui.getFileObject(), name));
+                        OpenAction.openable(treePathHandle, ctx.getFileObject(), name));
                 } else {
                     dirDesc = Description.directive(
                         ui,

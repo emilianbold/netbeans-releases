@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.j2seproject.moduletask.classfile;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  *
@@ -74,6 +75,10 @@ public class Attribute {
 
     public int getNameIndex() {
         return nameIndex;
+    }
+
+    public byte[] getValue() {
+        return Arrays.copyOf(info, info.length);
     }
 
     @Override
