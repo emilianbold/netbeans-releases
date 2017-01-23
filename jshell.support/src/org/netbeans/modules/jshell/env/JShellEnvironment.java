@@ -44,6 +44,7 @@ package org.netbeans.modules.jshell.env;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,10 +71,12 @@ import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
+import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
@@ -278,10 +281,53 @@ public class JShellEnvironment {
     }
     
     public JShell.Builder customizeJShell(JShell.Builder b) {
-        if (requiredModules != null) {
-            b.compilerOptions("--add-modules", String.join(",", requiredModules)); // NOI18N
+        if (ShellProjectUtils.isModularProject(project)) {
+            if (requiredModules != null) {
+                b.compilerOptions("--add-modules", String.join(",", requiredModules)); // NOI18N
+                
+            }
+            // extra options to include the modules:
+            List<String> opts = ShellProjectUtils.launchVMOptions(project);
+            b.remoteVMOptions(opts.toArray(new String[opts.size()]));
+            
+            String modPath = addRoots("", ShellProjectUtils.projectRuntimeModulePath(project));
+            if (!modPath.isEmpty()) {
+                b.remoteVMOptions("--module-path", modPath);
+            }
         }
         return b;
+    }
+    
+    public ClassPath    getVMClassPath() {
+        return ShellProjectUtils.projecRuntimeClassPath(project);
+    }
+
+    public ClassPath    getCompilerClasspath() {
+        if (ShellProjectUtils.isModularProject(project)) {
+            return getClasspathInfo().getClassPath(PathKind.MODULE_COMPILE);
+        } else {
+            return getClasspathInfo().getClassPath(PathKind.COMPILE);
+        }
+    }
+    
+    private String addRoots(String prev, ClassPath cp) {
+        FileObject[] roots = cp.getRoots();
+        StringBuilder sb = new StringBuilder(prev);
+        
+        for (FileObject r : roots) {
+            FileObject ar = FileUtil.getArchiveFile(r);
+            if (ar == null) {
+                ar = r;
+            }
+            File f = FileUtil.toFile(ar);
+            if (f != null) {
+                if (sb.length() > 0) {
+                    sb.append(File.pathSeparatorChar);
+                }
+                sb.append(f.getPath());
+            }
+        }
+        return sb.toString();
     }
     
     private volatile boolean starting;
@@ -350,8 +396,10 @@ public class JShellEnvironment {
             */
             if (ShellProjectUtils.isModularProject(project)) {
                 List<String> sortedModules = new ArrayList<>(ShellProjectUtils.findProjectImportedModules(project, null));
-                Collections.sort(sortedModules);
-                this.requiredModules = sortedModules;
+                if (!sortedModules.isEmpty()) {
+                    Collections.sort(sortedModules);
+                    this.requiredModules = sortedModules;
+                }
             }
         } else {
             cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
@@ -671,8 +719,11 @@ public class JShellEnvironment {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ShellSession.PROP_ENGINE.equals(evt.getPropertyName())) {
-                ShellEvent ev = new ShellEvent(JShellEnvironment.this, shellSession, shellSession);
-                fireShellStarted(ev);
+                ShellSession s = shellSession;
+                if (s != null && s.isValid() && s.isActive()) {
+                    ShellEvent ev = new ShellEvent(JShellEnvironment.this, shellSession, shellSession);
+                    fireShellStarted(ev);
+                }
             }
         }
         

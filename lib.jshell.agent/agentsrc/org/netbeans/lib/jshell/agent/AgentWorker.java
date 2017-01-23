@@ -494,6 +494,8 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             if (!killed.get()) {
                 throw td;
             }
+        } catch (ExecutionControlException ex) {
+            throw ex; 
         } catch (Throwable t) {
             killed.set(true);
         } finally {

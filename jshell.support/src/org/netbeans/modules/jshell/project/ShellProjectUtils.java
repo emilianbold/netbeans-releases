@@ -63,6 +63,7 @@ import javax.lang.model.element.ModuleElement.DirectiveKind;
 import javax.lang.model.element.ModuleElement.RequiresDirective;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -283,6 +284,43 @@ public final class ShellProjectUtils {
             }
         }
         return false;
+    }
+    
+    /**
+     * Returns classpath to execute the application merged from all source roots of a project.
+     * 
+     * @param project
+     * @return 
+     */
+    public static ClassPath projectRuntimeModulePath(Project project) {
+        List<ClassPath> delegates = new ArrayList<>();
+        for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            ClassPath del = ClassPath.getClassPath(sg.getRootFolder(), JavaClassPathConstants.MODULE_EXECUTE_PATH); 
+            if (del != null && !del.entries().isEmpty()) {
+                delegates.add(del);
+            }
+        }
+        return ClassPathSupport.createProxyClassPath(delegates.toArray(new ClassPath[delegates.size()]));
+    }
+    
+    public static ClassPath projecRuntimeClassPath(Project project) {
+        if (project == null) {
+            return null;
+        }
+        boolean modular = isModularProject(project);
+        List<ClassPath> delegates = new ArrayList<>();
+        for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            ClassPath del = null; 
+            if (modular) {
+                del = ClassPath.getClassPath(sg.getRootFolder(), JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH);
+            } else {
+                del = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.EXECUTE); 
+            }
+            if (del != null && !del.entries().isEmpty()) {
+                delegates.add(del);
+            }
+        }
+        return ClassPathSupport.createProxyClassPath(delegates.toArray(new ClassPath[delegates.size()]));
     }
     
     public static List<String> launchVMOptions(Project project) {
