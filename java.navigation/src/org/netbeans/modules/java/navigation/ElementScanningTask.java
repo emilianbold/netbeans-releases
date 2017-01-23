@@ -55,6 +55,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,6 +68,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -178,6 +180,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                     }
                     if (element.getKind().isClass() || element.getKind().isInterface()) {
                         addMembers((TypeElement)element, topLevel, info, ctx, fqn);
+                    } else if (element.getKind() == ElementKind.MODULE) {
+                        addModuleDirectives((ModuleElement)element, topLevel, ctx, info, fqn);
                     }
                 }
             }
@@ -355,12 +359,20 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 overridenFrom = (TypeElement) overriden.getEnclosingElement();
             }
         }
+        final boolean isModule = e.getKind() == ElementKind.MODULE;
+        Set<Modifier> mods = e.getModifiers();
+        if (isModule) {
+            //Prevent module elements be hidden when no "Show non public members"
+            final Set<Modifier> tmp = EnumSet.of(Modifier.PUBLIC);
+            tmp.addAll(mods);
+            mods = tmp;
+        }
         Description d = Description.element(
                 ui,
                 getSimpleName(e),
                 ElementHandle.create(e),
                 info.getClasspathInfo(),
-                e.getModifiers(),
+                mods,
                 ctx.getStartPosition(e),
                 inherited,
                 encElement != null && encElement.getKind() == ElementKind.PACKAGE);
@@ -374,10 +386,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             if( !(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT) )
                 return null;
             d.htmlHeader = createHtmlHeader(info,  (VariableElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
-        } else if (e.getKind() == ElementKind.MODULE) {
+        } else if (isModule) {
             final ModuleElement me = (ModuleElement) e;
             d.htmlHeader = me.getQualifiedName().toString();
-            addModuleDirectives(me, d, ctx, info, fqn);
         }
         return d;
     }
