@@ -46,10 +46,13 @@ import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
@@ -77,6 +80,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
@@ -124,10 +128,10 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
      */
     private Color                     typeColor;
     private Color                     hiddenColor;
+
+    private final NF                  factory;
     
-    private Set<N>                    nodes = new WeakSet<>();
-    
-    private java.util.Map<SnippetHandle, Reference<N>> handledNodes = new WeakHashMap<>();
+    private static final java.util.Map<JShellEnvironment, NF> env2Factories = new HashMap<>();
     
     @NonNull
     private static String getHtmlColor(@NullAllowed final Color _c, @NonNull final Color defaultColor) {
@@ -154,9 +158,19 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
 
     public SnippetNodes(JShellEnvironment env) {
         this.env = env;
+        /*
+        synchronized(SnippetNodes.class) {
+            NF f = env2Factories.get(env);
+            if (f == null) {
+                f = new NF();
+                env2Factories.put(env, f);
+            }
+            this.factory = f;
+        }
+        */
+        this.factory = new NF();
         this.env.addShellListener(WeakListeners.create(ShellListener.class, this, env));
         update();
-        
         attachTo(env.getShell());
         
         typeColor = UIManager.getColor(TYPE_COLOR_KEY);
@@ -164,9 +178,12 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     }
     
     private void update() {
-        ShellSession session = env.getSession();
-        if (session.getShell() == null) {
-            return;
+        synchronized (this) {
+            ShellSession session = env.getSession();
+            if (session == null || session.getShell() == null) {
+                return;
+            }
+            this.session = session;
         }
         SnippetRegistry reg = session.getSnippetRegistry();
         Collection<Snippet> snippets = session.getSnippetRegistry().getSnippets();
@@ -213,10 +230,7 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     
     private N createNode(SnippetHandle k) {
         N n = new N(env, k);
-        synchronized (this) {
-            nodes.add(n);
-            handledNodes.put(k, new WeakReference<>(n));
-        }
+        factory.register(k, n);
         return n;
     }
     
@@ -226,28 +240,33 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     }
     
     private JShell state;
-    private JShell.Subscription sub;
+    private NR sub;
     
     private synchronized void attachTo(JShell shell) {
         if (shell == state) {
             return;
         }
         if (state != null) {
-            state.unsubscribe(sub);
+            sub.unsubscribe();
+            state = null;
         }
         if (shell != null) {
             state = shell;
-            sub = shell.onSnippetEvent(this);
+            sub = new NR(this, shell);
+            sub.subscribe();
         }
     }
 
     @Override
     public void shellStarted(ShellEvent ev) {
         synchronized (this) {
-            this.session = ev.getSession();
-            attachTo(ev.getEngine());
+            ShellSession s = ev.getSession();
+            if (s == null) {
+                return;
+            }
         }
         update();
+        attachTo(ev.getEngine());
         refreshNodeNames();
     }
 
@@ -255,40 +274,30 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     public void accept(SnippetEvent t) {
         Snippet snip = t.snippet();
         Snippet.Status stat = t.status();
+        if (session == null) {
+            return;
+        }
         if (stat == Snippet.Status.DROPPED ||
             stat == Snippet.Status.OVERWRITTEN) {
             SnippetHandle h = session.getSnippetRegistry().getHandle(snip);
             if (h != null) {
-                N n;
-                synchronized (this) {
-                    Reference<N> rN = handledNodes.get(h);
-                    if (rN == null) {
-                        return;
-                    }
-                    n = rN.get();
-                    if (n == null) {
-                        handledNodes.remove(h);
-                        return;
-                    }
+                N n = factory.findNode(h);
+                if (n != null) {
+                    n.fireDisplayNameChange();
                 }
-                n.fireDisplayNameChange();
             }
         }
     }   
     
     public Node getNodeFor(SnippetHandle h) {
         Node[] keeAlive = getNodes(); // force initialization
-        Reference<N> n = handledNodes.get(h);
-        return n == null ? null : n.get();
+        return factory.findNode(h);
     }
     
     private void refreshNodeNames() {
         Collection<N> nodes;
         
-        synchronized (this) {
-            nodes = new ArrayList<>(this.nodes);
-        }
-        for (N n : nodes) {
+        for (N n : factory.getNodes()) {
             n.fireDisplayNameChange();
         }
     }
@@ -299,7 +308,15 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
     }
 
     @Override
-    public void shellShutdown(ShellEvent ev) {}
+    public void shellShutdown(ShellEvent ev) {
+        synchronized (SnippetNodes.class) {
+            JShellEnvironment e = ev.getEnvironment();
+            if (e != null) {
+                env2Factories.remove(e);
+            }
+        }
+    }
+    
     @Override
     public void shellSettingsChanged(ShellEvent ev) {}
     
@@ -474,6 +491,78 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
         @Override
         public boolean canRename() {
             return false;
+        }
+    }
+    
+    static class NF {
+        private Set<N>                    nodes = new WeakSet<>();
+        private java.util.Map<SnippetHandle, Reference<N>> handledNodes = new WeakHashMap<>();
+        
+        public void register(SnippetHandle h, N n) {
+            synchronized (this) {
+                nodes.add(n);
+                handledNodes.put(h, new WeakReference<>(n));
+            }
+        }
+        
+        public N findNode(SnippetHandle h) {
+            N n;
+            synchronized (this) {
+                Reference<N> rN = handledNodes.get(h);
+                if (rN == null) {
+                    return null;
+                }
+                n = rN.get();
+                if (n == null) {
+                    handledNodes.remove(h);
+                    return null;
+                }
+                return n;
+            }
+        }
+        
+        public List<N> getNodes() {
+            synchronized (this) {
+                return new ArrayList<>(this.nodes);
+            }
+        }
+    }
+    
+    static class NR extends WeakReference<SnippetNodes> implements Runnable, Consumer<SnippetEvent> {
+        private JShell.Subscription sub;
+        private final Reference<JShell> shellRef;
+
+        public NR(SnippetNodes referent, JShell shell) {
+            super(referent, Utilities.activeReferenceQueue());
+            this.sub = sub;
+            this.shellRef = new WeakReference<>(shell);
+        }
+        
+        void subscribe() {
+            shellRef.get().onSnippetEvent(this);
+        }
+        
+        @Override
+        public void run() {
+            unsubscribe();
+        }
+
+        synchronized void unsubscribe() {
+            JShell s = shellRef.get();
+            if (sub == null || s == null) {
+                return;
+            }
+            s.unsubscribe(sub);
+        }
+
+        @Override
+        public void accept(SnippetEvent t) {
+            SnippetNodes n = get();
+            if (n == null) {
+                unsubscribe();
+            } else {
+                n.accept(t);
+            }
         }
     }
 }
