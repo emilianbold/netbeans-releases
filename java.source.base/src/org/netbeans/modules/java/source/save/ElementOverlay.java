@@ -66,6 +66,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
@@ -201,6 +202,10 @@ public class ElementOverlay {
     }
 
     public Element resolve(ASTService ast, Elements elements, String what) {
+        return resolve(ast, elements, what, null);
+    }
+    
+    public Element resolve(ASTService ast, Elements elements, String what, ModuleElement modle) {
         Element result = null;
         
         if (classes.containsKey(what)) {
@@ -208,11 +213,11 @@ public class ElementOverlay {
         }
 
         if (result == null) {
-            result = elements.getTypeElement(what);
+            result = modle != null ? elements.getTypeElement(modle, what) : elements.getTypeElement(what);
         }
 
         if (result == null) {
-            result = elements.getPackageElement(what);
+            result = modle != null ? elements.getPackageElement(modle, what) : elements.getPackageElement(what);
         }
 
         result = createElement(ast, elements, what, result);
@@ -352,7 +357,7 @@ public class ElementOverlay {
         }
         
         String fqn = ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().toString();
-        Element resolved = resolve(ast, elements, fqn);
+        Element resolved = resolve(ast, elements, fqn, elements.getModuleOf(((DeclaredType)tm).asElement()));
         
         if (resolved != null) {
             result.add(resolved);
@@ -365,7 +370,7 @@ public class ElementOverlay {
         if (original == null) return null;
 
         if (original.getKind().isClass() || original.getKind().isInterface()) {
-            return resolve(ast, elements, ((TypeElement)original).getQualifiedName().toString());
+            return resolve(ast, elements, ((TypeElement)original).getQualifiedName().toString(), elements.getModuleOf(original));
         } else {
             return original;
         }
@@ -617,7 +622,7 @@ public class ElementOverlay {
 
         @Override
         public Element getEnclosingElement() {
-            return ElementOverlay.this.resolve(ast, elements, ((QualifiedNameable/*XXX*/) delegateTo.getEnclosingElement()).getQualifiedName().toString());
+            return ElementOverlay.this.resolve(ast, elements, ((QualifiedNameable/*XXX*/) delegateTo.getEnclosingElement()).getQualifiedName().toString(), elements.getModuleOf(delegateTo));
         }
 
         @Override
