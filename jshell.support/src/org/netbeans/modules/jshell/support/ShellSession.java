@@ -557,6 +557,9 @@ public class ShellSession  {
     private RemoteJShellService exec;
     
     private String addRoots(String prev, ClassPath cp) {
+        if (cp == null) {
+            return prev;
+        }
         FileObject[] roots = cp.getRoots();
         StringBuilder sb = new StringBuilder(prev);
         
@@ -577,21 +580,12 @@ public class ShellSession  {
     }
     
     private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
-        String cp = createProjectClasspath();
+        ClassPath compile = getEnv().getCompilerClasspath();
+        String cp = addRoots("", compile);
         JShellAccessor.resetCompileClasspath(jshell, cp);
     }
     
     private boolean initializing;
-    
-    private String createProjectClasspath() {
-        //ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
-        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
-        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
-        
-        String cp = addRoots("", compile);
-        //cp = addRoots(cp, compile);
-        return cp;
-    }
     
     private class GenProxy implements JShellGenerator {
         private final JShellGenerator del;
@@ -960,7 +954,10 @@ public class ShellSession  {
             }
         }
         
-        String projectCp = createProjectClasspath();
+        // classpath construction
+        
+        ClassPath compile = getEnv().getVMClassPath();
+        String projectCp = addRoots("", compile); // NOi18N
         sb.append(sep).append(projectCp);
         return sb.toString();
     }
