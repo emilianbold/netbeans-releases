@@ -199,6 +199,15 @@ public final class ElementUtilities {
         return (((Symbol) element).flags() & Flags.SYNTHETIC) != 0 || (((Symbol) element).flags() & Flags.GENERATEDCONSTR) != 0;
     }
     
+    /**Returns true if the given module is open.
+     * 
+     *  @param element to check
+     *  @return true if and only if the given module is open, false otherwise
+     */
+    public boolean isOpen(ModuleElement element) {
+        return ((Symbol.ModuleSymbol) element).flags.contains(Symbol.ModuleFlags.OPEN);
+    }
+    
     /**
      * Returns true if this element represents a method which overrides a
      * method in one of its superclasses.
