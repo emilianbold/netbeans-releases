@@ -48,6 +48,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * Returns the source level for the non projectized java/class files (those
@@ -58,6 +59,8 @@ import org.openide.filesystems.FileObject;
 public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementation {
 
     private static final String JAVA_EXT = "java";  //NOI18N
+    private static final String MODULE_INFO = "module-info";  //NOI18N
+    private static final SpecificationVersion JDK9 = new SpecificationVersion("9");
 
     public DefaultSourceLevelQueryImpl() {}
 
@@ -67,7 +70,11 @@ public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementati
         if (JAVA_EXT.equalsIgnoreCase (ext)) {
             JavaPlatform jp = JavaPlatformManager.getDefault().getDefaultPlatform();
             assert jp != null : "JavaPlatformManager.getDefaultPlatform returned null";     //NOI18N
-            String s = jp.getSpecification().getVersion().toString();
+            SpecificationVersion ver = jp.getSpecification().getVersion();
+            if (MODULE_INFO.equalsIgnoreCase(javaFile.getName()) && JDK9.compareTo(ver) > 0) {
+                ver = JDK9;
+            }
+            String s = ver.toString();
             if (s.equals("1.6")) {
                 // #89131: these levels are not actually distinct from 1.5.
                 return "1.5";
