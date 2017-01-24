@@ -1339,6 +1339,44 @@ public class SourceUtils {
         return null;
     }
 
+    /**
+     * Returns a module name parsed from the given module-info.java.
+     * @param moduleInfo the module-info java file to parse the module name from
+     * @return the module name or null
+     * @since 2.28
+     */
+    @CheckForNull
+    public static String parseModuleName(
+            @NonNull final FileObject moduleInfo) {
+        final JavacTaskImpl jt = JavacParser.createJavacTask(
+                new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        try {
+            final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(
+                    moduleInfo,
+                    moduleInfo.getParent(),
+                    null,
+                    FileEncodingQuery.getEncoding(moduleInfo))).iterator().next();
+            final List<? extends Tree> typeDecls = cu.getTypeDecls();
+            if (!typeDecls.isEmpty()) {
+                final Tree typeDecl = typeDecls.get(0);
+                if (typeDecl.getKind() == Tree.Kind.MODULE) {
+                    return ((ModuleTree)typeDecl).getName().toString();
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return null;
+    }
+
     // --------------- Helper methods of getFile () -----------------------------
     private static ClassPath createClassPath (ClasspathInfo cpInfo, PathKind kind) throws MalformedURLException {
 	return ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, kind);	
@@ -1613,32 +1651,7 @@ public class SourceUtils {
                 }
             }
             if (moduleInfo != null) {
-                final JavacTaskImpl jt = JavacParser.createJavacTask(
-                        new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null);
-                try {
-                    final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(
-                            moduleInfo,
-                            root,
-                            null,
-                            FileEncodingQuery.getEncoding(moduleInfo))).iterator().next();
-                    final List<? extends Tree> typeDecls = cu.getTypeDecls();
-                    if (!typeDecls.isEmpty()) {
-                        final Tree typeDecl = typeDecls.get(0);
-                        if (typeDecl.getKind() == Tree.Kind.MODULE) {
-                            return ((ModuleTree)typeDecl).getName().toString();
-                        }
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+                return parseModuleName(moduleInfo);
             } else {
                 //No module -> automatic module
                 return autoName(srcRootURLs);
