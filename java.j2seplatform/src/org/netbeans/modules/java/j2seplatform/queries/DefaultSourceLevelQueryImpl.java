@@ -74,13 +74,7 @@ public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementati
             if (MODULE_INFO.equalsIgnoreCase(javaFile.getName()) && JDK9.compareTo(ver) > 0) {
                 ver = JDK9;
             }
-            String s = ver.toString();
-            if (s.equals("1.6")) {
-                // #89131: these levels are not actually distinct from 1.5.
-                return "1.5";
-            } else {
-                return s;
-            }
+            return ver.toString();
         }
         return null;
     }
