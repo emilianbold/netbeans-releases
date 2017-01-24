@@ -52,7 +52,13 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  *
  * @author sdedic
  */
-@ProjectServiceProvider(projectType = "org-netbeans-modules-java-j2seproject", service = J2SECategoryExtensionProvider.class)
+@ProjectServiceProvider(
+        service = J2SECategoryExtensionProvider.class,
+         projectType = {
+            "org-netbeans-modules-java-j2seproject",
+            "org.netbeans.modules.java.j2semodule"
+        }
+)
 public class JShellRunProvider implements J2SECategoryExtensionProvider{
     private JShellOptions2  component;
     
