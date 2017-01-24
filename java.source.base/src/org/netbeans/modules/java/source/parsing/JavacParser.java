@@ -932,6 +932,14 @@ public class JavacParser extends Parser {
             sourceLevel = sources[sources.length-1].name;
             warnLevel = Level.FINE;
         } else {
+            if (isModuleInfo) {
+                //Module info requires at least 9 otherwise module.compete fails with ISE.
+                final com.sun.tools.javac.code.Source java9 = com.sun.tools.javac.code.Source.JDK1_9;
+                final com.sun.tools.javac.code.Source required = com.sun.tools.javac.code.Source.lookup(sourceLevel);
+                if (required == null || required.compareTo(java9) < 0) {
+                    sourceLevel = java9.name;
+                }
+            }
             warnLevel = Level.WARNING;
         }
         for (com.sun.tools.javac.code.Source source : sources) {
