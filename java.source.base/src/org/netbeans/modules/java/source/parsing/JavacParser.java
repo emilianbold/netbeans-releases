@@ -717,11 +717,6 @@ public class JavacParser extends Parser {
                 LOGGER.log(Level.FINE, null, ex);
             }
         }
-        final CompilerOptionsQuery.Result compilerOptions = root != null ?
-                CompilerOptionsQuery.getOptions(root) :
-                file != null ?
-                    CompilerOptionsQuery.getOptions(file) :
-                    null;
         final Set<ConfigFlags> flags = EnumSet.noneOf(ConfigFlags.class);
         final Optional<JavacParser> mayBeParser = Optional.ofNullable(parser);
         if (mayBeParser.filter((p)->p.sourceCount>1).isPresent()) {
@@ -732,20 +727,29 @@ public class JavacParser extends Parser {
                 .filter((f)->FileObjects.MODULE_INFO.equals(f.getName())).isPresent()) {
             flags.add(ConfigFlags.MODULE_INFO);
         }
-        final JavacTaskImpl javacTask = createJavacTask(
-                cpInfo,
-                diagnosticListener,
-                sourceLevel != null ? sourceLevel.getSourceLevel() : null,
-                sourceLevel != null ? sourceLevel.getProfile() : null,
-                flags,
-                oraculum,
-                dcc,
-                parser == null ? null : new DefaultCancelService(parser),
-                APTUtils.get(root),
-                compilerOptions);
-        Context context = javacTask.getContext();
-        TreeLoader.preRegister(context, cpInfo, detached);
-        return javacTask;
+        try(final ModuleOraculum mo = ModuleOraculum.getInstance()) {
+            mo.installModuleName(root, file);
+            final FileObject artefact = root != null ?
+                    root :
+                    file;
+            final CompilerOptionsQuery.Result compilerOptions = artefact != null ?
+                CompilerOptionsQuery.getOptions(artefact) :
+                null;
+            final JavacTaskImpl javacTask = createJavacTask(
+                    cpInfo,
+                    diagnosticListener,
+                    sourceLevel != null ? sourceLevel.getSourceLevel() : null,
+                    sourceLevel != null ? sourceLevel.getProfile() : null,
+                    flags,
+                    oraculum,
+                    dcc,
+                    parser == null ? null : new DefaultCancelService(parser),
+                    APTUtils.get(root),
+                    compilerOptions);
+            Context context = javacTask.getContext();
+            TreeLoader.preRegister(context, cpInfo, detached);
+            return javacTask;
+        }
     }
 
     public static JavacTaskImpl createJavacTask (
@@ -932,6 +936,14 @@ public class JavacParser extends Parser {
             sourceLevel = sources[sources.length-1].name;
             warnLevel = Level.FINE;
         } else {
+            if (isModuleInfo) {
+                //Module info requires at least 9 otherwise module.compete fails with ISE.
+                final com.sun.tools.javac.code.Source java9 = com.sun.tools.javac.code.Source.JDK1_9;
+                final com.sun.tools.javac.code.Source required = com.sun.tools.javac.code.Source.lookup(sourceLevel);
+                if (required == null || required.compareTo(java9) < 0) {
+                    sourceLevel = java9.name;
+                }
+            }
             warnLevel = Level.WARNING;
         }
         for (com.sun.tools.javac.code.Source source : sources) {
@@ -999,10 +1011,13 @@ public class JavacParser extends Parser {
     @NonNull
     public static List<? extends String> validateCompilerOptions(@NonNull final List<? extends String> options) {
         final List<String> res = new ArrayList<>();
+        boolean xmoduleSeen = false;
         for (int i = 0; i < options.size(); i++) {
             String option = options.get(i);
-            if (option.startsWith("-Xmodule:") ||   //NOI18N
-                option.equals("-parameters")) {     //NOI18N
+            if (option.startsWith("-Xmodule:") && !xmoduleSeen) {   //NOI18N
+                res.add(option);
+                xmoduleSeen = true;
+            } else if (option.equals("-parameters")) {     //NOI18N
                 res.add(option);
             } else if (i+1 < options.size() && (
                     option.equals("--add-modules") ||   //NOI18N

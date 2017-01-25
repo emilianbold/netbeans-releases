@@ -54,6 +54,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * @author Tomas Zezula
@@ -74,8 +75,22 @@ public class DefaultSourceLevelQueryImplTest extends NbTestCase {
         assertNotNull ("Cannot convert File to FileObject, missing master-fs?",root);    //NOI18N
         FileObject javaFile = createTestFile (root,"test","Test.java","package test;\n class Test {}");    //NOI18N
         assertEquals(JavaPlatform.getDefault().getSpecification().getVersion().toString(), SourceLevelQuery.getSourceLevel(javaFile));
-    }        
-    
+    }
+
+    public void testGetSourceLevelForModuleInfo() throws Exception {
+        FileObject root = FileUtil.toFileObject(this.getWorkDir());
+        assertNotNull ("Cannot convert File to FileObject, missing master-fs?",root);    //NOI18N
+        FileObject javaFile = createTestFile (root,"test","module-info.java","module Foo {}");    //NOI18N
+        final SpecificationVersion java9 = new SpecificationVersion("9");   //NOI18N
+        final SpecificationVersion defPlat = JavaPlatform.getDefault().getSpecification().getVersion();
+        final SpecificationVersion expected = defPlat.compareTo(java9) < 0 ?
+                java9 :
+                defPlat;
+        assertEquals(
+                expected.toString(),
+                SourceLevelQuery.getSourceLevel(javaFile));
+    }
+
     private FileObject createTestFile (FileObject root, String path, String fileName, String content) throws IOException {
         FileObject pkg = FileUtil.createFolder(root, path);
         assertNotNull (pkg);
