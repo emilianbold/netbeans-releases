@@ -154,7 +154,7 @@ public class ModuleOraculumTest extends NbTestCase {
         assertNotNull(impl);
         final Options opts = Options.instance(impl.getContext());
         assertNotNull(opts);
-        assertNull(opts.get("-Xmodule:"));    //NOI18N
+        assertEquals("Test", opts.get("-Xmodule:"));    //NOI18N
     }
 
     public void testOraculumLibrarySourceNoModuleInfo() throws IOException {

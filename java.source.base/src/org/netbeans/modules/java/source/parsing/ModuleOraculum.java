@@ -39,8 +39,12 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.PackageTree;
+import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
@@ -55,7 +59,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
@@ -106,9 +112,20 @@ public final class ModuleOraculum implements CompilerOptionsQueryImplementation,
         if (root == null && fo != null) {
             root = computeRootIfAbsent(fo, (f) -> {
                 final ClassPath src = ClassPath.getClassPath(f, ClassPath.SOURCE);
-                return src != null ?
+                FileObject owner =  src != null ?
                         src.findOwnerRoot(f) :
                         null;
+                if (owner == null && f.isData()) {
+                    String pkg = parsePackage(f);
+                    String[] pkgElements = pkg.isEmpty() ?
+                            new String[0] :
+                            pkg.split("\\.");   //NOI18N
+                    owner = f.getParent();
+                    for (int i = 0; owner != null && i < pkgElements.length; i++) {
+                        owner = owner.getParent();
+                    }
+                }
+                return owner;
             });
         }
         if (root == null || JavaIndex.hasSourceCache(root.toURL(), false)) {
@@ -176,6 +193,38 @@ public final class ModuleOraculum implements CompilerOptionsQueryImplementation,
             modName = entry.second();
         }
         return modName;
+    }
+
+    @NonNull
+    private static String parsePackage(FileObject file) {
+        String pkg = "";    //NOI18N
+        try {
+            final JavacTaskImpl jt = JavacParser.createJavacTask(
+                    new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+            final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(
+                    file,
+                    file.getParent(),
+                    null,
+                    FileEncodingQuery.getEncoding(file))).iterator().next();
+            pkg = Optional.ofNullable(cu.getPackage())
+                    .map((pt) -> pt.getPackageName())
+                    .map((xt) -> xt.toString())
+                    .orElse(pkg);
+        } catch (IOException ioe) {
+            LOG.log(
+                    Level.INFO,
+                    "Cannot parse: {0}",
+                    FileUtil.getFileDisplayName(file));
+        }
+        return pkg;
     }
 
     @Override
