@@ -345,7 +345,7 @@ public class SourceUtils {
         if (cs.useFQNs()) {
             return fqn;
         }
-        CompilationUnitTree cut = info.getCompilationUnit();
+        final CompilationUnitTree cut = info.getCompilationUnit();
         final Trees trees = info.getTrees();
         final Scope scope = trees.getScope(context);
         String qName = fqn;
@@ -358,11 +358,13 @@ public class SourceUtils {
                 return (e.getKind().isClass() || e.getKind().isInterface()) && trees.isAccessible(scope, (TypeElement)e);
             }
         };
+        Element el = info.getTrees().getElement(new TreePath(cut));
+        ModuleElement modle = el != null ? info.getElements().getModuleOf(el) : null;
         Element toImport = null;
         while(qName != null && qName.length() > 0) {
             int lastDot = qName.lastIndexOf('.');
             Element element;
-            if ((element = info.getElements().getTypeElement(qName)) != null) {
+            if ((element = (modle != null ? info.getElements().getTypeElement(modle, qName) : info.getElements().getTypeElement(qName))) != null) {
                 clashing = false;
                 String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
                 if (sqName.length() > 0) {
@@ -401,7 +403,7 @@ public class SourceUtils {
                 if (cs.importInnerClasses()) {
                     break;
                 }
-            } else if ((element = info.getElements().getPackageElement(qName)) != null) {
+            } else if ((element = (modle != null ? info.getElements().getPackageElement(modle, qName) : info.getElements().getPackageElement(qName))) != null) {
                 if (toImport == null || GeneratorUtilities.checkPackagesForStarImport(qName, cs)) {
                     toImport = element;
                 }
