@@ -258,7 +258,12 @@ public class ColorManager {
 
         linkColor = UIManager.getColor("nb.html.link.foreground"); //NOI18N
         if (null == linkColor) {
-            linkColor = new Color(0x164B7B);
+            Color labelColor = javax.swing.UIManager.getDefaults().getColor("Label.foreground"); // NOI18N
+            if (labelColor == null || (labelColor.getRed() < 192 && labelColor.getGreen() < 192 && labelColor.getBlue() < 192)) {
+                linkColor = new Color(0x164B7B);
+            } else { // hack for high-contrast black
+                linkColor = new Color(0x2170B8);
+            }
         }
     }
 
