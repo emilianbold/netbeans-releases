@@ -127,15 +127,13 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
             for (Enumeration en = p.keys(); en.hasMoreElements(); ) {
                 String k = (String)en.nextElement();
                 String v = p.getProperty(k);
-                if (J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH.equals(k)) {
-                    v = filterProbe (v, probePath);
-                } else if (J2SEPlatformImpl.SYSPROP_USER_DIR.equals(k)) {
+                if (J2SEPlatformImpl.SYSPROP_USER_DIR.equals(k)) {
                     v = ""; //NOI18N
                 }
                 v = Util.fixSymLinks (k,v, instFolders);
                 m.put(k, v);
             }
-            this.setSystemProperties(m);
+            this.setSystemProperties(Util.filterProbe(m, probePath));
             this.valid = true;
             f.delete();
         } catch (IOException ex) {
