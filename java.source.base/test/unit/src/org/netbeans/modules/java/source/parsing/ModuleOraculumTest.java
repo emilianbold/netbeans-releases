@@ -45,12 +45,15 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -74,9 +77,12 @@ import org.openide.util.Lookup;
  */
 public class ModuleOraculumTest extends NbTestCase {
 
-    private FileObject wd;
-    private FileObject moduleFile;
-    private FileObject javaFile;
+    private FileObject root1;
+    private FileObject moduleFile1;
+    private FileObject javaFile1;
+    private FileObject root2;
+    private FileObject moduleFile2;
+    private FileObject javaFile2;
 
     public ModuleOraculumTest(final String name) {
         super(name);
@@ -86,9 +92,13 @@ public class ModuleOraculumTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
-        moduleFile = createModule(wd, "Test");  //NOI18N
-        javaFile = createClass(wd, "org.nb.Test");  //NOI18N
+        final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
+        root1 = FileUtil.createFolder(wd, "root1");
+        moduleFile1 = createModule(root1, "Test");  //NOI18N
+        javaFile1 = createClass(root1, "org.nb.Test");  //NOI18N
+        root2 = FileUtil.createFolder(wd, "root2");
+        moduleFile2 = createModule(root2, "Next");  //NOI18N
+        javaFile2 = createClass(root2, "org.nb.Next");  //NOI18N
         MockServices.setServices(CPP.class, COQ.class);
     }
 
@@ -96,8 +106,8 @@ public class ModuleOraculumTest extends NbTestCase {
         final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
         final JavacParser parser = new JavacParser(Collections.emptyList(), true);
         final JavacTaskImpl impl = JavacParser.createJavacTask(
-                javaFile,
-                wd,
+                javaFile1,
+                root1,
                 cpInfo,
                 parser,
                 null,
@@ -111,13 +121,13 @@ public class ModuleOraculumTest extends NbTestCase {
 
     public void testOraculumLibrarySourceWithoutRootWithSourcePath() {
         Lookup.getDefault().lookup(CPP.class).add(
-                wd,
+                root1,
                 ClassPath.SOURCE,
-                ClassPathSupport.createClassPath(wd));
+                ClassPathSupport.createClassPath(root1));
         final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
         final JavacParser parser = new JavacParser(Collections.emptyList(), true);
         final JavacTaskImpl impl = JavacParser.createJavacTask(
-                javaFile,
+                javaFile1,
                 null,
                 cpInfo,
                 parser,
@@ -134,7 +144,7 @@ public class ModuleOraculumTest extends NbTestCase {
         final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
         final JavacParser parser = new JavacParser(Collections.emptyList(), true);
         final JavacTaskImpl impl = JavacParser.createJavacTask(
-                javaFile,
+                javaFile1,
                 null,
                 cpInfo,
                 parser,
@@ -148,12 +158,12 @@ public class ModuleOraculumTest extends NbTestCase {
     }
 
     public void testOraculumLibrarySourceNoModuleInfo() throws IOException {
-        moduleFile.delete();
+        moduleFile1.delete();
         final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
         final JavacParser parser = new JavacParser(Collections.emptyList(), true);
         final JavacTaskImpl impl = JavacParser.createJavacTask(
-                javaFile,
-                wd,
+                javaFile1,
+                root1,
                 cpInfo,
                 parser,
                 null,
@@ -166,12 +176,12 @@ public class ModuleOraculumTest extends NbTestCase {
     }
 
     public void testOraculumProjectSource() throws IOException {
-        scan(wd);
+        scan(root1);
         final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
         final JavacParser parser = new JavacParser(Collections.emptyList(), true);
         final JavacTaskImpl impl = JavacParser.createJavacTask(
-                javaFile,
-                wd,
+                javaFile1,
+                root1,
                 cpInfo,
                 parser,
                 null,
@@ -185,13 +195,13 @@ public class ModuleOraculumTest extends NbTestCase {
 
     public void testOraculumLibrarySourceWithRootExpliciteXModule() throws IOException {
         Lookup.getDefault().lookup(COQ.class)
-                .forRoot(wd)
+                .forRoot(root1)
                 .apply("-Xmodule:SomeModule");  //NOI18N
         final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
         final JavacParser parser = new JavacParser(Collections.emptyList(), true);
         final JavacTaskImpl impl = JavacParser.createJavacTask(
-                javaFile,
-                wd,
+                javaFile1,
+                root1,
                 cpInfo,
                 parser,
                 null,
@@ -201,6 +211,278 @@ public class ModuleOraculumTest extends NbTestCase {
         final Options opts = Options.instance(impl.getContext());
         assertNotNull(opts);
         assertEquals("SomeModule", opts.get("-Xmodule:"));    //NOI18N
+    }
+
+
+    public void testRootCache() {
+        Lookup.getDefault().lookup(CPP.class)
+                .add(
+                        root1,
+                        ClassPath.SOURCE,
+                        ClassPathSupport.createClassPath(root1))
+                .add(
+                        root2,
+                        ClassPath.SOURCE,
+                        ClassPathSupport.createClassPath(root2));
+        final Logger l = Logger.getLogger(ModuleOraculum.class.getName());
+        final Level origLogLevel = l.getLevel();
+        final H h = new H();
+        l.setLevel(Level.FINE);
+        l.addHandler(h);
+        try {
+            final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
+            final JavacParser parser = new JavacParser(Collections.emptyList(), true);
+            JavacTaskImpl impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    null,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Test", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            List<? extends FileObject> roots = h.getRoots();
+            assertEquals(1, roots.size());
+            assertEquals(root1, roots.get(0));
+            h.reset();
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    null,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Test", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            roots = h.getRoots();
+            assertEquals(0, roots.size());
+            impl = JavacParser.createJavacTask(
+                    javaFile2,
+                    null,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Next", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            roots = h.getRoots();
+            assertEquals(1, roots.size());
+            assertEquals(root2, roots.get(0));
+        } finally {
+            l.removeHandler(h);
+            l.setLevel(origLogLevel);
+        }
+    }
+
+    public void testModuleNameCache() {
+        final Logger l = Logger.getLogger(ModuleOraculum.class.getName());
+        final Level origLogLevel = l.getLevel();
+        final H h = new H();
+        l.setLevel(Level.FINE);
+        l.addHandler(h);
+        try {
+            final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
+            final JavacParser parser = new JavacParser(Collections.emptyList(), true);
+            JavacTaskImpl impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Test", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            List<? extends String> names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertEquals("Test", names.get(0)); //NOI18N
+            h.reset();
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Test", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(0, names.size());
+            impl = JavacParser.createJavacTask(
+                    javaFile2,
+                    root2,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Next", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertEquals("Next", names.get(0)); //NOI18N
+        } finally {
+            l.removeHandler(h);
+            l.setLevel(origLogLevel);
+        }
+    }
+
+    public void testModuleNameCache_ModuleInfoUpdated() throws IOException {
+        final Logger l = Logger.getLogger(ModuleOraculum.class.getName());
+        final Level origLogLevel = l.getLevel();
+        final H h = new H();
+        l.setLevel(Level.FINE);
+        l.addHandler(h);
+        try {
+            final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
+            final JavacParser parser = new JavacParser(Collections.emptyList(), true);
+            JavacTaskImpl impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Test", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            List<? extends String> names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertEquals("Test", names.get(0)); //NOI18N
+            h.reset();
+            createModule(root1, "TestUpdated");
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("TestUpdated", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertEquals("TestUpdated", names.get(0)); //NOI18N
+            h.reset();
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("TestUpdated", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(0, names.size());
+        } finally {
+            l.removeHandler(h);
+            l.setLevel(origLogLevel);
+        }
+    }
+
+    public void testModuleNameCache_ModuleInfoDeleted() throws IOException {
+        final Logger l = Logger.getLogger(ModuleOraculum.class.getName());
+        final Level origLogLevel = l.getLevel();
+        final H h = new H();
+        l.setLevel(Level.FINE);
+        l.addHandler(h);
+        try {
+            final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
+            final JavacParser parser = new JavacParser(Collections.emptyList(), true);
+            JavacTaskImpl impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("Test", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            List<? extends String> names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertEquals("Test", names.get(0)); //NOI18N
+            h.reset();
+            moduleFile1.delete();
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertNull(Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertEquals(null, names.get(0));
+            h.reset();
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertNull(Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(0, names.size());
+        } finally {
+            l.removeHandler(h);
+            l.setLevel(origLogLevel);
+        }
+    }
+
+    public void testModuleNameCache_ModuleInfoCreated() throws IOException {
+        final Logger l = Logger.getLogger(ModuleOraculum.class.getName());
+        final Level origLogLevel = l.getLevel();
+        final H h = new H();
+        l.setLevel(Level.FINE);
+        l.addHandler(h);
+        try {
+            moduleFile1.delete();
+            final ClasspathInfo cpInfo = new ClasspathInfo.Builder(ClassPath.EMPTY).build();
+            final JavacParser parser = new JavacParser(Collections.emptyList(), true);
+            JavacTaskImpl impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertNull(Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            List<? extends String> names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertNull(names.get(0));
+            h.reset();
+            createModule(root1, "TestNew");
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("TestNew", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(1, names.size());
+            assertEquals("TestNew", names.get(0));  //NOI18N
+            h.reset();
+            impl = JavacParser.createJavacTask(
+                    javaFile1,
+                    root1,
+                    cpInfo,
+                    parser,
+                    null,
+                    null,
+                    false);
+            assertEquals("TestNew", Options.instance(impl.getContext()).get("-Xmodule:"));    //NOI18N
+            names = h.getModuleNames();
+            assertEquals(0, names.size());
+        } finally {
+            l.removeHandler(h);
+            l.setLevel(origLogLevel);
+        }
     }
 
     private static void scan(@NonNull final FileObject root) throws IOException {
@@ -224,7 +506,7 @@ public class ModuleOraculumTest extends NbTestCase {
         final String content = String.format(
                 "module %s {}", //NOI18N
                 moduleName);
-        return createFile(
+        return writeFile(
                 root,
                 "",
                 "module-info.java",
@@ -240,7 +522,7 @@ public class ModuleOraculumTest extends NbTestCase {
                 "package %s;\nclass %s {}", //NOI18N
                 pnp[0],
                 pnp[1]);
-        return createFile(
+        return writeFile(
                 root,
                 FileObjects.convertPackage2Folder(pnp[0]),
                 pnp[1],
@@ -248,7 +530,7 @@ public class ModuleOraculumTest extends NbTestCase {
     }
 
     @NonNull
-    private static FileObject createFile(
+    private static FileObject writeFile(
             @NonNull final FileObject root,
             @NonNull final String folder,
             @NonNull final String name,
@@ -264,6 +546,52 @@ public class ModuleOraculumTest extends NbTestCase {
             out.println(content);
         }
         return file;
+    }
+
+    private final class H extends Handler {
+        private final List<FileObject> roots = new ArrayList<>();
+        private final List<String> moduleNames = new ArrayList<>();
+
+        H() {
+        }
+
+        void reset() {
+            roots.clear();
+            moduleNames.clear();
+        }
+
+        @NonNull
+        List< ? extends FileObject> getRoots() {
+            return new ArrayList<>(roots);
+        }
+
+        @NonNull
+        List< ? extends String> getModuleNames() {
+            return new ArrayList<>(moduleNames);
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            final String msg = record.getMessage();
+            if (msg != null) {
+                switch (msg) {
+                    case "rootCache updated: {0}":
+                        roots.add((FileObject)record.getParameters()[0]);
+                        break;
+                    case "modNameCache updated: {0}":
+                        moduleNames.add((String)record.getParameters()[0]);
+                        break;
+                }
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
     }
 
     public static final class CPP implements ClassPathProvider {
