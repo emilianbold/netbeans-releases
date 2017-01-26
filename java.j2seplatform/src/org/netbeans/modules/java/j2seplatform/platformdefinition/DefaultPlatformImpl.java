@@ -96,7 +96,9 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
             final String key = (String) e.getKey();
             final String value = Util.fixSymLinks(
                     key,
-                    (String) e.getValue(),
+                    Util.removeNBArtifacts(
+                            key,
+                            (String) e.getValue()),
                     Util.toFileObjects(installFolders));
             systemProperties.put(key, value);
         }
@@ -129,15 +131,4 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         throw new UnsupportedOperationException (); //Default platform name can not be changed
     }
 
-    @Override
-    public ClassPath getStandardLibraries() {
-        if (standardLibs != null) {
-            return standardLibs;
-        }
-        String s = System.getProperty(SYSPROP_JAVA_CLASS_PATH);       //NOI18N
-        if (s == null) {
-            s = ""; // NOI18N
-        }
-        return standardLibs = Util.createClassPath (s);
-    }
 }
