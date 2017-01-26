@@ -109,13 +109,18 @@ public final class ModuleOraculum implements CompilerOptionsQueryImplementation,
     boolean installModuleName(
             @NullAllowed FileObject root,
             @NullAllowed final FileObject fo) {
+        if (fo != null && fo.isData() &&
+                (FileObjects.MODULE_INFO.equals(fo.getName()) || FileObjects.CLASS.equals(fo.getExt()))) {
+            //No needed to install module name for module-info or class file
+            return false;
+        }
         if (root == null && fo != null) {
             root = computeRootIfAbsent(fo, (f) -> {
                 final ClassPath src = ClassPath.getClassPath(f, ClassPath.SOURCE);
                 FileObject owner =  src != null ?
                         src.findOwnerRoot(f) :
                         null;
-                if (owner == null && f.isData()) {
+                if (owner == null && f.isData() && FileUtil.getMIMEType(f, null, JavacParser.MIME_TYPE) != null) {
                     String pkg = parsePackage(f);
                     String[] pkgElements = pkg.isEmpty() ?
                             new String[0] :

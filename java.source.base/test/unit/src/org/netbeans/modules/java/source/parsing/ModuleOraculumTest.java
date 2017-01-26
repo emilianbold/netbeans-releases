@@ -100,6 +100,7 @@ public class ModuleOraculumTest extends NbTestCase {
         moduleFile2 = createModule(root2, "Next");  //NOI18N
         javaFile2 = createClass(root2, "org.nb.Next");  //NOI18N
         MockServices.setServices(CPP.class, COQ.class);
+        FileUtil.setMIMEType(FileObjects.JAVA, JavacParser.MIME_TYPE);
     }
 
     public void testOraculumLibrarySourceWithRoot() {
@@ -525,7 +526,7 @@ public class ModuleOraculumTest extends NbTestCase {
         return writeFile(
                 root,
                 FileObjects.convertPackage2Folder(pnp[0]),
-                pnp[1],
+                String.format("%s.java",pnp[1]),    //NOI18N
                 content);
     }
 
