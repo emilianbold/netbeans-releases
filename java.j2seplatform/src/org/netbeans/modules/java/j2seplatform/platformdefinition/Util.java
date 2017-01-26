@@ -395,6 +395,40 @@ public class Util {
         return result;
     }
 
+    @NullUnknown
+    public static Map<String,String> filterProbe (
+            @NullAllowed final Map<String,String> p,
+            @NullAllowed final String probePath) {
+        if (p != null) {
+            final String val = p.get(J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH);
+            if (val != null) {
+                p.put(J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH, filterProbe(val, null));
+            }
+        }
+        return p;
+    }
+
+    private static String filterProbe (String v, final String probePath) {
+        if (v != null) {
+            final String[] pes = PropertyUtils.tokenizePath(v);
+            final StringBuilder sb = new StringBuilder ();
+            for (String pe : pes) {
+                if (probePath != null ?  probePath.equals(pe) : (pe != null &&
+                pe.endsWith("org-netbeans-modules-java-j2seplatform-probe.jar"))) { //NOI18N
+                    //Skeep
+                }
+                else {
+                    if (sb.length() > 0) {
+                        sb.append(File.pathSeparatorChar);
+                    }
+                    sb.append(pe);
+                }
+            }
+            v = sb.toString();
+        }
+        return v;
+    }
+
     // copy pasted from org.openide.modules.Dependency:
     /** Try to make a specification version from a string.
      * Deal with errors gracefully and try to recover something from it.

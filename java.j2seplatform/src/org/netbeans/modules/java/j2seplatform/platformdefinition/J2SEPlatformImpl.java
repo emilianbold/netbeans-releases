@@ -202,7 +202,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
         if (javadoc != null) {
             this.javadoc = Collections.unmodifiableList(javadoc);   //No copy needed, called from this module => safe
         }
-        setSystemProperties(filterProbe(sysProperties));
+        setSystemProperties(sysProperties);
     }
 
     protected J2SEPlatformImpl (String dispName, String antName, List<URL> installFolders, Map<String,String> initialProperties,
@@ -429,38 +429,6 @@ public class J2SEPlatformImpl extends JavaPlatform {
     Collection getInstallFolderURLs () {
         return Collections.unmodifiableList(this.installFolders);
     }
-
-    protected static String filterProbe (String v, final String probePath) {
-        if (v != null) {
-            final String[] pes = PropertyUtils.tokenizePath(v);
-            final StringBuilder sb = new StringBuilder ();
-            for (String pe : pes) {
-                if (probePath != null ?  probePath.equals(pe) : (pe != null &&
-                pe.endsWith("org-netbeans-modules-java-j2seplatform-probe.jar"))) { //NOI18N
-                    //Skeep
-                }
-                else {
-                    if (sb.length() > 0) {
-                        sb.append(File.pathSeparatorChar);
-                    }
-                    sb.append(pe);
-                }
-            }
-            v = sb.toString();
-        }
-        return v;
-    }
-
-    private static Map<String,String> filterProbe (final Map<String,String> p) {
-        if (p!=null) {
-            final String val = p.get(SYSPROP_JAVA_CLASS_PATH);
-            if (val != null) {
-                p.put(SYSPROP_JAVA_CLASS_PATH, filterProbe(val, null));
-            }
-        }
-        return p;
-    }
-
 
     private static ClassPath createClassPath (final List<? extends URL> urls) {
         List<PathResourceImplementation> resources = new ArrayList<> ();
