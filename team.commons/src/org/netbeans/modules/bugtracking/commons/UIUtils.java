@@ -135,6 +135,12 @@ public class UIUtils {
         if( null == res ) {
             res = new Color( 224, 224, 224 );
         }
+        // hack for high-contrast black
+        Color c = UIManager.getColor("Label.foreground"); // NOI18N
+        if (c != null && (c.getRed() >= 240 || c.getGreen() >= 240 || c.getBlue() >= 240)
+                && (res.getRed() >= 192 || res.getGreen() >= 192 || res.getBlue() >= 192)) {
+            res = Color.darkGray;
+        }
         return res;
     }
     

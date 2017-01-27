@@ -1525,7 +1525,7 @@ public class ElementJavadoc {
     
     private static boolean fromClass(final Element element, final CompilationInfo info) {
         TypeElement te = info.getElementUtilities().outermostTypeElement(element);
-        return (((Symbol)te).flags_field & Flags.FROMCLASS) != 0;
+        return te != null && (((Symbol)te).flags_field & Flags.FROMCLASS) != 0;
     }
     
     @SuppressWarnings("unchecked")
