@@ -50,7 +50,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,9 +64,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.extexecution.base.input.InputReader;
-import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
@@ -83,21 +79,13 @@ import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptionsValidator;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferencesValidator;
-import org.netbeans.modules.php.phpunit.run.JsonParser;
-import org.netbeans.modules.php.phpunit.run.TestCaseVo;
-import org.netbeans.modules.php.phpunit.run.TestSessionVo;
-import org.netbeans.modules.php.phpunit.run.TestSuiteVo;
 import org.netbeans.modules.php.phpunit.ui.PhpUnitTestGroupsPanel;
 import org.netbeans.modules.php.phpunit.ui.customizer.PhpUnitCustomizer;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
 import org.netbeans.modules.php.phpunit.util.PhpUnitUtils;
-import org.netbeans.modules.php.spi.testing.locate.Locations;
-import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo.TestInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
-import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -107,16 +95,13 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * PHPUnit 3.4+ support.
  */
 public final class PhpUnit {
 
-    static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
-
-    private static final RequestProcessor RP = new RequestProcessor(PhpUnit.class);
+    private static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
 
     static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_OUT_LINE_CONVERTOR_FACTORY = new PhpUnitOutLineConvertorFactory();
     static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_ERR_LINE_CONVERTOR_FACTORY = new PhpUnitErrLineConvertorFactory();
@@ -135,7 +120,7 @@ public final class PhpUnit {
 
     // cli options
     private static final String COLORS_PARAM = "--colors"; // NOI18N
-    private static final String JSON_LOG_PARAM = "--log-json"; // NOI18N
+    private static final String JUNIT_LOG_PARAM = "--log-junit"; // NOI18N
     private static final String FILTER_PARAM = "--filter"; // NOI18N
     private static final String COVERAGE_LOG_PARAM = "--coverage-clover"; // NOI18N
     private static final String LIST_GROUPS_PARAM = "--list-groups"; // NOI18N
@@ -150,7 +135,7 @@ public final class PhpUnit {
     private static final List<String> DEFAULT_PARAMS = Arrays.asList(COLORS_PARAM);
 
     // output files
-    public static final File JSON_LOG;
+    public static final File XML_LOG;
     public static final File COVERAGE_LOG;
 
     // suite file
@@ -190,8 +175,8 @@ public final class PhpUnit {
             }
         }
         LOGGER.log(Level.FINE, "Directory for PhpUnit logs: {0}", logDirName);
+        XML_LOG = new File(logDirName, "nb-phpunit-log.xml"); // NOI18N
         COVERAGE_LOG = new File(logDirName, "nb-phpunit-coverage.xml"); // NOI18N
-        JSON_LOG = new File(logDirName, "nb-phpunit-log.json"); // NOI18N
     }
 
 
@@ -271,7 +256,7 @@ public final class PhpUnit {
     }
 
     @CheckForNull
-    public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
+    public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
         PhpExecutable phpUnit = getExecutable(phpModule);
         if (phpUnit == null) {
             return null;
@@ -282,7 +267,7 @@ public final class PhpUnit {
             phpUnit.workDir(workingDirectory);
         }
         phpUnit.additionalParameters(getTestParams(phpModule, runInfo));
-        ExecutionDescriptor descriptor = getTestDescriptor(createTailTask(phpModule, testSession));
+        ExecutionDescriptor descriptor = getTestDescriptor();
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return phpUnit.runAndWait(descriptor, "Running PhpUnit tests..."); // NOI18N
@@ -372,8 +357,8 @@ public final class PhpUnit {
 
     private List<String> getTestParams(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
         List<String> params = createParams(true);
-        params.add(JSON_LOG_PARAM);
-        params.add(JSON_LOG.getAbsolutePath());
+        params.add(JUNIT_LOG_PARAM);
+        params.add(XML_LOG.getAbsolutePath());
         addBootstrap(phpModule, params);
         addConfiguration(phpModule, params);
         if (runInfo.isCoverageEnabled()) {
@@ -462,8 +447,7 @@ public final class PhpUnit {
         }
     }
 
-    private ExecutionDescriptor getTestDescriptor(final InputReaderTask tailTask) {
-        final RequestProcessor.Task task = RP.create(tailTask);
+    private ExecutionDescriptor getTestDescriptor() {
         // #236397 - cannot be controllable
         return new ExecutionDescriptor()
                 .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
@@ -473,21 +457,6 @@ public final class PhpUnit {
                     @Override
                     public void run() {
                         cleanupLogFiles();
-                        task.schedule(0);
-                    }
-                })
-                .postExecution(new Runnable() {
-                    @Override
-                    public void run() {
-                        // cancel tail task
-                        tailTask.cancel();
-                        // wait for run task to finish
-                        try {
-                            task.waitFinished(10000);
-                        } catch (InterruptedException ex) {
-                            LOGGER.log(Level.INFO, "Tail task did not finish");
-                            Thread.currentThread().interrupt();
-                        }
                     }
                 });
     }
@@ -513,15 +482,10 @@ public final class PhpUnit {
         return FileUtil.toFile(testDirectory);
     }
 
-    private InputReaderTask createTailTask(PhpModule phpModule, TestSession testSession) {
-        InputReader inputReader = InputReaders.forFile(JSON_LOG, StandardCharsets.UTF_8);
-        return InputReaderTask.newDrainingTask(inputReader, new JsonLogInputProcessor(JSON_LOG, phpModule, testSession));
-    }
-
     void cleanupLogFiles() {
-        if (JSON_LOG.exists()) {
-            if (!JSON_LOG.delete()) {
-                LOGGER.log(Level.INFO, "Cannot delete json log {0}", JSON_LOG);
+        if (XML_LOG.exists()) {
+            if (!XML_LOG.delete()) {
+                LOGGER.log(Level.INFO, "Cannot delete PHPUnit XML log {0}", XML_LOG);
             }
         }
         if (COVERAGE_LOG.exists()) {
@@ -780,124 +744,6 @@ public final class PhpUnit {
 
     //~ Inner classes
 
-    private static final class JsonLogInputProcessor implements InputProcessor, JsonParser.Handler {
-
-        private final TestSession testSession;
-        private final JsonParser jsonParser;
-
-        private TestSuite actualTestSuite;
-        private TestCase actualTestCase;
-
-
-        JsonLogInputProcessor(File logFile, PhpModule phpModule, TestSession testSession) {
-            assert logFile != null;
-            assert phpModule != null;
-            assert testSession != null;
-            this.testSession = testSession;
-            jsonParser = new JsonParser(logFile, this, getCustomTestSuite(phpModule));
-        }
-
-        @Override
-        public void processInput(char[] chars) throws IOException {
-            try {
-                jsonParser.parse(new String(chars));
-            } catch (Throwable ex) {
-                LOGGER.log(Level.INFO, "JSON parse error", ex);
-                assert false : ex;
-            }
-        }
-
-        @Override
-        public void reset() throws IOException {
-        }
-
-        @Override
-        public void close() throws IOException {
-            jsonParser.finish();
-        }
-
-        @Override
-        public void onSessionStart(TestSessionVo testSessionVo) {
-            testSession.setOutputLineHandler(testSessionVo.getOutputLineHandler());
-            String initMessage = testSessionVo.getInitMessage();
-            if (initMessage != null) {
-                testSession.printMessage(initMessage, false);
-                testSession.printMessage("", false); // NOI18N
-            }
-        }
-
-        @Override
-        public void onSessionFinish(TestSessionVo testSessionVo) {
-            String finishMessage = testSessionVo.getFinishMessage();
-            if (finishMessage != null) {
-                testSession.printMessage(finishMessage, false);
-                testSession.printMessage("", false); // NOI18N
-            }
-            List<String> finishErrors = testSessionVo.getFinishErrors();
-            for (String finishError : finishErrors) {
-                testSession.printMessage(finishError, true);
-            }
-            if (!finishErrors.isEmpty()) {
-                testSession.printMessage("", false); // NOI18N
-            }
-        }
-
-        @Override
-        public void onSuiteStart(TestSuiteVo testSuiteVo) {
-            assert actualTestSuite == null : actualTestSuite;
-            actualTestSuite = testSession.addTestSuite(testSuiteVo.getName(), testSuiteVo.getLocation());
-        }
-
-        @Override
-        public void onSuiteFinish(TestSuiteVo testSuiteVo) {
-            assert actualTestSuite != null;
-            actualTestSuite.finish(testSuiteVo.getTime());
-            actualTestSuite = null;
-        }
-
-        @Override
-        public void onTestStart(TestCaseVo testCaseVo) {
-            assert actualTestCase == null : actualTestCase;
-            actualTestCase = actualTestSuite.addTestCase(testCaseVo.getName(), testCaseVo.getType());
-            String className = testCaseVo.getClassName();
-            if (className != null) {
-                actualTestCase.setClassName(className);
-            }
-        }
-
-        @Override
-        public void onTestFinish(TestCaseVo testCaseVo) {
-            assert actualTestCase != null;
-            Locations.Line location = testCaseVo.getLocation();
-            if (location != null) {
-                actualTestCase.setLocation(location);
-            }
-            actualTestCase.setStatus(testCaseVo.getStatus());
-            if (testCaseVo.hasFailureInfo()) {
-                String[] stackTrace = testCaseVo.getStackTrace();
-                // #251749
-                String[] tmp;
-                if (stackTrace.length == 1) {
-                    tmp = new String[0];
-                } else {
-                    tmp = new String[stackTrace.length - 1];
-                    System.arraycopy(stackTrace, 1, tmp, 0, stackTrace.length - 1);
-                }
-                actualTestCase.setFailureInfo(stackTrace[0], tmp, testCaseVo.isError(), testCaseVo.getDiff());
-            }
-            actualTestCase.setTime(testCaseVo.getTime());
-            actualTestCase = null;
-        }
-
-        private String getCustomTestSuite(PhpModule phpModule) {
-            if (PhpUnitPreferences.isCustomSuiteEnabled(phpModule)) {
-                return PhpUnitPreferences.getCustomSuitePath(phpModule);
-            }
-            return null;
-        }
-
-    }
-
     static final class PhpUnitOutLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
         @Override
         public LineConvertor newLineConvertor() {
@@ -917,7 +763,7 @@ public final class PhpUnit {
     private static final class TestGroupsOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         private final Pattern testGroupName = Pattern.compile("^\\s-\\s(.*)$"); // NOI18N
-        private final List<String> testGroups = Collections.synchronizedList(new ArrayList<String>());
+        private final List<String> testGroups = Collections.synchronizedList(new ArrayList<>());
 
         private volatile boolean hasOutput = false;
 
@@ -943,7 +789,7 @@ public final class PhpUnit {
         }
 
         public List<String> getTestGroups() {
-            return testGroups;
+            return Collections.unmodifiableList(testGroups);
         }
 
         public boolean hasTestGroups() {

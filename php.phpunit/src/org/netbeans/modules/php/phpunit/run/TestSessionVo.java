@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.phpunit.run;
@@ -60,8 +60,8 @@ public final class TestSessionVo {
     private final List<TestSuiteVo> testSuites = new ArrayList<>();
     private final String customSuitePath;
 
-    private boolean started = false;
-    private boolean fatalError = false;
+    private long time = -1;
+    private int tests = -1;
 
 
     public TestSessionVo(@NullAllowed String customSuitePath) {
@@ -76,16 +76,20 @@ public final class TestSessionVo {
         return Collections.unmodifiableList(testSuites);
     }
 
-    public boolean isStarted() {
-        return started;
+    public int getTests() {
+        return tests;
     }
 
-    public void setStarted(boolean started) {
-        this.started = started;
+    public void setTests(int tests) {
+        this.tests = tests;
     }
 
-    public void setFatalError(boolean fatalError) {
-        this.fatalError = fatalError;
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     @NbBundle.Messages({
@@ -102,30 +106,16 @@ public final class TestSessionVo {
     @NbBundle.Messages("TestSessionVo.msg.output=Full output can be found in Output window.")
     @CheckForNull
     public String getFinishMessage() {
-        if (getFinishErrors().isEmpty()) {
-            return Bundle.TestSessionVo_msg_output();
+        if (testSuites.isEmpty()) {
+            // no message if we have no testsuites
+            return null;
         }
-        return null;
-    }
-
-    @NbBundle.Messages({
-        "TestSessionVo.err.fatal=PHP Fatal error(s) occured, test results can be incomplete!",
-        "TestSessionVo.err.output=Review Output window for full output.",
-    })
-    public List<String> getFinishErrors() {
-        List<String> errors = new ArrayList<>(2);
-        if (fatalError) {
-            errors.add(Bundle.TestSessionVo_err_fatal());
-            errors.add(Bundle.TestSessionVo_err_output());
-        } else if (testSuites.isEmpty()) {
-            errors.add(Bundle.TestSessionVo_err_output());
-        }
-        return errors;
+        return Bundle.TestSessionVo_msg_output();
     }
 
     @Override
     public String toString() {
-        return String.format("TestSessionVo{started: %s, suites: %d}", started, testSuites.size());
+        return String.format("TestSessionVo{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size());
     }
 
     public OutputLineHandler getOutputLineHandler() {
