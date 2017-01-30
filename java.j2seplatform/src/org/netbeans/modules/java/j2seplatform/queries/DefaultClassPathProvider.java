@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seplatform.queries;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
@@ -60,16 +61,23 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -84,15 +92,18 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author  tom
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=10000)
-public class DefaultClassPathProvider implements ClassPathProvider {
+public class DefaultClassPathProvider implements ClassPathProvider, PropertyChangeListener {
     
     /** Name of package keyword. */
     private static final String PACKAGE = "package";                    //NOI18N
@@ -110,10 +121,16 @@ public class DefaultClassPathProvider implements ClassPathProvider {
 
     private /*WeakHash*/Map<FileObject,WeakReference<FileObject>> sourceRootsCache = new WeakHashMap<>();
     private /*WeakHash*/Map<FileObject,WeakReference<ClassPath>> sourceClasPathsCache = new WeakHashMap<>();
-    private Reference<ClassPath> compiledClassPath;    
+    private Reference<ClassPath> compiledClassPath;
+    private final AtomicReference<Optional<JavaPlatform>> platformCache;
+    private final AtomicBoolean listensOnJPM;
+    private final AtomicReference<Pair<Reference<FileObject>,JavaPlatform>> lru;
     
     /** Creates a new instance of DefaultClassPathProvider */
     public DefaultClassPathProvider() {
+        this.platformCache = new AtomicReference<>();
+        this.listensOnJPM = new AtomicBoolean();
+        this.lru = new AtomicReference<>();
     }
     
     @Override
@@ -144,6 +161,10 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         }
         if (JAVA_EXT.equalsIgnoreCase(file.getExt()) || file.isFolder()) {  //Workaround: Editor asks for package root
             if (ClassPath.BOOT.equals (type)) {
+                final JavaPlatform jdk9 = hasJava9(file, true);
+                if (jdk9 != null) {
+                    return jdk9.getBootstrapLibraries();
+                }
                 JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
                 if (defaultPlatform != null) {
                     return defaultPlatform.getBootstrapLibraries();
@@ -197,9 +218,9 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 //see issue #75410
                 return null;
             } else if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
-                final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-                if (defaultPlatform != null && Util.JDK9.compareTo(defaultPlatform.getSpecification().getVersion()) <= 0) {
-                    return defaultPlatform.getBootstrapLibraries();
+                final JavaPlatform jdk9 = hasJava9(file, true);
+                if (jdk9 != null) {
+                    return jdk9.getBootstrapLibraries();
                 }
             }
         } else if (CLASS_EXT.equals(file.getExt())) {
@@ -243,6 +264,65 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             }
         }
         return null;
+    }
+
+    @Override
+    public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+        if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName())) {
+            lru.set(null);
+            platformCache.set(null);
+        }
+    }
+
+    @CheckForNull
+    private JavaPlatform hasJava9(
+            @NonNull final FileObject artefact,
+            final boolean source) {
+        //For the default platfrom >= Java9 return the default platform
+        final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        if (defaultPlatform != null && Util.JDK9.compareTo(defaultPlatform.getSpecification().getVersion()) <= 0) {
+            return defaultPlatform;
+        }
+        //Last recently used check
+        Pair<Reference<FileObject>, JavaPlatform> lruEntry = lru.get();
+        FileObject lruKey;
+        if (lruEntry != null && (lruKey = lruEntry.first().get()) != null && lruKey.equals(artefact)) {
+            return lruEntry.second();
+        }
+        //Find Java9
+        Optional<JavaPlatform> cached9 = platformCache.get();
+        if (cached9 == null) {
+            if (!listensOnJPM.get() && listensOnJPM.compareAndSet(false, true)) {
+                JavaPlatformManager.getDefault().addPropertyChangeListener(
+                        WeakListeners.propertyChange(this, JavaPlatformManager.getDefault()));
+            }
+            JavaPlatform java9 = null;
+            for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                final Specification spec = jp.getSpecification();
+                if ("j2se".equals(spec.getName()) && Util.JDK9.compareTo(spec.getVersion()) <= 0) { //NOI18N
+                    java9 = jp;
+                    break;
+                }
+            }
+            cached9 = Optional.ofNullable(java9);
+            if (platformCache.compareAndSet(null, cached9)) {
+                LOG.log(Level.FINE, "platformCache updated: {0}", cached9);  //NOI18N
+            }
+        }
+        JavaPlatform res = null;
+        //Has Java9 platform
+        if (cached9.isPresent()) {
+            String sl = SourceLevelQuery.getSourceLevel(artefact);
+            //Source level >= 9.
+            if (sl != null && Util.JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
+                res = cached9.get();
+            }
+        }
+        lru.set(Pair.of(
+                new WeakReference<>(artefact),
+                res));
+        LOG.log(Level.FINE, "lru updated: {0}", res);  //NOI18N
+        return res;
     }
 
     private static FileObject getRootForFile (final FileObject fo, int type) {
@@ -408,7 +488,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         
         return null;
     }
-    
+
     /**
      * Filtered reader for Java sources - it simply excludes
      * comments and some useless whitespaces from the original stream.

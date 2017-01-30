@@ -53,28 +53,41 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.DataOutputStream;
 import java.net.URL;
+import java.util.ArrayList;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.ProjectGroup;
 import org.netbeans.api.project.ui.ProjectGroupChangeListener;
@@ -88,18 +101,20 @@ import org.netbeans.junit.MockServices;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.MasterURLMapper;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 
@@ -133,7 +148,8 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     private static FileObject[] execRoots;
     private static FileObject[] libSourceRoots;
     private FileObject execTestDir;
-    
+    private JavaPlatform j9;
+
     /** Creates a new instance of DefaultClassPathProviderTest */
     public DefaultClassPathProviderTest (String testName) {
         super (testName);
@@ -142,7 +158,8 @@ public class DefaultClassPathProviderTest extends NbTestCase {
                 MasterURLMapper.class,
                 JavaPlatformProviderImpl.class,
                 SFBQI.class,
-                OpenProject.class);
+                OpenProject.class,
+                MockSLQ.class);
     }
 
     public static TestSuite suite() {
@@ -150,6 +167,10 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         suite.addTest(new DefaultClassPathProviderTest("testFindClassPath"));   //NOI18N
         suite.addTest(new DefaultClassPathProviderTest("testCycle"));           //NOI18N
         suite.addTest(new DefaultClassPathProviderTest("testEvents"));          //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testModularSources"));  //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testJavaPlatformCaching"));  //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testLRUCaching"));  //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testJPMChanges"));  //NOI18N
         return suite;
     }
     
@@ -158,15 +179,18 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     protected void tearDown () throws Exception {
         this.srcRoot = null;
         this.compileRoots = null;
+        if (j9 != null) {
+            Lookup.getDefault().lookup(JavaPlatformProviderImpl.class).removePlatform(j9);
+        }
         super.tearDown();
     }
     
     
     @Override
     protected void setUp() throws Exception {
-        this.clearWorkDir();        
         super.setUp();
-        final RunnableFuture<Project[]> dummyFuture = new FutureTask<Project[]>(new Callable<Project[]>() {
+        this.clearWorkDir();
+        final RunnableFuture<Project[]> dummyFuture = new FutureTask<>(new Callable<Project[]>() {
             @Override
             public Project[] call() throws Exception {
                 return new Project[0];
@@ -196,6 +220,12 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         cp = ClassPathSupport.createClassPath (this.libSourceRoots);
         GlobalPathRegistry.getDefault().register (ClassPath.SOURCE, new ClassPath[]{cp});
         execTestDir = workDir.createFolder("exec");
+
+        FileObject java9 = FileUtil.createFolder(workDir, "java9"); //NOI18N
+        FileObject javaBase = FileUtil.createFolder(java9, "modules/java.base"); //NOI18N
+        j9 = new J9(java9, javaBase);
+        Lookup.getDefault().lookup(JavaPlatformProviderImpl.class).addPlatform(j9);
+        Lookup.getDefault().lookup(MockSLQ.class).reset();
     }
     
     
@@ -331,6 +361,150 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         assertEquals(1, listener.get());
         assertFalse(contains(defaultCompile, Utilities.toURI(root1).toURL()));
         assertFalse(contains(defaultCompile, Utilities.toURI(root2).toURL()));
+    }
+
+    public void testModularSources() throws Exception {
+        final FileObject artefact = getSourceFile (FILE_IN_PACKAGE);
+        Lookup.getDefault().lookup(MockSLQ.class).register(this.srcRoot, new SpecificationVersion("1.8"));  //NOI18N
+        assertEquals("1.8", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+        ClassPathProvider cpp = new DefaultClassPathProvider ();
+        ClassPath cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+        assertNull ("DefaultClassPathProvider returned not null for MODULE_BOOT_PATH with source level 8",cp);
+        cp = cpp.findClassPath(artefact, ClassPath.BOOT);
+        assertEquals("DefaultClassPathProvider returned invalid classpath for BOOT with source level 8",
+                JavaPlatform.getDefault().getBootstrapLibraries(),
+                cp);
+        Lookup.getDefault().lookup(MockSLQ.class).register(this.srcRoot, new SpecificationVersion("9"));  //NOI18N
+        assertEquals("9", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+        cpp = new DefaultClassPathProvider ();
+        cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+        assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                j9.getBootstrapLibraries(),
+                cp);
+        cp = cpp.findClassPath(artefact, ClassPath.BOOT);
+        assertEquals("DefaultClassPathProvider returned invalid classpath for BOOT with source level 9",
+                j9.getBootstrapLibraries(),
+                cp);
+    }
+
+    public void testJavaPlatformCaching() throws IOException {
+        FileObject artefact = getSourceFile (FILE_IN_PACKAGE);
+        Lookup.getDefault().lookup(MockSLQ.class).register(this.srcRoot, new SpecificationVersion("9"));  //NOI18N
+        assertEquals("9", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+        ClassPathProvider cpp = new DefaultClassPathProvider ();
+        final Logger log = Logger.getLogger(DefaultClassPathProvider.class.getName());
+        final H h = new H();
+        final Level origLevel = log.getLevel();
+        log.setLevel(Level.FINE);
+        log.addHandler(h);
+        try {
+            ClassPath cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+            assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                    j9.getBootstrapLibraries(),
+                    cp);
+            List<Optional<JavaPlatform>> plts = h.getCachedPlatforms();
+            assertEquals(1, plts.size());
+            assertEquals(j9, plts.get(0).get());
+            h.reset();
+            artefact = getSourceFile (FILE_IN_PACKAGE);
+            cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+            assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                    j9.getBootstrapLibraries(),
+                    cp);
+            plts = h.getCachedPlatforms();
+            assertEquals(0, plts.size());
+        } finally {
+            log.removeHandler(h);
+            log.setLevel(origLevel);
+        }
+    }
+
+    public void testLRUCaching() throws IOException {
+        FileObject artefact = getSourceFile (FILE_IN_PACKAGE);
+        Lookup.getDefault().lookup(MockSLQ.class).register(this.srcRoot, new SpecificationVersion("9"));  //NOI18N
+        assertEquals("9", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+        ClassPathProvider cpp = new DefaultClassPathProvider ();
+        final Logger log = Logger.getLogger(DefaultClassPathProvider.class.getName());
+        final H h = new H();
+        final Level origLevel = log.getLevel();
+        log.setLevel(Level.FINE);
+        log.addHandler(h);
+        try {
+            ClassPath cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+            assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                    j9.getBootstrapLibraries(),
+                    cp);
+            List<JavaPlatform> plts = h.getLRU();
+            assertEquals(1, plts.size());
+            assertEquals(j9, plts.get(0));
+            h.reset();
+            artefact = getSourceFile (FILE_IN_PACKAGE);
+            cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+            assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                    j9.getBootstrapLibraries(),
+                    cp);
+            plts = h.getLRU();
+            assertEquals(0, plts.size());
+        } finally {
+            log.removeHandler(h);
+            log.setLevel(origLevel);
+        }
+    }
+
+    public void testJPMChanges() throws IOException {
+        final FileObject artefact = getSourceFile (FILE_IN_PACKAGE);
+        Lookup.getDefault().lookup(MockSLQ.class).register(this.srcRoot, new SpecificationVersion("9"));  //NOI18N
+        assertEquals("9", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+        final JavaPlatform j9Orig = Arrays.stream(JavaPlatformManager.getDefault().getInstalledPlatforms())
+                .filter((jp) -> "j2se".equals(jp.getSpecification().getName())   //NOI18N
+                        && new SpecificationVersion("9").equals(jp.getSpecification().getVersion()))
+                .findFirst()
+                .get();
+        ClassPathProvider cpp = new DefaultClassPathProvider ();
+        final Logger log = Logger.getLogger(DefaultClassPathProvider.class.getName());
+        final H h = new H();
+        final Level origLevel = log.getLevel();
+        log.setLevel(Level.FINE);
+        log.addHandler(h);
+        try {
+            ClassPath cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+            assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                    j9Orig.getBootstrapLibraries(),
+                    cp);
+            List<Optional<JavaPlatform>> plts = h.getCachedPlatforms();
+            assertEquals(1, plts.size());
+            assertEquals(j9Orig, plts.get(0).get());
+            List<JavaPlatform> lru = h.getLRU();
+            assertEquals(1, lru.size());
+            assertEquals(j9Orig, lru.get(0));
+            h.reset();
+            Lookup.getDefault().lookup(JavaPlatformProviderImpl.class).removePlatform(j9Orig);
+            cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+            assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                    null,
+                    cp);
+            plts = h.getCachedPlatforms();
+            assertEquals(1, plts.size());
+            assertFalse(plts.get(0).isPresent());
+            lru = h.getLRU();
+            assertEquals(1, lru.size());
+            assertNull(lru.get(0));
+            h.reset();
+            Lookup.getDefault().lookup(JavaPlatformProviderImpl.class).addPlatform(j9Orig);
+            cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_BOOT_PATH);
+            assertEquals ("DefaultClassPathProvider returned invalid classpath for MODULE_BOOT_PATH with source level 9",
+                    j9Orig.getBootstrapLibraries(),
+                    cp);
+            plts = h.getCachedPlatforms();
+            assertEquals(1, plts.size());
+            assertEquals(j9Orig, plts.get(0).get());
+            lru = h.getLRU();
+            assertEquals(1, lru.size());
+            assertEquals(j9Orig, lru.get(0));
+        } finally {
+            log.removeHandler(h);
+            log.setLevel(origLevel);
+        }
     }
 
     private static boolean contains (final ClassPath cp, final URL url) {
@@ -547,6 +721,168 @@ public class DefaultClassPathProviderTest extends NbTestCase {
                 }
             }
         }
+    }
 
+    private static final class J9 extends JavaPlatform {
+        private final FileObject installFolder;
+        private final ClassPath boot;
+
+        public J9(
+                @NonNull final FileObject installFolder,
+                @NonNull final FileObject javaBase) {
+            assert installFolder != null;
+            assert javaBase != null;
+            this.installFolder = installFolder;
+            this.boot = ClassPathSupport.createClassPath(javaBase);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return installFolder.getNameExt();
+        }
+
+        @Override
+        public ClassPath getBootstrapLibraries() {
+            return boot;
+        }
+
+        @Override
+        public ClassPath getStandardLibraries() {
+            return ClassPath.EMPTY;
+        }
+
+        @Override
+        public ClassPath getSourceFolders() {
+            return ClassPath.EMPTY;
+        }
+
+        @Override
+        public List<URL> getJavadocFolders() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getVendor() {
+            return "Oracle";    //NOI18N
+        }
+
+        @Override
+        public Collection<FileObject> getInstallFolders() {
+            return Collections.singleton(installFolder);
+        }
+
+        @Override
+        public FileObject findTool(String toolName) {
+            return null;
+        }
+
+        @Override
+        public Map<String, String> getProperties() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public Specification getSpecification() {
+            return new Specification("j2se", new SpecificationVersion("9"));    //NOI18N
+        }
+    }
+
+    public static final class MockSLQ implements SourceLevelQueryImplementation2 {
+        private Map<FileObject,R> levels;
+
+        public MockSLQ() {
+            this.levels = new HashMap<>();
+        }
+
+        void register(
+                @NonNull final FileObject root,
+                @NonNull final SpecificationVersion sl) {
+            assert root != null;
+            levels.put(root, new R(sl));
+        }
+
+        void reset() {
+            levels.clear();
+        }
+
+        @Override
+        public Result getSourceLevel(FileObject javaFile) {
+            for (Map.Entry<FileObject,R> e : this.levels.entrySet()) {
+                final FileObject root = e.getKey();
+                if (root.equals(javaFile) || FileUtil.isParentOf(root, javaFile)) {
+                    return e.getValue();
+                }
+            }
+            return null;
+        }
+
+        private static final class R implements Result {
+            private final SpecificationVersion sl;
+
+            R(@NonNull final SpecificationVersion sl) {
+                assert sl != null;
+                this.sl = sl;
+            }
+
+            @Override
+            public String getSourceLevel() {
+                return sl.toString();
+            }
+
+            @Override
+            public void addChangeListener(ChangeListener listener) {
+            }
+
+            @Override
+            public void removeChangeListener(ChangeListener listener) {
+            }
+        }
+    }
+
+    private static final class H extends Handler {
+
+        private final List<Optional<JavaPlatform>> cachedPlatforms = new ArrayList<>();
+        private final List<JavaPlatform> lru = new ArrayList<>();
+
+        H() {
+        }
+
+        void reset() {
+            cachedPlatforms.clear();
+            lru.clear();
+        }
+
+        @NonNull
+        List<Optional<JavaPlatform>> getCachedPlatforms() {
+            return new ArrayList<>(cachedPlatforms);
+        }
+
+        @NonNull
+        List<JavaPlatform> getLRU() {
+            return new ArrayList<>(lru);
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            final String msg = record.getMessage();
+            if (msg != null) {
+                switch (msg) {
+                    case "platformCache updated: {0}":
+                        cachedPlatforms.add((Optional<JavaPlatform>)record.getParameters()[0]);
+                        break;
+                    case "lru updated: {0}":
+                        lru.add((JavaPlatform)record.getParameters()[0]);
+                        break;
+                }
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
     }
 }

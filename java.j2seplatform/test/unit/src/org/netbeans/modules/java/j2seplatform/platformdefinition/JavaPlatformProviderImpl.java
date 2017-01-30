@@ -85,7 +85,7 @@ public final class JavaPlatformProviderImpl implements JavaPlatformProvider {
     }
     
     public void removePlatform (JavaPlatform platform) {
-        this.platforms.add (platform);
+        this.platforms.remove(platform);
         this.support.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
     }
         
