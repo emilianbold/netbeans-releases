@@ -46,6 +46,7 @@ package org.netbeans.modules.java.j2seplatform.queries;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,14 +54,18 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
-import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.annotations.common.NonNull;
@@ -69,9 +74,14 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -80,13 +90,20 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=10000)
-public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementation {
+public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementation, FileChangeListener {
 
+    private static final Logger LOG = Logger.getLogger(DefaultSourceLevelQueryImpl.class.getName());
     private static final String JAVA_EXT = "java";  //NOI18N
     private static final String MODULE_INFO = "module-info";  //NOI18N
     private static final SpecificationVersion JDK9 = new SpecificationVersion("9");
 
-    public DefaultSourceLevelQueryImpl() {}
+    private final AtomicReference<Pair<Reference<FileObject>,Reference<FileObject>>> rootCache;
+    private final AtomicReference<Pair<Pair<Reference<FileObject>,File>,Boolean>> modCache;
+
+    public DefaultSourceLevelQueryImpl() {
+        this.rootCache = new AtomicReference<>();
+        this.modCache = new AtomicReference<>();
+    }
 
     public String getSourceLevel(final FileObject javaFile) {
         assert javaFile != null : "javaFile has to be non null";   //NOI18N
@@ -104,27 +121,95 @@ public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementati
         return null;
     }
 
-    private static boolean isModular(final FileObject javaFile) {
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+        resetModCache();
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        resetModCache();
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        resetModCache();
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        resetModCache();
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+    }
+
+    private void resetModCache() {
+        final Pair<Pair<Reference<FileObject>, File>, Boolean> entry = modCache.getAndSet(null);
+        if (entry != null && entry.first().second() != null) {
+            FileUtil.removeFileChangeListener(this, entry.first().second());
+        }
+    }
+
+    private boolean isModular(final FileObject javaFile) {
         //Module-info always modular
         if (MODULE_INFO.equals(javaFile.getName())) {
             return true;
         }
         //Try to find module-info
-        FileObject root = Optional.ofNullable(ClassPath.getClassPath(javaFile, ClassPath.SOURCE))
-                .map((scp) -> scp.findOwnerRoot(javaFile))
-                .orElseGet(() -> {
-                    final String pkg = parsePackage(javaFile);
-                    final String[] pkgElements = pkg.isEmpty() ?
-                            new String[0] :
-                            pkg.split("\\.");   //NOI18N
-                    FileObject owner = javaFile.getParent();
-                    for (int i = 0; owner != null && i < pkgElements.length; i++) {
-                        owner = owner.getParent();
-                    }
-                    return owner;
-                });
-        return root != null &&
-                root.getFileObject(MODULE_INFO, JAVA_EXT) != null;
+        final Pair<Reference<FileObject>,Reference<FileObject>> entry = rootCache.get();
+        FileObject file, root;
+        if (entry == null ||
+                (file = entry.first().get()) == null || !file.equals(javaFile) ||
+                (root = entry.second().get()) == null) {
+            root = Optional.ofNullable(ClassPath.getClassPath(javaFile, ClassPath.SOURCE))
+                    .map((scp) -> scp.findOwnerRoot(javaFile))
+                    .orElseGet(() -> {
+                        final String pkg = parsePackage(javaFile);
+                        final String[] pkgElements = pkg.isEmpty() ?
+                                new String[0] :
+                                pkg.split("\\.");   //NOI18N
+                        FileObject owner = javaFile.getParent();
+                        for (int i = 0; owner != null && i < pkgElements.length; i++) {
+                            owner = owner.getParent();
+                        }
+                        return owner;
+                    });
+            rootCache.set(Pair.of(
+                    new WeakReference<>(javaFile),
+                    new WeakReference<>(root)));
+            LOG.log(Level.FINE, "rootCache updated: {0}", root);  //NOI18N
+        }
+        if (root == null) {
+            return false;
+        }
+        final Pair<Pair<Reference<FileObject>,File>,Boolean> modEntry = modCache.get();
+        FileObject meKye;
+        if (modEntry == null ||
+                (meKye = modEntry.first().first().get()) == null || !meKye.equals(root)) {
+            final FileObject modInfo = root.getFileObject(MODULE_INFO, JAVA_EXT);
+            final boolean res =  modInfo != null && modInfo.isData();
+            final Pair<Pair<Reference<FileObject>,File>,Boolean> newModEntry = Pair.of(
+                    Pair.of(new WeakReference<>(root), FileUtil.toFile(root)),
+                    res);
+            if (modCache.compareAndSet(modEntry, newModEntry)) {
+                if (modEntry != null && modEntry.first().second() != null) {
+                    FileUtil.removeFileChangeListener(this, modEntry.first().second());
+                }
+                if (newModEntry != null && newModEntry.first().second() != null) {
+                    FileUtil.addFileChangeListener(this, newModEntry.first().second());
+                }
+                LOG.log(Level.FINE, "modCache updated: {0}", res);  //NOI18N
+            }
+            return res;
+        } else {
+            return modEntry.second();
+        }
     }
 
     @NonNull
