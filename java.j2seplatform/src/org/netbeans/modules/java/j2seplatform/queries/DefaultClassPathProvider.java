@@ -77,6 +77,7 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -91,10 +92,12 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -125,12 +128,14 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
     private final AtomicReference<Optional<JavaPlatform>> platformCache;
     private final AtomicBoolean listensOnJPM;
     private final AtomicReference<Pair<Reference<FileObject>,JavaPlatform>> lru;
-    
+    private final AtomicReference<Pair<Reference<FileObject>,Reference<ClassPath>>> mpCache;
+
     /** Creates a new instance of DefaultClassPathProvider */
     public DefaultClassPathProvider() {
         this.platformCache = new AtomicReference<>();
         this.listensOnJPM = new AtomicBoolean();
         this.lru = new AtomicReference<>();
+        this.mpCache = new AtomicReference<>();
     }
     
     @Override
@@ -170,14 +175,7 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
                     return defaultPlatform.getBootstrapLibraries();
                 }
             } else if (ClassPath.COMPILE.equals(type)) {
-                synchronized (this) {
-                    ClassPath cp = null;
-                    if (this.compiledClassPath == null || (cp = this.compiledClassPath.get()) == null) {
-                        cp = ClassPathFactory.createClassPath(new CompileClassPathImpl ());
-                        this.compiledClassPath = new SoftReference<> (cp);
-                    }
-                    return cp;
-                }
+                return getCompiledClassPath();
             } else if (ClassPath.SOURCE.equals(type)) {
 //                synchronized (this) {
 //                    ClassPath cp = null;
@@ -222,6 +220,22 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
                 if (jdk9 != null) {
                     return jdk9.getBootstrapLibraries();
                 }
+            } else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type) && hasJava9(file, true) != null) {
+                Pair<Reference<FileObject>,Reference<ClassPath>> entry = mpCache.get();
+                FileObject key;
+                ClassPath value;
+                if (entry == null ||
+                        (key = entry.first().get()) == null || !key.equals(file) ||
+                        (value = entry.second().get()) == null) {
+                    final ClassPath base = getCompiledClassPath();
+                    //Limit the path to the actual library jar to prevent automatic modules creation for performance reasons
+                    //For an automatic module javac does list of all packages in ModuleFinder.
+                    value = ClassPathFactory.createClassPath(ModulePath.create(base,file));
+                    mpCache.set(Pair.of(
+                            new WeakReference<>(file),
+                            new WeakReference<>(value)));
+                }
+                return value;
             }
         } else if (CLASS_EXT.equals(file.getExt())) {
             if (ClassPath.BOOT.equals (type)) {
@@ -272,6 +286,16 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
             lru.set(null);
             platformCache.set(null);
         }
+    }
+
+    @NonNull
+    private synchronized ClassPath getCompiledClassPath() {
+        ClassPath cp = null;
+        if (this.compiledClassPath == null || (cp = this.compiledClassPath.get()) == null) {
+            cp = ClassPathFactory.createClassPath(new CompileClassPathImpl ());
+            this.compiledClassPath = new SoftReference<> (cp);
+        }
+        return cp;
     }
 
     @CheckForNull
@@ -787,6 +811,56 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
             }
         }
 
+    }
+
+    private static final class ModulePath implements ClassPathImplementation {
+        private final ClassPath base;
+        private final FileObject artefact;
+        private final AtomicReference<List<PathResourceImplementation>> cache;
+        private ModulePath(
+                @NonNull final ClassPath base,
+                @NonNull final FileObject artefact) {
+            Parameters.notNull("base", base);   //NOI18N
+            Parameters.notNull("artefact", artefact);   //NOI18N
+            this.base = base;
+            this.artefact = artefact;
+            this.cache = new AtomicReference<>();
+        }
+
+        @NonNull
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = cache.get();
+            if (res == null) {
+                res = new ArrayList<>();
+                for (ClassPath.Entry e : base.entries()) {
+                    for (FileObject src : SourceForBinaryQuery.findSourceRoots(e.getURL()).getRoots()) {
+                        if (artefact.equals(src) || FileUtil.isParentOf(src, artefact)) {
+                            res.add(ClassPathSupport.createResource(e.getURL()));
+                        }
+                    }
+                }
+                cache.set(res);
+            }
+            return res;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            //Immutable
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            //Immutable
+        }
+
+        @NonNull
+        static ModulePath create(
+                @NonNull final ClassPath base,
+                @NonNull final FileObject artefact) {
+            return new ModulePath(base, artefact);
+        }
     }
 
 }
