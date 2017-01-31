@@ -234,6 +234,21 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
             provider.clear();
         }
     }
+    
+    @Override
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
+        return null;
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
+        return null;
+    }
 
     //Protected impl methods for subclasses
 
