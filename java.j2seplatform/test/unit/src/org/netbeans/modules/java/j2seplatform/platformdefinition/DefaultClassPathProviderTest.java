@@ -76,6 +76,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.event.ChangeListener;
 import junit.framework.TestSuite;
 import org.netbeans.api.annotations.common.NonNull;
@@ -167,10 +168,11 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         suite.addTest(new DefaultClassPathProviderTest("testFindClassPath"));   //NOI18N
         suite.addTest(new DefaultClassPathProviderTest("testCycle"));           //NOI18N
         suite.addTest(new DefaultClassPathProviderTest("testEvents"));          //NOI18N
-        suite.addTest(new DefaultClassPathProviderTest("testModularSources"));  //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testModularSources_SystemModules"));  //NOI18N
         suite.addTest(new DefaultClassPathProviderTest("testJavaPlatformCaching"));  //NOI18N
         suite.addTest(new DefaultClassPathProviderTest("testLRUCaching"));  //NOI18N
         suite.addTest(new DefaultClassPathProviderTest("testJPMChanges"));  //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testModularSources_UserModules"));  //NOI18N
         return suite;
     }
     
@@ -363,7 +365,7 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         assertFalse(contains(defaultCompile, Utilities.toURI(root2).toURL()));
     }
 
-    public void testModularSources() throws Exception {
+    public void testModularSources_SystemModules() throws Exception {
         final FileObject artefact = getSourceFile (FILE_IN_PACKAGE);
         Lookup.getDefault().lookup(MockSLQ.class).register(this.srcRoot, new SpecificationVersion("1.8"));  //NOI18N
         assertEquals("1.8", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
@@ -507,6 +509,27 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         }
     }
 
+    public void testModularSources_UserModules() throws Exception {
+        final FileObject artefact = libSourceRoots[0];
+        Lookup.getDefault().lookup(MockSLQ.class).register(artefact, new SpecificationVersion("1.8"));  //NOI18N
+        assertEquals("1.8", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+        ClassPathProvider cpp = new DefaultClassPathProvider ();
+        ClassPath cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_COMPILE_PATH);
+        assertNull ("DefaultClassPathProvider returned not null for MODULE_COMPILE_PATH with source level 8",cp);
+        Lookup.getDefault().lookup(MockSLQ.class).register(artefact, new SpecificationVersion("9"));  //NOI18N
+        assertEquals("9", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+        cpp = new DefaultClassPathProvider ();
+        cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_COMPILE_PATH);
+        assertEquals(
+                Arrays.stream(execRoots)
+                        .sorted((a,b) -> a.getPath().compareTo(b.getPath()))
+                        .collect(Collectors.toList()),
+                cp.entries().stream()
+                        .map((e) -> e.getRoot())
+                        .sorted((a,b) -> a.getPath().compareTo(b.getPath()))
+                        .collect(Collectors.toList()));
+    }
+
     private static boolean contains (final ClassPath cp, final URL url) {
         for (ClassPath.Entry entry : cp.entries()) {
             if (entry.getURL().equals(url)) {
@@ -601,23 +624,21 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
             for (int i = 0; i < execRoots.length; i++) {
-                try {
-                    URL url = execRoots[i].getURL ();
-                    if (url.equals (binaryRoot)) {
-                        return new SourceForBinaryQuery.Result () {
-                    
-                            public FileObject[] getRoots () {                        
-                                return libSourceRoots;
-                            }
-                    
-                            public void addChangeListener (ChangeListener l) {
-                            }
-                    
-                            public void removeChangeListener (ChangeListener l) {
-                            }
-                        };
-                    }
-                } catch (Exception e) {}                
+                final URL url = execRoots[i].toURL ();
+                if (url.equals (binaryRoot)) {
+                    return new SourceForBinaryQuery.Result () {
+
+                        public FileObject[] getRoots () {
+                            return libSourceRoots;
+                        }
+
+                        public void addChangeListener (ChangeListener l) {
+                        }
+
+                        public void removeChangeListener (ChangeListener l) {
+                        }
+                    };
+                }
             }
             return null;
         }
