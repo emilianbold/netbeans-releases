@@ -510,24 +510,37 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     }
 
     public void testModularSources_UserModules() throws Exception {
-        final FileObject artefact = libSourceRoots[0];
-        Lookup.getDefault().lookup(MockSLQ.class).register(artefact, new SpecificationVersion("1.8"));  //NOI18N
-        assertEquals("1.8", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
-        ClassPathProvider cpp = new DefaultClassPathProvider ();
-        ClassPath cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_COMPILE_PATH);
-        assertNull ("DefaultClassPathProvider returned not null for MODULE_COMPILE_PATH with source level 8",cp);
-        Lookup.getDefault().lookup(MockSLQ.class).register(artefact, new SpecificationVersion("9"));  //NOI18N
-        assertEquals("9", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
-        cpp = new DefaultClassPathProvider ();
-        cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_COMPILE_PATH);
-        assertEquals(
-                Arrays.stream(execRoots)
-                        .sorted((a,b) -> a.getPath().compareTo(b.getPath()))
-                        .collect(Collectors.toList()),
-                cp.entries().stream()
-                        .map((e) -> e.getRoot())
-                        .sorted((a,b) -> a.getPath().compareTo(b.getPath()))
-                        .collect(Collectors.toList()));
+        final FileObject workDir = FileUtil.toFileObject(FileUtil.normalizeFile(this.getWorkDir()));
+        final FileObject modulesFolder = FileUtil.createFolder(workDir, "modules");
+        final FileObject[] modules = new FileObject[3];
+        for (int i = 0; i < modules.length; i++) {
+            modules[i] = FileUtil.createFolder(modulesFolder, "module" + (char) ('a'+i));
+        }
+        final ClassPath mp = ClassPathSupport.createClassPath(modules);
+        GlobalPathRegistry.getDefault().register(JavaClassPathConstants.MODULE_COMPILE_PATH, new ClassPath[]{mp});
+        try {
+            final FileObject artefact = libSourceRoots[0];
+            Lookup.getDefault().lookup(MockSLQ.class).register(artefact, new SpecificationVersion("1.8"));  //NOI18N
+            assertEquals("1.8", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+            ClassPathProvider cpp = new DefaultClassPathProvider ();
+            ClassPath cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            assertNull ("DefaultClassPathProvider returned not null for MODULE_COMPILE_PATH with source level 8",cp);
+            Lookup.getDefault().lookup(MockSLQ.class).register(artefact, new SpecificationVersion("9"));  //NOI18N
+            assertEquals("9", SourceLevelQuery.getSourceLevel(artefact)); //NOI18N
+            cpp = new DefaultClassPathProvider ();
+            cp = cpp.findClassPath(artefact, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            assertEquals(
+                    mp.entries().stream()
+                            .map((e) -> e.getRoot())
+                            .sorted((a,b) -> a.getPath().compareTo(b.getPath()))
+                            .collect(Collectors.toList()),
+                    cp.entries().stream()
+                            .map((e) -> e.getRoot())
+                            .sorted((a,b) -> a.getPath().compareTo(b.getPath()))
+                            .collect(Collectors.toList()));
+        } finally {
+            GlobalPathRegistry.getDefault().unregister(JavaClassPathConstants.MODULE_COMPILE_PATH, new ClassPath[]{mp});
+        }
     }
 
     private static boolean contains (final ClassPath cp, final URL url) {

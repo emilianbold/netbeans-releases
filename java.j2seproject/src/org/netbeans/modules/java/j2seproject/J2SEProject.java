@@ -74,6 +74,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -340,6 +341,7 @@ public final class J2SEProject implements Project {
                         addClassPathType(ClassPath.BOOT).
                         addClassPathType(ClassPath.COMPILE).
                         addClassPathType(ClassPath.SOURCE).
+                        addClassPathType(JavaClassPathConstants.MODULE_COMPILE_PATH).   //For DefaultClassPathProvider
                         setBuildImplTemplate(J2SEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2SEProject.class.getResource("resources/build.xsl")).             //NOI18N
                         addOpenPostAction(newStartMainUpdaterAction()).

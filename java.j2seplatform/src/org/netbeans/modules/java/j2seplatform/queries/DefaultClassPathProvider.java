@@ -124,18 +124,19 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
 
     private /*WeakHash*/Map<FileObject,WeakReference<FileObject>> sourceRootsCache = new WeakHashMap<>();
     private /*WeakHash*/Map<FileObject,WeakReference<ClassPath>> sourceClasPathsCache = new WeakHashMap<>();
+    //@GuardedBy("this")
     private Reference<ClassPath> compiledClassPath;
+    //@GuardedBy("this")
+    private Reference<ClassPath> modulePath;
     private final AtomicReference<Optional<JavaPlatform>> platformCache;
     private final AtomicBoolean listensOnJPM;
     private final AtomicReference<Pair<Reference<FileObject>,JavaPlatform>> lru;
-    private final AtomicReference<Pair<Reference<FileObject>,Reference<ClassPath>>> mpCache;
 
     /** Creates a new instance of DefaultClassPathProvider */
     public DefaultClassPathProvider() {
         this.platformCache = new AtomicReference<>();
         this.listensOnJPM = new AtomicBoolean();
         this.lru = new AtomicReference<>();
-        this.mpCache = new AtomicReference<>();
     }
     
     @Override
@@ -177,65 +178,14 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
             } else if (ClassPath.COMPILE.equals(type)) {
                 return getCompiledClassPath();
             } else if (ClassPath.SOURCE.equals(type)) {
-//                synchronized (this) {
-//                    ClassPath cp = null;
-//                    if (file.isFolder()) {
-//                        Reference ref = (Reference) this.sourceClasPathsCache.get (file);
-//                        if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-//                            cp = ClassPathSupport.createClassPath(new FileObject[] {file});
-//                            this.sourceClasPathsCache.put (file, new WeakReference(cp));
-//                        }
-//                    }
-//                    else {
-//                        Reference ref = (Reference) this.sourceRootsCache.get (file);
-//                        FileObject sourceRoot = null;
-//                        if (ref == null || (sourceRoot = (FileObject)ref.get()) == null ) {
-//                            sourceRoot = getRootForFile (file, TYPE_JAVA);
-//                            if (sourceRoot == null) {
-//                                return null;
-//                            }
-//                            this.sourceRootsCache.put (file, new WeakReference(sourceRoot));
-//                        }
-//                        if (!sourceRoot.isValid()) {
-//                            this.sourceClasPathsCache.remove(sourceRoot);
-//                        }
-//                        else {
-//                            ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
-//                            if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-//                                cp = ClassPathSupport.createClassPath(new FileObject[] {sourceRoot});
-//                                this.sourceClasPathsCache.put (sourceRoot, new WeakReference(cp));
-//                            }
-//                        }
-//                    }
-//                    return cp;                                        
-//                }         
-                //XXX: Needed by refactoring of the javaws generated files,
-                //anyway it's better to return no source path for files with no project.
-                //It has to be ignored by java model anyway otherwise a single java
-                //file inside home folder may cause a scan of the whole home folder.
-                //see issue #75410
-                return null;
+                return getSourcePath(file);
             } else if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
                 final JavaPlatform jdk9 = hasJava9(file, true);
                 if (jdk9 != null) {
                     return jdk9.getBootstrapLibraries();
                 }
             } else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type) && hasJava9(file, true) != null) {
-                Pair<Reference<FileObject>,Reference<ClassPath>> entry = mpCache.get();
-                FileObject key;
-                ClassPath value;
-                if (entry == null ||
-                        (key = entry.first().get()) == null || !key.equals(file) ||
-                        (value = entry.second().get()) == null) {
-                    final ClassPath base = getCompiledClassPath();
-                    //Limit the path to the actual library jar to prevent automatic modules creation for performance reasons
-                    //For an automatic module javac does list of all packages in ModuleFinder.
-                    value = ClassPathFactory.createClassPath(ModulePath.create(base,file));
-                    mpCache.set(Pair.of(
-                            new WeakReference<>(file),
-                            new WeakReference<>(value)));
-                }
-                return value;
+                return getModulePath();
             }
         } else if (CLASS_EXT.equals(file.getExt())) {
             if (ClassPath.BOOT.equals (type)) {
@@ -288,14 +238,65 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
         }
     }
 
+    @CheckForNull
+    private synchronized ClassPath getSourcePath(@NonNull final FileObject file) {
+//        ClassPath cp = null;
+//        if (file.isFolder()) {
+//            Reference ref = (Reference) this.sourceClasPathsCache.get (file);
+//            if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+//                cp = ClassPathSupport.createClassPath(new FileObject[] {file});
+//                this.sourceClasPathsCache.put (file, new WeakReference(cp));
+//            }
+//        }
+//        else {
+//            Reference ref = (Reference) this.sourceRootsCache.get (file);
+//            FileObject sourceRoot = null;
+//            if (ref == null || (sourceRoot = (FileObject)ref.get()) == null ) {
+//                sourceRoot = getRootForFile (file, TYPE_JAVA);
+//                if (sourceRoot == null) {
+//                    return null;
+//                }
+//                this.sourceRootsCache.put (file, new WeakReference(sourceRoot));
+//            }
+//            if (!sourceRoot.isValid()) {
+//                this.sourceClasPathsCache.remove(sourceRoot);
+//            }
+//            else {
+//                ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
+//                if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+//                    cp = ClassPathSupport.createClassPath(new FileObject[] {sourceRoot});
+//                    this.sourceClasPathsCache.put (sourceRoot, new WeakReference(cp));
+//                }
+//            }
+//        }
+//        return cp;
+        //XXX: Needed by refactoring of the javaws generated files,
+        //anyway it's better to return no source path for files with no project.
+        //It has to be ignored by java model anyway otherwise a single java
+        //file inside home folder may cause a scan of the whole home folder.
+        //see issue #75410
+        return null;
+    }
+
     @NonNull
     private synchronized ClassPath getCompiledClassPath() {
         ClassPath cp = null;
         if (this.compiledClassPath == null || (cp = this.compiledClassPath.get()) == null) {
-            cp = ClassPathFactory.createClassPath(new CompileClassPathImpl ());
+            //Add Compile paths and Exec paths which are not on the Compile paths
+            cp = ClassPathFactory.createClassPath(new GPRClassPath(ClassPath.COMPILE, ClassPath.EXECUTE));
             this.compiledClassPath = new SoftReference<> (cp);
         }
         return cp;
+    }
+
+    @NonNull
+    private synchronized ClassPath getModulePath() {
+        ClassPath mp = null;
+        if (this.modulePath == null || (mp = this.modulePath.get()) == null) {
+            mp = ClassPathFactory.createClassPath(new GPRClassPath(JavaClassPathConstants.MODULE_COMPILE_PATH));
+            this.modulePath = new SoftReference<> (mp);
+        }
+        return mp;
     }
 
     @CheckForNull
@@ -683,20 +684,23 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
     
     
     private static class RecursionException extends IllegalStateException {}
-    
-    private static class CompileClassPathImpl implements ClassPathImplementation, GlobalPathRegistryListener {
 
-        private List<? extends PathResourceImplementation> cachedCompiledClassPath;
+    private static final class GPRClassPath implements ClassPathImplementation, GlobalPathRegistryListener {
+
+        private final String[] cpIds;
         private final PropertyChangeSupport support;
         private final ThreadLocal<Boolean> active = new ThreadLocal<> ();
+        private List<? extends PathResourceImplementation> cachedCompiledClassPath;
         private long eventId;
         private volatile RequestProcessor.Task task;
         private boolean listening;
 
-        public CompileClassPathImpl () {
+        GPRClassPath (@NonNull final String... cpIds) {
+            this.cpIds = cpIds;
             this.support = new PropertyChangeSupport (this);
         }
 
+        @NonNull
         @Override
         public List<? extends PathResourceImplementation> getResources () {
             final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
@@ -717,25 +721,17 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
             }
             active.set(true);
             final List<PathResourceImplementation> l =  new ArrayList<> ();
-            try {                
+            try {
                 Set<URL> roots = new HashSet<> ();
-                //Add compile classpath
-                Set<ClassPath> paths = regs.getPaths (ClassPath.COMPILE);
-                for (ClassPath cp : paths) {
-                    try {
-                        for (ClassPath.Entry entry : cp.entries()) {
-                            roots.add (entry.getURL());
-                        }
-                    } catch (RecursionException e) {/*Recover from recursion*/}
-                }
-                //Add entries from Exec CP which are not on the Compile CP
-                Set<ClassPath> exec = regs.getPaths(ClassPath.EXECUTE);
-                for (ClassPath cp : exec) {
-                    try {
-                        for (ClassPath.Entry entry : cp.entries()) {
-                            roots.add (entry.getURL());
-                        }
-                    } catch (RecursionException e) {/*Recover from recursion*/}
+                for (String cpId : cpIds) {
+                    final Set<ClassPath> paths = regs.getPaths (cpId);
+                    for (ClassPath cp : paths) {
+                        try {
+                            for (ClassPath.Entry entry : cp.entries()) {
+                                roots.add (entry.getURL());
+                            }
+                        } catch (RecursionException e) {/*Recover from recursion*/}
+                    }
                 }
                 for (URL  root : roots) {
                     l.add (ClassPathSupport.createResource(root));
@@ -812,55 +808,4 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
         }
 
     }
-
-    private static final class ModulePath implements ClassPathImplementation {
-        private final ClassPath base;
-        private final FileObject artefact;
-        private final AtomicReference<List<PathResourceImplementation>> cache;
-        private ModulePath(
-                @NonNull final ClassPath base,
-                @NonNull final FileObject artefact) {
-            Parameters.notNull("base", base);   //NOI18N
-            Parameters.notNull("artefact", artefact);   //NOI18N
-            this.base = base;
-            this.artefact = artefact;
-            this.cache = new AtomicReference<>();
-        }
-
-        @NonNull
-        @Override
-        public List<? extends PathResourceImplementation> getResources() {
-            List<PathResourceImplementation> res = cache.get();
-            if (res == null) {
-                res = new ArrayList<>();
-                for (ClassPath.Entry e : base.entries()) {
-                    for (FileObject src : SourceForBinaryQuery.findSourceRoots(e.getURL()).getRoots()) {
-                        if (artefact.equals(src) || FileUtil.isParentOf(src, artefact)) {
-                            res.add(ClassPathSupport.createResource(e.getURL()));
-                        }
-                    }
-                }
-                cache.set(res);
-            }
-            return res;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            //Immutable
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            //Immutable
-        }
-
-        @NonNull
-        static ModulePath create(
-                @NonNull final ClassPath base,
-                @NonNull final FileObject artefact) {
-            return new ModulePath(base, artefact);
-        }
-    }
-
 }
