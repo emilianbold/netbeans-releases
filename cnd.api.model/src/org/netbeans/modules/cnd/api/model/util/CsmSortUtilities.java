@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -117,7 +118,52 @@ public class CsmSortUtilities {
         return n1 >= n2;
     }
 
-    
+    public static boolean startsWith(String theString, String prefix, boolean match, boolean caseSensitive) {
+        return isCamelCasePrefix(prefix) && !match
+                ? caseSensitive
+                        ? startsWithCamelCase(theString, prefix)
+                        : startsWithCamelCase(theString, prefix) || CsmSortUtilities.matchName(theString, prefix, match, caseSensitive)
+                : CsmSortUtilities.matchName(theString, prefix, match, caseSensitive);
+    }
+
+    public static boolean startsWithCamelCase(String theString, String prefix) {
+        if (theString == null || theString.length() == 0 || prefix == null || prefix.length() == 0) {
+            return false;
+        }
+        StringBuilder sb = new StringBuilder();
+        int lastIndex = 0;
+        int index;
+        do {
+            index = findNextUpper(prefix, lastIndex + 1);
+            String token = prefix.substring(lastIndex, index == -1 ? prefix.length() : index);
+            sb.append(token);
+            sb.append(index != -1 ? "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+            lastIndex = index;
+        } while (index != -1);
+        return Pattern.compile(sb.toString()).matcher(theString).matches();
+    }
+
+    private static int findNextUpper(String text, int offset) {
+        for (int i = offset; i < text.length(); i++) {
+            if (Character.isUpperCase(text.charAt(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isCamelCasePrefix(String prefix) {
+        if (prefix == null || prefix.length() < 2 || prefix.charAt(0) == '"') {
+            return false;
+        }
+        for (int i = 1; i < prefix.length(); i++) {
+            if (Character.isUpperCase(prefix.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static List<CsmNamedElement> filterList(Collection<? extends CsmDeclaration> list, CharSequence strPrefix, boolean match, boolean caseSensitive) {
         return filterList(list.iterator(), strPrefix, match, caseSensitive);
     }
