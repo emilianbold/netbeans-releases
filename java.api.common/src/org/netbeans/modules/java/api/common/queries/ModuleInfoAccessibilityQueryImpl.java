@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,15 +56,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.ModuleElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation2;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -85,7 +90,9 @@ import org.openide.util.WeakListeners;
 final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplementation2, PropertyChangeListener, FileChangeListener {
     private static final String MODULE_INFO_JAVA = "module-info.java";  //NOI18N
 
+    private final SourceRoots sourceModules;
     private final SourceRoots sources;
+    private final SourceRoots testModules;
     private final SourceRoots tests;
     private final ChangeSupport listeners;
     private final Set</*@GuardedBy("this")*/File> moduleInfoListeners;
@@ -95,11 +102,15 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
     private boolean listensOnRoots;
 
     ModuleInfoAccessibilityQueryImpl(
+            @NullAllowed final SourceRoots sourceModules,
             @NonNull final SourceRoots sources,
+            @NullAllowed final SourceRoots testModules,
             @NonNull final SourceRoots tests) {
         Parameters.notNull("sources", sources);     //NOI18N
         Parameters.notNull("tests", tests);         //NOI18N
+        this.sourceModules = sourceModules;
         this.sources = sources;
+        this.testModules = testModules;
         this.tests = tests;
         this.moduleInfoListeners = new HashSet<>();
         this.listeners = new ChangeSupport(this);
@@ -179,8 +190,21 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
         if (ec == null) {
             final Set<FileObject> rootsCollector = new HashSet<>();
             final List<Pair<Set<FileObject>,Set<FileObject>>> data = new ArrayList<>(2);
-            readExports(sources, rootsCollector).ifPresent(data::add);
-            readExports(tests, rootsCollector).ifPresent(data::add);
+            final Queue<FileObject[]> todo = new ArrayDeque<>();
+            if (sourceModules != null) {
+                todo.addAll(collectModuleRoots(sourceModules, sources));
+            } else {
+                todo.offer(sources.getRoots());
+            }
+            if (testModules != null) {
+                todo.addAll(collectModuleRoots(testModules, tests));
+            } else {
+                todo.offer(tests.getRoots());
+            }
+            for (FileObject[] work : todo) {
+                readExports(work, rootsCollector).ifPresent(data::add);
+            }
+
             ec = new ExportsCache(rootsCollector, data);
             synchronized (this) {
                 if (exportsCache == null) {
@@ -190,6 +214,12 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
                 }
                 if (!listensOnRoots) {
                     listensOnRoots = true;
+                    if (sourceModules != null) {
+                        sourceModules.addPropertyChangeListener(WeakListeners.propertyChange(this, sourceModules));
+                    }
+                    if (testModules != null) {
+                        testModules.addPropertyChangeListener(WeakListeners.propertyChange(this, testModules));
+                    }
                     sources.addPropertyChangeListener(WeakListeners.propertyChange(this, sources));
                     tests.addPropertyChangeListener(WeakListeners.propertyChange(this, tests));
                 }
@@ -218,10 +248,22 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
     }
 
     @NonNull
+    private Collection<FileObject[]> collectModuleRoots(
+            @NonNull final SourceRoots mods,
+            @NonNull final SourceRoots src) {
+        final Collection<FileObject[]> res = new ArrayDeque<>();
+        final MultiModule model = MultiModule.getOrCreate(mods, src);
+        for (String modName : model.getModuleNames()) {
+            final ClassPath cp = model.getModuleSources(modName);
+            res.add(cp.getRoots());
+        }
+        return res;
+    }
+
+    @NonNull
     private static Optional<Pair<Set<FileObject>,Set<FileObject>>> readExports(
-            @NonNull final SourceRoots srcRoots,
+            @NonNull final FileObject[] roots,
             @NonNull final Set<? super FileObject> rootsCollector) {
-        final FileObject[] roots = srcRoots.getRoots();
         Collections.addAll(rootsCollector, roots);
         final Optional<FileObject> moduleInfo = Arrays.stream(roots)
                 .map((root) -> root.getFileObject(MODULE_INFO_JAVA))

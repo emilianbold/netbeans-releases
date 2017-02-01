@@ -537,7 +537,27 @@ public final class QuerySupport {
     public static AccessibilityQueryImplementation2 createModuleInfoAccessibilityQuery(
             @NonNull final SourceRoots sources,
             @NonNull final SourceRoots tests) {
-        return new ModuleInfoAccessibilityQueryImpl(sources, tests);
+        return new ModuleInfoAccessibilityQueryImpl(null, sources, null, tests);
+    }
+
+    /**
+     * Creates a {@link AccessibilityQueryImplementation2} based on the module-info for multi module projects.
+     * @param sourceModules the module roots
+     * @param sources the source roots
+     * @param testModules the test module roots
+     * @param tests the test roots
+     * @return the {@link AccessibilityQueryImplementation2} instance
+     * @since 1.97
+     */
+    public static AccessibilityQueryImplementation2 createModuleInfoAccessibilityQuery(
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots sources,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots tests) {
+        Parameters.notNull("sourceModules", sourceModules);     //NOI18N
+        Parameters.notNull("testModules", testModules);         //NOI18N
+        return new ModuleInfoAccessibilityQueryImpl(
+                sourceModules, sources, testModules, tests);
     }
 
     private static class AntHelper extends ProjectInfoImpl {

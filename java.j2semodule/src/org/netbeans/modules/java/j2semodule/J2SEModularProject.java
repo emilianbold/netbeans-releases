@@ -354,6 +354,11 @@ public final class J2SEModularProject implements Project {
                 setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2semodule.ui.J2SEModularLogicalViewProvider.J2SEModularLogicalViewRootNode")).    //NOI18N
 //                setCompileOnSaveBadge(newCoSBadge()).
                 build(),
+            QuerySupport.createModuleInfoAccessibilityQuery(
+                    getModuleRoots(),
+                    getSourceRoots(),
+                    getTestModuleRoots(),
+                    getTestSourceRoots()),
 
 
             //UNKNOWN FOR MODULAR PROJECT
@@ -387,8 +392,7 @@ public final class J2SEModularProject implements Project {
 //            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
 //            UILookupMergerSupport.createProjectProblemsProviderMerger(),
 //            new J2SEProjectPlatformImpl(this),
-            QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots),
-            QuerySupport.createModuleInfoAccessibilityQuery(sourceRoots, testRoots)
+            QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots)
 //            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
