@@ -199,7 +199,6 @@ public class J2SEModularProjectGenerator {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEModularProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", ""); // NOI18N
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {ref(ProjectProperties.JAVAC_CLASSPATH, true)}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[] {ref(ProjectProperties.JAVAC_TEST_CLASSPATH,true)}); // NOI18N
