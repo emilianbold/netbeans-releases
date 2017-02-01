@@ -348,7 +348,6 @@ is divided into following sections:
                 <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
                 <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
-                <fail unless="dist.jar">Must set dist.jar</fail>
             </target>
             
             <target name="-init-macrodef-property">

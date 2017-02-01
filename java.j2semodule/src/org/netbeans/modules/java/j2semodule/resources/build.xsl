@@ -124,14 +124,6 @@ made subject to such option by the copyright holder.
       -javadoc-build:           Javadoc generation
       test-report:              JUnit report generation
 
-    An example of overriding the target for project execution could look like this:
-
-        <target name="run" depends="]]><xsl:value-of select="$codename"/><![CDATA[-impl.jar">
-            <exec dir="bin" executable="launcher.exe">
-                <arg file="${dist.jar}"/>
-            </exec>
-        </target>
-
     Notice that the overridden target depends on the jar target and not only on 
     the compile target as the regular run target does. Again, for a list of available 
     properties which you can use, check the target you are overriding in the
