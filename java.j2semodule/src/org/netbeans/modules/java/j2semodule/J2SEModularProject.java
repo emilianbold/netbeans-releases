@@ -364,15 +364,18 @@ public final class J2SEModularProject implements Project {
                     evaluator(),
                     getModuleRoots(),
                     getSourceRoots()),
+            QuerySupport.createSharabilityQuery2(
+                    helper,
+                    evaluator(),
+                    getModuleRoots(),
+                    getTestModuleRoots()),
 
 
             //UNKNOWN FOR MODULAR PROJECT
             refHelper.createSubprojectProvider(),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 //            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-//            new AntArtifactProviderImpl(),
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
-//            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
 //            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
