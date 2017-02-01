@@ -359,6 +359,11 @@ public final class J2SEModularProject implements Project {
                     getSourceRoots(),
                     getTestModuleRoots(),
                     getTestSourceRoots()),
+            QuerySupport.createMultiModuleAntArtifactProvider(
+                    helper,
+                    evaluator(),
+                    getModuleRoots(),
+                    getSourceRoots()),
 
 
             //UNKNOWN FOR MODULAR PROJECT
@@ -489,22 +494,6 @@ public final class J2SEModularProject implements Project {
     public void setProjectPropertiesSave(boolean value) {
         this.projectPropertiesSave.set(value);
     }
-
-    // Private innerclasses ----------------------------------------------------    
-//    /**
-//     * Exports the main JAR as an official build product for use from other scripts.
-//     * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
-//     */
-//    private final class AntArtifactProviderImpl implements AntArtifactProvider {
-//
-//        @Override
-//        public AntArtifact[] getBuildArtifacts() {
-//            return new AntArtifact[] {
-//                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean", ProjectProperties.BUILD_SCRIPT), // NOI18N
-//            };
-//        }
-//
-//    }
 
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 

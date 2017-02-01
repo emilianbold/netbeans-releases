@@ -68,7 +68,6 @@ import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.BaseUtilities;
@@ -193,7 +192,7 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
 
     private final class R implements BinaryForSourceQuery.Result, PropertyChangeListener {
         private final URL url;
-        private final PP pp;
+        private final EvaluatorPropertyProvider pp;
         private final PropertyEvaluator evaluator;
         private final MultiModule modules;
         private final String moduleName;
@@ -213,7 +212,7 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
             Parameters.notNull("moduleName", moduleName);   //NOI18N
             Parameters.notNull("templates", templates);         //NOI18N
             this.url = url;
-            this.pp = new PP(MultiModuleBinaryForSourceQueryImpl.this.evaluator);
+            this.pp = new EvaluatorPropertyProvider(MultiModuleBinaryForSourceQueryImpl.this.evaluator);
             this.evaluator = PropertyUtils.sequentialPropertyEvaluator(
                 PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.name",moduleName)), //NOI18N
                 pp);
@@ -364,35 +363,6 @@ final class MultiModuleBinaryForSourceQueryImpl implements BinaryForSourceQueryI
                 propsCache.set(res);
             }
             return res;
-        }
-    }
-
-    private static final class PP implements PropertyProvider {
-        private final PropertyEvaluator base;
-        private final ChangeSupport listeners;
-
-        PP(@NonNull final PropertyEvaluator base) {
-            this.base = base;
-            this.listeners = new ChangeSupport(this);
-        }
-
-        @Override
-        public Map<String, String> getProperties() {
-            return base.getProperties();
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener l) {
-            this.listeners.addChangeListener(l);
-        }
-
-        @Override
-        public void removeChangeListener(ChangeListener l) {
-            this.listeners.removeChangeListener(l);
-        }
-
-        void update() {
-            listeners.fireChange();
         }
     }
 }

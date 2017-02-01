@@ -63,6 +63,7 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -79,6 +80,7 @@ import org.w3c.dom.Element;
 /**
  * Support class for creating different types of queries implementations.
  * @author Tomas Mysik
+ * @author Tomas Zezula
  */
 public final class QuerySupport {
 
@@ -549,6 +551,7 @@ public final class QuerySupport {
      * @return the {@link AccessibilityQueryImplementation2} instance
      * @since 1.97
      */
+    @NonNull
     public static AccessibilityQueryImplementation2 createModuleInfoAccessibilityQuery(
             @NonNull final SourceRoots sourceModules,
             @NonNull final SourceRoots sources,
@@ -558,6 +561,29 @@ public final class QuerySupport {
         Parameters.notNull("testModules", testModules);         //NOI18N
         return new ModuleInfoAccessibilityQueryImpl(
                 sourceModules, sources, testModules, tests);
+    }
+
+    /**
+     * Creates a {@link AntArtifactProvider} for multi-module project.
+     * @param helper the {@link AntProjectHelper}
+     * @param eval the {@link PropertyEvaluator}
+     * @param sourceModules the module roots
+     * @param sources the source roots
+     * @return the {@link AntArtifactProvider} instance
+     * @since 1.98
+     */
+    @NonNull
+    public static AntArtifactProvider createMultiModuleAntArtifactProvider(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots sources) {
+        return new MultiModuleAntArtifactProvider(
+                helper,
+                eval,
+                MultiModule.getOrCreate(sourceModules, sources),
+                "jar",      //NOI18N
+                "clean");   //NOI18N
     }
 
     private static class AntHelper extends ProjectInfoImpl {
