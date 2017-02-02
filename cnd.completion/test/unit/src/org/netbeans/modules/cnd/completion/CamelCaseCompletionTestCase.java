@@ -58,14 +58,16 @@ public class CamelCaseCompletionTestCase extends CompletionBaseTestCase {
     public void testFirstCapitalCamelCase() throws Exception {
         super.performTest("file.cc", 41, 4, "GI");
     }
-    
+
     public void testAllCapital() throws Exception {
         super.performTest("file.cc", 41, 4, "UID");
     }
 
-    /* Not implemented yet
     public void testUnderscore() throws Exception {
-        super.performTest("file.cc", 38, 4, "aS");
+        super.performTest("file.cc", 41, 4, "aS");
     }
-    */
+
+    public void testUnderscoreCompound() throws Exception {
+        super.performTest("file.cc", 41, 4, "aSTSo");
+    }
 }
