@@ -981,12 +981,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                 ClassPathImplementation impl = ModuleClassPaths.createPropertyBasedModulePath(
                                         projectDirectory,
                                         evaluator,
+                                        null,
                                         type == 0 ? modulePath : testModulePath);
                                 final SourceRoots modules = type == 0 ? moduleSourceRoots : testModuleSourceRoots;
                                 if (modules != null) {
                                     final MultiModule model = getMultiModuleModel(type);
                                     impl = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation(
-                                            ModuleClassPaths.createMultiModuleBinariesPath(model),
+                                            ModuleClassPaths.createMultiModuleBinariesPath(model, true),
                                             impl
                                     );
                                 }
@@ -1030,7 +1031,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         return getModuleExecutePath(type);
     }
-    
+
     @NonNull
     private ClassPath getModuleExecutePath(final int type) {
         int index;
@@ -1049,50 +1050,61 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             default:
                 throw new IllegalArgumentException(Integer.toString(type));
         }
-        Supplier<ClassPathImplementation> provider;
-        switch (index) {
-            case 16:
-                provider = () -> {
-                    final String[] props = new String[moduleExecutePath.length+1];
-                    props[0] = buildClassesDir;
-                    System.arraycopy(moduleExecutePath, 0, props, 1, moduleExecutePath.length);
-                    return ModuleClassPaths.createPropertyBasedModulePath(
-                        projectDirectory,
-                        evaluator,
-                        props);
-                };
-                break;
-            case 17:
-                provider = () -> {
-                    final String[] props = new String[testModuleExecutePath.length+1];
-                    props[0] = buildTestClassesDir;
-                    System.arraycopy(testModuleExecutePath, 0, props, 1, testModuleExecutePath.length);
-                    return ModuleClassPaths.createPropertyBasedModulePath(
-                        projectDirectory,
-                        evaluator,
-                        props);
-                };
-                break;
-            case 18:
-                provider = () -> {
-                    String[] props = new String[moduleExecutePath.length+1];
-                    props[0] = distJar;
-                    System.arraycopy(moduleExecutePath, 0, props, 1, moduleExecutePath.length);
-                    return ModuleClassPaths.createPropertyBasedModulePath(
-                        projectDirectory,
-                        evaluator,
-                        new Filter(null, buildClassesDir),
-                        props);
-                };
-                break;
-            default:
-                throw new IllegalStateException(Integer.toString(index));
-        }
+        Supplier<ClassPathImplementation> supplier = () -> {
+            final boolean multiModule =
+                (index != 17 ? moduleSourceRoots : testModuleSourceRoots) != null ;
+            switch (index) {
+                case 16:
+                    return multiModule ?
+                            createMultiModuleExecutePath(moduleExecutePath, 0, false) :
+                            createSingleModuleExecutePath(moduleExecutePath, buildClassesDir, null);
+                case 17:
+                    return multiModule ?
+                            createMultiModuleExecutePath(testModuleExecutePath, 1, false) :
+                            createSingleModuleExecutePath(testModuleExecutePath, buildTestClassesDir, null);
+                case 18:
+                    return multiModule ?
+                            createMultiModuleExecutePath(moduleExecutePath, 0, true) :
+                            createSingleModuleExecutePath(moduleExecutePath, distJar, new Filter(null, buildClassesDir));
+                default:
+                    throw new IllegalStateException(Integer.toString(index));
+            }
+        };
         return computeIfAbsent(index, ClassPath.class, () -> {
             return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(createSourceLevelSelector(
-                    ()->ClassPath.EMPTY,
-                    ()->ClassPathFactory.createClassPath(provider.get())));
+                    () -> ClassPath.EMPTY,
+                    () -> ClassPathFactory.createClassPath(supplier.get())));
         });
+    }
+
+    @NonNull
+    private ClassPathImplementation createMultiModuleExecutePath(
+            @NonNull final String[] pathProps,
+            final int type,
+            final boolean archives) {
+        final MultiModule model = getMultiModuleModel(type);
+        return org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation(
+                ModuleClassPaths.createMultiModuleBinariesPath(model, archives),
+                ModuleClassPaths.createPropertyBasedModulePath(
+                        projectDirectory,
+                        evaluator,
+                        null,
+                        pathProps));
+    }
+
+    @NonNull
+    private ClassPathImplementation createSingleModuleExecutePath(
+            @NonNull final String[] pathProps,
+            @NonNull final String extProp,
+            @NullAllowed final Function<URL,Boolean> filter) {
+        final String[] props = new String[pathProps.length+1];
+        props[0] = extProp;
+        System.arraycopy(pathProps, 0, props, 1, pathProps.length);
+        return ModuleClassPaths.createPropertyBasedModulePath(
+            projectDirectory,
+            evaluator,
+            filter,
+            props);
     }
 
     @CheckForNull

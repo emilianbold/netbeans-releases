@@ -150,7 +150,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                 testSources);
         assertNotNull(impl);
         Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
-        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model, true);
         assertNotNull(cpImpl);
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         assertEquals(
@@ -194,7 +194,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                 testSources);
         assertNotNull(impl);
         Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
-        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model, true);
         assertNotNull(cpImpl);
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         assertEquals(
@@ -264,7 +264,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                 testSources);
         assertNotNull(impl);
         Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
-        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model, true);
         assertNotNull(cpImpl);
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         assertEquals(
@@ -316,7 +316,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                 testSources);
         assertNotNull(impl);
         Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
-        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model, true);
         assertNotNull(cpImpl);
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         assertEquals(
@@ -385,7 +385,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                 testSources);
         assertNotNull(impl);
         Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
-        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model, true);
         assertNotNull(cpImpl);
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         assertEquals(
@@ -436,7 +436,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                 testSources);
         assertNotNull(impl);
         Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
-        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model, true);
         assertNotNull(cpImpl);
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         final List<URL> oldExpected = Arrays.stream(new FileObject[]{mod1a, mod1b, mod1d})
@@ -502,7 +502,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                 testSources);
         assertNotNull(impl);
         Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
-        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(model, true);
         assertNotNull(cpImpl);
         final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
         assertEquals(

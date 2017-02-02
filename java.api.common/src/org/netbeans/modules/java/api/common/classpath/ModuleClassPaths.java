@@ -168,14 +168,7 @@ final class ModuleClassPaths {
             @NonNull final String platformType) {
         return new PlatformModulePath(eval, platformType);
     }
-    
-    static ClassPathImplementation createPropertyBasedModulePath(
-            @NonNull final File projectDir,
-            @NonNull final PropertyEvaluator eval,
-            @NonNull final String... props) {
-        return createPropertyBasedModulePath(projectDir, eval, null, props);
-    }
-    
+
     @NonNull
     static ClassPathImplementation createPropertyBasedModulePath(
             @NonNull final File projectDir,
@@ -187,19 +180,23 @@ final class ModuleClassPaths {
 
     @NonNull
     static ClassPathImplementation createMultiModuleBinariesPath(
-            @NonNull final MultiModule model) {
-        return new MultiModuleBinaries(model);
+            @NonNull final MultiModule model,
+            final boolean archives) {
+        return new MultiModuleBinaries(model, archives);
     }
 
     private static final class MultiModuleBinaries extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener {
         private final MultiModule model;
+        private final boolean archives;
         //@GuardedBy("this")
         private Collection<BinaryForSourceQuery.Result> currentResults;
 
         MultiModuleBinaries(
-                @NonNull final MultiModule model) {
+                @NonNull final MultiModule model,
+                final boolean archives) {
             Parameters.notNull("model", model); //NOI18N
             this.model = model;
+            this.archives = archives;
             this.model.addPropertyChangeListener(WeakListeners.propertyChange(this, this.model));
         }
 
@@ -248,7 +245,7 @@ final class ModuleClassPaths {
                     for (ClassPath.Entry e : scp.entries()) {
                         final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(e.getURL());
                         results.add(r);
-                        binaries.addAll(distFor(r.getRoots()));
+                        binaries.addAll(filterArtefact(archives, r.getRoots()));
                     }
                 }
             }
@@ -257,10 +254,13 @@ final class ModuleClassPaths {
                     .collect(Collectors.toList());
         }
 
-        private static Collection<? extends URL> distFor(@NonNull final URL... urls) {
+        private static Collection<? extends URL> filterArtefact(
+                final boolean archive,
+                @NonNull final URL... urls) {
             final Collection<URL> res = new ArrayList<>(urls.length);
             for (URL url : urls) {
-                if (FileUtil.isArchiveArtifact(url)) {
+                if ((archive && FileUtil.isArchiveArtifact(url)) ||
+                    (!archive && !FileUtil.isArchiveArtifact(url))) {
                     res.add(url);
                     break;
                 }
