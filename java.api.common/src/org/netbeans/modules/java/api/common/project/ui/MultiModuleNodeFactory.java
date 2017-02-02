@@ -519,12 +519,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 res = fosCache;
                 smp = srcModPath;
                 if (smp == null) {
-                    smp = srcModPath = modules.getModulePath();
+                    smp = srcModPath = modules.getSourceModulePath();
                     smp.addPropertyChangeListener(WeakListeners.propertyChange(this, smp));
                 }
                 tmp = testModPath;
                 if (tmp == null) {
-                    tmp = testModPath = testModules.getModulePath();
+                    tmp = testModPath = testModules.getSourceModulePath();
                     tmp.addPropertyChangeListener(WeakListeners.propertyChange(this, tmp));
                 }
             }

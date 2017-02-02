@@ -137,7 +137,7 @@ public final class MultiModule implements PropertyChangeListener {
     }
 
     @NonNull
-    public ClassPath getModulePath() {
+    public ClassPath getSourceModulePath() {
         ClassPath mp = mpCache.get();
         if (mp == null) {
             mp = ClassPathFactory.createClassPath(new MPImpl(moduleRoots));
