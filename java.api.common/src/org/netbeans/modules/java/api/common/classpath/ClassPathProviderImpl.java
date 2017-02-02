@@ -889,27 +889,25 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     @CheckForNull
-    private synchronized MultiModule getMultiModuleModel(final int type) {
+    private MultiModule getMultiModuleModel(final int type) {
         if (type < 0 || type > 1) {
             return null;
         }
-        MultiModule model = (MultiModule)cache[type];
-        if (model == null) {
+        return computeIfAbsent(type, MultiModule.class, () -> {
+            MultiModule model;
             switch (type) {
                 case 0:
                     model = MultiModule.getOrCreate(moduleSourceRoots, sourceRoots);
-                    model.addPropertyChangeListener(WeakListeners.propertyChange(pl, model));
                     break;
                 case 1:
                     model = MultiModule.getOrCreate(testModuleSourceRoots, testSourceRoots);
-                    model.addPropertyChangeListener(WeakListeners.propertyChange(pl, model));
                     break;
                 default:
                     throw new IllegalStateException("Invalid classpath type: " + type); //NOI18N
             }
-            cache[type] = model;
-        }
-        return model;
+            model.addPropertyChangeListener(WeakListeners.propertyChange(pl, model));
+            return model;
+        });
     }
 
     private ClassPath getBootClassPath() {
