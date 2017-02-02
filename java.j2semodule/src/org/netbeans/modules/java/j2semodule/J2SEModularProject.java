@@ -397,7 +397,6 @@ public final class J2SEModularProject implements Project {
 //            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
 //            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, platformChangedHook, J2SEProjectUtil.getBreakableProperties(this), new String[]{ProjectProperties.PLATFORM_ACTIVE}),
 //            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
-//            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
 //            UILookupMergerSupport.createProjectProblemsProviderMerger(),
 //            new J2SEProjectPlatformImpl(this),
             QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots)
