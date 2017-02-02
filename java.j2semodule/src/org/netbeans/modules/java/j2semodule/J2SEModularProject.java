@@ -369,10 +369,10 @@ public final class J2SEModularProject implements Project {
                     evaluator(),
                     getModuleRoots(),
                     getTestModuleRoots()),
+            refHelper.createSubprojectProvider(),
 
 
             //UNKNOWN FOR MODULAR PROJECT
-            refHelper.createSubprojectProvider(),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 //            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
