@@ -438,7 +438,7 @@ final class Line {
 		    attr[c] = Attr.unsetAttribute(attr[c], value);
 	    }
 	} catch (ArrayIndexOutOfBoundsException x) {
-	    System.out.printf("bcol %d  ecol %d  capacity %d  length %d buf %d  attr %d",
+	    System.out.printf("bcol %d  ecol %d  capacity %d  length %d buf %d  attr %d", // NOI18N
 		    bcol, ecol, capacity, length, buf.length, attr.length);
 	    throw x;
 	}
