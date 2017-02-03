@@ -852,7 +852,7 @@ public class ClassPathTest extends NbTestCase {
         final FileObject root = FileUtil.createFolder(new File(wd,"root"));
         final ClassPath cp = ClassPathSupport.createClassPath(root);
         final ClassPath.Entry entry = cp.entries().iterator().next();
-        entry.isDataResult = Boolean.TRUE;
+        entry.isDataResult.set(Boolean.TRUE);
         final FileObject fo = entry.getRoot();
         assertNotNull(fo);
         assertEquals(root, fo);
