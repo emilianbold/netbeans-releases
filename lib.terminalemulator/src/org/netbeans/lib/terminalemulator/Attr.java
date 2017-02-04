@@ -144,7 +144,7 @@ enum Attr {
 
     @Override
     public String toString() {
-	return String.format("%d %10s(%2d, %2d, 0x%02x %8s, 0x%08x %32s)",
+	return String.format("%d %10s(%2d, %2d, 0x%02x %8s, 0x%08x %32s)", // NOI18N
 		             ordinal(), name(),
 			     offset, width,
 			     fmask, Integer.toBinaryString(fmask),
@@ -152,7 +152,7 @@ enum Attr {
     }
 
     public static String toString(int attr) {
-	return String.format("%32s", Integer.toBinaryString(attr)).replace(" ", "0");
+	return String.format("%32s", Integer.toBinaryString(attr)).replace(" ", "0"); // NOI18N
 
     }
 

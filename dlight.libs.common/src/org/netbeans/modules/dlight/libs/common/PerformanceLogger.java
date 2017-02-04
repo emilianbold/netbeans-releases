@@ -202,7 +202,7 @@ public class PerformanceLogger {
                 isDebugMode = true;
             } else {
                 for (String arg : args) {
-                    if (arg.startsWith("-agentlib:jdwp=")) {
+                    if (arg.startsWith("-agentlib:jdwp=")) { //NOI18N
                         isDebugMode = true;
                         break;
                     }
