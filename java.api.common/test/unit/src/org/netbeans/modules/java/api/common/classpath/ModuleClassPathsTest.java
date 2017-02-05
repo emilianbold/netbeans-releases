@@ -108,14 +108,14 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     private static final Comparator<Object> LEX_COMPARATOR =
             (a,b) -> a.toString().compareTo(b.toString());
-    private static final Predicate<ModuleElement> NON_JAVA_PUB = (e) -> 
+    private static final Predicate<ModuleElement> NON_JAVA_PUB = (e) ->
                            !e.getQualifiedName().toString().startsWith("java.") &&  //NOI18N
                             e.getDirectives().stream()
                                 .filter((d) -> d.getKind() == ModuleElement.DirectiveKind.EXPORTS)
                                 .map((d) -> (ModuleElement.ExportsDirective)d)
                                 .anyMatch((ed) -> ed.getTargetModules() == null);
     
-    private SourceRoots src;
+    private ClassPath src;
     private ClassPath systemModules;
     private FileObject automaticModuleRoot;
     private FileObject jarFileRoot;
@@ -137,9 +137,12 @@ public class ModuleClassPathsTest extends NbTestCase {
         final Project prj = TestProject.createProject(prjDir, srcDir, null);
         assertNotNull(prj);
         setSourceLevel(prj, "9");   //NOI18N
-        src = Optional.ofNullable(prj.getLookup().lookup(TestProject.class))
-                .map((p) -> p.getSourceRoots())
-                .orElse(null);
+        final TestProject tp = prj.getLookup().lookup(TestProject.class);
+        assertNotNull(tp);
+        src = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (
+                            tp.getSourceRoots(),
+                            tp.getUpdateHelper().getAntProjectHelper(),
+                            tp.getEvaluator()));
         systemModules = Optional.ofNullable(TestUtilities.getJava9Home())
                 .map((jh) -> TestJavaPlatform.createModularPlatform(jh))
                 .map((jp) -> jp.getBootstrapLibraries())
@@ -492,7 +495,7 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     @NonNull
     private static FileObject createModuleInfo(
-            @NonNull final SourceRoots src,
+            @NonNull final ClassPath src,
             @NonNull final String moduleName,
             @NonNull final String... requiredModules) throws IOException {
         final FileObject[] roots = src.getRoots();

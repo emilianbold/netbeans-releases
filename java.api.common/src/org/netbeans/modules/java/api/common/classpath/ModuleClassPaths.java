@@ -90,7 +90,6 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
@@ -133,7 +132,7 @@ final class ModuleClassPaths {
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
             @NonNull final ClassPath systemModules,
-            @NonNull final SourceRoots sourceRoots,
+            @NonNull final ClassPath sourceRoots,
             @NullAllowed final Function<URL,Boolean> filter) {
         return new ModuleInfoClassPathImplementation(
                 systemModules,
@@ -146,7 +145,7 @@ final class ModuleClassPaths {
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
             @NonNull final ClassPath modulePath,
-            @NonNull final SourceRoots sourceRoots,
+            @NonNull final ClassPath sourceRoots,
             @NonNull final ClassPath systemModules,
             @NonNull final ClassPath legacyClassPath,
             @NullAllowed final Function<URL,Boolean> filter) {
@@ -455,7 +454,7 @@ final class ModuleClassPaths {
                     .filter((d) -> d.getKind() == ModuleElement.DirectiveKind.EXPORTS)
                     .anyMatch((d) -> ((ModuleElement.ExportsDirective)d).getTargetModules() == null);
         private final ClassPath base;
-        private final SourceRoots sources;
+        private final ClassPath sources;
         private final ClassPath systemModules;
         private final ClassPath legacyClassPath;
         private final Function<URL,Boolean> filter;
@@ -471,7 +470,7 @@ final class ModuleClassPaths {
 
         ModuleInfoClassPathImplementation(
                 @NonNull final ClassPath base,
-                @NonNull final SourceRoots sources,
+                @NonNull final ClassPath sources,
                 @NullAllowed final ClassPath systemModules,
                 @NullAllowed final ClassPath legacyClassPath,
                 @NullAllowed final Function<URL,Boolean> filter) {
@@ -522,7 +521,9 @@ final class ModuleClassPaths {
                     base,
                     modulesPatches,
                     newActiveProjectSourceRoots);
-            Collections.addAll(newActiveProjectSourceRoots, sources.getRootURLs());
+            newActiveProjectSourceRoots.addAll(sources.entries().stream()
+                .map((e) -> e.getURL())
+                .collect(Collectors.toList()));
             ProjectManager.mutex().readAccess(() -> {
                 synchronized (this) {
                     if (activeProjectSourceRoots != null) {
@@ -588,7 +589,8 @@ final class ModuleClassPaths {
                     needToFire});
                 try {
                     FileObject found = null;
-                    for (URL root : sources.getRootURLs()) {
+                    for (ClassPath.Entry cpe : sources.entries()) {
+                        final URL root = cpe.getURL();
                         try {
                             final File moduleInfo = FileUtil.normalizeFile(new File(BaseUtilities.toFile(root.toURI()),MODULE_INFO_JAVA));
                             newModuleInfos.add(moduleInfo);
@@ -617,7 +619,7 @@ final class ModuleClassPaths {
                                 new ClasspathInfo.Builder(bootCp)
                                         .setModuleBootPath(bootModules)
                                         .setModuleCompilePath(userModules)
-                                        .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
+                                        .setSourcePath(sources)
                                         .build(),
                                 found);
                         final Set<String> additionalModules = getAddMods();
@@ -629,7 +631,7 @@ final class ModuleClassPaths {
                                 new ClasspathInfo.Builder(bootCp)
                                         .setModuleBootPath(bootModules)
                                         .setModuleCompilePath(userModules)
-                                        .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
+                                        .setSourcePath(sources)
                                         .build());
                         final Set<String> additionalModules = getAddMods();
                         additionalModules.remove(MOD_ALL_UNNAMED);
@@ -734,11 +736,11 @@ final class ModuleClassPaths {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
-            if (propName == null || ClassPath.PROP_ENTRIES.equals(propName) || SourceRoots.PROP_ROOTS.equals(propName)) {
+            if (propName == null || ClassPath.PROP_ENTRIES.equals(propName)) {
                 resetOutsideWriteAccess(null);
             }
         }
-        
+
         @Override
         public void stateChanged(@NonNull final ChangeEvent evt) {
             resetOutsideWriteAccess(null);
@@ -759,7 +761,7 @@ final class ModuleClassPaths {
             final ClasspathInfo info = ClasspathInfo.create(
                 ClassPath.EMPTY,
                 ClassPath.EMPTY,
-                org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()));
+                sources);
             final Set<ElementHandle<ModuleElement>> mods = info.getClassIndex().getDeclaredModules(
                     "", //NOI18N
                     ClassIndex.NameKind.PREFIX,
@@ -1051,15 +1053,14 @@ final class ModuleClassPaths {
         private static boolean supportsModules(
             @NonNull final ClassPath boot,
             @NonNull final ClassPath compile,
-            @NonNull final SourceRoots src) {
+            @NonNull final ClassPath src) {
             if (boot.findResource("java/util/zip/CRC32C.class") != null) {  //NOI18N
                 return true;
             }
             if (compile.findResource("java/util/zip/CRC32C.class") != null) {   //NOI18N
                 return true;
             }
-            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(src.getRootURLs())
-                    .findResource("java/util/zip/CRC32C.java") != null;   //NOI18N
+            return src.findResource("java/util/zip/CRC32C.java") != null;   //NOI18N
         }
         
         private static boolean isMandated(@NonNull final ModuleElement.RequiresDirective rd) {
