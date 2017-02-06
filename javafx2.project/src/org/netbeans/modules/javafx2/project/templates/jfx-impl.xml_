@@ -2728,8 +2728,7 @@
             <echo message="Warning: Parameters (if any) not passed to &lt;fx:application&gt; in fallback build mode due to JDK missing JavaScript support."/>
             <fx:application id="fxApp"
                 name="${application.title}"
-                mainClass="${javafx.main.class}"
-                fallbackClass="${javafx.fallback.class}">
+                mainClass="${javafx.main.class}">
                 <!-- PARAMETERS NOT PASSED IN FALLBACK -->
             </fx:application>
         </sequential>
@@ -2741,8 +2740,7 @@
             <fx:application id="fxApp"
                 name="${application.title}"
                 mainClass="${javafx.main.class}"
-                preloaderClass="${javafx.preloader.class}"
-                fallbackClass="${javafx.fallback.class}">
+                preloaderClass="${javafx.preloader.class}">
                 <!-- PARAMETERS NOT PASSED IN FALLBACK -->
             </fx:application>
         </sequential>
@@ -2754,7 +2752,6 @@
             <fx:application id="fxApp"
                 name="${application.title}"
                 mainClass="${main.class}"
-                fallbackClass="${javafx.fallback.class}"
                 toolkit="swing">
                 <!-- PARAMETERS NOT PASSED IN FALLBACK -->
             </fx:application>
