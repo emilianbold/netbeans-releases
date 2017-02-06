@@ -727,7 +727,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             ()->ClassPathFactory.createClassPath(
                                 ModuleClassPaths.createModuleInfoBasedPath(
                                     getModuleCompilePath(type),
-                                    type == 0 ? sourceRoots : testSourceRoots,
+                                    getSourcepath(type),
                                     getModuleBootPath(),
                                     getJava8ClassPath(type),
                                     null))));
@@ -791,7 +791,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             ()->ClassPathFactory.createClassPath(
                                 ModuleClassPaths.createModuleInfoBasedPath(
                                     getModuleExecutePath(type),
-                                    index != 5 ? sourceRoots : testSourceRoots,
+                                    getSourcepath(index != 5 ? 0 : 1),
                                     getModuleBootPath(),
                                     getJava8RunTimeClassPath(type),
                                     getFilter(type)))));
@@ -837,7 +837,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                         platform.first())),
                                 ()->ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                                     getModuleBootPath(),
-                                    sourceRoots,
+                                    getSourcepath(0),   //TODO: Fixme should be 0 and 1 depending if sources or tests
                                     null))));
             } else {
                 assert platform.hasSecond();
