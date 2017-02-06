@@ -1743,7 +1743,9 @@
                     var fallback = new String(project.getProperty("javafx.fallback.class"));
                     app.setName(title);
                     app.setMainClass(mainclass);
-                    app.setFallbackClass(fallback);
+                    if (typeof(app['fallbackClass']) === 'function') {
+                        app.setFallbackClass(fallback);
+                    }
                     if(isTrue(withpreloader)) {
                         preloaderclass = new String(project.getProperty("javafx.preloader.class"));
                         app.setPreloaderClass(preloaderclass);
@@ -2246,7 +2248,9 @@
                     var fallback = new String(project.getProperty("javafx.fallback.class"));
                     app.setName(title);
                     app.setMainClass(mainclass);
-                    app.setFallbackClass(fallback);
+                    if (typeof(app['fallbackClass']) === 'function') {
+                        app.setFallbackClass(fallback);
+                    }
                     if(isTrue(withpreloader)) {
                         preloaderclass = new String(project.getProperty("javafx.preloader.class"));
                         app.setPreloaderClass(preloaderclass);
