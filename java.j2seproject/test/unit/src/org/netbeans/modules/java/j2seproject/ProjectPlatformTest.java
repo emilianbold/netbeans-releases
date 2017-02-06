@@ -119,9 +119,9 @@ public final class ProjectPlatformTest extends NbTestCase {
         final J2SEProject j2se = p.getLookup().lookup(J2SEProject.class);
         assertNotNull(j2se);
         final ClassPath[] cps = j2se.getClassPathProvider().getProjectClassPaths(ClassPath.BOOT);
-        assertEquals(1, cps.length);
+        assertEquals(2, cps.length);
         assertNotNull(cps[0]);
-        assertFalse(cps[0].entries().isEmpty());    
+        assertFalse(cps[0].entries().isEmpty());
     }
     
     private static File getJdkHome() {
