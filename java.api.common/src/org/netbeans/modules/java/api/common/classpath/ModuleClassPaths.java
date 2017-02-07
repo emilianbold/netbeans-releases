@@ -513,12 +513,13 @@ final class ModuleClassPaths {
                 return (List<? extends PathResourceImplementation>) bestSoFar[0];
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
-            final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
             final Map<String, List<URL>> modulesPatches = getPatches();
             final Map<String,List<URL>> modulesByName = getModulesByName(
                     base,
-                    modulesPatches,
-                    newActiveProjectSourceRoots);
+                    modulesPatches);
+            final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
+            collectProjectSourceRoots(systemModules, newActiveProjectSourceRoots);
+            collectProjectSourceRoots(userModules, newActiveProjectSourceRoots);
             newActiveProjectSourceRoots.addAll(sources.entries().stream()
                 .map((e) -> e.getURL())
                 .collect(Collectors.toList()));
@@ -598,7 +599,7 @@ final class ModuleClassPaths {
                     }
                     final List<PathResourceImplementation> bcprs = base == systemModules ?
                             selfResResources :   //java.base
-                            findJavaBase(getModulesByName(systemModules, modulesPatches, null));
+                            findJavaBase(getModulesByName(systemModules, modulesPatches));
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
                     final Predicate<ModuleElement> rootModulesPredicate;
@@ -902,20 +903,11 @@ final class ModuleClassPaths {
         @NonNull
         private static Map<String,List<URL>> getModulesByName(
                 @NonNull final ClassPath cp,
-                @NonNull final Map<String,List<URL>> patches,
-                @NullAllowed final Collection<URL> projectSourceRoots) {
+                @NonNull final Map<String,List<URL>> patches) {
             final Map<String,List<URL>> res = new LinkedHashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
                     .forEach((url)-> {
-                        if (projectSourceRoots != null) {
-                            final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(url);
-                            if (sfbqRes.preferSources()) {
-                                Arrays.stream(sfbqRes.getRoots())
-                                        .map((fo)->fo.toURL())
-                                        .forEach(projectSourceRoots::add);
-                            }
-                        }
                         final String moduleName = SourceUtils.getModuleName(url, true);
                         if (moduleName != null) {
                             final List<URL> roots = new ArrayList<>();
@@ -926,6 +918,21 @@ final class ModuleClassPaths {
                         }
                     });
             return res;
+        }
+
+        private static void collectProjectSourceRoots(
+                @NonNull final ClassPath cp,
+                @NonNull final Collection<? super URL> projectSourceRoots) {
+            cp.entries().stream()
+                    .map((e) -> e.getURL())
+                    .forEach((url) -> {
+                        final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(url);
+                        if (sfbqRes.preferSources()) {
+                            Arrays.stream(sfbqRes.getRoots())
+                                    .map((fo)->fo.toURL())
+                                    .forEach(projectSourceRoots::add);
+                        }
+                    });
         }
 
         @NonNull
