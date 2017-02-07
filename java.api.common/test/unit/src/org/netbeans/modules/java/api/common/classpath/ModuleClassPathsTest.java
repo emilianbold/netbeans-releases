@@ -164,6 +164,9 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
         final Collection<URL> expectedURLs = reads(
@@ -171,8 +174,8 @@ public class ModuleClassPathsTest extends NbTestCase {
                 NamePredicate.create("java.se").or(NON_JAVA_PUB));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
-    
-    
+
+
     public void testModuleInfoBasedCp_SystemModules_in_NamedEmptyModule() throws IOException {
         if (systemModules == null) {
             System.out.println("No jdk 9 home configured.");    //NOI18N
@@ -183,12 +186,15 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
         final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.base"));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
-    
+
     public void testModuleInfoBasedCp_SystemModules_in_NamedModule() throws IOException {
         if (systemModules == null) {
             System.out.println("No jdk 9 home configured.");    //NOI18N
@@ -199,6 +205,9 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
         final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.logging"));  //NOI18N
@@ -217,6 +226,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -243,6 +253,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -268,6 +279,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -295,6 +307,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -323,6 +336,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -350,6 +364,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -370,6 +385,9 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final RequestProcessor deadLockMaker = new RequestProcessor("DeadLock Maker", 1);
         final ClasspathInfo info = new ClasspathInfo.Builder(systemModules)
@@ -429,6 +447,9 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);     
         final Collection<URL> expectedURLs = reads(
@@ -461,6 +482,9 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);     
         final Collection<URL> expectedURLs = reads(
