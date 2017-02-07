@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.FutureTask;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -98,6 +99,8 @@ public class BuildImageWizard {
     public static final String PULL_PROPERTY = "pull";
 
     public static final String NO_CACHE_PROPERTY = "noCache";
+    
+    public static final String BUILD_ARGUMENTS_PROPERTY = "buildArguments";
 
     public static final boolean PULL_DEFAULT = false;
 
@@ -178,6 +181,7 @@ public class BuildImageWizard {
             build((DockerInstance) wiz.getProperty(INSTANCE_PROPERTY),
                     (String) wiz.getProperty(BUILD_CONTEXT_PROPERTY),
                     (String) wiz.getProperty(DOCKERFILE_PROPERTY),
+                    (Map<String, String>) wiz.getProperty(BUILD_ARGUMENTS_PROPERTY),
                     (String) wiz.getProperty(REPOSITORY_PROPERTY),
                     (String) wiz.getProperty(TAG_PROPERTY),
                     pull != null ? pull : PULL_DEFAULT,
@@ -208,7 +212,7 @@ public class BuildImageWizard {
     }
 
     private void build(final DockerInstance instance, final String buildContext,
-            final String dockerfile, final String repository, final String tag,
+            final String dockerfile, final Map<String, String> buildargs, final String repository, final String tag,
             final boolean pull, final boolean noCache) {
 
         assert SwingUtilities.isEventDispatchThread();
@@ -267,7 +271,7 @@ public class BuildImageWizard {
                 };
 
                 BuildTask task = new BuildTask(instance, io, hook, fileSystem.getRoot().getFileObject(buildContext),
-                        fileSystem.getRoot().getFileObject(file), repository, tag, pull, noCache);
+                        fileSystem.getRoot().getFileObject(file), buildargs, repository, tag, pull, noCache);
                 rerun.configure(task);
                 task.run();
             }

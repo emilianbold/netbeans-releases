@@ -650,6 +650,7 @@ public class DockerAction {
     }
 
     public FutureTask<DockerImage> createBuildTask(@NonNull FileObject buildContext, @NullAllowed FileObject dockerfile,
+            @NullAllowed Map<String, String> buildargs,
             String repository, String tag, boolean pull, boolean noCache,
             final BuildEvent.Listener buildListener, final StatusEvent.Listener statusListener) {
 
@@ -697,6 +698,9 @@ public class DockerAction {
                         if (tag != null) {
                             request.append(":").append(tag);
                         }
+                    }
+                    if (buildargs != null && !buildargs.isEmpty()) {
+                        request.append("&buildargs=").append((new JSONObject(buildargs)).toString());
                     }
                     request.append(" HTTP/1.1\r\n");
 

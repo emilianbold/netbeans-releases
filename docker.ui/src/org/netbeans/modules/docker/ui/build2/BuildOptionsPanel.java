@@ -159,6 +159,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         wiz.putProperty(BuildImageWizard.DOCKERFILE_PROPERTY, component.getDockerfile());
         wiz.putProperty(BuildImageWizard.PULL_PROPERTY, component.isPull());
         wiz.putProperty(BuildImageWizard.NO_CACHE_PROPERTY, component.isNoCache());
+        wiz.putProperty(BuildImageWizard.BUILD_ARGUMENTS_PROPERTY, component.getBuildargs());
     }
 
     @Override
