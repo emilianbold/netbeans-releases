@@ -729,6 +729,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                     getModuleCompilePath(type),
                                     getSourcepath(type),
                                     getModuleBootPath(),
+                                    getModuleCompilePath(type),
                                     getJava8ClassPath(type),
                                     null))));
                 });
@@ -793,6 +794,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                     getModuleExecutePath(type),
                                     getSourcepath(index != 5 ? 0 : 1),
                                     getModuleBootPath(),
+                                    getModuleExecutePath(type),
                                     getJava8RunTimeClassPath(type),
                                     getFilter(type)))));
         });
@@ -857,6 +859,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                                             () -> ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                                                     getModuleBootPath(),
                                                     getSourcepath(type),
+                                                    getModuleBootPath(),
+                                                    getModuleCompilePath(type),
+                                                    null,
                                                     null))));
                         } else {
                             assert platform.hasSecond();

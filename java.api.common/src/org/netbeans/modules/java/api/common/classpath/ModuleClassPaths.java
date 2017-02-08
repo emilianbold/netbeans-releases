@@ -131,31 +131,27 @@ final class ModuleClassPaths {
 
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
-            @NonNull final ClassPath systemModules,
-            @NonNull final ClassPath sourceRoots,
-            @NullAllowed final Function<URL,Boolean> filter) {
-        return new ModuleInfoClassPathImplementation(
-                systemModules,
-                sourceRoots,
-                null,
-                null,
-                filter);
-    }
-
-    @NonNull
-    static ClassPathImplementation createModuleInfoBasedPath(
-            @NonNull final ClassPath modulePath,
+            @NonNull final ClassPath base,
             @NonNull final ClassPath sourceRoots,
             @NonNull final ClassPath systemModules,
-            @NonNull final ClassPath legacyClassPath,
+            @NonNull final ClassPath userModules,
+            @NullAllowed final ClassPath legacyClassPath,
             @NullAllowed final Function<URL,Boolean> filter) {
-        Parameters.notNull("systemModules", systemModules); //NOI18N
-        Parameters.notNull("legacyClassPath", legacyClassPath); //NOI18N
+        Parameters.notNull("base", base);                       //NOI18N
+        Parameters.notNull("sourceRoots", sourceRoots);         //NOI18N
+        Parameters.notNull("systemModules", systemModules);     //NOI18N
+        Parameters.notNull("userModules", userModules);         //NOI18N
+        if (base != systemModules && base != userModules) {
+            throw new IllegalArgumentException("The base must be either systemModules or userModules"); //NOI18N
+        }
         return new ModuleInfoClassPathImplementation(
-                modulePath,
+                base,
                 sourceRoots,
                 systemModules,
-                legacyClassPath,
+                userModules,
+                legacyClassPath != null ?
+                        legacyClassPath :
+                        ClassPath.EMPTY,
                 filter);
     }
 
@@ -456,6 +452,7 @@ final class ModuleClassPaths {
         private final ClassPath base;
         private final ClassPath sources;
         private final ClassPath systemModules;
+        private final ClassPath userModules;
         private final ClassPath legacyClassPath;
         private final Function<URL,Boolean> filter;
         private final ThreadLocal<Object[]> selfRes;
@@ -471,15 +468,20 @@ final class ModuleClassPaths {
         ModuleInfoClassPathImplementation(
                 @NonNull final ClassPath base,
                 @NonNull final ClassPath sources,
-                @NullAllowed final ClassPath systemModules,
-                @NullAllowed final ClassPath legacyClassPath,
+                @NonNull final ClassPath systemModules,
+                @NonNull final ClassPath userModules,
+                @NonNull final ClassPath legacyClassPath,
                 @NullAllowed final Function<URL,Boolean> filter) {
             super(null);
             Parameters.notNull("base", base);       //NOI18N
             Parameters.notNull("sources", sources); //NOI18N
+            Parameters.notNull("systemModules", systemModules); //NOI18N
+            Parameters.notNull("userModules", userModules); //NOI18N
+            Parameters.notNull("legacyClassPath", legacyClassPath); //NOI18N
             this.base = base;
             this.sources = sources;
             this.systemModules = systemModules;
+            this.userModules = userModules;
             this.legacyClassPath = legacyClassPath;
             this.filter = filter == null ?
                     (url) -> null :
@@ -487,14 +489,10 @@ final class ModuleClassPaths {
             this.selfRes = new ThreadLocal<>();
             this.compilerOptions = new AtomicReference<>();
             this.moduleInfos = Collections.emptyList();
-            this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
             this.sources.addPropertyChangeListener(WeakListeners.propertyChange(this, this.sources));
-            if (this.systemModules != null) {
-                this.systemModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.systemModules));
-            }
-            if (this.legacyClassPath != null) {
-                this.legacyClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.legacyClassPath));
-            }
+            this.systemModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.systemModules));
+            this.userModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
+            this.legacyClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.legacyClassPath));
         }
 
         @Override
@@ -547,25 +545,16 @@ final class ModuleClassPaths {
                     }
                 }
             });
-            if(supportsModules(
-                    systemModules != null ? systemModules : base,
-                    systemModules != null ? base : ClassPath.EMPTY,
-                    sources)) {
+            if(supportsModules(systemModules, userModules, sources)) {
                 res = modulesByName.values().stream()
                         .flatMap((urls) -> urls.stream())
                         .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
                         .collect(Collectors.toList());
                 final List<PathResourceImplementation> selfResResources;
-                final ClassPath bootModules;
-                final ClassPath userModules;
-                if (systemModules != null) {
-                    selfResResources = Collections.emptyList();
-                    bootModules = systemModules;
-                    userModules = base;
-                } else {
+                if (base == systemModules) {
                     selfResResources = findJavaBase(modulesByName);
-                    bootModules = base;
-                    userModules = ClassPath.EMPTY;
+                } else {
+                    selfResResources = Collections.emptyList();
                 }
                 LOG.log(
                     Level.FINER,
@@ -577,12 +566,12 @@ final class ModuleClassPaths {
                     });
                 LOG.log(
                     Level.FINEST,
-                    "{0} for {1} bootModules: {2}, modules: {4}",    //NOI18N
+                    "{0} for {1} systemModules: {2}, userModules: {4}",    //NOI18N
                     new Object[]{
                         ModuleInfoClassPathImplementation.class.getSimpleName(),
                         base,
-                        bootModules,
-                        modulesByName
+                        systemModules,
+                        userModules
                     });
                 selfRes.set(new Object[]{
                     selfResResources,
@@ -607,17 +596,17 @@ final class ModuleClassPaths {
                                 });
                         }
                     }
-                    final List<PathResourceImplementation> bcprs = systemModules != null ?
-                                findJavaBase(getModulesByName(systemModules, modulesPatches, null)) :
-                                selfResResources;   //java.base
+                    final List<PathResourceImplementation> bcprs = base == systemModules ?
+                            selfResResources :   //java.base
+                            findJavaBase(getModulesByName(systemModules, modulesPatches, null));
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
                     final Predicate<ModuleElement> rootModulesPredicate;
                     final String xmodule;
-                    if (found != null) {                        
+                    if (found != null) {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
-                                        .setModuleBootPath(bootModules)
+                                        .setModuleBootPath(systemModules)
                                         .setModuleCompilePath(userModules)
                                         .setSourcePath(sources)
                                         .build(),
@@ -629,22 +618,20 @@ final class ModuleClassPaths {
                     } else {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
-                                        .setModuleBootPath(bootModules)
+                                        .setModuleBootPath(systemModules)
                                         .setModuleCompilePath(userModules)
                                         .setSourcePath(sources)
                                         .build());
                         final Set<String> additionalModules = getAddMods();
                         additionalModules.remove(MOD_ALL_UNNAMED);
-                        if (systemModules == null) {
+                        if (base == systemModules) {
                             additionalModules.add(MOD_JAVA_SE);
                             rootModulesPredicate = ModuleNames.create(additionalModules)
                                     .or(NON_JAVA_PUBEXP);
                         } else {
                             rootModulesPredicate = ModuleNames.create(additionalModules);
                         }
-                        xmodule = Optional.ofNullable(getXModule())
-                                .filter((n) -> modulesByName.keySet().contains(n))
-                                .orElse(null);
+                        xmodule = getXModule();
                     }
                     boolean dependsOnUnnamed = false;
                     if (src != null) {
@@ -659,7 +646,7 @@ final class ModuleClassPaths {
                                     } else {
                                         final List<URL> xmoduleLocs = modulesByName.get(xmodule);
                                         myModule = mu.resolveModule(xmodule);
-                                        if (myModule != null) {
+                                        if (myModule != null && xmoduleLocs != null) {
                                             requires.addAll(xmoduleLocs);
                                         }
                                     }
@@ -685,15 +672,13 @@ final class ModuleClassPaths {
                     }
                     if (dependsOnUnnamed) {
                         //Unnamed module - add legacy classpath to classpath.
-                        if (legacyClassPath != null) {
-                            final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
-                            final List<PathResourceImplementation> tmp = new ArrayList<>(res.size() + legacyEntires.size());
-                            legacyEntires.stream()
-                                    .map((e)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
-                                    .forEach(tmp::add);
-                            tmp.addAll(res);
-                            res = tmp;
-                        }
+                        final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
+                        final List<PathResourceImplementation> tmp = new ArrayList<>(res.size() + legacyEntires.size());
+                        legacyEntires.stream()
+                                .map((e)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
+                                .forEach(tmp::add);
+                        tmp.addAll(res);
+                        res = tmp;
                     }
                 } finally {
                     needToFire = selfRes.get()[1] == Boolean.TRUE;
