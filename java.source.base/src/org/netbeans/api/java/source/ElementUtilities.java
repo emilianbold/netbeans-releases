@@ -53,6 +53,7 @@ import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -810,6 +811,9 @@ public final class ElementUtilities {
      */
     public boolean isErroneous(@NullAllowed Element e) {
         if (e == null) {
+            return true;
+        }
+        if (e.getKind() == ElementKind.MODULE && ((Symbol)e).kind == Kinds.Kind.ERR) {
             return true;
         }
         final TypeMirror type = e.asType();

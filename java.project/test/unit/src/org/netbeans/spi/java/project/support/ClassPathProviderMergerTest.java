@@ -46,17 +46,22 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -100,9 +105,12 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         
         final AtomicInteger count = new AtomicInteger();
         compile.addPropertyChangeListener(new PropertyChangeListener() {
-
             public void propertyChange(PropertyChangeEvent evt) {
-                count.incrementAndGet();
+                final String propName = evt.getPropertyName();
+                if (ClassPath.PROP_ENTRIES.equals(propName) ||
+                    ClassPath.PROP_ROOTS.equals(propName)) {
+                    count.incrementAndGet();
+                }
             }
         });
         
@@ -162,7 +170,73 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         assertEquals(2, compile.entries().size());
     }
     
-    
+    public final void testPropagatesFlags() throws IOException {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        final URL root1 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(getWorkDir(),"root1")));
+        final URL root2 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(getWorkDir(),"root2")));
+
+        ProviderImpl defaultCP = new ProviderImpl();
+        final MutableCPImpl cpImpl = new MutableCPImpl(root1);
+        defaultCP.paths.put(ClassPath.COMPILE, ClassPathFactory.createClassPath(cpImpl));
+        ClassPathProviderMerger instance = new ClassPathProviderMerger(defaultCP);
+        ClassPathProvider result = instance.merge(lookup);
+
+        ClassPath compile = result.findClassPath(null, ClassPath.COMPILE);
+        assertNotNull(compile);
+        assertEquals(0, compile.getFlags().size());
+
+        final ProviderImpl additional = new ProviderImpl();
+        final MutableCPImpl addCpImpl = new MutableCPImpl(root2);
+        addCpImpl.add(ClassPath.Flag.INCOMPLETE);
+        additional.paths.put(ClassPath.COMPILE, ClassPathFactory.createClassPath(addCpImpl));
+        ic.add(additional);
+
+        assertEquals(1, compile.getFlags().size());
+        assertSame(compile, result.findClassPath(null, ClassPath.COMPILE));
+        
+        addCpImpl.remove(ClassPath.Flag.INCOMPLETE);
+        assertEquals(0, compile.getFlags().size());
+        addCpImpl.add(ClassPath.Flag.INCOMPLETE);
+        assertEquals(1, compile.getFlags().size());
+    }
+
+    public void testFlagsEvents() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        final URL root1 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(getWorkDir(),"root1")));
+        final URL root2 = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(getWorkDir(),"root2")));
+
+        ProviderImpl defaultCP = new ProviderImpl();
+        final MutableCPImpl cpImpl = new MutableCPImpl(root1);
+        defaultCP.paths.put(ClassPath.COMPILE, ClassPathFactory.createClassPath(cpImpl));
+        ClassPathProviderMerger instance = new ClassPathProviderMerger(defaultCP);
+        ClassPathProvider result = instance.merge(lookup);
+
+        ClassPath compile = result.findClassPath(null, ClassPath.COMPILE);
+        assertNotNull(compile);
+
+        final AtomicInteger count = new AtomicInteger();
+        compile.addPropertyChangeListener((evt) -> {
+            if (ClassPath.PROP_FLAGS.equals(evt.getPropertyName())) {
+                count.incrementAndGet();
+            }
+        });
+        final ProviderImpl additional = new ProviderImpl();
+        final MutableCPImpl addCpImpl = new MutableCPImpl(root2);
+        addCpImpl.add(ClassPath.Flag.INCOMPLETE);
+        additional.paths.put(ClassPath.COMPILE, ClassPathFactory.createClassPath(addCpImpl));
+        ic.add(additional);
+        assertEquals(1, count.get());
+        count.set(0);
+        addCpImpl.remove(ClassPath.Flag.INCOMPLETE);
+        assertEquals(1, count.get());
+        count.set(0);
+        addCpImpl.add(ClassPath.Flag.INCOMPLETE);
+        assertEquals(1, count.get());
+        count.set(0);
+    }
+
     private static URL createURLReference(String path) {
         URL url = ClassPathProviderMergerTest.class.getClassLoader().getResource(path);
 
@@ -179,15 +253,31 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         
     }
 
-    private static final class MutableCPImpl implements ClassPathImplementation {
+    private static final class MutableCPImpl implements FlaggedClassPathImplementation {
         private final List<PathResourceImplementation> roots;
+        private final Set<ClassPath.Flag> flags;
         private final PropertyChangeSupport support;
 
 
         MutableCPImpl(URL... urls) {
             roots = new ArrayList<>();
+            flags = EnumSet.noneOf(ClassPath.Flag.class);
             this.support = new PropertyChangeSupport(this);
             add(urls);
+        }
+
+        void add(ClassPath.Flag... flgs) {
+            for (ClassPath.Flag flg : flgs) {
+                flags.add(flg);
+            }
+            support.firePropertyChange(PROP_FLAGS, null, null);
+        }
+
+        void remove(ClassPath.Flag... flgs) {
+            for (ClassPath.Flag flg : flgs) {
+                flags.remove(flg);
+            }
+            support.firePropertyChange(PROP_FLAGS, null, null);
         }
 
         void add(URL... urls) {
@@ -200,6 +290,11 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         @Override
         public List<? extends PathResourceImplementation> getResources() {
             return roots;
+        }
+
+        @Override
+        public Set<ClassPath.Flag> getFlags() {
+            return this.flags;
         }
 
         @Override
