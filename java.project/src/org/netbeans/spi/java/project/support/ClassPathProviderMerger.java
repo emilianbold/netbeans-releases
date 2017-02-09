@@ -151,11 +151,6 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
             this.file = fo;
             mainProvider = dominant;
             providers = context.lookupResult(ClassPathProvider.class);
-
-            checkProviders();
-            lookupList = (ev) -> {
-                checkProviders();
-            };
             flagsListener = (ev) -> {
                 if (ProxyFilteringCPI.PROP_CP_FLAGS.equals(ev.getPropertyName())) {
                     synchronized (this) {
@@ -163,6 +158,10 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
                     }
                     firePropertyChange(new PropertyChangeEvent(this, PROP_FLAGS, null, null));
                 }
+            };
+            checkProviders();
+            lookupList = (ev) -> {
+                checkProviders();
             };
             providers.addLookupListener(lookupList);
         }
