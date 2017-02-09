@@ -372,6 +372,11 @@ public class RepositoryUpdater2Test extends IndexingTestBase {
         mcpi.removeResource(url2file.values().toArray(new FileObject[0]));
 
         // unblock the indexer
+        try {
+            Thread.sleep(PathRegistry.FIRER_EVT_COLLAPSE_WINDOW << 1);
+        } catch (InterruptedException ex) {
+            throw new AssertionError(ex);
+        }
         indexer.blocking.set(false);
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
