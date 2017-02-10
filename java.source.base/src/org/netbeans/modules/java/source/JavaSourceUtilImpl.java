@@ -309,7 +309,10 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                     @CheckForNull
                     public ModuleElement resolveModule(String moduleName) throws IOException {
                         cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        return cc.getElements().getModuleElement(moduleName);
+                        final ModuleElement mod = cc.getElements().getModuleElement(moduleName);
+                        return mod == null || cc.getElementUtilities().isErroneous(mod) ?
+                                null :
+                                mod;
                     }
 
                     @Override

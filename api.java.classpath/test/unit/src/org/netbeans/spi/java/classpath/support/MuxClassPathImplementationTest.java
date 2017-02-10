@@ -49,13 +49,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockPropertyChangeListener;
@@ -209,6 +212,56 @@ public final class MuxClassPathImplementationTest extends NbTestCase {
         assertEquals(Collections.singletonList(cp2r2), res);
     }
 
+    public void testPropagatesFlags() throws IOException {
+        final File wd = FileUtil.normalizeFile(getWorkDir());
+        final URL cp1r1 = FileUtil.urlForArchiveOrDir(new File(wd, "cp1_root1"));   //NOI18N
+        final URL cp2r1 = FileUtil.urlForArchiveOrDir(new File(wd, "cp2_root1"));   //NOI18N
+        final MutableClassPathImpl cpImpl1 = new MutableClassPathImpl(cp1r1);
+        final MutableClassPathImpl cpImpl2 = new MutableClassPathImpl(cp2r1)
+                .add(ClassPath.Flag.INCOMPLETE);
+        final SelectorImpl selector = new SelectorImpl(
+                    ClassPathFactory.createClassPath(cpImpl1),
+                    ClassPathFactory.createClassPath(cpImpl2));
+        final ClassPath cp = ClassPathSupport.createMultiplexClassPath(selector);
+        assertEquals(0, cp.getFlags().size());
+        selector.select(1);
+        assertEquals(1, cp.getFlags().size());
+        selector.select(0);
+        assertEquals(0, cp.getFlags().size());
+        cpImpl1.add(ClassPath.Flag.INCOMPLETE);
+        assertEquals(1, cp.getFlags().size());
+        cpImpl1.remove(ClassPath.Flag.INCOMPLETE);
+        assertEquals(0, cp.getFlags().size());
+        selector.select(1);
+        assertEquals(1, cp.getFlags().size());
+    }
+
+    public void testFlagsEvents() throws IOException {
+        final File wd = FileUtil.normalizeFile(getWorkDir());
+        final URL cp1r1 = FileUtil.urlForArchiveOrDir(new File(wd, "cp1_root1"));   //NOI18N
+        final URL cp2r1 = FileUtil.urlForArchiveOrDir(new File(wd, "cp2_root1"));   //NOI18N
+        final MutableClassPathImpl cpImpl1 = new MutableClassPathImpl(cp1r1);
+        final MutableClassPathImpl cpImpl2 = new MutableClassPathImpl(cp2r1)
+                .add(ClassPath.Flag.INCOMPLETE);
+        final SelectorImpl selector = new SelectorImpl(
+                    ClassPathFactory.createClassPath(cpImpl1),
+                    ClassPathFactory.createClassPath(cpImpl2));
+        final ClassPath cp = ClassPathSupport.createMultiplexClassPath(selector);
+        assertEquals(0, cp.getFlags().size());
+        final MockPropertyChangeListener l = new MockPropertyChangeListener();
+        cp.addPropertyChangeListener(l);
+        selector.select(1);
+        l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS, ClassPath.PROP_FLAGS);
+        selector.select(0);
+        l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS, ClassPath.PROP_FLAGS);
+        cpImpl1.add(ClassPath.Flag.INCOMPLETE);
+        l.assertEvents(ClassPath.PROP_FLAGS);
+        cpImpl1.remove(ClassPath.Flag.INCOMPLETE);
+        l.assertEvents(ClassPath.PROP_FLAGS);
+        selector.select(1);
+        l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS, ClassPath.PROP_FLAGS);
+    }
+
     private static final class SelectorImpl implements ClassPathSupport.Selector {
         private final PropertyChangeSupport cs = new PropertyChangeSupport(this);
         private final ClassPath[] cps;
@@ -242,14 +295,33 @@ public final class MuxClassPathImplementationTest extends NbTestCase {
         }
     }
 
-    private static final class MutableClassPathImpl implements ClassPathImplementation {
+    private static final class MutableClassPathImpl implements FlaggedClassPathImplementation {
         private final PropertyChangeSupport cs = new PropertyChangeSupport(this);
         private final List<PathResourceImplementation> resources = new ArrayList<>();
+        private final Set<ClassPath.Flag> flags = EnumSet.noneOf(ClassPath.Flag.class);
 
         public MutableClassPathImpl(URL... roots) {
             for (URL root : roots) {
                 resources.add(ClassPathSupport.createResource(root));
             }
+        }
+
+        @NonNull
+        public MutableClassPathImpl add(@NonNull final ClassPath.Flag flag) {
+            assert flag != null;
+            if (flags.add(flag)) {
+                cs.firePropertyChange(PROP_FLAGS, null, null);
+            }
+            return this;
+        }
+
+        @NonNull
+        public MutableClassPathImpl remove(@NonNull final ClassPath.Flag flag) {
+            assert flag != null;
+            if (flags.remove(flag)) {
+                cs.firePropertyChange(PROP_FLAGS, null, null);
+            }
+            return this;
         }
 
         public MutableClassPathImpl add(URL root) {
@@ -277,6 +349,12 @@ public final class MuxClassPathImplementationTest extends NbTestCase {
         @Override
         public List<? extends PathResourceImplementation> getResources() {
             return Collections.unmodifiableList(resources);
+        }
+
+        @Override
+        @NonNull
+        public Set<ClassPath.Flag> getFlags() {
+            return Collections.unmodifiableSet(flags);
         }
 
         @Override

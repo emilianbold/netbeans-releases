@@ -876,10 +876,10 @@ public final class ClassPath {
     public final class Entry {
                         
         private final URL url;
-        private volatile FileObject root;
-        private IOException lastError;
+        private final AtomicReference<FileObject> root;
+        private volatile IOException lastError;
         private FilteringPathResourceImplementation filter;
-        /*unit test*/ Boolean isDataResult;
+        /*unit test*/ final AtomicReference<Boolean> isDataResult;
 
         /**
          * Returns the ClassPath instance, which defines/introduces the Entry.
@@ -898,74 +898,77 @@ public final class ClassPath {
          * @return classpath entry root folder
          */
         public  FileObject  getRoot() {
-            FileObject _root = root;
+            FileObject _root = root.get();
             if (_root != null && _root.isValid()) {
                 return _root;
             }
             for (int retryCount = 0; retryCount<=1; retryCount++) { //Bug 193086 : try to do refresh
-                _root = URLMapper.findFileObject(this.url);            
-                synchronized (this) {
-                    if (root == null || !root.isValid()) {
-                        if (_root == null) {
-                            this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
-                                new Object[] {this.url}));
-                            return null;
-                        } else if (isData(_root)) {
-                            if (retryCount == 0) {
-                                Logger l = Logger.getLogger("org.netbeans.modules.masterfs"); // NOI18N
-                                Level prev = l.getLevel();
-                                try {
-                                    l.setLevel(Level.FINEST);
-                                    LOG.log(Level.WARNING, "Root is not folder {0}; about to refresh", _root); // NOI18N
-                                    _root.refresh();
-                                    FileObject parent = _root.getParent();
-                                    if (parent != null) {
-                                        LOG.log(Level.WARNING, "Refreshing its parent {0}", parent); // NOI18N
-                                        FileObject[] arr = parent.getChildren();
-                                        parent.refresh();
-                                    }
-                                } finally {
-                                    l.setLevel(prev);
-                                    LOG.warning("End of refresh"); // NOI18N
+                FileObject newRoot = URLMapper.findFileObject(this.url);
+                _root = root.get();
+                if (_root == null || !_root.isValid()) {
+                    if (newRoot == null) {
+                        this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
+                            new Object[] {this.url}));
+                        return null;
+                    } else if (isData(newRoot)) {
+                        if (retryCount == 0) {
+                            Logger l = Logger.getLogger("org.netbeans.modules.masterfs"); // NOI18N
+                            Level prev = l.getLevel();
+                            try {
+                                l.setLevel(Level.FINEST);
+                                LOG.log(Level.WARNING, "Root is not folder {0}; about to refresh", newRoot); // NOI18N
+                                newRoot.refresh();
+                                FileObject parent = newRoot.getParent();
+                                if (parent != null) {
+                                    LOG.log(Level.WARNING, "Refreshing its parent {0}", parent); // NOI18N
+                                    FileObject[] arr = parent.getChildren();
+                                    parent.refresh();
                                 }
-                                continue;
-                            } else {
-                                String fileState = null;
-                                try {
-                                    final File file = BaseUtilities.toFile(this.url.toURI());
-                                    final boolean exists = file.exists();
-                                    final boolean isDirectory = file.isDirectory();
-                                    if (exists && !isDirectory) {
-                                        LOG.log(
-                                            Level.WARNING,
-                                            "Ignoring non folder root : {0} on classpath ", //NOI18N
-                                            file);
-                                        return null;
-                                    }
-                                    fileState = "(exists: " +  exists +           //NOI18N
-                                                " file: " + file.isFile() +             //NOI18N
-                                                " directory: "+ isDirectory +    //NOI18N
-                                                " read: "+ file.canRead() +             //NOI18N
-                                                " write: "+ file.canWrite()+        //NOI18N
-                                                " root: "+ root +        //NOI18N
-                                                " _root: "+ _root +")";        //NOI18N
-                                } catch (IllegalArgumentException e) {
-                                    //Non local file - keep file null (not log file state)
-                                } catch (URISyntaxException e) {
-                                    //keep file null (not log file state)
-                                }
-                                throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder." + //NOI18N
-                                        (fileState != null ? fileState : ""));
+                            } finally {
+                                l.setLevel(prev);
+                                LOG.warning("End of refresh"); // NOI18N
                             }
+                            continue;
                         } else {
-                            root = _root;                            
+                            String fileState = null;
+                            try {
+                                final File file = BaseUtilities.toFile(this.url.toURI());
+                                final boolean exists = file.exists();
+                                final boolean isDirectory = file.isDirectory();
+                                if (exists && !isDirectory) {
+                                    LOG.log(
+                                        Level.WARNING,
+                                        "Ignoring non folder root : {0} on classpath ", //NOI18N
+                                        file);
+                                    return null;
+                                }
+                                fileState = "(exists: " +  exists +           //NOI18N
+                                            " file: " + file.isFile() +             //NOI18N
+                                            " directory: "+ isDirectory +    //NOI18N
+                                            " read: "+ file.canRead() +             //NOI18N
+                                            " write: "+ file.canWrite()+        //NOI18N
+                                            " root: "+ _root +        //NOI18N
+                                            " newRoot: "+ newRoot +")";        //NOI18N
+                            } catch (IllegalArgumentException e) {
+                                //Non local file - keep file null (not log file state)
+                            } catch (URISyntaxException e) {
+                                //keep file null (not log file state)
+                            }
+                            throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder." + //NOI18N
+                                    (fileState != null ? fileState : ""));
                         }
+                    } else {
+                        if (!root.compareAndSet(_root, newRoot)) {
+                            newRoot = root.get();
+                        }
+                        return newRoot;
                     }
-                    return root;
+                } else {
+                    return _root;
                 }
             }
-            return null;            
-        }        
+            return null;
+        }
 
         /**
          * @return true, iff the Entry refers to an existing and readable
@@ -1083,6 +1086,8 @@ public final class ClassPath {
             Parameters.notNull("url", url); //NOI18N
             this.url = url;
             this.filter = filter;
+            this.root = new AtomicReference<>();
+            this.isDataResult = new AtomicReference<>();
         }
 
         public @Override String toString() {
@@ -1102,11 +1107,10 @@ public final class ClassPath {
             return this.url == null ? 0 : this.url.hashCode();
         }
         
-        private synchronized boolean isData(final FileObject fo) {
-            if (isDataResult != null) {
-                boolean res = isDataResult;
-                isDataResult = null;
-                return res;
+        private boolean isData(final FileObject fo) {
+            Boolean isd = isDataResult.getAndSet(null);
+            if (isd != null) {
+                return isd;
             } else {
                 return fo.isData();
             }
