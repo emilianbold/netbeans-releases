@@ -50,9 +50,11 @@ import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -80,6 +82,7 @@ public abstract class ProjectGenerator {
         private Iterator<LogicalFoldersInfo> logicalFolders;
         private Iterator<? extends SourceFolderInfo> testFolders;
         private String mainFile;
+        private PredefinedToolKind mainFileTool;
         private String hostUID;
         private ExecutionEnvironment sourceEnv;
         private String fullRemoteNativeProjectPath;
@@ -165,6 +168,11 @@ public abstract class ProjectGenerator {
             return this;
         }
         
+        public ProjectParameters setMainFileTool(PredefinedToolKind mainFileTool) {
+            this.mainFileTool = mainFileTool;
+            return this;
+        }
+        
         public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs, boolean defaultCS) {
             this.hostUID = hostUID;
             this.cs = cs;
@@ -218,6 +226,10 @@ public abstract class ProjectGenerator {
 
         public String getMainFile() {
             return this.mainFile;
+        }
+
+        public PredefinedToolKind getMainFileTool() {
+            return this.mainFileTool;
         }
 
         public Iterator<SourceFolderInfo> getSourceFolders() {
