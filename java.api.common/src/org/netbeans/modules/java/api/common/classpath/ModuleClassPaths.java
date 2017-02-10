@@ -95,6 +95,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
+import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -220,7 +221,7 @@ final class ModuleClassPaths {
             if (propName == null ||
                 ProjectProperties.PLATFORM_ACTIVE.equals(propName) ||
                 (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName) && isActivePlatformChange())) {
-                resetCache(true);
+                resetCache(PROP_RESOURCES);
             }
         }
 
@@ -356,7 +357,7 @@ final class ModuleClassPaths {
                         getClass().getSimpleName(),
                         propName
                     });
-                resetCache(true);
+                resetCache(PROP_RESOURCES);
             }
         }
 
@@ -396,7 +397,7 @@ final class ModuleClassPaths {
                     getClass().getSimpleName(),
                     fe.getFile()
                 });
-            resetCache(true);
+            resetCache(PROP_RESOURCES);
         }
 
         private static boolean isArchiveFile(@NonNull final File file) {
@@ -436,7 +437,7 @@ final class ModuleClassPaths {
         }
     }
 
-    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener, FileChangeListener, ClassIndexListener {
+    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements FlaggedClassPathImplementation, PropertyChangeListener, ChangeListener, FileChangeListener, ClassIndexListener {
 
         private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
         private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
@@ -464,6 +465,7 @@ final class ModuleClassPaths {
         private volatile boolean rootsChanging;
         //@GuardedBy("this")
         private Collection<File> moduleInfos;
+        private volatile boolean incomplete;
 
         ModuleInfoClassPathImplementation(
                 @NonNull final ClassPath base,
@@ -493,6 +495,14 @@ final class ModuleClassPaths {
             this.systemModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.systemModules));
             this.userModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
             this.legacyClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.legacyClassPath));
+        }
+
+        @Override
+        public Set<ClassPath.Flag> getFlags() {
+            getResources(); //Compute incomplete status
+            return incomplete ?
+                    EnumSet.of(ClassPath.Flag.INCOMPLETE) :
+                    Collections.emptySet();
         }
 
         @Override
@@ -546,6 +556,7 @@ final class ModuleClassPaths {
                     }
                 }
             });
+            boolean incompleteVote = false;
             if(supportsModules(systemModules, userModules, sources)) {
                 res = modulesByName.values().stream()
                         .flatMap((urls) -> urls.stream())
@@ -650,6 +661,7 @@ final class ModuleClassPaths {
                                         if (myModule != null && xmoduleLocs != null) {
                                             requires.addAll(xmoduleLocs);
                                         }
+                                        incompleteVote = myModule == null;
                                     }
                                     if (myModule != null) {
                                         dependsOnUnnamed = dependsOnUnnamed(myModule, true);
@@ -709,12 +721,13 @@ final class ModuleClassPaths {
                     removed.stream().forEach((f) -> FileUtil.removeFileChangeListener(this, f));
                     added.stream().forEach((f) -> FileUtil.addFileChangeListener(this, f));
                     moduleInfos = newModuleInfos;
+                    incomplete = incompleteVote;
                 } else {
                     res = ccv;
                 }
             }
             if (needToFire) {
-                fire();
+                fire(PROP_RESOURCES);
             }
             return res;
         }
@@ -723,23 +736,23 @@ final class ModuleClassPaths {
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (propName == null || ClassPath.PROP_ENTRIES.equals(propName)) {
-                resetOutsideWriteAccess(null);
+                resetOutsideWriteAccess(null, PROP_RESOURCES);
             }
         }
 
         @Override
         public void stateChanged(@NonNull final ChangeEvent evt) {
-            resetOutsideWriteAccess(null);
+            resetOutsideWriteAccess(null, PROP_FLAGS, PROP_RESOURCES);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            resetOutsideWriteAccess(fe.getFile());
+            resetOutsideWriteAccess(fe.getFile(), PROP_RESOURCES);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            resetOutsideWriteAccess(fe.getFile());
+            resetOutsideWriteAccess(fe.getFile(), PROP_RESOURCES);
         }
 
         @Override
@@ -753,13 +766,13 @@ final class ModuleClassPaths {
                     ClassIndex.NameKind.PREFIX,
                     EnumSet.of(ClassIndex.SearchScope.SOURCE));
             if (mods.isEmpty()) {
-                resetOutsideWriteAccess(null);
+                resetOutsideWriteAccess(null, PROP_RESOURCES);
             }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            resetOutsideWriteAccess(fe.getFile());
+            resetOutsideWriteAccess(fe.getFile(), PROP_RESOURCES);
         }
 
         @Override
@@ -793,7 +806,7 @@ final class ModuleClassPaths {
             handleModuleChange(event);
         }
         
-        private void resetOutsideWriteAccess(FileObject artifact) {
+        private void resetOutsideWriteAccess(FileObject artifact, String... propNames) {
             final boolean hasDocExclusiveLock = Optional.ofNullable(artifact)
                     .map((fo) -> {
                         try {
@@ -805,7 +818,7 @@ final class ModuleClassPaths {
                     .map((ec) -> ec.getDocument())
                     .map(DocumentUtilities::isWriteLocked)
                     .orElse(Boolean.FALSE);
-            final Runnable action = () -> resetCache(TOMBSTONE, true);
+            final Runnable action = () -> resetCache(TOMBSTONE, propNames);
             if (hasDocExclusiveLock) {
                 if (LOG.isLoggable(Level.WARNING)) {
                     LOG.log(
@@ -832,7 +845,7 @@ final class ModuleClassPaths {
                         } else {
                             rootsChanging = true;
                         }
-                    }                    
+                    }
                 }
                 if (info != null) {
                     try {
@@ -847,7 +860,7 @@ final class ModuleClassPaths {
                                     event.getRoot()
                                 });
                             rootsChanging = false;
-                            CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, true));
+                            CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, PROP_FLAGS, PROP_RESOURCES));
                         },
                         true);
                     } catch (IOException ioe) {
@@ -1118,23 +1131,23 @@ final class ModuleClassPaths {
             this.cache = cache;
         }
 
-        final void resetCache(final boolean fire) {
-            resetCache(null, fire);
+        final void resetCache(@NonNull final String... propNames) {
+            resetCache(null, propNames);
         }
 
         final void resetCache(
                 @NullAllowed final List<PathResourceImplementation> update,
-                final boolean fire) {
+                @NonNull final String... propNames) {
             synchronized (this) {
                 this.cache = update;
             }
-            if (fire) {
-                fire();
-            }
+            fire(propNames);
         }
 
-        final void fire() {
-            this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
+        final void fire(@NonNull final String... propNames) {
+            for (String pn : propNames) {
+                this.listeners.firePropertyChange(pn, null, null);
+            }
         }
     }
 

@@ -91,6 +91,7 @@ import org.openide.util.WeakListeners;
 public final class PathRegistry implements Runnable {
 
     private static final boolean FIRE_UNKNOWN_ALWAYS = false;
+    /*test*/ static final int FIRER_EVT_COLLAPSE_WINDOW = 500;
 
     private static PathRegistry instance;
     private static final RequestProcessor firer = new RequestProcessor ("Path Registry Request Processor"); //NOI18N
@@ -981,7 +982,7 @@ public final class PathRegistry implements Runnable {
         if (!firstProjectOpened) {
             firstProjectOpened = true;
         }
-        firerTask.schedule(0);
+        firerTask.schedule(FIRER_EVT_COLLAPSE_WINDOW);
     }
 
     private void fire (final Iterable<? extends PathRegistryEvent.Change> changes, LogContext ctx) {
