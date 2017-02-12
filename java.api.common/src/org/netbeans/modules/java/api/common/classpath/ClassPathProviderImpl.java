@@ -63,6 +63,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -831,7 +832,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         int type = getType(artefact);
         switch (type) {
             case -1:
-                return null;
+                //Some old code rely on the existence of BootCP on any project file, mainly project folder.
+                //For compatibily reasons simulate this behavior even it's not correct.
+                //Cannot be done for multi module project, but there are no compatibility reasons as it's new.
+                if (project.equals(FileOwnerQuery.getOwner(artefact))) {
+                    type = 0;
+                    break;
+                } else {
+                    return null;
+                }
             case 0:
             case 2:
             case 4:
