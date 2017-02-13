@@ -42,7 +42,6 @@
 package org.netbeans.core.multiview;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -53,8 +52,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -138,11 +135,19 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    if (tc != null) {
 		setEnabled(true);
 		if (tc instanceof Splitable && ((Splitable)tc).canSplit()) {
-		    JMenuItem item = new JMenuItem(new SplitDocumentHorizontallyAction(tc));
+                    SplitDocumentHorizontallyAction horizontalSplitAction = new SplitDocumentHorizontallyAction();
+                    horizontalSplitAction.setTopComponent(tc);
+                    horizontalSplitAction.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+                    
+		    JMenuItem item = new JMenuItem(horizontalSplitAction);
 		    Mnemonics.setLocalizedText(item, item.getText());
 		    add(item);
                     
-		    item = new JMenuItem(new SplitDocumentVerticallyAction(tc));
+                    SplitDocumentVerticallyAction verticalSplitAction = new SplitDocumentVerticallyAction();
+                    verticalSplitAction.setTopComponent(tc);
+                    verticalSplitAction.setOrientation(JSplitPane.VERTICAL_SPLIT);
+                    
+		    item = new JMenuItem(verticalSplitAction);
 		    Mnemonics.setLocalizedText(item, item.getText());
 		    add(item);
                     
@@ -161,79 +166,6 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 		setEnabled(false);
 	    }
 	    return new JComponent[]{this};
-	}
-    }
-
-    private class SplitDocumentAction extends AbstractAction {
-	private final Reference<TopComponent> tcRef;
-	private final int orientation;
-
-	public SplitDocumentAction(TopComponent tc, int orientation) {
-            // Replaced by weak ref since strong ref led to leaking of editor panes
-	    this.tcRef = new WeakReference<TopComponent>(tc);
-	    this.orientation = orientation;
-
-	    putValue(Action.NAME, orientation == JSplitPane.VERTICAL_SPLIT ? Bundle.LBL_SplitDocumentActionVertical() : Bundle.LBL_SplitDocumentActionHorizontal());
-	    //hack to insert extra actions into JDev's popup menu
-	    putValue("_nb_action_id_", orientation == JSplitPane.VERTICAL_SPLIT ? Bundle.LBL_ValueSplitVertical() : Bundle.LBL_ValueSplitHorizontal()); //NOI18N
-
-            if (tc instanceof Splitable) {
-                int split = ((Splitable)tc).getSplitOrientation();
-		setEnabled( split == -1 || split != orientation );
-	    } else {
-		setEnabled(false);
-	    }
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent evt) {}
-        
-        public void splitDocument() {
-            TopComponent tc = tcRef.get();
-
-            if (tc != null) {
-                splitWindow(tc, orientation);
-            }
-        }
-    }
-
-    @ActionID(
-        category = "Tools",
-        id = "org.netbeans.core.multiview.SplitDocumentHorizontallyAction"
-    )
-    @ActionReference(path = "Shortcuts", name = "DOS-H")
-    @NbBundle.Messages({
-        "LBL_SplitDocumentActionHorizontal=&Horizontally",
-	"LBL_ValueSplitHorizontal=splitHorizontally"
-    })
-    private final class SplitDocumentHorizontallyAction extends SplitDocumentAction implements ActionListener {
-        private SplitDocumentHorizontallyAction(TopComponent tc) {
-            super(tc, JSplitPane.HORIZONTAL_SPLIT);
-        }
-
-        @Override
-	public void actionPerformed(ActionEvent evt) {
-            super.splitDocument();
-	}
-    }
-
-    @ActionID(
-        category = "Tools",
-        id = "org.netbeans.core.multiview.SplitDocumentVerticallyAction"
-    )
-    @ActionReference(path = "Shortcuts", name = "DOS-V")
-    @NbBundle.Messages({
-        "LBL_SplitDocumentActionVertical=&Vertically",
-	"LBL_ValueSplitVertical=splitVertically"
-    })
-    private final class SplitDocumentVerticallyAction extends SplitDocumentAction implements ActionListener {
-        public SplitDocumentVerticallyAction(TopComponent tc) {
-            super(tc, JSplitPane.VERTICAL_SPLIT);
-        }
-
-        @Override
-	public void actionPerformed(ActionEvent evt) {
-            super.splitDocument();
 	}
     }
 
