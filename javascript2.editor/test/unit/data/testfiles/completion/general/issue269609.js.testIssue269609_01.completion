@@ -3,4 +3,3 @@ import member f|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    from                                       null
-FILE       findObjectByOffset.js                      

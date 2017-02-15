@@ -208,8 +208,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case STRING_ELEMENTS_BY_CLASS_NAME:
                     completeCSSClassNames(request, resultList);
                     break;
-                case IMPORT_EXPORT_MODULE:
+                case IMPORT_EXPORT_SPECIAL_TOKENS:
                     addImportExportKeywords(request, resultList);
+                    break;
+                case IMPORT_EXPORT_MODULE:
                     completeJsModuleNames(request, resultList);
                     break;
                 case GLOBAL:
