@@ -3,7 +3,7 @@ FormatToken{kind=TEXT, offset=0, text=import, id=KEYWORD_IMPORT}
 FormatToken{kind=WHITESPACE, offset=6, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=7, text=Ember, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=12, text= , id=WHITESPACE}
-FormatToken{kind=TEXT, offset=13, text=from, id=IDENTIFIER}
+FormatToken{kind=TEXT, offset=13, text=from, id=SPECIAL_KEYWORD_FROM}
 FormatToken{kind=WHITESPACE, offset=17, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=18, text=', id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=19, text=ember, id=STRING}
@@ -14,7 +14,7 @@ FormatToken{kind=TEXT, offset=26, text=import, id=KEYWORD_IMPORT}
 FormatToken{kind=WHITESPACE, offset=32, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=33, text=PaginationBaseRoute, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=52, text= , id=WHITESPACE}
-FormatToken{kind=TEXT, offset=53, text=from, id=IDENTIFIER}
+FormatToken{kind=TEXT, offset=53, text=from, id=SPECIAL_KEYWORD_FROM}
 FormatToken{kind=WHITESPACE, offset=57, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=58, text=', id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=59, text=../pagination-base, id=STRING}

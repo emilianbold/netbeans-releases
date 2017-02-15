@@ -3,7 +3,7 @@ FormatToken{kind=TEXT, offset=0, text=import, id=KEYWORD_IMPORT}
 FormatToken{kind=WHITESPACE, offset=6, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=7, text=Ember, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=12, text= , id=WHITESPACE}
-FormatToken{kind=TEXT, offset=13, text=from, id=IDENTIFIER}
+FormatToken{kind=TEXT, offset=13, text=from, id=SPECIAL_KEYWORD_FROM}
 FormatToken{kind=WHITESPACE, offset=17, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=18, text=', id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=19, text=ember, id=STRING}
@@ -18,7 +18,7 @@ FormatToken{kind=TEXT, offset=27, text=import, id=KEYWORD_IMPORT}
 FormatToken{kind=WHITESPACE, offset=33, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=34, text=Resolver, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=42, text= , id=WHITESPACE}
-FormatToken{kind=TEXT, offset=43, text=from, id=IDENTIFIER}
+FormatToken{kind=TEXT, offset=43, text=from, id=SPECIAL_KEYWORD_FROM}
 FormatToken{kind=WHITESPACE, offset=47, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=48, text=', id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=49, text=./resolver, id=STRING}
@@ -33,7 +33,7 @@ FormatToken{kind=TEXT, offset=62, text=import, id=KEYWORD_IMPORT}
 FormatToken{kind=WHITESPACE, offset=68, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=69, text=loadInitializers, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=85, text= , id=WHITESPACE}
-FormatToken{kind=TEXT, offset=86, text=from, id=IDENTIFIER}
+FormatToken{kind=TEXT, offset=86, text=from, id=SPECIAL_KEYWORD_FROM}
 FormatToken{kind=WHITESPACE, offset=90, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=91, text=', id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=92, text=ember-load-initializers, id=STRING}
@@ -48,7 +48,7 @@ FormatToken{kind=TEXT, offset=118, text=import, id=KEYWORD_IMPORT}
 FormatToken{kind=WHITESPACE, offset=124, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=125, text=config, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=131, text= , id=WHITESPACE}
-FormatToken{kind=TEXT, offset=132, text=from, id=IDENTIFIER}
+FormatToken{kind=TEXT, offset=132, text=from, id=SPECIAL_KEYWORD_FROM}
 FormatToken{kind=WHITESPACE, offset=136, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=137, text=', id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=138, text=./config/environment, id=STRING}

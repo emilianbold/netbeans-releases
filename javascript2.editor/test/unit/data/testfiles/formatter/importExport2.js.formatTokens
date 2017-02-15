@@ -4,7 +4,7 @@ FormatToken{kind=TEXT, offset=1, text=import, id=KEYWORD_IMPORT}
 FormatToken{kind=WHITESPACE, offset=7, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=8, text=Ember, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=13, text= , id=WHITESPACE}
-FormatToken{kind=TEXT, offset=14, text=from, id=IDENTIFIER}
+FormatToken{kind=TEXT, offset=14, text=from, id=SPECIAL_KEYWORD_FROM}
 FormatToken{kind=WHITESPACE, offset=18, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=19, text=', id=STRING_BEGIN}
 FormatToken{kind=TEXT, offset=20, text=ember, id=STRING}
