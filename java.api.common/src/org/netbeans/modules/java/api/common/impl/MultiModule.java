@@ -114,26 +114,24 @@ public final class MultiModule implements PropertyChangeListener {
     }
 
     @CheckForNull
+    public String getModuleName(@NonNull final FileObject artifact) {
+        return findImpl(artifact)
+                .map((p) -> p.first())
+                .orElse(null);
+    }
+
+    @CheckForNull
     public ClassPath getModuleSources(@NonNull final String moduleName) {
         return Optional.ofNullable(getCache().get(moduleName))
                 .map((p) -> p.first())
                 .orElse(null);
     }
 
-    //Todo: Make me faster, trie or at least Map<URL,CP>.
     @CheckForNull
     public ClassPath getModuleSources(@NonNull final FileObject artifact) {
-        final Map<String,Pair<ClassPath,CPImpl>> data = getCache();
-        final URL artifactURL = artifact.toURL();
-        for (Map.Entry<String,Pair<ClassPath,CPImpl>> e : data.entrySet()) {
-            final ClassPath cp = e.getValue().first();
-            for (ClassPath.Entry cpe : cp.entries()) {
-                if (isParentOf(cpe.getURL(), artifactURL)) {
-                    return cp;
-                }
-            }
-        }
-        return null;
+        return findImpl(artifact)
+                .map((p) -> p.second())
+                .orElse(null);
     }
 
     @NonNull
@@ -162,6 +160,22 @@ public final class MultiModule implements PropertyChangeListener {
         if (SourceRoots.PROP_ROOTS.equals(propName)) {
             ProjectManager.mutex().postReadRequest(()->updateCache());
         }
+    }
+
+    //Todo: Make me faster, trie or at least Map<URL,CP>.
+    @NonNull
+    private Optional<Pair<String,ClassPath>> findImpl(@NonNull final FileObject artifact) {
+        final Map<String,Pair<ClassPath,CPImpl>> data = getCache();
+        final URL artifactURL = artifact.toURL();
+        for (Map.Entry<String,Pair<ClassPath,CPImpl>> e : data.entrySet()) {
+            final ClassPath cp = e.getValue().first();
+            for (ClassPath.Entry cpe : cp.entries()) {
+                if (isParentOf(cpe.getURL(), artifactURL)) {
+                    return Optional.of(Pair.of(e.getKey(), cp));
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     @NonNull

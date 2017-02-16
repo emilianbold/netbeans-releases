@@ -89,7 +89,7 @@ import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
-import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.MultiModuleClassPathProvider;
 import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectOperations;
@@ -193,7 +193,7 @@ public final class J2SEModularProject implements Project {
     private SourceRoots testRoots;
     private SourceRoots moduleRoots;
     private SourceRoots testModuleRoots;
-    private final ClassPathProviderImpl cpProvider;
+    private final MultiModuleClassPathProvider cpProvider;
     private final ClassPathModifier cpMod;
 
     private AntBuildExtender buildExtender;
@@ -226,10 +226,13 @@ public final class J2SEModularProject implements Project {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEModularExtenderImplementation(), refHelper);
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
 
-        this.cpProvider = ClassPathProviderImpl.Builder.create(helper, evaluator(), getSourceRoots(), getTestSourceRoots())
-                .setProject(this)
-                .setModuleSourceRoots(getModuleRoots())
-                .setTestModuleSourceRoots(getTestModuleRoots())
+        this.cpProvider = MultiModuleClassPathProvider.Builder.newInstance(
+                helper,
+                evaluator(),
+                getModuleRoots(),
+                getSourceRoots(),
+                getTestModuleRoots(),
+                getTestSourceRoots())
                 .build();
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
         lookup = createLookup(aux, null/*newProjectOperationsCallback(this, updateProject)*/);//TODO
@@ -241,7 +244,9 @@ public final class J2SEModularProject implements Project {
             public String getClassPathProperty(SourceGroup sg, String type) {
                 assert sg != null : "SourceGroup cannot be null";  //NOI18N
                 assert type != null : "Type cannot be null";  //NOI18N
-                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+//              TODO: Commented as wery strange for Multi-Module project
+//                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+                String[] classPathProperty = null;
                 if (classPathProperty == null || classPathProperty.length == 0) {
                     throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
@@ -406,7 +411,7 @@ public final class J2SEModularProject implements Project {
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2semodule/Lookup"); //NOI18N
     }
 
-    public ClassPathProviderImpl getClassPathProvider () {
+    private MultiModuleClassPathProvider getClassPathProvider () {
         return this.cpProvider;
     }
 

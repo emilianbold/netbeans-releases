@@ -44,6 +44,12 @@ package org.netbeans.modules.java.api.common;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
@@ -58,6 +64,14 @@ import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
+import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -67,12 +81,15 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -84,6 +101,7 @@ public final class TestProject implements Project {
 
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "urn:test";
 
+    final Map<Class<?>,Function<TestProject, Object>> mergedFactories;
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final AuxiliaryConfiguration aux;
@@ -92,7 +110,9 @@ public final class TestProject implements Project {
     private final SourceRoots test;
     private Lookup lookup;
 
-    private TestProject(AntProjectHelper helper) {
+    private TestProject(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final Map<Class<?>,Function<TestProject, Object>> serviceFactories) {
         this.helper = new UpdateHelper(new UpdateImplementation() {
                 @Override public boolean isCurrent() {
                     return true;
@@ -117,6 +137,42 @@ public final class TestProject implements Project {
                     "source-roots", false, "src.{0}{1}.dir");
         this.test = SourceRoots.create(this.helper, evaluator, refHelper, PROJECT_CONFIGURATION_NAMESPACE,
                     "test-roots", false, "test.{0}{1}.dir");
+        this.mergedFactories = new HashMap<>();
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> new TestSources(this, helper, evaluator, src, test),
+                Sources.class);
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> new ClassPathProviderImpl(helper, evaluator, src, test),
+                ClassPathProvider.class);
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator, src, test),
+                SourceForBinaryQueryImplementation.class,
+                SourceForBinaryQueryImplementation2.class);
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> QuerySupport.createBinaryForSourceQueryImplementation(src, test, helper, evaluator),
+                BinaryForSourceQueryImplementation.class);
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> QuerySupport.createUnitTestForSourceQuery(src, test),
+                UnitTestForSourceQueryImplementation.class,
+                MultipleRootsUnitTestForSourceQueryImplementation.class);
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> QuerySupport.createSourceLevelQuery2(evaluator),
+                SourceLevelQueryImplementation.class,
+                SourceLevelQueryImplementation2.class);
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> QuerySupport.createFileBuiltQuery(helper, evaluator, src, test),
+                FileBuiltQueryImplementation.class);
+        merge(mergedFactories,
+                serviceFactories,
+                (p) -> QuerySupport.createFileEncodingQuery(evaluator, "encoding"),
+                FileEncodingQueryImplementation.class);
     }
 
     @Override
@@ -151,25 +207,39 @@ public final class TestProject implements Project {
     @Override
     public synchronized Lookup getLookup() {
         if (lookup == null) {
-            lookup = Lookups.fixed(
-                    this,
-                    aux,
-                    new TestSources(this, helper.getAntProjectHelper(), evaluator, src, test),
-                    new ClassPathProviderImpl(helper.getAntProjectHelper(), evaluator, src, test),
-                    QuerySupport.createCompiledSourceForBinaryQuery(helper.getAntProjectHelper(), evaluator, src, test),
-                    QuerySupport.createBinaryForSourceQueryImplementation(src, test, helper.getAntProjectHelper(), evaluator),
-                    QuerySupport.createUnitTestForSourceQuery(src, test),
-                    QuerySupport.createSourceLevelQuery2(evaluator),
-                    QuerySupport.createFileBuiltQuery(helper.getAntProjectHelper(), evaluator, src, test),
-                    QuerySupport.createFileEncodingQuery(evaluator, "encoding")
-            );
+            final InstanceContent ic = new InstanceContent();
+            ic.add(this);
+            ic.add(aux);
+            lookup = new AbstractLookup(ic) {
+                private final Set<Class> seen = Collections.synchronizedSet(new HashSet<>());
+
+                @Override
+                protected void beforeLookup(Lookup.Template<?> template) {
+                    super.beforeLookup(template);
+                    final Class<?> type = template.getType();
+                    if (seen.add(type)) {
+                        final Function<TestProject, Object> f = mergedFactories.get(type);
+                        if (f != null) {
+                            final Object res = f.apply(TestProject.this);
+                            if (type.isInstance(res)) {
+                                ic.add(res);
+                            }
+                        }
+                    }
+                }
+            };
         }
         return lookup;
     }
 
     @NonNull
     public static AntBasedProjectType createProjectType() {
-        return new TestAntBasedProjectType();
+        return createProjectType(Collections.emptyMap());
+    }
+
+    @NonNull
+    public static AntBasedProjectType createProjectType(@NonNull final Map<Class<?>,Function<TestProject, Object>> serviceFactories) {
+        return new TestAntBasedProjectType(serviceFactories);
     }
 
     @NonNull
@@ -229,12 +299,40 @@ public final class TestProject implements Project {
         });
     }
 
+    @NonNull
+    private static void merge(
+            @NonNull final Map<Class<?>,Function<TestProject, Object>> mergedFactories,
+            @NonNull final Map<Class<?>,Function<TestProject, Object>> serviceFactories,
+            @NonNull final Function<TestProject, Object> defaultFactory,
+            @NonNull final Class... serviceTypes) {
+        Function<TestProject, Object> res = null;
+        for (Class serviceType : serviceTypes) {
+            final Function<TestProject, Object> factory = serviceFactories.get(serviceType);
+            if (factory != null) {
+                res = factory;
+                break;
+            }
+        }
+        if (res == null) {
+            res = defaultFactory;
+        }
+        for (Class serviceType : serviceTypes) {
+            mergedFactories.put(serviceType, res);
+        }
+    }
+
     private static class TestAntBasedProjectType implements AntBasedProjectType {
+        private final Map<Class<?>,Function<TestProject, Object>> serviceFactories;
+
+        TestAntBasedProjectType(@NonNull final Map<Class<?>,Function<TestProject, Object>> serviceFactories) {
+            this.serviceFactories = serviceFactories;
+        }
+
         public String getType() {
             return "test";
         }
         public Project createProject(AntProjectHelper helper) throws IOException {
-            return new TestProject(helper);
+            return new TestProject(helper, serviceFactories);
         }
         public String getPrimaryConfigurationDataElementName(boolean shared) {
             return "data";
