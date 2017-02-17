@@ -48,12 +48,12 @@ import java.util.Map;
 import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.ModuleRoots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.TestProject;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.BaseUtilities;
@@ -76,7 +76,7 @@ public final class ModuleTestUtilities {
     }
 
     public boolean updateModuleRoots(@NonNull final FileObject... folders) {
-        return updateModuleRoots("*/classes", folders);
+        return updateModuleRoots("classes", folders);
     }
 
     public boolean updateModuleRoots(
@@ -106,7 +106,7 @@ public final class ModuleTestUtilities {
                 for (Map.Entry<Pair<String,String>,FileObject> e : rbn.entrySet()) {
                     final Pair<String,String> p = e.getKey();
                     ep.put(p.first(), e.getValue().getNameExt());
-                    ep.put(p.second(),resolveModulePath(modulePath, p.first())); //NOI18N
+                    ep.put(p.second(), modulePath); //NOI18N
                 }
                 tp.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                 try {
@@ -123,7 +123,7 @@ public final class ModuleTestUtilities {
     @NonNull
     public SourceRoots newModuleRoots(
             final boolean tests) {
-        return SourceRoots.createModule(
+        return ModuleRoots.create(
                 tp.getUpdateHelper(),
                 tp.getEvaluator(),
                 tp.getReferenceHelper(),
@@ -175,18 +175,5 @@ public final class ModuleTestUtilities {
     @NonNull
     public static ModuleTestUtilities newInstance(@NonNull final TestProject tp) {
         return new ModuleTestUtilities(tp);
-    }
-
-    private static String resolveModulePath(
-            @NonNull final String path,
-            @NonNull final String rootProp) {
-        final StringBuilder sb = new StringBuilder();
-        for (String pathElement : PropertyUtils.tokenizePath(path)) {
-            if (sb.length() > 0) {
-                sb.append(':'); //NOI18N
-            }
-            sb.append(String.format("${%s}/%s", rootProp, pathElement));    //NOI18N
-        }
-        return sb.toString();
     }
 }

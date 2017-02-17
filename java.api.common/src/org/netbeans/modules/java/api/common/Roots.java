@@ -219,6 +219,11 @@ public abstract class Roots {
         public String getType(final @NonNull Roots roots) {
             return roots.type;
         }
+
+        @Override
+        public String[] getRootPathProperties(final @NonNull Roots roots) {
+            return roots instanceof SourceRoots ? ((SourceRoots)roots).getRootPathProperties() : new String[roots.getRootProperties().length];
+        }
     }
 
 }

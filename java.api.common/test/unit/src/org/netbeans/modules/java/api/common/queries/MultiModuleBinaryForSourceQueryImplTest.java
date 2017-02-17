@@ -99,7 +99,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         assertNotNull(mod2d);
         mod1d = src1.createFolder("lib.event").createFolder("classes");         //NOI18N
         assertNotNull(mod1d);
-        final Project prj = TestProject.createProject(wd, null, null);
+        final Project prj = TestProject.createMultiModuleProject(wd);
         tp = prj.getLookup().lookup(TestProject.class);
         assertNotNull(tp);
         mtu = ModuleTestUtilities.newInstance(tp);
@@ -425,7 +425,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -465,7 +465,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
                 ),
                 Arrays.asList(r2.getRoots()));
 
-        assertTrue(mtu.updateModuleRoots("*/resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots("resources",modulesFolder));   //NOI18N
         assertEquals(
                 Collections.emptyList(),
                 Arrays.asList(r1.getRoots()));
@@ -489,7 +489,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -533,7 +533,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         r1.addChangeListener(l1);
         final MockChangeListener l2 = new MockChangeListener();
         r2.addChangeListener(l2);
-        assertTrue(mtu.updateModuleRoots("*/resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots("resources",modulesFolder));   //NOI18N
         l1.assertEventCount(1);
         l2.assertEventCount(0);
     }

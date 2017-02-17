@@ -61,6 +61,7 @@ import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.java.api.common.Roots;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Sources;
@@ -235,52 +236,50 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
     }
 
     private void registerSources(SourcesHelper sourcesHelper, Roots roots) {
-        String[] propNames = roots.getRootProperties();
-        String[] displayNames = roots.getRootDisplayNames();
+        final String hint = RootsAccessor.getInstance().getHint(roots);
+        final String type = RootsAccessor.getInstance().getType(roots);
+        final String includes = RootsAccessor.getInstance().supportIncludes(roots) ? "${" + ProjectProperties.INCLUDES + "}" : null; // NOI18N
+        final String excludes = RootsAccessor.getInstance().supportIncludes(roots) ? "${" + ProjectProperties.EXCLUDES + "}" : null; // NOI18N
+        final String[] rootPathPropNames = RootsAccessor.getInstance().getRootPathProperties(roots);
+        final String[] propNames = roots.getRootProperties();
+        final String[] displayNames = roots.getRootDisplayNames();
+
         for (int i = 0; i < propNames.length; i++) {
             final String prop = propNames[i];
-            final String locProp = "${" + prop + "}"; // NOI18N
+            final String pathProp =  rootPathPropNames[i];
 
-            final String loc = evaluator.evaluate(locProp);
             final List<String> locations;
             final List<String> names;
-            if (loc.contains("/*/")) {  //NOI18N
-                final Collection<? extends String> spVariants = Arrays.stream(PropertyUtils.tokenizePath(loc))
-                        .map((p) -> CommonModuleUtils.parseSourcePathVariants(p))
-                        .flatMap((lv) -> lv.stream())
-                        .collect(Collectors.toList());
+            if (pathProp == null || JavaProjectConstants.SOURCES_TYPE_MODULES.equals(type)) {
+                locations = Collections.singletonList("${" + prop + "}"); // NOI18N
+                names = Collections.singletonList(displayNames[i]);
+            } else {
                 locations = new ArrayList<>();
                 names = new ArrayList<>();
-                for (String variant : spVariants) {
-                    final int idx = variant.indexOf("/*/"); //NOI18N
-                    final String pathInModule = variant.substring(idx + 3);
-                    final String pathToModules = variant.substring(0, idx);
-                    final File file = helper.resolveFile(pathToModules);
-                    if (file.isDirectory()) {
-                        for (File f : file.listFiles()) {
-                            if (f.isDirectory()) {
+                final String pathToModules = evaluator.getProperty(prop);
+                final File file = helper.resolveFile(pathToModules);
+                if (file.isDirectory()) {
+                    final Collection<? extends String> spVariants = Arrays.stream(PropertyUtils.tokenizePath(evaluator.getProperty(pathProp)))
+                            .map((p) -> CommonModuleUtils.parseSourcePathVariants(p))
+                            .flatMap((lv) -> lv.stream())
+                            .collect(Collectors.toList());
+                    for (File f : file.listFiles()) {
+                        if (f.isDirectory()) {
+                            for (String variant : spVariants) {
                                 final String resolvedSrcPath = String.format(
                                         "%s/%s/%s", //NOI18N
                                         pathToModules,
                                         f.getName(),
-                                        pathInModule);
-                                final File resolvedSrc = helper.resolveFile(resolvedSrcPath);
+                                        variant);
                                 locations.add(resolvedSrcPath); //Todo: Should be unevaluated
-                                names.add(resolvedSrc.getName());
+                                names.add(variant);
                             }
                         }
                     }
                 }
-            } else {
-                locations = Collections.singletonList(locProp);
-                names = Collections.singletonList(displayNames[i]);
             }
             assert locations.size() == names.size();
 
-            final String hint = RootsAccessor.getInstance().getHint(roots);
-            final String type = RootsAccessor.getInstance().getType(roots);
-            final String includes = RootsAccessor.getInstance().supportIncludes(roots) ? "${" + ProjectProperties.INCLUDES + "}" : null; // NOI18N
-            final String excludes = RootsAccessor.getInstance().supportIncludes(roots) ? "${" + ProjectProperties.EXCLUDES + "}" : null; // NOI18N
             for (Iterator<String> locationIt = locations.iterator(), nameIt = names.iterator(); locationIt.hasNext() && nameIt.hasNext();) {
                 final SourcesHelper.SourceRootConfig cfg = sourcesHelper.sourceRoot(locationIt.next());
                 cfg.displayName(nameIt.next());

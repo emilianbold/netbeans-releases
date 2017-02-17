@@ -58,7 +58,6 @@ import org.netbeans.modules.java.api.common.TestProject;
 import org.netbeans.modules.java.api.common.impl.ModuleTestUtilities;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.api.common.queries.MultiModuleBinaryForSourceQueryImplTest;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -111,7 +110,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         assertNotNull(mod2d);
         mod1d = src1.createFolder("lib.event").createFolder("classes");         //NOI18N
         assertNotNull(mod1d);
-        final Project prj = TestProject.createProject(wd, null, null);
+        final Project prj = TestProject.createMultiModuleProject(wd);
         tp = prj.getLookup().lookup(TestProject.class);
         assertNotNull(tp);
         //Set BUILD_MODULES_DIR used by QuerySupport to BUILD_CLASSES_DIR used by ModuleTestUtilities

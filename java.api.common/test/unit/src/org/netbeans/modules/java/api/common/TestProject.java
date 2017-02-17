@@ -247,6 +247,21 @@ public final class TestProject implements Project {
             @NonNull final FileObject projectFolder,
             @NullAllowed final FileObject srcRoot,
             @NullAllowed final FileObject testRoot) {
+        return createProjectImpl(projectFolder, srcRoot, testRoot, false);
+    }
+
+    @NonNull
+    public static Project createMultiModuleProject(
+            @NonNull final FileObject projectFolder) {
+        return createProjectImpl(projectFolder, null, null, true);
+    }
+
+    @NonNull
+    private static Project createProjectImpl(
+            @NonNull final FileObject projectFolder,
+            @NullAllowed final FileObject srcRoot,
+            @NullAllowed final FileObject testRoot,
+            final boolean multiModule) {
         return ProjectManager.mutex().writeAccess(() -> {
             try {
                 AntProjectHelper h = ProjectGenerator.createProject(projectFolder, "test");
@@ -260,6 +275,10 @@ public final class TestProject implements Project {
                     pp.setProperty("test.src.dir", PropertyUtils.relativizeFile(
                             FileUtil.toFile(projectFolder),
                             FileUtil.toFile(testRoot)));
+                }
+                if (multiModule) {
+                    pp.setProperty("src.dir.path", "classes");
+                    pp.setProperty("test.src.dir.path", "classes");
                 }
                 pp.setProperty("build.dir", "build");
                 pp.setProperty("build.classes.dir", "${build.dir}/classes");
@@ -277,12 +296,18 @@ public final class TestProject implements Project {
                 h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pp);
                 Element data = h.getPrimaryConfigurationData(true);
                 Document doc = data.getOwnerDocument();
-                ((Element) data.appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "source-roots")).
-                        appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "root"))).
-                        setAttribute("id", "src.dir");
-                ((Element) data.appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "test-roots")).
-                        appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "root"))).
-                        setAttribute("id", "test.src.dir");
+                Element sRoot = (Element) data.appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "source-roots")).
+                        appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "root"));
+                sRoot.setAttribute("id", "src.dir");
+                if (multiModule) {
+                    sRoot.setAttribute("pathref", "src.dir.path");
+                }
+                Element tRoot = ((Element) data.appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "test-roots")).
+                        appendChild(doc.createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "root")));
+                tRoot.setAttribute("id", "test.src.dir");
+                if (multiModule) {
+                    tRoot.setAttribute("pathref", "test.src.dir.path");
+                }
                 h.putPrimaryConfigurationData(data, true);
                 Project p = ProjectManager.getDefault().findProject(projectFolder);
                 if (p == null) {

@@ -46,7 +46,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -61,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockChangeListener;
 import org.openide.util.test.MockLookup;
-import org.openide.util.test.MockPropertyChangeListener;
 
 /**
  *
@@ -102,7 +100,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         assertNotNull(mod2d);
         mod1d = src1.createFolder("lib.event").createFolder("classes");         //NOI18N
         assertNotNull(mod1d);
-        final Project prj = TestProject.createProject(wd, null, null);
+        final Project prj = TestProject.createMultiModuleProject(wd);
         tp = prj.getLookup().lookup(TestProject.class);
         assertNotNull(tp);
         mtu = ModuleTestUtilities.newInstance(tp);
@@ -317,7 +315,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -358,7 +356,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("*/classes:*/resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
