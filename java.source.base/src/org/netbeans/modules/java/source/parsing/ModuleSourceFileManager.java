@@ -243,7 +243,8 @@ final class ModuleSourceFileManager implements JavaFileManager {
         if (fo != null) {
             for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocations(location)) {
                 for (ClassPath.Entry moduleEntry : moduleLocation.getModuleEntries()) {
-                    if (FileUtil.isParentOf(moduleEntry.getRoot(), fo)) {
+                    final FileObject root = moduleEntry.getRoot();
+                    if (root != null && FileUtil.isParentOf(root, fo)) {
                         return moduleLocation;
                     }
                 }

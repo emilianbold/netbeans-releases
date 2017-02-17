@@ -43,11 +43,14 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -99,26 +102,27 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
         FileObject template = Templates.getTemplate(wiz);
 
         final List<FileObject> createdFolders = new ArrayList<>();
-        final FileObject moduleFoder = FileUtil.createFolder(dir, targetName);
-        createdFolders.add(moduleFoder);
+        final FileObject moduleFolder = FileUtil.createFolder(dir, targetName);
+        createdFolders.add(moduleFolder);
 
         Project p = Templates.getProject(wiz);
         J2SEModularProject project = p != null ? p.getLookup().lookup(J2SEModularProject.class) : null;
         if (project != null) {
-            for (String rootProp : project.getSourceRoots().getRootProperties()) {
-                String rootPath = project.evaluator().getProperty(rootProp);
-                for (String rootPathEntry : PropertyUtils.tokenizePath(rootPath)) {
-                    if (rootPathEntry.contains("/*/")) {
-                        for (String variant : CommonModuleUtils.parseSourcePathVariants(rootPathEntry)) {
-                            final int idx = variant.indexOf("/*/");
-                            FileObject root = project.getAntProjectHelper().resolveFileObject(variant.substring(0, idx));
-                            if (root == dir) {
-                                String path = variant.substring(idx + 3);
-                                if (!path.isEmpty()) {
-                                    createdFolders.add(FileUtil.createFolder(moduleFoder, path.replace(File.separatorChar, '/')));
-                                }
-                            }
-                        }
+            String[] rootProperties = project.getModuleRoots().getRootProperties();
+            String[] rootPathProperties = project.getModuleRoots().getRootPathProperties();
+            assert rootProperties.length == rootPathProperties.length;
+            for (int i = 0; i < rootProperties.length; i++) {
+                String rootProp = project.evaluator().getProperty(rootProperties[i]);
+                if (rootProp != null && dir == project.getAntProjectHelper().resolveFileObject(rootProp)) {
+                    final Collection<? extends String> spVariants =
+                            Arrays.stream(PropertyUtils.tokenizePath(project.evaluator().getProperty(rootPathProperties[i])))
+                            .map((pe) -> CommonModuleUtils.parseSourcePathVariants(pe))
+                            .flatMap((lv) -> lv.stream())
+                            .collect(Collectors.toList());
+                    for (String variant : spVariants) {
+                        if (!variant.isEmpty()) {
+                            createdFolders.add(FileUtil.createFolder(moduleFolder, variant.replace(File.separatorChar, '/')));
+                        }                        
                     }
                 }
             }

@@ -85,6 +85,7 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 //import org.netbeans.api.project.libraries.Library;
 //import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.api.common.ModuleRoots;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -96,6 +97,7 @@ import org.netbeans.modules.java.api.common.project.ProjectOperations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl;
 //import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 //import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 //import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
@@ -191,8 +193,8 @@ public final class J2SEModularProject implements Project {
     private final UpdateHelper updateHelper;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
-    private SourceRoots moduleRoots;
-    private SourceRoots testModuleRoots;
+    private ModuleRoots moduleRoots;
+    private ModuleRoots testModuleRoots;
     private final MultiModuleClassPathProvider cpProvider;
     private final ClassPathModifier cpMod;
 
@@ -376,10 +378,9 @@ public final class J2SEModularProject implements Project {
                     getTestModuleRoots()),
             refHelper.createSubprojectProvider(),
 
+            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
 
             //UNKNOWN FOR MODULAR PROJECT
-            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
-//            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
 //            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             ProjectClassPathModifier.extenderForModifier(cpMod),
@@ -441,17 +442,17 @@ public final class J2SEModularProject implements Project {
         return this.testRoots;
     }
 
-    public synchronized SourceRoots getModuleRoots() {
+    public synchronized ModuleRoots getModuleRoots() {
         if (this.moduleRoots == null) { //Local caching, no project metadata access
-            this.moduleRoots = SourceRoots.createModule(updateHelper, evaluator(), getReferenceHelper(),
+            this.moduleRoots = ModuleRoots.create(updateHelper, evaluator(), getReferenceHelper(),
                     J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
         }
         return this.moduleRoots;
     }
 
-    public synchronized SourceRoots getTestModuleRoots() {
+    public synchronized ModuleRoots getTestModuleRoots() {
         if (this.testModuleRoots == null) { //Local caching, no project metadata access
-            this.testModuleRoots = SourceRoots.createModule(updateHelper, evaluator(), getReferenceHelper(),
+            this.testModuleRoots = ModuleRoots.create(updateHelper, evaluator(), getReferenceHelper(),
                     J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testModuleRoots;

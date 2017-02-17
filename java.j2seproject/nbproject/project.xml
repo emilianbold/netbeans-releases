@@ -532,14 +532,15 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.java.analysis.parfait</friend>
+                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.hudsonfindbugs</friend>
                 <friend>org.netbeans.modules.java.j2sedeploy</friend>
                 <friend>org.netbeans.modules.java.j2seembedded</friend>
+                <friend>org.netbeans.modules.java.j2semodule</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javawebstart</friend>
-                <friend>org.netbeans.modules.cnd.mixeddev</friend>
-                <friend>org.netbeans.modules.swingapp</friend>
                 <friend>org.netbeans.modules.jshell.support</friend>
+                <friend>org.netbeans.modules.swingapp</friend>
                 <package>org.netbeans.modules.java.j2seproject.api</package>
             </friend-packages>
         </data>

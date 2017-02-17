@@ -130,7 +130,7 @@ public class J2SEModularProjectGenerator {
         final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(() -> {
             final SpecificationVersion sourceLevel = getSourceLevel(platform);
-            h[0] = createProject(dirFO, name, sourceLevel, "src", "*/classes", "*/tests", platform.getProperties().get(PROP_PLATFORM_ANT_NAME));   //NOI18N
+            h[0] = createProject(dirFO, name, sourceLevel, "src", "classes", "tests", platform.getProperties().get(PROP_PLATFORM_ANT_NAME));   //NOI18N
             final J2SEModularProject p = (J2SEModularProject) ProjectManager.getDefault().findProject(dirFO);
             ProjectManager.getDefault().saveProject(p);
             try {
@@ -177,7 +177,7 @@ public class J2SEModularProjectGenerator {
             root.setAttribute ("pathref","src.dir.path");   //NOI18N
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
-            ep.setProperty("src.dir.path", "${src.dir}/" + srcRootPath); // NOI18N
+            ep.setProperty("src.dir.path", srcRootPath); // NOI18N
         }
         data.appendChild (sourceRoots);
         Element testRoots = doc.createElementNS(J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
@@ -187,7 +187,7 @@ public class J2SEModularProjectGenerator {
             root.setAttribute ("pathref","test.src.dir.path");   //NOI18N
             testRoots.appendChild (root);
             ep.setProperty("test.src.dir", srcRoot); // NOI18N
-            ep.setProperty("test.src.dir.path", "${test.src.dir}/" + testSrcRootPath); // NOI18N
+            ep.setProperty("test.src.dir.path", testSrcRootPath); // NOI18N
         }
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);
