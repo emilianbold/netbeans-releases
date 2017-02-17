@@ -30,4 +30,13 @@ public class SplitDocumentAction extends AbstractAction {
             splitWindow(tc, orientation);
         }
     }
+
+   protected void setTcEnabled(TopComponent tc, int orientation) {
+         if (tc instanceof Splitable) {
+            int split = ((Splitable)tc).getSplitOrientation();
+            setEnabled( split == -1 || split != orientation );
+        } else {
+            setEnabled(false);
+        }
+    }
 }

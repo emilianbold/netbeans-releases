@@ -60,11 +60,15 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Shortcuts", name = "DOS-V")
 @NbBundle.Messages({
     "LBL_SplitDocumentActionVertical=&Vertically",
-    "LBL_ValueSplitVertical=splitVertically"
+    "LBL_ValueSplitVertical=Split vertically"
 })
-public final class SplitDocumentVerticallyAction extends SplitDocumentAction implements ActionListener {
-    public SplitDocumentVerticallyAction() {
+public final class SplitDocumentVerticallyAction extends SplitDocumentAction implements ActionListener {    
+    public void initTopComponent(TopComponent tc, int orientation) {
         putValue(Action.NAME, Bundle.LBL_SplitDocumentActionVertical());
+        //hack to insert extra actions into JDev's popup menu
+        putValue("_nb_action_id_", Bundle.LBL_ValueSplitVertical()); //NOI18N
+        
+        super.setTcEnabled(tc, orientation);
     }
 
     @Override

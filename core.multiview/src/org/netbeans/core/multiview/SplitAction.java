@@ -42,8 +42,6 @@
 package org.netbeans.core.multiview;
 
 import java.awt.event.ActionEvent;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -54,7 +52,6 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
@@ -135,24 +132,25 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    if (tc != null) {
 		setEnabled(true);
 		if (tc instanceof Splitable && ((Splitable)tc).canSplit()) {
-                    SplitDocumentHorizontallyAction horizontalSplitAction = new SplitDocumentHorizontallyAction();
-                    horizontalSplitAction.setTopComponent(tc);
-                    horizontalSplitAction.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+                                        SplitDocumentHorizontallyAction horizontalSplitAction = new SplitDocumentHorizontallyAction();
+                                        horizontalSplitAction.initTopComponent(tc, JSplitPane.HORIZONTAL_SPLIT);
                     
 		    JMenuItem item = new JMenuItem(horizontalSplitAction);
 		    Mnemonics.setLocalizedText(item, item.getText());
 		    add(item);
                     
-                    SplitDocumentVerticallyAction verticalSplitAction = new SplitDocumentVerticallyAction();
-                    verticalSplitAction.setTopComponent(tc);
-                    verticalSplitAction.setOrientation(JSplitPane.VERTICAL_SPLIT);
+                                        SplitDocumentVerticallyAction verticalSplitAction = new SplitDocumentVerticallyAction();
+                                        verticalSplitAction.initTopComponent(tc, JSplitPane.VERTICAL_SPLIT);
                     
 		    item = new JMenuItem(verticalSplitAction);
 		    Mnemonics.setLocalizedText(item, item.getText());
 		    add(item);
                     
-		    item = new JMenuItem(new ClearSplitAction(tc));
-		    Mnemonics.setLocalizedText(item, item.getText());
+                                        ClearSplitAction clearSplitAction = new ClearSplitAction();
+                                        clearSplitAction.initTopComponent(tc);
+                    
+		    item = new JMenuItem(clearSplitAction);
+                                        Mnemonics.setLocalizedText(item, item.getText());
 		    add(item);
 		} else { // tc is not splitable
 		    //No reason to enable action on any TC because now it was enabled even for Welcome page
@@ -166,34 +164,6 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 		setEnabled(false);
 	    }
 	    return new JComponent[]{this};
-	}
-    }
-
-    @NbBundle.Messages({"LBL_ClearSplitAction=&Clear",
-	"LBL_ValueClearSplit=clearSplit"})
-    private static class ClearSplitAction extends AbstractAction {
-
-	private final Reference<TopComponent> tcRef;
-
-	public ClearSplitAction(TopComponent tc) {
-            // Replaced by weak ref since strong ref led to leaking of editor panes
-	    this.tcRef = new WeakReference<TopComponent>(tc);
-	    putValue(Action.NAME, Bundle.LBL_ClearSplitAction());
-	    //hack to insert extra actions into JDev's popup menu
-	    putValue("_nb_action_id_", Bundle.LBL_ValueClearSplit()); //NOI18N
-	    if (tc instanceof Splitable) {
-		setEnabled(((Splitable) tc).getSplitOrientation() != -1);
-	    } else {
-		setEnabled(false);
-	    }
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent evt) {
-            TopComponent tc = tcRef.get();
-            if (tc != null) {
-                clearSplit(tc, -1);
-            }
 	}
     }
 

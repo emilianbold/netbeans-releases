@@ -60,11 +60,15 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Shortcuts", name = "DOS-H")
 @NbBundle.Messages({
     "LBL_SplitDocumentActionHorizontal=&Horizontally",
-    "LBL_ValueSplitHorizontal=splitHorizontally"
+    "LBL_ValueSplitHorizontal=Split horizontally"
 })
 public final class SplitDocumentHorizontallyAction extends SplitDocumentAction implements ActionListener {
-    public SplitDocumentHorizontallyAction() {
+    public void initTopComponent(TopComponent tc, int orientation) {
         putValue(Action.NAME, Bundle.LBL_SplitDocumentActionHorizontal());
+        //hack to insert extra actions into JDev's popup menu
+        putValue("_nb_action_id_", Bundle.LBL_ValueSplitHorizontal()); //NOI18N
+
+        super.setTcEnabled(tc, orientation);
     }
 
     @Override
