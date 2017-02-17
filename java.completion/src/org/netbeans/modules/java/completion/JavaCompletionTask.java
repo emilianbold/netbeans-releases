@@ -861,13 +861,13 @@ public final class JavaCompletionTask<T> extends BaseTask {
         VariableTree var = (VariableTree) path.getLeaf();
         SourcePositions sourcePositions = env.getSourcePositions();
         CompilationUnitTree root = env.getRoot();
+        CompilationController controller = env.getController();
         Tree type = var.getType();
         int typePos = type.getKind() == Tree.Kind.ERRONEOUS && ((ErroneousTree) type).getErrorTrees().isEmpty()
                 ? (int) sourcePositions.getEndPosition(root, type) : (int) sourcePositions.getStartPosition(root, type);
         if (offset <= typePos) {
             Tree parent = path.getParentPath().getLeaf();
             if (parent.getKind() == Tree.Kind.CATCH) {
-                CompilationController controller = env.getController();
                 if (!options.contains(Options.ALL_COMPLETION)) {
                     TreeUtilities tu = controller.getTreeUtilities();
                     TreePath tryPath = tu.getPathElementOfKind(Tree.Kind.TRY, path);
@@ -887,7 +887,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
                 }
             } else if (parent.getKind() == Tree.Kind.TRY) {
-                CompilationController controller = env.getController();
                 TypeElement te = controller.getElements().getTypeElement("java.lang.AutoCloseable"); //NOI18N
                 if (te != null) {
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(te));
@@ -903,6 +902,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
             return;
         }
+        controller.toPhase(Phase.RESOLVED);
         Tree init = unwrapErrTree(var.getInitializer());
         if (init == null) {
             TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, (int) sourcePositions.getEndPosition(root, type), offset);

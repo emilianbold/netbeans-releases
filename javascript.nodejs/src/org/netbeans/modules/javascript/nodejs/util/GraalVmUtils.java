@@ -104,7 +104,20 @@ public final class GraalVmUtils {
     }
 
     private static File getJavaHomeBinFile(String filename) {
-        return new File(new File(System.getProperty("java.home"), "bin"), filename); // NOI18N
+        File javaHome = new File(System.getProperty("java.home"));
+        // first, detect graalvm 0.20+
+        File parent = javaHome.getParentFile();
+        if (parent != null) {
+            File graalvmHome = parent.getParentFile();
+            if (graalvmHome != null) {
+                File file = new File(new File(graalvmHome, "bin"), filename);
+                if (file.isFile()) {
+                    return file;
+                }
+            }
+        }
+        // legacy graalvm versions
+        return new File(new File(javaHome, "bin"), filename); // NOI18N
     }
 
 }

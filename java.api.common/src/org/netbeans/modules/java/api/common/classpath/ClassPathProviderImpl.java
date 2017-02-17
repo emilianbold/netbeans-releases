@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -112,7 +113,7 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
     private final String[] testModuleExecutePath;
     private final Union2<String,String[]> platform;
     private final String javacSource;
-    private final Project project;
+    private final AtomicReference<Project> project;
     /**
      * ClassPaths cache.
      * Index -> CP mapping
@@ -303,7 +304,7 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
         this.testModuleExecutePath = testModuleExecutePath;
         this.platform = platform;
         this.javacSource = javacSource;
-        this.project = project;
+        this.project = new AtomicReference<>(project);
     }
 
     /**
@@ -553,7 +554,12 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
             this.bootClasspathProperties = Arrays.copyOf(bootClasspathProperties, bootClasspathProperties.length);
             return this;
         }
-        
+
+        /**
+         * Sets the owner project.
+         * @param project the owner
+         * @return return {@link Builder}
+         */
         @NonNull
         public Builder setProject(@NonNull final Project project) {
             Parameters.notNull("project", project); //NOI18N
@@ -834,7 +840,8 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
                 //Some old code rely on the existence of BootCP on any project file, mainly project folder.
                 //For compatibily reasons simulate this behavior even it's not correct.
                 //Cannot be done for multi module project, but there are no compatibility reasons as it's new.
-                if (project.equals(FileOwnerQuery.getOwner(artefact))) {
+                final Project prj = getProject();
+                if (prj != null && prj.equals(FileOwnerQuery.getOwner(artefact))) {
                     type = 0;
                     break;
                 } else {
@@ -1130,9 +1137,19 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
         return computeIfAbsent(28,
                 () -> ClassPathFactory.createClassPath(ClassPathSupportFactory.createBootClassPathImplementation(
                         evaluator,
-                        project,
+                        getProject(),
                         getEndorsedClasspath(),
                         platform.first())));
+    }
+
+    @CheckForNull
+    private Project getProject() {
+        Project prj = project.get();
+        if (prj == null) {
+            prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+            project.set(prj);
+        }
+        return prj;
     }
 
     @Override
