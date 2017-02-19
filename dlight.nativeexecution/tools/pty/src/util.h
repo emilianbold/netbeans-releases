@@ -55,7 +55,14 @@
 extern "C" {
 #endif
 
+    struct buffer{
+        char buf[BUFSIZ];
+        int offset;
+        int length; 
+   };
+
     ssize_t writen(int fd, const void *ptr, size_t n);
+    ssize_t writen_no_block(int fd, struct buffer *ptr);
 
 #if defined (__CYGWIN__) || defined (WINDOWS)
         extern char *strsignal(int);
