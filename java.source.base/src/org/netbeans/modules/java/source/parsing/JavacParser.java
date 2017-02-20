@@ -702,12 +702,10 @@ public class JavacParser extends Parser {
             final DiagnosticListener<? super JavaFileObject> diagnosticListener,
             final ClassNamesForFileOraculum oraculum,
             final boolean detached) {
-        SourceLevelQuery.Result sourceLevel = null;
         if (file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Created new JavacTask for: {0}", FileUtil.getFileDisplayName(file));
             }
-            sourceLevel = SourceLevelQuery.getSourceLevel2(file);
         }
         FQN2Files dcc = null;
         if (root != null) {
@@ -732,9 +730,15 @@ public class JavacParser extends Parser {
             final FileObject artefact = root != null ?
                     root :
                     file;
-            final CompilerOptionsQuery.Result compilerOptions = artefact != null ?
-                CompilerOptionsQuery.getOptions(artefact) :
-                null;
+            final CompilerOptionsQuery.Result compilerOptions;
+            final SourceLevelQuery.Result sourceLevel;
+            if (artefact != null) {
+                compilerOptions = CompilerOptionsQuery.getOptions(artefact);
+                sourceLevel = SourceLevelQuery.getSourceLevel2(artefact);
+            } else {
+                compilerOptions = null;
+                sourceLevel = null;
+            }
             final JavacTaskImpl javacTask = createJavacTask(
                     cpInfo,
                     diagnosticListener,
