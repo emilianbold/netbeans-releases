@@ -141,7 +141,7 @@ public final class JFXProjectUtils {
     private static final String[] JAVA_PATHS = {
             ClassPath.BOOT, ClassPath.COMPILE, ClassPath.SOURCE,
             JavaClassPathConstants.MODULE_BOOT_PATH, JavaClassPathConstants.MODULE_COMPILE_PATH,
-            JavaClassPathConstants.MODULE_CLASS_PATH, JavaClassPathConstants.MODULE_SOURCE_PATH
+            JavaClassPathConstants.MODULE_CLASS_PATH, /*JavaClassPathConstants.MODULE_SOURCE_PATH*/
     };
 
     // two deprecated properties, to be auto-cleaned from project.properties if present
