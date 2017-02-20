@@ -67,6 +67,7 @@ import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -136,7 +137,13 @@ public final class JFXProjectUtils {
     // from J2SEDeployProperties
     private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
     private static final String EXTENSION_BUILD_SCRIPT_PATH = "nbproject/build-native.xml";        //NOI18N
-    
+    //Important path types for Java model
+    private static final String[] JAVA_PATHS = {
+            ClassPath.BOOT, ClassPath.COMPILE, ClassPath.SOURCE,
+            JavaClassPathConstants.MODULE_BOOT_PATH, JavaClassPathConstants.MODULE_COMPILE_PATH,
+            JavaClassPathConstants.MODULE_CLASS_PATH, JavaClassPathConstants.MODULE_SOURCE_PATH
+    };
+
     // two deprecated properties, to be auto-cleaned from project.properties if present
     @Deprecated
     public static final String PROPERTY_JAVAFX_RUNTIME = "javafx.runtime"; // NOI18N
@@ -209,28 +216,26 @@ public final class JFXProjectUtils {
      * @param project
      * @return map of classpaths of all project files
      */
-    public static Map<FileObject,List<ClassPath>> getClassPathMap(@NonNull Project project) {
+    public static Map<FileObject,Map<String,ClassPath>> getClassPathMap(@NonNull Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] srcGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        final Map<FileObject,List<ClassPath>> classpathMap = new HashMap<FileObject,List<ClassPath>>();
-
+        final Map<FileObject,Map<String,ClassPath>> classpathMap = new HashMap<>();
+        final BitSet requiredPaths = new BitSet(3);
+        requiredPaths.set(0, 3, true);
         for (SourceGroup srcGroup : srcGroups) {
             FileObject srcRoot = srcGroup.getRootFolder();
-            ClassPath bootCP = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
-            ClassPath executeCP = ClassPath.getClassPath(srcRoot, ClassPath.EXECUTE);
-            ClassPath sourceCP = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
-            List<ClassPath> cpList = new ArrayList<ClassPath>();
-            if (bootCP != null) {
-                cpList.add(bootCP);
+            final Map<String, ClassPath> sgCps = new HashMap<>();
+            final BitSet seen = new BitSet(JAVA_PATHS.length);
+            for (int i = 0; i < JAVA_PATHS.length; i++) {
+                final ClassPath cp = ClassPath.getClassPath(srcRoot, JAVA_PATHS[i]);
+                if (cp != null) {
+                    sgCps.put(JAVA_PATHS[i], cp);
+                    seen.set(i);
+                }
             }
-            if (executeCP != null) {
-                cpList.add(executeCP);
-            }
-            if (sourceCP != null) {
-                cpList.add(sourceCP);
-            }
-            if (cpList.size() == 3) {
-                classpathMap.put(srcRoot, cpList);
+            seen.and(requiredPaths);
+            if (seen.cardinality() == 3) {
+                classpathMap.put(srcRoot, sgCps);
             }
         }
         return classpathMap;
