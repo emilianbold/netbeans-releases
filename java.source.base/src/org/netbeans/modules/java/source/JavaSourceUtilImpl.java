@@ -193,6 +193,9 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                     boot,
                     compile,
                     src,
+                    moduleBoot,
+                    moduleCompile,
+                    moduleClass,
                     FileObjects.MODULE_INFO.equals(file.getName()));
             final Function<JavaFileManager.Location,JavaFileManager> jfmProvider =
                     (loc) -> {
