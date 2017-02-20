@@ -315,12 +315,6 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         volumesTable.setEnabled(selected);
         addButton.setEnabled(selected);
         deleteButton.setEnabled(selected);
-
-        TableCellEditor editor = volumesTable.getCellEditor();
-        if (editor != null) {
-            editor.cancelCellEditing();
-        }
-        volumesTable.clearSelection();
     }//GEN-LAST:event_mountVolumesCheckBoxStateChanged
 
 
