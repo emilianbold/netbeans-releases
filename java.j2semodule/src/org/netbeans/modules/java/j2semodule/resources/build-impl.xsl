@@ -385,7 +385,7 @@ is divided into following sections:
                     <attribute>
                         <xsl:attribute name="name">modulesourcepath</xsl:attribute>
                         <xsl:attribute name="default">
-                            <xsl:call-template name="createPath2">
+                            <xsl:call-template name="createModulePath">
                                 <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
                             </xsl:call-template>
                         </xsl:attribute>
@@ -1452,18 +1452,17 @@ is divided into following sections:
             var prefixes = [];
             var suffixes = [];
             pathVariants(spec).forEach(function(item) {
-                var parts = item.split("/*/");
-                prefixes.push(parts[0]);
-                suffixes.push(parts[1]);
+                suffixes.push(item);
             });
             var tail = "";
             if (filepattern != tail) {
                 tail = "/" + filepattern;
             }
-            return /* "(" + prefixes.join("|") + ")" */ "([^/]+)/(" + suffixes.join("|") + ")" + tail;
+            return "([^/]+)/(" + suffixes.join("|") + ")" + tail;
         }
                 self.project.setProperty(attributes.get("property"), 
                     toRegexp2(attributes.get("modsource"), attributes.get("filepattern")));
+            
             ]]>
             </scriptdef>
             
@@ -2441,14 +2440,20 @@ is divided into following sections:
     <xsl:template name="createRootAvailableTest">
         <xsl:param name="roots"/>
         <xsl:param name="propName"/>
+        <xsl:for-each select="$roots/j2semodularproject1:root">
+            <j2semodularproject1:modsource_regexp property="{$propName}.{@id}.regexp" modsource="${{{@id}.path}}"/>
+        </xsl:for-each>
         <xsl:element name="condition">
             <xsl:attribute name="property"><xsl:value-of select="$propName"/></xsl:attribute>
             <or>
                 <xsl:for-each select="$roots/j2semodularproject1:root">
                     <resourcecount when="greater" count="0">
                         <xsl:element name="dirset">
-                            <xsl:attribute name="dir">${basedir}</xsl:attribute>
-                            <xsl:attribute name="includes">${<xsl:value-of select="@id"/>.path}</xsl:attribute>
+                            <xsl:attribute name="dir">${{basedir}}/${{{@id}}}</xsl:attribute>
+                            <xsl:attribute name="includes">*/*</xsl:attribute>
+                            <xsl:element name="filename">
+                                <xsl:attribute name="regex">${{{$propName}.{@id}.regexp}}</xsl:attribute>
+                            </xsl:element>
                         </xsl:element>
                     </resourcecount>
                 </xsl:for-each>
@@ -2568,12 +2573,15 @@ is divided into following sections:
         </xsl:for-each>						
     </xsl:template>
 
-    <xsl:template name="createPath2">
+    <xsl:template name="createModulePath">
         <xsl:param name="roots"/>
         <xsl:for-each select="$roots/j2semodularproject1:root">
             <xsl:if test="position() != 1">
                 <xsl:text>:</xsl:text>
             </xsl:if>
+            <xsl:text>${</xsl:text>
+            <xsl:value-of select="@id"/>
+            <xsl:text>}/*/</xsl:text>
             <xsl:text>${</xsl:text>
             <xsl:value-of select="@id"/>
             <xsl:text>.path}</xsl:text>
