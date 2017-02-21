@@ -539,12 +539,26 @@
                 <available file="${javafx.runtime}${file.separator}lib${file.separator}ext${file.separator}jfxrt.jar"/>
             </and>
         </condition>
+        <condition property="do.set.jfxrt.in.fxrt.mods">
+            <and>
+                <not><isset property="jfxrt.jar.location"/></not>
+                <not><isset property="do.set.jfxrt.in.fxrt.old"/></not>
+                <not><isset property="ddo.set.jfxrt.in.fxrt.new"/></not>
+                <or>
+                    <available file="${javafx.runtime}${file.separator}jrt-fs.jar"/>
+                    <available file="${javafx.runtime}${file.separator}lib${file.separator}jrt-fs.jar"/>
+                </or>
+            </and>
+        </condition>
     </target>
     <target name="-set-jfxrt-in-fxrt-old" depends="-check-jfxrt-in-fxrt" if="do.set.jfxrt.in.fxrt.old">
         <property name="jfxrt.jar.location" value="${javafx.runtime}${file.separator}lib${file.separator}jfxrt.jar"/>
     </target>
     <target name="-set-jfxrt-in-fxrt-new" depends="-set-jfxrt-in-fxrt-old,-check-jfxrt-in-fxrt" if="do.set.jfxrt.in.fxrt.new">
         <property name="jfxrt.jar.location" value="${javafx.runtime}${file.separator}lib${file.separator}ext${file.separator}jfxrt.jar"/>
+    </target>
+    <target name="-set-jfxrt-in-fxrt-mods" depends="-set-jfxrt-in-fxrt-new" if="do.set.jfxrt.in.fxrt.mods">
+        <property name="jfxrt.jar.location" value=""/>
     </target>
     <target name="-check-jfxrt-in-fxsdk-jre" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
         <condition property="do.set.jfxrt.in.fxsdk.jre.old">
@@ -561,7 +575,7 @@
             </and>
         </condition>
     </target>
-    <target name="-set-jfxrt-in-fxsdk-jre-old" depends="-set-jfxrt-in-fxrt-new,-check-jfxrt-in-fxsdk-jre" if="do.set.jfxrt.in.fxsdk.jre.old">
+    <target name="-set-jfxrt-in-fxsdk-jre-old" depends="-set-jfxrt-in-fxrt-mods,-check-jfxrt-in-fxsdk-jre" if="do.set.jfxrt.in.fxsdk.jre.old">
         <property name="jfxrt.jar.location" value="${javafx.sdk}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
     </target>
     <target name="-set-jfxrt-in-fxsdk-jre-new" depends="-set-jfxrt-in-fxsdk-jre-old,-check-jfxrt-in-fxsdk-jre" if="do.set.jfxrt.in.fxsdk.jre.new">
@@ -630,6 +644,22 @@
     <target name="-set-jfxrt-in-platform-home-rt-new" depends="-set-jfxrt-in-platform-home-rt-old,-check-jfxrt-in-platform-home-rt" if="do.set.jfxrt.in.platform.home.rt.new">
         <property name="jfxrt.jar.location" value="${platform.home}${file.separator}rt${file.separator}lib${file.separator}ext${file.separator}jfxrt.jar"/>
     </target>
+    <target name="-check-jfxrt-modules-in-platform-home" if="platform.home">
+        <condition property="do.set.jfxrt.in.platform.home.mods">
+            <and>
+                <not><isset property="do.set.jfxrt.in.platform.home.jre.old"/></not>
+                <not><isset property="do.set.jfxrt.in.platform.home.jre.new"/></not>
+                <not><isset property="jfxrt.jar.location"/></not>
+                <or>
+                    <available file="${platform.home}${file.separator}jrt-fs.jar"/>
+                    <available file="${platform.home}${file.separator}lib${file.separator}jrt-fs.jar"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-jfxrt-modules-in-platform-home" depends="-set-jfxrt-in-platform-home-rt-new,-check-jfxrt-modules-in-platform-home" if="do.set.jfxrt.in.platform.home.mods">
+        <property name="jfxrt.jar.location" value=""/>
+    </target>
     <target name="-check-jfxrt-in-jre" unless="jfxrt.jar.location">
         <condition property="do.set.jfxrt.in.jre.old">
             <and>
@@ -644,12 +674,26 @@
                 <available file="${java.home}${file.separator}lib${file.separator}ext${file.separator}jfxrt.jar"/>
             </and>
         </condition>
+        <condition property="do.set.jfxrt.in.jre.mods">
+            <and>
+                <not><isset property="do.set.jfxrt.in.jre.old"/></not>
+                <not><isset property="do.set.jfxrt.in.jre.new"/></not>
+                <not><isset property="jfxrt.jar.location"/></not>
+                <or>
+                    <available file="${java.home}${file.separator}jrt-fs.jar"/>
+                    <available file="${java.home}${file.separator}lib${file.separator}jrt-fs.jar"/>
+                </or>
+            </and>
+        </condition>
     </target>
-    <target name="-set-jfxrt-in-jre-old" depends="-set-jfxrt-in-platform-home-rt-new,-check-jfxrt-in-jre" if="do.set.jfxrt.in.jre.old">
+    <target name="-set-jfxrt-in-jre-old" depends="-set-jfxrt-modules-in-platform-home,-check-jfxrt-in-jre" if="do.set.jfxrt.in.jre.old">
         <property name="jfxrt.jar.location" value="${java.home}${file.separator}lib${file.separator}jfxrt.jar"/>
     </target>
     <target name="-set-jfxrt-in-jre-new" depends="-set-jfxrt-in-jre-old,-check-jfxrt-in-jre" if="do.set.jfxrt.in.jre.new">
         <property name="jfxrt.jar.location" value="${java.home}${file.separator}lib${file.separator}ext${file.separator}jfxrt.jar"/>
+    </target>
+    <target name="-set-jfxrt-in-jre-mods" depends="-set-jfxrt-in-jre-new,-check-jfxrt-in-jre" if="do.set.jfxrt.in.jre.mods">
+        <property name="jfxrt.jar.location" value=""/>
     </target>
     <target name="-check-jfxrt-in-envjdk-jre" unless="jfxrt.jar.location">
         <property environment="env"/>
@@ -667,13 +711,28 @@
             </and>
         </condition>
     </target>
-    <target name="-set-jfxrt-in-envjdk-jre-old" depends="-set-jfxrt-in-jre-new,-check-jfxrt-in-envjdk-jre" if="do.set.jfxrt.in.envjdk.jre.old">
+    <target name="-set-jfxrt-in-envjdk-jre-old" depends="-set-jfxrt-in-jre-mods,-check-jfxrt-in-envjdk-jre" if="do.set.jfxrt.in.envjdk.jre.old">
         <property name="jfxrt.jar.location" value="${env.JAVA_HOME}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
     </target>
     <target name="-set-jfxrt-in-envjdk-jre-new" depends="-set-jfxrt-in-envjdk-jre-old,-check-jfxrt-in-envjdk-jre" if="do.set.jfxrt.in.envjdk.jre.new">
         <property name="jfxrt.jar.location" value="${env.JAVA_HOME}${file.separator}jre${file.separator}lib${file.separator}ext${file.separator}jfxrt.jar"/>
     </target>
-    <target name="-pre-check-jfx-runtime" depends="-set-jfxrt-in-envjdk-jre-new">
+    <target name="-check-jfxrt-modules-in-envjdk" unless="jfxrt.jar.location">
+        <condition property="do.set.jfxrt.in.envjdk.mods">
+            <and>
+                <not><isset property="do.set.jfxrt.in.envjdk.jre.old"/></not>
+                <not><isset property="do.set.jfxrt.in.envjdk.jre.new"/></not>
+                <or>
+                    <available file="${env.JAVA_HOME}${file.separator}jrt-fs.jar"/>
+                    <available file="${env.JAVA_HOME}${file.separator}lib${file.separator}jrt-fs.jar"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    <target name="-set-jfxrt-modules-in-envjdk" depends="-set-jfxrt-in-envjdk-jre-new,-check-jfxrt-modules-in-envjdk" if="do.set.jfxrt.in.envjdk.mods">
+        <property name="jfxrt.jar.location" value=""/>
+    </target>
+    <target name="-pre-check-jfx-runtime" depends="-set-jfxrt-modules-in-envjdk">
         <echo message="jfxrt.jar.location = ${jfxrt.jar.location}" level="verbose"/>
     </target>
 
@@ -683,6 +742,7 @@
                 <or>
                     <isset property="do.set.jfxrt.in.fxrt.old"/>
                     <isset property="do.set.jfxrt.in.fxrt.new"/>
+                    <isset property="do.set.jfxrt.in.fxrt.mods"/>
                     <isset property="do.set.jfxrt.in.fxsdk.jre.old"/>
                     <isset property="do.set.jfxrt.in.fxsdk.jre.new"/>
                     <isset property="do.set.jfxrt.in.fxsdk.rt.old"/>
@@ -691,10 +751,13 @@
                     <isset property="do.set.jfxrt.in.platform.home.jre.new"/>
                     <isset property="do.set.jfxrt.in.platform.home.rt.old"/>
                     <isset property="do.set.jfxrt.in.platform.home.rt.new"/>
+                    <isset property="do.set.jfxrt.in.platform.home.mods"/>
                     <isset property="do.set.jfxrt.in.jre.old"/>
                     <isset property="do.set.jfxrt.in.jre.new"/>
+                    <isset property="do.set.jfxrt.in.jre.mods"/>
                     <isset property="do.set.jfxrt.in.envjdk.jre.old"/>
                     <isset property="do.set.jfxrt.in.envjdk.jre.new"/>
+                    <isset property="do.set.jfxrt.in.envjdk.mods"/>
                 </or>
                 <isset property="jfxrt.jar.location"/>
             </and>
@@ -1743,7 +1806,9 @@
                     var fallback = new String(project.getProperty("javafx.fallback.class"));
                     app.setName(title);
                     app.setMainClass(mainclass);
-                    app.setFallbackClass(fallback);
+                    if (typeof(app['fallbackClass']) === 'function') {
+                        app.setFallbackClass(fallback);
+                    }
                     if(isTrue(withpreloader)) {
                         preloaderclass = new String(project.getProperty("javafx.preloader.class"));
                         app.setPreloaderClass(preloaderclass);
@@ -2246,7 +2311,9 @@
                     var fallback = new String(project.getProperty("javafx.fallback.class"));
                     app.setName(title);
                     app.setMainClass(mainclass);
-                    app.setFallbackClass(fallback);
+                    if (typeof(app['fallbackClass']) === 'function') {
+                        app.setFallbackClass(fallback);
+                    }
                     if(isTrue(withpreloader)) {
                         preloaderclass = new String(project.getProperty("javafx.preloader.class"));
                         app.setPreloaderClass(preloaderclass);
@@ -2724,8 +2791,7 @@
             <echo message="Warning: Parameters (if any) not passed to &lt;fx:application&gt; in fallback build mode due to JDK missing JavaScript support."/>
             <fx:application id="fxApp"
                 name="${application.title}"
-                mainClass="${javafx.main.class}"
-                fallbackClass="${javafx.fallback.class}">
+                mainClass="${javafx.main.class}">
                 <!-- PARAMETERS NOT PASSED IN FALLBACK -->
             </fx:application>
         </sequential>
@@ -2737,8 +2803,7 @@
             <fx:application id="fxApp"
                 name="${application.title}"
                 mainClass="${javafx.main.class}"
-                preloaderClass="${javafx.preloader.class}"
-                fallbackClass="${javafx.fallback.class}">
+                preloaderClass="${javafx.preloader.class}">
                 <!-- PARAMETERS NOT PASSED IN FALLBACK -->
             </fx:application>
         </sequential>
@@ -2750,7 +2815,6 @@
             <fx:application id="fxApp"
                 name="${application.title}"
                 mainClass="${main.class}"
-                fallbackClass="${javafx.fallback.class}"
                 toolkit="swing">
                 <!-- PARAMETERS NOT PASSED IN FALLBACK -->
             </fx:application>

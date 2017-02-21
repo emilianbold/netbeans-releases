@@ -108,14 +108,14 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     private static final Comparator<Object> LEX_COMPARATOR =
             (a,b) -> a.toString().compareTo(b.toString());
-    private static final Predicate<ModuleElement> NON_JAVA_PUB = (e) -> 
+    private static final Predicate<ModuleElement> NON_JAVA_PUB = (e) ->
                            !e.getQualifiedName().toString().startsWith("java.") &&  //NOI18N
                             e.getDirectives().stream()
                                 .filter((d) -> d.getKind() == ModuleElement.DirectiveKind.EXPORTS)
                                 .map((d) -> (ModuleElement.ExportsDirective)d)
                                 .anyMatch((ed) -> ed.getTargetModules() == null);
     
-    private SourceRoots src;
+    private ClassPath src;
     private ClassPath systemModules;
     private FileObject automaticModuleRoot;
     private FileObject jarFileRoot;
@@ -137,9 +137,12 @@ public class ModuleClassPathsTest extends NbTestCase {
         final Project prj = TestProject.createProject(prjDir, srcDir, null);
         assertNotNull(prj);
         setSourceLevel(prj, "9");   //NOI18N
-        src = Optional.ofNullable(prj.getLookup().lookup(TestProject.class))
-                .map((p) -> p.getSourceRoots())
-                .orElse(null);
+        final TestProject tp = prj.getLookup().lookup(TestProject.class);
+        assertNotNull(tp);
+        src = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (
+                            tp.getSourceRoots(),
+                            tp.getUpdateHelper().getAntProjectHelper(),
+                            tp.getEvaluator()));
         systemModules = Optional.ofNullable(TestUtilities.getJava9Home())
                 .map((jh) -> TestJavaPlatform.createModularPlatform(jh))
                 .map((jp) -> jp.getBootstrapLibraries())
@@ -161,6 +164,9 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
         final Collection<URL> expectedURLs = reads(
@@ -168,8 +174,8 @@ public class ModuleClassPathsTest extends NbTestCase {
                 NamePredicate.create("java.se").or(NON_JAVA_PUB));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
-    
-    
+
+
     public void testModuleInfoBasedCp_SystemModules_in_NamedEmptyModule() throws IOException {
         if (systemModules == null) {
             System.out.println("No jdk 9 home configured.");    //NOI18N
@@ -180,25 +186,31 @@ public class ModuleClassPathsTest extends NbTestCase {
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
         final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.base"));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
-    
+
     public void testModuleInfoBasedCp_SystemModules_in_NamedModule() throws IOException {
         if (systemModules == null) {
             System.out.println("No jdk 9 home configured.");    //NOI18N
             return;
         }
         assertNotNull(src);
-        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
-        final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.compact1"));  //NOI18N
+        final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.logging"));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
     
@@ -214,6 +226,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -240,6 +253,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -260,11 +274,12 @@ public class ModuleClassPathsTest extends NbTestCase {
         assertNotNull(src);
         final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
         final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
-        createModuleInfo(src, "Modle", "java.compact1",SourceUtils.getModuleName(automaticModuleRoot.toURL())); //NOI18N
+        createModuleInfo(src, "Modle", "java.logging",SourceUtils.getModuleName(automaticModuleRoot.toURL())); //NOI18N
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -282,7 +297,7 @@ public class ModuleClassPathsTest extends NbTestCase {
         assertNotNull(src);
         final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
         final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
-        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
         final MockCompilerOptions opts = MockCompilerOptions.getInstance();
         assertNotNull("No MockCompilerOptions in Lookup", opts);
         opts.forRoot(src.getRoots()[0])
@@ -292,6 +307,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -308,16 +324,19 @@ public class ModuleClassPathsTest extends NbTestCase {
         assertNotNull(src);
         final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
         final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
-        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
         final MockCompilerOptions opts = MockCompilerOptions.getInstance();
         assertNotNull("No MockCompilerOptions in Lookup", opts);
         opts.forRoot(src.getRoots()[0])
                 .apply("--add-reads")    //NOI18N
-                .apply("Modle="+SourceUtils.getModuleName(automaticModuleRoot.toURL()));    //NOI18N
+                .apply("Modle="+SourceUtils.getModuleName(automaticModuleRoot.toURL()))    //NOI18N
+                .apply("--add-modules") //NOI18N
+                .apply(SourceUtils.getModuleName(automaticModuleRoot.toURL()));
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -335,7 +354,7 @@ public class ModuleClassPathsTest extends NbTestCase {
         assertNotNull(src);
         final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(automaticModuleRoot);
         final ClassPath legacyCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(jarFileRoot);
-        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
         final MockCompilerOptions opts = MockCompilerOptions.getInstance();
         assertNotNull("No MockCompilerOptions in Lookup", opts);
         opts.forRoot(src.getRoots()[0])
@@ -345,6 +364,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 src,
                 systemModules,
+                userModules,
                 legacyCp,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);
@@ -361,10 +381,13 @@ public class ModuleClassPathsTest extends NbTestCase {
             return;
         }
         assertNotNull(src);
-        final FileObject moduleInfo = createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
+        final FileObject moduleInfo = createModuleInfo(src, "Modle", "java.logging"); //NOI18N
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final RequestProcessor deadLockMaker = new RequestProcessor("DeadLock Maker", 1);
         final ClasspathInfo info = new ClasspathInfo.Builder(systemModules)
@@ -400,7 +423,7 @@ public class ModuleClassPathsTest extends NbTestCase {
         });                
         endThread.await();
         final Collection<URL> resURLs = collectEntries(cp);
-        final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.compact1"));  //NOI18N
+        final Collection<URL> expectedURLs = reads(systemModules, NamePredicate.create("java.logging"));  //NOI18N
         assertEquals(expectedURLs, resURLs);
     }
     
@@ -410,25 +433,28 @@ public class ModuleClassPathsTest extends NbTestCase {
             return;
         }
         assertNotNull(src);
-        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
-        final FileObject compact1Patch1 = createPatchFolder("java.compact1.patch1");    //NOI18N
-        final FileObject compact1Patch2 = createPatchFolder("java.compact1.patch2");    //NOI18N
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
+        final FileObject compact1Patch1 = createPatchFolder("java.logging.patch1");    //NOI18N
+        final FileObject compact1Patch2 = createPatchFolder("java.logging.patch2");    //NOI18N
         final MockCompilerOptions opts = MockCompilerOptions.getInstance();
         assertNotNull("No MockCompilerOptions in Lookup", opts);
         opts.forRoot(src.getRoots()[0])
                 .apply("--patch-module")    //NOI18N
                 .apply(String.format(
-                        "java.compact1=%s:%s",  //NOI18N
+                        "java.logging=%s:%s",  //NOI18N
                         FileUtil.toFile(compact1Patch1).getAbsolutePath(),
                         FileUtil.toFile(compact1Patch2).getAbsolutePath()));        
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);     
         final Collection<URL> expectedURLs = reads(
                 systemModules,
-                NamePredicate.create("java.compact1"),   //NOI18N
+                NamePredicate.create("java.logging"),   //NOI18N
                 compact1Patch1,
                 compact1Patch2);  
         assertEquals(expectedURLs, resURLs);
@@ -440,27 +466,30 @@ public class ModuleClassPathsTest extends NbTestCase {
             return;
         }
         assertNotNull(src);
-        createModuleInfo(src, "Modle", "java.compact1"); //NOI18N
-        final FileObject compact1Patch1 = createPatchFolder("java.compact1.patch1");    //NOI18N
-        final FileObject compact1Patch2 = createPatchFolder("java.compact1.patch2");    //NOI18N
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
+        final FileObject compact1Patch1 = createPatchFolder("java.logging.patch1");    //NOI18N
+        final FileObject compact1Patch2 = createPatchFolder("java.logging.patch2");    //NOI18N
         final MockCompilerOptions opts = MockCompilerOptions.getInstance();
         assertNotNull("No MockCompilerOptions in Lookup", opts);
         opts.forRoot(src.getRoots()[0])
                 .apply("--patch-module")    //NOI18N
                 .apply(String.format(
-                        "java.compact1=%s",//NOI18N
+                        "java.logging=%s",//NOI18N
                         FileUtil.toFile(compact1Patch1).getAbsolutePath()))
                 .apply("--patch-module")    //NOI18N
-                .apply(String.format("java.compact1=%s",  //NOI18N
+                .apply(String.format("java.logging=%s",  //NOI18N
                         FileUtil.toFile(compact1Patch2).getAbsolutePath()));
         final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                 systemModules,
                 src,
+                systemModules,
+                ClassPath.EMPTY,
+                null,
                 null));
         final Collection<URL> resURLs = collectEntries(cp);     
         final Collection<URL> expectedURLs = reads(
                 systemModules,
-                NamePredicate.create("java.compact1"),   //NOI18N
+                NamePredicate.create("java.logging"),   //NOI18N
                 compact1Patch1);  
         assertEquals(expectedURLs, resURLs);
     }
@@ -490,7 +519,7 @@ public class ModuleClassPathsTest extends NbTestCase {
     
     @NonNull
     private static FileObject createModuleInfo(
-            @NonNull final SourceRoots src,
+            @NonNull final ClassPath src,
             @NonNull final String moduleName,
             @NonNull final String... requiredModules) throws IOException {
         final FileObject[] roots = src.getRoots();
@@ -573,7 +602,7 @@ public class ModuleClassPathsTest extends NbTestCase {
                 for (ModuleElement.Directive d : me.getDirectives()) {
                     if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         final ModuleElement.RequiresDirective rd = (ModuleElement.RequiresDirective)d;
-                        if (rd.isPublic() || isMandated(rd)) {
+                        if (rd.isTransitive()|| isMandated(rd)) {
                             collectDeps(rd.getDependency(), modNames);
                         }
                     }

@@ -131,6 +131,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -3751,6 +3752,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     public Mirror visitExports(ExportsTree node, EvaluationContext p) {
         Assert.error(node, "noModules");
         return super.visitExports(node, p);
+    }
+
+    @Override
+    public Mirror visitOpens(OpensTree node, EvaluationContext p) {
+        Assert.error(node, "noModules");
+        return super.visitOpens(node, p);
     }
 
     @Override

@@ -50,7 +50,7 @@ final class LangErrors {
     
     private LangErrors() {}
     
-    static void exception(String context, Exception ex) {
+    static void exception(String context, Throwable ex) {
         if (!SUPRESS_EXCEPTIONS) {
             System.err.println(context);
             ex.printStackTrace();

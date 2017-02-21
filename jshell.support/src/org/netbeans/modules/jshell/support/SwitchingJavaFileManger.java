@@ -100,7 +100,7 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
             local = locals.poll();
         }
         if (local == null) {
-            local = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
+            local = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
         }
         JavaFileManager old = localDelegate.get();
         localDelegate.set(local);
@@ -125,7 +125,7 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
         }
         synchronized (this) {
             if (delegate == null) {
-                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo);
+                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
             }
             return delegate;
         }
@@ -192,13 +192,13 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
     }
 
     @Override
-    public Location getModuleLocation(Location location, String moduleName) throws IOException {
-        return delegate().getModuleLocation(location, moduleName);
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
+        return delegate().getLocationForModule(location, moduleName);
     }
 
     @Override
-    public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
-        return delegate().getModuleLocation(location, fo, pkgName);
+    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
+        return delegate().getLocationForModule(location, fo, pkgName);
     }
 
     @Override
@@ -212,8 +212,8 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
     }
 
     @Override
-    public Iterable<Set<Location>> listModuleLocations(Location location) throws IOException {
-        return delegate().listModuleLocations(location);
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
+        return delegate().listLocationsForModules(location);
     }
 
     @Override

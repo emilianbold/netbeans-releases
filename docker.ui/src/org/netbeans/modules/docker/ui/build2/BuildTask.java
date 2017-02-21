@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
@@ -79,6 +80,8 @@ public class BuildTask implements Runnable {
     private final FileObject buildContext;
 
     private final FileObject dockerfile;
+    
+    private final Map<String, String> buildargs;
 
     private final String repository;
 
@@ -89,7 +92,7 @@ public class BuildTask implements Runnable {
     private final boolean noCache;
 
     public BuildTask(DockerInstance instance, InputOutput inputOutput, Hook hook, FileObject buildContext,
-            FileObject dockerfile, String repository, String tag, boolean pull, boolean noCache) {
+            FileObject dockerfile, Map<String, String> buildargs, String repository, String tag, boolean pull, boolean noCache) {
         this.instance = new WeakReference<>(instance);
         this.inputOutput = new WeakReference<>(inputOutput);
         this.hook = hook;
@@ -99,6 +102,7 @@ public class BuildTask implements Runnable {
         this.tag = tag;
         this.pull = pull;
         this.noCache = noCache;
+        this.buildargs = buildargs;
     }
 
     public WeakReference<DockerInstance> getInstance() {
@@ -152,7 +156,7 @@ public class BuildTask implements Runnable {
         }
         DockerAction facade = new DockerAction(inst);
         final FutureTask<DockerImage> task = facade.createBuildTask(buildContext,
-                dockerfile, repository, tag, pull, noCache, new BuildEvent.Listener() {
+                dockerfile, buildargs, repository, tag, pull, noCache, new BuildEvent.Listener() {
             @Override
             public void onEvent(BuildEvent event) {
                 if (event.isUpload()) {

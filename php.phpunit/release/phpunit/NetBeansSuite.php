@@ -41,6 +41,10 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+// keep BC with PHPUnit versions < 6
+if (!class_exists('PHPUnit_Framework_TestSuite')) {
+    class PHPUnit_Framework_TestSuite extends PHPUnit\Framework\TestSuite {}
+}
 
 /**
  * Generic test suite containing tests based on the provided CLI parameters,

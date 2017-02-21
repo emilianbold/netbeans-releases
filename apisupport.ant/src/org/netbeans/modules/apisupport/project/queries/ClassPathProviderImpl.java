@@ -69,6 +69,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.Evaluator;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -135,10 +137,26 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     @Override
                     public ClassPath run() {
                         if (boot == null) {
-                            boot = ClassPathFactory.createClassPath(ClassPathSupport.createProxyClassPathImplementation(
-                                    createPathFromProperty(BOOTCLASSPATH_PREPEND),
-                                    createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH),
-                                    createFxPath()));
+                            final String loc = project.evaluator().getProperty(Evaluator.NBJDK_BOOTCLASSPATH_MODULAR);
+                            if(loc != null) {
+                                final File locf = new File(loc);
+                                for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                                    final File jpLocf = jp.getInstallFolders().stream()
+                                            .map((fo) -> FileUtil.toFile(fo))
+                                            .filter((f) -> f != null)
+                                            .findFirst()
+                                            .orElse(null);
+                                    if (locf.equals(jpLocf)) {
+                                        boot = jp.getBootstrapLibraries();
+                                        break;
+                                    }
+                                }
+                            } else {
+                                boot = ClassPathFactory.createClassPath(ClassPathSupport.createProxyClassPathImplementation(
+                                        createPathFromProperty(BOOTCLASSPATH_PREPEND),
+                                        createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH),
+                                        createFxPath()));
+                            }
                         }
                         return boot;
                     }

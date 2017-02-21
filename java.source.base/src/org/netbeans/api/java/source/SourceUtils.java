@@ -87,12 +87,14 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
 import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -112,6 +114,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.Module;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
@@ -131,7 +134,6 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -343,7 +345,7 @@ public class SourceUtils {
         if (cs.useFQNs()) {
             return fqn;
         }
-        CompilationUnitTree cut = info.getCompilationUnit();
+        final CompilationUnitTree cut = info.getCompilationUnit();
         final Trees trees = info.getTrees();
         final Scope scope = trees.getScope(context);
         String qName = fqn;
@@ -356,11 +358,13 @@ public class SourceUtils {
                 return (e.getKind().isClass() || e.getKind().isInterface()) && trees.isAccessible(scope, (TypeElement)e);
             }
         };
+        Element el = info.getTrees().getElement(new TreePath(cut));
+        ModuleElement modle = el != null ? info.getElements().getModuleOf(el) : null;
         Element toImport = null;
         while(qName != null && qName.length() > 0) {
             int lastDot = qName.lastIndexOf('.');
             Element element;
-            if ((element = info.getElements().getTypeElement(qName)) != null) {
+            if ((element = (modle != null ? info.getElements().getTypeElement(modle, qName) : info.getElements().getTypeElement(qName))) != null) {
                 clashing = false;
                 String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
                 if (sqName.length() > 0) {
@@ -399,7 +403,7 @@ public class SourceUtils {
                 if (cs.importInnerClasses()) {
                     break;
                 }
-            } else if ((element = info.getElements().getPackageElement(qName)) != null) {
+            } else if ((element = (modle != null ? info.getElements().getPackageElement(modle, qName) : info.getElements().getPackageElement(qName))) != null) {
                 if (toImport == null || GeneratorUtilities.checkPackagesForStarImport(qName, cs)) {
                     toImport = element;
                 }
@@ -516,12 +520,33 @@ public class SourceUtils {
                     createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),                    
                     createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
                 };
-           String pkgName, className = null;
+            String pkgName, className = null;
+            Predicate<FileObject> filter = (p) -> true;
             if (pkg) {
                 pkgName = FileObjects.convertPackage2Folder(signature[0]);
             } else if (handle.getKind() == ElementKind.MODULE) {
                 pkgName = "";   //NOI18N
                 className = FileObjects.MODULE_INFO;
+                final String moduleName = handle.getQualifiedName();
+                JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
+                JavaFileManager.Location loc = fm.getLocationForModule(StandardLocation.MODULE_PATH, moduleName);
+                if (loc == null) {
+                    loc = fm.getLocationForModule(StandardLocation.SYSTEM_MODULES, moduleName);
+                    if (loc == null) {
+                        loc = fm.getLocationForModule(StandardLocation.UPGRADE_MODULE_PATH, moduleName);
+                    }
+                }
+                if (loc != null) {
+                    JavaFileObject jfo = fm.getJavaFileForInput(loc, className, JavaFileObject.Kind.CLASS);
+                    FileObject fo = jfo != null ? URLMapper.findFileObject(jfo.toUri().toURL()) : null;
+                    if (fo != null) {
+                        FileObject foundFo = findSourceForBinary(fo.getParent(), fo, signature[0], pkgName, className, false);
+                        if (foundFo != null) {
+                            return foundFo;
+                        }
+                    }
+                }
+                filter = (fo) -> moduleName.equals(SourceUtils.getModuleName(fo.toURL()));
             } else {
                 int index = signature[0].lastIndexOf('.');                          //NOI18N
                 if (index<0) {
@@ -533,54 +558,51 @@ public class SourceUtils {
                     className = signature[0].substring(index+1);
                 }
             }
-            final List<Pair<FileObject,ClassPath>> fos = findAllResources(pkgName, cps);
+            final List<Pair<FileObject,ClassPath>> fos = findAllResources(pkgName, filter, cps);
             for (Pair<FileObject,ClassPath> pair : fos) {                
                 FileObject root = pair.second().findOwnerRoot(pair.first());
                 if (root == null) {
                     continue;
                 }
-                FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.toURL()).getRoots();                        
-                ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
-                LinkedList<FileObject> folders = new LinkedList<>(sourcePath.findAllResources(pkgName));
-                if (pkg) {
-                    return folders.isEmpty() ? pair.first() : folders.get(0);
-                } else {               
-                    final boolean caseSensitive = isCaseSensitive ();
-                    final Object fnames = getSourceFileNames (className);
-                    folders.addFirst(pair.first());
-                    if (fnames instanceof String) {
-                        FileObject match = findMatchingChild((String)fnames, folders, caseSensitive);
-                        if (match != null) {
-                            return match;
-                        }
-                    } else {
-                        for (String candidate : (List<String>)fnames) {
-                            FileObject match = findMatchingChild(candidate, folders, caseSensitive);
-                            if (match != null) {
-                                FileObject ownerRoot = sourcePath.entries().isEmpty() ? root : sourcePath.findOwnerRoot(match);
-                                FQN2Files fQN2Files = ownerRoot != null ? FQN2Files.forRoot(ownerRoot.toURL()) : null;
-                                if (fQN2Files == null || !fQN2Files.check(signature[0], match.toURL())) {
-                                    return match;
-                                }
-                            }
-                        }
-                    }
-                    FileObject foundFo;
-                    if (sourceRoots.length == 0) {
-                        foundFo = findSource (signature[0],root);
-                    }
-                    else {
-                        foundFo = findSource (signature[0],sourceRoots);
-                    }
-                    if (foundFo != null) {
-                        return foundFo;
-                    }
+                FileObject foundFo = findSourceForBinary(root, pair.first(), signature[0], pkgName, className, pkg);
+                if (foundFo != null) {
+                    return foundFo;
                 }
             }
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
         return null;        
+    }
+    
+    private static FileObject findSourceForBinary(FileObject binaryRoot, FileObject binary, String signature, String pkgName, String className, boolean isPkg) throws IOException {
+        FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(binaryRoot.toURL()).getRoots();                        
+        ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
+        LinkedList<FileObject> folders = new LinkedList<>(sourcePath.findAllResources(pkgName));
+        if (isPkg) {
+            return folders.isEmpty() ? binary : folders.get(0);
+        }
+        final boolean caseSensitive = isCaseSensitive ();
+        final Object fnames = getSourceFileNames(className);
+        folders.addFirst(binary);
+        if (fnames instanceof String) {
+            FileObject match = findMatchingChild((String)fnames, folders, caseSensitive);
+            if (match != null) {
+                return match;
+            }
+        } else {
+            for (String candidate : (List<String>)fnames) {
+                FileObject match = findMatchingChild(candidate, folders, caseSensitive);
+                if (match != null) {
+                    FileObject ownerRoot = sourcePath.entries().isEmpty() ? binaryRoot : sourcePath.findOwnerRoot(match);
+                    FQN2Files fQN2Files = ownerRoot != null ? FQN2Files.forRoot(ownerRoot.toURL()) : null;
+                    if (fQN2Files == null || !fQN2Files.check(signature, match.toURL())) {
+                        return match;
+                    }
+                }
+            }
+        }
+        return sourceRoots.length == 0 ? findSource(signature,binaryRoot) : findSource(signature,sourceRoots);
     }
     
     private static FileObject findMatchingChild(String sourceFileName, Collection<FileObject> folders, boolean caseSensitive) {
@@ -598,16 +620,20 @@ public class SourceUtils {
     @NonNull
     private static List<Pair<FileObject, ClassPath>> findAllResources(
             @NonNull final String resourceName,
-            @NonNull final ClassPath[] cps) {
+            @NonNull final Predicate<? super FileObject> rootsFilter,
+            @NonNull final ClassPath... cps) {
         final List<Pair<FileObject,ClassPath>> result = new ArrayList<>();
         for (ClassPath cp : cps) {
             for (FileObject fo : cp.findAllResources(resourceName)) {
-                result.add(Pair.<FileObject,ClassPath>of(fo, cp));
-            }            
+                final FileObject root = cp.findOwnerRoot(fo);
+                if (root != null && rootsFilter.test(root)) {
+                    result.add(Pair.<FileObject,ClassPath>of(fo, cp));
+                }
+            }
         }
         return result;
     }
-    
+
     private static FileObject findSource (final String binaryName, final FileObject... fos) throws IOException {
         final ClassIndexManager cim = ClassIndexManager.getDefault();
         try {
@@ -1241,7 +1267,7 @@ public class SourceUtils {
             }
             try {
                 for (JavaFileManager.Location searchLocation : toSearch) {
-                    for (Set<JavaFileManager.Location> locations : jfm.listModuleLocations(searchLocation)) {
+                    for (Set<JavaFileManager.Location> locations : jfm.listLocationsForModules(searchLocation)) {
                         for (JavaFileManager.Location location : locations) {
                             ret.add(jfm.inferModuleName(location));
                         }
@@ -1326,6 +1352,44 @@ public class SourceUtils {
                     //pass to null
                 }
             }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a module name parsed from the given module-info.java.
+     * @param moduleInfo the module-info java file to parse the module name from
+     * @return the module name or null
+     * @since 2.28
+     */
+    @CheckForNull
+    public static String parseModuleName(
+            @NonNull final FileObject moduleInfo) {
+        final JavacTaskImpl jt = JavacParser.createJavacTask(
+                new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+        try {
+            final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(
+                    moduleInfo,
+                    moduleInfo.getParent(),
+                    null,
+                    FileEncodingQuery.getEncoding(moduleInfo))).iterator().next();
+            final List<? extends Tree> typeDecls = cu.getTypeDecls();
+            if (!typeDecls.isEmpty()) {
+                final Tree typeDecl = typeDecls.get(0);
+                if (typeDecl.getKind() == Tree.Kind.MODULE) {
+                    return ((ModuleTree)typeDecl).getName().toString();
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
         return null;
     }
@@ -1604,32 +1668,7 @@ public class SourceUtils {
                 }
             }
             if (moduleInfo != null) {
-                final JavacTaskImpl jt = JavacParser.createJavacTask(
-                        new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null);
-                try {
-                    final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(
-                            moduleInfo,
-                            root,
-                            null,
-                            FileEncodingQuery.getEncoding(moduleInfo))).iterator().next();
-                    final List<? extends Tree> typeDecls = cu.getTypeDecls();
-                    if (!typeDecls.isEmpty()) {
-                        final Tree typeDecl = typeDecls.get(0);
-                        if (typeDecl.getKind() == Tree.Kind.MODULE) {
-                            return ((ModuleTree)typeDecl).getName().toString();
-                        }
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+                return parseModuleName(moduleInfo);
             } else {
                 //No module -> automatic module
                 return autoName(srcRootURLs);
@@ -1665,12 +1704,14 @@ public class SourceUtils {
             moduleName;
     }
 
-    @NonNull
+    @CheckForNull
     private static String readModuleName(@NonNull FileObject moduleInfo) throws IOException {
         try (final InputStream in = new BufferedInputStream(moduleInfo.getInputStream())) {
             final ClassFile clz = new ClassFile(in, false);
-            final String name = clz.getName().getExternalName(true);
-            return name.substring(0, name.length() - (FileObjects.MODULE_INFO.length()+1));
+            final Module modle = clz.getModule();
+            return modle != null ?
+                    modle.getName() :
+                    null;
         }
     }
 

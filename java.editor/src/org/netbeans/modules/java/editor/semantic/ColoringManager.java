@@ -108,6 +108,7 @@ public final class ColoringManager {
         put("mod-deprecated", DEPRECATED);
         put("mod-undefined", UNDEFINED);
         put("mod-unused", UNUSED);
+        put("mod-keyword", KEYWORD);
         put("javadoc-identifier", JAVADOC_IDENTIFIER);
     }
     

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
-import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Source;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -88,14 +88,18 @@ final class ModuleFileManager implements JavaFileManager {
     private final CachingArchiveProvider cap;
     private final ClassPath modulePath;
     private final Function<URL,Collection<? extends URL>> peers;
+    private final Source sourceLevel;
     private final boolean cacheFile;
     private final Map<String,List<URL>> patches;
+    private Set<ModuleLocation> moduleLocations;
+    private Location forLocation;
 
 
     public ModuleFileManager(
             @NonNull final CachingArchiveProvider cap,
             @NonNull final ClassPath modulePath,
             @NonNull final Function<URL,Collection<? extends URL>> peers,
+            @NullAllowed final Source sourceLevel,
             final boolean cacheFile) {
         assert cap != null;
         assert modulePath != null;
@@ -103,6 +107,7 @@ final class ModuleFileManager implements JavaFileManager {
         this.cap = cap;
         this.modulePath = modulePath;
         this.peers = peers;
+        this.sourceLevel = sourceLevel;
         this.cacheFile = cacheFile;
         this.patches = new HashMap<>();
     }
@@ -119,31 +124,52 @@ final class ModuleFileManager implements JavaFileManager {
         final String folderName = FileObjects.convertPackage2Folder(packageName);
         try {
             final List<Iterable<JavaFileObject>> res = new ArrayList<>();
+            List<? extends String> prefixes = null;
+            final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9) >= 0;
             for (URL root : ml.getModuleRoots()) {
                 final Archive archive = cap.getArchive(root, cacheFile);
                 if (archive != null) {
-                    final Iterable<JavaFileObject> entries = archive.getFiles(folderName, null, kinds, null, recursive);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        final StringBuilder urls = new StringBuilder ();
-                        for (JavaFileObject jfo : entries) {
-                            urls.append(jfo.toUri().toString());
-                            urls.append(", ");  //NOI18N
+                    final Iterable<JavaFileObject> entries;
+                    if (supportsMultiRelease && archive.isMultiRelease()) {
+                        if (prefixes == null) {
+                            prefixes = multiReleaseRelocations();
                         }
-                        LOG.log(
-                            Level.FINEST,
-                            "Cache for {0} package: {1} type: {2} files: [{3}]",   //NOI18N
-                            new Object[] {
-                                l,
-                                packageName,
-                                kinds,
-                                urls
-                            });
+                        final java.util.Map<String,JavaFileObject> fqn2f = new HashMap<>();
+                        final Set<String> seenPackages = new HashSet<>();
+                        for (String prefix : prefixes) {
+                            Iterable<JavaFileObject> fos = archive.getFiles(
+                                    join(prefix, folderName),
+                                    null,
+                                    kinds,
+                                    null,
+                                    recursive);
+                            for (JavaFileObject fo : fos) {
+                                final boolean base = prefix.isEmpty();
+                                if (!base) {
+                                    fo = new MultiReleaseJarFileObject((InferableJavaFileObject)fo, prefix);    //Always inferable in this branch
+                                }
+                                final String fqn = inferBinaryName(l, fo);
+                                final String pkg = FileObjects.getPackageAndName(fqn)[0];
+                                if (base) {
+                                    seenPackages.add(pkg);
+                                    fqn2f.put(fqn, fo);
+                                } else if (seenPackages.contains(pkg)) {
+                                    fqn2f.put(fqn, fo);
+                                }
+                            }
+                        }
+                        entries = fqn2f.values();
+                    } else {
+                        entries = archive.getFiles(folderName, null, kinds, null, recursive);
                     }
                     res.add(entries);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        logListedFiles(l,packageName, kinds, entries);
+                    }
                 } else if (LOG.isLoggable(Level.FINEST)) {
                     LOG.log(
                         Level.FINEST,
-                        "No cache for: {0}",               //NOI18N
+                        "No archive for: {0}",               //NOI18N
                         ml.getModuleRoots());
                 }
             }
@@ -169,22 +195,43 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final JavaFileObject.Kind kind) {
         final ModuleLocation ml = asModuleLocation(l);
         final String[] namePair = FileObjects.getParentRelativePathAndName(className);
-        try {
-            for (URL root : ml.getModuleRoots()) {
+        final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
+        List<? extends String> reloc = null;
+        for (URL root : ml.getModuleRoots()) {
+            try {
                 final Archive  archive = cap.getArchive (root, cacheFile);
                 if (archive != null) {
-                    final Iterable<JavaFileObject> files = archive.getFiles(namePair[0], null, null, null, false);
-                    for (JavaFileObject e : files) {
-                        final String ename = e.getName();
-                        if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
-                            kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
-                            return e;
+                    final List<? extends String> prefixes;
+                    if (supportsMultiRelease && archive.isMultiRelease()) {
+                        if (reloc == null) {
+                            reloc = multiReleaseRelocations();
+                        }
+                        prefixes = reloc;
+                    } else {
+                        prefixes = Collections.singletonList("");   //NOI18N
+                    }
+                    for (int i = prefixes.size() - 1; i >=0; i--) {
+                        final String prefix = prefixes.get(i);
+                        Iterable<JavaFileObject> files = archive.getFiles(
+                                join(prefix,namePair[0]),
+                                null,
+                                null,
+                                null,
+                                false);
+                        for (JavaFileObject e : files) {
+                            final String ename = e.getName();
+                            if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
+                                kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
+                                return prefix.isEmpty() ?
+                                        e :
+                                        new MultiReleaseJarFileObject((InferableJavaFileObject)e, prefix);  //Always inferable
+                            }
                         }
                     }
                 }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
             }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -264,29 +311,10 @@ final class ModuleFileManager implements JavaFileManager {
 
     @Override
     @NonNull
-    public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
-        final Set<Set<Location>> moduleRoots = new HashSet<>();
-        final Set<URL> seen = new HashSet<>();
-        for (ClassPath.Entry e : modulePath.entries()) {
-            final URL root = e.getURL();
-            if (!seen.contains(root)) {
-                final String moduleName = SourceUtils.getModuleName(root);
-                if (moduleName != null) {
-                    Collection<? extends URL> p = peers.apply(root);
-                    final List<? extends URL> x = patches.get(moduleName);
-                    if (x != null) {
-                        final List<URL> tmp = new ArrayList(x.size() + p.size());
-                        tmp.addAll(x);
-                        tmp.addAll(p);
-                        p = tmp;
-                    }
-                    moduleRoots.add(Collections.singleton(
-                            ModuleLocation.create(location, p, moduleName)));
-                    seen.addAll(p);
-                }
-            }
-        }
-        return moduleRoots;
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
+        return moduleLocations(location).stream()
+                .map((ml) -> Collections.<Location>singleton(ml))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -298,16 +326,51 @@ final class ModuleFileManager implements JavaFileManager {
 
     @Override
     @CheckForNull
-    public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
         //todo: Only for Source Module Path & Output Path
         return null;
     }
 
     @Override
     @CheckForNull
-    public Location getModuleLocation(Location location, String moduleName) throws IOException {
-        //todo: Only for Source Module Path & Output Path
-        return null;
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
+        return moduleLocations(location).stream()
+                .filter((ml) -> moduleName != null && moduleName.equals(ml.getModuleName()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Set<ModuleLocation> moduleLocations(final Location baseLocation) {
+        if (moduleLocations == null) {
+            final Set<ModuleLocation> moduleRoots = new HashSet<>();
+            final Set<URL> seen = new HashSet<>();
+            for (ClassPath.Entry e : modulePath.entries()) {
+                final URL root = e.getURL();
+                if (!seen.contains(root)) {
+                    final String moduleName = SourceUtils.getModuleName(root);
+                    if (moduleName != null) {
+                        Collection<? extends URL> p = peers.apply(root);
+                        final List<? extends URL> x = patches.get(moduleName);
+                        if (x != null) {
+                            final List<URL> tmp = new ArrayList(x.size() + p.size());
+                            tmp.addAll(x);
+                            tmp.addAll(p);
+                            p = tmp;
+                        }
+                        moduleRoots.add(ModuleLocation.create(baseLocation, p, moduleName));
+                        seen.addAll(p);
+                    }
+                }
+            }
+            moduleLocations = moduleRoots;
+            forLocation = baseLocation;
+        } else if (!forLocation.equals(baseLocation)) {
+                throw new IllegalStateException(String.format(
+                        "Locations computed for: %s, but queried for: %s",  //NOI18N
+                        forLocation,
+                        baseLocation));
+        }
+        return moduleLocations;
     }
 
     private JavaFileObject findFile(
@@ -318,18 +381,34 @@ final class ModuleFileManager implements JavaFileManager {
         assert pkgName != null;
         assert relativeName != null;
         final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
-        try {
-            for (URL root : ml.getModuleRoots()) {
+        final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9) >= 0;
+        List<? extends String> reloc = null;
+        for (URL root : ml.getModuleRoots()) {
+            try {
                 final Archive  archive = cap.getArchive (root, cacheFile);
                 if (archive != null) {
-                    final JavaFileObject file = archive.getFile(resourceName);
-                    if (file != null) {
-                        return file;
+                    final List<? extends String> prefixes;
+                    if (supportsMultiRelease && archive.isMultiRelease()) {
+                        if (reloc == null) {
+                            reloc = multiReleaseRelocations();
+                        }
+                        prefixes = reloc;
+                    } else {
+                        prefixes = Collections.singletonList("");   //NOI18N
+                    }
+                    for (int i = prefixes.size() - 1; i >= 0; i--) {
+                        final String prefix = prefixes.get(i);
+                        final JavaFileObject file = archive.getFile(join(prefix, resourceName));
+                        if (file != null) {
+                            return prefix.isEmpty() ?
+                                    file :
+                                    new MultiReleaseJarFileObject((InferableJavaFileObject)file, prefix);   //Always inferable
+                        }
                     }
                 }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
             }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -357,5 +436,60 @@ final class ModuleFileManager implements JavaFileManager {
             }
         }        
         return null;
+    }
+
+    private static void logListedFiles(
+            @NonNull final Location l,
+            @NonNull final String packageName,
+            @NullAllowed final Set<? extends JavaFileObject.Kind> kinds,
+            @NonNull final Iterable<? extends JavaFileObject> entries) {
+        final StringBuilder urls = new StringBuilder ();
+        for (JavaFileObject jfo : entries) {
+            urls.append(jfo.toUri().toString());
+            urls.append(", ");  //NOI18N
+        }
+        LOG.log(
+            Level.FINEST,
+            "Filesfor {0} package: {1} type: {2} files: [{3}]",   //NOI18N
+            new Object[] {
+                l,
+                packageName,
+                kinds,
+                urls
+            });
+    }
+
+    @NonNull
+    private List<? extends String> multiReleaseRelocations() {
+        final List<String> prefixes = new ArrayList<>();
+        prefixes.add("");   //NOI18N
+        final Source[] sources = Source.values();
+        for (int i=0; i< sources.length; i++) {
+            if (sources[i].compareTo(Source.JDK1_9) >=0 && sources[i].compareTo(sourceLevel) <=0) {
+                prefixes.add(String.format(
+                        "META-INF/versions/%s",    //NOI18N
+                        normalizeSourceLevel(sources[i].name)));
+            }
+        }
+        return prefixes;
+    }
+
+    @NonNull
+    private static String normalizeSourceLevel(@NonNull final String sl) {
+        final int index = sl.indexOf('.');  //NOI18N
+        return index < 0 ?
+                sl :
+                sl.substring(index+1);
+    }
+
+    @NonNull
+    private static String join(
+            @NonNull final String prefix,
+            @NonNull final String path) {
+        return prefix.isEmpty() ?
+            path:
+            path.isEmpty() ?
+                prefix :
+                prefix + FileObjects.NBFS_SEPARATOR_CHAR + path;
     }
 }

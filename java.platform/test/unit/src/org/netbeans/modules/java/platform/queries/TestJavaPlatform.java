@@ -98,7 +98,7 @@ class TestJavaPlatform extends JavaPlatform {
 
     @Override
     public Specification getSpecification() {
-        return new Specification("j2se", new SpecificationVersion("1,5"));
+        return new Specification("j2se", new SpecificationVersion("1.5"));
     }
 
     @Override

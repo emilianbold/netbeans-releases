@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -247,6 +248,21 @@ public class SourceFileManager implements JavaFileManager {
             ((AbstractSourceFileObject)a).getHandle().file != null &&
             ((AbstractSourceFileObject)a).getHandle().file.equals(
                 ((AbstractSourceFileObject)b).getHandle().file);
+    }
+
+    @Override
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
+        return null;
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
+        return null;
     }
 
     private FileObject[] findFile (final String relativePath) {

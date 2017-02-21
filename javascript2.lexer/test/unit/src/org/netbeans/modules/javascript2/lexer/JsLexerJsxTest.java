@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.lexer;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.lib.lexer.test.dump.TokenDumpCheck;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
@@ -103,6 +104,16 @@ public class JsLexerJsxTest extends NbTestCase {
     
     public void testIssue268900() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/jsx/issue268900.js",
+                JsTokenId.javascriptLanguage());
+    }
+    
+    public void testStyleJSX() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/jsx/styleInJSXissue.js",
+                JsTokenId.javascriptLanguage());
+    }
+    
+    public void testIncLess() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/jsx/incLess.js",
                 JsTokenId.javascriptLanguage());
     }
 }

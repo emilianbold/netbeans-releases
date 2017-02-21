@@ -60,7 +60,7 @@ public class ConfirmationPanel extends javax.swing.JPanel {
     private static final String PANEL_QUESTION = "question";
     
     @Messages({
-        "LBL_FormattingQuestion=Recursivelly format the selected files and folders?",
+        "LBL_FormattingQuestion=Recursively format the selected files and folders?",
         "LBL_FormattingInProgress=Formatting:"
     })
     public ConfirmationPanel(ProgressHandle handle) {

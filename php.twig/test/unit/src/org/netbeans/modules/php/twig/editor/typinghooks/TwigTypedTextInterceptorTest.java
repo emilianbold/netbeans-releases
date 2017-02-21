@@ -597,16 +597,14 @@ public class TwigTypedTextInterceptorTest extends TwigTypinghooksTestBase {
     }
 
     public void testSkipClosingCurlyInVariable_02() throws Exception {
-        // }} is delimiter, so add a space between }}
-        String original = "{{ {'foo' : {^} } }}";
-        String expected = "{{ {'foo' : {}^ } }}";
+        String original = "{{ {'foo' : {^}} }}";
+        String expected = "{{ {'foo' : {}^} }}";
         insertChar(original, '}', expected);
     }
 
     public void testSkipClosingCurlyInVariable_03() throws Exception {
-        // }} is delimiter, so add a space between }}
-        String original = "{{ {'foo' : {^} } { }}";
-        String expected = "{{ {'foo' : {}^ } { }}";
+        String original = "{{ {'foo' : {^}} { }}";
+        String expected = "{{ {'foo' : {}^} { }}";
         insertChar(original, '}', expected);
     }
 

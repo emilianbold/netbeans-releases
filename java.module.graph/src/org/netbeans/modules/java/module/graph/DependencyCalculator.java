@@ -139,7 +139,7 @@ final class DependencyCalculator {
         for (Dependency d : collect(me, mods, deps, classpathInfo)) {
             meNode.addChild(d.node);
             d.node.setParent(meNode);
-            deps.add(new DependencyEdge(meNode, d.node, d.reqD.isPublic(), false));
+            deps.add(new DependencyEdge(meNode, d.node, d.reqD.isTransitive(), false));
         }
         deps.addAll(collectTransitiveDependencies(new HashSet<>(deps)));
     }

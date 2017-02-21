@@ -653,12 +653,14 @@ public class ElementNode extends AbstractNode implements Iterable<ElementNode> {
             switch (kind) {
                 case EXPORTS:
                     return 0;
-                case REQUIRES:
+                case OPENS:
                     return 1;
-                case USES:
+                case REQUIRES:
                     return 2;
-                case PROVIDES:
+                case USES:
                     return 3;
+                case PROVIDES:
+                    return 4;
                 default:
                     return 100;
             }

@@ -1732,7 +1732,7 @@ public class Term extends JComponent implements Accessible {
 	// Ensure nothing is left unfilled.
 	for (int px = 0; px < palette.length; px++) {
 	    if (palette[px] == null) {
-		System.out.printf("palette[%d] is null\n", px);
+		System.out.printf("palette[%d] is null\n", px); //NOI18N
 		palette[px] = Color.GRAY;
 	    }
 	}

@@ -85,6 +85,8 @@ public enum ColoringAttributes {
 
     MARK_OCCURRENCES,
     
+    KEYWORD,
+    
     JAVADOC_IDENTIFIER;
     
     public static Coloring empty() {

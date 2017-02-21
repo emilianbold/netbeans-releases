@@ -81,6 +81,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -614,7 +615,7 @@ public class TreeDuplicator implements TreeVisitor<Tree, Void> {
 
     @Override
     public Tree visitModule(ModuleTree tree, Void p) {
-        ModuleTree n = make.Module(tree.getName(), tree.getDirectives());
+        ModuleTree n = make.Module(make.Modifiers(0, tree.getAnnotations()), tree.getModuleType(), tree.getName(), tree.getDirectives());
         model.setType(n, model.getType(tree));
         comments.copyComments(tree, n);
         model.setPos(n, model.getPos(tree));
@@ -623,7 +624,16 @@ public class TreeDuplicator implements TreeVisitor<Tree, Void> {
 
     @Override
     public Tree visitExports(ExportsTree tree, Void p) {
-        ExportsTree n = make.Exports(tree.getExportName(), tree.getModuleNames());
+        ExportsTree n = make.Exports(tree.getPackageName(), tree.getModuleNames());
+        model.setType(n, model.getType(tree));
+        comments.copyComments(tree, n);
+        model.setPos(n, model.getPos(tree));
+        return n;
+    }
+
+    @Override
+    public Tree visitOpens(OpensTree tree, Void p) {
+        OpensTree n = make.Opens(tree.getPackageName(), tree.getModuleNames());
         model.setType(n, model.getType(tree));
         comments.copyComments(tree, n);
         model.setPos(n, model.getPos(tree));
@@ -632,7 +642,7 @@ public class TreeDuplicator implements TreeVisitor<Tree, Void> {
 
     @Override
     public Tree visitProvides(ProvidesTree tree, Void p) {
-        ProvidesTree n = make.Provides(tree.getServiceName(), tree.getImplementationName());
+        ProvidesTree n = make.Provides(tree.getServiceName(), tree.getImplementationNames());
         model.setType(n, model.getType(tree));
         comments.copyComments(tree, n);
         model.setPos(n, model.getPos(tree));
@@ -641,7 +651,7 @@ public class TreeDuplicator implements TreeVisitor<Tree, Void> {
 
     @Override
     public Tree visitRequires(RequiresTree tree, Void p) {
-        RequiresTree n = make.Requires(tree.isPublic(), tree.getModuleName());
+        RequiresTree n = make.Requires(tree.isTransitive(), tree.isStatic(), tree.getModuleName());
         model.setType(n, model.getType(tree));
         comments.copyComments(tree, n);
         model.setPos(n, model.getPos(tree));

@@ -365,6 +365,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
                 final CachingFileManager fm = new CachingFileManager(
                         CachingArchiveProvider.getDefault(),
                         ClassPathSupport.createClassPath(BaseUtilities.toURI(classes).toURL()),
+                        null,
                         false,
                         true);
                 this.delegate = fm;
@@ -438,7 +439,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         }
 
         @Override
-        public Iterable<Set<Location>> listModuleLocations(Location location) throws IOException {
+        public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
             return Collections.emptyList();
         }
     }

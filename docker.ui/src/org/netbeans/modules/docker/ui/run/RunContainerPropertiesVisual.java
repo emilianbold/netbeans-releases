@@ -41,9 +41,14 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Vector;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -61,7 +66,7 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
      */
     public RunContainerPropertiesVisual() {
         initComponents();
-
+        volumesTable.setVisible(mountVolumesCheckBox.isSelected());
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -133,6 +138,39 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
     public void setTty(boolean tty) {
         ttyCheckBox.setSelected(tty);
     }
+    
+    public boolean isPrivileged() {
+        return privilegedCheckBox.isSelected();
+    }
+    
+    public void setPrivileged(boolean privileged) {
+        privilegedCheckBox.setSelected(privileged);
+    }
+    
+    public boolean areMountVolumesSelected() {
+        return mountVolumesCheckBox.isSelected();
+    }
+    
+    public void setMountVolumesSelected(boolean selected) {
+        mountVolumesCheckBox.setSelected(selected);
+    }
+    public Map<String, String> getVolumesTable() {
+        Map<String, String> result = new TreeMap<>();
+        DefaultTableModel model = (DefaultTableModel) volumesTable.getModel();
+        if (volumesTable.isEditing()) {
+            volumesTable.getCellEditor().stopCellEditing();
+        }
+        for (Object o : model.getDataVector()) {
+            Vector v = (Vector) o;
+            String target = (String) v.elementAt(0);
+            String source = (String) v.elementAt(1);
+            if (target != null && source != null) {
+                result.put(target, source);
+            }
+        }
+        return result;
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -151,6 +189,12 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         nameTextField = new javax.swing.JTextField();
         userLabel = new javax.swing.JLabel();
         userTextField = new javax.swing.JTextField();
+        privilegedCheckBox = new javax.swing.JCheckBox();
+        mountVolumesCheckBox = new javax.swing.JCheckBox();
+        addButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        volumesTable = new javax.swing.JTable();
 
         commandLabel.setLabelFor(commandTextField);
         org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.commandLabel.text")); // NOI18N
@@ -166,11 +210,52 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.userLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(privilegedCheckBox, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.privilegedCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(mountVolumesCheckBox, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.mountVolumesCheckBox.text")); // NOI18N
+        mountVolumesCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                mountVolumesCheckBoxStateChanged(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.addButton.text")); // NOI18N
+        addButton.setEnabled(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(deleteButton, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.deleteButton.text")); // NOI18N
+        deleteButton.setEnabled(false);
+
+        volumesTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Target", "Source"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        volumesTable.setEnabled(false);
+        jScrollPane2.setViewportView(volumesTable);
+        if (volumesTable.getColumnModel().getColumnCount() > 0) {
+            volumesTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.volumesTable.columnModel.title0")); // NOI18N
+            volumesTable.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.volumesTable.columnModel.title1")); // NOI18N
+        }
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(interactiveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+            .addComponent(interactiveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(ttyCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -182,6 +267,14 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
                     .addComponent(nameTextField)
                     .addComponent(commandTextField)
                     .addComponent(userTextField)))
+            .addComponent(privilegedCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mountVolumesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 447, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(deleteButton, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -200,19 +293,51 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(interactiveCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(ttyCheckBox))
+                .addComponent(ttyCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(privilegedCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(mountVolumesCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteButton)
+                        .addContainerGap(75, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void mountVolumesCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_mountVolumesCheckBoxStateChanged
+        boolean selected = mountVolumesCheckBox.isSelected();
+        volumesTable.setVisible(selected);
+        volumesTable.setEnabled(selected);
+        addButton.setEnabled(selected);
+        deleteButton.setEnabled(selected);
+
+        TableCellEditor editor = volumesTable.getCellEditor();
+        if (editor != null) {
+            editor.cancelCellEditing();
+        }
+        volumesTable.clearSelection();
+    }//GEN-LAST:event_mountVolumesCheckBoxStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
     private javax.swing.JLabel commandLabel;
     private javax.swing.JTextField commandTextField;
+    private javax.swing.JButton deleteButton;
     private javax.swing.JCheckBox interactiveCheckBox;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JCheckBox mountVolumesCheckBox;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
+    private javax.swing.JCheckBox privilegedCheckBox;
     private javax.swing.JCheckBox ttyCheckBox;
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userTextField;
+    private javax.swing.JTable volumesTable;
     // End of variables declaration//GEN-END:variables
 }

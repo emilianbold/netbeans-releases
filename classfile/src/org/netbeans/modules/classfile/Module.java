@@ -49,17 +49,31 @@ import java.util.List;
 
 /**
  * The JDK 9 Module attribute.
- * @since 1.51
+ * @since 1.52
  * @author Tomas Zezula
  */
 public final class Module {
 
+    private final String name;
+    private final int flags;
+    private final String version;
     private final List<RequiresEntry> requires;
     private final List<ExportsEntry> exports;
-    private final List<CPClassInfo> uses;
+    private final List<OpensEntry> opens;
+    private final List<ClassName> uses;
     private final List<ProvidesEntry> provides;
 
     Module(final DataInputStream in, final ConstantPool cp) throws IOException {
+        final CPEntry entry = cp.get(in.readUnsignedShort());
+        if (entry.getTag() != ConstantPool.CONSTANT_Module) {
+            throw new LegacyClassFile("Java 9 older than b148.");   //NOI18N
+        }
+        name = ((CPModuleInfo)entry).getName();
+        flags = in.readUnsignedShort();
+        int index = in.readUnsignedShort();
+        version = index == 0 ?
+                null :
+                ((CPUTF8Info)cp.get(index)).getName();
         final int reqCnt = in.readUnsignedShort();
         final RequiresEntry[] req = new RequiresEntry[reqCnt];
         for (int i=0; i<reqCnt; i++) {
@@ -72,10 +86,16 @@ public final class Module {
             exp[i] = new ExportsEntry(in, cp);
         }
         exports = Collections.unmodifiableList(Arrays.asList(exp));
+        final int opnCnt = in.readUnsignedShort();
+        final OpensEntry[] opn = new OpensEntry[opnCnt];
+        for (int i=0; i<opnCnt; i++) {
+            opn[i] = new OpensEntry(in, cp);
+        }
+        opens = Collections.unmodifiableList(Arrays.asList(opn));
         final int usesCnt = in.readUnsignedShort();
-        final CPClassInfo[] uss = new CPClassInfo[usesCnt];
+        final ClassName[] uss = new ClassName[usesCnt];
         for (int i=0; i<usesCnt; i++) {
-            uss[i] = (CPClassInfo) cp.get(in.readUnsignedShort());
+            uss[i] = ((CPClassInfo)cp.get(in.readUnsignedShort())).getClassName();
         }
         uses = Collections.unmodifiableList(Arrays.asList(uss));
         final int provCnt = in.readUnsignedShort();
@@ -84,6 +104,30 @@ public final class Module {
             prov[i] = new ProvidesEntry(in, cp);
         }
         provides = Collections.unmodifiableList(Arrays.asList(prov));
+    }
+
+    /**
+     * Returns module name.
+     * @return the module name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns module flags.
+     * @return the module flags
+     */
+    public int getFlags() {
+        return flags;
+    }
+
+    /**
+     * Returns module version.
+     * @return the module version or null if not specified
+     */
+    public String getVersion() {
+        return version;
     }
 
     /**
@@ -103,10 +147,18 @@ public final class Module {
     }
 
     /**
+     * Returns the opened packages.
+     * @return the list of {@link OpensEntry}
+     */
+    public List<OpensEntry> getOpensEntries() {
+        return opens;
+    }
+
+    /**
      * Returns the used services.
      * @return the list of services used by this module
      */
-    public List<CPClassInfo> getUses() {
+    public List<ClassName> getUses() {
         return uses;
     }
 
@@ -123,26 +175,25 @@ public final class Module {
      */
     public static final class RequiresEntry {
 
-        public static final int ACC_TRANSITIVE    =  0x20;
-        public static final int ACC_SYNTHETIC = 0x1000;
-        public static final int ACC_MANDATED  = 0x8000;
-
-
-        private final CPUTF8Info name;
+        private final String module;
         private final int flags;
+        private final String version;
 
         RequiresEntry(final DataInputStream in, final ConstantPool cp) throws IOException {
-            final int index = in.readUnsignedShort();
-            name = (CPUTF8Info) cp.get(index);
+            module = ((CPModuleInfo)cp.get(in.readUnsignedShort())).getName();
             flags = in.readUnsignedShort();
+            int index = in.readUnsignedShort();
+            version = index == 0 ?
+                    null :
+                    ((CPUTF8Info)cp.get(index)).getName();
         }
 
         /**
          * Returns the module name.
          * @return the module name
          */
-        public CPUTF8Info getModule() {
-            return name;
+        public String getModule() {
+            return module;
         }
 
         /**
@@ -153,19 +204,34 @@ public final class Module {
             return flags;
         }
 
+        /**
+         * Returns the version of the required module.
+         * @return version of required module or null if not specified
+         */
+        public String getVersion() {
+            return version;
+        }
+
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder()
-                .append("require: ")            //NOI18N
-                .append(name.getName());
-            if ((flags & ACC_TRANSITIVE) != 0) {
-                sb.append(" public");           //NOI18N
+            final StringBuilder sb = new StringBuilder("requires");
+            if ((flags & Access.TRANSITIVE) != 0) {
+                sb.append(" transitive");           //NOI18N
             }
-            if ((flags & ACC_SYNTHETIC) != 0) {
+            if ((flags & Access.STATIC_PHASE) != 0) {
+                sb.append(" static");           //NOI18N
+            }
+            if ((flags & Access.SYNTHETIC) != 0) {
                 sb.append(" synthetic");        //NOI18N
             }
-            if ((flags & ACC_MANDATED) != 0) {
+            if ((flags & Access.MANDATED) != 0) {
                 sb.append(" mandated");         //NOI18N
+            }
+            sb.append(' ')
+                    .append(module);
+            if (version != null) {
+                sb.append("@")
+                    .append(version);
             }
             return sb.toString();
         }
@@ -175,16 +241,17 @@ public final class Module {
      * Exported package.
      */
     public static final class ExportsEntry {
-        private final CPUTF8Info name;
-        private final List<CPUTF8Info> to;
+        private final String pkg;
+        private final int flags;
+        private final List<String> to;
 
         ExportsEntry(final DataInputStream in, final ConstantPool cp) throws IOException {
-            final int index = in.readUnsignedShort();
-            name = (CPUTF8Info) cp.get(index);
+            pkg = ((CPPackageInfo) cp.get(in.readUnsignedShort())).getName();
+            flags = in.readUnsignedShort();
             final int toCnt = in.readUnsignedShort();
-            final CPUTF8Info[] t = new CPUTF8Info[toCnt];
+            final String[] t = new String[toCnt];
             for (int i=0; i< toCnt; i++) {
-                t[i] = (CPUTF8Info) cp.get(in.readUnsignedShort());
+                t[i] = ((CPModuleInfo) cp.get(in.readUnsignedShort())).getName();
             }
             to = Collections.unmodifiableList(Arrays.asList(t));
         }
@@ -193,62 +260,145 @@ public final class Module {
          * Name of exported package.
          * @return the package name
          */
-        public CPUTF8Info getPackage() {
-            return name;
+        public String getPackage() {
+            return pkg;
+        }
+
+        /**
+         * Returns export modifiers.
+         * @return flags
+         */
+        public int getFlags() {
+            return flags;
         }
 
         /**
          * Returns a list of modules to which the package is exported.
          * @return module list.
          */
-        public List<CPUTF8Info> getExportsTo() {
+        public List<String> getExportsTo() {
             return to;
         }
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder()
-                .append("exports: ")            //NOI18N
-                .append(name.getName());
+            final StringBuilder sb = new StringBuilder("exports");
+            if ((flags & Access.SYNTHETIC) != 0) {
+                sb.append(" synthetic");        //NOI18N
+            }
+            if ((flags & Access.MANDATED) != 0) {
+                sb.append(" mandated");         //NOI18N
+            }
+            sb.append(' ')
+                .append(pkg);
             if (!to.isEmpty()) {
-                sb.append(" [");                //NOI18N
+                sb.append(" to ");                //NOI18N
                 boolean first = true;
-                for (CPUTF8Info m : to) {
+                for (String m : to) {
                     if (!first) {
                         sb.append(", ");        //NOI18N
                     } else {
                         first = false;
                     }
-                    sb.append(m.getName());
+                    sb.append(m);
                 }
-                sb.append(']');                 //NOI18N
             }
             return sb.toString();
         }
+    }
 
+    /**
+     * Opened package.
+     */
+    public static final class OpensEntry {
+        private final String pkg;
+        private final int flags;
+        private final List<String> to;
 
+        OpensEntry(final DataInputStream in, final ConstantPool cp) throws IOException {
+            pkg = ((CPPackageInfo) cp.get(in.readUnsignedShort())).getName();
+            flags = in.readUnsignedShort();
+            final int toCnt = in.readUnsignedShort();
+            final String[] t = new String[toCnt];
+            for (int i=0; i< toCnt; i++) {
+                t[i] = ((CPModuleInfo) cp.get(in.readUnsignedShort())).getName();
+            }
+            to = Collections.unmodifiableList(Arrays.asList(t));
+        }
+
+        /**
+         * Name of opened package.
+         * @return the package name
+         */
+        public String getPackage() {
+            return pkg;
+        }
+
+        /**
+         * Returns open modifiers.
+         * @return flags
+         */
+        public int getFlags() {
+            return flags;
+        }
+
+        /**
+         * Returns a list of modules to which the package is opened.
+         * @return module list.
+         */
+        public List<String> getOpensTo() {
+            return to;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("opens");
+            if ((flags & Access.SYNTHETIC) != 0) {
+                sb.append(" synthetic");        //NOI18N
+            }
+            if ((flags & Access.MANDATED) != 0) {
+                sb.append(" mandated");         //NOI18N
+            }
+            sb.append(' ')
+                .append(pkg);
+            if (!to.isEmpty()) {
+                sb.append(" to ");                //NOI18N
+                boolean first = true;
+                for (String m : to) {
+                    if (!first) {
+                        sb.append(", ");        //NOI18N
+                    } else {
+                        first = false;
+                    }
+                    sb.append(m);
+                }
+            }
+            return sb.toString();
+        }
     }
 
     /**
      * Provided service.
      */
     public static final class ProvidesEntry {
-        private final CPClassInfo service;
-        private final CPClassInfo impl;
+        private final ClassName service;
+        private final List<ClassName> impls;
 
         ProvidesEntry(final DataInputStream in, final ConstantPool cp) throws IOException {
-            final int index = in.readUnsignedShort();
-            service = (CPClassInfo) cp.get(index);
-            //todo:
-            final int with_index = in.readUnsignedShort();
-            impl = (CPClassInfo) cp.get(with_index);
+            service = ((CPClassInfo)cp.get(in.readUnsignedShort())).getClassName();
+            final int cnt = in.readUnsignedShort();
+            final ClassName[] ims = new ClassName[cnt];
+            for (int i=0; i< cnt; i++) {
+                ims[i] = ((CPClassInfo)cp.get(in.readUnsignedShort())).getClassName();
+            }
+            impls = Collections.unmodifiableList(Arrays.asList(ims));
         }
 
         /**
          * Service type.
          * @return the service type
          */
-        public CPClassInfo getService() {
+        public ClassName getService() {
             return service;
         }
 
@@ -256,17 +406,27 @@ public final class Module {
          * Service implementation.
          * @return the class implementing the service
          */
-        public CPClassInfo getImplementation() {
-            return impl;
+        public List<ClassName> getImplementations() {
+            return impls;
         }
 
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder()
-                .append("provides: ")
-                .append(service.getClassName())
-                .append(" by: ")
-                .append(impl.getClassName());
+                .append("provides ")            //NOI18N
+                .append(service);
+            if (!impls.isEmpty()) {
+                sb.append(" with ");            //NOI18N
+                boolean first = true;
+                for (ClassName m : impls) {
+                    if (!first) {
+                        sb.append(", ");        //NOI18N
+                    } else {
+                        first = false;
+                    }
+                    sb.append(m.getExternalName());
+                }
+            }
             return sb.toString();
         }
     }

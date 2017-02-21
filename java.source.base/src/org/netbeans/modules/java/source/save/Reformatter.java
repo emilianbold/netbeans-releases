@@ -632,6 +632,8 @@ public class Reformatter implements ReformatTask {
                     continue;
                 if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind()))
                     blankLines(cs.getBlankLinesBeforeClass());
+                else
+                    blankLines(1);
                 scan(typeDecl, p);
                 int index = tokens.index();
                 int c = col;
@@ -650,6 +652,10 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitModule(ModuleTree node, Void p) {
+            if (node.getModuleType() == ModuleTree.ModuleKind.OPEN) {
+                accept(OPEN);
+                space();
+            }
             accept(MODULE);
             boolean old = continuationIndent;
             try {
@@ -756,10 +762,29 @@ public class Reformatter implements ReformatTask {
             try {
                 continuationIndent = true;
                 space();
-                scan(node.getExportName(), p);
+                scan(node.getPackageName(), p);
                 if (node.getModuleNames() != null) {
                     wrapToken(cs.wrapExportsToKeyword(), 1, TO);
                     wrapList(cs.wrapExportsToList(), cs.alignMultilineExports(), true, COMMA, node.getModuleNames());
+                }
+                accept(SEMICOLON);
+            } finally {
+                continuationIndent = old;
+            }
+            return true;
+        }
+
+        @Override
+        public Boolean visitOpens(OpensTree node, Void p) {
+            accept(OPENS);
+            boolean old = continuationIndent;
+            try {
+                continuationIndent = true;
+                space();
+                scan(node.getPackageName(), p);
+                if (node.getModuleNames() != null) {
+                    wrapToken(cs.wrapOpensToKeyword(), 1, TO);
+                    wrapList(cs.wrapOpensToList(), cs.alignMultilineOpens(), true, COMMA, node.getModuleNames());
                 }
                 accept(SEMICOLON);
             } finally {
@@ -776,9 +801,10 @@ public class Reformatter implements ReformatTask {
                 continuationIndent = true;
                 space();
                 scan(node.getServiceName(), p);
-                wrapToken(cs.wrapProvidesWithKeyword(), 1, WITH);
-                spaces(1, true);
-                scan(node.getImplementationName(), p);
+                if (node.getImplementationNames() != null) {
+                    wrapToken(cs.wrapProvidesWithKeyword(), 1, WITH);
+                    wrapList(cs.wrapProvidesWithList(), cs.alignMultilineProvides(), true, COMMA, node.getImplementationNames());
+                }
                 accept(SEMICOLON);
             } finally {
                 continuationIndent = old;
@@ -793,9 +819,23 @@ public class Reformatter implements ReformatTask {
             try {
                 continuationIndent = true;
                 space();
-                if (node.isPublic()) {
-                    accept(PUBLIC);
+                if (node.isStatic() || node.isTransitive()) {
+                    JavaTokenId id = accept(STATIC, TRANSITIVE);
                     space();
+                    switch (id) {
+                        case STATIC:
+                            if (node.isTransitive()) {
+                                accept(TRANSITIVE);
+                                space();
+                            }
+                            break;
+                        case TRANSITIVE:
+                            if (node.isStatic()) {
+                                accept(STATIC);
+                                space();
+                            }
+                            break;
+                    }
                 }
                 scan(node.getModuleName(), p);
                 accept(SEMICOLON);
@@ -3139,7 +3179,16 @@ public class Reformatter implements ReformatTask {
                     return null;
                 }
                 JavaTokenId id = tokens.token().id();
-                if (tokenIds.contains(id)) {
+                boolean contains = tokenIds.contains(id);
+                if (!contains && id == IDENTIFIER) {
+                    for (JavaTokenId tokenId : tokenIds) {
+                        if (tokenId.fixedText() != null && tokenId.fixedText().contentEquals(tokens.token().text())) {
+                            contains = true;
+                            break;
+                        }
+                    }
+                }
+                if (contains) {
                     String spaces = after == 1 //after line comment
                             ? getIndent()
                             : after == 2 //after javadoc comment

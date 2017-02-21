@@ -48,6 +48,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.code.Symbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,6 +67,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
@@ -122,13 +124,13 @@ public class ElementOverlay {
     private final Map<String, Set<Modifier>> classes = new HashMap<String, Set<Modifier>>();
     private final Map<String, Element> elementCache = new HashMap<String, Element>();
 
-    public List<Element> getEnclosedElements(ASTService ast, Elements elements, String parent) {
+    public List<Element> getEnclosedElements(ASTService ast, Elements elements, String parent, ModuleElement modle) {
         List<Element> result = new LinkedList<Element>();
         List<String> enclosed = class2Enclosed.get(parent);
 
         if (enclosed != null) {
             for (String enc : enclosed) {
-                Element el = resolve(ast, elements, enc);
+                Element el = resolve(ast, elements, enc, modle);
 
                 if (el != null) {
                     result.add(el);
@@ -138,15 +140,15 @@ public class ElementOverlay {
             return result;
         }
         
-        Element parentEl = resolve(ast, elements, parent);
+        Element parentEl = resolve(ast, elements, parent, modle);
 
         if (parentEl == null) throw new IllegalStateException(parent);
         if (parentEl instanceof FakeTypeElement) {
-            TypeElement original = elements.getTypeElement(parent);
+            TypeElement original = modle != null ? elements.getTypeElement(modle, parent) : elements.getTypeElement(parent);
 
             if (original != null) result.addAll(wrap(ast, elements, original.getEnclosedElements()));
         } else if (parentEl instanceof FakePackageElement) {
-            PackageElement original = elements.getPackageElement(parent);
+            PackageElement original = modle != null ? elements.getPackageElement(modle, parent) : elements.getPackageElement(parent);
 
             if (original != null) result.addAll(wrap(ast, elements, original.getEnclosedElements()));
         } else {
@@ -157,7 +159,7 @@ public class ElementOverlay {
         return result;
     }
 
-    private Element createElement(ASTService ast, Elements elements, String name, Element original) {
+    private Element createElement(ASTService ast, Elements elements, String name, Element original, ModuleElement modle) {
         Element el = elementCache.get(name);
 
         if (el == null) {
@@ -179,11 +181,11 @@ public class ElementOverlay {
             Name fqnName = elements.getName(name);
 
             if (classes.containsKey(name)) {
-                Element parent = lastDot > 0 ? resolve(ast, elements, name.substring(0, lastDot)) : elements.getPackageElement("");
+                Element parent = lastDot > 0 ? resolve(ast, elements, name.substring(0, lastDot), modle) : elements.getPackageElement("");
 
-                elementCache.put(name, el = new FakeTypeElement(ast, elements, simpleName, fqnName, name, parent, classes.get(name)));
+                elementCache.put(name, el = new FakeTypeElement(ast, elements, simpleName, fqnName, name, parent, classes.get(name), modle));
             } else if (packages.contains(name)) {
-                elementCache.put(name, el = new FakePackageElement(ast, elements, fqnName, name, simpleName));
+                elementCache.put(name, el = new FakePackageElement(ast, elements, fqnName, name, simpleName, modle));
             } else {
                 return null;//XXX: handling of this null in callers!
             }
@@ -201,21 +203,25 @@ public class ElementOverlay {
     }
 
     public Element resolve(ASTService ast, Elements elements, String what) {
+        return resolve(ast, elements, what, null);
+    }
+    
+    public Element resolve(ASTService ast, Elements elements, String what, ModuleElement modle) {
         Element result = null;
         
         if (classes.containsKey(what)) {
-            result = createElement(ast, elements, what, null);
+            result = createElement(ast, elements, what, null, modle);
         }
 
         if (result == null) {
-            result = elements.getTypeElement(what);
+            result = modle != null ? elements.getTypeElement(modle, what) : elements.getTypeElement(what);
         }
 
         if (result == null) {
-            result = elements.getPackageElement(what);
+            result = modle != null ? elements.getPackageElement(modle, what) : elements.getPackageElement(what);
         }
 
-        result = createElement(ast, elements, what, result);
+        result = createElement(ast, elements, what, result, modle);
 
         return result;
     }
@@ -308,7 +314,7 @@ public class ElementOverlay {
         List<Element> result = new LinkedList<Element>();
         if (forElement instanceof FakeTypeElement) {
             for (String fqn : class2SuperElementTrees.get(((FakeTypeElement) forElement).fqnString)) {
-                Element el = resolve(ast, elements, fqn);
+                Element el = resolve(ast, elements, fqn, moduleOf(elements, forElement));
 
                 if (el != null) {
                     result.add(el);
@@ -352,7 +358,7 @@ public class ElementOverlay {
         }
         
         String fqn = ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().toString();
-        Element resolved = resolve(ast, elements, fqn);
+        Element resolved = resolve(ast, elements, fqn, moduleOf(elements, ((DeclaredType)tm).asElement()));
         
         if (resolved != null) {
             result.add(resolved);
@@ -365,7 +371,7 @@ public class ElementOverlay {
         if (original == null) return null;
 
         if (original.getKind().isClass() || original.getKind().isInterface()) {
-            return resolve(ast, elements, ((TypeElement)original).getQualifiedName().toString());
+            return resolve(ast, elements, ((TypeElement)original).getQualifiedName().toString(), moduleOf(elements, original));
         } else {
             return original;
         }
@@ -398,9 +404,9 @@ public class ElementOverlay {
                this.packages.size();
     }
 
-    public Collection<? extends Element> getAllVisibleThrough(ASTService ast, Elements elements, String what, ClassTree tree) {
+    public Collection<? extends Element> getAllVisibleThrough(ASTService ast, Elements elements, String what, ClassTree tree, ModuleElement modle) {
         Collection<Element> result = new ArrayList<Element>();
-        Element current = what != null ? resolve(ast, elements, what) : null;
+        Element current = what != null ? resolve(ast, elements, what, modle) : null;
 
         if (current == null) {
             //can happen if:
@@ -410,7 +416,7 @@ public class ElementOverlay {
             //use only supertypes:
             //XXX: will probably not work correctly for newly created NCT (as the ClassTree does not have the correct extends/implements:
             for (String sup : superFQNs(tree)) {
-                Element c = resolve(ast, elements, sup);
+                Element c = resolve(ast, elements, sup, modle);
 
                 if (c != null) {//may legitimely be null, e.g. if the super type is not resolvable at all.
                     result.add(c);
@@ -437,8 +443,22 @@ public class ElementOverlay {
         return result;
     }
 
-    public PackageElement unnamedPackage(ASTService ast, Elements elements) {
-        return (PackageElement) resolve(ast, elements, "");
+    public PackageElement unnamedPackage(ASTService ast, Elements elements, ModuleElement modle) {
+        return (PackageElement) resolve(ast, elements, "", modle);
+    }
+    
+    private ModuleElement moduleOf(Elements elements, Element el) {
+        if (el instanceof TypeElementWrapper)
+            return moduleOf(elements, ((TypeElementWrapper) el).delegateTo);
+        if (el instanceof FakeTypeElement)
+            return ((FakeTypeElement) el).modle;
+        if (el instanceof PackageElementWrapper)
+            return moduleOf(elements, ((PackageElementWrapper) el).delegateTo);
+        if (el instanceof FakePackageElement)
+            return ((FakePackageElement) el).modle;
+        if (el instanceof Symbol)
+            return elements.getModuleOf(el);
+        return null;
     }
 
     private final class FakeTypeElement implements TypeElement {
@@ -450,8 +470,9 @@ public class ElementOverlay {
         private final String fqnString;
         private final Element parent;
         private final Set<Modifier> mods;
+        private final ModuleElement modle;
 
-        public FakeTypeElement(ASTService ast, Elements elements, Name simpleName, Name fqn, String fqnString, Element parent, Set<Modifier> mods) {
+        public FakeTypeElement(ASTService ast, Elements elements, Name simpleName, Name fqn, String fqnString, Element parent, Set<Modifier> mods, ModuleElement modle) {
             this.ast = ast;
             this.elements = elements;
             this.simpleName = simpleName;
@@ -459,11 +480,12 @@ public class ElementOverlay {
             this.fqnString = fqnString;
             this.parent = parent;
             this.mods = mods;
+            this.modle = modle;
         }
 
         @Override
         public List<? extends Element> getEnclosedElements() {
-            return ElementOverlay.this.getEnclosedElements(ast, elements, fqnString);
+            return ElementOverlay.this.getEnclosedElements(ast, elements, fqnString, modle);
         }
 
         @Override
@@ -617,7 +639,7 @@ public class ElementOverlay {
 
         @Override
         public Element getEnclosingElement() {
-            return ElementOverlay.this.resolve(ast, elements, ((QualifiedNameable/*XXX*/) delegateTo.getEnclosingElement()).getQualifiedName().toString());
+            return ElementOverlay.this.resolve(ast, elements, ((QualifiedNameable/*XXX*/) delegateTo.getEnclosingElement()).getQualifiedName().toString(), moduleOf(elements, delegateTo));
         }
 
         @Override
@@ -634,13 +656,15 @@ public class ElementOverlay {
         private final Name fqn;
         private final String fqnString;
         private final Name simpleName;
+        private final ModuleElement modle;
 
-        public FakePackageElement(ASTService ast, Elements elements, Name fqn, String fqnString, Name simpleName) {
+        public FakePackageElement(ASTService ast, Elements elements, Name fqn, String fqnString, Name simpleName, ModuleElement modle) {
             this.ast = ast;
             this.elements = elements;
             this.fqn = fqn;
             this.fqnString = fqnString;
             this.simpleName = simpleName;
+            this.modle = modle;
         }
 
         @Override
@@ -696,7 +720,7 @@ public class ElementOverlay {
         @Override
         public List<? extends Element> getEnclosedElements() {
             //should delegate to pre-existing PackageElement, if available:
-            return ElementOverlay.this.getEnclosedElements(ast, elements, fqnString);
+            return ElementOverlay.this.getEnclosedElements(ast, elements, fqnString, modle);
         }
 
         @Override

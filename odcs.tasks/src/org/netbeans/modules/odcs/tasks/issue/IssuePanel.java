@@ -169,7 +169,12 @@ public class IssuePanel extends javax.swing.JPanel {
     static {
         highlightColor = UIManager.getColor( "nb.bugtracking.label.highlight" ); //NOI18N
         if( null == highlightColor ) {
-            highlightColor = new Color(217, 255, 217);
+            Color labelColor = javax.swing.UIManager.getDefaults().getColor("Label.foreground"); // NOI18N
+            if (labelColor == null || (labelColor.getRed() < 192 && labelColor.getGreen() < 192 && labelColor.getBlue() < 192)) {
+                highlightColor = new Color(217, 255, 217);
+            } else { // hack for high-contrast black
+                highlightColor = new Color(108, 128, 108);
+            }
         }
     }
     
@@ -1182,11 +1187,7 @@ public class IssuePanel extends javax.swing.JPanel {
             field.setUI(new BasicTextFieldUI());
         }
         field.setBackground(getBackground());
-        Color bkColor = getBackground();
-        if( null != bkColor ) {
-            bkColor = new Color( bkColor.getRGB() );
-        }
-        field.setBackground(bkColor);
+        field.setOpaque(false);
         Caret caret = field.getCaret();
         if (caret instanceof DefaultCaret) {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);

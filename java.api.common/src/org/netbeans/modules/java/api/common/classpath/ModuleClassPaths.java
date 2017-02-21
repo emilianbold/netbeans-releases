@@ -90,12 +90,12 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
+import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -132,31 +132,27 @@ final class ModuleClassPaths {
 
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
+            @NonNull final ClassPath base,
+            @NonNull final ClassPath sourceRoots,
             @NonNull final ClassPath systemModules,
-            @NonNull final SourceRoots sourceRoots,
+            @NonNull final ClassPath userModules,
+            @NullAllowed final ClassPath legacyClassPath,
             @NullAllowed final Function<URL,Boolean> filter) {
+        Parameters.notNull("base", base);                       //NOI18N
+        Parameters.notNull("sourceRoots", sourceRoots);         //NOI18N
+        Parameters.notNull("systemModules", systemModules);     //NOI18N
+        Parameters.notNull("userModules", userModules);         //NOI18N
+        if (base != systemModules && base != userModules) {
+            throw new IllegalArgumentException("The base must be either systemModules or userModules"); //NOI18N
+        }
         return new ModuleInfoClassPathImplementation(
-                systemModules,
-                sourceRoots,
-                null,
-                null,
-                filter);
-    }
-
-    @NonNull
-    static ClassPathImplementation createModuleInfoBasedPath(
-            @NonNull final ClassPath modulePath,
-            @NonNull final SourceRoots sourceRoots,
-            @NonNull final ClassPath systemModules,
-            @NonNull final ClassPath legacyClassPath,
-            @NullAllowed final Function<URL,Boolean> filter) {
-        Parameters.notNull("systemModules", systemModules); //NOI18N
-        Parameters.notNull("legacyClassPath", legacyClassPath); //NOI18N
-        return new ModuleInfoClassPathImplementation(
-                modulePath,
+                base,
                 sourceRoots,
                 systemModules,
-                legacyClassPath,
+                userModules,
+                legacyClassPath != null ?
+                        legacyClassPath :
+                        ClassPath.EMPTY,
                 filter);
     }
 
@@ -225,7 +221,7 @@ final class ModuleClassPaths {
             if (propName == null ||
                 ProjectProperties.PLATFORM_ACTIVE.equals(propName) ||
                 (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName) && isActivePlatformChange())) {
-                resetCache(true);
+                resetCache(PROP_RESOURCES);
             }
         }
 
@@ -361,7 +357,7 @@ final class ModuleClassPaths {
                         getClass().getSimpleName(),
                         propName
                     });
-                resetCache(true);
+                resetCache(PROP_RESOURCES);
             }
         }
 
@@ -401,7 +397,7 @@ final class ModuleClassPaths {
                     getClass().getSimpleName(),
                     fe.getFile()
                 });
-            resetCache(true);
+            resetCache(PROP_RESOURCES);
         }
 
         private static boolean isArchiveFile(@NonNull final File file) {
@@ -441,7 +437,7 @@ final class ModuleClassPaths {
         }
     }
 
-    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener, FileChangeListener, ClassIndexListener {
+    private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements FlaggedClassPathImplementation, PropertyChangeListener, ChangeListener, FileChangeListener, ClassIndexListener {
 
         private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
         private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
@@ -455,8 +451,9 @@ final class ModuleClassPaths {
                     .filter((d) -> d.getKind() == ModuleElement.DirectiveKind.EXPORTS)
                     .anyMatch((d) -> ((ModuleElement.ExportsDirective)d).getTargetModules() == null);
         private final ClassPath base;
-        private final SourceRoots sources;
+        private final ClassPath sources;
         private final ClassPath systemModules;
+        private final ClassPath userModules;
         private final ClassPath legacyClassPath;
         private final Function<URL,Boolean> filter;
         private final ThreadLocal<Object[]> selfRes;
@@ -468,19 +465,25 @@ final class ModuleClassPaths {
         private volatile boolean rootsChanging;
         //@GuardedBy("this")
         private Collection<File> moduleInfos;
+        private volatile boolean incomplete;
 
         ModuleInfoClassPathImplementation(
                 @NonNull final ClassPath base,
-                @NonNull final SourceRoots sources,
-                @NullAllowed final ClassPath systemModules,
-                @NullAllowed final ClassPath legacyClassPath,
+                @NonNull final ClassPath sources,
+                @NonNull final ClassPath systemModules,
+                @NonNull final ClassPath userModules,
+                @NonNull final ClassPath legacyClassPath,
                 @NullAllowed final Function<URL,Boolean> filter) {
             super(null);
             Parameters.notNull("base", base);       //NOI18N
             Parameters.notNull("sources", sources); //NOI18N
+            Parameters.notNull("systemModules", systemModules); //NOI18N
+            Parameters.notNull("userModules", userModules); //NOI18N
+            Parameters.notNull("legacyClassPath", legacyClassPath); //NOI18N
             this.base = base;
             this.sources = sources;
             this.systemModules = systemModules;
+            this.userModules = userModules;
             this.legacyClassPath = legacyClassPath;
             this.filter = filter == null ?
                     (url) -> null :
@@ -488,14 +491,18 @@ final class ModuleClassPaths {
             this.selfRes = new ThreadLocal<>();
             this.compilerOptions = new AtomicReference<>();
             this.moduleInfos = Collections.emptyList();
-            this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
             this.sources.addPropertyChangeListener(WeakListeners.propertyChange(this, this.sources));
-            if (this.systemModules != null) {
-                this.systemModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.systemModules));
-            }
-            if (this.legacyClassPath != null) {
-                this.legacyClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.legacyClassPath));
-            }
+            this.systemModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.systemModules));
+            this.userModules.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
+            this.legacyClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.legacyClassPath));
+        }
+
+        @Override
+        public Set<ClassPath.Flag> getFlags() {
+            getResources(); //Compute incomplete status
+            return incomplete ?
+                    EnumSet.of(ClassPath.Flag.INCOMPLETE) :
+                    Collections.emptySet();
         }
 
         @Override
@@ -516,53 +523,50 @@ final class ModuleClassPaths {
                 return (List<? extends PathResourceImplementation>) bestSoFar[0];
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
-            final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
             final Map<String, List<URL>> modulesPatches = getPatches();
             final Map<String,List<URL>> modulesByName = getModulesByName(
                     base,
-                    modulesPatches,
-                    newActiveProjectSourceRoots);
-            Collections.addAll(newActiveProjectSourceRoots, sources.getRootURLs());
-            synchronized (this) {
-                if (activeProjectSourceRoots != null) {
-                    activeProjectSourceRoots.getClassIndex().removeClassIndexListener(this);
-                    activeProjectSourceRoots = null;
+                    modulesPatches);
+            final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
+            collectProjectSourceRoots(systemModules, newActiveProjectSourceRoots);
+            collectProjectSourceRoots(userModules, newActiveProjectSourceRoots);
+            newActiveProjectSourceRoots.addAll(sources.entries().stream()
+                .map((e) -> e.getURL())
+                .collect(Collectors.toList()));
+            ProjectManager.mutex().readAccess(() -> {
+                synchronized (this) {
+                    if (activeProjectSourceRoots != null) {
+                        activeProjectSourceRoots.getClassIndex().removeClassIndexListener(this);
+                        activeProjectSourceRoots = null;
+                    }
+                    if (!newActiveProjectSourceRoots.isEmpty()) {
+                        activeProjectSourceRoots = ClasspathInfo.create(
+                                ClassPath.EMPTY,
+                                ClassPath.EMPTY,
+                                org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(newActiveProjectSourceRoots.toArray(new URL[newActiveProjectSourceRoots.size()])));
+                        activeProjectSourceRoots.getClassIndex().addClassIndexListener(this);
+                        LOG.log(
+                            Level.FINER,
+                            "{0} for {1} listening on: {2}",    //NOI18N
+                            new Object[]{
+                                getClass().getSimpleName(),
+                                base,
+                                newActiveProjectSourceRoots
+                            });
+                    }
                 }
-                if (!newActiveProjectSourceRoots.isEmpty()) {
-                    activeProjectSourceRoots = ClasspathInfo.create(
-                            ClassPath.EMPTY,
-                            ClassPath.EMPTY,
-                            org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(newActiveProjectSourceRoots.toArray(new URL[newActiveProjectSourceRoots.size()])));
-                    activeProjectSourceRoots.getClassIndex().addClassIndexListener(this);
-                    LOG.log(
-                        Level.FINER,
-                        "{0} for {1} listening on: {2}",    //NOI18N
-                        new Object[]{
-                            getClass().getSimpleName(),
-                            base,
-                            newActiveProjectSourceRoots
-                        });
-                }
-            }
-            if(supportsModules(
-                    systemModules != null ? systemModules : base,
-                    systemModules != null ? base : ClassPath.EMPTY,
-                    sources)) {
+            });
+            boolean incompleteVote = false;
+            if(supportsModules(systemModules, userModules, sources)) {
                 res = modulesByName.values().stream()
                         .flatMap((urls) -> urls.stream())
                         .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
                         .collect(Collectors.toList());
                 final List<PathResourceImplementation> selfResResources;
-                final ClassPath bootModules;
-                final ClassPath userModules;
-                if (systemModules != null) {
-                    selfResResources = Collections.emptyList();
-                    bootModules = systemModules;
-                    userModules = base;
-                } else {
+                if (base == systemModules) {
                     selfResResources = findJavaBase(modulesByName);
-                    bootModules = base;
-                    userModules = ClassPath.EMPTY;
+                } else {
+                    selfResResources = Collections.emptyList();
                 }
                 LOG.log(
                     Level.FINER,
@@ -574,19 +578,20 @@ final class ModuleClassPaths {
                     });
                 LOG.log(
                     Level.FINEST,
-                    "{0} for {1} bootModules: {2}, modules: {4}",    //NOI18N
+                    "{0} for {1} systemModules: {2}, userModules: {4}",    //NOI18N
                     new Object[]{
                         ModuleInfoClassPathImplementation.class.getSimpleName(),
                         base,
-                        bootModules,
-                        modulesByName
+                        systemModules,
+                        userModules
                     });
                 selfRes.set(new Object[]{
                     selfResResources,
                     needToFire});
                 try {
                     FileObject found = null;
-                    for (URL root : sources.getRootURLs()) {
+                    for (ClassPath.Entry cpe : sources.entries()) {
+                        final URL root = cpe.getURL();
                         try {
                             final File moduleInfo = FileUtil.normalizeFile(new File(BaseUtilities.toFile(root.toURI()),MODULE_INFO_JAVA));
                             newModuleInfos.add(moduleInfo);
@@ -603,19 +608,19 @@ final class ModuleClassPaths {
                                 });
                         }
                     }
-                    final List<PathResourceImplementation> bcprs = systemModules != null ?
-                                findJavaBase(getModulesByName(systemModules, modulesPatches, null)) :
-                                selfResResources;   //java.base
+                    final List<PathResourceImplementation> bcprs = base == systemModules ?
+                            selfResResources :   //java.base
+                            findJavaBase(getModulesByName(systemModules, modulesPatches));
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
                     final Predicate<ModuleElement> rootModulesPredicate;
                     final String xmodule;
-                    if (found != null) {                        
+                    if (found != null) {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
-                                        .setModuleBootPath(bootModules)
+                                        .setModuleBootPath(systemModules)
                                         .setModuleCompilePath(userModules)
-                                        .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
+                                        .setSourcePath(sources)
                                         .build(),
                                 found);
                         final Set<String> additionalModules = getAddMods();
@@ -625,22 +630,20 @@ final class ModuleClassPaths {
                     } else {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
-                                        .setModuleBootPath(bootModules)
+                                        .setModuleBootPath(systemModules)
                                         .setModuleCompilePath(userModules)
-                                        .setSourcePath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()))
+                                        .setSourcePath(sources)
                                         .build());
                         final Set<String> additionalModules = getAddMods();
                         additionalModules.remove(MOD_ALL_UNNAMED);
-                        if (systemModules == null) {
+                        if (base == systemModules) {
                             additionalModules.add(MOD_JAVA_SE);
                             rootModulesPredicate = ModuleNames.create(additionalModules)
                                     .or(NON_JAVA_PUBEXP);
                         } else {
                             rootModulesPredicate = ModuleNames.create(additionalModules);
                         }
-                        xmodule = Optional.ofNullable(getXModule())
-                                .filter((n) -> modulesByName.keySet().contains(n))
-                                .orElse(null);
+                        xmodule = getXModule();
                     }
                     boolean dependsOnUnnamed = false;
                     if (src != null) {
@@ -655,9 +658,10 @@ final class ModuleClassPaths {
                                     } else {
                                         final List<URL> xmoduleLocs = modulesByName.get(xmodule);
                                         myModule = mu.resolveModule(xmodule);
-                                        if (myModule != null) {
+                                        if (myModule != null && xmoduleLocs != null) {
                                             requires.addAll(xmoduleLocs);
                                         }
+                                        incompleteVote = myModule == null;
                                     }
                                     if (myModule != null) {
                                         dependsOnUnnamed = dependsOnUnnamed(myModule, true);
@@ -681,15 +685,13 @@ final class ModuleClassPaths {
                     }
                     if (dependsOnUnnamed) {
                         //Unnamed module - add legacy classpath to classpath.
-                        if (legacyClassPath != null) {
-                            final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
-                            final List<PathResourceImplementation> tmp = new ArrayList<>(res.size() + legacyEntires.size());
-                            legacyEntires.stream()
-                                    .map((e)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
-                                    .forEach(tmp::add);
-                            tmp.addAll(res);
-                            res = tmp;
-                        }
+                        final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
+                        final List<PathResourceImplementation> tmp = new ArrayList<>(res.size() + legacyEntires.size());
+                        legacyEntires.stream()
+                                .map((e)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
+                                .forEach(tmp::add);
+                        tmp.addAll(res);
+                        res = tmp;
                     }
                 } finally {
                     needToFire = selfRes.get()[1] == Boolean.TRUE;
@@ -719,12 +721,13 @@ final class ModuleClassPaths {
                     removed.stream().forEach((f) -> FileUtil.removeFileChangeListener(this, f));
                     added.stream().forEach((f) -> FileUtil.addFileChangeListener(this, f));
                     moduleInfos = newModuleInfos;
+                    incomplete = incompleteVote;
                 } else {
                     res = ccv;
                 }
             }
             if (needToFire) {
-                fire();
+                fire(PROP_RESOURCES);
             }
             return res;
         }
@@ -732,24 +735,24 @@ final class ModuleClassPaths {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
-            if (propName == null || ClassPath.PROP_ENTRIES.equals(propName) || SourceRoots.PROP_ROOTS.equals(propName)) {
-                resetOutsideWriteAccess(null);
+            if (propName == null || ClassPath.PROP_ENTRIES.equals(propName)) {
+                resetOutsideWriteAccess(null, PROP_RESOURCES);
             }
         }
-        
+
         @Override
         public void stateChanged(@NonNull final ChangeEvent evt) {
-            resetOutsideWriteAccess(null);
+            resetOutsideWriteAccess(null, PROP_FLAGS, PROP_RESOURCES);
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            resetOutsideWriteAccess(fe.getFile());
+            resetOutsideWriteAccess(fe.getFile(), PROP_RESOURCES);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            resetOutsideWriteAccess(fe.getFile());
+            resetOutsideWriteAccess(fe.getFile(), PROP_RESOURCES);
         }
 
         @Override
@@ -757,19 +760,19 @@ final class ModuleClassPaths {
             final ClasspathInfo info = ClasspathInfo.create(
                 ClassPath.EMPTY,
                 ClassPath.EMPTY,
-                org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(sources.getRootURLs()));
+                sources);
             final Set<ElementHandle<ModuleElement>> mods = info.getClassIndex().getDeclaredModules(
                     "", //NOI18N
                     ClassIndex.NameKind.PREFIX,
                     EnumSet.of(ClassIndex.SearchScope.SOURCE));
             if (mods.isEmpty()) {
-                resetOutsideWriteAccess(null);
+                resetOutsideWriteAccess(null, PROP_RESOURCES);
             }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            resetOutsideWriteAccess(fe.getFile());
+            resetOutsideWriteAccess(fe.getFile(), PROP_RESOURCES);
         }
 
         @Override
@@ -803,7 +806,7 @@ final class ModuleClassPaths {
             handleModuleChange(event);
         }
         
-        private void resetOutsideWriteAccess(FileObject artifact) {
+        private void resetOutsideWriteAccess(FileObject artifact, String... propNames) {
             final boolean hasDocExclusiveLock = Optional.ofNullable(artifact)
                     .map((fo) -> {
                         try {
@@ -815,7 +818,7 @@ final class ModuleClassPaths {
                     .map((ec) -> ec.getDocument())
                     .map(DocumentUtilities::isWriteLocked)
                     .orElse(Boolean.FALSE);
-            final Runnable action = () -> resetCache(TOMBSTONE, true);
+            final Runnable action = () -> resetCache(TOMBSTONE, propNames);
             if (hasDocExclusiveLock) {
                 if (LOG.isLoggable(Level.WARNING)) {
                     LOG.log(
@@ -842,7 +845,7 @@ final class ModuleClassPaths {
                         } else {
                             rootsChanging = true;
                         }
-                    }                    
+                    }
                 }
                 if (info != null) {
                     try {
@@ -857,7 +860,7 @@ final class ModuleClassPaths {
                                     event.getRoot()
                                 });
                             rootsChanging = false;
-                            CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, true));
+                            CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, PROP_FLAGS, PROP_RESOURCES));
                         },
                         true);
                     } catch (IOException ioe) {
@@ -913,20 +916,11 @@ final class ModuleClassPaths {
         @NonNull
         private static Map<String,List<URL>> getModulesByName(
                 @NonNull final ClassPath cp,
-                @NonNull final Map<String,List<URL>> patches,
-                @NullAllowed final Collection<URL> projectSourceRoots) {
+                @NonNull final Map<String,List<URL>> patches) {
             final Map<String,List<URL>> res = new LinkedHashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
                     .forEach((url)-> {
-                        if (projectSourceRoots != null) {
-                            final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(url);
-                            if (sfbqRes.preferSources()) {
-                                Arrays.stream(sfbqRes.getRoots())
-                                        .map((fo)->fo.toURL())
-                                        .forEach(projectSourceRoots::add);
-                            }
-                        }
                         final String moduleName = SourceUtils.getModuleName(url, true);
                         if (moduleName != null) {
                             final List<URL> roots = new ArrayList<>();
@@ -937,6 +931,21 @@ final class ModuleClassPaths {
                         }
                     });
             return res;
+        }
+
+        private static void collectProjectSourceRoots(
+                @NonNull final ClassPath cp,
+                @NonNull final Collection<? super URL> projectSourceRoots) {
+            cp.entries().stream()
+                    .map((e) -> e.getURL())
+                    .forEach((url) -> {
+                        final SourceForBinaryQuery.Result2 sfbqRes = SourceForBinaryQuery.findSourceRoots2(url);
+                        if (sfbqRes.preferSources()) {
+                            Arrays.stream(sfbqRes.getRoots())
+                                    .map((fo)->fo.toURL())
+                                    .forEach(projectSourceRoots::add);
+                        }
+                    });
         }
 
         @NonNull
@@ -968,7 +977,7 @@ final class ModuleClassPaths {
                 for (ModuleElement.Directive d : module.getDirectives()) {
                     if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         final ModuleElement.RequiresDirective rd = (ModuleElement.RequiresDirective) d;
-                        if (topLevel || (transitive && rd.isPublic())) {
+                        if (topLevel || (transitive && rd.isTransitive())) {
                             if (dependsOnUnnamed(rd.getDependency(), transitive, false, seen)) {
                                 return true;
                             }
@@ -1008,7 +1017,7 @@ final class ModuleClassPaths {
                 for (ModuleElement.Directive directive : module.getDirectives()) {
                     if (directive.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
                         ModuleElement.RequiresDirective req = (ModuleElement.RequiresDirective) directive;
-                        if (topLevel || req.isPublic() || isMandated(req)) {
+                        if (topLevel || req.isTransitive()|| isMandated(req)) {
                             final ModuleElement dependency = req.getDependency();
                             boolean add = true;
                             if (transitive) {
@@ -1049,15 +1058,14 @@ final class ModuleClassPaths {
         private static boolean supportsModules(
             @NonNull final ClassPath boot,
             @NonNull final ClassPath compile,
-            @NonNull final SourceRoots src) {
+            @NonNull final ClassPath src) {
             if (boot.findResource("java/util/zip/CRC32C.class") != null) {  //NOI18N
                 return true;
             }
             if (compile.findResource("java/util/zip/CRC32C.class") != null) {   //NOI18N
                 return true;
             }
-            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(src.getRootURLs())
-                    .findResource("java/util/zip/CRC32C.java") != null;   //NOI18N
+            return src.findResource("java/util/zip/CRC32C.java") != null;   //NOI18N
         }
         
         private static boolean isMandated(@NonNull final ModuleElement.RequiresDirective rd) {
@@ -1123,23 +1131,23 @@ final class ModuleClassPaths {
             this.cache = cache;
         }
 
-        final void resetCache(final boolean fire) {
-            resetCache(null, fire);
+        final void resetCache(@NonNull final String... propNames) {
+            resetCache(null, propNames);
         }
 
         final void resetCache(
                 @NullAllowed final List<PathResourceImplementation> update,
-                final boolean fire) {
+                @NonNull final String... propNames) {
             synchronized (this) {
                 this.cache = update;
             }
-            if (fire) {
-                fire();
-            }
+            fire(propNames);
         }
 
-        final void fire() {
-            this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
+        final void fire(@NonNull final String... propNames) {
+            for (String pn : propNames) {
+                this.listeners.firePropertyChange(pn, null, null);
+            }
         }
     }
 

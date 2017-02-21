@@ -50,6 +50,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import static com.sun.source.tree.Tree.*;
@@ -77,6 +78,7 @@ import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
 import com.sun.source.doctree.LiteralTree;
 import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ProvidesTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.doctree.ReturnTree;
 import com.sun.source.doctree.SeeTree;
@@ -89,6 +91,7 @@ import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.ThrowsTree;
 import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.UsesTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
 
@@ -743,6 +746,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public void visitModuleDef(JCModuleDecl tree) {
 	toLeftMargin();
+        printAnnotations(tree.mods.annotations);
+        if (tree.getModuleType() == ModuleTree.ModuleKind.OPEN) {
+            print("open ");
+        }
         print("module ");
         print(fullName(tree.qualId));
 	int old = cs.indentTopLevelClassMembers() ? indent() : out.leftMargin;
@@ -796,10 +803,24 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
 
     @Override
+    public void visitOpens(JCOpens tree) {
+        print("opens ");
+        print(fullName(tree.qualid));
+        if (tree.moduleNames.nonEmpty()) {
+            wrap("to ", cs.wrapOpensToKeyword());
+            wrapTrees(tree.moduleNames, cs.wrapOpensToList(), cs.alignMultilineOpens()
+                    ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+        }
+        print(';');
+    }
+
+    @Override
     public void visitRequires(JCRequires tree) {
         print("requires ");
-        if (tree.isPublic)
-            print("public ");
+        if (tree.isStaticPhase)
+            print("static ");
+        if (tree.isTransitive)
+            print("transitive ");
         print(fullName(tree.moduleName));
         print(';');
     }
@@ -808,8 +829,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     public void visitProvides(JCProvides tree) {
         print("provides ");
         print(fullName(tree.serviceName));
-        wrap("with ", cs.wrapProvidesWithKeyword());
-        print(fullName(tree.implName));
+        if (tree.implNames.nonEmpty()) {
+            wrap("with ", cs.wrapProvidesWithKeyword());
+            wrapTrees(tree.implNames, cs.wrapProvidesWithList(), cs.alignMultilineProvides()
+                    ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+        }
         print(';');
     }
 
@@ -2364,6 +2388,20 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
 
     @Override
+    public Void visitProvides(ProvidesTree node, Void p) {
+        printTagName(node);
+        needSpace();
+        doAccept((DCTree)node.getServiceType());
+        if (!node.getDescription().isEmpty()) {
+            needSpace();
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public Void visitReference(ReferenceTree node, Void p) {
         //TODO: should use formatting settings:
         DCReference refNode = (DCReference) node;
@@ -2502,6 +2540,20 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             doAccept((DCTree)docTree);
         }
         print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitUses(UsesTree node, Void p) {
+        printTagName(node);
+        needSpace();
+        doAccept((DCTree)node.getServiceType());
+        if (!node.getDescription().isEmpty()) {
+            needSpace();
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
         return null;
     }
 

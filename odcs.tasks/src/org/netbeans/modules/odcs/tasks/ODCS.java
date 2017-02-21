@@ -41,17 +41,29 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
+import com.tasktop.c2c.server.common.service.web.ApacheHttpRestClientDelegate;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.service.TaskServiceClient;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
+import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
+import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
@@ -248,7 +260,69 @@ public class ODCS {
     }
 
     public CloudDevClient getCloudDevClient(TaskRepository taskRepository) {
-        return rc.getCloudDevClientManager().getCloudDevClient(taskRepository);
+        CloudDevClient client = rc.getCloudDevClientManager().getCloudDevClient(taskRepository);
+
+        // Workaround for missing proxy configuration in CloudDevClient (from oracle-eclipse-tools-cloud-dev-tasks.jar).
+        Field f;
+        try {
+            f = CloudDevClient.class.getDeclaredField("taskServiceClient"); // NOI18N
+            f.setAccessible(true);
+            Object value = f.get(client);
+            if (value != null) { // TaskServiceClient already set
+                return client;
+            }
+        } catch (Exception ex) {
+            ODCS.LOG.log(Level.WARNING, "", ex);
+            return client;
+        }
+
+        Proxy proxy = null;
+        String proxyHost = taskRepository.getProperty(TaskRepository.PROXY_HOSTNAME);
+        if (proxyHost != null && proxyHost.length() > 0) {
+            URI uri = null;
+            try {
+                uri = new URI(taskRepository.getRepositoryUrl());
+            } catch (URISyntaxException ex) {
+                ODCS.LOG.log(Level.INFO, "", ex);
+            }
+            List<Proxy> proxies = ProxySelector.getDefault().select(uri);
+            for (Proxy p : proxies) {
+                if (p.type() != Proxy.Type.DIRECT) {
+                    SocketAddress addr = p.address();
+                    if (addr instanceof InetSocketAddress) {                        
+                        InetSocketAddress inet = (InetSocketAddress) addr;
+                        if (proxyHost.equals(inet.getHostString())) {
+                            proxy = p;
+                            break;
+                        }                        
+                    }
+                }
+            }            
+        }
+
+        AuthenticationCredentials credentials = taskRepository.getCredentials(AuthenticationType.HTTP);
+        ApacheHttpRestClientDelegate restDelegate;
+        if (proxy != null) {
+            AuthenticationCredentials proxyCredentials = taskRepository.getCredentials(AuthenticationType.PROXY);
+            if (proxyCredentials != null) {
+                restDelegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword(),
+                        proxy, proxyCredentials.getUserName(), proxyCredentials.getPassword());
+            } else {
+                restDelegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword(), proxy);
+            }
+        } else {
+            restDelegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+        }
+        TaskServiceClient taskServiceClient = new TaskServiceClient();
+        taskServiceClient.setBaseUrl(taskRepository.getRepositoryUrl());
+        taskServiceClient.setRestClientDelegate(restDelegate);
+
+        try {
+            f.set(client, taskServiceClient);
+        } catch (Exception ex) {
+            ODCS.LOG.log(Level.WARNING, "", ex);
+        }
+        return client;
     }
 
     public IssueNode.ChangesProvider<ODCSIssue> getChangesProvider() {
