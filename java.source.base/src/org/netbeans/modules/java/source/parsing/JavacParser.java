@@ -702,12 +702,10 @@ public class JavacParser extends Parser {
             final DiagnosticListener<? super JavaFileObject> diagnosticListener,
             final ClassNamesForFileOraculum oraculum,
             final boolean detached) {
-        SourceLevelQuery.Result sourceLevel = null;
         if (file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Created new JavacTask for: {0}", FileUtil.getFileDisplayName(file));
             }
-            sourceLevel = SourceLevelQuery.getSourceLevel2(file);
         }
         FQN2Files dcc = null;
         if (root != null) {
@@ -732,9 +730,15 @@ public class JavacParser extends Parser {
             final FileObject artefact = root != null ?
                     root :
                     file;
-            final CompilerOptionsQuery.Result compilerOptions = artefact != null ?
-                CompilerOptionsQuery.getOptions(artefact) :
-                null;
+            final CompilerOptionsQuery.Result compilerOptions;
+            final SourceLevelQuery.Result sourceLevel;
+            if (artefact != null) {
+                compilerOptions = CompilerOptionsQuery.getOptions(artefact);
+                sourceLevel = SourceLevelQuery.getSourceLevel2(artefact);
+            } else {
+                compilerOptions = null;
+                sourceLevel = null;
+            }
             final JavacTaskImpl javacTask = createJavacTask(
                     cpInfo,
                     diagnosticListener,
@@ -919,6 +923,9 @@ public class JavacParser extends Parser {
                 cpInfo.getClassPath(PathKind.BOOT),
                 cpInfo.getClassPath(PathKind.COMPILE),
                 cpInfo.getClassPath(PathKind.SOURCE),
+                cpInfo.getClassPath(PathKind.MODULE_BOOT),
+                cpInfo.getClassPath(PathKind.MODULE_COMPILE),
+                cpInfo.getClassPath(PathKind.MODULE_CLASS),
                 isModuleInfo);
     }
 
@@ -928,6 +935,9 @@ public class JavacParser extends Parser {
             @NullAllowed final ClassPath bootClassPath,
             @NullAllowed final ClassPath classPath,
             @NullAllowed final ClassPath srcClassPath,
+            @NullAllowed final ClassPath moduleBoot,
+            @NullAllowed final ClassPath moduleCompile,
+            @NullAllowed final ClassPath moduleAllUnnamed,
             final boolean isModuleInfo) {
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         Level warnLevel;
@@ -954,7 +964,7 @@ public class JavacParser extends Parser {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
                         final boolean checkCp = bootClassPath.findResource("java/lang/Object.class") == null;
-                        if (!hasResource("java/lang/AssertionError", ClassPath.EMPTY, checkCp ? classPath : ClassPath.EMPTY, srcClassPath)) { // NOI18N
+                        if (!hasResource("java/lang/AssertionError", new ClassPath[] {ClassPath.EMPTY}, new ClassPath[] {checkCp ? classPath : ClassPath.EMPTY}, new ClassPath[] {srcClassPath})) { // NOI18N
                             LOGGER.log(warnLevel,
                                        "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
                                        "Changing source level to 1.3",
@@ -964,7 +974,7 @@ public class JavacParser extends Parser {
                     }
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0 &&
-                    !hasResource("java/lang/StringBuilder", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    !hasResource("java/lang/StringBuilder", new ClassPath[] {bootClassPath}, new ClassPath[] {classPath}, new ClassPath[] {srcClassPath})) { //NOI18N
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
                                "Changing source level to 1.4",
@@ -972,14 +982,14 @@ public class JavacParser extends Parser {
                     return com.sun.tools.javac.code.Source.JDK1_4;
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_7) >= 0 &&
-                    !hasResource("java/lang/AutoCloseable", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    !hasResource("java/lang/AutoCloseable", new ClassPath[] {bootClassPath}, new ClassPath[] {classPath}, new ClassPath[] {srcClassPath})) { //NOI18N
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.lang.AutoCloseable cannot be found on the bootclasspath: {2}\n" +   //NOI18N
                                "Try with resources is unsupported.",  //NOI18N
                                new Object[]{srcClassPath, sourceLevel, bootClassPath}); //NOI18N
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_8) >= 0 &&
-                    !hasResource("java/util/stream/Streams", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    !hasResource("java/util/stream/Streams", new ClassPath[] {bootClassPath}, new ClassPath[] {classPath}, new ClassPath[] {srcClassPath})) { //NOI18N
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.util.stream.Streams cannot be found on the bootclasspath: {2}\n" +   //NOI18N
                                "Changing source level to 1.7",  //NOI18N
@@ -987,7 +997,7 @@ public class JavacParser extends Parser {
                     return com.sun.tools.javac.code.Source.JDK1_7;
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_9) >= 0 &&
-                    !hasResource("java/util/zip/CRC32C", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    !hasResource("java/util/zip/CRC32C", new ClassPath[] {moduleBoot}, new ClassPath[] {moduleCompile, moduleAllUnnamed}, new ClassPath[] {srcClassPath})) { //NOI18N
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.util.zip.CRC32C cannot be found on the bootclasspath: {2}\n" +   //NOI18N
                                "Changing source level to 1.8",  //NOI18N
@@ -1035,20 +1045,31 @@ public class JavacParser extends Parser {
 
     private static boolean hasResource(
         @NonNull String resourceBase,
-        @NullAllowed ClassPath boot,
-        @NullAllowed ClassPath compile,
-        @NullAllowed ClassPath source) {
-        final String resourceClass = String.format("%s.class", resourceBase);
-        final String resourceJava = String.format("%s.java", resourceBase);
-        if (boot != null && boot.findResource(resourceClass) == null) { //NOI18N
-            if (source != null && source.findResource(resourceJava) == null) {   //NOI18N
-                if (compile == null || compile.findResource(resourceClass) == null) { // NOI18N
+        @NonNull ClassPath[] boot,
+        @NonNull ClassPath[] compile,
+        @NonNull ClassPath[] source) {
+        final String resourceClass = String.format("%s.class", resourceBase);    //NOI18N
+        final String resourceJava = String.format("%s.java", resourceBase);      //NOI18N
+        if (!hasResource(resourceClass, boot)) {
+            if (!hasResource(resourceJava, source)) {
+                if (!hasResource(resourceClass, compile)) {
                     return false;
                 }
             }
         }
         return true;
     }
+
+     private static boolean hasResource(
+             @NonNull final String resource,
+             @NonNull final ClassPath... cps) {
+         for (ClassPath cp : cps) {
+            if (cp != null && cp.findResource(resource) != null) {
+                return true;
+            }
+         }
+         return false;
+     }
 
     private static void logTime (FileObject source, Phase phase, long time) {
         assert source != null && phase != null;
