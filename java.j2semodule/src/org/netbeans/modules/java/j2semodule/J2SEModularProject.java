@@ -91,6 +91,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.MultiModuleClassPathProvider;
+import org.netbeans.modules.java.api.common.project.MultiModuleActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectOperations;
@@ -377,8 +378,8 @@ public final class J2SEModularProject implements Project {
                     getModuleRoots(),
                     getTestModuleRoots()),
             refHelper.createSubprojectProvider(),
-
-            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
+            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
+            newActionProvider(),
 
             //UNKNOWN FOR MODULAR PROJECT
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
@@ -501,6 +502,15 @@ public final class J2SEModularProject implements Project {
      */
     public void setProjectPropertiesSave(boolean value) {
         this.projectPropertiesSave.set(value);
+    }
+
+    @NonNull
+    private ActionProvider newActionProvider() {
+        return MultiModuleActionProvider.Builder.newInstance(this, evaluator())
+                .addProjectOperationsActions()
+                .addCleanAction("clean")    //NOI18N
+                .addBuildAction("jar")  //NOI18N
+                .build();
     }
 
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
