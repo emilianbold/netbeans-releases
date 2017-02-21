@@ -567,6 +567,7 @@ public class SourceRoots extends Roots {
             // in case of change reset local cache
             if (isXMLChange) {
                 sourceRootProperties = null;
+                sourceRootPathProperties = null;
                 sourceRootNames = null;
                 sourceRoots = null;
                 sourceRootURLs = null;
