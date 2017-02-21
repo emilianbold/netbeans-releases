@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.java.editor.javadoc;
 
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.Tag;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavadocTokenId;
@@ -86,17 +89,19 @@ public class JavaReferenceTest extends JavadocTestSupport {
         TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         String dump = insertPointer(code, offset);
         assertNotNull(dump, jdts);
-        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
-        assertNotNull(dump, javadoc);
-        TypeElement scope = (TypeElement) info.getElementUtilities().elementFor(javadoc).getEnclosingElement();
-        DocPositions positions = DocPositions.get(info, javadoc, jdts);
-        assertNotNull(dump, positions);
+        TreePath javadocPath = JavadocCompletionUtils.findJavadoc(info, offset);
+        assertNotNull(dump, javadocPath);
+        DocSourcePositions sourcePositions = info.getDocTrees().getSourcePositions();
+        DocCommentTree dcTree = info.getDocTrees().getDocCommentTree(javadocPath);
+        TypeElement scope = (TypeElement) info.getTrees().getElement(javadocPath).getEnclosingElement();
         
         // link1
-        Tag tag = positions.getTag(offset);
-        assertNotNull(dump + '\n' + positions, tag);
-        int[] tagSpan = positions.getTagSpan(tag);
-        assertNotNull(dump, tagSpan);
+        DocTreePath path = info.getTreeUtilities().pathFor(javadocPath, dcTree, offset);
+        assertNotNull(dump, path.getLeaf());
+        int[] tagSpan = new int[] {
+            (int)sourcePositions.getStartPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf()),
+            (int)sourcePositions.getEndPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf())
+        };
 
         JavaReference ref = JavaReference.resolve(jdts, offset, tagSpan[1]);
         assertNotNull(dump, ref);
@@ -107,11 +112,13 @@ public class JavaReferenceTest extends JavadocTestSupport {
         // link2
         what = "link2 {@linkplain ";
         offset = code.indexOf(what) + what.length();
-        tag = positions.getTag(offset);
+        path = info.getTreeUtilities().pathFor(javadocPath, dcTree, offset);
         dump = insertPointer(code, offset);
-        assertNotNull(dump + '\n' + positions, tag);
-        tagSpan = positions.getTagSpan(tag);
-        assertNotNull(dump, tagSpan);
+        assertNotNull(dump, path.getLeaf());
+        tagSpan = new int[] {
+            (int)sourcePositions.getStartPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf()),
+            (int)sourcePositions.getEndPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf())
+        };
 
         ref = JavaReference.resolve(jdts, offset, tagSpan[1]);
         assertNotNull(dump, ref);
@@ -122,26 +129,30 @@ public class JavaReferenceTest extends JavadocTestSupport {
         // link3
         what = "link3 {@link ";
         offset = code.indexOf(what) + what.length();
-        tag = positions.getTag(offset);
+        path = info.getTreeUtilities().pathFor(javadocPath, dcTree, offset);
         dump = insertPointer(code, offset);
-        assertNotNull(dump + '\n' + positions, tag);
-        tagSpan = positions.getTagSpan(tag);
-        assertNotNull(dump, tagSpan);
+        assertNotNull(dump, path.getLeaf());
+        tagSpan = new int[] {
+            (int)sourcePositions.getStartPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf()),
+            (int)sourcePositions.getEndPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf())
+        };
 
         ref = JavaReference.resolve(jdts, offset, tagSpan[1]);
         assertNotNull(dump, ref);
         exp = findCollectionsBinaryMethod(code, "Collections.<String>binary");
         result = ref.getReferencedElement(info, scope);
-//        assertEquals(ref + "\n" + dump, exp, result);
+        assertEquals(ref + "\n" + dump, exp, result);
         
         // unclosed link
         what = "unclosed link {@value ";
         offset = code.indexOf(what) + what.length();
-        tag = positions.getTag(offset);
+        path = info.getTreeUtilities().pathFor(javadocPath, dcTree, offset);
         dump = insertPointer(code, offset);
-        assertNotNull(dump + '\n' + positions, tag);
-        tagSpan = positions.getTagSpan(tag);
-        assertNotNull(dump, tagSpan);
+        assertNotNull(dump, path.getLeaf());
+        tagSpan = new int[] {
+            (int)sourcePositions.getStartPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf()),
+            (int)sourcePositions.getEndPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf())
+        };
 
         ref = JavaReference.resolve(jdts, offset, tagSpan[1]);
         assertNotNull(dump, ref);
@@ -152,11 +163,13 @@ public class JavaReferenceTest extends JavadocTestSupport {
         // see
         what = "@see ";
         offset = code.indexOf(what) + what.length();
-        tag = positions.getTag(offset);
+        path = info.getTreeUtilities().pathFor(javadocPath, dcTree, offset);
         dump = insertPointer(code, offset);
-        assertNotNull(dump + '\n' + positions, tag);
-        tagSpan = positions.getTagSpan(tag);
-        assertNotNull(dump, tagSpan);
+        assertNotNull(dump, path.getLeaf());
+        tagSpan = new int[] {
+            (int)sourcePositions.getStartPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf()),
+            (int)sourcePositions.getEndPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf())
+        };
 
         ref = JavaReference.resolve(jdts, offset, tagSpan[1]);
         assertNotNull(dump, ref);
@@ -167,11 +180,13 @@ public class JavaReferenceTest extends JavadocTestSupport {
         // throws
         what = "@throws ";
         offset = code.indexOf(what) + what.length();
-        tag = positions.getTag(offset);
+        path = info.getTreeUtilities().pathFor(javadocPath, dcTree, offset);
         dump = insertPointer(code, offset);
-        assertNotNull(dump + '\n' + positions, tag);
-        tagSpan = positions.getTagSpan(tag);
-        assertNotNull(dump, tagSpan);
+        assertNotNull(dump, path.getLeaf());
+        tagSpan = new int[] {
+            (int)sourcePositions.getStartPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf()),
+            (int)sourcePositions.getEndPosition(javadocPath.getCompilationUnit(), dcTree, path.getLeaf())
+        };
 
         ref = JavaReference.resolve(jdts, offset, tagSpan[1]);
         assertNotNull(dump, ref);
