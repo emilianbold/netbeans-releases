@@ -242,7 +242,7 @@ public final class J2SEModularProject implements Project {
                 getTestSourceRoots())
                 .build();
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
-        lookup = createLookup(aux, null/*newProjectOperationsCallback(this, updateProject)*/);//TODO
+        lookup = createLookup(aux, newProjectOperationsCallback(this, updateProject));
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -385,6 +385,12 @@ public final class J2SEModularProject implements Project {
             refHelper.createSubprojectProvider(),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
             newActionProvider(),
+            ProjectOperations.createBuilder(this, evaluator(), updateHelper, refHelper, getModuleRoots(), getTestModuleRoots()).
+                    addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
+                    addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
+                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
+                    setCallback(opsCallback).
+                    build(),
 
             //UNKNOWN FOR MODULAR PROJECT
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
@@ -392,14 +398,6 @@ public final class J2SEModularProject implements Project {
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
-//            ProjectOperations.createBuilder(this, eval, updateHelper, refHelper, sourceRoots, testRoots).
-//                    addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
-//                    addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
-//                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
-//                    addUpdatedNameProperty(ProjectProperties.DIST_JAR, "$'{'dist.dir'}'/{0}.jar", true).    //NOI18N
-//                    addUpdatedNameProperty(J2SEProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
-//                    setCallback(opsCallback).
-//                    build(),
             ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).
                     addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
 //                    setCustomizerAction(newConfigCustomizerAction()).
@@ -949,29 +947,29 @@ public final class J2SEModularProject implements Project {
 //            }
 //        };
 //    }
-//
-//    @NonNull
-//    private static ProjectOperations.Callback newProjectOperationsCallback (
-//        @NonNull final J2SEModularProject project,
-//        @NonNull final UpdateProjectImpl projectUpdate) {
-//        return new ProjectOperations.Callback() {
-//            @Override
-//            public void beforeOperation(@NonNull final ProjectOperations.Callback.Operation operation) {
-//            }
-//            @Override
-//            @SuppressWarnings("fallthrough")
-//            public void afterOperation(
-//                    @NonNull final ProjectOperations.Callback.Operation operation,
-//                    @NullAllowed final String newName,
-//                    @NullAllowed final Pair<File, Project> oldProject) {
-//                switch (operation) {
-//                    case COPY:
-//                        projectUpdate.setTransparentUpdate(true);
-//                    case MOVE:
-//                    case RENAME:
-//                        project.setName(newName);
-//                }
-//            }
-//        };
-//    }
+
+    @NonNull
+    private static ProjectOperations.Callback newProjectOperationsCallback (
+        @NonNull final J2SEModularProject project,
+        @NonNull final UpdateProjectImpl projectUpdate) {
+        return new ProjectOperations.Callback() {
+            @Override
+            public void beforeOperation(@NonNull final ProjectOperations.Callback.Operation operation) {
+            }
+            @Override
+            @SuppressWarnings("fallthrough")
+            public void afterOperation(
+                    @NonNull final ProjectOperations.Callback.Operation operation,
+                    @NullAllowed final String newName,
+                    @NullAllowed final Pair<File, Project> oldProject) {
+                switch (operation) {
+                    case COPY:
+                        projectUpdate.setTransparentUpdate(true);
+                    case MOVE:
+                    case RENAME:
+                        project.setName(newName);
+                }
+            }
+        };
+    }
 }
