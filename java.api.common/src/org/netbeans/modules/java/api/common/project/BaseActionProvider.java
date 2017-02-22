@@ -677,7 +677,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
         if (getJavaModelActions().contains(command) || (isCompileOnSaveUpdate && getScanSensitiveActions().contains(command))) {
             //Always have to run with java model
-            ScanDialog.runWhenScanFinished(action, commandName(command));
+            ScanDialog.runWhenScanFinished(action, ActionProviderSupport.getCommandDisplayName(command));
         }
         else if (getScanSensitiveActions().contains(command)) {
             //Run without model if not yet ready
@@ -694,71 +694,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         } else {
             //Does not need java model
             action.run();
-        }
-    }
-
-    @Messages({
-        "ACTION_run=Run Project",
-        "ACTION_run.single=Run File",
-        "ACTION_run.single.method=Run File",
-        "ACTION_debug=Debug Project",
-        "ACTION_debug.single=Debug File",
-        "ACTION_debug.single.method=Debug File",
-        "ACTION_debug.stepinto=Debug Project",
-        "ACTION_debug.fix=Apply Code Changes",
-        "ACTION_debug.test.single=Debug Test",
-        "ACTION_profile=Profile Project",
-        "ACTION_profile.single=Profile File",
-        "ACTION_profile.test.single=Profile Test",
-        "ACTION_rebuild=Rebuild Project",
-        "ACTION_build=Build Project",
-        "ACTION_clean=Clean Project",
-        "ACTION_compile.single=Compile File",
-        "ACTION_javadoc=Generate JavaDoc",
-        "ACTION_test=Test Project",
-        "ACTION_test.single=Test File"
-    })
-    private String commandName(String command) throws MissingResourceException {
-        if (command.equals("run")) {
-            return ACTION_run();
-        } else if (command.equals("run.single")) {
-            return ACTION_run_single();
-        } else if (command.equals("run.single.method")) {
-            return ACTION_run_single_method();
-        } else if (command.equals("debug")) {
-            return ACTION_debug();
-        } else if (command.equals("debug.single")) {
-            return ACTION_debug_single();
-        } else if (command.equals("debug.single.method")) {
-            return ACTION_debug_single_method();
-        } else if (command.equals("debug.stepinto")) {
-            return ACTION_debug_stepinto();
-        } else if (command.equals("debug.fix")) {
-            return ACTION_debug_fix();
-        } else if (command.equals("debug.test.single")) {
-            return ACTION_debug_test_single();
-        } else if (command.equals("profile")) {
-            return ACTION_profile();
-        } else if (command.equals("profile.single")) {
-            return ACTION_profile_single();
-        } else if (command.equals("profile.test.single")) {
-            return ACTION_profile_test_single();
-        } else if (command.equals("rebuild")) {
-            return ACTION_rebuild();
-        } else if (command.equals("build")) {
-            return ACTION_build();
-        } else if (command.equals("clean")) {
-            return ACTION_clean();
-        } else if (command.equals("compile.single")) {
-            return ACTION_compile_single();
-        } else if (command.equals("javadoc")) {
-            return ACTION_javadoc();
-        } else if (command.equals("test")) {
-            return ACTION_test();
-        } else if (command.equals("test.single")) {
-            return ACTION_test_single();
-        } else {
-            return command;
         }
     }
 

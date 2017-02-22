@@ -55,13 +55,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -508,10 +511,15 @@ public final class J2SEModularProject implements Project {
 
     @NonNull
     private ActionProvider newActionProvider() {
-        return MultiModuleActionProvider.Builder.newInstance(this, evaluator())
+        return MultiModuleActionProvider.Builder.newInstance(this, getUpdateHelper(), evaluator())
                 .addProjectOperationsActions()
                 .addCleanAction("clean")    //NOI18N
                 .addBuildAction("jar")  //NOI18N
+                .setCompileOnSaveOperationsProvider(() -> {
+                        return J2SEModularProjectUtil.isCompileOnSaveEnabled(this) ?
+                            EnumSet.of(MultiModuleActionProvider.CompileOnSaveOperation.UPDATE, MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE) :
+                            Collections.emptySet();
+                })
                 .build();
     }
 
