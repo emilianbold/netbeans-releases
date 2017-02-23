@@ -951,12 +951,12 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     @NonNull
-    private Set<? extends ActionProviderSupport.ActionFlag> getActionFlags(@NonNull final String command) {
+    private Set<? extends ActionProviderSupport.ActionFlag> getActionFlags(@NonNull final String forCommand) {
         final Set<ActionProviderSupport.ActionFlag> flgs = EnumSet.noneOf(ActionProviderSupport.ActionFlag.class);
-        if (getScanSensitiveActions().contains(command)) {
+        if (getScanSensitiveActions().contains(forCommand)) {
             flgs.add(ActionProviderSupport.ActionFlag.SCAN_SENITIVE);
         }
-        if (getJavaModelActions().contains(command)) {
+        if (getJavaModelActions().contains(forCommand)) {
             flgs.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
         }
         return flgs;
@@ -964,7 +964,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     @NonNull
     private Function<MultiModuleActionProvider.Context,String[]> getTargetProvider(
-            @NonNull final String command) {
+            @NonNull final String forCommand) {
         return (ctx) -> {
             final Properties p = new Properties();
             final String[] result = getTargetNames(
@@ -981,14 +981,19 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     @NonNull
     private BiFunction<MultiModuleActionProvider.Context,String[],ActionProviderSupport.Result> getCoSProvider(
-            @NonNull final String command) {
+            @NonNull final String forCommand) {
         return (ctx, targetNames) -> {
-            if (COMMAND_BUILD.equals(ctx.getCommand()) && !allowAntBuild()) {
+            String command = ctx.getCommand();
+            if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
                 showBuildActionWarning(ctx.getActiveLookup());
                 return ActionProviderSupport.Result.ABORT;
             }
+            if(COMMAND_TEST_SINGLE.equals(ctx.getCommand()) && Arrays.equals(targetNames, new String[]{COMMAND_TEST})) {
+                //multiple files or package(s) selected so we need to call test target instead of test-single
+                command = COMMAND_TEST;
+            }
             final Map<String, Object> execProperties = new HashMap<>();
-            execProperties.put("nb.internal.action.name", ctx.getCommand());
+            execProperties.put("nb.internal.action.name", command);
             copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
             prepareWorkDir(execProperties);
             execProperties.put(JavaRunner.PROP_PLATFORM, getProjectPlatform());
@@ -1015,7 +1020,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         String url = ctx.getProperty("applet.url");
                         execProperties.put("applet.url", url);
                         execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                        prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), false);
+                        prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
                         return ActionProviderSupport.Result.success(JavaRunner.execute(targetNames[0], execProperties));
                     }
                 } catch (IOException ex) {
@@ -1023,10 +1028,10 @@ public abstract class BaseActionProvider implements ActionProvider {
                 }
                 return ActionProviderSupport.Result.ABORT;
             }
-            if (!isServerExecution() && (COMMAND_RUN.equals(ctx.getCommand()) || COMMAND_DEBUG.equals(ctx.getCommand()) || COMMAND_DEBUG_STEP_INTO.equals(ctx.getCommand()) || COMMAND_PROFILE.equals(ctx.getCommand()))) {
-                prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), false);
+            if (!isServerExecution() && (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command))) {
+                prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
                 AtomicReference<ExecutorTask> _task = new AtomicReference<>();
-                bypassAntBuildScript(ctx.getCommand(), ctx.getActiveLookup(), execProperties, _task);
+                bypassAntBuildScript(command, ctx.getActiveLookup(), execProperties, _task);
                 final ExecutorTask t = _task.get();
                 return t == null ?
                         ActionProviderSupport.Result.ABORT :
@@ -1035,42 +1040,42 @@ public abstract class BaseActionProvider implements ActionProvider {
             // for example RUN_SINGLE Java file with Servlet must be run on server and not locally
             boolean serverExecution = ctx.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
             ctx.removeProperty(PROPERTY_RUN_SINGLE_ON_SERVER);
-            if (!serverExecution && (COMMAND_RUN_SINGLE.equals(ctx.getCommand()) || COMMAND_DEBUG_SINGLE.equals(ctx.getCommand()) || COMMAND_PROFILE_SINGLE.equals(ctx.getCommand()))) {
-                prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), false);
-                if (COMMAND_RUN_SINGLE.equals(ctx.getCommand())) {
+            if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command))) {
+                prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
+                if (COMMAND_RUN_SINGLE.equals(command)) {
                     execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("run.class"));
-                } else if (COMMAND_DEBUG_SINGLE.equals(ctx.getCommand())) {
+                } else if (COMMAND_DEBUG_SINGLE.equals(command)) {
                     execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("debug.class")); 
                 } else {
                     execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("profile.class"));
                 }
                 AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
-                bypassAntBuildScript(ctx.getCommand(), ctx.getActiveLookup(), execProperties, _task);
+                bypassAntBuildScript(command, ctx.getActiveLookup(), execProperties, _task);
                 final ExecutorTask t = _task.get();
                 return t == null ?
                         ActionProviderSupport.Result.ABORT :
                         ActionProviderSupport.Result.success(t);
             }
             String buildDir = evaluator.getProperty(ProjectProperties.BUILD_DIR);
-            if (COMMAND_TEST_SINGLE.equals(ctx.getCommand()) || COMMAND_DEBUG_TEST_SINGLE.equals(ctx.getCommand()) || COMMAND_PROFILE_TEST_SINGLE.equals(ctx.getCommand())) {
+            if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command)) {
                 @SuppressWarnings("MismatchedReadAndWriteOfArray")
                 FileObject[] files = findTestSources(ctx.getActiveLookup(), true);
                 try {
-                    prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), true);
+                    prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), true);
                     execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
                     if (buildDir != null) { // #211543
                         execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
                     }
-                    updateJavaRunnerClasspath(ctx.getCommand(), execProperties);
+                    updateJavaRunnerClasspath(command, execProperties);
                     return ActionProviderSupport.Result.success(JavaRunner.execute(
-                            ctx.getCommand().equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(ctx.getCommand()) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
+                            command.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
                                        execProperties));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
                 return ActionProviderSupport.Result.ABORT;
             }
-            if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(ctx.getCommand()) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(ctx.getCommand())) {
+            if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command)) {
                 SingleMethod methodSpec = findTestMethods(ctx.getActiveLookup())[0];
                 try {
                     execProperties.put("methodname", methodSpec.getMethodName());//NOI18N
@@ -1078,9 +1083,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                     if (buildDir != null) {
                         execProperties.put("tmp.dir",updateHelper.getAntProjectHelper().resolvePath(buildDir));
                     }
-                    updateJavaRunnerClasspath(ctx.getCommand(), execProperties);
+                    updateJavaRunnerClasspath(command, execProperties);
                     return ActionProviderSupport.Result.success(JavaRunner.execute(
-                            ctx.getCommand().equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
+                            command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
                                           execProperties));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);

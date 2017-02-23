@@ -132,20 +132,6 @@ final class ActionProviderSupport {
         }
     }
 
-    static final class CommandChange extends RuntimeException {
-        private final String command;
-
-        private CommandChange(@NonNull String command) {
-            Parameters.notNull("command", command); //NOI18N
-            this.command = command;
-        }
-
-        @NonNull
-        String getCommand() {
-            return this.command;
-        }
-    }
-
     static final class Result {
         static final Result ABORT = new Result(null);
         static final Result FOLLOW = new Result(null);
@@ -440,10 +426,6 @@ final class ActionProviderSupport {
             String[] targetNames = targetProvider.apply(context);
             if (targetNames == null) {
                 return null;
-            }
-            if(COMMAND_TEST_SINGLE.equals(context.getCommand()) && Arrays.equals(targetNames, new String[]{COMMAND_TEST})) {
-                //multiple files or package(s) selected so we need to call test target instead of test-single
-                throw new CommandChange(COMMAND_TEST);
             }
             if (context.getCompileOnSaveOperations().contains(MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE)) {
                 final Result r = cosPerformer.apply(context, targetNames);

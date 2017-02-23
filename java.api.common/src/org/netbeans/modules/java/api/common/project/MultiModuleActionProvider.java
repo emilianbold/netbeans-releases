@@ -134,30 +134,22 @@ public class MultiModuleActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(
-            @NonNull String command,
+            @NonNull final String command,
             @NonNull final Lookup context) throws IllegalArgumentException {
         assert SwingUtilities.isEventDispatchThread();
-        while (true) {
-            try {
-                final String commandFin = command;
-                Optional.ofNullable(supportedActions.get(command))
-                        .ifPresent((act) -> {
-                            final Context ctx = new Context(
-                                    prj, updateHelper, eval,
-                                    commandFin, context, userPropertiesPolicy,
-                                    jpp, null, null, cosOpsProvider,
-                                    listeners);
-                            try {
-                                act.invoke(ctx);
-                            } finally {
-                                userPropertiesPolicy = ctx.getUserPropertiesPolicy();
-                            }
-                        });
-                return;
-            } catch (ActionProviderSupport.CommandChange cc) {
-                command = cc.getCommand();
-            }
-        }
+        Optional.ofNullable(supportedActions.get(command))
+                .ifPresent((act) -> {
+                    final Context ctx = new Context(
+                            prj, updateHelper, eval,
+                            command, context, userPropertiesPolicy,
+                            jpp, null, null, cosOpsProvider,
+                            listeners);
+                    try {
+                        act.invoke(ctx);
+                    } finally {
+                        userPropertiesPolicy = ctx.getUserPropertiesPolicy();
+                    }
+                });
     }
 
     public void addAntTargetInvocationListener(@NonNull final AntTargetInvocationListener listener) {
