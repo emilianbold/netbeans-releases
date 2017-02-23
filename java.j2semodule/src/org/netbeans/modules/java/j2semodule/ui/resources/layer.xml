@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
 <!--                <file name="org-netbeans-modules-project-ui-JavadocProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-JavadocProject.instance"/>
                     <attr name="position" intvalue="600"/>
-                </file>
+                </file> -->
                 <file name="sep-2.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="700"/>
@@ -97,7 +97,7 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
                     <attr name="position" intvalue="900"/>
                 </file>
-                <file name="org-netbeans-modules-project-ui-TestProject.shadow">
+<!--                <file name="org-netbeans-modules-project-ui-TestProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
                     <attr name="position" intvalue="1100"/>
                 </file>

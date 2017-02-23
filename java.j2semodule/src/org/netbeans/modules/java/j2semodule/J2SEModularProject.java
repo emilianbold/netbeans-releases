@@ -513,6 +513,9 @@ public final class J2SEModularProject implements Project {
                 .addProjectOperationsActions()
                 .addCleanAction("clean")    //NOI18N
                 .addBuildAction("jar")  //NOI18N
+                .addRebuildAction("clean", "jar")   //NOI18N
+                .addRunAction("run")    //NOI18N
+                .addDebugAction("debug")    //NOI18N
                 .setCompileOnSaveOperationsProvider(() -> {
                         return J2SEModularProjectUtil.isCompileOnSaveEnabled(this) ?
                             EnumSet.of(MultiModuleActionProvider.CompileOnSaveOperation.UPDATE, MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE) :

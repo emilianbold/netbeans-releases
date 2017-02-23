@@ -376,12 +376,27 @@ public class MultiModuleActionProvider implements ActionProvider {
 
         @NonNull
         public Builder addCleanAction(@NonNull final String cleanTarget) {
-            return addAction(new ScriptAction(COMMAND_CLEAN, false, false, (c,t) -> null, cleanTarget));
+            return addAction(new ScriptAction(COMMAND_CLEAN, false, false, (c,t) -> ActionProviderSupport.Result.FOLLOW, cleanTarget));
         }
 
         @NonNull
         public Builder addBuildAction(@NonNull final String buildTarget) {
-            return addAction(new ScriptAction(COMMAND_BUILD, false, false, (c,t) -> null, buildTarget));
+            return addAction(new ScriptAction(COMMAND_BUILD, false, false, (c,t) -> ActionProviderSupport.Result.FOLLOW, buildTarget));
+        }
+
+        @NonNull
+        public Builder addRebuildAction(@NonNull final String cleanTarget, @NonNull final String buildTarget) {
+            return addAction(new ScriptAction(COMMAND_REBUILD, false, false, (c,t) -> ActionProviderSupport.Result.FOLLOW, cleanTarget, buildTarget));
+        }
+
+        @NonNull
+        public Builder addRunAction(@NonNull final String runTarget) {
+            return addAction(new ScriptAction(COMMAND_RUN, false, true, (c,t) -> ActionProviderSupport.Result.FOLLOW, runTarget));
+        }
+
+        @NonNull
+        public Builder addDebugAction(@NonNull final String debugTarget) {
+            return addAction(new ScriptAction(COMMAND_DEBUG, false, true, (c,t) -> ActionProviderSupport.Result.FOLLOW, debugTarget));
         }
 
         @NonNull
