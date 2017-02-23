@@ -125,6 +125,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                         <specification-version>1.7</specification-version>
                     </run-dependency>
                 </dependency>
+                <!--
                 <dependency>
                     <code-name-base>org.netbeans.lib.nbjshell</code-name-base>
                     <build-prerequisite/>
@@ -133,6 +134,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                         <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
+                -->
                 <dependency>
                     <code-name-base>org.netbeans.libs.javacapi</code-name-base>
                     <build-prerequisite/>
@@ -147,7 +149,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.42</specification-version>
+                        <specification-version>0.46</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -155,7 +157,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.3</specification-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

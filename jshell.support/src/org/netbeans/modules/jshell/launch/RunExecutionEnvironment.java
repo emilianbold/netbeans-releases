@@ -44,20 +44,15 @@ package org.netbeans.modules.jshell.launch;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.jshell.execution.StreamingExecutionControl;
 import jdk.jshell.execution.Util;
-import jdk.jshell.spi.ExecutionControl;
-import org.netbeans.lib.nbjshell.LaunchJDIAgent;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import org.netbeans.lib.nbjshell.NbExecutionControlBase;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
@@ -149,13 +144,6 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
     public boolean requestShutdown() {
         agent.closeConnection(shellConnection);
         return false;
-    }
-
-    @Override
-    public void setClasspath(String path) throws EngineTerminationException, InternalException {
-        if (!suppressClasspath) {
-            super.setClasspath(path);
-        }
     }
 
     @Override

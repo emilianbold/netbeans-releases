@@ -67,7 +67,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.jshell.execution.JdiDefaultExecutionControl;
 import jdk.jshell.execution.JdiExecutionControl;
-import jdk.jshell.execution.JdiExecutionControlProvider;
 import jdk.jshell.execution.JdiInitiator;
 import jdk.jshell.execution.Util;
 import jdk.jshell.spi.ExecutionControl;
@@ -202,7 +201,7 @@ public class LaunchJDIAgent extends JdiExecutionControl
 
             @Override
             public ExecutionControl generate(ExecutionEnv ee, Map<String, String> map) throws Throwable {
-                return create(platform, ee, true);
+                return create(platform, ee, true, map);
             }
         };
     }
@@ -220,17 +219,19 @@ public class LaunchJDIAgent extends JdiExecutionControl
      * @return the channel
      * @throws IOException if there are errors in set-up
      */
-    private static JdiExecutionControl create(JavaPlatform platform, ExecutionEnv env, boolean isLaunch) throws IOException {
+    private static JdiExecutionControl create(JavaPlatform platform, ExecutionEnv env, boolean isLaunch, Map<String, String> customArgs) throws IOException {
         try (final ServerSocket listener = new ServerSocket(0)) {
             // timeout after 60 seconds
             listener.setSoTimeout(60000);
             int port = listener.getLocalPort();
 
-            Map<String, String> customArguments = null;
+            Map<String, String> customArguments = new HashMap<>();
+            if (customArgs != null) {
+                customArguments.putAll(customArgs);
+            }
             
             if (platform != null) {
                 String jHome = platform.getSystemProperties().get("java.home");
-                customArguments = new HashMap<>();
                 // TODO: if jHome is null for some reason, the connector fails.
                 customArguments.put("home", jHome);
             }

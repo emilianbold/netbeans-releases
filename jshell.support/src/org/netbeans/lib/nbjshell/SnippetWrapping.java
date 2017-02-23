@@ -39,15 +39,60 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.lib.nbjshell;
 
-import jdk.jshell.spi.ExecutionControlProvider;
+import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.Kind;
+import jdk.jshell.Snippet.Status;
 
 /**
- *
+ * Encapsulates information necessary for JShell console to work.
+ * Provides access to a snippet, if it exists, or at least to the wrapper,
+ * if the Snippet does not exist.
+ * 
  * @author sdedic
  */
-public interface JShellGenerator extends ExecutionControlProvider {
-    // FIXME: seems that noone really calls this method.
-    public String getTargetSpec();
+public interface SnippetWrapping {
+    /**
+     * @return kind of the snippet.
+     */
+    public Kind    getSnippetKind();
+    
+    /**
+     * Snippet status. Wrappers prepared from String code not
+     * executed by JShell return {@link Status#NONEXISTENT}.
+     * @return snippet status
+     */
+    public Status  getStatus();
+    
+    /**
+     * Snippet instance, if executed by JShell
+     * @return snippet instance of {@code null}.
+     */
+    public Snippet getSnippet();
+    
+    /**
+     * Returns the complete wrapped text. 
+     * @return wrapped text
+     */
+    public String  getCode();
+    
+    /**
+     * Returns the original user's source
+     * @return original source before parsing/executing/wrapping
+     */
+    public String  getSource();
+    
+    /**
+     * Transforms original source position into the wrapped one.
+     * @param pos original position
+     * @return position inside the wrapper returned from {@link #getCode}
+     */
+    public int     getWrappedPosition(int pos);
+    
+    /**
+     * Class name of the shell snippet
+     * @return 
+     */
+    public String  getClassName();
 }

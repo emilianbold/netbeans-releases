@@ -43,7 +43,6 @@ package org.netbeans.modules.jshell.env;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import jdk.jshell.JShell;
+import jdk.jshell.spi.ExecutionControlProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -60,7 +60,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
-import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -301,9 +300,18 @@ public class JShellEnvironment {
             );
             */
         } else {
-            cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
+            ClasspathInfo.Builder bld = new ClasspathInfo.Builder(platformTemp.getBootstrapLibraries());
+            bld.setClassPath(platformTemp.getStandardLibraries());
+            if (ShellProjectUtils.isModularJDK(platformTemp)) {
+                bld.setModuleBootPath(platformTemp.getBootstrapLibraries());
+            }
+            /*
+            cpi = ClasspathInfo.create(
+                    platformTemp.getBootstrapLibraries(),
                     platformTemp.getStandardLibraries(),
                     ClassPath.EMPTY);
+            */
+            cpi = bld.build();
         }
         this.classpathInfo = cpi;
         forceOpenDocument();
@@ -584,7 +592,7 @@ public class JShellEnvironment {
         this.shellListeners.remove(l);
     }
     
-    public JShellGenerator createExecutionEnv() {
+    public ExecutionControlProvider createExecutionEnv() {
         return null;
     }
     

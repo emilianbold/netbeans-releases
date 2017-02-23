@@ -527,21 +527,6 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
     }
 
     @Override
-    public void setClasspath(String path) throws EngineTerminationException, InternalException {
-        List<URL> savePath = additionalClasspath;
-        additionalClasspath = new ArrayList<>();
-        boolean success = false;
-        try {
-            addToClasspath(path);
-            success = true;
-        } finally {
-            if (!success) {
-                additionalClasspath = savePath;
-            }
-        }
-    }
-
-    @Override
     public void addToClasspath(String cp) throws EngineTerminationException, InternalException {
         for (String cpItem : cp.split(";")) { // NOI18N
             File f = new File(cpItem);

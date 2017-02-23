@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,15 +39,34 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.lib.nbjshell;
 
-import jdk.jshell.spi.ExecutionControlProvider;
+import jdk.jshell.spi.ExecutionControl;
 
 /**
+ * Carries out non-agent tasks for the JShell. Its actual implementation
+ * may vary depending on the launch mode of the JShell
  *
  * @author sdedic
  */
-public interface JShellGenerator extends ExecutionControlProvider {
-    // FIXME: seems that noone really calls this method.
+public interface RemoteJShellService extends ExecutionControl {
+    /**
+     * Requests shutdown of the target process. The implementation may ignore
+     * the request, but JShell should terminate at the local side anyway.
+     * @return true, if the request was accepted
+     */
+    public boolean requestShutdown();
+
+    /**
+     * Closes the supplied I/O streams. If the streams are not yet opened or created
+     * the method does not even attempt to initiate the target VM. Further requests
+     * to get streams will result in an IOException.
+     */
+    public void closeStreams();
+
     public String getTargetSpec();
+
+    public void suppressClasspathChanges(boolean b);
+    
+    public ExecutionControlException getBrokenException();
 }

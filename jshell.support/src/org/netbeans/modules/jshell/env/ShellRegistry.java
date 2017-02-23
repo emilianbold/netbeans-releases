@@ -58,8 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.netbeans.lib.nbjshell.LaunchJDIAgent;
-import jdk.jshell.spi.ExecutionControl;
-import jdk.jshell.spi.ExecutionEnv;
+import jdk.jshell.spi.ExecutionControlProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -67,7 +66,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.jshell.launch.ShellOptions;
-import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -394,18 +392,8 @@ public class ShellRegistry {
         }
         
         @Override
-        public JShellGenerator createExecutionEnv() {
-            return new JShellGenerator() {
-                @Override
-                public String getTargetSpec() {
-                    return null;
-                }
-
-                @Override
-                public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-                    return LaunchJDIAgent.launch(getPlatform()).generate(ee);
-                }
-            };
+        public ExecutionControlProvider createExecutionEnv() {
+            return LaunchJDIAgent.launch(getPlatform());
         }
         
         private String createClasspathString(String dummy) {
