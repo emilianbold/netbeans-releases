@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,14 +69,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -97,11 +98,9 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -119,9 +118,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChoos
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarning;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ProjectPlatform;
-import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.SingleMethod;
@@ -146,11 +143,7 @@ import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Parameters;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 
 /** Action provider which was originally written for J2SE project and later
@@ -166,16 +159,6 @@ public abstract class BaseActionProvider implements ActionProvider {
     private static final Logger LOG = Logger.getLogger(BaseActionProvider.class.getName());
 
     public static final String PROPERTY_RUN_SINGLE_ON_SERVER = "run.single.on.server";
-
-    private static final Set<String> NO_SYNC_COMMANDS = Collections.unmodifiableSet(
-        new HashSet<String>(
-            Arrays.asList(new String[]{
-                COMMAND_BUILD,
-                COMMAND_CLEAN,
-                COMMAND_REBUILD,
-                COMMAND_COMPILE_SINGLE,
-                JavaProjectConstants.COMMAND_JAVADOC
-            })));
 
     // Project
     private final Project project;
@@ -207,7 +190,8 @@ public abstract class BaseActionProvider implements ActionProvider {
     private SourceRoots projectTestRoots;
 
     private boolean serverExecution = false;
-    private UserPropertiesPolicy userPropertiesPolicy;
+    private ActionProviderSupport.UserPropertiesPolicy userPropertiesPolicy;
+    private final List<? extends MultiModuleActionProvider.AntTargetInvocationListener> listeners;
 
     public BaseActionProvider(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, 
             SourceRoots sourceRoots, SourceRoots testRoots, AntProjectHelper antProjectHelper, Callback callback) {
@@ -233,6 +217,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 }
             }
         });
+        this.listeners = Collections.singletonList(new EventAdaptor());
     }
 
     abstract protected String[] getPlatformSensitiveActions();
@@ -442,279 +427,33 @@ public abstract class BaseActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
-        final String[] userPropertiesFile = new String[]{verifyUserPropertiesFile()};
 
-        final boolean isCompileOnSaveEnabled = isCompileOnSaveEnabled();
-        final boolean isCompileOnSaveUpdate = isCompileOnSaveUpdate();
-        final AtomicReference<Thread> caller = new AtomicReference<Thread>(Thread.currentThread());
-        final AtomicBoolean called = new AtomicBoolean(false);
-        // XXX prefer to call just if and when actually starting target, but that is hard to calculate here
-        final ActionProgress listener = ActionProgress.start(context);
-
-        class  Action implements Runnable {
-
-            /**
-             * True when the action always requires access to java model
-             */
-            private boolean needsJavaModel = true;
-            /**
-             * When true getTargetNames accesses java model, when false
-             * the default values (possibly incorrect) are used.
-             */
-            private boolean doJavaChecks = true;
-            ExecutorTask task;
-
-            @Override
-            public void run () {
-                if (!needsJavaModel && caller.get() != Thread.currentThread()) {
-                    return;
-                }
-                called.set(true);
-                try {
-                    doRun();
-                } finally {
-                    if (task != null) {
-                        task.addTaskListener(new TaskListener() {
-                            @org.netbeans.api.annotations.common.SuppressWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
-                            @Override public void taskFinished(Task _) {
-                                listener.finished(task.result() == 0);
-                            }
-                        });
-                    } else {
-                        listener.finished(false);
-                    }
-                }
-            }
-
-            void doRun() {
-                Properties p = new Properties();
-                p.put("nb.internal.action.name", command);                  //NOI18N
-                if (userPropertiesFile[0] != null) {
-                    p.put("user.properties.file", userPropertiesFile[0]);   //NOI18N
-                }
-                String[] targetNames;
-
-                targetNames = getTargetNames(command, context, p, doJavaChecks);
-                if (targetNames == null) {
-                    return;
-                }
-                final String command2execute;
-                if(COMMAND_TEST_SINGLE.equals(command) && targetNames.length == 1 && targetNames[0].equals(COMMAND_TEST)) {
-                    //multiple files or package(s) selected so we need to call test target instead of test-single
-                    command2execute = COMMAND_TEST;
-                    p.put("nb.internal.action.name", command2execute);
-                } else {
-                    command2execute = command;
-                }
-                if (isCompileOnSaveEnabled) {
-                    if (COMMAND_BUILD.equals(command2execute) && !allowAntBuild()) {
-                        showBuildActionWarning(context);
-                        return ;
-                    }
-                    final Map<String, Object> execProperties = new HashMap<>();
-                    execProperties.put("nb.internal.action.name", command2execute);
-
-                    copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
-                    prepareWorkDir(execProperties);
-
-                    execProperties.put(JavaRunner.PROP_PLATFORM, getProjectPlatform());
-                    execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
-                    String runtimeEnc = evaluator.getProperty(ProjectProperties.RUNTIME_ENCODING);
-                    if (runtimeEnc != null) {
-                        try {
-                            Charset runtimeChs = Charset.forName(runtimeEnc);
-                            execProperties.put(JavaRunner.PROP_RUNTIME_ENCODING, runtimeChs); //NOI18N
-                        } catch (IllegalCharsetNameException ichsn) {
-                            LOG.log(Level.WARNING, "Illegal charset name: {0}", runtimeEnc); //NOI18N
-                        } catch (UnsupportedCharsetException uchs) {
-                            LOG.log(Level.WARNING, "Unsupported charset : {0}", runtimeEnc); //NOI18N
-                        }
-                    }
-                    Optional.ofNullable(evaluator.getProperty("java.failonerror"))  //NOI18N
-                            .map((val) -> Boolean.valueOf(val))
-                            .ifPresent((b) -> execProperties.put("java.failonerror", b));    //NOI18N
-                    
-
-                    if (targetNames.length == 1 && (JavaRunner.QUICK_RUN_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_DEBUG_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_PROFILE_APPLET.equals(targetNames[0]))) {
-                        try {
-                            final FileObject[] selectedFiles = findSources(context);
-                            if (selectedFiles != null) {
-                                FileObject file = selectedFiles[0];
-                                String url = p.getProperty("applet.url");
-                                execProperties.put("applet.url", url);
-                                execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                                prepareSystemProperties(execProperties, command2execute, context, false);
-                                task =
-                                JavaRunner.execute(targetNames[0], execProperties);
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        return;
-                    }
-                    if (!isServerExecution() && (COMMAND_RUN.equals(command2execute) || COMMAND_DEBUG.equals(command2execute) || COMMAND_DEBUG_STEP_INTO.equals(command2execute) || COMMAND_PROFILE.equals(command2execute))) {
-                        prepareSystemProperties(execProperties, command2execute, context, false);
-                        AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
-                        bypassAntBuildScript(command2execute, context, execProperties, _task);
-                        task = _task.get();
-                        return ;
-                    }
-                    // for example RUN_SINGLE Java file with Servlet must be run on server and not locally
-                    boolean serverExecution = p.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
-                    p.remove(PROPERTY_RUN_SINGLE_ON_SERVER);
-                    if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command2execute) || COMMAND_DEBUG_SINGLE.equals(command2execute) || COMMAND_PROFILE_SINGLE.equals(command2execute))) {
-                        prepareSystemProperties(execProperties, command2execute, context, false);
-                        if (COMMAND_RUN_SINGLE.equals(command2execute)) {
-                            execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("run.class"));
-                        } else if (COMMAND_DEBUG_SINGLE.equals(command2execute)) {
-                            execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("debug.class")); 
-                        } else {
-                            execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("profile.class"));
-                        }
-                        AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
-                        bypassAntBuildScript(command2execute, context, execProperties, _task);
-                        task = _task.get();
-                        return;
-                    }
-                    String buildDir = evaluator.getProperty(ProjectProperties.BUILD_DIR);
-                    if (COMMAND_TEST_SINGLE.equals(command2execute) || COMMAND_DEBUG_TEST_SINGLE.equals(command2execute) || COMMAND_PROFILE_TEST_SINGLE.equals(command2execute)) {
-                        @SuppressWarnings("MismatchedReadAndWriteOfArray")
-                        FileObject[] files = findTestSources(context, true);
-                        try {
-                            prepareSystemProperties(execProperties, command2execute, context, true);
-                            execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
-                            if (buildDir != null) { // #211543
-                                execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
-                            }
-                            updateJavaRunnerClasspath(command2execute, execProperties);
-                            task =
-                            JavaRunner.execute(command2execute.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command2execute) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
-                                               execProperties);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        return;
-                    }
-                    if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command2execute) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command2execute)) {
-                        SingleMethod methodSpec = findTestMethods(context)[0];
-                        try {
-                            execProperties.put("methodname", methodSpec.getMethodName());//NOI18N
-                            execProperties.put(JavaRunner.PROP_EXECUTE_FILE, methodSpec.getFile());
-                            if (buildDir != null) {
-                                execProperties.put("tmp.dir",updateHelper.getAntProjectHelper().resolvePath(buildDir));
-                            }
-                            updateJavaRunnerClasspath(command2execute, execProperties);
-                            task =
-                            JavaRunner.execute(command2execute.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
-                                                  execProperties);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        return;
-                    }
-                }
-                collectStartupExtenderArgs(p, command2execute);
-                Set<String> concealedProperties = collectAdditionalProperties(p, command2execute, context);
-                if (targetNames.length == 0) {
-                    targetNames = null;
-                }
-                if (isCompileOnSaveUpdate && !NO_SYNC_COMMANDS.contains(command2execute)) {
-                    p.put("nb.wait.for.caches", "true");
-                }
-                final Callback cb = getCallback();
-                final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
-                if (p.keySet().isEmpty()) {
-                    p = null;
-                }
-                try {
-                    FileObject buildFo = findBuildXml();
-                    if (buildFo == null || !buildFo.isValid()) {
-                        //The build.xml was deleted after the isActionEnabled was called
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Build_XML_Found(), NotifyDescriptor.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(nd);
-                    } else {
-                        if (cb2 != null) {
-                            cb2.antTargetInvocationStarted(command2execute, context);
-                        }
-                        try {
-                            task = ActionUtils.runTarget(buildFo, targetNames, p, concealedProperties);
-                            task.addTaskListener(new TaskListener() {
-                                @Override
-                                public void taskFinished(Task _) {
-                                    try {
-                                        if (task.result() != 0) {
-                                            synchronized (BaseActionProvider.this) {
-                                                // #120843: if a build fails, disable dirty-list optimization.
-                                                dirty = null;
-                                            }
-                                        }
-                                    } finally {
-                                        if (cb2 != null) {
-                                            cb2.antTargetInvocationFinished(command2execute, context, task.result());
-                                        }
-                                    }
-                                }
-                            });
-                        } catch (IOException ex) {
-                            if (cb2 != null) {
-                                cb2.antTargetInvocationFailed(command2execute, context);
-                            }
-                            throw ex;
-                        } catch (RuntimeException ex) {
-                            if (cb2 != null) {
-                                cb2.antTargetInvocationFailed(command2execute, context);
-                            }
-                            throw ex;
-                        }
-                    }
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-            }
-        }
-        final Action action = new Action();
-
-        if (getJavaModelActions().contains(command) || (isCompileOnSaveUpdate && getScanSensitiveActions().contains(command))) {
-            //Always have to run with java model
-            ScanDialog.runWhenScanFinished(action, ActionProviderSupport.getCommandDisplayName(command));
-        }
-        else if (getScanSensitiveActions().contains(command)) {
-            //Run without model if not yet ready
-            try {
-                action.needsJavaModel = false;
-                invokeByJavaSource(action);
-                if (!called.get()) {
-                    action.doJavaChecks = false;
-                    action.run();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            //Does not need java model
-            action.run();
+        final MultiModuleActionProvider.Context ctx = new MultiModuleActionProvider.Context(
+                project,
+                updateHelper,
+                evaluator,
+                command,
+                context,
+                userPropertiesPolicy,
+                this::getProjectPlatform,
+                this::getAdditionalProperties,
+                this::getConcealedProperties,
+                this::getCompileOnSaveOperations,
+                listeners);
+        try {
+            ActionProviderSupport.invokeTarget(
+                    getTargetProvider(command),
+                    getCoSProvider(command),
+                    ctx,
+                    getActionFlags(command),
+                    ActionProviderSupport.getCommandDisplayName(command));
+        } finally {
+            userPropertiesPolicy = ctx.getUserPropertiesPolicy();
         }
     }
 
     protected void updateJavaRunnerClasspath(String command, Map<String, Object> execProperties) {
     }
-
-    //where
-    private static void invokeByJavaSource (final Runnable runnable) throws IOException {
-        Parameters.notNull("runnable", runnable);   //NOI18N
-        final ClasspathInfo info = ClasspathInfo.create(JavaPlatform.getDefault().getBootstrapLibraries(),
-            ClassPathSupport.createClassPath(new URL[0]),
-            ClassPathSupport.createClassPath(new URL[0]));
-        final JavaSource js = JavaSource.create(info);
-        js.runWhenScanFinished(new org.netbeans.api.java.source.Task<CompilationController>() {
-            @Override
-            public void run(final CompilationController controller) throws Exception {
-                runnable.run();
-            }
-        }, true);
-    }
-
     /**
      * Compatibility
      *
@@ -1175,6 +914,181 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
         LOG.log(Level.FINE, "Main class {0} is invalid.", mainClass);   //NOI18N
         return null;
+    }
+
+    @NonNull
+    private Set<String> getConcealedProperties(
+            @NonNull final String command,
+            @NonNull final Lookup context) {
+        final Callback clb = getCallback();
+        if (clb instanceof Callback3) {
+            return ((Callback3)clb).createConcealedProperties(command, context);
+        }
+        return Collections.emptySet();
+    }
+
+    @NonNull
+    private Map<String,String> getAdditionalProperties(
+            @NonNull final String command,
+            @NonNull final Lookup context) {
+        final Callback clb = getCallback();
+        if (clb instanceof Callback3) {
+            return ((Callback3)clb).createAdditionalProperties(command, context);
+        }
+        return Collections.emptyMap();
+    }
+
+    @NonNull
+    private Set<? extends MultiModuleActionProvider.CompileOnSaveOperation> getCompileOnSaveOperations() {
+        final Set<MultiModuleActionProvider.CompileOnSaveOperation> ops = EnumSet.noneOf(MultiModuleActionProvider.CompileOnSaveOperation.class);
+        if (isCompileOnSaveEnabled()) {
+            ops.add(MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE);
+        }
+        if (isCompileOnSaveUpdate()) {
+            ops.add(MultiModuleActionProvider.CompileOnSaveOperation.UPDATE);
+        }
+        return Collections.unmodifiableSet(ops);
+    }
+
+    @NonNull
+    private Set<? extends ActionProviderSupport.ActionFlag> getActionFlags(@NonNull final String command) {
+        final Set<ActionProviderSupport.ActionFlag> flgs = EnumSet.noneOf(ActionProviderSupport.ActionFlag.class);
+        if (getScanSensitiveActions().contains(command)) {
+            flgs.add(ActionProviderSupport.ActionFlag.SCAN_SENITIVE);
+        }
+        if (getJavaModelActions().contains(command)) {
+            flgs.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
+        }
+        return flgs;
+    }
+
+    @NonNull
+    private Function<MultiModuleActionProvider.Context,String[]> getTargetProvider(
+            @NonNull final String command) {
+        return (ctx) -> {
+            final Properties p = new Properties();
+            final String[] result = getTargetNames(
+                    ctx.getCommand(),
+                    ctx.getActiveLookup(),
+                    p,
+                    ctx.doJavaChecks());
+            for (Map.Entry<Object,Object> e : p.entrySet()) {
+                ctx.setProperty((String)e.getKey(), (String)e.getValue());
+            }
+            return result;
+        };
+    }
+
+    @NonNull
+    private BiFunction<MultiModuleActionProvider.Context,String[],ActionProviderSupport.Result> getCoSProvider(
+            @NonNull final String command) {
+        return (ctx, targetNames) -> {
+            if (COMMAND_BUILD.equals(ctx.getCommand()) && !allowAntBuild()) {
+                showBuildActionWarning(ctx.getActiveLookup());
+                return ActionProviderSupport.Result.ABORT;
+            }
+            final Map<String, Object> execProperties = new HashMap<>();
+            execProperties.put("nb.internal.action.name", ctx.getCommand());
+            copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
+            prepareWorkDir(execProperties);
+            execProperties.put(JavaRunner.PROP_PLATFORM, getProjectPlatform());
+            execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
+            String runtimeEnc = evaluator.getProperty(ProjectProperties.RUNTIME_ENCODING);
+            if (runtimeEnc != null) {
+                try {
+                    Charset runtimeChs = Charset.forName(runtimeEnc);
+                    execProperties.put(JavaRunner.PROP_RUNTIME_ENCODING, runtimeChs); //NOI18N
+                } catch (IllegalCharsetNameException ichsn) {
+                    LOG.log(Level.WARNING, "Illegal charset name: {0}", runtimeEnc); //NOI18N
+                } catch (UnsupportedCharsetException uchs) {
+                    LOG.log(Level.WARNING, "Unsupported charset : {0}", runtimeEnc); //NOI18N
+                }
+            }
+            Optional.ofNullable(evaluator.getProperty("java.failonerror"))  //NOI18N
+                    .map((val) -> Boolean.valueOf(val))
+                    .ifPresent((b) -> execProperties.put("java.failonerror", b));    //NOI18N
+            if (targetNames.length == 1 && (JavaRunner.QUICK_RUN_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_DEBUG_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_PROFILE_APPLET.equals(targetNames[0]))) {
+                try {
+                    final FileObject[] selectedFiles = findSources(ctx.getActiveLookup());
+                    if (selectedFiles != null) {
+                        FileObject file = selectedFiles[0];
+                        String url = ctx.getProperty("applet.url");
+                        execProperties.put("applet.url", url);
+                        execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
+                        prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), false);
+                        return ActionProviderSupport.Result.success(JavaRunner.execute(targetNames[0], execProperties));
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return ActionProviderSupport.Result.ABORT;
+            }
+            if (!isServerExecution() && (COMMAND_RUN.equals(ctx.getCommand()) || COMMAND_DEBUG.equals(ctx.getCommand()) || COMMAND_DEBUG_STEP_INTO.equals(ctx.getCommand()) || COMMAND_PROFILE.equals(ctx.getCommand()))) {
+                prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), false);
+                AtomicReference<ExecutorTask> _task = new AtomicReference<>();
+                bypassAntBuildScript(ctx.getCommand(), ctx.getActiveLookup(), execProperties, _task);
+                final ExecutorTask t = _task.get();
+                return t == null ?
+                        ActionProviderSupport.Result.ABORT :
+                        ActionProviderSupport.Result.success(t);
+            }
+            // for example RUN_SINGLE Java file with Servlet must be run on server and not locally
+            boolean serverExecution = ctx.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
+            ctx.removeProperty(PROPERTY_RUN_SINGLE_ON_SERVER);
+            if (!serverExecution && (COMMAND_RUN_SINGLE.equals(ctx.getCommand()) || COMMAND_DEBUG_SINGLE.equals(ctx.getCommand()) || COMMAND_PROFILE_SINGLE.equals(ctx.getCommand()))) {
+                prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), false);
+                if (COMMAND_RUN_SINGLE.equals(ctx.getCommand())) {
+                    execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("run.class"));
+                } else if (COMMAND_DEBUG_SINGLE.equals(ctx.getCommand())) {
+                    execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("debug.class")); 
+                } else {
+                    execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("profile.class"));
+                }
+                AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
+                bypassAntBuildScript(ctx.getCommand(), ctx.getActiveLookup(), execProperties, _task);
+                final ExecutorTask t = _task.get();
+                return t == null ?
+                        ActionProviderSupport.Result.ABORT :
+                        ActionProviderSupport.Result.success(t);
+            }
+            String buildDir = evaluator.getProperty(ProjectProperties.BUILD_DIR);
+            if (COMMAND_TEST_SINGLE.equals(ctx.getCommand()) || COMMAND_DEBUG_TEST_SINGLE.equals(ctx.getCommand()) || COMMAND_PROFILE_TEST_SINGLE.equals(ctx.getCommand())) {
+                @SuppressWarnings("MismatchedReadAndWriteOfArray")
+                FileObject[] files = findTestSources(ctx.getActiveLookup(), true);
+                try {
+                    prepareSystemProperties(execProperties, ctx.getCommand(), ctx.getActiveLookup(), true);
+                    execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
+                    if (buildDir != null) { // #211543
+                        execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
+                    }
+                    updateJavaRunnerClasspath(ctx.getCommand(), execProperties);
+                    return ActionProviderSupport.Result.success(JavaRunner.execute(
+                            ctx.getCommand().equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(ctx.getCommand()) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
+                                       execProperties));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return ActionProviderSupport.Result.ABORT;
+            }
+            if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(ctx.getCommand()) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(ctx.getCommand())) {
+                SingleMethod methodSpec = findTestMethods(ctx.getActiveLookup())[0];
+                try {
+                    execProperties.put("methodname", methodSpec.getMethodName());//NOI18N
+                    execProperties.put(JavaRunner.PROP_EXECUTE_FILE, methodSpec.getFile());
+                    if (buildDir != null) {
+                        execProperties.put("tmp.dir",updateHelper.getAntProjectHelper().resolvePath(buildDir));
+                    }
+                    updateJavaRunnerClasspath(ctx.getCommand(), execProperties);
+                    return ActionProviderSupport.Result.success(JavaRunner.execute(
+                            ctx.getCommand().equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
+                                          execProperties));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return ActionProviderSupport.Result.ABORT;
+            }
+            return ActionProviderSupport.Result.FOLLOW;
+        };
     }
 
     private String assertPath (
@@ -2248,71 +2162,27 @@ public abstract class BaseActionProvider implements ActionProvider {
         return JavaMainAction.forName(evaluator.getProperty(PROP_JAVA_MAIN_ACTION));
     }
 
-    private static enum UserPropertiesPolicy {
-        RUN_ANYWAY(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Anyway")),
-        RUN_WITH(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_With")),
-        RUN_UPDATE(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Update"));
+    private class EventAdaptor implements MultiModuleActionProvider.AntTargetInvocationListener {
 
-        private final String displayName;
-
-        UserPropertiesPolicy(@NonNull final String displayName) {
-            this.displayName = displayName;
-        }
-
-        @NonNull
-        public String getDisplayName() {
-            return this.displayName;
+        @Override
+        public void antTargetInvocationStarted(String command, Lookup context) {
+            Optional.ofNullable((getCallback()))
+                    .map((cb) -> cb instanceof Callback2 ? (Callback2) cb : null)
+                    .ifPresent((cb) -> cb.antTargetInvocationStarted(command, context));
         }
 
         @Override
-        public String toString() {
-            return getDisplayName();
+        public void antTargetInvocationFinished(String command, Lookup context, int result) {
+            Optional.ofNullable((getCallback()))
+                    .map((cb) -> cb instanceof Callback2 ? (Callback2) cb : null)
+                    .ifPresent((cb) -> cb.antTargetInvocationFinished(command, context, result));
         }
-    }
 
-    @CheckForNull
-    private String verifyUserPropertiesFile() {
-        final String currentPath = evaluator.getProperty("user.properties.file");      //NOI18N
-        final File current = currentPath == null ? null : FileUtil.normalizeFile(antProjectHelper.resolveFile(currentPath));
-        final File expected = FileUtil.normalizeFile(new File(System.getProperty("netbeans.user"), "build.properties")); // NOI18N
-        if (!expected.equals(current)) {
-            if (userPropertiesPolicy == null) {
-                final Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                        NbBundle.getMessage(BaseActionProvider.class, "MSG_InvalidBuildPropertiesPath", ProjectUtils.getInformation(project).getDisplayName()),
-                        NbBundle.getMessage(BaseActionProvider.class, "TITLE_InvalidBuildPropertiesPath"),
-                        0,
-                        NotifyDescriptor.QUESTION_MESSAGE,
-                        UserPropertiesPolicy.values(),
-                        UserPropertiesPolicy.RUN_ANYWAY));
-                userPropertiesPolicy = option instanceof UserPropertiesPolicy ?
-                        (UserPropertiesPolicy) option :
-                        null;
-            }
-            if (null != userPropertiesPolicy) {
-                switch (userPropertiesPolicy) {
-                    case RUN_ANYWAY:
-                        return null;
-                    case RUN_WITH:
-                        return expected.getAbsolutePath();
-                    case RUN_UPDATE:
-                        ProjectManager.mutex().writeAccess(new Runnable() {
-                            @Override
-                            public void run() {
-                                final EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                                ep.setProperty("user.properties.file", expected.getAbsolutePath()); //NOI18N
-                                updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                                try {
-                                    ProjectManager.getDefault().saveProject(project);
-                                } catch (IOException ioe) {
-                                    Exceptions.printStackTrace(ioe);
-                                }
-                            }
-                        });
-                        return null;
-                    default:
-                }
-            }
+        @Override
+        public void antTargetInvocationFailed(String command, Lookup context) {
+            Optional.ofNullable((getCallback()))
+                    .map((cb) -> cb instanceof Callback2 ? (Callback2) cb : null)
+                    .ifPresent((cb) -> cb.antTargetInvocationFailed(command, context));
         }
-        return null;
     }
 }

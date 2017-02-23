@@ -188,7 +188,7 @@ public class MultiModuleActionProvider implements ActionProvider {
         private final BiFunction<String,Lookup,Map<String,String>> additionalPropertiesProvider;
         private final BiFunction<String,Lookup,Set<String>> concealedPropertiesProvider;
         private final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
-        private final List<AntTargetInvocationListener> listeners;
+        private final Collection<? extends AntTargetInvocationListener> listeners;
         private final Properties properties;
         private final Set<String> concealedProperties;
 
@@ -203,7 +203,7 @@ public class MultiModuleActionProvider implements ActionProvider {
                 @NullAllowed final BiFunction<String,Lookup,Map<String,String>> additionalPropertiesProvider,
                 @NullAllowed final BiFunction<String,Lookup,Set<String>> concealedPropertiesProvider,
                 @NonNull final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider,
-                @NonNull final List<AntTargetInvocationListener> listeners) {
+                @NonNull final Collection<? extends AntTargetInvocationListener> listeners) {
             this.project = project;
             this.updateHelper = updateHelper;
             this.eval = eval;
@@ -265,12 +265,22 @@ public class MultiModuleActionProvider implements ActionProvider {
             return res;
         }
 
+        @CheckForNull
+        String getProperty(@NonNull final String propName) {
+            return properties.getProperty(propName);
+        }
+
         void setProperty(
                 @NonNull final String propName,
                 @NonNull final String propValue) {
             Parameters.notNull("propName", propName);   //NOI18N
             Parameters.notNull("propValue", propValue);   //NOI18N
             properties.put(propName, propValue);
+        }
+
+        void removeProperty(
+                @NonNull final String propName) {
+            properties.remove(propName);
         }
 
         void addConcealedProperty(@NonNull final String propName) {
@@ -374,12 +384,12 @@ public class MultiModuleActionProvider implements ActionProvider {
 
         @NonNull
         public Builder addCleanAction(@NonNull final String cleanTarget) {
-            return addAction(new ScriptAction(COMMAND_CLEAN, false, false, (c) -> null, cleanTarget));
+            return addAction(new ScriptAction(COMMAND_CLEAN, false, false, (c,t) -> null, cleanTarget));
         }
 
         @NonNull
         public Builder addBuildAction(@NonNull final String buildTarget) {
-            return addAction(new ScriptAction(COMMAND_BUILD, false, false, (c) -> null, buildTarget));
+            return addAction(new ScriptAction(COMMAND_BUILD, false, false, (c,t) -> null, buildTarget));
         }
 
         @NonNull
@@ -466,13 +476,13 @@ public class MultiModuleActionProvider implements ActionProvider {
         private final Set<ActionProviderSupport.ActionFlag> actionFlags;
         private final Predicate<Lookup> enabled;
         private final Function<Context,String[]> targetProvider;
-        private final Function<Context,ExecutorTask> cosPerformer;
+        private final BiFunction<Context,String[],ActionProviderSupport.Result> cosPerformer;
 
         ScriptAction(
                 @NonNull final String name,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
-                @NonNull final Function<Context,ExecutorTask> cosPerformer,
+                @NonNull final BiFunction<Context,String[],ActionProviderSupport.Result> cosPerformer,
                 @NonNull final String... targets) {
             this(name, javaModelSensitive, scanSensitive, (l) -> true, (l) -> targets, cosPerformer);
         }
@@ -483,7 +493,7 @@ public class MultiModuleActionProvider implements ActionProvider {
                 final boolean scanSensitive,
                 @NonNull final Predicate<Lookup> enabled,
                 @NonNull final Function<Context,String[]> targetProvider,
-                @NonNull final Function<Context,ExecutorTask> cosPerformer) {
+                @NonNull final BiFunction<Context,String[],ActionProviderSupport.Result> cosPerformer) {
             super(name);
             Parameters.notNull("enabled", enabled);     //NOI18N
             Parameters.notNull("targetProvider", targetProvider);     //NOI18N

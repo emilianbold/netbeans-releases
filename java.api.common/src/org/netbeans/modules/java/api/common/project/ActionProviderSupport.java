@@ -51,6 +51,7 @@ import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -145,6 +146,27 @@ final class ActionProviderSupport {
         }
     }
 
+    static final class Result {
+        static final Result ABORT = new Result(null);
+        static final Result FOLLOW = new Result(null);
+
+        private final ExecutorTask task;
+
+        private Result(@NullAllowed final ExecutorTask task) {
+            this.task = task;
+        }
+
+        ExecutorTask getTask() {
+            return task;
+        }
+
+        @NonNull
+        static Result success(@NonNull final ExecutorTask task) {
+            Parameters.notNull("task", task);   //NOI18N
+            return new Result(task);
+        }
+    }
+
     @NbBundle.Messages({
         "ACTION_run=Run Project",
         "ACTION_run.single=Run File",
@@ -212,7 +234,7 @@ final class ActionProviderSupport {
 
     static void invokeTarget(
             @NonNull final Function<Context,String[]> targetProvider,
-            @NonNull final Function<Context,ExecutorTask> cosPerformer,
+            @NonNull final BiFunction<Context,String[],Result> cosPerformer,
             @NonNull final Context ctx,
             @NonNull final Set<? extends ActionFlag> flags,
             @NonNull final String actionDisplayName) {
@@ -352,16 +374,9 @@ final class ActionProviderSupport {
         return args;
     }
 
-    private static boolean allowAntBuild(@NonNull final Context ctx) {
-        String buildClasses = ctx.getPropertyEvaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
-        if (buildClasses == null) return false;
-        final File buildClassesFile = ctx.getUpdateHelper().getAntProjectHelper().resolveFile(buildClasses);
-        return !new File(buildClassesFile, BaseActionProvider.AUTOMATIC_BUILD_TAG).exists();
-    }
-
     private static final class Action implements Runnable {
         private final Function<Context,String[]> targetProvider;
-        private final Function<Context,ExecutorTask> cosPerformer;
+        private final BiFunction<Context,String[],Result> cosPerformer;
         private final Context context;
         private final String userPropertiesFile;
         private final AtomicReference<Thread> caller;
@@ -379,7 +394,7 @@ final class ActionProviderSupport {
 
         Action(
                 @NonNull final Function<Context,String[]> targetProvider,
-                @NonNull final Function<Context,ExecutorTask> cosPerformer,
+                @NonNull final BiFunction<Context,String[],Result> cosPerformer,
                 @NonNull final Context context,
                 @NullAllowed final String userPropertiesFile) {
             this.targetProvider = targetProvider;
@@ -431,8 +446,12 @@ final class ActionProviderSupport {
                 throw new CommandChange(COMMAND_TEST);
             }
             if (context.getCompileOnSaveOperations().contains(MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE)) {
-                final ExecutorTask t = cosPerformer.apply(context);
-                if (t != null) {
+                final Result r = cosPerformer.apply(context, targetNames);
+                if (r == Result.ABORT) {
+                    return null;
+                } else if (r != Result.FOLLOW) {
+                    final ExecutorTask t = r.getTask();
+                    assert t != null;
                     return t;
                 }
             }
