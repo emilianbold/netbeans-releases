@@ -53,8 +53,6 @@ import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URI;
@@ -86,6 +84,7 @@ import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.IntersectionType;
@@ -451,6 +450,9 @@ public class ElementJavadoc {
                 case PACKAGE:
                     sb.append(getPackageHeader((PackageElement)element));
                     break;
+                case MODULE:
+                    sb.append(getModuleHeader((ModuleElement)element));
+                    break;
             }
         }
         return sb;
@@ -458,24 +460,26 @@ public class ElementJavadoc {
     
     private StringBuilder getContainingClassOrPackageHeader(Element el, Elements elements, ElementUtilities eu) {
         StringBuilder sb = new StringBuilder();
-        TypeElement cls = el.getKind() != ElementKind.PACKAGE ? eu.enclosingTypeElement(el) : null;
-        if (cls != null) {
-            switch(cls.getEnclosingElement().getKind()) {
-                case ANNOTATION_TYPE:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
-                case PACKAGE:
+        if (el.getKind() != ElementKind.PACKAGE && el.getKind() != ElementKind.MODULE) {
+            TypeElement cls = eu.enclosingTypeElement(el);
+            if (cls != null) {
+                switch(cls.getEnclosingElement().getKind()) {
+                    case ANNOTATION_TYPE:
+                    case CLASS:
+                    case ENUM:
+                    case INTERFACE:
+                    case PACKAGE:
+                        sb.append("<font size='+0'><b>"); //NOI18N
+                        createLink(sb, cls, makeNameLineBreakable(cls.getQualifiedName().toString()));
+                        sb.append("</b></font>"); //NOI18N)
+                }
+            } else {
+                PackageElement pkg = elements.getPackageOf(el);
+                if (pkg != null) {
                     sb.append("<font size='+0'><b>"); //NOI18N
-                    createLink(sb, cls, makeNameLineBreakable(cls.getQualifiedName().toString()));
+                    createLink(sb, pkg, makeNameLineBreakable(pkg.getQualifiedName().toString()));
                     sb.append("</b></font>"); //NOI18N)
-            }
-        } else {
-            PackageElement pkg = elements.getPackageOf(el);
-            if (pkg != null) {
-                sb.append("<font size='+0'><b>"); //NOI18N
-                createLink(sb, pkg, makeNameLineBreakable(pkg.getQualifiedName().toString()));
-                sb.append("</b></font>"); //NOI18N)
+                }
             }
         }
         return sb;
@@ -656,6 +660,17 @@ public class ElementJavadoc {
         return sb;
     }
     
+    private StringBuilder getModuleHeader(ModuleElement mdoc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<pre>"); //NOI18N
+        mdoc.getAnnotationMirrors().forEach((annotationDesc) -> {
+            appendAnnotation(sb, annotationDesc, true);
+        });
+        sb.append("module <b>").append(mdoc.getQualifiedName()).append("</b>"); //NOI18N
+        sb.append("</pre>"); //NOI18N
+        return sb;
+    }
+    
     private void appendAnnotation(StringBuilder sb, AnnotationMirror annotationDesc, boolean topLevel) {
         DeclaredType annotationType = annotationDesc.getAnnotationType();
         if (annotationType != null && (!topLevel || isDocumented(annotationType))) {
@@ -825,39 +840,40 @@ public class ElementJavadoc {
     
     private Map<Object, StringBuilder> getElementDocFromSource(final Element element, final CompilationInfo info) {
         final Map<Object, StringBuilder> ret = new LinkedHashMap<>();
-        if (fromClass(element, info)) {
+        final ElementHandle<? extends Element> eh = ElementHandle.create(element);
+        FileObject fo = SourceUtils.getFile(eh, cpInfo);
+        if (fo != null && fo.isFolder() && element.getKind() == ElementKind.PACKAGE) {
+            fo = fo.getFileObject("package-info.java"); // NOI18N
+        }
+        if (fo != null && fo != info.getFileObject()) {
             try {
-                final ElementHandle<? extends Element> eh = ElementHandle.create(element);
-                FileObject fo = SourceUtils.getFile(eh, cpInfo);
-                if (fo != null && fo != info.getFileObject()) {
-                    JavaSource js = JavaSource.forFileObject(fo);
-                    if (js != null) {
-                        final Map<Object, StringBuilder> out = new HashMap<>();
-                        js.runUserActionTask(controller -> {
-                            controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                            Element e = eh.resolve(controller);
-                            if (e != null) {
-                                getElementDocFromSource(e, controller).entrySet().forEach((entry) -> {
-                                    Object key = entry.getKey();
-                                    if (key instanceof Element) {
-                                        key = ElementHandle.create((Element)key);
-                                    }
-                                    out.put(key, entry.getValue());
-                                });
-                            }
-                        },true);
-                        out.entrySet().forEach((entry) -> {
-                            Object key = entry.getKey();
-                            if (key instanceof ElementHandle) {
-                                Element e = ((ElementHandle)key).resolve(info);
-                                if (e != null) {
-                                    ret.put(e, entry.getValue());
+                JavaSource js = JavaSource.forFileObject(fo);
+                if (js != null) {
+                    final Map<Object, StringBuilder> out = new HashMap<>();
+                    js.runUserActionTask(controller -> {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        Element e = eh.resolve(controller);
+                        if (e != null) {
+                            getElementDocFromSource(e, controller).entrySet().forEach((entry) -> {
+                                Object key = entry.getKey();
+                                if (key instanceof Element) {
+                                    key = ElementHandle.create((Element)key);
                                 }
-                            } else {
-                                ret.put(key, entry.getValue());
+                                out.put(key, entry.getValue());
+                            });
+                        }
+                    },true);
+                    out.entrySet().forEach((entry) -> {
+                        Object key = entry.getKey();
+                        if (key instanceof ElementHandle) {
+                            Element e = ((ElementHandle)key).resolve(info);
+                            if (e != null) {
+                                ret.put(e, entry.getValue());
                             }
-                        });
-                    }
+                        } else {
+                            ret.put(key, entry.getValue());
+                        }
+                    });
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -1482,12 +1498,7 @@ public class ElementJavadoc {
     }
 
     private static boolean isLocalized(final List<? extends URL> docUrls, final Element element) {
-        for (URL docUrl : docUrls) {
-            if (isLocalized(docUrl, element)) {
-                return true;
-            }
-        }
-        return false;
+        return docUrls.stream().anyMatch((docUrl) -> (isLocalized(docUrl, element)));
     }
 
     private static boolean isLocalized(final URL docURL, final Element element) {
@@ -1521,11 +1532,6 @@ public class ElementJavadoc {
         }
         String lang = surl.substring(index2+1, index);        
         return LANGS.contains(lang);
-    }
-    
-    private static boolean fromClass(final Element element, final CompilationInfo info) {
-        TypeElement te = info.getElementUtilities().outermostTypeElement(element);
-        return te != null && (((Symbol)te).flags_field & Flags.FROMCLASS) != 0;
     }
     
     @SuppressWarnings("unchecked")
