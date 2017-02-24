@@ -105,6 +105,20 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="modules.constants">
+            <api name="java-api-common"/>
+            <summary>Added module-related properties to <code>ProjectProperties</code></summary>
+            <version major="1" minor="101"/>
+            <date day="24" month="2" year="2017"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>BUILD_TEST_MODULES_DIR</code> to denote build location for tests in modular projects
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+        </change>
         <change id="ModuleInfoAccessibilityQuery">
             <api name="java-api-common"/>
             <summary>Added a factory method into <code>QuerySupport</code>to create a module-info based <code>AccessibilityQueryImplementation2</code> instance</summary>

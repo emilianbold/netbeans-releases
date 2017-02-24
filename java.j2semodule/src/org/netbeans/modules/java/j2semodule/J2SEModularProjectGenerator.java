@@ -229,7 +229,7 @@ public class J2SEModularProjectGenerator {
         });
         ep.setProperty("run.test.classpath", new String[] { // NOI18N
             ref(ProjectProperties.JAVAC_TEST_CLASSPATH, false),
-            ref(ProjectProperties.BUILD_TEST_CLASSES_DIR, true)
+            ref(ProjectProperties.BUILD_TEST_MODULES_DIR, true)
         });
         ep.setProperty("debug.test.classpath", new String[] { // NOI18N
             ref(ProjectProperties.RUN_TEST_CLASSPATH, true)
@@ -239,7 +239,7 @@ public class J2SEModularProjectGenerator {
         ep.setProperty(ProjectProperties.JAVAC_MODULEPATH, ""); //NOI18N
         ep.setProperty(ProjectProperties.RUN_MODULEPATH, new String[] {
             ref(ProjectProperties.JAVAC_MODULEPATH, false),
-            ref(ProjectProperties.BUILD_CLASSES_DIR, true)
+            ref(ProjectProperties.BUILD_MODULES_DIR, true)
         });
         ep.setProperty(ProjectProperties.DEBUG_MODULEPATH, new String[] {
             ref(ProjectProperties.RUN_MODULEPATH, true)
@@ -262,6 +262,7 @@ public class J2SEModularProjectGenerator {
         ep.setProperty(ProjectProperties.BUILD_MODULES_DIR, "${build.dir}/modules"); // NOI18N  //TODO: For What?
         ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
         ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
+        ep.setProperty("build.test.modules.dir", "${build.dir}/test/modules"); // NOI18N
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
