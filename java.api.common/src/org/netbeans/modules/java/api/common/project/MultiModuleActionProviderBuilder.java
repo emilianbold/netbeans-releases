@@ -39,38 +39,14 @@
  */
 package org.netbeans.modules.java.api.common.project;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.CompileOnSaveOperation;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.execution.ExecutorTask;
-import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
 /**
