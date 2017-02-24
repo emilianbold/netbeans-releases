@@ -384,4 +384,11 @@ public final class ProjectProperties {
      * @since 1.93
      */
     public static final String BUILD_MODULES_DIR="build.modules.dir";   //NOI18N
+
+    /**
+     * The name of the property holding the output directory for modular test compilation. Module directories
+     * holding test classes will be created at this location
+     * @since 1.101
+     */
+    public static final String BUILD_TEST_MODULES_DIR = "build.test.modules.dir"; // NOI18N
 }
