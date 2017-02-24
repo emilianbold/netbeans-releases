@@ -95,7 +95,8 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.MultiModuleClassPathProvider;
-import org.netbeans.modules.java.api.common.project.MultiModuleActionProvider;
+import org.netbeans.modules.java.api.common.project.JavaActionProvider;
+import org.netbeans.modules.java.api.common.project.MultiModuleActionProviderBuilder;
 import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectOperations;
@@ -509,16 +510,10 @@ public final class J2SEModularProject implements Project {
 
     @NonNull
     private ActionProvider newActionProvider() {
-        return MultiModuleActionProvider.Builder.newInstance(this, getUpdateHelper(), evaluator())
-                .addProjectOperationsActions()
-                .addCleanAction("clean")    //NOI18N
-                .addBuildAction("jar")  //NOI18N
-                .addRebuildAction("clean", "jar")   //NOI18N
-                .addRunAction("run")    //NOI18N
-                .addDebugAction("debug")    //NOI18N
+        return MultiModuleActionProviderBuilder.newInstance(this, getUpdateHelper(), evaluator())
                 .setCompileOnSaveOperationsProvider(() -> {
                         return J2SEModularProjectUtil.isCompileOnSaveEnabled(this) ?
-                            EnumSet.of(MultiModuleActionProvider.CompileOnSaveOperation.UPDATE, MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE) :
+                            EnumSet.of(JavaActionProvider.CompileOnSaveOperation.UPDATE, JavaActionProvider.CompileOnSaveOperation.EXECUTE) :
                             Collections.emptySet();
                 })
                 .build();

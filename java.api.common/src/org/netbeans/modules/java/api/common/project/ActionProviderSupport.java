@@ -68,7 +68,9 @@ import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import static org.netbeans.modules.java.api.common.project.Bundle.*;
-import org.netbeans.modules.java.api.common.project.MultiModuleActionProvider.Context;
+import org.netbeans.modules.java.api.common.project.JavaActionProvider.Context;
+import org.netbeans.modules.java.api.common.project.JavaActionProvider.CompileOnSaveOperation;
+import org.netbeans.modules.java.api.common.project.JavaActionProvider.ScriptAction.Result;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProgress;
@@ -111,9 +113,9 @@ final class ActionProviderSupport {
     }
 
     static enum UserPropertiesPolicy {
-        RUN_ANYWAY(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Anyway")),
-        RUN_WITH(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_With")),
-        RUN_UPDATE(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Update"));
+        RUN_ANYWAY(NbBundle.getMessage(ActionProviderSupport.class, "OPTION_Run_Anyway")),
+        RUN_WITH(NbBundle.getMessage(ActionProviderSupport.class, "OPTION_Run_With")),
+        RUN_UPDATE(NbBundle.getMessage(ActionProviderSupport.class, "OPTION_Run_Update"));
 
         private final String displayName;
 
@@ -129,27 +131,6 @@ final class ActionProviderSupport {
         @Override
         public String toString() {
             return getDisplayName();
-        }
-    }
-
-    static final class Result {
-        static final Result ABORT = new Result(null);
-        static final Result FOLLOW = new Result(null);
-
-        private final ExecutorTask task;
-
-        private Result(@NullAllowed final ExecutorTask task) {
-            this.task = task;
-        }
-
-        ExecutorTask getTask() {
-            return task;
-        }
-
-        @NonNull
-        static Result success(@NonNull final ExecutorTask task) {
-            Parameters.notNull("task", task);   //NOI18N
-            return new Result(task);
         }
     }
 
@@ -225,9 +206,9 @@ final class ActionProviderSupport {
             @NonNull final Set<? extends ActionFlag> flags,
             @NonNull final String actionDisplayName) {
         final String userPropertiesFile = verifyUserPropertiesFile(ctx);
-        final Action action = new Action(targetProvider, cosPerformer, ctx, userPropertiesFile);
+        final JavaModelWork action = new JavaModelWork(targetProvider, cosPerformer, ctx, userPropertiesFile);
         if (flags.contains(ActionFlag.JAVA_MODEL_SENSITIVE) ||
-                (ctx.getCompileOnSaveOperations().contains(MultiModuleActionProvider.CompileOnSaveOperation.UPDATE) && flags.contains(ActionFlag.SCAN_SENITIVE))) {
+                (ctx.getCompileOnSaveOperations().contains(CompileOnSaveOperation.UPDATE) && flags.contains(ActionFlag.SCAN_SENITIVE))) {
             //Always have to run with java model
             ScanDialog.runWhenScanFinished(action, actionDisplayName);
         } else if (flags.contains(ActionFlag.SCAN_SENITIVE)) {
@@ -275,8 +256,8 @@ final class ActionProviderSupport {
         if (!expected.equals(current)) {
             if (ctx.getUserPropertiesPolicy() == null) {
                 final Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                        NbBundle.getMessage(BaseActionProvider.class, "MSG_InvalidBuildPropertiesPath", ProjectUtils.getInformation(ctx.getProject()).getDisplayName()),
-                        NbBundle.getMessage(BaseActionProvider.class, "TITLE_InvalidBuildPropertiesPath"),
+                        NbBundle.getMessage(ActionProviderSupport.class, "MSG_InvalidBuildPropertiesPath", ProjectUtils.getInformation(ctx.getProject()).getDisplayName()),
+                        NbBundle.getMessage(ActionProviderSupport.class, "TITLE_InvalidBuildPropertiesPath"),
                         0,
                         NotifyDescriptor.QUESTION_MESSAGE,
                         UserPropertiesPolicy.values(),
@@ -360,7 +341,7 @@ final class ActionProviderSupport {
         return args;
     }
 
-    private static final class Action implements Runnable {
+    private static final class JavaModelWork implements Runnable {
         private final Function<Context,String[]> targetProvider;
         private final BiFunction<Context,String[],Result> cosPerformer;
         private final Context context;
@@ -378,7 +359,7 @@ final class ActionProviderSupport {
          */
         boolean doJavaChecks = true;
 
-        Action(
+        JavaModelWork(
                 @NonNull final Function<Context,String[]> targetProvider,
                 @NonNull final BiFunction<Context,String[],Result> cosPerformer,
                 @NonNull final Context context,
@@ -427,11 +408,11 @@ final class ActionProviderSupport {
             if (targetNames == null) {
                 return null;
             }
-            if (context.getCompileOnSaveOperations().contains(MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE)) {
+            if (context.getCompileOnSaveOperations().contains(CompileOnSaveOperation.EXECUTE)) {
                 final Result r = cosPerformer.apply(context, targetNames);
-                if (r == Result.ABORT) {
+                if (r == Result.abort()) {
                     return null;
-                } else if (r != Result.FOLLOW) {
+                } else if (r != Result.follow()) {
                     final ExecutorTask t = r.getTask();
                     assert t != null;
                     return t;
@@ -441,7 +422,7 @@ final class ActionProviderSupport {
             if (targetNames.length == 0) {
                 targetNames = null;
             }
-            if (context.getCompileOnSaveOperations().contains(MultiModuleActionProvider.CompileOnSaveOperation.UPDATE) && !NO_SYNC_COMMANDS.contains(context.getCommand())) {
+            if (context.getCompileOnSaveOperations().contains(CompileOnSaveOperation.UPDATE) && !NO_SYNC_COMMANDS.contains(context.getCommand())) {
                 context.setProperty("nb.wait.for.caches", "true");  //NOI18N
             }
             try {

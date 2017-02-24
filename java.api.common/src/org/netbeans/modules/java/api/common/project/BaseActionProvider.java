@@ -191,7 +191,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     private boolean serverExecution = false;
     private ActionProviderSupport.UserPropertiesPolicy userPropertiesPolicy;
-    private final List<? extends MultiModuleActionProvider.AntTargetInvocationListener> listeners;
+    private final List<? extends JavaActionProvider.AntTargetInvocationListener> listeners;
 
     public BaseActionProvider(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, 
             SourceRoots sourceRoots, SourceRoots testRoots, AntProjectHelper antProjectHelper, Callback callback) {
@@ -428,7 +428,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             return ;
         }
 
-        final MultiModuleActionProvider.Context ctx = new MultiModuleActionProvider.Context(
+        final JavaActionProvider.Context ctx = new JavaActionProvider.Context(
                 project,
                 updateHelper,
                 evaluator,
@@ -939,13 +939,13 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     @NonNull
-    private Set<? extends MultiModuleActionProvider.CompileOnSaveOperation> getCompileOnSaveOperations() {
-        final Set<MultiModuleActionProvider.CompileOnSaveOperation> ops = EnumSet.noneOf(MultiModuleActionProvider.CompileOnSaveOperation.class);
+    private Set<? extends JavaActionProvider.CompileOnSaveOperation> getCompileOnSaveOperations() {
+        final Set<JavaActionProvider.CompileOnSaveOperation> ops = EnumSet.noneOf(JavaActionProvider.CompileOnSaveOperation.class);
         if (isCompileOnSaveEnabled()) {
-            ops.add(MultiModuleActionProvider.CompileOnSaveOperation.EXECUTE);
+            ops.add(JavaActionProvider.CompileOnSaveOperation.EXECUTE);
         }
         if (isCompileOnSaveUpdate()) {
-            ops.add(MultiModuleActionProvider.CompileOnSaveOperation.UPDATE);
+            ops.add(JavaActionProvider.CompileOnSaveOperation.UPDATE);
         }
         return Collections.unmodifiableSet(ops);
     }
@@ -963,7 +963,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     @NonNull
-    private Function<MultiModuleActionProvider.Context,String[]> getTargetProvider(
+    private Function<JavaActionProvider.Context,String[]> getTargetProvider(
             @NonNull final String forCommand) {
         return (ctx) -> {
             final Properties p = new Properties();
@@ -980,13 +980,13 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     @NonNull
-    private BiFunction<MultiModuleActionProvider.Context,String[],ActionProviderSupport.Result> getCoSProvider(
+    private BiFunction<JavaActionProvider.Context,String[],JavaActionProvider.ScriptAction.Result> getCoSProvider(
             @NonNull final String forCommand) {
         return (ctx, targetNames) -> {
             String command = ctx.getCommand();
             if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
                 showBuildActionWarning(ctx.getActiveLookup());
-                return ActionProviderSupport.Result.ABORT;
+                return JavaActionProvider.ScriptAction.Result.abort();
             }
             if(COMMAND_TEST_SINGLE.equals(ctx.getCommand()) && Arrays.equals(targetNames, new String[]{COMMAND_TEST})) {
                 //multiple files or package(s) selected so we need to call test target instead of test-single
@@ -1021,12 +1021,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                         execProperties.put("applet.url", url);
                         execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
                         prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
-                        return ActionProviderSupport.Result.success(JavaRunner.execute(targetNames[0], execProperties));
+                        return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(targetNames[0], execProperties));
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                return ActionProviderSupport.Result.ABORT;
+                return JavaActionProvider.ScriptAction.Result.abort();
             }
             if (!isServerExecution() && (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command))) {
                 prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
@@ -1034,8 +1034,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                 bypassAntBuildScript(command, ctx.getActiveLookup(), execProperties, _task);
                 final ExecutorTask t = _task.get();
                 return t == null ?
-                        ActionProviderSupport.Result.ABORT :
-                        ActionProviderSupport.Result.success(t);
+                        JavaActionProvider.ScriptAction.Result.abort() :
+                        JavaActionProvider.ScriptAction.Result.success(t);
             }
             // for example RUN_SINGLE Java file with Servlet must be run on server and not locally
             boolean serverExecution = ctx.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
@@ -1053,8 +1053,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                 bypassAntBuildScript(command, ctx.getActiveLookup(), execProperties, _task);
                 final ExecutorTask t = _task.get();
                 return t == null ?
-                        ActionProviderSupport.Result.ABORT :
-                        ActionProviderSupport.Result.success(t);
+                        JavaActionProvider.ScriptAction.Result.abort() :
+                        JavaActionProvider.ScriptAction.Result.success(t);
             }
             String buildDir = evaluator.getProperty(ProjectProperties.BUILD_DIR);
             if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command)) {
@@ -1067,13 +1067,13 @@ public abstract class BaseActionProvider implements ActionProvider {
                         execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
                     }
                     updateJavaRunnerClasspath(command, execProperties);
-                    return ActionProviderSupport.Result.success(JavaRunner.execute(
+                    return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(
                             command.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
                                        execProperties));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                return ActionProviderSupport.Result.ABORT;
+                return JavaActionProvider.ScriptAction.Result.abort();
             }
             if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command)) {
                 SingleMethod methodSpec = findTestMethods(ctx.getActiveLookup())[0];
@@ -1084,15 +1084,15 @@ public abstract class BaseActionProvider implements ActionProvider {
                         execProperties.put("tmp.dir",updateHelper.getAntProjectHelper().resolvePath(buildDir));
                     }
                     updateJavaRunnerClasspath(command, execProperties);
-                    return ActionProviderSupport.Result.success(JavaRunner.execute(
+                    return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(
                             command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
                                           execProperties));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                return ActionProviderSupport.Result.ABORT;
+                return JavaActionProvider.ScriptAction.Result.abort();
             }
-            return ActionProviderSupport.Result.FOLLOW;
+            return JavaActionProvider.ScriptAction.Result.follow();
         };
     }
 
@@ -2167,7 +2167,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         return JavaMainAction.forName(evaluator.getProperty(PROP_JAVA_MAIN_ACTION));
     }
 
-    private class EventAdaptor implements MultiModuleActionProvider.AntTargetInvocationListener {
+    private class EventAdaptor implements JavaActionProvider.AntTargetInvocationListener {
 
         @Override
         public void antTargetInvocationStarted(String command, Lookup context) {

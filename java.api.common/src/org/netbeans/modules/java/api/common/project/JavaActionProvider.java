@@ -66,6 +66,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_CLEAN;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_COPY;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_DEBUG;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_DELETE;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_MOVE;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
+import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
@@ -76,8 +85,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public class MultiModuleActionProvider implements ActionProvider {
-
+public final class JavaActionProvider implements ActionProvider {
     private final Project prj;
     private final UpdateHelper updateHelper;
     private final PropertyEvaluator eval;
@@ -87,7 +95,7 @@ public class MultiModuleActionProvider implements ActionProvider {
     private final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
     private ActionProviderSupport.UserPropertiesPolicy userPropertiesPolicy;
 
-    private MultiModuleActionProvider(
+    private JavaActionProvider(
             @NonNull final Project project,
             @NonNull final UpdateHelper updateHelper,
             @NonNull final PropertyEvaluator evaluator,
@@ -105,7 +113,7 @@ public class MultiModuleActionProvider implements ActionProvider {
         this.eval = evaluator;
         final Map<String,Action> abn = new HashMap<>();
         for (Action action : actions) {
-            abn.put(action.getName(), action);
+            abn.put(action.getCommand(), action);
         }
         this.supportedActions = Collections.unmodifiableMap(abn);
         this.listeners = new CopyOnWriteArrayList<>();
@@ -115,56 +123,21 @@ public class MultiModuleActionProvider implements ActionProvider {
         this.cosOpsProvider = cosOpsProvider;
     }
 
-    @Override
-    public String[] getSupportedActions() {
-        return supportedActions.keySet().toArray(new String[supportedActions.size()]);
-    }
-    @Override
-    public boolean isActionEnabled(
-            @NonNull final String command,
-            @NonNull final Lookup context) throws IllegalArgumentException {
-        return Optional.ofNullable(supportedActions.get(command))
-                .map((act) -> act.isEnabled(new Context(
-                        prj, updateHelper, eval,
-                        command, context, userPropertiesPolicy,
-                        jpp, null, null, cosOpsProvider,
-                        listeners)))
-                .orElse(Boolean.FALSE);
-    }
-
-    @Override
-    public void invokeAction(
-            @NonNull final String command,
-            @NonNull final Lookup context) throws IllegalArgumentException {
-        assert SwingUtilities.isEventDispatchThread();
-        Optional.ofNullable(supportedActions.get(command))
-                .ifPresent((act) -> {
-                    final Context ctx = new Context(
-                            prj, updateHelper, eval,
-                            command, context, userPropertiesPolicy,
-                            jpp, null, null, cosOpsProvider,
-                            listeners);
-                    try {
-                        act.invoke(ctx);
-                    } finally {
-                        userPropertiesPolicy = ctx.getUserPropertiesPolicy();
-                    }
-                });
-    }
-
-    public void addAntTargetInvocationListener(@NonNull final AntTargetInvocationListener listener) {
-        Parameters.notNull("listener", listener);
-        listeners.add(listener);
-    }
-
-    public void removeAntTargetInvocationListener(@NonNull final AntTargetInvocationListener listener) {
-        Parameters.notNull("listener", listener);
-        listeners.remove(listener);
-    }
-
     public static enum CompileOnSaveOperation {
         UPDATE,
         EXECUTE
+    }
+
+    public static interface AntTargetInvocationListener extends EventListener {
+        void antTargetInvocationStarted(final String command, final Lookup context);
+        void antTargetInvocationFinished(final String command, final Lookup context, int result);
+        void antTargetInvocationFailed(final String command, final Lookup context);
+    }
+    
+    public static interface Action {
+        String getCommand();
+        boolean isEnabled(@NonNull final Context context);
+        void invoke(@NonNull final Context context);
     }
 
     public static final class Context {
@@ -332,16 +305,91 @@ public class MultiModuleActionProvider implements ActionProvider {
         }
     }
 
-    public static interface Action {
-        String getName();
-        boolean isEnabled(@NonNull final Context context);
-        void invoke(@NonNull final Context context);
-    }
 
-    public static interface AntTargetInvocationListener extends EventListener {
-        void antTargetInvocationStarted(final String command, final Lookup context);
-        void antTargetInvocationFinished(final String command, final Lookup context, int result);
-        void antTargetInvocationFailed(final String command, final Lookup context);
+    public static abstract class ScriptAction implements Action {
+        private final String command;
+        private final String displayName;
+        private final Set<ActionProviderSupport.ActionFlag> actionFlags;
+
+        public static final class Result {
+            private static final Result ABORT = new Result(null);
+            private static final Result FOLLOW = new Result(null);
+
+            private final ExecutorTask task;
+
+            private Result(@NullAllowed final ExecutorTask task) {
+                this.task = task;
+            }
+
+            ExecutorTask getTask() {
+                return task;
+            }
+
+            @NonNull
+            public static Result success(@NonNull final ExecutorTask task) {
+                Parameters.notNull("task", task);   //NOI18N
+                return new Result(task);
+            }
+
+            @NonNull
+            public static Result abort() {
+                return ABORT;
+            }
+
+            @NonNull
+            public static Result follow() {
+                return FOLLOW;
+            }
+        }
+
+        protected ScriptAction (
+                @NonNull final String command,
+                @NullAllowed final String dispalyName,
+                final boolean javaModelSensitive,
+                final boolean scanSensitive) {
+            Parameters.notNull("command", command); //NOI18N
+            this.command = command;
+            this.displayName = dispalyName;
+            this.actionFlags = EnumSet.noneOf(ActionProviderSupport.ActionFlag.class);
+            if (javaModelSensitive) {
+                this.actionFlags.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
+            }
+            if (scanSensitive) {
+                this.actionFlags.add(ActionProviderSupport.ActionFlag.SCAN_SENITIVE);
+            }
+        }
+
+        @NonNull
+        protected abstract String[] getTargerNames(@NonNull final Context context);
+
+        @NonNull
+        protected Result performCompileOnSave(@NonNull final Context context, @NonNull final String[] targetNames) {
+            return Result.follow();
+        }
+
+        @Override
+        public final String getCommand() {
+            return command;
+        }
+
+        @Override
+        public final void invoke(@NonNull final Context context) {
+            ActionProviderSupport.invokeTarget(
+                    this::getTargerNames,
+                    this::performCompileOnSave,
+                    context,
+                    actionFlags,
+                    getDisplayName());
+        }
+
+        @NonNull
+        String getDisplayName() {
+            String res = displayName;
+            if (res == null) {
+                res = ActionProviderSupport.getCommandDisplayName(command);
+            }
+            return res;
+        }
     }
 
     public static final class Builder {
@@ -366,43 +414,32 @@ public class MultiModuleActionProvider implements ActionProvider {
         }
 
         @NonNull
-        public Builder addProjectOperationsActions() {
-            addAction(new SimpleAction(COMMAND_DELETE, (ctx) -> DefaultProjectOperations.performDefaultDeleteOperation(ctx.getProject())));
-            addAction(new SimpleAction(COMMAND_MOVE, (ctx) -> DefaultProjectOperations.performDefaultMoveOperation(ctx.getProject())));
-            addAction(new SimpleAction(COMMAND_COPY, (ctx) -> DefaultProjectOperations.performDefaultCopyOperation(ctx.getProject())));
-            addAction(new SimpleAction(COMMAND_RENAME, (ctx) -> DefaultProjectOperations.performDefaultRenameOperation(ctx.getProject(), null)));
+        public Builder addAction(@NonNull final Action action) {
+            Parameters.notNull("action", action);   //NOI18N
+            actions.add(action);
             return this;
         }
 
         @NonNull
-        public Builder addCleanAction(@NonNull final String cleanTarget) {
-            return addAction(new ScriptAction(COMMAND_CLEAN, false, false, (c,t) -> ActionProviderSupport.Result.FOLLOW, cleanTarget));
-        }
-
-        @NonNull
-        public Builder addBuildAction(@NonNull final String buildTarget) {
-            return addAction(new ScriptAction(COMMAND_BUILD, false, false, (c,t) -> ActionProviderSupport.Result.FOLLOW, buildTarget));
-        }
-
-        @NonNull
-        public Builder addRebuildAction(@NonNull final String cleanTarget, @NonNull final String buildTarget) {
-            return addAction(new ScriptAction(COMMAND_REBUILD, false, false, (c,t) -> ActionProviderSupport.Result.FOLLOW, cleanTarget, buildTarget));
-        }
-
-        @NonNull
-        public Builder addRunAction(@NonNull final String runTarget) {
-            return addAction(new ScriptAction(COMMAND_RUN, false, true, (c,t) -> ActionProviderSupport.Result.FOLLOW, runTarget));
-        }
-
-        @NonNull
-        public Builder addDebugAction(@NonNull final String debugTarget) {
-            return addAction(new ScriptAction(COMMAND_DEBUG, false, true, (c,t) -> ActionProviderSupport.Result.FOLLOW, debugTarget));
-        }
-
-        @NonNull
-        public Builder addAction(@NonNull final Action action) {
-            Parameters.notNull("action", action);   //NOI18N
-            actions.add(action);
+        public Builder addProjectOperations(String... requiredOperations) {
+            for (String requiredOperation : requiredOperations) {
+                switch (requiredOperation) {
+                    case COMMAND_DELETE:
+                        addAction(new SimpleAction(COMMAND_DELETE, (ctx) -> DefaultProjectOperations.performDefaultDeleteOperation(ctx.getProject())));
+                        break;
+                    case COMMAND_MOVE:
+                        addAction(new SimpleAction(COMMAND_MOVE, (ctx) -> DefaultProjectOperations.performDefaultMoveOperation(ctx.getProject())));
+                        break;
+                    case COMMAND_COPY:
+                        addAction(new SimpleAction(COMMAND_COPY, (ctx) -> DefaultProjectOperations.performDefaultCopyOperation(ctx.getProject())));
+                        break;
+                    case COMMAND_RENAME:
+                        addAction(new SimpleAction(COMMAND_RENAME, (ctx) -> DefaultProjectOperations.performDefaultRenameOperation(ctx.getProject(), null)));
+                        break;
+                    default:
+                        throw new IllegalArgumentException(requiredOperation);
+                }
+            }
             return this;
         }
 
@@ -421,8 +458,8 @@ public class MultiModuleActionProvider implements ActionProvider {
         }
 
         @NonNull
-        public MultiModuleActionProvider build() {
-            return new MultiModuleActionProvider(
+        public JavaActionProvider build() {
+            return new JavaActionProvider(
                     project,
                     updateHelper,
                     evaluator,
@@ -440,31 +477,71 @@ public class MultiModuleActionProvider implements ActionProvider {
         }
     }
 
-    private static abstract class BaseAction implements Action {
-        private final String name;
-
-        BaseAction(@NonNull final String name) {
-            Parameters.notNull("name", name);           //NOI18N
-            this.name = name;
-        }
-
-        @Override
-        @NonNull
-        public final String getName() {
-            return this.name;
-        }
+    @Override
+    public String[] getSupportedActions() {
+        return supportedActions.keySet().toArray(new String[supportedActions.size()]);
     }
 
-    private static final class SimpleAction extends BaseAction {
+    @Override
+    public boolean isActionEnabled(
+            @NonNull final String command,
+            @NonNull final Lookup context) throws IllegalArgumentException {
+        return Optional.ofNullable(supportedActions.get(command))
+                .map((act) -> act.isEnabled(new Context(
+                        prj, updateHelper, eval,
+                        command, context, userPropertiesPolicy,
+                        jpp, null, null, cosOpsProvider,
+                        listeners)))
+                .orElse(Boolean.FALSE);
+    }
 
+    @Override
+    public void invokeAction(
+            @NonNull final String command,
+            @NonNull final Lookup context) throws IllegalArgumentException {
+        assert SwingUtilities.isEventDispatchThread();
+        Optional.ofNullable(supportedActions.get(command))
+                .ifPresent((act) -> {
+                    final Context ctx = new Context(
+                            prj, updateHelper, eval,
+                            command, context, userPropertiesPolicy,
+                            jpp, null, null, cosOpsProvider,
+                            listeners);
+                    try {
+                        act.invoke(ctx);
+                    } finally {
+                        userPropertiesPolicy = ctx.getUserPropertiesPolicy();
+                    }
+                });
+    }
+
+    public void addAntTargetInvocationListener(@NonNull final AntTargetInvocationListener listener) {
+        Parameters.notNull("listener", listener);
+        listeners.add(listener);
+    }
+
+    public void removeAntTargetInvocationListener(@NonNull final AntTargetInvocationListener listener) {
+        Parameters.notNull("listener", listener);
+        listeners.remove(listener);
+    }
+
+    private static final class SimpleAction implements Action {
+        private final String name;
         private final Consumer<? super Context> performer;
 
         SimpleAction(
                 @NonNull final String name,
                 final Consumer<? super Context> performer) {
-            super(name);
+            Parameters.notNull("name", name);           //NOI18N
             Parameters.notNull("performer", performer); //NOI18N
+            this.name = name;
             this.performer = performer;
+        }
+
+        @Override
+        @NonNull
+        public final String getCommand() {
+            return this.name;
         }
 
         @Override
@@ -475,63 +552,6 @@ public class MultiModuleActionProvider implements ActionProvider {
         @Override
         public void invoke(@NonNull final Context context) {
             performer.accept(context);
-        }
-    }
-
-    private static final class ScriptAction extends BaseAction {
-
-        private final Set<ActionProviderSupport.ActionFlag> actionFlags;
-        private final Predicate<Lookup> enabled;
-        private final Function<Context,String[]> targetProvider;
-        private final BiFunction<Context,String[],ActionProviderSupport.Result> cosPerformer;
-
-        ScriptAction(
-                @NonNull final String name,
-                final boolean javaModelSensitive,
-                final boolean scanSensitive,
-                @NonNull final BiFunction<Context,String[],ActionProviderSupport.Result> cosPerformer,
-                @NonNull final String... targets) {
-            this(name, javaModelSensitive, scanSensitive, (l) -> true, (l) -> targets, cosPerformer);
-        }
-
-        ScriptAction(
-                @NonNull final String name,
-                final boolean javaModelSensitive,
-                final boolean scanSensitive,
-                @NonNull final Predicate<Lookup> enabled,
-                @NonNull final Function<Context,String[]> targetProvider,
-                @NonNull final BiFunction<Context,String[],ActionProviderSupport.Result> cosPerformer) {
-            super(name);
-            Parameters.notNull("enabled", enabled);     //NOI18N
-            Parameters.notNull("targetProvider", targetProvider);     //NOI18N
-            Parameters.notNull("cosPerformer", cosPerformer);     //NOI18N
-            final EnumSet<ActionProviderSupport.ActionFlag> flgs = EnumSet.noneOf(ActionProviderSupport.ActionFlag.class);
-            if (javaModelSensitive) {
-                flgs.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
-            }
-            if (scanSensitive) {
-                flgs.add(ActionProviderSupport.ActionFlag.SCAN_SENITIVE);
-            }
-            actionFlags = Collections.unmodifiableSet(flgs);
-            this.enabled = enabled;
-            this.targetProvider = targetProvider;
-            this.cosPerformer = cosPerformer;
-        }
-
-        @Override
-        public boolean isEnabled(
-                @NonNull final Context context) {
-            return this.enabled.test(context.getActiveLookup());
-        }
-
-        @Override
-        public void invoke(@NonNull final Context context) {
-            ActionProviderSupport.invokeTarget(
-                    targetProvider,
-                    cosPerformer,
-                    context,
-                    actionFlags,
-                    ActionProviderSupport.getCommandDisplayName(context.getCommand()));
         }
     }
 }
