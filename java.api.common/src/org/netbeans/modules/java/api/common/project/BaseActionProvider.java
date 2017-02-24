@@ -2178,6 +2178,12 @@ public abstract class BaseActionProvider implements ActionProvider {
 
         @Override
         public void antTargetInvocationFinished(String command, Lookup context, int result) {
+            if (result != 0) {
+                synchronized (BaseActionProvider.this) {
+                    // #120843: if a build fails, disable dirty-list optimization.
+                    dirty = null;
+                }
+            }
             Optional.ofNullable((getCallback()))
                     .map((cb) -> cb instanceof Callback2 ? (Callback2) cb : null)
                     .ifPresent((cb) -> cb.antTargetInvocationFinished(command, context, result));
