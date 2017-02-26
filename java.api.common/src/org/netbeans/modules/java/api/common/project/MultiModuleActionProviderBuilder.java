@@ -66,8 +66,8 @@ public final class MultiModuleActionProviderBuilder {
     @NonNull
     private MultiModuleActionProviderBuilder addProjectSensitiveActions() {
         builder.addAction(new DummyAction(ActionProvider.COMMAND_CLEAN, false, false, "clean"));
-        builder.addAction(new DummyAction(ActionProvider.COMMAND_BUILD, false, false,  "build"));
-        builder.addAction(new DummyAction(ActionProvider.COMMAND_REBUILD, false, false,  "clean", "build"));
+        builder.addAction(new DummyAction(ActionProvider.COMMAND_BUILD, false, false,  "jar"));
+        builder.addAction(new DummyAction(ActionProvider.COMMAND_REBUILD, false, false,  "clean", "jar"));
         builder.addAction(new DummyAction(ActionProvider.COMMAND_RUN, false, true, "run"));
         builder.addAction(new DummyAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));
         return this;
