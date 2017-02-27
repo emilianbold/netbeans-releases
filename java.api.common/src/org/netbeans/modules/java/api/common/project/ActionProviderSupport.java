@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.java.api.common.project;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -47,14 +48,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -63,6 +68,7 @@ import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -70,6 +76,8 @@ import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import static org.netbeans.modules.java.api.common.project.Bundle.*;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.Context;
@@ -87,12 +95,19 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Task;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -100,6 +115,7 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Zezula
  */
 final class ActionProviderSupport {
+    private static final Logger LOG = Logger.getLogger(ActionProviderSupport.class.getName());
     private static final Set<String> NO_SYNC_COMMANDS = Collections.unmodifiableSet(new HashSet<String>(
             Arrays.asList(new String[]{
                 COMMAND_BUILD,
@@ -384,6 +400,192 @@ final class ActionProviderSupport {
             args.addAll(group.getArguments());
         }
         return args;
+    }
+
+
+    static final class ModifiedFilesSupport {
+        private final Project project;
+        private final UpdateHelper updateHelper;
+        private final PropertyEvaluator evaluator;
+        private final FileChangeListener modificationListener;
+        private final PropertyChangeListener propListner;
+        private volatile Boolean allowsFileTracking;
+        /** Set of Java source files (as relative path from source root) known to have been modified. See issue #104508. */
+        //@GuardedBy("this")
+        private Set<String> dirty;
+        //@GuardedBy("this")
+        private Sources src;
+        //@GuardedBy("this")
+        private List<FileObject> roots;
+
+        private ModifiedFilesSupport(
+                @NonNull final Project project,
+                @NonNull final UpdateHelper updateHelper,
+                @NonNull final PropertyEvaluator evaluator) {
+            this.project = project;
+            this.updateHelper = updateHelper;
+            this.evaluator = evaluator;
+            this.modificationListener = new FileChangeAdapter() {
+                @Override
+                public void fileChanged(final FileEvent fe) {
+                    modification(fe.getFile());
+                }
+                @Override
+                public void fileDataCreated(final FileEvent fe) {
+                    modification(fe.getFile());
+                }
+            };
+            this.propListner = (e) -> {
+                final String propName = e.getPropertyName();
+                if (propName == null || ProjectProperties.TRACK_FILE_CHANGES.equals(propName)) {
+                    synchronized(this) {
+                        this.allowsFileTracking = null;
+                        this.dirty = null;
+                    }
+                }
+            };
+            this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this.propListner, this.evaluator));
+        }
+
+        void start() {
+            try {
+                final FileSystem fs = project.getProjectDirectory().getFileSystem();
+                // XXX would be more efficient to only listen while TRACK_FILE_CHANGES is set,
+                // but it needs adding and removing of listeners depending on PropertyEvaluator events,
+                // the file event handling is cheap when TRACK_FILE_CHANGES is disabled.
+                fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
+            } catch (FileStateInvalidException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+
+        synchronized void resetDirtyList() {
+            dirty = null;
+        }
+
+        @CheckForNull
+        String prepareDirtyList(final boolean isExplicitBuildTarget) {
+            String doDepend = evaluator.getProperty(ProjectProperties.DO_DEPEND);
+            String buildClassesDirValue = evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR);
+            if (buildClassesDirValue == null) {
+                //Log
+                StringBuilder logRecord = new StringBuilder();
+                logRecord.append("EVALUATOR: ").append(evaluator.getProperties()).append(";"); // NOI18N
+                logRecord.append("PROJECT_PROPS: ").append(updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).entrySet()).append(";"); // NOI18N
+                logRecord.append("PRIVATE_PROPS: ").append(updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).entrySet()).append(";"); // NOI18N
+                LOG.log(Level.WARNING, "No build.classes.dir property: {0}", logRecord.toString());
+                return null;
+            }
+            File buildClassesDir = updateHelper.getAntProjectHelper().resolveFile(buildClassesDirValue);
+            synchronized (this) {
+                if (dirty == null) {
+                    if (allowsFileChangesTracking()) {
+                        // #119777: the first time, build everything.
+                        dirty = new TreeSet<>();
+                    }
+                    return null;
+                }
+                for (DataObject d : DataObject.getRegistry().getModified()) {
+                    // Treat files modified in memory as dirty as well.
+                    // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
+                    modification(d.getPrimaryFile());
+                }
+                String res = null;
+                boolean wasBuiltAutomatically = new File(buildClassesDir,BaseActionProvider.AUTOMATIC_BUILD_TAG).canRead(); //NOI18N
+                if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty()) && !wasBuiltAutomatically) { // NOI18N
+                    // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
+                    // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
+                    if (dirty.isEmpty()) {
+                        // includes="" apparently is ignored.
+                        dirty.add("nothing whatsoever"); // NOI18N
+                    }
+                    StringBuilder dirtyList = new StringBuilder();
+                    for (String f : dirty) {
+                        if (dirtyList.length() > 0) {
+                            dirtyList.append(',');
+                        }
+                        dirtyList.append(f);
+                    }
+                    res = dirtyList.toString();
+                }
+                dirty.clear();
+                return res;
+            }
+        }
+
+        private void modification(FileObject f) {
+            if (!allowsFileChangesTracking()) {
+                return;
+            }
+            final Iterable <? extends FileObject> _roots = getRoots();
+            assert _roots != null;
+            for (FileObject root : _roots) {
+                String path = FileUtil.getRelativePath(root, f);
+                if (path != null) {
+                    synchronized (this) {
+                        if (dirty != null) {
+                            dirty.add(path);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        private Iterable <? extends FileObject> getRoots () {
+            Sources _src;
+            synchronized (this) {
+                if (this.roots != null) {
+                    return this.roots;
+                }
+                if (this.src == null) {
+                    this.src = ProjectUtils.getSources(this.project);
+                    this.src.addChangeListener ((e) -> {
+                        resetDirtyList();
+                    });
+                }
+                _src = this.src;
+            }
+            assert _src != null;
+            final SourceGroup[] sgs = _src.getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
+            final List<FileObject> _roots = new ArrayList<>(sgs.length);
+            for (SourceGroup sg : sgs) {
+                final FileObject root = sg.getRootFolder();
+                if (UnitTestForSourceQuery.findSources(root).length == 0) {
+                    _roots.add (root);
+                }
+            }
+            synchronized (this) {
+                if (this.roots == null) {
+                    this.roots = _roots;
+                }
+                return this.roots;
+            }
+        }
+
+        private boolean allowsFileChangesTracking () {
+            //allowsFileTracking is volatile primitive, fine to do double checking
+            synchronized (this) {
+                if (allowsFileTracking != null) {
+                    return allowsFileTracking.booleanValue();
+                }
+            }
+            final String val = evaluator.getProperty(ProjectProperties.TRACK_FILE_CHANGES);
+            synchronized (this) {
+                if (allowsFileTracking == null) {
+                    allowsFileTracking = "true".equals(val) ? Boolean.TRUE : Boolean.FALSE;  //NOI18N
+                }
+                return allowsFileTracking.booleanValue();
+            }
+        }
+
+        @NonNull
+        static ModifiedFilesSupport newInstance(
+                @NonNull final Project project,
+                @NonNull final UpdateHelper helper,
+                @NonNull final PropertyEvaluator evaluator) {
+            return new ModifiedFilesSupport(project, helper, evaluator);
+        }
     }
 
     private static final class JavaModelWork implements Runnable {

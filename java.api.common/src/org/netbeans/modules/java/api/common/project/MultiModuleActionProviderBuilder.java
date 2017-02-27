@@ -68,8 +68,8 @@ public final class MultiModuleActionProviderBuilder {
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_CLEAN, false, false, "clean"));
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_BUILD, false, false,  "jar"));
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_REBUILD, false, false,  "clean", "jar"));
-//        builder.addAction(new DummyAction(ActionProvider.COMMAND_RUN, false, true, "run"));
-//        builder.addAction(new DummyAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));
+        builder.addAction(new DummyAction(ActionProvider.COMMAND_RUN, false, true, "run"));
+        builder.addAction(new DummyAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));
         return this;
     }
 
@@ -104,5 +104,28 @@ public final class MultiModuleActionProviderBuilder {
             @NonNull final UpdateHelper updateHelper,
             @NonNull final PropertyEvaluator evaluator) {
         return new MultiModuleActionProviderBuilder(JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator));
+    }
+
+    //Temporary - should be replaced by actions shared with BaseActionProvider
+    private static class DummyAction extends JavaActionProvider.ScriptAction {
+        private final String[] targetNames;
+
+        DummyAction(
+                @NonNull final String command,
+                final boolean jms,
+                @NonNull final boolean sc, String... targetNames) {
+            super(command, null, true, true);
+            this.targetNames = targetNames;
+        }
+
+        @Override
+        public boolean isEnabled(JavaActionProvider.Context context) {
+            return true;
+        }
+
+        @Override
+        public String[] getTargetNames(JavaActionProvider.Context context) {
+            return targetNames;
+        }
     }
 }

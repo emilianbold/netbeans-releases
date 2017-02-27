@@ -173,17 +173,12 @@ public abstract class BaseActionProvider implements ActionProvider {
     //Property evaluator
     private final PropertyEvaluator evaluator;
 
-    /** Set of Java source files (as relative path from source root) known to have been modified. See issue #104508. */
-    private Set<String> dirty = null;
-
     private Sources src;
-    private List<FileObject> roots;
 
     // Used only from unit tests to suppress detection of top level classes. If value
     // is different from null it will be returned instead.
     public String unitTestingSupport_fixClasses;
     
-    private volatile Boolean allowsFileTracking;
     private volatile String buildXMLName;
 
     private SourceRoots projectSourceRoots;
@@ -208,10 +203,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             public void propertyChange(final PropertyChangeEvent evt) {
                 synchronized (BaseActionProvider.class) {
                     final String propName = evt.getPropertyName();
-                    if (propName == null || ProjectProperties.TRACK_FILE_CHANGES.equals(propName)) {
-                        allowsFileTracking = null;
-                        dirty = null;
-                    }
                     if (propName == null || BUILD_SCRIPT.equals(propName)) {
                         buildXMLName = null;
                     }
@@ -277,101 +268,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         return callback;
     }
 
-    private boolean allowsFileChangesTracking () {
-        //allowsFileTracking is volatile primitive, fine to do double checking
-        synchronized (this) {
-            if (allowsFileTracking != null) {
-                return allowsFileTracking.booleanValue();
-            }
-        }
-        final String val = evaluator.getProperty(ProjectProperties.TRACK_FILE_CHANGES);
-        synchronized (this) {
-            if (allowsFileTracking == null) {
-                allowsFileTracking = "true".equals(val) ? Boolean.TRUE : Boolean.FALSE;  //NOI18N
-            }
-            return allowsFileTracking.booleanValue();
-        }
-    }
-
-    private final FileChangeListener modificationListener = new FileChangeAdapter() {
-        public @Override void fileChanged(FileEvent fe) {
-            modification(fe.getFile());
-        }
-        public @Override void fileDataCreated(FileEvent fe) {
-            modification(fe.getFile());
-        }
-    };
-
-    private final ChangeListener sourcesChangeListener = new ChangeListener() {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            synchronized (BaseActionProvider.this) {
-                BaseActionProvider.this.roots = null;
-            }
-        }
-    };
-
-
     public void startFSListener () {
-        //Listener has to be started when the project's lookup is initialized
-        try {
-            FileSystem fs = project.getProjectDirectory().getFileSystem();
-            // XXX would be more efficient to only listen while TRACK_FILE_CHANGES is set,
-            // but it needs adding and removing of listeners depending on PropertyEvaluator events,
-            // the file event handling is cheap when TRACK_FILE_CHANGES is disabled.
-            fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
-        } catch (FileStateInvalidException x) {
-            Exceptions.printStackTrace(x);
-        }
-    }    
-
-    private void modification(FileObject f) {
-        if (!allowsFileChangesTracking()) {
-            return;
-        }
-        final Iterable <? extends FileObject> _roots = getRoots();
-        assert _roots != null;
-        for (FileObject root : _roots) {
-            String path = FileUtil.getRelativePath(root, f);
-            if (path != null) {
-                synchronized (this) {
-                    if (dirty != null) {
-                        dirty.add(path);
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    private Iterable <? extends FileObject> getRoots () {
-        Sources _src;
-        synchronized (this) {
-            if (this.roots != null) {
-                return this.roots;
-            }
-            if (this.src == null) {
-                this.src = ProjectUtils.getSources(this.project);
-                this.src.addChangeListener (sourcesChangeListener);
-            }
-            _src = this.src;
-        }
-        assert _src != null;
-        final SourceGroup[] sgs = _src.getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
-        final List<FileObject> _roots = new ArrayList<FileObject>(sgs.length);
-        for (SourceGroup sg : sgs) {
-            final FileObject root = sg.getRootFolder();
-            if (UnitTestForSourceQuery.findSources(root).length == 0) {
-                _roots.add (root);
-            }
-        }
-        synchronized (this) {
-            if (this.roots == null) {
-                this.roots = _roots;
-            }
-            return this.roots;
-        }
     }
 
     // Main build.xml location
@@ -462,7 +359,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                 .map((a) -> a instanceof JavaActionProvider.ScriptAction ?
                         ((JavaActionProvider.ScriptAction) a) :
                         null)
-                .map((sa) -> sa.getTargerNames(new JavaActionProvider.Context(
+                .map((sa) -> {
+                    final JavaActionProvider.Context ctx = new JavaActionProvider.Context(
                         project,
                         updateHelper,
                         evaluator,
@@ -473,7 +371,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                         null,
                         null,
                         this::getCompileOnSaveOperations,
-                        null)))
+                        Collections.emptyList());
+                    final String[] targetNames = sa.getTargetNames(ctx);
+                    Optional.ofNullable(ctx.getProperties())
+                            .ifPresent(p::putAll);
+                    return targetNames;
+                })
                 .orElse(null);
         }
         if (Arrays.asList(getPlatformSensitiveActions()).contains(command)) {
@@ -599,7 +502,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
-            prepareDirtyList(p, false);
+//todo: fixme            prepareDirtyList(p, false);
         } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_PROFILE_SINGLE)) {
             FileObject[] files = findTestSources(context, false);
             FileObject[] rootz = projectTestRoots.getRoots();
@@ -786,13 +689,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             String[] targets = targetsFromConfig.get(command);
             targetNames = (targets != null) ? targets : getCommands().get(command);
             if (targetNames == null) {
-                String buildTarget = "false".equalsIgnoreCase(evaluator.getProperty(ProjectProperties.DO_JAR)) ? "compile" : "jar"; // NOI18N
-                if (command.equals(COMMAND_BUILD)) {
-                    targetNames = new String[] {buildTarget};
-                    prepareDirtyList(p, true);
-                } else {
-                    throw new IllegalArgumentException(command);
-                }
+                throw new IllegalArgumentException(command);
             }
         }
         return targetNames;
@@ -1268,53 +1165,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
         dlg.dispose();
         return result;
-    }
-
-    private void prepareDirtyList(Properties p, boolean isExplicitBuildTarget) {
-        String doDepend = evaluator.getProperty(ProjectProperties.DO_DEPEND);
-        String buildClassesDirValue = evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR);
-        if (buildClassesDirValue == null) {            
-            //Log
-            StringBuilder logRecord = new StringBuilder();
-            logRecord.append("EVALUATOR: ").append(evaluator.getProperties()).append(";"); // NOI18N
-            logRecord.append("PROJECT_PROPS: ").append(updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).entrySet()).append(";"); // NOI18N
-            logRecord.append("PRIVATE_PROPS: ").append(updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).entrySet()).append(";"); // NOI18N
-            LOG.log(Level.WARNING, "No build.classes.dir property: {0}", logRecord.toString());
-            return;
-        }
-        File buildClassesDir = antProjectHelper.resolveFile(buildClassesDirValue);
-        synchronized (this) {
-            if (dirty == null) {
-                if (allowsFileChangesTracking()) {
-                    // #119777: the first time, build everything.
-                    dirty = new TreeSet<String>();
-                }
-                return;
-            }
-            for (DataObject d : DataObject.getRegistry().getModified()) {
-                // Treat files modified in memory as dirty as well.
-                // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
-                modification(d.getPrimaryFile());
-            }
-            boolean wasBuiltAutomatically = new File(buildClassesDir,AUTOMATIC_BUILD_TAG).canRead(); //NOI18N
-            if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty()) && !wasBuiltAutomatically) { // NOI18N
-                // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
-                // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
-                if (dirty.isEmpty()) {
-                    // includes="" apparently is ignored.
-                    dirty.add("nothing whatsoever"); // NOI18N
-                }
-                StringBuilder dirtyList = new StringBuilder();
-                for (String f : dirty) {
-                    if (dirtyList.length() > 0) {
-                        dirtyList.append(',');
-                    }
-                    dirtyList.append(f);
-                }
-                p.setProperty(ProjectProperties.INCLUDES, dirtyList.toString());
-            }
-            dirty.clear();
-        }
     }
 
     // loads targets for specific commands from shared config property file
@@ -2200,12 +2050,6 @@ public abstract class BaseActionProvider implements ActionProvider {
 
         @Override
         public void antTargetInvocationFinished(String command, Lookup context, int result) {
-            if (result != 0 || COMMAND_CLEAN.equals(command)) {
-                synchronized (BaseActionProvider.this) {
-                    // #120843: if a build fails, disable dirty-list optimization.
-                    dirty = null;
-                }
-            }
             Optional.ofNullable((getCallback()))
                     .map((cb) -> cb instanceof Callback2 ? (Callback2) cb : null)
                     .ifPresent((cb) -> cb.antTargetInvocationFinished(command, context, result));

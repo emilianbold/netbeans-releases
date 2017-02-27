@@ -54,8 +54,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -65,18 +63,13 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_CLEAN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_COPY;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_DEBUG;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_DELETE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_MOVE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -108,13 +101,15 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final PropertyEvaluator evaluator,
             @NonNull final Collection<? extends Action> actions,
             @NonNull Supplier<? extends JavaPlatform> javaPlatformProvider,
-            @NonNull final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider) {
+            @NonNull final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider,
+            @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs) {
         Parameters.notNull("project", project); //NOI18N
         Parameters.notNull("updateHelper", updateHelper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
         Parameters.notNull("actions", actions); //NOI18N
         Parameters.notNull("javaPlatformProvider", javaPlatformProvider);   //NOI18N
         Parameters.notNull("cosOpsProvider", cosOpsProvider);   //NOI18N
+        Parameters.notNull("mfs", mfs);
         this.prj = project;
         this.updateHelper = updateHelper;
         this.eval = evaluator;
@@ -124,6 +119,20 @@ public final class JavaActionProvider implements ActionProvider {
         }
         this.supportedActions = Collections.unmodifiableMap(abn);
         this.listeners = new CopyOnWriteArrayList<>();
+        this.listeners.add(new AntTargetInvocationListener() {
+            @Override
+            public void antTargetInvocationStarted(String command, Lookup context) {
+            }
+            @Override
+            public void antTargetInvocationFinished(String command, Lookup context, int result) {
+                if (result != 0 || COMMAND_CLEAN.equals(command)) {
+                    mfs.resetDirtyList();
+                }
+            }
+            @Override
+            public void antTargetInvocationFailed(String command, Lookup context) {
+            }
+        });
         this.jpp = javaPlatformProvider;
         this.cosOpsProvider = cosOpsProvider;
     }
@@ -138,7 +147,7 @@ public final class JavaActionProvider implements ActionProvider {
         void antTargetInvocationFinished(final String command, final Lookup context, int result);
         void antTargetInvocationFailed(final String command, final Lookup context);
     }
-    
+
     public static interface Action {
         String getCommand();
         boolean isEnabled(@NonNull final Context context);
@@ -365,7 +374,7 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @NonNull
-        public abstract String[] getTargerNames(@NonNull final Context context);
+        public abstract String[] getTargetNames(@NonNull final Context context);
 
         @NonNull
         public Result performCompileOnSave(@NonNull final Context context, @NonNull final String[] targetNames) {
@@ -379,8 +388,7 @@ public final class JavaActionProvider implements ActionProvider {
 
         @Override
         public final void invoke(@NonNull final Context context) {
-            ActionProviderSupport.invokeTarget(
-                    this::getTargerNames,
+            ActionProviderSupport.invokeTarget(this::getTargetNames,
                     this::performCompileOnSave,
                     context,
                     actionFlags,
@@ -402,6 +410,7 @@ public final class JavaActionProvider implements ActionProvider {
         private final UpdateHelper updateHelper;
         private final PropertyEvaluator evaluator;
         private final List<Action> actions;
+        private final ActionProviderSupport.ModifiedFilesSupport mfs;
         private Supplier<? extends JavaPlatform> jpp;
         private Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
 
@@ -417,6 +426,7 @@ public final class JavaActionProvider implements ActionProvider {
             this.evaluator = evaluator;
             this.actions = new ArrayList<>();
             this.jpp = createJavaPlatformProvider(ProjectProperties.PLATFORM_ACTIVE);
+            this.mfs = ActionProviderSupport.ModifiedFilesSupport.newInstance(project, updateHelper, evaluator);
         }
 
         @NonNull
@@ -471,7 +481,7 @@ public final class JavaActionProvider implements ActionProvider {
                 case ActionProvider.COMMAND_REBUILD:
                     return createNonCosAction(command, javaModelSensitive, scanSensitive, targets);
                 case ActionProvider.COMMAND_BUILD:
-                    return createBuildAction(javaModelSensitive, scanSensitive, targets);
+                    return createBuildAction(javaModelSensitive, scanSensitive, targets, mfs);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -500,13 +510,16 @@ public final class JavaActionProvider implements ActionProvider {
 
         @NonNull
         public JavaActionProvider build() {
-            return new JavaActionProvider(
+            final JavaActionProvider ap = new JavaActionProvider(
                     project,
                     updateHelper,
                     evaluator,
                     actions,
                     jpp,
-                    cosOpsProvider);
+                    cosOpsProvider,
+                    mfs);
+            mfs.start();
+            return ap;
         }
 
         @NonNull
@@ -589,8 +602,20 @@ public final class JavaActionProvider implements ActionProvider {
     private static ScriptAction createBuildAction (
             final boolean javaModelSensitive,
             final boolean scanSensitive,
-            @NonNull final Supplier<? extends String[]> targets) {
+            @NonNull final Supplier<? extends String[]> targets,
+            @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs) {
         return new BaseScriptAction(COMMAND_BUILD, javaModelSensitive, scanSensitive, targets) {
+
+            @Override
+            public String[] getTargetNames(Context context) {
+                final String[] targets = super.getTargetNames(context);
+                final String includes = mfs.prepareDirtyList(true);
+                if (includes != null) {
+                    context.setProperty(ProjectProperties.INCLUDES, includes);
+                }
+                return targets;
+            }
+
             @Override
             public ScriptAction.Result performCompileOnSave(Context context, String[] targetNames) {
                 if (!ActionProviderSupport.allowAntBuild(context.getPropertyEvaluator(), context.getUpdateHelper())) {
@@ -688,7 +713,7 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @Override
-        public String[] getTargerNames(JavaActionProvider.Context context) {
+        public String[] getTargetNames(JavaActionProvider.Context context) {
             return targetNames.get();
         }
     }
