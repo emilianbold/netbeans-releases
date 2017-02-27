@@ -192,6 +192,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     private boolean serverExecution = false;
     private ActionProviderSupport.UserPropertiesPolicy userPropertiesPolicy;
     private final List<? extends JavaActionProvider.AntTargetInvocationListener> listeners;
+    private final AtomicReference<JavaActionProvider> delegate;
 
     public BaseActionProvider(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, 
             SourceRoots sourceRoots, SourceRoots testRoots, AntProjectHelper antProjectHelper, Callback callback) {
@@ -218,6 +219,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
         });
         this.listeners = Collections.singletonList(new EventAdaptor());
+        this.delegate = new AtomicReference<>();
     }
 
     abstract protected String[] getPlatformSensitiveActions();
@@ -408,24 +410,9 @@ public abstract class BaseActionProvider implements ActionProvider {
     @Override
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         assert EventQueue.isDispatchThread();
-        if (COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
-            return ;
-        }
-
-        if (COMMAND_COPY.equals(command)) {
-            DefaultProjectOperations.performDefaultCopyOperation(project);
-            return ;
-        }
-
-        if (COMMAND_MOVE.equals(command)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
-            return ;
-        }
-
-        if (COMMAND_RENAME.equals(command)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            return ;
+        if (isSupportedByDelegate(command)) {
+            getDelegate().invokeAction(command, context);
+            return;
         }
 
         final JavaActionProvider.Context ctx = new JavaActionProvider.Context(
@@ -468,6 +455,27 @@ public abstract class BaseActionProvider implements ActionProvider {
     @Messages({"# {0} - class name", "LBL_No_Main_Class_Found=Class \"{0}\" does not have a main method."})
     @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
     public @CheckForNull String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
+        final JavaActionProvider.Action action = getDelegate().getAction(command);
+        if (action != null) {
+            //Handled by delegate
+            return Optional.of(action)
+                .map((a) -> a instanceof JavaActionProvider.ScriptAction ?
+                        ((JavaActionProvider.ScriptAction) a) :
+                        null)
+                .map((sa) -> sa.getTargerNames(new JavaActionProvider.Context(
+                        project,
+                        updateHelper,
+                        evaluator,
+                        command,
+                        context,
+                        null,
+                        null,
+                        null,
+                        null,
+                        this::getCompileOnSaveOperations,
+                        null)))
+                .orElse(null);
+        }
         if (Arrays.asList(getPlatformSensitiveActions()).contains(command)) {
             if (getProjectPlatform() == null) {
                 showPlatformWarning ();
@@ -782,18 +790,11 @@ public abstract class BaseActionProvider implements ActionProvider {
                 if (command.equals(COMMAND_BUILD)) {
                     targetNames = new String[] {buildTarget};
                     prepareDirtyList(p, true);
-                } else if (command.equals(COMMAND_REBUILD)) {
-                    targetNames = new String[] {"clean", buildTarget}; // NOI18N
                 } else {
                     throw new IllegalArgumentException(command);
                 }
             }
-            if (COMMAND_CLEAN.equals(command)) {
-                //After clean, rebuild all
-                dirty = null;
-            }
         }
-        
         return targetNames;
     }
 
@@ -805,11 +806,7 @@ public abstract class BaseActionProvider implements ActionProvider {
      */
     @CheckForNull
     protected JavaPlatform getProjectPlatform() {
-        JavaPlatform plat = CommonProjectUtils.getActivePlatform(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE));
-        if (plat == null) {
-            plat = ProjectPlatform.forProject(project, evaluator, CommonProjectUtils.J2SE_PLATFORM_TYPE);
-        }
-        return plat;
+        return ActionProviderSupport.getActivePlatform(project, evaluator, ProjectProperties.PLATFORM_ACTIVE);
     }
 
     /**
@@ -916,6 +913,85 @@ public abstract class BaseActionProvider implements ActionProvider {
         return null;
     }
 
+    private boolean isSupportedByDelegate(final String command) {
+        for (String action : getDelegate().getSupportedActions()) {
+            if (action.equals(command)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @NonNull
+    private JavaActionProvider getDelegate() {
+        JavaActionProvider jap = delegate.get();
+        if (jap == null) {
+            jap = createDelegate();
+            if (!delegate.compareAndSet(null, jap)) {
+                jap = delegate.get();
+                assert jap != null : "Transition non-null -> null for delegate.";   //NOI18N
+            }
+        }
+        return jap;
+    }
+
+    @NonNull
+    private JavaActionProvider createDelegate() {
+        final JavaActionProvider.Builder builder = JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator)
+                .setCompileOnSaveOperationsProvider(this::getCompileOnSaveOperations)
+                .setActivePlatformProvider(this::getProjectPlatform);
+        final Set<? extends String> supported = new HashSet<>(Arrays.asList(getSupportedActions()));
+        for (String op : new String[] {COMMAND_DELETE, COMMAND_RENAME, COMMAND_MOVE, COMMAND_COPY}) {
+            if (supported.contains(op)) {
+                builder.addAction(builder.createProjectOperation(op));
+            }
+        }
+        final Map<String,String[]> cmds = getCommands();
+        final Set<String> scanSensitive = getScanSensitiveActions();
+        final Set<String> modelSensitive = getJavaModelActions();
+        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD}) {
+            if (supported.contains(cmd)) {
+                String[] targets = cmds.get(cmd);
+                final JavaActionProvider.Action action;
+                if (targets != null) {
+                    action = builder.createScriptAction(
+                        cmd,
+                        modelSensitive.contains(cmd),
+                        scanSensitive.contains(cmd),
+                        targets);
+                } else {
+                    String[] jarEnabledTargets, jarDisabledTargets;
+                    switch (cmd) {
+                        case COMMAND_BUILD:
+                            jarEnabledTargets = new String[] {"jar"};   //NOI18N
+                            jarDisabledTargets = new String[] {"compile"};  //NOI18N
+                            break;
+                        case COMMAND_REBUILD:
+                            jarEnabledTargets = new String[] {"clean","jar"};   //NOI18N
+                            jarDisabledTargets = new String[] {"clean","compile"};  //NOI18N
+                            break;
+                        default:
+                            jarEnabledTargets = jarDisabledTargets = null;
+                    }
+                    action = jarEnabledTargets != null ? builder.createScriptAction(
+                            cmd,
+                            modelSensitive.contains(cmd),
+                            scanSensitive.contains(cmd),
+                            ActionProviderSupport.createConditionalTarget(
+                                    evaluator,
+                                    ActionProviderSupport.createJarEnabledPredicate(),
+                                    jarEnabledTargets,
+                                    jarDisabledTargets
+                            )) : null;
+                }
+                if (action != null) {
+                    builder.addAction(action);
+                }
+            }
+        }
+        return builder.build();
+    }
+
     @NonNull
     private Set<String> getConcealedProperties(
             @NonNull final String command,
@@ -984,10 +1060,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             @NonNull final String forCommand) {
         return (ctx, targetNames) -> {
             String command = ctx.getCommand();
-            if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
-                showBuildActionWarning(ctx.getActiveLookup());
-                return JavaActionProvider.ScriptAction.Result.abort();
-            }
             if(COMMAND_TEST_SINGLE.equals(ctx.getCommand()) && Arrays.equals(targetNames, new String[]{COMMAND_TEST})) {
                 //multiple files or package(s) selected so we need to call test target instead of test-single
                 command = COMMAND_TEST;
@@ -1353,25 +1425,14 @@ public abstract class BaseActionProvider implements ActionProvider {
         return relPath.substring(0, relPath.length() - 5).replace('/', '.');
     }
 
-    private boolean allowAntBuild() {
-        String buildClasses = evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR);
-        if (buildClasses == null) return false;
-        File buildClassesFile = this.updateHelper.getAntProjectHelper().resolveFile(buildClasses);
-
-        return !new File(buildClassesFile, AUTOMATIC_BUILD_TAG).exists();
-    }
-
     @Override
     public boolean isActionEnabled( String command, Lookup context ) {
-        if (COMMAND_DELETE.equals(command) 
-            || COMMAND_MOVE.equals(command)
-            || COMMAND_COPY.equals(command)
-            || COMMAND_RENAME.equals(command)) {
-            return true;
-        }   
+        if (isSupportedByDelegate(command)) {
+            return getDelegate().isActionEnabled(command, context);
+        }
         if (   Arrays.asList(getActionsDisabledForQuickRun()).contains(command)
             && isCompileOnSaveUpdate()
-            && !allowAntBuild()) {
+            && !ActionProviderSupport.allowAntBuild(evaluator, updateHelper)) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -1982,45 +2043,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return url;
     }
 
-    @Messages({
-        "LBL_ProjectBuiltAutomatically=<html><b>This project's source files are compiled automatically when you save them.</b><br>You do not need to build the project to run or debug the project in the IDE.<br><br>If you need to build or rebuild the project's JAR file, use Clean and Build.<br>To disable the automatic compiling feature and activate the Build command,<br>go to Project Properties and disable Compile on Save.",
-        "BTN_ProjectProperties=Project Properties...",
-        "BTN_CleanAndBuild=Clean and Build",
-        "BTN_OK=OK",
-        "# {0} - project name", "TITLE_BuildProjectWarning=Build Project ({0})"
-    })
-    @org.netbeans.api.annotations.common.SuppressWarnings("ES_COMPARING_STRINGS_WITH_EQ")
-    private void showBuildActionWarning(Lookup context) {
-        String projectProperties = BTN_ProjectProperties();
-        String cleanAndBuild = BTN_CleanAndBuild();
-        String ok = BTN_OK();
-        DialogDescriptor dd = new DialogDescriptor(LBL_ProjectBuiltAutomatically(),
-                                                   TITLE_BuildProjectWarning(ProjectUtils.getInformation(project).getDisplayName()),
-                                                   true,
-                                                   new Object[] {projectProperties, cleanAndBuild, ok},
-                                                   ok,
-                                                   DialogDescriptor.DEFAULT_ALIGN,
-                                                   null,
-                                                   null);
-
-        dd.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
-        
-        Object result = DialogDisplayer.getDefault().notify(dd);
-
-        if (result == projectProperties) {
-            CustomizerProvider2 p = project.getLookup().lookup(CustomizerProvider2.class);
-
-            p.showCustomizer("Build", null); //NOI18N
-            return ;
-        }
-
-        if (result == cleanAndBuild) {
-            invokeAction(COMMAND_REBUILD, context);
-        }
-
-        //otherwise dd.getValue() == ok
-    }
-
     /**
      * Callback for accessing project private data.
      */
@@ -2178,7 +2200,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
         @Override
         public void antTargetInvocationFinished(String command, Lookup context, int result) {
-            if (result != 0) {
+            if (result != 0 || COMMAND_CLEAN.equals(command)) {
                 synchronized (BaseActionProvider.this) {
                     // #120843: if a build fails, disable dirty-list optimization.
                     dirty = null;

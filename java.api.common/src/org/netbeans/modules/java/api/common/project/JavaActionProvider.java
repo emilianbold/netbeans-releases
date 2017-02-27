@@ -63,8 +63,10 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_CLEAN;
@@ -76,9 +78,14 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 
 /**
@@ -100,13 +107,13 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final UpdateHelper updateHelper,
             @NonNull final PropertyEvaluator evaluator,
             @NonNull final Collection<? extends Action> actions,
-            @NonNull final String javaPlatformProperty,
+            @NonNull Supplier<? extends JavaPlatform> javaPlatformProvider,
             @NonNull final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider) {
         Parameters.notNull("project", project); //NOI18N
         Parameters.notNull("updateHelper", updateHelper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
         Parameters.notNull("actions", actions); //NOI18N
-        Parameters.notNull("javaPlatformProperty", javaPlatformProperty);   //NOI18N
+        Parameters.notNull("javaPlatformProvider", javaPlatformProvider);   //NOI18N
         Parameters.notNull("cosOpsProvider", cosOpsProvider);   //NOI18N
         this.prj = project;
         this.updateHelper = updateHelper;
@@ -117,9 +124,7 @@ public final class JavaActionProvider implements ActionProvider {
         }
         this.supportedActions = Collections.unmodifiableMap(abn);
         this.listeners = new CopyOnWriteArrayList<>();
-        this.jpp = () -> {
-            return CommonProjectUtils.getActivePlatform(eval.getProperty(javaPlatformProperty));
-        };
+        this.jpp = javaPlatformProvider;
         this.cosOpsProvider = cosOpsProvider;
     }
 
@@ -360,10 +365,10 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @NonNull
-        protected abstract String[] getTargerNames(@NonNull final Context context);
+        public abstract String[] getTargerNames(@NonNull final Context context);
 
         @NonNull
-        protected Result performCompileOnSave(@NonNull final Context context, @NonNull final String[] targetNames) {
+        public Result performCompileOnSave(@NonNull final Context context, @NonNull final String[] targetNames) {
             return Result.follow();
         }
 
@@ -383,7 +388,7 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @NonNull
-        String getDisplayName() {
+        final String getDisplayName() {
             String res = displayName;
             if (res == null) {
                 res = ActionProviderSupport.getCommandDisplayName(command);
@@ -397,7 +402,7 @@ public final class JavaActionProvider implements ActionProvider {
         private final UpdateHelper updateHelper;
         private final PropertyEvaluator evaluator;
         private final List<Action> actions;
-        private String javaPlatformProperty = ProjectProperties.PLATFORM_ACTIVE;
+        private Supplier<? extends JavaPlatform> jpp;
         private Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
 
         private Builder(
@@ -411,6 +416,7 @@ public final class JavaActionProvider implements ActionProvider {
             this.updateHelper = updateHelper;
             this.evaluator = evaluator;
             this.actions = new ArrayList<>();
+            this.jpp = createJavaPlatformProvider(ProjectProperties.PLATFORM_ACTIVE);
         }
 
         @NonNull
@@ -421,32 +427,67 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @NonNull
-        public Builder addProjectOperations(String... requiredOperations) {
-            for (String requiredOperation : requiredOperations) {
-                switch (requiredOperation) {
-                    case COMMAND_DELETE:
-                        addAction(new SimpleAction(COMMAND_DELETE, (ctx) -> DefaultProjectOperations.performDefaultDeleteOperation(ctx.getProject())));
-                        break;
-                    case COMMAND_MOVE:
-                        addAction(new SimpleAction(COMMAND_MOVE, (ctx) -> DefaultProjectOperations.performDefaultMoveOperation(ctx.getProject())));
-                        break;
-                    case COMMAND_COPY:
-                        addAction(new SimpleAction(COMMAND_COPY, (ctx) -> DefaultProjectOperations.performDefaultCopyOperation(ctx.getProject())));
-                        break;
-                    case COMMAND_RENAME:
-                        addAction(new SimpleAction(COMMAND_RENAME, (ctx) -> DefaultProjectOperations.performDefaultRenameOperation(ctx.getProject(), null)));
-                        break;
-                    default:
-                        throw new IllegalArgumentException(requiredOperation);
-                }
+        public Action createProjectOperation(String command) {
+            final Consumer<? super Context> performer;
+            switch (command) {
+                case COMMAND_DELETE:
+                    performer = (ctx) -> DefaultProjectOperations.performDefaultDeleteOperation(ctx.getProject());
+                    break;
+                case COMMAND_MOVE:
+                    performer = (ctx) -> DefaultProjectOperations.performDefaultMoveOperation(ctx.getProject());
+                    break;
+                case COMMAND_COPY:
+                    performer = (ctx) -> DefaultProjectOperations.performDefaultCopyOperation(ctx.getProject());
+                    break;
+                case COMMAND_RENAME:
+                    performer = (ctx) -> DefaultProjectOperations.performDefaultRenameOperation(ctx.getProject(), null);
+                    break;
+                default:
+                    throw new IllegalArgumentException(command);
             }
+            return new SimpleAction(command, performer);
+        }
+
+        @NonNull
+        public ScriptAction createScriptAction(
+                @NonNull final String command,
+                final boolean javaModelSensitive,
+                final boolean scanSensitive,
+                @NonNull final String... targets) {
+            Parameters.notNull("targets", targets);     //NOI18N
+            return createScriptAction(command, javaModelSensitive, scanSensitive, () -> targets);
+        }
+
+        @NonNull
+        public ScriptAction createScriptAction(
+                @NonNull final String command,
+                final boolean javaModelSensitive,
+                final boolean scanSensitive,
+                @NonNull final Supplier<? extends String[]> targets) {
+            Parameters.notNull("command", command);         //NOI18N
+            Parameters.notNull("targets", targets);         //NOI18N
+            switch (command) {
+                case ActionProvider.COMMAND_CLEAN:
+                case ActionProvider.COMMAND_REBUILD:
+                    return createNonCosAction(command, javaModelSensitive, scanSensitive, targets);
+                case ActionProvider.COMMAND_BUILD:
+                    return createBuildAction(javaModelSensitive, scanSensitive, targets);
+                default:
+                    throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
+            }
+        }
+
+        @NonNull
+        public Builder setActivePlatformProperty(@NonNull final String activePlatformProperty) {
+            Parameters.notNull("activePlatformProperty", activePlatformProperty);   //NOI18N
+            this.jpp = createJavaPlatformProvider(activePlatformProperty);
             return this;
         }
 
         @NonNull
-        public Builder setPlatformProperty(@NonNull final String activePlatformProperty) {
-            Parameters.notNull("activePlatformProperty", activePlatformProperty);   //NOI18N
-            this.javaPlatformProperty = activePlatformProperty;
+        public Builder setActivePlatformProvider(@NonNull final Supplier<? extends JavaPlatform> javaPlatformProvider) {
+            Parameters.notNull("javaPlatformProvider", javaPlatformProvider);   //NOI18N
+            this.jpp = javaPlatformProvider;
             return this;
         }
 
@@ -464,8 +505,15 @@ public final class JavaActionProvider implements ActionProvider {
                     updateHelper,
                     evaluator,
                     actions,
-                    javaPlatformProperty,
+                    jpp,
                     cosOpsProvider);
+        }
+
+        @NonNull
+        private Supplier<? extends JavaPlatform> createJavaPlatformProvider(@NonNull final String activePlatformProperty) {
+            return () -> {
+                return ActionProviderSupport.getActivePlatform(project, evaluator, activePlatformProperty);
+            };
         }
 
         @NonNull
@@ -525,6 +573,73 @@ public final class JavaActionProvider implements ActionProvider {
         listeners.remove(listener);
     }
 
+    @CheckForNull
+    Action getAction(@NonNull final String command) {
+        return supportedActions.get(command);
+    }
+
+    @NonNull
+    @Messages({
+        "LBL_ProjectBuiltAutomatically=<html><b>This project's source files are compiled automatically when you save them.</b><br>You do not need to build the project to run or debug the project in the IDE.<br><br>If you need to build or rebuild the project's JAR file, use Clean and Build.<br>To disable the automatic compiling feature and activate the Build command,<br>go to Project Properties and disable Compile on Save.",
+        "BTN_ProjectProperties=Project Properties...",
+        "BTN_CleanAndBuild=Clean and Build",
+        "BTN_OK=OK",
+        "# {0} - project name", "TITLE_BuildProjectWarning=Build Project ({0})"
+    })
+    private static ScriptAction createBuildAction (
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final Supplier<? extends String[]> targets) {
+        return new BaseScriptAction(COMMAND_BUILD, javaModelSensitive, scanSensitive, targets) {
+            @Override
+            public ScriptAction.Result performCompileOnSave(Context context, String[] targetNames) {
+                if (!ActionProviderSupport.allowAntBuild(context.getPropertyEvaluator(), context.getUpdateHelper())) {
+                    showBuildActionWarning(context);
+                    return JavaActionProvider.ScriptAction.Result.abort();
+                }
+                return JavaActionProvider.ScriptAction.Result.follow();
+            }
+
+            @org.netbeans.api.annotations.common.SuppressWarnings("ES_COMPARING_STRINGS_WITH_EQ")
+            private void showBuildActionWarning(Context context) {
+                String projectProperties = Bundle.BTN_ProjectProperties();
+                String cleanAndBuild = Bundle.BTN_CleanAndBuild();
+                String ok = Bundle.BTN_OK();
+                DialogDescriptor dd = new DialogDescriptor(Bundle.LBL_ProjectBuiltAutomatically(),
+                       Bundle.TITLE_BuildProjectWarning(ProjectUtils.getInformation(context.getProject()).getDisplayName()),
+                       true,
+                       new Object[] {projectProperties, cleanAndBuild, ok},
+                       ok,
+                       DialogDescriptor.DEFAULT_ALIGN,
+                       null,
+                       null);
+
+                dd.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+                Object result = DialogDisplayer.getDefault().notify(dd);
+                if (result == projectProperties) {
+                    CustomizerProvider2 p = context.getProject().getLookup().lookup(CustomizerProvider2.class);
+                    p.showCustomizer("Build", null); //NOI18N
+                    return ;
+                }
+                if (result == cleanAndBuild) {
+                    final ActionProvider ap = context.getProject().getLookup().lookup(ActionProvider.class);
+                    if (ap != null) {
+                        ap.invokeAction(COMMAND_REBUILD, context.getActiveLookup());
+                    }
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private static ScriptAction createNonCosAction (
+            final String command,
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final Supplier<? extends String[]> targets) {
+        return new BaseScriptAction(command, javaModelSensitive, scanSensitive, targets);
+    }
+
     private static final class SimpleAction implements Action {
         private final String name;
         private final Consumer<? super Context> performer;
@@ -552,6 +667,29 @@ public final class JavaActionProvider implements ActionProvider {
         @Override
         public void invoke(@NonNull final Context context) {
             performer.accept(context);
+        }
+    }
+
+    private static class BaseScriptAction extends ScriptAction {
+        private final Supplier<? extends String[]> targetNames;
+
+        BaseScriptAction(
+                @NonNull final String command,
+                final boolean jms,
+                final boolean sc,
+                Supplier<? extends String[]> targetNames) {
+            super(command, null, true, true);
+            this.targetNames = targetNames;
+        }
+
+        @Override
+        public boolean isEnabled(JavaActionProvider.Context context) {
+            return true;
+        }
+
+        @Override
+        public String[] getTargerNames(JavaActionProvider.Context context) {
+            return targetNames.get();
         }
     }
 }

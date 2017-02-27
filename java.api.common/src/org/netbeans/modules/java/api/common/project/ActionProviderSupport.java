@@ -53,6 +53,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -65,19 +67,23 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import static org.netbeans.modules.java.api.common.project.Bundle.*;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.Context;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.CompileOnSaveOperation;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.ScriptAction.Result;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.*;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -233,6 +239,45 @@ final class ActionProviderSupport {
     static FileObject getBuildScript(@NonNull final Context context) {
         final String path =  CommonProjectUtils.getBuildXmlName(context.getPropertyEvaluator(), null);
         return context.getProject().getProjectDirectory().getFileObject(path);
+    }
+
+    static boolean allowAntBuild(
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final UpdateHelper updateHelper) {
+        String buildClasses = evaluator.getProperty(ProjectProperties.BUILD_CLASSES_DIR);
+        if (buildClasses == null) return false;
+        File buildClassesFile = updateHelper.getAntProjectHelper().resolveFile(buildClasses);
+        return !new File(buildClassesFile, BaseActionProvider.AUTOMATIC_BUILD_TAG).exists();
+    }
+
+    @CheckForNull
+    static JavaPlatform getActivePlatform(
+            @NonNull final Project prj,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String activePlatformProperty) {
+        JavaPlatform plat = CommonProjectUtils.getActivePlatform(eval.getProperty(activePlatformProperty));
+        if (plat == null) {
+            plat = ProjectPlatform.forProject(prj, eval, CommonProjectUtils.J2SE_PLATFORM_TYPE);
+        }
+        return plat;
+    }
+
+
+    static @NonNull final Supplier<? extends String[]> createConditionalTarget(
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final Predicate<PropertyEvaluator> predicate,
+            @NonNull final String[] ifTargets,
+            @NonNull final String[] elseTargets) {
+        return () -> {
+            return predicate.test(eval) ?
+                    ifTargets:
+                    elseTargets;
+        };
+    }
+
+    @NonNull
+    static Predicate<PropertyEvaluator> createJarEnabledPredicate() {
+        return (evaluator) -> !"false".equalsIgnoreCase(evaluator.getProperty(ProjectProperties.DO_JAR));    //NOI18N
     }
 
     private static void invokeByJavaSource (
