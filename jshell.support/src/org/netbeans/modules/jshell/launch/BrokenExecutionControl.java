@@ -87,11 +87,6 @@ public final class BrokenExecutionControl implements NbExecutionControl, RemoteJ
     }
 
     @Override
-    public void setClasspath(String string) throws EngineTerminationException, InternalException {
-        throw originalException;
-    }
-
-    @Override
     public void stop() throws EngineTerminationException, InternalException {
         throw originalException;
     }

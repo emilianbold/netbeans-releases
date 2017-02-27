@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.java.editor.base.javadoc;
 
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.Tag;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavadocTokenId;
@@ -94,13 +94,6 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
                 "}\n";
         prepareTest(code);
         
-        Element methodEl = info.getTopLevelElements().get(0).getEnclosedElements().get(1);
-        Doc javaDocFor = info.getElementUtilities().javaDocFor(methodEl);
-        Tag[] firstSentenceTags = javaDocFor.firstSentenceTags();
-        Tag[] tags = javaDocFor.tags();
-        Tag[] inlineTags = javaDocFor.inlineTags();
-        String commentText = javaDocFor.commentText();
-        String rawCommentText = javaDocFor.getRawCommentText();
         TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, code.indexOf("HUH"));
         jdts.moveStart();
         jdts.moveNext();
@@ -200,13 +193,12 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         prepareTest(code);
         
         Element fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(1);
-        Doc exp = info.getElementUtilities().javaDocFor(fieldEl);
         
         String what = "/***/";
         int offset = code.indexOf(what) + 3;
         
-        Doc jdoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
-        assertEquals("Wrong Doc instance", exp, jdoc);
+        TreePath jdoc = JavadocCompletionUtils.findJavadoc(info, offset);
+        assertEquals("Wrong Doc instance", fieldEl, info.getTrees().getElement(jdoc));
     }
 
     public void testFindJavadoc_147533() throws Exception {
@@ -223,20 +215,18 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         prepareTest(code);
 
         Element fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(1);
-        Doc exp = info.getElementUtilities().javaDocFor(fieldEl);
 
         String what = "/**jd1*/";
         int offset = code.indexOf(what) + 3;
 
-        Doc jdoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        TreePath jdoc = JavadocCompletionUtils.findJavadoc(info, offset);
         assertNull("Wrong Doc instance", jdoc);
 
         fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(2);
-        exp = info.getElementUtilities().javaDocFor(fieldEl);
         what = "/**jd2*/";
         offset = code.indexOf(what) + 3;
-        jdoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
-        assertEquals("Wrong Doc instance", exp, jdoc);
+        jdoc = JavadocCompletionUtils.findJavadoc(info, offset);
+        assertEquals("Wrong Doc instance", fieldEl, info.getTrees().getElement(jdoc));
     }
     
     public void testResolveOtherText() throws Exception {
@@ -562,42 +552,41 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
                 "}\n";
         prepareTest(code);
 
-        doIsInvalidJavadoc(1, null, null, null, false);
+        doIsInvalidJavadoc(1, null, false);
         doIsTokenOfEmptyJavadoc(1, true);
-        doIsInvalidJavadoc(2, null, null, null, false);
+        doIsInvalidJavadoc(2, null, false);
         doIsTokenOfEmptyJavadoc(2, true);
-        doIsInvalidJavadoc(3, null, null, null, false);
+        doIsInvalidJavadoc(3, null, false);
         doIsTokenOfEmptyJavadoc(3, true);
-        doIsInvalidJavadoc(4, null, null, null, false);
+        doIsInvalidJavadoc(4, null, false);
 
         Element fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(4);
         assertNotNull(fieldEl);
         TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, null, fieldEl);
         assertNotNull(jdts);
-        doIsInvalidJavadoc(5, null, null, jdts, true);
+        doIsInvalidJavadoc(5, jdts, true);
 
         // issue 159352
-        doIsInvalidJavadoc(6, null, null, null, false);
+        doIsInvalidJavadoc(6, null, false);
         doIsTokenOfEmptyJavadoc(6, true);
-        doIsInvalidJavadoc(7, null, null, null, false);
+        doIsInvalidJavadoc(7, null, false);
         doIsTokenOfEmptyJavadoc(7, true);
-        doIsInvalidJavadoc(8, null, null, null, false);
+        doIsInvalidJavadoc(8, null, false);
         doIsTokenOfEmptyJavadoc(8, true);
-        doIsInvalidJavadoc(9, null, null, null, false);
+        doIsInvalidJavadoc(9, null, false);
         doIsTokenOfEmptyJavadoc(9, true);
-        doIsInvalidJavadoc(10, null, null, null, false);
+        doIsInvalidJavadoc(10, null, false);
         doIsTokenOfEmptyJavadoc(10, true);
-        doIsInvalidJavadoc(11, null, null, null, false);
+        doIsInvalidJavadoc(11, null, false);
         doIsTokenOfEmptyJavadoc(11, true);
-        doIsInvalidJavadoc(12, null, null, null, false);
+        doIsInvalidJavadoc(12, null, false);
         doIsTokenOfEmptyJavadoc(11, true);
     }
 
-    private void doIsInvalidJavadoc(int fieldIndex, Element fieldEl, Doc jdoc, TokenSequence<JavadocTokenId> jdts, boolean isInvalid) {
-        fieldEl = fieldEl != null ? fieldEl : info.getTopLevelElements().get(0).getEnclosedElements().get(fieldIndex);
+    private void doIsInvalidJavadoc(int fieldIndex, TokenSequence<JavadocTokenId> jdts, boolean isInvalid) {
+        Element fieldEl = info.getTopLevelElements().get(0).getEnclosedElements().get(fieldIndex);
         assertNotNull(fieldEl);
-        jdoc = jdoc != null ? jdoc : info.getElementUtilities().javaDocFor(fieldEl);
-        assertNotNull(jdoc);
+        DocCommentTree jdoc = info.getDocTrees().getDocCommentTree(fieldEl);
         jdts = jdts != null ? jdts : JavadocCompletionUtils.findJavadocTokenSequence(info, null, fieldEl);
         assertNotNull(jdts);
         assertEquals(fieldEl.getSimpleName().toString(), isInvalid, JavadocCompletionUtils.isInvalidDocInstance(jdoc, jdts));

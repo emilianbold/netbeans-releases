@@ -64,7 +64,8 @@ public class JsKeywords {
     };
 
     protected final static Map<String, CompletionDescription> KEYWORDS = new HashMap<>();
-
+    protected final static Map<String, CompletionDescription> SPECIAL_KEYWORDS_IMPORTEXPORT = new HashMap<>();//not in ECMAScript 6,7
+    
     static {
         KEYWORDS.put(JsTokenId.KEYWORD_BREAK.fixedText(), new CompletionDescription(CompletionType.ENDS_WITH_SEMICOLON));
         KEYWORDS.put(JsTokenId.KEYWORD_CASE.fixedText(), new CompletionDescription(CompletionType.ENDS_WITH_COLON));
@@ -112,6 +113,11 @@ public class JsKeywords {
         KEYWORDS.put(JsTokenId.RESERVED_AWAIT.fixedText(), new CompletionDescription(CompletionType.ENDS_WITH_SPACE, JsVersion.ECMA7));
         KEYWORDS.put("async", new CompletionDescription(CompletionType.ENDS_WITH_SPACE, JsVersion.ECMA7)); // NOI18N
     }
+   
+    static {
+        SPECIAL_KEYWORDS_IMPORTEXPORT.put(JsTokenId.SPECIAL_KEYWORD_AS.fixedText(), new CompletionDescription(CompletionType.ENDS_WITH_SPACE));
+        SPECIAL_KEYWORDS_IMPORTEXPORT.put(JsTokenId.SPECIAL_KEYWORD_FROM.fixedText(), new CompletionDescription(CompletionType.ENDS_WITH_SPACE));
+    }    
 
     public static class CompletionDescription {
 

@@ -364,6 +364,12 @@ public final class ShellAgent {
         public Debug(ShellAgent agent, String targetSpec) {
             super(agent, targetSpec);
         }
+
+        @Override
+        public String name() {
+            return getClass().getName();
+        }
+        
         @Override
         protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
             return new DebugExecutionEnvironment(agent, out, in, c.getVirtualMachine(), c);
@@ -378,6 +384,11 @@ public final class ShellAgent {
             this.targetSpec = targetSpec;
         }
         
+        @Override
+        public String name() {
+            return getClass().getName();
+        }
+
         @Override
         protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
             return new RunExecutionEnvironment(agent, out, in, targetSpec, c);

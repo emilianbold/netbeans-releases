@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
 import jdk.jshell.JShell;
+import jdk.jshell.spi.ExecutionControlProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -69,7 +70,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
-import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
 import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -402,9 +402,18 @@ public class JShellEnvironment {
                 }
             }
         } else {
-            cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
+            ClasspathInfo.Builder bld = new ClasspathInfo.Builder(platformTemp.getBootstrapLibraries());
+            bld.setClassPath(platformTemp.getStandardLibraries());
+            if (ShellProjectUtils.isModularJDK(platformTemp)) {
+                bld.setModuleBootPath(platformTemp.getBootstrapLibraries());
+            }
+            /*
+            cpi = ClasspathInfo.create(
+                    platformTemp.getBootstrapLibraries(),
                     platformTemp.getStandardLibraries(),
                     ClassPath.EMPTY);
+            */
+            cpi = bld.build();
         }
         this.classpathInfo = cpi;
         forceOpenDocument();
@@ -685,7 +694,7 @@ public class JShellEnvironment {
         this.shellListeners.remove(l);
     }
     
-    public JShellGenerator createExecutionEnv() {
+    public ExecutionControlProvider createExecutionEnv() {
         return null;
     }
     

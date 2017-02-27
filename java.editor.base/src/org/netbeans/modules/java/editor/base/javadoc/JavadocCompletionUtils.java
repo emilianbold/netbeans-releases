@@ -42,23 +42,14 @@
 
 package org.netbeans.modules.java.editor.base.javadoc;
 
-import com.sun.javadoc.Doc;
+import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.DocTreePath;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
@@ -74,9 +65,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 
 /**
  * XXX try to merge with hints.JavadocUtilities
@@ -181,66 +169,6 @@ public final class JavadocCompletionUtils {
         }
         
         return tp;
-    }
-    
-    public static Doc findJavadoc(CompilationInfo javac, Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
-        if (ts == null || !movedToJavadocToken(ts, offset)) {
-            return null;
-        }
-
-        TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
-        
-        int offsetBehindJavadoc = ts.offset() + ts.token().length();
-
-        while (ts.moveNext()) {
-            TokenId tid = ts.token().id();
-            if (tid == JavaTokenId.BLOCK_COMMENT) {
-                if ("/**/".contentEquals(ts.token().text())) { // NOI18N
-                    // see #147533
-                    return null;
-                }
-            } else if (tid == JavaTokenId.JAVADOC_COMMENT) {
-                if (ts.token().partType() == PartType.COMPLETE) {
-                    return null;
-                }
-            } else if (!IGNORE_TOKES.contains(tid)) {
-                offsetBehindJavadoc = ts.offset();
-                // it is magic for TreeUtilities.pathFor
-                ++offsetBehindJavadoc;
-                break;
-            }
-        }
-
-        TreePath tp = javac.getTreeUtilities().pathFor(offsetBehindJavadoc);
-        Tree leaf = tp.getLeaf();
-        Kind kind = leaf.getKind();
-        SourcePositions positions = javac.getTrees().getSourcePositions();
-
-        while (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Kind.METHOD && kind != Kind.VARIABLE && kind != Kind.COMPILATION_UNIT) {
-            tp = tp.getParentPath();
-            if (tp == null) {
-                leaf = null;
-                kind = null;
-                break;
-            }
-            leaf = tp.getLeaf();
-            kind = leaf.getKind();
-        }
-                
-        if (leaf == null || kind == Kind.COMPILATION_UNIT
-                || positions.getStartPosition(javac.getCompilationUnit(), leaf) < offset) {
-            // not a class member javadoc -> ignore
-            return null;
-        }
-        
-        Element el = javac.getTrees().getElement(tp);
-        Doc jdoc = el != null? javac.getElementUtilities().javaDocFor(el): null;
-        if (isInvalidDocInstance(jdoc, jdts)) {
-            dumpOutOfSyncError(javac.getSnapshot(), offset, leaf, el, jdts, jdoc, false);
-            jdoc = null;
-        }
-        return jdoc;
     }
     
     public static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, int offset) {
@@ -506,8 +434,8 @@ public final class JavadocCompletionUtils {
      * 
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=139147">139147</a>
      */
-    public static boolean isInvalidDocInstance(Doc javadoc, TokenSequence<JavadocTokenId> ts) {
-        if (javadoc != null && javadoc.getRawCommentText().trim().length() == 0) {
+    public static boolean isInvalidDocInstance(DocCommentTree javadoc, TokenSequence<JavadocTokenId> ts) {
+        if (javadoc == null || javadoc.getFullBody().isEmpty()) {
             if (!ts.isEmpty()) {
                 ts.moveStart();
                 return !(ts.moveNext() && isTokenOfEmptyJavadoc(ts.token()) && ts.moveNext() == false);
@@ -522,134 +450,4 @@ public final class JavadocCompletionUtils {
         }
         return JAVADOC_EMPTY.matcher(token.text()).matches();
     }
-
-    private static final int MAX_DUMPS = 255;
-
-    /**
-     * Dumps the source code to the file. Used for parser debugging. Only a limited number
-     * of dump files is used. If the last file exists, this method doesn't dump anything.
-     *
-     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=139147">139147</a>
-     */
-    public static void dumpOutOfSyncError(Snapshot snapshot, int offset,
-            Tree tree, Element elm, TokenSequence<JavadocTokenId> ts, Doc jdoc, boolean throwNotLogException) {
-        String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
-        String dumpExt = ".jddump"; //NOI18N
-
-        FileObject source = snapshot.getSource().getFileObject();
-        Document doc = snapshot.getSource().getDocument(false);
-
-        String uri = "<unknown>"; // NOI18N
-        try {
-            uri = source.getURL().toURI().toASCIIString();
-        } catch (URISyntaxException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        } catch (FileStateInvalidException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        String origName = source.getName();
-        File f = new File(dumpDir + origName + dumpExt); // NOI18N
-        boolean dumpSucceeded = false;
-        int i = 1;
-        while (i < MAX_DUMPS) {
-            if (!f.exists())
-                break;
-            f = new File(dumpDir + origName + '_' + i + dumpExt); // NOI18N
-            i++;
-        }
-        IllegalStateException throwable = new IllegalStateException(
-                "Please attach dump file " + f.toURI().toASCIIString() + " to bug."); //NOI18N
-        if (!f.exists()) {
-            try {
-                OutputStream os = new FileOutputStream(f);
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
-                try {
-                    writer.printf("Out of sync error: source file %s\n", uri);
-                    writer.println("----- Element: -------------------------------------------------------"); // NOI18N
-                    if (elm != null) {
-                        writer.printf("kind: %s, %s\n", elm.getKind(), elm); // NOI18N
-                    } else {
-                        writer.println("null"); // NOI18N
-                    }
-                    writer.println("----- Tree: -------------------------------------------------------"); // NOI18N
-                    if (tree != null) {
-                        writer.printf("kind: %s\n %s\n", tree.getKind(), tree); // NOI18N
-                    } else {
-                        writer.println("null"); // NOI18N
-                    }
-                    writer.println("----- Offset: -------------------------------------------------------"); // NOI18N
-                    writer.printf("offset: %s\n", offset);
-                    writer.println("----- Token sequence: ----------------------------------------"); // NOI18N
-                    writer.println(ts);
-                    writer.println("----- Doc instance: -------------------------------------------------------"); // NOI18N
-                    writer.printf("class: %s, toString: %s,\nraw text:'%s'\n", jdoc.getClass(), jdoc, jdoc.getRawCommentText());
-                    writer.println("----- Stack trace: ---------------------------------------------"); // NOI18N
-                    throwable.printStackTrace(writer);
-                    writer.println("----- Source file content/snapshot: ----------------------------------------"); // NOI18N
-                    writer.println(snapshot.getText());
-                    writer.println("----- Document content: ----------------------------------------"); // NOI18N
-                    try {
-                        if (doc != null) {
-                            writer.println(doc.getText(0, doc.getLength()));
-                        } else {
-                            writer.println("doc: null"); // NOI18N
-                        }
-                    } catch (BadLocationException ex) {
-                        LOGGER.log(Level.INFO, null, ex);
-                    }
-                } finally {
-                    writer.close();
-                    dumpSucceeded = true;
-                }
-            } catch (IOException ioe) {
-                LOGGER.log(Level.INFO, "Error when writing javadoc dump file!", ioe); // NOI18N
-            }
-        }
-        if (dumpSucceeded) {
-            if (throwNotLogException) {
-                throw throwable;
-            } else {
-                LOGGER.log(Level.SEVERE, null, throwable);
-            }
-        } else {
-            LOGGER.log(Level.WARNING,
-                    "Dump could not be written. Either dump file could not " + // NOI18N
-                    "be created or all dump files were already used. Please " + // NOI18N
-                    "check that you have write permission to ''{0}'' and " + // NOI18N
-                    "clean all *{1} files in that directory.",
-                    new Object[] {dumpDir, dumpExt}); // NOI18N
-            if (throwNotLogException) {
-                throw throwable;
-            }
-        }
-    }
-
-    /**
-     * @see #dumpOutOfSyncError(org.netbeans.modules.parsing.api.Snapshot, int, com.sun.source.tree.Tree, javax.lang.model.element.Element, org.netbeans.api.lexer.TokenSequence, com.sun.javadoc.Doc, boolean) dumpOutOfSyncError
-     */
-    public static void dumpOutOfSyncError(Snapshot snapshot,
-            TokenSequence<JavadocTokenId> ts, Doc jdoc, boolean throwNotLogException) {
-        dumpOutOfSyncError(snapshot, dumpOffset(ts), null, null, ts, jdoc, throwNotLogException);
-    }
-
-    /**
-     * @see #dumpOutOfSyncError(org.netbeans.modules.parsing.api.Snapshot, int, com.sun.source.tree.Tree, javax.lang.model.element.Element, org.netbeans.api.lexer.TokenSequence, com.sun.javadoc.Doc, boolean) dumpOutOfSyncError
-     */
-    public static void dumpOutOfSyncError(CompilationInfo javac,
-            TokenSequence<JavadocTokenId> ts, Doc jdoc, boolean throwNotLogException) {
-        Element elm = javac.getElementUtilities().elementFor(jdoc);
-        Tree tree = elm != null ? javac.getTrees().getTree(elm) : null;
-        dumpOutOfSyncError(javac.getSnapshot(), dumpOffset(ts), tree, elm, ts, jdoc, throwNotLogException);
-    }
-
-    private static int dumpOffset(TokenSequence<JavadocTokenId> ts) {
-        int offset = -1;
-        if (!ts.isEmpty()) {
-            ts.moveStart();
-            ts.moveNext();
-            offset = ts.offset();
-        }
-        return offset;
-    }
-    
 }

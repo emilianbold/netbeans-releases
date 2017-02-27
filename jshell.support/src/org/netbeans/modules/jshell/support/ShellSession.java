@@ -95,9 +95,8 @@ import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.SourceCodeAnalysis;
-import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
-import jdk.jshell.spi.ExecutionEnv;
+import jdk.jshell.spi.ExecutionControlProvider;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -113,6 +112,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.lib.nbjshell.NbExecutionControl;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
@@ -587,26 +587,16 @@ public class ShellSession  {
     
     private boolean initializing;
     
-    private class GenProxy implements JShellGenerator {
-        private final JShellGenerator del;
-
-        public GenProxy(JShellGenerator del) {
-            this.del = del;
-        }
-
-        @Override
-        public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-            ExecutionControl ctrl = del.generate(ee);
-            exec = (RemoteJShellService)ctrl;
-            return ctrl;
-        }
-
-        @Override
-        public String getTargetSpec() {
-            return del.getTargetSpec();
-        } 
+    private String createProjectClasspath() {
+        //ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
+        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
+        
+        String cp = addRoots("", compile);
+        //cp = addRoots(cp, compile);
+        return cp;
     }
-    
+
     /**
      * Finds appropriate source (language) version for the environment.
      * @return 
@@ -631,7 +621,7 @@ public class ShellSession  {
     private class Launcher extends JShellLauncher implements Consumer<SnippetEvent> {
         Subscription subscription;
         
-        public Launcher(JShellGenerator execEnv) throws IOException {
+        public Launcher(ExecutionControlProvider execEnv) throws IOException {
             super(
                 createShellPreferences(),
                 shellControlOutput, 
@@ -713,6 +703,14 @@ public class ShellSession  {
             }
             return homeResolvedPath;
         }
+
+        @Override
+        protected NbExecutionControl execControlCreated(NbExecutionControl ctrl) {
+            if (ctrl instanceof RemoteJShellService) {
+                exec = (RemoteJShellService)ctrl;
+            }
+            return super.execControlCreated(ctrl);
+        }
     }
     
     private SwitchingJavaFileManger fileman;
@@ -726,8 +724,32 @@ public class ShellSession  {
         if (v != null) {
             b.compilerOptions("-target", v.toString()); // NOI18N
         }
-        b.remoteVMOptions("-classpath", quote(createExecClasspathString())); // NOI18N
-        b.fileManager(fileman = new SwitchingJavaFileManger(getClasspathInfo()));
+        b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
+        ClasspathInfo cpI = getClasspathInfo();
+        System.err.println("Starting jshell with ClasspathInfo:");
+        for (PathKind kind : PathKind.values()) {
+            if (kind == PathKind.OUTPUT) {
+                continue;
+            }
+            System.err.print(kind + ": ");
+            ClassPath cp;
+            try {
+                cp = cpI.getClassPath(kind);
+            } catch (IllegalArgumentException ex) {
+                System.err.println("<not supported>");
+                continue;
+            }
+            if (cp == null) {
+                System.err.println("<null>");
+                continue;
+            }
+            System.err.println("");
+            for (ClassPath.Entry e : cp.entries()) {
+                System.err.println("\t" + e.getURL());
+            }
+            System.err.println("---------------");
+        }
+        b.fileManager((fm) -> fileman = new SwitchingJavaFileManger(cpI));
         return getEnv().customizeJShell(b);
     }
     
@@ -735,9 +757,8 @@ public class ShellSession  {
         if (launcher != null) {
             return launcher;
         }
-        JShellGenerator gen = new GenProxy(env.createExecutionEnv());
         try {
-            launcher = new Launcher(gen);
+            launcher = new Launcher(env.createExecutionEnv());
         } catch (IOException | RuntimeException | Error e) {
             e.printStackTrace();
         }

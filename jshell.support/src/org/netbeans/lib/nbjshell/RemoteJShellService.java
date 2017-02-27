@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,34 +39,34 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-export {|>GLOBAL:a<| as |>GLOBAL:x1<|};
-export {|>GLOBAL:a<| as |>GLOBAL:x2<|} |>CUSTOM2:from<| 'uuu';
-export * |>CUSTOM2:from<| 'ooo';
+package org.netbeans.lib.nbjshell;
 
-import |>GLOBAL:i1<| |>CUSTOM2:from<| 'ddd';
-import * as |>GLOBAL:star<| |>CUSTOM2:from<| 'fff';
+import jdk.jshell.spi.ExecutionControl;
 
-import {i2 as |>GLOBAL:i3<|} |>CUSTOM2:from<| 'sss';
+/**
+ * Carries out non-agent tasks for the JShell. Its actual implementation
+ * may vary depending on the launch mode of the JShell
+ *
+ * @author sdedic
+ */
+public interface RemoteJShellService extends ExecutionControl {
+    /**
+     * Requests shutdown of the target process. The implementation may ignore
+     * the request, but JShell should terminate at the local side anyway.
+     * @return true, if the request was accepted
+     */
+    public boolean requestShutdown();
 
-|>CUSTOM2:let<| |>GLOBAL:test<| = 7;
+    /**
+     * Closes the supplied I/O streams. If the streams are not yet opened or created
+     * the method does not even attempt to initiate the target VM. Further requests
+     * to get streams will result in an IOException.
+     */
+    public void closeStreams();
 
-class |>CLASS,GLOBAL:Test<| {
-    |>CUSTOM2:static<| test1() {
-        
-    }
+    public String getTargetSpec();
+
+    public void suppressClasspathChanges(boolean b);
     
-    |>METHOD:as<|() {
-        //ok
-    }
-    
-    |>METHOD:from<|() {
-        //ok
-    }
-    
-    |>METHOD:test1<|() {
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:a<| = 7;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:from<| = 0;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:as<| = 0;
-    }
+    public ExecutionControlException getBrokenException();
 }
-

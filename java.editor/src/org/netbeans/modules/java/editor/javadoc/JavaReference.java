@@ -42,27 +42,25 @@
 
 package org.netbeans.modules.java.editor.javadoc;
 
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.ConstructorDoc;
-import com.sun.javadoc.FieldDoc;
-import com.sun.javadoc.MemberDoc;
-import com.sun.javadoc.MethodDoc;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.openide.util.Exceptions;
 
 /**
  * Represents a reference to java element.
@@ -145,30 +143,33 @@ public final class JavaReference {
         if (declaredElement != null && member != null && member.length() > 0) {
             String[] paramarr;
             String memName = member.toString();
-            MemberDoc referencedMember;
-            ClassDoc referencedClass = (ClassDoc) javac.getElementUtilities().javaDocFor(declaredElement);
+            Element referencedMember;
             
             if (paramsText != null) {
                 // has parameter list -- should be method or constructor
                 paramarr = new ParameterParseMachine(paramsText).parseParameters();
                 if (paramarr != null) {
-                    referencedMember = findExecutableMember(memName, paramarr, referencedClass);
+                    List<TypeMirror> types = new ArrayList<>(paramarr.length);
+                    for (int i = 0; i < paramarr.length; i++) {
+                        String paramType = paramarr[i];
+                        types.add(javac.getTreeUtilities().parseType(paramType, scope));
+                    }
+                    referencedMember = findExecutableMember(declaredElement, memName, types, javac.getTypes());
                 } else {
                     referencedMember = null;
                 }
             } else {
                 // no parameter list -- should be field
-                referencedMember = findExecutableMember(memName, null, referencedClass);
-                FieldDoc fd = findField(referencedClass, memName);
+                referencedMember = findExecutableMember(declaredElement, memName, Collections.emptyList(), javac.getTypes());
+                Element fd = findField(declaredElement, memName);
                 // when no args given, prefer fields over methods
-                if (referencedMember == null ||
-                        (fd != null && fd.containingClass()
-                            .subclassOf(referencedMember.containingClass()))) {
+                if (referencedMember == null || (fd != null
+                        && javac.getTypes().isSubtype(fd.getEnclosingElement().asType(), referencedMember.getEnclosingElement().asType()))) {
                     referencedMember = fd;
                 }
             }
             if (referencedMember != null) {
-                result = javac.getElementUtilities().elementFor(referencedMember);
+                result = referencedMember;
             }
         }
         return result;
@@ -441,92 +442,35 @@ public final class JavaReference {
             }
         }
     }
-
-    private MemberDoc findReferencedMethod(String memName, String[] paramarr,
-                                           ClassDoc referencedClass) {
-        MemberDoc meth = findExecutableMember(memName, paramarr, referencedClass);
-        ClassDoc[] nestedclasses = referencedClass.innerClasses();
-        if (meth == null) {
-            for (int i = 0; i < nestedclasses.length; i++) {
-                meth = findReferencedMethod(memName, paramarr, nestedclasses[i]);
-                if (meth != null) {
-                    return meth;
+    
+    private ExecutableElement findExecutableMember(TypeElement clazz, String methodName, List<TypeMirror> paramTypes, Types types) {
+        List<ExecutableElement> members = methodName.contentEquals(clazz.getSimpleName())
+                ? ElementFilter.constructorsIn(clazz.getEnclosedElements())
+                : ElementFilter.methodsIn(clazz.getEnclosedElements());
+        outer: for (ExecutableElement ee : members) {
+            if (ee.getKind() == ElementKind.CONSTRUCTOR || methodName.contentEquals(ee.getSimpleName())) {
+                List<? extends TypeMirror> memberParamTypes = ((ExecutableType) ee.asType()).getParameterTypes();
+                if (memberParamTypes.size() == paramTypes.size()) {
+                    Iterator<TypeMirror> it = paramTypes.iterator();
+                    for (TypeMirror memberParamType : memberParamTypes) {
+                        TypeMirror type = it.next();
+                        if (types.isSameType(type, memberParamType)) {
+                            continue outer;
+                        }
+                    }
+                    return ee;
                 }
             }
         }
         return null;
     }
-
-    private MemberDoc findExecutableMember(String memName, String[] paramarr,
-                                           ClassDoc referencedClass) {
-        if (memName.equals(referencedClass.name())) {
-            return findConstructor(referencedClass, memName, paramarr);
-        } else {   // it's a method.
-            return findMethod(referencedClass, memName, paramarr);
-        }
-    }
     
-    // Here starts dark side. It is necessary to introduce API for following methods
-    // since they come from ClassDocImpl
-    
-    private static MethodDoc findMethod(ClassDoc clazz, String methodName, String[] paramTypes) {
-        try {
-            Method findMethod = clazz.getClass().getMethod(
-                    "findMethod", String.class, String[].class); // NOI18N
-            Object result = findMethod.invoke(clazz, methodName, paramTypes);
-            return result instanceof MethodDoc ? (MethodDoc) result : null;
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
+    private VariableElement findField(TypeElement clazz, String fieldName) {
+        for (VariableElement field : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
+            if (fieldName.contentEquals(field.getSimpleName())) {
+                return field;
+            }
         }
         return null;
     }
-    
-    private static ConstructorDoc findConstructor(ClassDoc clazz, String methodName, String[] paramTypes) {
-        try {
-            Method findConstructor = clazz.getClass().getMethod(
-                    "findConstructor", String.class, String[].class); // NOI18N
-            Object result = findConstructor.invoke(clazz, methodName, paramTypes);
-            return result instanceof ConstructorDoc ? (ConstructorDoc) result : null;
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-    
-    private FieldDoc findField(ClassDoc clazz, String fieldName) {
-        try {
-            Method findField = clazz.getClass().getMethod(
-                    "findField", String.class); // NOI18N
-            Object result = findField.invoke(clazz, fieldName);
-            return result instanceof FieldDoc ? (FieldDoc) result : null;
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-
 }

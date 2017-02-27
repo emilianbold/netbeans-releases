@@ -48,7 +48,10 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.util.Collection;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.ProjectInformation;
@@ -74,6 +77,9 @@ import org.openide.xml.XMLUtil;
  * @author Milos Kleint
  */
 public class MavenProjectNode extends AbstractNode {
+
+    private static final Logger LOGGER = Logger.getLogger(MavenProjectNode.class.getName());
+
     @Messages("ICON_BrokenProjectBadge=Project loading failed or was not complete")
     private static final String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(IconResources.BROKEN_PROJECT_BADGE_ICON) + "\">&nbsp;" + ICON_BrokenProjectBadge();
 
@@ -141,12 +147,17 @@ public class MavenProjectNode extends AbstractNode {
 
     @Override
     public Image getIcon(int param) {
-        return ImageUtilities.icon2Image(info.getIcon());
+        Icon icon = info.getIcon();
+        if (icon == null) {
+            LOGGER.log(Level.WARNING, "no icon in {0}", info);
+            return super.getIcon(param);
+        }
+        return ImageUtilities.icon2Image(icon);
     }
 
     @Override
     public Image getOpenedIcon(int param) {
-        return ImageUtilities.icon2Image(info.getIcon());
+        return getIcon(param);
     }
 
     public @Override Action[] getActions(boolean param) {

@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
@@ -39,34 +39,60 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-export {|>GLOBAL:a<| as |>GLOBAL:x1<|};
-export {|>GLOBAL:a<| as |>GLOBAL:x2<|} |>CUSTOM2:from<| 'uuu';
-export * |>CUSTOM2:from<| 'ooo';
+package org.netbeans.lib.nbjshell;
 
-import |>GLOBAL:i1<| |>CUSTOM2:from<| 'ddd';
-import * as |>GLOBAL:star<| |>CUSTOM2:from<| 'fff';
+import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.Kind;
+import jdk.jshell.Snippet.Status;
 
-import {i2 as |>GLOBAL:i3<|} |>CUSTOM2:from<| 'sss';
-
-|>CUSTOM2:let<| |>GLOBAL:test<| = 7;
-
-class |>CLASS,GLOBAL:Test<| {
-    |>CUSTOM2:static<| test1() {
-        
-    }
+/**
+ * Encapsulates information necessary for JShell console to work.
+ * Provides access to a snippet, if it exists, or at least to the wrapper,
+ * if the Snippet does not exist.
+ * 
+ * @author sdedic
+ */
+public interface SnippetWrapping {
+    /**
+     * @return kind of the snippet.
+     */
+    public Kind    getSnippetKind();
     
-    |>METHOD:as<|() {
-        //ok
-    }
+    /**
+     * Snippet status. Wrappers prepared from String code not
+     * executed by JShell return {@link Status#NONEXISTENT}.
+     * @return snippet status
+     */
+    public Status  getStatus();
     
-    |>METHOD:from<|() {
-        //ok
-    }
+    /**
+     * Snippet instance, if executed by JShell
+     * @return snippet instance of {@code null}.
+     */
+    public Snippet getSnippet();
     
-    |>METHOD:test1<|() {
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:a<| = 7;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:from<| = 0;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:as<| = 0;
-    }
+    /**
+     * Returns the complete wrapped text. 
+     * @return wrapped text
+     */
+    public String  getCode();
+    
+    /**
+     * Returns the original user's source
+     * @return original source before parsing/executing/wrapping
+     */
+    public String  getSource();
+    
+    /**
+     * Transforms original source position into the wrapped one.
+     * @param pos original position
+     * @return position inside the wrapper returned from {@link #getCode}
+     */
+    public int     getWrappedPosition(int pos);
+    
+    /**
+     * Class name of the shell snippet
+     * @return 
+     */
+    public String  getClassName();
 }
-

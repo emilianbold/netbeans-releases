@@ -382,6 +382,8 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "export"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_EXPORT; }
   "extends"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_EXTENDS; }
   "import"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_IMPORT; }
+  "as"                           { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.SPECIAL_KEYWORD_AS; }
+  "from"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.SPECIAL_KEYWORD_FROM; }
   "super"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_SUPER; }
   "yield"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_YIELD; }
 

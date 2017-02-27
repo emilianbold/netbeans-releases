@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
@@ -39,34 +39,67 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-export {|>GLOBAL:a<| as |>GLOBAL:x1<|};
-export {|>GLOBAL:a<| as |>GLOBAL:x2<|} |>CUSTOM2:from<| 'uuu';
-export * |>CUSTOM2:from<| 'ooo';
+package org.netbeans.lib.nbjshell;
 
-import |>GLOBAL:i1<| |>CUSTOM2:from<| 'ddd';
-import * as |>GLOBAL:star<| |>CUSTOM2:from<| 'fff';
+import java.io.InputStream;
 
-import {i2 as |>GLOBAL:i3<|} |>CUSTOM2:from<| 'sss';
+/**
+ *
+ * @author sdedic
+ */
+public class PipeInputStream extends InputStream {
+    
+    public static final int INITIAL_SIZE = 128;
+    private int[] buffer = new int[INITIAL_SIZE];
+    private int start;
+    private int end;
+    private boolean closed;
 
-|>CUSTOM2:let<| |>GLOBAL:test<| = 7;
+    @Override
+    public synchronized int read() {
+        while (start == end) {
+            if (closed) {
+                return -1;
+            }
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                //ignore
+            }
+        }
+        try {
+            return buffer[start];
+        } finally {
+            start = (start + 1) % buffer.length;
+        }
+    }
 
-class |>CLASS,GLOBAL:Test<| {
-    |>CUSTOM2:static<| test1() {
-        
+    public synchronized void write(int b) {
+        if (closed) {
+            throw new IllegalStateException("Already closed.");
+        }
+        int newEnd = (end + 1) % buffer.length;
+        if (newEnd == start) {
+            //overflow:
+            int[] newBuffer = new int[buffer.length * 2];
+            int rightPart = (end > start ? end : buffer.length) - start;
+            int leftPart = end > start ? 0 : start - 1;
+            System.arraycopy(buffer, start, newBuffer, 0, rightPart);
+            System.arraycopy(buffer, 0, newBuffer, rightPart, leftPart);
+            buffer = newBuffer;
+            start = 0;
+            end = rightPart + leftPart;
+            newEnd = end + 1;
+        }
+        buffer[end] = b;
+        end = newEnd;
+        notifyAll();
+    }
+
+    @Override
+    public synchronized void close() {
+        closed = true;
+        notifyAll();
     }
     
-    |>METHOD:as<|() {
-        //ok
-    }
-    
-    |>METHOD:from<|() {
-        //ok
-    }
-    
-    |>METHOD:test1<|() {
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:a<| = 7;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:from<| = 0;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:as<| = 0;
-    }
 }
-

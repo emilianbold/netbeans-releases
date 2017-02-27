@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
@@ -39,34 +39,24 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-export {|>GLOBAL:a<| as |>GLOBAL:x1<|};
-export {|>GLOBAL:a<| as |>GLOBAL:x2<|} |>CUSTOM2:from<| 'uuu';
-export * |>CUSTOM2:from<| 'ooo';
+package org.netbeans.lib.nbjshell;
 
-import |>GLOBAL:i1<| |>CUSTOM2:from<| 'ddd';
-import * as |>GLOBAL:star<| |>CUSTOM2:from<| 'fff';
+import java.util.Map;
+import jdk.jshell.spi.ExecutionControl;
 
-import {i2 as |>GLOBAL:i3<|} |>CUSTOM2:from<| 'sss';
+/**
+ * Extension ExecutionControl interface. Defines NB-specific commands to the agent
+ * and command methods.
+ * 
+ * @author sdedic
+ */
+public interface NbExecutionControl extends ExecutionControl {
+    /**
+     * Retrieves properties of the JShell process. May be used to print out
+     * system information.
+     * 
+     * @return properties in a map
+     */
+    public Map<String, String> commandVersionInfo();
 
-|>CUSTOM2:let<| |>GLOBAL:test<| = 7;
-
-class |>CLASS,GLOBAL:Test<| {
-    |>CUSTOM2:static<| test1() {
-        
-    }
-    
-    |>METHOD:as<|() {
-        //ok
-    }
-    
-    |>METHOD:from<|() {
-        //ok
-    }
-    
-    |>METHOD:test1<|() {
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:a<| = 7;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:from<| = 0;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:as<| = 0;
-    }
 }
-

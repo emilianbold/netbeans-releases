@@ -62,11 +62,6 @@ public class LoaderDelegator implements LoaderDelegate {
     }
 
     @Override
-    public void setClasspath(String string) throws ExecutionControl.EngineTerminationException, ExecutionControl.InternalException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public Class<?> findClass(String string) throws ClassNotFoundException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

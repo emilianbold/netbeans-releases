@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
@@ -39,34 +39,65 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-export {|>GLOBAL:a<| as |>GLOBAL:x1<|};
-export {|>GLOBAL:a<| as |>GLOBAL:x2<|} |>CUSTOM2:from<| 'uuu';
-export * |>CUSTOM2:from<| 'ooo';
+package org.netbeans.lib.nbjshell;
 
-import |>GLOBAL:i1<| |>CUSTOM2:from<| 'ddd';
-import * as |>GLOBAL:star<| |>CUSTOM2:from<| 'fff';
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jdk.jshell.execution.StreamingExecutionControl;
 
-import {i2 as |>GLOBAL:i3<|} |>CUSTOM2:from<| 'sss';
+public class NbExecutionControlBase extends StreamingExecutionControl implements NbExecutionControl {
+    private static final Logger LOG = Logger.getLogger(NbExecutionControlBase.class.getName());
 
-|>CUSTOM2:let<| |>GLOBAL:test<| = 7;
+    private ObjectInput   remoteIn;
+    private ObjectOutput  remoteOut;
 
-class |>CLASS,GLOBAL:Test<| {
-    |>CUSTOM2:static<| test1() {
-        
+    public NbExecutionControlBase(ObjectOutput out, ObjectInput in) {
+        super(out, in);
+        this.remoteOut = out;
+        this.remoteIn = in;
+    }
+
+    public ObjectOutput getRemoteOut() {
+        return remoteOut;
     }
     
-    |>METHOD:as<|() {
-        //ok
+    protected ObjectInput  getRemoteIn() {
+        return remoteIn;
     }
     
-    |>METHOD:from<|() {
-        //ok
+    @Override
+    public Map<String, String> commandVersionInfo() {
+        Map<String, String> result = new HashMap<>();
+        try {
+            Object o = extensionCommand("nb_vmInfo", null);
+            if (!(o instanceof Map)) {
+                return Collections.emptyMap();
+            }
+            result = (Map<String, String>)o;
+        } catch (RunException | InternalException ex) {
+            LOG.log(Level.INFO, "Error invoking JShell agent", ex.toString());
+        } catch (EngineTerminationException ex) {
+            shutdown();
+        }
+        return result;
+    }
+
+    protected void shutdown() {
+        if (remoteIn == null) {
+            return;
+        }
+        try {
+            remoteIn.close();
+            remoteOut.close();
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Error closing streams", ex);
+        }
     }
     
-    |>METHOD:test1<|() {
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:a<| = 7;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:from<| = 0;
-        |>CUSTOM2:let<| |>LOCAL_VARIABLE_DECLARATION,UNUSED:as<| = 0;
-    }
 }
-

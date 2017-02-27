@@ -88,6 +88,12 @@ public class RunTagWizard {
     public static final String INTERACTIVE_PROPERTY = "interactive";
 
     public static final String TTY_PROPERTY = "tty";
+    
+    public static final String PRIVILEGED_PROPERTY = "privileged";
+    
+    public static final String VOLUMES_PROPERTY = "mountVolumes";
+    
+    public static final String VOLUMES_TABLE_PROPERTY = "volumesTable";
 
     public static final String RANDOM_BIND_PROPERTY = "portRandom";
 
@@ -130,23 +136,30 @@ public class RunTagWizard {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.LBL_Run(getImage(tag)));
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            Boolean portRandom = (Boolean) wiz.getProperty(RANDOM_BIND_PROPERTY);
-            List<PortMapping> mapping = (List<PortMapping>) wiz.getProperty(PORT_MAPPING_PROPERTY);
-            if (mapping == null) {
-                mapping = Collections.emptyList();
-            }
-            run(tag, (String) wiz.getProperty(NAME_PROPERTY),
-                    (String) wiz.getProperty(COMMAND_PROPERTY),
-                    (String) wiz.getProperty(USER_PROPERTY),
-                    (Boolean) wiz.getProperty(INTERACTIVE_PROPERTY),
-                    (Boolean) wiz.getProperty(TTY_PROPERTY),
-                    portRandom != null ? portRandom : RANDOM_BIND_DEFAULT,
-                    mapping);
+            run(tag, wiz);
         }
     }
 
-    private void run(final DockerTag tag, final String name, final String command, final String user,
-            final boolean interactive, final boolean tty, final boolean randomBind, final List<PortMapping> mapping) {
+    private void run(final DockerTag tag, final WizardDescriptor wiz) {
+        final Boolean portRandom = (Boolean) wiz.getProperty(RANDOM_BIND_PROPERTY);
+        List<PortMapping> mappingVar = (List<PortMapping>) wiz.getProperty(PORT_MAPPING_PROPERTY);
+        if (mappingVar == null) {
+            mappingVar = Collections.emptyList();
+        }
+        final List<PortMapping> mapping = mappingVar;
+        final String name = (String) wiz.getProperty(NAME_PROPERTY);
+        final String command = (String) wiz.getProperty(COMMAND_PROPERTY);
+        final String user = (String) wiz.getProperty(USER_PROPERTY);
+        final boolean interactive = (Boolean) wiz.getProperty(INTERACTIVE_PROPERTY);
+        final boolean tty = (Boolean) wiz.getProperty(TTY_PROPERTY);
+        final boolean privileged = (Boolean) wiz.getProperty(PRIVILEGED_PROPERTY);
+        final boolean randomBind = portRandom != null ? portRandom : RANDOM_BIND_DEFAULT;
+        final boolean mountVolumes = (Boolean) wiz.getProperty(VOLUMES_PROPERTY);
+        Map<String, String> volumesTableVar = (Map<String, String>) wiz.getProperty(VOLUMES_TABLE_PROPERTY);
+        if (volumesTableVar == null) {
+            volumesTableVar = new HashMap<>();
+        }
+        final Map<String, String> volumesTable = volumesTableVar;
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -186,6 +199,9 @@ public class RunTagWizard {
 
                     JSONObject hostConfig = new JSONObject();
                     config.put("HostConfig", hostConfig);
+                    if (privileged) {
+                        hostConfig.put("Privileged", true);
+                    }
                     hostConfig.put("PublishAllPorts", randomBind);
                     if (!randomBind && !bindings.isEmpty()) {
                         JSONObject portBindings = new JSONObject();
@@ -200,6 +216,13 @@ public class RunTagWizard {
                                 arr.add(o);
                             }
                             portBindings.put(e.getKey(), arr);
+                        }
+                    }
+                    if (mountVolumes) {
+                        JSONArray binds = new JSONArray();
+                        hostConfig.put("Binds", binds);
+                        for (String target : volumesTable.keySet()) {
+                            binds.add(volumesTable.get(target) + ":" + target);
                         }
                     }
                     Pair<DockerContainer, ActionStreamResult> result = remote.run(name, config);

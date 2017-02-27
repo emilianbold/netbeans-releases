@@ -1287,7 +1287,7 @@ public class Utilities {
                          boolean keepLineMap,
                          CancelService cancelService,
                          Names names) {
-            super(fac, S, keepDocComments, keepLineMap, true, cancelService);
+            super(fac, S, keepDocComments, keepLineMap, true, false, cancelService);
             this.ctx = ctx;
             this.dollar = names.fromString("$");
         }
