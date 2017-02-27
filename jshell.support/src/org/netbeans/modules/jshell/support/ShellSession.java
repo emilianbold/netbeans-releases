@@ -938,7 +938,7 @@ public class ShellSession  {
     
     private Set<Snippet>    excludedSnippets = new HashSet<>();
     
-    private String createExecClasspathString() {
+    private String createClasspathString() {
         String sep = System.getProperty("path.separator");
         boolean modular = ShellProjectUtils.isModularJDK(platform);
         String agentJar = 
