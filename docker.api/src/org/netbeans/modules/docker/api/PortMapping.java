@@ -39,9 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.run;
-
-import org.netbeans.modules.docker.api.ExposedPort;
+package org.netbeans.modules.docker.api;
 
 /**
  *

@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.docker.api;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  *
  * @author Petr Hejl
@@ -54,12 +57,23 @@ public class DockerContainerDetail {
     private final boolean stdin;
 
     private final boolean tty;
+    
+    private final List<PortMapping> portMappings;
 
     public DockerContainerDetail(String name, DockerContainer.Status status, boolean stdin, boolean tty) {
         this.name = name;
         this.status = status;
         this.stdin = stdin;
         this.tty = tty;
+        this.portMappings = Collections.EMPTY_LIST;
+    }
+    
+    public DockerContainerDetail(String name, DockerContainer.Status status, boolean stdin, boolean tty, List<PortMapping> portMappings) {
+        this.name = name;
+        this.status = status;
+        this.stdin = stdin;
+        this.tty = tty;
+        this.portMappings = portMappings;
     }
 
     public String getName() {
@@ -76,5 +90,13 @@ public class DockerContainerDetail {
 
     public boolean isTty() {
         return tty;
+    }
+    
+    public List<PortMapping> portMappings() {
+        return Collections.unmodifiableList(portMappings);
+    }
+    
+    public boolean arePortExposed() {
+        return portMappings.isEmpty();
     }
 }
