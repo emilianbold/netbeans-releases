@@ -562,7 +562,7 @@ public class WorkingCopy extends CompilationController {
     /**
      * Resolves all fields that belong to the same field group. 
      */
-    private static @NonNull Collection<? extends Tree> collectFieldGroup(@NonNull CompilationInfo info, 
+    private static @NonNull List<? extends Tree> collectFieldGroup(@NonNull CompilationInfo info, 
             @NonNull TreePath parentPath, Tree leaf) {
         Iterable<? extends Tree> children;
 
@@ -704,16 +704,21 @@ public class WorkingCopy extends CompilationController {
                  */
                 private TreePath variableParent;
                 
+                private Tree     lastVariableItem;
+                
                 @Override
                 public Void scan(Tree tree, Void p) {
                     boolean saveVarDec = beginVariableDeclarator;
-                    
+                    boolean lastVar = false;
                     if (tree != null) {
+                        List<? extends Tree> group;
+                        
                         if (tree.getKind() == Tree.Kind.VARIABLE &&
-                            collectFieldGroup(WorkingCopy.this, 
-                                    getCurrentPath(), tree).size() > 1) {
+                            (group = collectFieldGroup(WorkingCopy.this, 
+                                    getCurrentPath(), tree)).size() > 1) {
                             // start of a variable, which is a part of a variable group
                             variableParent = getCurrentPath();
+                            lastVar = group.get(group.size() - 1) == tree;
                         } else if (variableParent != null && getCurrentPath().getLeaf().getKind() == Tree.Kind.VARIABLE) {
                             VariableTree vt = (VariableTree)getCurrentPath().getLeaf();
                             beginVariableDeclarator = vt.getModifiers() == tree || vt.getType() == tree;
@@ -763,6 +768,9 @@ public class WorkingCopy extends CompilationController {
                     }
                     if (currentParent != null && currentParent.getLeaf() == tree) {
                         currentParent = null;
+                    }
+                    if (lastVar) {
+                        variableParent = null;
                     }
                     beginVariableDeclarator = saveVarDec;
                     return null;

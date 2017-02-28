@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.jshell.tool;
 
-import org.netbeans.modules.jshell.tool.IOContext;
-import org.netbeans.modules.jshell.tool.JShellTool;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -54,8 +52,9 @@ import java.util.prefs.Preferences;
 import jdk.jshell.JShell;
 import org.netbeans.lib.nbjshell.NbExecutionControl;
 import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.spi.ExecutionControlProvider;
 import jdk.jshell.spi.ExecutionEnv;
-import org.netbeans.modules.jshell.support.JShellGenerator;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +63,7 @@ import org.openide.util.NbBundle;
  */
 public class JShellLauncher extends JShellTool {
     private String prefix = "";     // NOI18N
-    private JShellGenerator execGen;
+    private ExecutionControlProvider execGen;
     private NbExecutionControl    shellExecControl;
 
     /**
@@ -77,7 +76,7 @@ public class JShellLauncher extends JShellTool {
      */
     public JShellLauncher(
             Preferences prefs,
-            PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, JShellGenerator execEnv) {
+            PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, ExecutionControlProvider execEnv) {
         super(
                 new ByteArrayInputStream(new byte[1]),
                 cmdout, cmderr, cmderr, userin, userout, usererr, 
@@ -237,21 +236,38 @@ public class JShellLauncher extends JShellTool {
         printSystemInfo();
     }
 */
+    class CaptureExecControl implements ExecutionControlProvider {
+        private final ExecutionControlProvider delegate;
+
+        public CaptureExecControl(ExecutionControlProvider delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public String name() {
+            return delegate.name();
+        }
+
+        @Override
+        public Map<String, String> defaultParameters() {
+            return delegate.defaultParameters();
+        }
+
+        @Override
+        public ExecutionControl generate(ExecutionEnv ee, Map<String, String> map) throws Throwable {
+            return execControlCreated((NbExecutionControl)delegate.generate(ee, map));
+        }
+        
+    }
     
     @Override
     protected JShell createJShellInstance() {
-        ExecutionControl.Generator proxyGen = new ExecutionControl.Generator() {
-            @Override
-            public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-                return shellExecControl = (NbExecutionControl)execGen.generate(ee);
-            }
-        };
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+            Thread.currentThread().setContextClassLoader(Lookup.getDefault().lookup(ClassLoader.class));
             JShell.Builder b = makeBuilder();
             if (execGen != null) {
-                    b.executionEngine(proxyGen);
+                    b.executionEngine(new CaptureExecControl(execGen), Collections.emptyMap());
             }
             String s = System.getProperty("jshell.logging.properties");
             if (s != null) {
@@ -321,5 +337,14 @@ public class JShellLauncher extends JShellTool {
     
     public void closeState() {
         super.closeState();
+    }
+    
+    protected NbExecutionControl execControlCreated(NbExecutionControl ctrl) {
+        this.shellExecControl = ctrl;
+        return ctrl;
+    }
+    
+    protected NbExecutionControl execControl() {
+        return shellExecControl;
     }
 }
