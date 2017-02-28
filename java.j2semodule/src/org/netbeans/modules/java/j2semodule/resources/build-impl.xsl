@@ -226,6 +226,16 @@ is divided into following sections:
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
                 </xsl:call-template>
+                <xsl:call-template name="createRootAvailableSet">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
+                    <xsl:with-param name="propName">have.tests</xsl:with-param>
+                    <xsl:with-param name="suffix">patchset</xsl:with-param>
+                    <xsl:with-param name="filter">
+                        <scriptselector language="javascript">
+                            self.setSelected(!new java.io.File(file, "module-info.java").exists());
+                        </scriptselector>                    
+                    </xsl:with-param>
+                </xsl:call-template>
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:source-roots"/>
                     <xsl:with-param name="propName">have.sources</xsl:with-param>
@@ -357,7 +367,7 @@ is divided into following sections:
                         <loadresource quiet="true" property="entry" unless:blank="@{{paths}}">
                             <concat>@{paths}</concat>
                             <filterchain>
-                                <replaceregex pattern="([^@{{separator}}]*)@{{separator}}.*" replace="\1" />
+                                <replaceregex pattern="([^@{{separator}}]*)\Q@{{separator}}\E.*" replace="\1" />
                             </filterchain>
                         </loadresource>
                 
@@ -369,7 +379,7 @@ is divided into following sections:
                         <loadresource quiet="true" property="tail" if:true="${{moreElements}}">
                             <concat>@{paths}</concat>
                             <filterchain>
-                                <replaceregex pattern="[^@{{separator}}]*@{{separator}}(.*)" replace="\1" />
+                                <replaceregex pattern="[^@{{separator}}]*\Q@{{separator}}\E(.*)" replace="\1" />
                             </filterchain>
                         </loadresource>
 
@@ -378,6 +388,7 @@ is divided into following sections:
                         </j2semodularproject1:for-paths>
                     </sequential>
                 </macrodef>
+                <property name="modules.supported.internal" value="true"/>
             </target>
 
             <target name="-post-init">
@@ -681,7 +692,7 @@ is divided into following sections:
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
-                            <jvmarg value="-modulepath"/>
+                            <jvmarg value="--module-path"/>
                             <jvmarg path="${{run.test.modulepath}}:${{empty.dir}}"/>
                             <jvmarg line="${{run.test.jvmargs}}"/>
                             <customizePrototype/>
@@ -753,13 +764,14 @@ is divided into following sections:
                         <j2semodularproject1:junit-prototype>
                             <customizePrototype>
                                 <batchtest todir="${{build.test.results.dir}}">
-                                    <xsl:call-template name="createFilesets">
+                                    <xsl:call-template name="createMappedResources">
                                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
                                         <xsl:with-param name="includes">@{includes}</xsl:with-param>
                                         <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
                                         <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
+                                        <xsl:with-param name="setprefix">have.tests</xsl:with-param>
                                     </xsl:call-template>
-                                    <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
+                                    <fileset dir="${{build.test.modules.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
                                         <filename name="${{test.binarytestincludes}}"/>
                                     </fileset>
                                 </batchtest>
@@ -937,7 +949,7 @@ is divided into following sections:
             <target name="-init-macrodef-test" depends="-init-macrodef-test-impl,-init-macrodef-junit-impl,-init-macrodef-testng-impl">
                 <macrodef>
                     <xsl:attribute name="name">test</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-modular-project/3</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-modular-project/1</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
                         <xsl:attribute name="default">${includes}</xsl:attribute>
@@ -1263,7 +1275,7 @@ is divided into following sections:
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-modular-project/1</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">dir</xsl:attribute>
-                        <xsl:attribute name="default">${build.modules.dir}</xsl:attribute>
+                        <xsl:attribute name="default">${debug.modules.dir}</xsl:attribute>
                     </attribute>
                     <sequential>
                         <nbjpdareload>
@@ -1480,7 +1492,7 @@ is divided into following sections:
                 Object.keys(values).sort().forEach(function(k) {
                     result.push(k + keyValueSeparator + values[k].join(multiSeparator));
                 });
-                return result.join(entrySeparator);
+                return result.join(" " + entrySeparator);
             }
             self.project.setProperty(attributes.get("property"),
                 coalesce(attributes.get("value"), 
@@ -1552,7 +1564,7 @@ is divided into following sections:
             return res;
         }
 
-        function toRegexp2(spec, filepattern) {
+        function toRegexp2(spec, filepattern, separator) {
             var prefixes = [];
             var suffixes = [];
             pathVariants(spec).forEach(function(item) {
@@ -1560,12 +1572,12 @@ is divided into following sections:
             });
             var tail = "";
             if (filepattern && filepattern != tail) {
-                tail = "/" + filepattern;
+                tail = separator + filepattern;
             }
-            return "([^/]+)/(" + suffixes.join("|") + ")" + tail;
+            return "([^" + separator +"]+)\\Q" + separator + "\\E(" + suffixes.join("|") + ")" + tail;
         }
                 self.project.setProperty(attributes.get("property"), 
-                    toRegexp2(attributes.get("modsource"), attributes.get("filepattern")));
+                    toRegexp2(attributes.get("modsource"), attributes.get("filepattern"), self.project.getProperty("file.separator")));
             
             ]]>
             </scriptdef>
@@ -1768,11 +1780,7 @@ is divided into following sections:
             <target depends="init,compile,-check-main-class,-main-module-check" description="Run a main class." name="run">
                 <property name="main.class.relativepath" refid="main.class.relativepath"></property>
                 <pathconvert pathsep="," property="src.dir.list" refid="have.sources.set"></pathconvert>
-                <j2semodularproject1:modsource_regexp filePattern="(.*$)" modsource="${{src.dir.path}}" property="run.src.dir.path.regexp"></j2semodularproject1:modsource_regexp>
-                <pathconvert property="x">
-                    <multirootfileset basedirs="${{src.dir.list}}" id="foo" includes="**/${{main.class.relativepath}}"></multirootfileset>
-                    <regexpmapper from="${{run.src.dir.path.regexp}}" to="\1"></regexpmapper>
-                </pathconvert>
+                <j2semodularproject1:modsource_regexp filePattern="(.*$)" modsource="${{src.dir.path}}" property="run.src.dir.path.regexp"/>
                 <j2semodularproject1:java>
                     <customize>
                         <arg line="${{application.args}}"></arg>
@@ -1783,6 +1791,11 @@ is divided into following sections:
                 <condition property="check.class.name" value="${{run.class}}" else="${{main.class}}">
                     <isset property="run.class"/>
                 </condition>
+                <condition property="run.modules.dir" value="${{build.modules.dir}}">
+                    <not>
+                        <isset property="run.modules.dir"/>
+                    </not>
+                </condition>
                 <resources id="main.class.relativepath">
                     <mappedresources>
                         <string value="${{check.class.name}}"/>
@@ -1790,8 +1803,8 @@ is divided into following sections:
                     </mappedresources>
                 </resources>
                 <pathconvert property="module.name">
-                    <fileset dir="${{build.modules.dir}}" includes="**/${{toString:main.class.relativepath}}"/>
-                    <regexpmapper from="${{build.modules.dir}}/([^${{file.separator}}]+)/.*.class" to="\1"/>
+                    <fileset dir="${{run.modules.dir}}" includes="**/${{toString:main.class.relativepath}}"/>
+                    <regexpmapper from="${{run.modules.dir}}\Q${{file.separator}}\E([^${{file.separator}}]+)\Q${{file.separator}}\E.*\.class" to="\1"/>
                 </pathconvert>
                 <fail message="Could not determine module of the main class and module.name is not set">
                     <condition>
@@ -1815,9 +1828,13 @@ is divided into following sections:
             </target>
 
             <target name="run-test-with-main">
-                <xsl:attribute name="depends">init,compile-test-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-main-module-check</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-                <j2semodularproject1:java classname="${{run.class}}" classpath="${{run.test.classpath}}"/>
+                <j2semodularproject1:java classname="${{run.class}}" classpath="${{run.test.classpath}}" modulepath="${{run.test.modulepath}}">
+                    <customize>
+                        <jvmarg line="${{run.test.jvmargs}}"/>
+                    </customize>
+                </j2semodularproject1:java>
             </target>
 
             <xsl:comment>
@@ -1827,10 +1844,10 @@ is divided into following sections:
             </xsl:comment>
             
             <target name="-debug-init">
-                <fail message="debug.class property is not set" unless="debug.class"/>
                 <condition property="run.class" value="${{debug.class}}" else="${{main.class}}">
                     <isset property="debug.class"/>
                 </condition>
+                <fail message="debug.class or main.class property is not set" unless="run.class"/>
             </target>
             <target name="-debug-start-debugger">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
@@ -1862,7 +1879,7 @@ is divided into following sections:
             <target name="-debug-start-debugger-stepinto">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-debug-init,-main-module-check</xsl:attribute>
-                <j2semodularproject1:nbjpdastart stopclassname="${{main.class}}"/>
+                <j2semodularproject1:nbjpdastart stopclassname="${{debug.class}}"/>
             </target>
             
             <target name="debug-stepinto">
@@ -1903,6 +1920,7 @@ is divided into following sections:
             <target name="-do-debug-fix">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
+                 <property name="debug.modules.dir" value="${{build.modules.dir}}"/>
                 <j2semodularproject1:nbjpdareload/>
             </target>
             
@@ -2140,61 +2158,83 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="-init-test-javac-module-properties-with-module" depends="-init-source-module-properties" if="named.module.internal">
-                <property name="test.compile.modulepath" value="${javac.test.modulepath}"/>
-                <j2semodularproject1:modulename property="test.module.name">
-                    <xsl:attribute name="sourcepath">
-                            <xsl:call-template name="createPath">
-                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
-                            </xsl:call-template>
-                    </xsl:attribute>
-                </j2semodularproject1:modulename>
-                <condition property="javac.test.moduleargs" value="-XaddReads:${{test.module.name}}=ALL-UNNAMED" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=ALL-UNNAMED">
-                    <and>
-                        <isset property="test.module.name"/>
-                        <length length="0" string="${{test.module.name}}" when="greater"/>
-                    </and>
-                </condition>
-            </target>
-            <target name="-init-test-run-module-properties" depends="-init-source-module-properties" if="named.module.internal">
-                <condition property ="run.test.addexport.source.module.internal" value="${{test.module.name}}" else="${{module.name}}">
-                    <and>
-                        <isset property="test.module.name"/>
-                        <length length="0" string="${{test.module.name}}" when="greater"/>
-                    </and>
-                </condition>
+            <target name="-init-test-run-module-properties" depends="-init-source-module-properties">
                 <fileset id="run.test.packages.internal" dir="${{build.test.modules.dir}}" includes="**/*.class"/>
                 <property name="build.test.modules.dir.abs.internal" location="${{build.test.modules.dir}}"/>
                 <pathconvert refid="run.test.packages.internal" property="run.test.addexports.internal" pathsep=" ">
                     <chainedmapper>
+                        <filtermapper>
+                            <replacestring from="${{build.test.modules.dir.abs.internal}}/" to=""/>
+                        </filtermapper>
                         <regexpmapper from="^([^${{file.separator}}]*)\Q${{file.separator}}\E(.*)\Q${{file.separator}}\E.*\.class$$" to="\1${{path.separator}}\2"/>
                         <filtermapper>
                             <uniqfilter/>
-                            <replacestring from="${{build.test.modules.dir.abs.internal}}" to=""/>
+                            <replacestring from="${{file.separator}}" to="."/>
                         </filtermapper>
-                        <replacestring from="${{file.separator}}" to="."/>
-                        <replacestring from="${{path:separator}}" to="/"/>
-                        <regexpmapper from="([^/]+)(.*)" to="--add-exports:\1/\2=ALL-UNNAMED"/>
+                        <regexpmapper from="([^${{file.separator}}]+)${{path.separator}}(.*)" to="--add-exports \1/\2=ALL-UNNAMED"/>
                     </chainedmapper>
                 </pathconvert>
-                <condition property ="run.test.jvmargs" value="-addmods ${{test.module.name}} -XaddReads:${{test.module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}" else="-Xpatch:${{module.name}}=${{build.test.classes.dir}} -addmods ${{module.name}} -XaddReads:${{module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}">
-                    <and>
-                        <isset property="test.module.name"/>
-                        <length length="0" string="${{test.module.name}}" when="greater"/>
-                    </and>
+                <property name="build.test.modules.location" location="${{build.test.modules.dir}}"/>
+                <pathconvert property="run.test.addmodules.list" pathsep=",">
+                    <map from="${{build.test.modules.location}}${{file.separator}}" to=""/>
+                    <dirset dir="${{build.test.modules.dir}}" includes="*"/>
+                    <chainedmapper>
+                        <filtermapper>
+                            <uniqfilter/>
+                        </filtermapper>
+                    </chainedmapper>
+                </pathconvert>
+                <pathconvert property="run.test.patchmodules.list" pathsep=" ">
+                    <dirset dir="${{build.test.modules.dir}}" includes="*">
+                        <scriptselector language="javascript">
+                            self.setSelected(!new java.io.File(file, "module-info.class").exists());
+                        </scriptselector>
+                    </dirset>
+                    <chainedmapper>
+                        <filtermapper>
+                            <uniqfilter/>
+                        </filtermapper>
+                        <regexpmapper from=".*\Q${{file.separator}}\E([^${{file.separator}}]+)$" to="--patch-module \1=\0"/>
+                    </chainedmapper>
+                </pathconvert>
+                <j2semodularproject1:coalesce_keyvalue property="run.test.patchmodules" value="${{run.test.patchmodules.list}}" value-sep="=" entry-sep="${{path.separator}}" multi-sep="--patch-module "/>
+                <condition property="run.test.addmodules.internal" value="--add-modules ${{run.test.addmodules.list}}" else="">
+                    <isset property="run.test.addmodules.list"/>
                 </condition>
+                <pathconvert property="run.test.addreads.internal" pathsep=" ">
+                    <map from="${{build.test.modules.location}}" to=""/>
+                    <dirset dir="${{build.test.modules.dir}}" includes="*"/>
+                    <chainedmapper>
+                        <regexpmapper from="^${{build.test.modules.location}}(.*)" to="\1"/>
+                        <regexpmapper from="(.*)" to="--add-reads \1=ALL-UNNAMED"/>
+                        <filtermapper>
+                            <uniqfilter/>
+                        </filtermapper>
+                    </chainedmapper>
+                </pathconvert>
+                <property name="run.test.jvmargs" value="${{run.test.addmodules.internal}} ${{run.test.addreads.internal}} ${{run.test.addexports.internal}} ${{run.test.patchmodules}}"/>
             </target>
-            <target name="-init-test-module-properties-without-module" depends="-init-source-module-properties" unless="named.module.internal">
-                <property name="run.test.jvmargs" value=""/>
-                <pathconvert pathsep=" " property="compile.test.patchmodule.internal" refid="have.tests.set">
+            <target name="-init-test-javac-module-properties" depends="-init-source-module-properties">
+                <echo message="Test root dirs = ${{toString:have.tests.patchset}}"/>
+                <pathconvert pathsep=" " property="compile.test.patchmodule.internal" refid="have.tests.patchset">
                     <regexpmapper from="(.*\Q${{file.separator}}\E)([^${{file.separator}}]+)\Q${{file.separator}}\E(.*)$$" to="--patch-module \2=\1\2${{file.separator}}\3"/>
                 </pathconvert>
-                <j2semodularproject1:coalesce_keyvalue 
-                    property="javac.test.moduleargs" 
-                    value="${{compile.test.patchmodule.internal}}" 
-                    value-sep="=" entry-sep="${{path.separator}}" multi-sep="--patch-module "/>
+                <pathconvert property="compile.test.addreads" pathsep=" ">
+                    <union refid="have.tests.set"/>
+                    <chainedmapper>
+                        <firstmatchmapper>
+                            <regexpmapper from="${{have.tests.test.src.dir.regexp}}" to="\1"/>
+                        </firstmatchmapper>
+                        <regexpmapper from="(.*)" to="--add-reads \1=ALL-UNNAMED"/>
+                        <filtermapper>
+                            <uniqfilter/>
+                        </filtermapper>
+                    </chainedmapper>
+                </pathconvert>
+                <j2semodularproject1:coalesce_keyvalue property="compile.test.patchmodules" value="${{compile.test.patchmodule.internal}}" value-sep="=" entry-sep="${{path.separator}}" multi-sep="--patch-module "/>
+                <property name="javac.test.moduleargs" value="${{compile.test.patchmodules}} ${{compile.test.addreads}}"/>
             </target>
-            <target name="-init-test-module-properties" depends="-init-test-javac-module-properties-with-module,-init-test-module-properties-without-module">
+            <target name="-init-test-module-properties" depends="-init-test-javac-module-properties">
                 <property name="test.module.build.location" location="${{build.modules.dir}}"/>
                 <xsl:element name="property">
                     <xsl:attribute name="name">
@@ -2296,7 +2336,9 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{build.test.results.dir}}"/>
             </target>
-            
+            <target name="-init-test-run">
+                <property name="run.modules.dir" value="${{build.test.modules.dir}}"/>
+            </target>
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-init-test-run-module-properties,-pre-test-run</xsl:attribute>
@@ -2386,14 +2428,14 @@ is divided into following sections:
             
             <target name="-debug-start-debuggee-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
                 <j2semodularproject1:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{javac.includes}}" testClass="${{test.class}}"/>
             </target>
             
             <target name="-debug-start-debuggee-test-method">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
                 <fail unless="test.method">Must select some method in the IDE or set test.method</fail>
                 <j2semodularproject1:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{test.class}}" testmethods="${{test.method}}" testClass="${{test.class}}" testMethod="${{test.method}}"/>
@@ -2416,6 +2458,7 @@ is divided into following sections:
             <target name="-do-debug-fix-test">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,compile-test-single</xsl:attribute>
+                <property name="debug.modules.dir" value="${{build.test.modules.dir}}"/>
                 <j2semodularproject1:nbjpdareload/>
             </target>
             
@@ -2602,6 +2645,12 @@ is divided into following sections:
     <xsl:template name="createRootAvailableTest">
         <xsl:param name="roots"/>
         <xsl:param name="propName"/>
+        <xsl:call-template name="createRootAvailableSet">
+            <xsl:with-param name="roots" select="$roots"/>
+            <xsl:with-param name="propName" select="$propName"/>
+            <xsl:with-param name="suffix" select="'set'"/>
+        </xsl:call-template>
+        <!--
         <xsl:for-each select="$roots/j2semodularproject1:root">
             <j2semodularproject1:modsource_regexp property="{$propName}.{@id}.regexp" modsource="${{{@id}.path}}"/>
             <dirset dir="${{basedir}}/${{{@id}}}" includes="*/*" id="{$propName}.{@id}.set">
@@ -2613,6 +2662,7 @@ is divided into following sections:
                 <dirset refid="{$propName}.{@id}.set"/>
             </xsl:for-each>
         </union>
+        -->
         <xsl:element name="condition">
             <xsl:attribute name="property"><xsl:value-of select="$propName"/></xsl:attribute>
             <or>
@@ -2623,6 +2673,27 @@ is divided into following sections:
                 </xsl:for-each>
             </or>
         </xsl:element>
+    </xsl:template>
+    
+    <xsl:template name="createRootAvailableSet">
+        <xsl:param name="roots"/>
+        <xsl:param name="propName"/>
+        <xsl:param name="suffix" select="'set'"/>
+        <xsl:param name="filter"/>
+        <xsl:for-each select="$roots/j2semodularproject1:root">
+            <j2semodularproject1:modsource_regexp property="{$propName}.{@id}.regexp" modsource="${{{@id}.path}}"/>
+            <dirset dir="${{basedir}}/${{{@id}}}" includes="*/*" id="{$propName}.{@id}.{$suffix}">
+                <filename regex="${{{$propName}.{@id}.regexp}}"/>
+                <xsl:if test="$filter">
+                    <xsl:copy-of select="$filter"/>
+                </xsl:if>
+            </dirset>
+        </xsl:for-each>
+        <union id="{$propName}.{$suffix}">
+            <xsl:for-each select="$roots/j2semodularproject1:root">
+                <dirset refid="{$propName}.{@id}.{$suffix}"/>
+            </xsl:for-each>
+        </union>
     </xsl:template>
     
     <xsl:template name="createSourcePathValidityTest">
@@ -2670,6 +2741,30 @@ is divided into following sections:
         </xsl:for-each>
     </xsl:template>
     
+    <xsl:template name="createOneFileSet">
+        <xsl:param name="includes" select="'${includes}'"/>
+        <xsl:param name="includes2"/>
+        <xsl:param name="excludes"/>
+        <xsl:param name="condition"/>
+        
+        <xsl:element name="fileset">
+            <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+            <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+            <xsl:choose>
+                <xsl:when test="$excludes">
+                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:if test="$includes2">
+                <filename name="{$includes2}"/>
+                <xsl:copy-of select="$condition"/>
+            </xsl:if>
+        </xsl:element>
+    </xsl:template>
+    
     <xsl:template name="createFilesets">
         <xsl:param name="roots"/>
         <xsl:param name="includes" select="'${includes}'"/>
@@ -2677,23 +2772,40 @@ is divided into following sections:
         <xsl:param name="excludes"/>
         <xsl:param name="condition"/>
         <xsl:for-each select="$roots/j2semodularproject1:root">
-            <xsl:element name="fileset">
-                <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-                <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
-                <xsl:choose>
-                    <xsl:when test="$excludes">
-                        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/>,${excludes}</xsl:attribute>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:attribute name="excludes">${excludes}</xsl:attribute>
-                    </xsl:otherwise>
-                </xsl:choose>
-                <xsl:if test="$includes2">
-                    <filename name="{$includes2}"/>
-                    <xsl:copy-of select="$condition"/>
-                </xsl:if>
-            </xsl:element>
+            <xsl:call-template name="createOneFileSet">
+                <xsl:with-param name="includes" select="$includes"/>
+                <xsl:with-param name="includes2" select="$includes2"/>
+                <xsl:with-param name="excludes" select="$excludes"/>
+                <xsl:with-param name="condition" select="$condition"/>
+            </xsl:call-template>
         </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="createMappedResources">
+        <xsl:param name="roots"/>
+        <xsl:param name="includes" select="'${includes}'"/>
+        <xsl:param name="includes2"/>
+        <xsl:param name="excludes"/>
+        <xsl:param name="condition"/>
+        <xsl:param name="setprefix"/>
+        <mappedresources>
+            <union>
+                <xsl:for-each select="$roots/j2semodularproject1:root">
+                    <xsl:call-template name="createOneFileSet">
+                        <xsl:with-param name="includes" select="$includes"/>
+                        <xsl:with-param name="includes2" select="$includes2"/>
+                        <xsl:with-param name="excludes" select="$excludes"/>
+                        <xsl:with-param name="condition">
+                            <xsl:copy-of select="$condition"/>
+                            <filename regex="${{{$setprefix}.{@id}.regexp}}"/>
+                        </xsl:with-param>
+                    </xsl:call-template>
+                </xsl:for-each>
+            </union>
+            <xsl:for-each select="$roots/j2semodularproject1:root">
+                <regexpmapper from="${{{$setprefix}.{@id}.regexp}}\Q${{file.separator}}\E(.*)$" to="\3"/>
+            </xsl:for-each>
+        </mappedresources>
     </xsl:template>
     
     <xsl:template name="createPackagesets">
