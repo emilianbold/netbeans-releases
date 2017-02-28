@@ -193,8 +193,13 @@ public final class OutputUtils {
         })
         public void outputLineAction(OutputEvent ev) {
             StacktraceAttributes sa = matchStackTraceLine(ev.getLine());
+            if(sa == null || sa.method == null || sa.file == null) {
+                Logger.getLogger(OutputUtils.class.getName()).log(Level.WARNING, "No file found for output line {0}", ev.getLine()); // NOI18N
+                StatusDisplayer.getDefault().setStatusText(Bundle.NoSource(ev.getLine()));
+                return;
+            } 
+            
             ClassPath classPath = getClassPath();
-
             int index = sa.method.indexOf(sa.file);
             String packageName = sa.method.substring(0, index).replace('.', '/'); //NOI18N
             String resourceName = packageName + sa.file + ".class"; //NOI18N
@@ -232,7 +237,7 @@ public final class OutputUtils {
                             }
                         }
                     }
-                }
+                }                
                 StatusDisplayer.getDefault().setStatusText(Bundle.NoSource(sa.file));
             } else {
                 StatusDisplayer.getDefault().setStatusText(Bundle.NotFound(sa.file));

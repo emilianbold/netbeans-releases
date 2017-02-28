@@ -39,15 +39,67 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.lib.nbjshell;
 
-import jdk.jshell.spi.ExecutionControlProvider;
+import java.io.InputStream;
 
 /**
  *
  * @author sdedic
  */
-public interface JShellGenerator extends ExecutionControlProvider {
-    // FIXME: seems that noone really calls this method.
-    public String getTargetSpec();
+public class PipeInputStream extends InputStream {
+    
+    public static final int INITIAL_SIZE = 128;
+    private int[] buffer = new int[INITIAL_SIZE];
+    private int start;
+    private int end;
+    private boolean closed;
+
+    @Override
+    public synchronized int read() {
+        while (start == end) {
+            if (closed) {
+                return -1;
+            }
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                //ignore
+            }
+        }
+        try {
+            return buffer[start];
+        } finally {
+            start = (start + 1) % buffer.length;
+        }
+    }
+
+    public synchronized void write(int b) {
+        if (closed) {
+            throw new IllegalStateException("Already closed.");
+        }
+        int newEnd = (end + 1) % buffer.length;
+        if (newEnd == start) {
+            //overflow:
+            int[] newBuffer = new int[buffer.length * 2];
+            int rightPart = (end > start ? end : buffer.length) - start;
+            int leftPart = end > start ? 0 : start - 1;
+            System.arraycopy(buffer, start, newBuffer, 0, rightPart);
+            System.arraycopy(buffer, 0, newBuffer, rightPart, leftPart);
+            buffer = newBuffer;
+            start = 0;
+            end = rightPart + leftPart;
+            newEnd = end + 1;
+        }
+        buffer[end] = b;
+        end = newEnd;
+        notifyAll();
+    }
+
+    @Override
+    public synchronized void close() {
+        closed = true;
+        notifyAll();
+    }
+    
 }

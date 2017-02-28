@@ -119,6 +119,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
@@ -1603,7 +1604,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
-    static class PomListChildren<T extends POMComponent> extends Children.Keys<Lookup> {
+    static class PomListChildren<T extends POMComponent> extends Children.Keys<Lookup> implements PropertyChangeListener {
         private final Object[] one = new Object[] {new Object()};
         private final POMCutHolder holder;
         private final POMQNames names;
@@ -1619,15 +1620,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             this.keyGenerator = generator;
             this.childName = childName;
             this.configuration = configuration;
-            this.configuration.addPropertyChangeListener(new PropertyChangeListener() {
-
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (POMModelPanel.Configuration.PROP_SORT_LISTS.equals(evt.getPropertyName())) {
-                        resort();
-                    }
-                }
-            });
+            this.configuration.addPropertyChangeListener(WeakListeners.propertyChange(this, this.configuration));
         }
 
         @Override
@@ -1691,6 +1684,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             setKeys(toSet);
         }
         
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (POMModelPanel.Configuration.PROP_SORT_LISTS.equals(evt.getPropertyName())) {
+                resort();
+            }
+        }
+
         public void resort() {
             if (keys != null) {
                 if (configuration.isSortLists()) {

@@ -42,11 +42,13 @@
 
 package org.netbeans.modules.java.completion;
 
+import com.sun.source.tree.ModuleTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -93,18 +95,17 @@ public final class JavaDocumentationTask<T> extends BaseTask {
         } else {
             Env e = getCompletionEnvironment(controller, false);
             if (e != null) {
-                el = controller.getTrees().getElement(e.getPath());
+                el = controller.getTrees().getElement(refinePath(e.getPath()));
             }
         }
-        if (el != null) {
+        if (!controller.getElementUtilities().isErroneous(el)) {
             switch (el.getKind()) {
+                case MODULE:
+                case PACKAGE:
                 case ANNOTATION_TYPE:
                 case CLASS:
                 case ENUM:
                 case INTERFACE:
-                    if (el.asType().getKind() == TypeKind.ERROR) {
-                        break;
-                    }
                 case CONSTRUCTOR:
                 case ENUM_CONSTANT:
                 case FIELD:
@@ -112,5 +113,18 @@ public final class JavaDocumentationTask<T> extends BaseTask {
                     documentation = (T)factory.create(controller, el, cancel);
             }
         }
+    }
+
+    private TreePath refinePath(final TreePath path) {
+        TreePath tp = path;
+        Tree last = null;
+        while(tp != null) {
+            if (tp.getLeaf().getKind() == Tree.Kind.MODULE && ((ModuleTree)tp.getLeaf()).getName() == last) {
+                return tp;
+            }
+            last = tp.getLeaf();
+            tp = tp.getParentPath();
+        }
+        return path;
     }    
 }

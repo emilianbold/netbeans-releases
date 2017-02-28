@@ -39,15 +39,24 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.lib.nbjshell;
 
-import jdk.jshell.spi.ExecutionControlProvider;
+import java.util.Map;
+import jdk.jshell.spi.ExecutionControl;
 
 /**
- *
+ * Extension ExecutionControl interface. Defines NB-specific commands to the agent
+ * and command methods.
+ * 
  * @author sdedic
  */
-public interface JShellGenerator extends ExecutionControlProvider {
-    // FIXME: seems that noone really calls this method.
-    public String getTargetSpec();
+public interface NbExecutionControl extends ExecutionControl {
+    /**
+     * Retrieves properties of the JShell process. May be used to print out
+     * system information.
+     * 
+     * @return properties in a map
+     */
+    public Map<String, String> commandVersionInfo();
+
 }

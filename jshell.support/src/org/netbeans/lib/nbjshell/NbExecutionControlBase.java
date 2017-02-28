@@ -39,88 +39,65 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.launch;
+package org.netbeans.lib.nbjshell;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.lib.nbjshell.NbExecutionControl;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jdk.jshell.execution.StreamingExecutionControl;
 
-/**
- *
- * @author sdedic
- */
-public final class BrokenExecutionControl implements NbExecutionControl, RemoteJShellService {
-    private final EngineTerminationException originalException;
+public class NbExecutionControlBase extends StreamingExecutionControl implements NbExecutionControl {
+    private static final Logger LOG = Logger.getLogger(NbExecutionControlBase.class.getName());
 
-    public BrokenExecutionControl(EngineTerminationException originalException) {
-        this.originalException = originalException;
+    private ObjectInput   remoteIn;
+    private ObjectOutput  remoteOut;
+
+    public NbExecutionControlBase(ObjectOutput out, ObjectInput in) {
+        super(out, in);
+        this.remoteOut = out;
+        this.remoteIn = in;
+    }
+
+    public ObjectOutput getRemoteOut() {
+        return remoteOut;
+    }
+    
+    protected ObjectInput  getRemoteIn() {
+        return remoteIn;
     }
     
     @Override
     public Map<String, String> commandVersionInfo() {
-        return null;
+        Map<String, String> result = new HashMap<>();
+        try {
+            Object o = extensionCommand("nb_vmInfo", null);
+            if (!(o instanceof Map)) {
+                return Collections.emptyMap();
+            }
+            result = (Map<String, String>)o;
+        } catch (RunException | InternalException ex) {
+            LOG.log(Level.INFO, "Error invoking JShell agent", ex.toString());
+        } catch (EngineTerminationException ex) {
+            shutdown();
+        }
+        return result;
     }
 
-    @Override
-    public void load(ClassBytecodes[] cbs) throws ClassInstallException, NotImplementedException, EngineTerminationException {
-        throw originalException;
-    }
-
-    @Override
-    public void redefine(ClassBytecodes[] cbs) throws ClassInstallException, NotImplementedException, EngineTerminationException {
-        throw originalException;
-    }
-
-    @Override
-    public String invoke(String string, String string1) throws RunException, EngineTerminationException, InternalException {
-        throw originalException;
-    }
-
-    @Override
-    public String varValue(String string, String string1) throws RunException, EngineTerminationException, InternalException {
-        throw originalException;
-    }
-
-    @Override
-    public void addToClasspath(String string) throws EngineTerminationException, InternalException {
-        throw originalException;
-    }
-
-    @Override
-    public void stop() throws EngineTerminationException, InternalException {
-        throw originalException;
-    }
-
-    @Override
-    public Object extensionCommand(String string, Object o) throws RunException, EngineTerminationException, InternalException {
-        throw originalException;
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
-    public boolean requestShutdown() {
-        return false;
-    }
-
-    @Override
-    public void closeStreams() {
-    }
-
-    @Override
-    public String getTargetSpec() {
-        return null;
-    }
-
-    @Override
-    public void suppressClasspathChanges(boolean b) {
-    }
-
-    @Override
-    public ExecutionControlException getBrokenException() {
-        return originalException;
+    protected void shutdown() {
+        if (remoteIn == null) {
+            return;
+        }
+        try {
+            remoteIn.close();
+            remoteOut.close();
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Error closing streams", ex);
+        }
     }
     
 }
