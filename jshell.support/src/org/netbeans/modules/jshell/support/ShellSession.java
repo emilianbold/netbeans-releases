@@ -732,28 +732,31 @@ public class ShellSession  {
         }
         b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
         ClasspathInfo cpI = getClasspathInfo();
-        System.err.println("Starting jshell with ClasspathInfo:");
-        for (PathKind kind : PathKind.values()) {
-            if (kind == PathKind.OUTPUT) {
-                continue;
+        if (LOG.isLoggable(Level.FINEST)) {
+            StringBuilder sb = new StringBuilder("Starting jshell with ClasspathInfo:");
+            for (PathKind kind : PathKind.values()) {
+                if (kind == PathKind.OUTPUT) {
+                    continue;
+                }
+                sb.append(kind + ": ");
+                ClassPath cp;
+                try {
+                    cp = cpI.getClassPath(kind);
+                } catch (IllegalArgumentException ex) {
+                    sb.append("<not supported>\n");
+                    continue;
+                }
+                if (cp == null) {
+                    sb.append("<null>\n");
+                    continue;
+                }
+                sb.append("\n");
+                for (ClassPath.Entry e : cp.entries()) {
+                    sb.append("\t" + e.getURL() + "\n");
+                }
+                sb.append("---------------\n");
+                LOG.log(Level.FINEST, sb.toString());
             }
-            System.err.print(kind + ": ");
-            ClassPath cp;
-            try {
-                cp = cpI.getClassPath(kind);
-            } catch (IllegalArgumentException ex) {
-                System.err.println("<not supported>");
-                continue;
-            }
-            if (cp == null) {
-                System.err.println("<null>");
-                continue;
-            }
-            System.err.println("");
-            for (ClassPath.Entry e : cp.entries()) {
-                System.err.println("\t" + e.getURL());
-            }
-            System.err.println("---------------");
         }
         b.fileManager((fm) -> fileman = new SwitchingJavaFileManger(cpI));
         return getEnv().customizeJShell(b);
