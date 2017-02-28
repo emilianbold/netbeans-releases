@@ -510,7 +510,9 @@ public final class J2SEModularProject implements Project {
 
     @NonNull
     private ActionProvider newActionProvider() {
-        return MultiModuleActionProviderBuilder.newInstance(this, getUpdateHelper(), evaluator())
+        return MultiModuleActionProviderBuilder.newInstance(
+                this, getUpdateHelper(), evaluator(),
+                getSourceRoots(), getTestSourceRoots())
                 .setCompileOnSaveOperationsProvider(() -> {
                         return J2SEModularProjectUtil.isCompileOnSaveEnabled(this) ?
                             EnumSet.of(JavaActionProvider.CompileOnSaveOperation.UPDATE, JavaActionProvider.CompileOnSaveOperation.EXECUTE) :

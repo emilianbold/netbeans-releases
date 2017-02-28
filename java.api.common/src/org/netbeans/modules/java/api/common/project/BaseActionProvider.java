@@ -51,7 +51,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -61,7 +60,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -72,8 +70,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -97,15 +93,12 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -113,31 +106,21 @@ import org.netbeans.modules.java.api.common.applet.AppletSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import static org.netbeans.modules.java.api.common.project.Bundle.*;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarning;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
@@ -155,7 +138,6 @@ import org.openide.util.lookup.Lookups;
 public abstract class BaseActionProvider implements ActionProvider {
     public static final String AUTOMATIC_BUILD_TAG = ".netbeans_automatic_build";
 
-    private static final String PROP_JAVA_MAIN_ACTION = "java.main.action"; //NOI18N
     private static final Logger LOG = Logger.getLogger(BaseActionProvider.class.getName());
 
     public static final String PROPERTY_RUN_SINGLE_ON_SERVER = "run.single.on.server";
@@ -373,8 +355,10 @@ public abstract class BaseActionProvider implements ActionProvider {
                         this::getCompileOnSaveOperations,
                         Collections.emptyList());
                     final String[] targetNames = sa.getTargetNames(ctx);
-                    Optional.ofNullable(ctx.getProperties())
-                            .ifPresent(p::putAll);
+                    if (targetNames != null) {
+                        Optional.ofNullable(ctx.getProperties())
+                                .ifPresent(p::putAll);
+                    }
                     return targetNames;
                 })
                 .orElse(null);
@@ -387,7 +371,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
         LOG.log(Level.FINE, "COMMAND: {0}", command);       //NOI18N
         String[] targetNames = new String[0];
-        Map<String,String[]> targetsFromConfig = loadTargetsFromConfig();
+        Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = projectSourceRoots.getRoots();
             FileObject[] files = findSourcesAndPackages( context, sourceRoots);
@@ -466,43 +450,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
             p.setProperty("fix.includes", path); // NOI18N
             p.setProperty("fix.classes", classes); // NOI18N
-        } else if (!isServerExecution() && (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO) || command.equals(COMMAND_PROFILE))) {
-            // check project's main class
-            // Check whether main class is defined in this config. Note that we use the evaluator,
-            // not ep.getProperty(MAIN_CLASS), since it is permissible for the default pseudoconfig
-            // to define a main class - in this case an active config need not override it.
-
-            // If a specific config was selected, just skip this check for now.
-            // XXX would ideally check that that config in fact had a main class.
-            // But then evaluator.getProperty(MAIN_CLASS) would be inaccurate.
-            // Solvable but punt on it for now.
-            final boolean hasCfg = context.lookup(ProjectConfiguration.class) != null;
-            final boolean verifyMain = doJavaChecks && !hasCfg && getJavaMainAction() == null;
-            String mainClass = getProjectMainClass(verifyMain);
-            if (mainClass == null) {
-                do {
-                    // show warning, if cancel then return
-                    if (!showMainClassSelector()) {
-                        return null;
-                    }
-                    // No longer use the evaluator: have not called putProperties yet so it would not work.
-                    mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
-                    mainClass = getProjectMainClass(verifyMain);
-                } while (mainClass == null);
-            }
-            if (!command.equals(COMMAND_RUN) && /* XXX should ideally look up proper mainClass in evaluator x config */ mainClass != null) {
-                if (command.equals(COMMAND_PROFILE)) {
-                    p.setProperty("run.class", mainClass); // NOI18N
-                } else {
-                    p.setProperty("debug.class", mainClass); // NOI18N
-                }
-            }
-            String[] targets = targetsFromConfig.get(command);
-            targetNames = (targets != null) ? targets : getCommands().get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-//todo: fixme            prepareDirtyList(p, false);
         } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_PROFILE_SINGLE)) {
             FileObject[] files = findTestSources(context, false);
             FileObject[] rootz = projectTestRoots.getRoots();
@@ -606,12 +553,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                                 return null;
                             }
                         } else {
-                            final JavaMainAction javaMainAction = getJavaMainAction();
+                            final ActionProviderSupport.JavaMainAction javaMainAction = ActionProviderSupport.getJavaMainAction(evaluator);
                             if (javaMainAction == null) {
                                 NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Main_Class_Found(clazz), NotifyDescriptor.INFORMATION_MESSAGE);
                                 DialogDisplayer.getDefault().notify(nd);
                                 return null;
-                            } else if (javaMainAction == JavaMainAction.RUN) {
+                            } else if (javaMainAction == ActionProviderSupport.JavaMainAction.RUN) {
                                 String prop;
                                 switch (command) {
                                     case COMMAND_RUN_SINGLE:
@@ -626,7 +573,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                                 p.setProperty(prop, clazz);
                                 final String[] targets = targetsFromConfig.get(command);
                                 targetNames = targets != null ? targets : getCommands().get(command);
-                            } else if (javaMainAction == JavaMainAction.TEST) {
+                            } else if (javaMainAction == ActionProviderSupport.JavaMainAction.TEST) {
                                 switch (command) {
                                     case COMMAND_RUN_SINGLE:
                                         targetNames = setupTestSingle(p, files, projectSourceRoots);
@@ -724,90 +671,12 @@ public abstract class BaseActionProvider implements ActionProvider {
      */
     @CheckForNull
     protected String getProjectMainClass(final boolean verify) {
-        final String mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
-        // support for unit testing
-        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult ?
-                mainClass :
-                null;
-        }
-        if (mainClass == null || mainClass.length () == 0) {
-            LOG.fine("Main class is not set");    //NOI18N
-            return null;
-        }
-        if (!verify) {
-            return mainClass;
-        }
-        final FileObject[] sourcesRoots = projectSourceRoots.getRoots();
-        if (sourcesRoots.length > 0) {
-            LOG.log(Level.FINE, "Searching main class {0} for root: {1}",   //NOI18N
-                    new Object[] {
-                        mainClass,
-                        FileUtil.getFileDisplayName(sourcesRoots[0])
-            });
-            ClassPath bootPath = null, compilePath = null;
-            try {
-                bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
-                assert bootPath != null : assertPath (
-                        sourcesRoots[0],
-                        sourcesRoots,
-                        projectSourceRoots,
-                        ClassPath.BOOT);
-            } catch (AssertionError e) {
-                //Log the assertion when -ea
-                Exceptions.printStackTrace(e);
-            }
-            try {
-                compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);
-                assert compilePath != null : assertPath (
-                        sourcesRoots[0],
-                        sourcesRoots,
-                        projectSourceRoots,
-                        ClassPath.EXECUTE);
-            } catch (AssertionError e) {
-                //Log the assertion when -ea
-                Exceptions.printStackTrace(e);
-            }
-            //todo: The J2SEActionProvider does not require the sourceRoots, it can take the classpath
-            //from ClassPathProvider everytime. But the assertions above are important, it seems that
-            //the SimpleFileOwnerQueryImplementation is broken in some cases. When assertions are enabled
-            //log the data.
-            if (bootPath == null) {
-                LOG.fine("Source root has no boot classpath, using project boot classpath.");   //NOI18N
-                bootPath = callback.getProjectSourcesClassPath(ClassPath.BOOT);
-            }
-            if (compilePath == null) {
-                LOG.fine("Source root has no execute classpath, using project execute classpath.");   //NOI18N
-                compilePath = callback.getProjectSourcesClassPath(ClassPath.EXECUTE);
-            }
-
-            ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
-            LOG.log(Level.FINE, "Classpaths used to resolve main boot: {0}, exec: {1}, src: {2}",   //NOI18N
-                    new Object[]{
-                        bootPath,
-                        compilePath,
-                        sourcePath
-            });
-            if (CommonProjectUtils.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
-                return mainClass;
-            }
-        } else {
-            LOG.log(Level.FINE, "Searching main class {0} without source root", mainClass);  //NOI18N
-            ClassPath bootPath = callback.getProjectSourcesClassPath(ClassPath.BOOT);
-            ClassPath compilePath = callback.getProjectSourcesClassPath(ClassPath.EXECUTE);
-            ClassPath sourcePath = callback.getProjectSourcesClassPath(ClassPath.SOURCE);   //Empty ClassPath
-            LOG.log(Level.FINE, "Classpaths used to resolve main boot: {0}, exec: {1}, src: {2}",   //NOI18N
-                    new Object[]{
-                        bootPath,
-                        compilePath,
-                        sourcePath
-            });
-            if (CommonProjectUtils.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
-                return mainClass;
-            }
-        }
-        LOG.log(Level.FINE, "Main class {0} is invalid.", mainClass);   //NOI18N
-        return null;
+        return ActionProviderSupport.getProjectMainClass(
+                project,
+                evaluator,
+                projectSourceRoots,
+                (cpType) -> getCallback().getProjectSourcesClassPath(cpType),
+                verify);
     }
 
     private boolean isSupportedByDelegate(final String command) {
@@ -834,9 +703,11 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     @NonNull
     private JavaActionProvider createDelegate() {
-        final JavaActionProvider.Builder builder = JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator)
+        final JavaActionProvider.Builder builder = JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator, projectSourceRoots, projectTestRoots)
                 .setCompileOnSaveOperationsProvider(this::getCompileOnSaveOperations)
-                .setActivePlatformProvider(this::getProjectPlatform);
+                .setActivePlatformProvider(this::getProjectPlatform)
+                .setProjectMainClassProvider(this::getProjectMainClass)
+                .setProjectMainClassSelector(this::showMainClassSelector);
         final Set<? extends String> supported = new HashSet<>(Arrays.asList(getSupportedActions()));
         for (String op : new String[] {COMMAND_DELETE, COMMAND_RENAME, COMMAND_MOVE, COMMAND_COPY}) {
             if (supported.contains(op)) {
@@ -846,10 +717,11 @@ public abstract class BaseActionProvider implements ActionProvider {
         final Map<String,String[]> cmds = getCommands();
         final Set<String> scanSensitive = getScanSensitiveActions();
         final Set<String> modelSensitive = getJavaModelActions();
-        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD}) {
+        final Set<String> disabledByServerExecuion = new HashSet<>(Arrays.asList(COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO));
+        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD, COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO}) {
             if (supported.contains(cmd)) {
                 String[] targets = cmds.get(cmd);
-                final JavaActionProvider.Action action;
+                JavaActionProvider.ScriptAction action;
                 if (targets != null) {
                     action = builder.createScriptAction(
                         cmd,
@@ -882,6 +754,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                             )) : null;
                 }
                 if (action != null) {
+                    if (disabledByServerExecuion.contains(cmd)) {
+                        action = new ServerExecutionAwareAction(action);
+                    }
                     builder.addAction(action);
                 }
             }
@@ -927,7 +802,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     private Set<? extends ActionProviderSupport.ActionFlag> getActionFlags(@NonNull final String forCommand) {
         final Set<ActionProviderSupport.ActionFlag> flgs = EnumSet.noneOf(ActionProviderSupport.ActionFlag.class);
         if (getScanSensitiveActions().contains(forCommand)) {
-            flgs.add(ActionProviderSupport.ActionFlag.SCAN_SENITIVE);
+            flgs.add(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE);
         }
         if (getJavaModelActions().contains(forCommand)) {
             flgs.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
@@ -1065,147 +940,18 @@ public abstract class BaseActionProvider implements ActionProvider {
         };
     }
 
-    private String assertPath (
-            FileObject          fileObject,
-            FileObject[]        expectedRoots,
-            SourceRoots         roots,
-            String              pathType) {
-        final StringBuilder sb = new StringBuilder ();
-        sb.append ("File: ").append (fileObject);                                                                       //NOI18N
-        sb.append ("\nPath Type: ").append (pathType);                                                                  //NOI18N
-        final Project owner = FileOwnerQuery.getOwner(fileObject);
-        sb.append ("\nOwner: ").append (owner == null ? "" : ProjectUtils.getInformation(owner).getDisplayName());      //NOI18N
-        sb.append ("\nClassPathProviders: ");                                                                           //NOI18N
-        for (ClassPathProvider impl  : Lookup.getDefault ().lookupResult (ClassPathProvider.class).allInstances ())
-            sb.append ("\n  ").append (impl);                                                                           //NOI18N
-        sb.append ("\nProject SourceGroups:");                                                                          //NOI18N
-        final SourceGroup[] sgs =  ProjectUtils.getSources(this.project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (SourceGroup sg : sgs) {
-            sb.append("\n  ").append(FileUtil.getFileDisplayName(sg.getRootFolder()));                                  //NOI18N
-        }
-        sb.append ("\nProject Source Roots(");                                                                          //NOI18N
-        sb.append(System.identityHashCode(roots));
-        sb.append("):");                                                                                                //NOI18N
-        for (FileObject expectedRoot : expectedRoots) {
-            sb.append("\n  ").append(FileUtil.getFileDisplayName(expectedRoot));                                        //NOI18N
-        }
-        return sb.toString ();
-    }
-
     /**
      * Shows a selector of project main class.
      * @return true if main class was selected, false when project execution was canceled.
      * @since 1.66
      */
-    @Messages({
-        "LBL_MainClassWarning_ChooseMainClass_OK=OK",
-        "AD_MainClassWarning_ChooseMainClass_OK=N/A",
-        "# {0} - project name", "LBL_MainClassNotFound=Project {0} does not have a main class set.",
-        "# {0} - name of class", "# {1} - project name", "LBL_MainClassWrong={0} class wasn''t found in {1} project.",
-        "CTL_MainClassWarning_Title=Run Project"
-        })
     protected boolean showMainClassSelector() {
-        boolean result = false;
-        final JButton okButton = new JButton(LBL_MainClassWarning_ChooseMainClass_OK());
-        okButton.getAccessibleContext().setAccessibleDescription(AD_MainClassWarning_ChooseMainClass_OK());        
-        // main class goes wrong => warning
-        String mainClass = getProjectMainClass(false);
-        String message;
-        if (mainClass == null) {
-            message = LBL_MainClassNotFound(ProjectUtils.getInformation(project).getDisplayName());
-        } else {
-            message = LBL_MainClassWrong(
-                mainClass,
-                ProjectUtils.getInformation(project).getDisplayName());
-        }
-        final MainClassWarning panel = new MainClassWarning (message, projectSourceRoots.getRoots());
-        Object[] options = new Object[] {
-            okButton,
-            DialogDescriptor.CANCEL_OPTION
-        };
-        panel.addChangeListener (new ChangeListener () {
-            @Override
-           public void stateChanged (ChangeEvent e) {
-               if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
-                   // click button and the finish dialog with selected class
-                   okButton.doClick ();
-               } else {
-                   okButton.setEnabled (panel.getSelectedMainClass () != null);
-               }
-           }
-        });
-        okButton.setEnabled (false);
-        DialogDescriptor desc = new DialogDescriptor (panel,
-            CTL_MainClassWarning_Title(),
-            true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
-        desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
-        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-        dlg.setVisible (true);
-        if (desc.getValue() == options[0]) {
-            mainClass = panel.getSelectedMainClass ();
-            String config = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG);
-            String path;
-            if (config == null || config.length() == 0) {
-                path = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-            } else {
-                // Set main class for a particular config only.
-                path = "nbproject/configs/" + config + ".properties"; // NOI18N
-            }
-            final EditableProperties ep = updateHelper.getProperties(path);
-            ep.put(ProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass);
-            try {
-                if (updateHelper.requestUpdate()) {
-                    updateHelper.putProperties(path, ep);
-                    ProjectManager.getDefault().saveProject(project);
-                    result = true;
-                }
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
-            }
-        }
-        dlg.dispose();
-        return result;
-    }
-
-    // loads targets for specific commands from shared config property file
-    // returns map; key=command name; value=array of targets for given command
-    private HashMap<String,String[]> loadTargetsFromConfig() {
-        HashMap<String,String[]> targets = new HashMap<String,String[]>(6);
-        String config = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG);
-        // load targets from shared config
-        FileObject propFO = project.getProjectDirectory().getFileObject("nbproject/configs/" + config + ".properties");
-        if (propFO == null) {
-            return targets;
-        }
-        Properties props = new Properties();
-        try {
-            InputStream is = propFO.getInputStream();
-            try {
-                props.load(is);
-            } finally {
-                is.close();
-            }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return targets;
-        }
-        Enumeration<?> propNames = props.propertyNames();
-        while (propNames.hasMoreElements()) {
-            String propName = (String) propNames.nextElement();
-            if (propName.startsWith("$target.")) {
-                String tNameVal = props.getProperty(propName);
-                if (tNameVal != null && !tNameVal.equals("")) {
-                    String cmdNameKey = propName.substring("$target.".length());
-                    StringTokenizer stok = new StringTokenizer(tNameVal.trim(), " ");
-                    List<String> targetNames = new ArrayList<String>(3);
-                    while (stok.hasMoreTokens()) {
-                        targetNames.add(stok.nextToken());
-                    }
-                    targets.put(cmdNameKey, targetNames.toArray(new String[targetNames.size()]));
-                }
-            }
-        }
-        return targets;
+        return ActionProviderSupport.showCustomizer(
+            project,
+            updateHelper,
+            evaluator,
+            projectSourceRoots,
+            (cpType) -> getCallback().getProjectSourcesClassPath(cpType));
     }
 
     private String[] setupTestFilesOrPackages(Properties p, FileObject[] files) {
@@ -1614,8 +1360,8 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     private void bypassAntBuildScript(String command, Lookup context, Map<String, Object> p, AtomicReference<ExecutorTask> task) throws IllegalArgumentException {
-        final JavaMainAction javaMainAction = getJavaMainAction();
-        boolean run = javaMainAction != JavaMainAction.TEST;
+        final ActionProviderSupport.JavaMainAction javaMainAction = ActionProviderSupport.getJavaMainAction(evaluator);
+        boolean run = javaMainAction != ActionProviderSupport.JavaMainAction.TEST;
         boolean hasMainMethod = run;
 
         if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command)) {
@@ -2015,30 +1761,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return result;
     }
 
-    private static enum JavaMainAction {
-        RUN("run"),     //NOI18N
-        TEST("test");   //NOI18N
-
-        private final String name;
-        JavaMainAction(@NonNull final String name) {
-            assert name != null;
-            this.name = name;
-        }
-        @CheckForNull
-        static JavaMainAction forName(@NullAllowed final String name) {
-            if (RUN.name.equals(name)) {
-                return RUN;
-            } else if (TEST.name.equals(name)) {
-                return TEST;
-            }
-            return null;
-        }
-    }
-
-    private JavaMainAction getJavaMainAction() {
-        return JavaMainAction.forName(evaluator.getProperty(PROP_JAVA_MAIN_ACTION));
-    }
-
     private class EventAdaptor implements JavaActionProvider.AntTargetInvocationListener {
 
         @Override
@@ -2060,6 +1782,42 @@ public abstract class BaseActionProvider implements ActionProvider {
             Optional.ofNullable((getCallback()))
                     .map((cb) -> cb instanceof Callback2 ? (Callback2) cb : null)
                     .ifPresent((cb) -> cb.antTargetInvocationFailed(command, context));
+        }
+    }
+
+    private final class ServerExecutionAwareAction extends JavaActionProvider.ScriptAction {
+        private final JavaActionProvider.ScriptAction delegate;
+
+        ServerExecutionAwareAction(
+                @NonNull final JavaActionProvider.ScriptAction delegate) {
+            super(
+                    delegate.getCommand(),
+                    null,
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE),
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE));
+            this.delegate = delegate;
+        }
+
+        @Override
+        public String[] getTargetNames(JavaActionProvider.Context context) {
+            if (!isServerExecution()) {
+                return delegate.getTargetNames(context);
+            } else {
+                final Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
+                String[] targets = targetsFromConfig.get(this.getCommand());
+                if (targets == null) {
+                    targets = getCommands().get(this.getCommand());
+                }
+                if (targets == null) {
+                    throw new IllegalArgumentException(this.getCommand());
+                }
+                return targets;
+            }
+        }
+
+        @Override
+        public boolean isEnabled(JavaActionProvider.Context context) {
+            return delegate.isEnabled(context);
         }
     }
 }
