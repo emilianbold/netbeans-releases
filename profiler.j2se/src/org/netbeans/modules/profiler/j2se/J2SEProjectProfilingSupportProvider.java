@@ -69,7 +69,10 @@ import org.openide.modules.InstalledFileLocator;
  * @author Ian Formanek
  */
 @ProjectServiceProvider(service=ProjectProfilingSupportProvider.class, 
-                        projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject",position=550)}) // NOI18N
+                        projectTypes={
+                            @ProjectType(id="org-netbeans-modules-java-j2seproject",position=550),
+                            @ProjectType(id="org-netbeans-modules-java-j2semodule",position=550)
+                        }) // NOI18N
 public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     final private static Logger LOG = Logger.getLogger(J2SEProjectProfilingSupportProvider.class.getName());
 

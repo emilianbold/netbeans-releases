@@ -99,6 +99,7 @@ public class AntActions {
     @ActionRegistration(displayName="#LBL_ProfileProject", lazy=false, asynchronous=true)
     @ActionReferences({
         @ActionReference(path="Projects/org-netbeans-modules-java-j2seproject/Actions", position=1000),
+        @ActionReference(path="Projects/org-netbeans-modules-java-j2semodule/Actions", position=1000),
         @ActionReference(path="Projects/org-netbeans-modules-apisupport-project/Actions", position=900),
         @ActionReference(path="Projects/org-netbeans-modules-apisupport-project-suite/Actions", position=1000),
         @ActionReference(path="Projects/org-netbeans-modules-web-project/Actions", position=1000)
