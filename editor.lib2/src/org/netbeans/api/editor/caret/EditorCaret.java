@@ -1648,7 +1648,14 @@ public final class EditorCaret implements Caret {
                                 caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
-                        if (activeTransaction.isDotOrStructuralChange()) {
+                        /* 269451: If we set scrollToLastCaret above, we need to let dispatchUpdate
+                                   happen so the former can be cleared again. A comment in
+                                   CaretTransaction suggests that scrolling really should happen
+                                   even if the dot offset is not changed. ("Scroll even if setDot()
+                                   to same offset"). */
+                        if (activeTransaction.isDotOrStructuralChange() ||
+                            activeTransaction.isScrollToLastCaret())
+                        {
                             if (!inAtomicSectionL) {
                                 // For now clear the lists and use old way TODO update to selective updating and rendering
                                 fireStateChanged(activeTransaction.getOrigin());
