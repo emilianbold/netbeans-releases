@@ -511,9 +511,6 @@ public final class SnippetRegistry {
                 end = snapshot.length();
                 curRange = new Rng(curRange.start, end);
             }
-            if (curRange.len() == 0) {
-                continue;
-            }
             Rng[] fragments;
             
             if (index < snips.size()) {
@@ -535,7 +532,7 @@ public final class SnippetRegistry {
                 ex.printStackTrace();
                 return Collections.emptyList();
             }
-            if (text == null || text.isEmpty()) {
+            if (text == null) {
                 continue;
             }
             SnippetWrapping shellWrapping = wrap(text);//JShellAccessor.wrapInput(state, text);

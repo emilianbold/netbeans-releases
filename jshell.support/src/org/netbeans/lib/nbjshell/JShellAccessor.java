@@ -127,6 +127,9 @@ public class JShellAccessor {
      * @return wrapped source
      */
     public static SnippetWrapping wrapInput(JShell state, String input) {
+        if (input.trim().isEmpty()) {
+            input = input + ";"; // NOI18N
+        }
         List<SnippetWrapper> wraps = state.sourceCodeAnalysis().wrappers(input);
         if (wraps.size() != 1) {
             return null;

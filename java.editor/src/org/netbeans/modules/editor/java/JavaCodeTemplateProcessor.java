@@ -1086,11 +1086,15 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (cInfo != null || cancel.get()) {
                                 return;
                             }
-                            CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(fo, null).getCompilationController();
+                            CompilationController controller = (CompilationController) JavaSourceUtil.createControllerHandle(fo, caretOffset, null).getCompilationController();
                             controller.toPhase(JavaSource.Phase.RESOLVED);
                             final TreeUtilities tu = controller.getTreeUtilities();
-                            treePath = tu.pathFor(caretOffset);
-                            scope = tu.scopeFor(caretOffset);
+                            int embeddedCaret = controller.getSnapshot().getEmbeddedOffset(caretOffset);
+                            if (embeddedCaret == -1) {
+                                return;
+                            }
+                            treePath = tu.pathFor(embeddedCaret);
+                            scope = tu.scopeFor(embeddedCaret);
                             enclClass = scope.getEnclosingClass();
                             final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
                             if (enclClass == null) {
@@ -1102,7 +1106,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             }
                             final Trees trees = controller.getTrees();
                             final SourcePositions sp = trees.getSourcePositions();
-                            final Collection<? extends Element> illegalForwardRefs = SourceUtils.getForwardReferences(treePath, caretOffset, sp, trees);
+                            final Collection<? extends Element> illegalForwardRefs = SourceUtils.getForwardReferences(treePath, embeddedCaret, sp, trees);
                             final Collection<CharSequence> illegalForwardRefNames = new HashSet<>(illegalForwardRefs.size());
                             for (Element element : illegalForwardRefs) {
                                 illegalForwardRefNames.add(element.getSimpleName());
