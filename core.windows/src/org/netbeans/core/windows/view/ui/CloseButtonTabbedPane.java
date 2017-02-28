@@ -84,12 +84,18 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
     CloseButtonTabbedPane() {
             // close tab via middle button
             addMouseListener(new MouseAdapter() {
-                int lastIdx = -1;
+                // Tab index at the time of the previous two mouse presses.
+                private int lastTwoIdx[] = new int[] {-1, -1};
+                // Tab index of an ongoing middle mouse button press.
+                private int ongoingMiddleIdx = -1;
 
                 @Override
                 public void mousePressed(MouseEvent e) {
+                    int idx =
+                        getUI().tabForCoordinate(CloseButtonTabbedPane.this, e.getX(), e.getY());
+                    lastTwoIdx = new int[] { idx, lastTwoIdx[0] };
                     if (SwingUtilities.isMiddleMouseButton(e)) {
-                        lastIdx = getUI().tabForCoordinate(CloseButtonTabbedPane.this, e.getX(), e.getY());
+                        ongoingMiddleIdx = idx;
                     }
                 }
 
@@ -99,17 +105,26 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                         int idx = getUI().tabForCoordinate(CloseButtonTabbedPane.this, e.getX(), e.getY());
                         if (idx >= 0) {
                             Component comp = getComponentAt(idx);
-                            if (idx == lastIdx && comp != null && !hideCloseButton(comp)) {
+                            if (idx == ongoingMiddleIdx && comp != null && !hideCloseButton(comp)) {
                                 fireCloseRequest(comp);
                             }
                         }
-                        lastIdx = -1;
+                        ongoingMiddleIdx = -1;
                     }
                 }
 
             @Override
             public void mouseClicked( MouseEvent e ) {
                 if( e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton( e ) ) {
+                    /* Fix for bug #268681. Avoid maximizing if the user is simply clicking the
+                    "left" or "right" tab-switching buttons quickly. By the time the double click
+                    event is delivered, the initial press or click of the left or right buttons may
+                    already have changed which tab button is currently under the mouse cursor, so
+                    instead of trying to detect whether the button pressed is a left/right button,
+                    perform the maximization action only if the same tab button was showing under
+                    the mouse cursor for both of the button presses involved in the double click. */
+                    if (!(lastTwoIdx[0] >= 0 && lastTwoIdx[0] == lastTwoIdx[1]))
+                      return;
                     //toggle maximize
                     TopComponent tc = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, CloseButtonTabbedPane.this );
                     if( null != tc ) {
