@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.CompileOnSaveOperation;
 import org.netbeans.spi.project.ActionProvider;
@@ -68,8 +69,9 @@ public final class MultiModuleActionProviderBuilder {
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_CLEAN, false, false, "clean"));
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_BUILD, false, false,  "jar"));
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_REBUILD, false, false,  "clean", "jar"));
-        builder.addAction(new DummyAction(ActionProvider.COMMAND_RUN, false, true, "run"));
-        builder.addAction(new DummyAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_RUN, false, true, "run"));
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE, false, true, "profile"));
         return this;
     }
 
@@ -102,30 +104,9 @@ public final class MultiModuleActionProviderBuilder {
     public static MultiModuleActionProviderBuilder newInstance(
             @NonNull final Project project,
             @NonNull final UpdateHelper updateHelper,
-            @NonNull final PropertyEvaluator evaluator) {
-        return new MultiModuleActionProviderBuilder(JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator));
-    }
-
-    //Temporary - should be replaced by actions shared with BaseActionProvider
-    private static class DummyAction extends JavaActionProvider.ScriptAction {
-        private final String[] targetNames;
-
-        DummyAction(
-                @NonNull final String command,
-                final boolean jms,
-                @NonNull final boolean sc, String... targetNames) {
-            super(command, null, true, true);
-            this.targetNames = targetNames;
-        }
-
-        @Override
-        public boolean isEnabled(JavaActionProvider.Context context) {
-            return true;
-        }
-
-        @Override
-        public String[] getTargetNames(JavaActionProvider.Context context) {
-            return targetNames;
-        }
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testSourceRoots) {
+        return new MultiModuleActionProviderBuilder(JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator, sourceRoots, testSourceRoots));
     }
 }

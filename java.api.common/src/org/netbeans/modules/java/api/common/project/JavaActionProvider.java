@@ -54,14 +54,17 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
@@ -70,6 +73,7 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_DELETE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_MOVE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -369,11 +373,11 @@ public final class JavaActionProvider implements ActionProvider {
                 this.actionFlags.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
             }
             if (scanSensitive) {
-                this.actionFlags.add(ActionProviderSupport.ActionFlag.SCAN_SENITIVE);
+                this.actionFlags.add(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE);
             }
         }
 
-        @NonNull
+        @CheckForNull
         public abstract String[] getTargetNames(@NonNull final Context context);
 
         @NonNull
@@ -403,6 +407,11 @@ public final class JavaActionProvider implements ActionProvider {
             }
             return res;
         }
+
+        @NonNull
+        final Set<ActionProviderSupport.ActionFlag> getActionFlags() {
+            return actionFlags;
+        }
     }
 
     public static final class Builder {
@@ -411,22 +420,31 @@ public final class JavaActionProvider implements ActionProvider {
         private final PropertyEvaluator evaluator;
         private final List<Action> actions;
         private final ActionProviderSupport.ModifiedFilesSupport mfs;
+        private volatile Object[] mainClassServices;
         private Supplier<? extends JavaPlatform> jpp;
         private Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
 
         private Builder(
                 @NonNull final Project project,
                 @NonNull final UpdateHelper updateHelper,
-                @NonNull final PropertyEvaluator evaluator) {
+                @NonNull final PropertyEvaluator evaluator,
+                @NonNull final SourceRoots sourceRoots,
+                @NonNull final SourceRoots testSourceRoots) {
             Parameters.notNull("project", project); //NOI18N
             Parameters.notNull("updateHelper", updateHelper); //NOI18N
             Parameters.notNull("evaluator", evaluator); //NOI18N
+            Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
+            Parameters.notNull("testSourceRoots", testSourceRoots); //NOI18N
             this.project = project;
             this.updateHelper = updateHelper;
             this.evaluator = evaluator;
             this.actions = new ArrayList<>();
             this.jpp = createJavaPlatformProvider(ProjectProperties.PLATFORM_ACTIVE);
             this.mfs = ActionProviderSupport.ModifiedFilesSupport.newInstance(project, updateHelper, evaluator);
+            final Function<String,ClassPath> classpaths = (id) -> ClassPath.EMPTY;
+            final Function<Boolean,String> pmcp = (validate) -> ActionProviderSupport.getProjectMainClass(project, evaluator, sourceRoots, classpaths, validate);
+            final Supplier<Boolean> mcc = () -> ActionProviderSupport.showCustomizer(project, updateHelper, evaluator, sourceRoots, classpaths);
+            this.mainClassServices = new Object[] {pmcp, mcc};
         }
 
         @NonNull
@@ -482,6 +500,11 @@ public final class JavaActionProvider implements ActionProvider {
                     return createNonCosAction(command, javaModelSensitive, scanSensitive, targets);
                 case ActionProvider.COMMAND_BUILD:
                     return createBuildAction(javaModelSensitive, scanSensitive, targets, mfs);
+                case ActionProvider.COMMAND_RUN:
+                case ActionProvider.COMMAND_DEBUG:
+                case ActionProvider.COMMAND_DEBUG_STEP_INTO:
+                case ActionProvider.COMMAND_PROFILE:
+                    return createRunAction(command, javaModelSensitive, scanSensitive, targets, mfs, mainClassServices);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -505,6 +528,22 @@ public final class JavaActionProvider implements ActionProvider {
         public Builder setCompileOnSaveOperationsProvider(@NonNull final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider) {
             Parameters.notNull("cosOpsProvider", cosOpsProvider);   //NOI18N
             this.cosOpsProvider = cosOpsProvider;
+            return this;
+        }
+
+        @NonNull
+        public Builder setProjectMainClassProvider(@NonNull final Function<Boolean,String> mainClassProvider) {
+            Parameters.notNull("mainClassProvider", mainClassProvider);
+            mainClassServices[0] = mainClassProvider;
+            mainClassServices = mainClassServices;
+            return this;
+        }
+
+        @NonNull
+        public Builder setProjectMainClassSelector(@NonNull final Supplier<Boolean> selectMainClassAction) {
+            Parameters.notNull("selectMainClassAction", selectMainClassAction);
+            mainClassServices[1] = selectMainClassAction;
+            mainClassServices = mainClassServices;
             return this;
         }
 
@@ -533,8 +572,10 @@ public final class JavaActionProvider implements ActionProvider {
         public static Builder newInstance(
                 @NonNull final Project project,
                 @NonNull final UpdateHelper updateHelper,
-                @NonNull final PropertyEvaluator evaluator) {
-            return new Builder(project, updateHelper, evaluator);
+                @NonNull final PropertyEvaluator evaluator,
+                @NonNull final SourceRoots sourceRoots,
+                @NonNull final SourceRoots testSourceRoots) {
+            return new Builder(project, updateHelper, evaluator, sourceRoots, testSourceRoots);
         }
     }
 
@@ -608,10 +649,12 @@ public final class JavaActionProvider implements ActionProvider {
 
             @Override
             public String[] getTargetNames(Context context) {
-                final String[] targets = super.getTargetNames(context);
-                final String includes = mfs.prepareDirtyList(true);
-                if (includes != null) {
-                    context.setProperty(ProjectProperties.INCLUDES, includes);
+                String[] targets = super.getTargetNames(context);
+                if (targets != null) {
+                    final String includes = mfs.prepareDirtyList(true);
+                    if (includes != null) {
+                        context.setProperty(ProjectProperties.INCLUDES, includes);
+                    }
                 }
                 return targets;
             }
@@ -652,6 +695,70 @@ public final class JavaActionProvider implements ActionProvider {
                         ap.invokeAction(COMMAND_REBUILD, context.getActiveLookup());
                     }
                 }
+            }
+        };
+    }
+
+    @NonNull
+    private static ScriptAction createRunAction(
+            @NonNull final String command,
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final Supplier<? extends String[]> targets,
+            @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs,
+            @NonNull final Object[] mainClassServices) {
+        return new BaseScriptAction(command, scanSensitive, scanSensitive, targets) {
+            @Override
+            public String[] getTargetNames(Context context) {
+                String[] targets = super.getTargetNames(context);
+                if (targets != null) {
+                    // check project's main class
+                    // Check whether main class is defined in this config. Note that we use the evaluator,
+                    // not ep.getProperty(MAIN_CLASS), since it is permissible for the default pseudoconfig
+                    // to define a main class - in this case an active config need not override it.
+
+                    // If a specific config was selected, just skip this check for now.
+                    // XXX would ideally check that that config in fact had a main class.
+                    // But then evaluator.getProperty(MAIN_CLASS) would be inaccurate.
+                    // Solvable but punt on it for now.
+                    final boolean hasCfg = context.getActiveLookup().lookup(ProjectConfiguration.class) != null;
+                    final boolean verifyMain = context.doJavaChecks() && !hasCfg && ActionProviderSupport.getJavaMainAction(context.getPropertyEvaluator()) == null;
+                    String mainClass = ((Function<Boolean,String>)mainClassServices[0]).apply(verifyMain);
+                    if (mainClass == null) {
+                        do {
+                            // show warning, if cancel then return
+                            if (!((Supplier<Boolean>)mainClassServices[1]).get()) {
+                                return null;
+                            }
+                            // No longer use the evaluator: have not called putProperties yet so it would not work.
+                            mainClass = context.getPropertyEvaluator().getProperty(ProjectProperties.MAIN_CLASS);
+                            mainClass = ((Function<Boolean,String>)mainClassServices[0]).apply(verifyMain);
+                        } while (mainClass == null);
+                    }
+                    if (mainClass != null) {
+                        switch (command) {
+                            case COMMAND_PROFILE:
+                                context.setProperty("run.class", mainClass); // NOI18N
+                                break;
+                            case COMMAND_DEBUG:
+                            case COMMAND_DEBUG_STEP_INTO:
+                                context.setProperty("debug.class", mainClass); // NOI18N
+                                break;
+                        }
+                    }
+                    final String includes = mfs.prepareDirtyList(false);
+                    if (includes != null) {
+                        context.setProperty(ProjectProperties.INCLUDES, includes);
+                    }
+                    final String[] cfgTargets = ActionProviderSupport.loadTargetsFromConfig(
+                            context.getProject(),
+                            context.getPropertyEvaluator())
+                            .get(command);
+                    if (cfgTargets != null) {
+                        targets = cfgTargets;
+                    }
+                }
+                return targets;
             }
         };
     }
