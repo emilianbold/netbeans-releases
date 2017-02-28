@@ -560,13 +560,34 @@ public final class JavaSource {
         }
 
     }
-
+    
+    static long createTaggedController(final FileObject fo, int position, final long timestamp, final Object[] controller) throws IOException {
+        ClasspathInfo cpi = ClasspathInfo.create(fo);
+        Collection<Source> sources = Collections.singleton(Source.create(fo));
+        CompilationController cc = (CompilationController) controller[0];
+        final NewComilerTask _task = new NewComilerTask(cpi, position, cc, timestamp);
+        try {
+            ParserManager.parse(sources, _task);
+            controller[0] = _task.getCompilationController();
+            return _task.getTimeStamp();
+        } catch (final ParseException pe) {
+            final Throwable rootCase = pe.getCause();
+            if (rootCase instanceof CompletionFailure) {
+                throw new IOException (rootCase);
+            } else if (rootCase instanceof RuntimeException) {
+                throw (RuntimeException) rootCase;
+            } else {
+                throw new IOException (rootCase);
+            }
+        }
+    }
+    
     long createTaggedController (final long timestamp, final Object[] controller) throws IOException {
         assert controller.length == 1;
         assert controller[0] == null || controller[0] instanceof CompilationController;
         try {
             CompilationController cc = (CompilationController) controller[0];
-            final NewComilerTask _task = new NewComilerTask(this.classpathInfo, cc, timestamp);
+            final NewComilerTask _task = new NewComilerTask(this.classpathInfo, -1, cc, timestamp);
             ParserManager.parse(sources, _task);
             controller[0] = _task.getCompilationController();
             return _task.getTimeStamp();
@@ -741,6 +762,11 @@ public final class JavaSource {
             };
             parser.parse(snapshot, dummy, null);
             return CompilationController.get(parser.getResult(dummy));
+        }
+
+        @Override
+        public long createTaggedCompilationController (FileObject f, int position, long currentTag, Object[] out) throws IOException {
+            return JavaSource.createTaggedController(f, position, currentTag, out);
         }
 
         public long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException {

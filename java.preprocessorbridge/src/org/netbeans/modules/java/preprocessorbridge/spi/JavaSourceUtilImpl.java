@@ -74,6 +74,14 @@ public abstract class JavaSourceUtilImpl {
             throw new IllegalArgumentException ();
         }
     }
+    
+    protected long createTaggedCompilationController (FileObject file, int position, long currenTag, Object[] out) throws IOException {
+        if (position == -1) {
+            return createTaggedCompilationController(file, currenTag, out);
+        }
+        throw new UnsupportedOperationException("Not supported in the registered implementation: " + getClass().getName()); //NOI18N
+    }
+    
 
     protected abstract long createTaggedCompilationController (FileObject file, long currenTag, Object[] out) throws IOException;
 
@@ -103,7 +111,7 @@ public abstract class JavaSourceUtilImpl {
     private static class MyAccessor extends JavaSourceUtilImplAccessor {
 
         @Override
-        public long createTaggedCompilationController(JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException {
+        public long createTaggedCompilationController(JavaSourceUtilImpl spi, FileObject fo, int position, long currentTag, Object[] out) throws IOException {
             assert spi != null;
             return spi.createTaggedCompilationController(fo, currentTag, out);
         }

@@ -119,12 +119,15 @@ import org.openide.util.Parameters;
 
 public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl {
     private static final Logger LOGGER = Logger.getLogger(JavaSourceUtilImpl.class.getName());
-
-    @Override
-    protected long createTaggedCompilationController(FileObject file, long currenTag, Object[] out) throws IOException {
+    
+    protected long createTaggedCompilationController(FileObject file, int position, long currenTag, Object[] out) throws IOException {
         assert file != null;
         final JavaSource js = JavaSource.forFileObject(file);
-        if (js == null) {
+        if (js != null) {
+            return JavaSourceAccessor.getINSTANCE().createTaggedCompilationController(js, currenTag, out);
+        }
+        long l = JavaSourceAccessor.getINSTANCE().createTaggedCompilationController(file, position, currenTag, out);
+        if (out[0] == null || l == -1) {
             throw new FileNotFoundException(
                     String.format("No java source for %s, exists: %b, file: %b",    //NOI18N
                         FileUtil.getFileDisplayName(file),
@@ -132,7 +135,12 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                         file.isData()
                     ));
         }
-        return JavaSourceAccessor.getINSTANCE().createTaggedCompilationController(js, currenTag, out);
+        return l;
+    }
+
+    @Override
+    protected long createTaggedCompilationController(FileObject file, long currenTag, Object[] out) throws IOException {
+        return createTaggedCompilationController(file, -1, currenTag, out);
     }
 
     @Override

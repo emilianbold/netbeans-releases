@@ -75,6 +75,19 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="controller-position">
+            <summary>Added a possibility to generate class for java source file</summary>
+            <version major="1" minor="47"/>
+            <date day="28" month="2" year="2017"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Extended the <code>createControllerHandle</code> to locate the most suitable
+                    controller for the passed source code position.
+                </p>
+            </description>
+        </change>
         <change id="generate-class">
             <api name="general"/>
             <summary>Added a possibility to generate class for java source file</summary>

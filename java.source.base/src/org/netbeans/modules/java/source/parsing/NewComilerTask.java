@@ -61,9 +61,11 @@ public final class NewComilerTask extends ClasspathInfoTask {
 
     private CompilationController result;
     private long timestamp;
+    private final int position;
 
-    public NewComilerTask (final ClasspathInfo cpInfo, final CompilationController last, long timestamp) {
+    public NewComilerTask (final ClasspathInfo cpInfo, final int position, final CompilationController last, long timestamp) {
         super (cpInfo);
+        this.position = position;
         this.result = last;
         this.timestamp = timestamp;
     }
@@ -84,6 +86,9 @@ public final class NewComilerTask extends ClasspathInfoTask {
         final Collection<Embedding> todo = new LinkedList<>();
         //BFS should perform better than DFS in this dark.
         for (Embedding embedding : theMess.getEmbeddings()) {
+            if (position != -1 && !embedding.containsOriginalOffset(position)) {
+                continue;
+            }
             if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
                 return theMess.getResultIterator(embedding);
             } else {

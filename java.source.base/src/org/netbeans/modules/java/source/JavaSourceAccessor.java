@@ -200,6 +200,7 @@ public abstract class JavaSourceAccessor {
      */
     public abstract CompilationController createCompilationController (Source s, ClasspathInfo cpInfo) throws IOException, ParseException;    
     
+    public abstract long createTaggedCompilationController (FileObject f, int pos, long currentTag, Object[] out) throws IOException;
     public abstract long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException;
     
     public abstract JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException;
