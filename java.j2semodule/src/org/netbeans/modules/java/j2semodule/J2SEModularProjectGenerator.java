@@ -248,7 +248,8 @@ public class J2SEModularProjectGenerator {
                 ref(ProjectProperties.JAVAC_MODULEPATH, true)
         });
         ep.setProperty(ProjectProperties.RUN_TEST_MODULEPATH, new String[] {
-            ref(ProjectProperties.JAVAC_TEST_MODULEPATH, true)
+            ref(ProjectProperties.JAVAC_TEST_MODULEPATH, true),
+            ref(ProjectProperties.BUILD_TEST_MODULES_DIR, true)
         });
         ep.setProperty(ProjectProperties.DEBUG_TEST_MODULEPATH, new String[] {
             ref(ProjectProperties.RUN_TEST_MODULEPATH, true)
