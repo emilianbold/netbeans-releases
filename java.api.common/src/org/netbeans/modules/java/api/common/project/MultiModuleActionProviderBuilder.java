@@ -74,6 +74,7 @@ public final class MultiModuleActionProviderBuilder {
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_RUN, false, true, "run"));
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE, false, true, "profile"));
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_TEST, false, false, "test"));
         return this;
     }
 

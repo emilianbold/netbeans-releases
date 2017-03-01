@@ -384,9 +384,6 @@ public abstract class BaseActionProvider implements ActionProvider {
                     return null;
                 }
             }
-        } else if ( command.equals( COMMAND_TEST ) ){
-            p.setProperty("ignore.failing.tests", "true");  //NOI18N
-            targetNames = getCommands().get(command);
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             p.setProperty("ignore.failing.tests", "true");  //NOI18N
             final FileObject[] files = findTestSourcesForFiles(context);
@@ -712,7 +709,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         final Set<String> scanSensitive = getScanSensitiveActions();
         final Set<String> modelSensitive = getJavaModelActions();
         final Set<String> disabledByServerExecuion = new HashSet<>(Arrays.asList(COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO));
-        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD, COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO}) {
+        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD, COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO, COMMAND_TEST}) {
             if (supported.contains(cmd)) {
                 String[] targets = cmds.get(cmd);
                 JavaActionProvider.ScriptAction action;

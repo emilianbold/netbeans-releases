@@ -524,7 +524,7 @@ public final class JavaActionProvider implements ActionProvider {
             switch (command) {
                 case ActionProvider.COMMAND_CLEAN:
                 case ActionProvider.COMMAND_REBUILD:
-                    return createNonCosAction(command, javaModelSensitive, scanSensitive, targets);
+                    return createNonCosAction(command, javaModelSensitive, scanSensitive, targets, Collections.emptyMap());
                 case ActionProvider.COMMAND_BUILD:
                     return createBuildAction(javaModelSensitive, scanSensitive, targets, mfs);
                 case ActionProvider.COMMAND_RUN:
@@ -532,6 +532,8 @@ public final class JavaActionProvider implements ActionProvider {
                 case ActionProvider.COMMAND_DEBUG_STEP_INTO:
                 case ActionProvider.COMMAND_PROFILE:
                     return createRunAction(command, javaModelSensitive, scanSensitive, targets, mfs, mainClassServices);
+                case ActionProvider.COMMAND_TEST:
+                    return createNonCosAction(command, javaModelSensitive, scanSensitive, targets, Collections.singletonMap("ignore.failing.tests", "true"));  //NOI18N);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -818,7 +820,8 @@ public final class JavaActionProvider implements ActionProvider {
             final String command,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
-            @NonNull final Supplier<? extends String[]> targets) {
+            @NonNull final Supplier<? extends String[]> targets,
+            @NullAllowed final Map<String,String> props) {
         return new BaseScriptAction(command, javaModelSensitive, scanSensitive, targets);
     }
 
@@ -854,14 +857,25 @@ public final class JavaActionProvider implements ActionProvider {
 
     private static class BaseScriptAction extends ScriptAction {
         private final Supplier<? extends String[]> targetNames;
+        private final Map<String,String> initialProps;
 
         BaseScriptAction(
                 @NonNull final String command,
                 final boolean jms,
                 final boolean sc,
                 Supplier<? extends String[]> targetNames) {
+            this(command, jms, sc, targetNames, Collections.emptyMap());
+        }
+
+        BaseScriptAction(
+                @NonNull final String command,
+                final boolean jms,
+                final boolean sc,
+                @NonNull Supplier<? extends String[]> targetNames,
+                @NonNull Map<String,String> initialProps) {
             super(command, null, true, true);
             this.targetNames = targetNames;
+            this.initialProps = initialProps;
         }
 
         @Override
@@ -871,6 +885,9 @@ public final class JavaActionProvider implements ActionProvider {
 
         @Override
         public String[] getTargetNames(JavaActionProvider.Context context) {
+            for (Map.Entry<String,String> e : initialProps.entrySet()) {
+                context.setProperty(e.getKey(), e.getValue());
+            }
             return targetNames.get();
         }
     }
