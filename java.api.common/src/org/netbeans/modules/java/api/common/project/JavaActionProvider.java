@@ -98,6 +98,8 @@ public final class JavaActionProvider implements ActionProvider {
     private final Map<String,Action> supportedActions;
     private final List<AntTargetInvocationListener> listeners;
     private final Supplier<? extends JavaPlatform> jpp;
+    private final BiFunction<String,Lookup,Map<String,String>> additionalPropertiesProvider;
+    private final BiFunction<String,Lookup,Set<String>> concealedPropertiesProvider;
     private final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
     private ActionProviderSupport.UserPropertiesPolicy userPropertiesPolicy;
 
@@ -108,6 +110,8 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final Function<String,ClassPath> classpaths,
             @NonNull final Collection<? extends Action> actions,
             @NonNull Supplier<? extends JavaPlatform> javaPlatformProvider,
+            @NullAllowed final BiFunction<String,Lookup,Map<String,String>> additionalPropertiesProvider,
+            @NullAllowed final BiFunction<String,Lookup,Set<String>> concealedPropertiesProvider,
             @NonNull final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider,
             @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs) {
         Parameters.notNull("project", project); //NOI18N
@@ -143,6 +147,8 @@ public final class JavaActionProvider implements ActionProvider {
             }
         });
         this.jpp = javaPlatformProvider;
+        this.additionalPropertiesProvider = additionalPropertiesProvider;
+        this.concealedPropertiesProvider = concealedPropertiesProvider;
         this.cosOpsProvider = cosOpsProvider;
     }
 
@@ -377,12 +383,16 @@ public final class JavaActionProvider implements ActionProvider {
         protected ScriptAction (
                 @NonNull final String command,
                 @NullAllowed final String dispalyName,
+                final boolean platformSensitive,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive) {
             Parameters.notNull("command", command); //NOI18N
             this.command = command;
             this.displayName = dispalyName;
             this.actionFlags = EnumSet.noneOf(ActionProviderSupport.ActionFlag.class);
+            if (platformSensitive) {
+                this.actionFlags.add(ActionProviderSupport.ActionFlag.PLATFORM_SENSITIVE);
+            }
             if (javaModelSensitive) {
                 this.actionFlags.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
             }
@@ -406,6 +416,10 @@ public final class JavaActionProvider implements ActionProvider {
 
         @Override
         public final void invoke(@NonNull final Context context) {
+            if (actionFlags.contains(ActionProviderSupport.ActionFlag.PLATFORM_SENSITIVE) && context.getActiveJavaPlatform() == null) {
+                ActionProviderSupport.showPlatformWarning(context.getProject());
+                return;
+            }
             ActionProviderSupport.invokeTarget(
                     this::getTargetNames,
                     this::performCompileOnSave,
@@ -447,6 +461,8 @@ public final class JavaActionProvider implements ActionProvider {
         private final Function<String,ClassPath> classpaths;
         private volatile Object[] mainClassServices;
         private Supplier<? extends JavaPlatform> jpp;
+        private BiFunction<String,Lookup,Map<String,String>> additionalPropertiesProvider;
+        private BiFunction<String,Lookup,Set<String>> concealedPropertiesProvider;
         private Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
 
         private Builder(
@@ -523,8 +539,9 @@ public final class JavaActionProvider implements ActionProvider {
             Parameters.notNull("targets", targets);         //NOI18N
             switch (command) {
                 case ActionProvider.COMMAND_CLEAN:
+                    return createNonCosAction(command, false, javaModelSensitive, scanSensitive, targets, Collections.emptyMap());
                 case ActionProvider.COMMAND_REBUILD:
-                    return createNonCosAction(command, javaModelSensitive, scanSensitive, targets, Collections.emptyMap());
+                    return createNonCosAction(command, true, javaModelSensitive, scanSensitive, targets, Collections.emptyMap());
                 case ActionProvider.COMMAND_BUILD:
                     return createBuildAction(javaModelSensitive, scanSensitive, targets, mfs);
                 case ActionProvider.COMMAND_RUN:
@@ -533,7 +550,7 @@ public final class JavaActionProvider implements ActionProvider {
                 case ActionProvider.COMMAND_PROFILE:
                     return createRunAction(command, javaModelSensitive, scanSensitive, targets, mfs, mainClassServices);
                 case ActionProvider.COMMAND_TEST:
-                    return createNonCosAction(command, javaModelSensitive, scanSensitive, targets, Collections.singletonMap("ignore.failing.tests", "true"));  //NOI18N);
+                    return createNonCosAction(command, true, javaModelSensitive, scanSensitive, targets, Collections.singletonMap("ignore.failing.tests", "true"));  //NOI18N);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -577,6 +594,20 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @NonNull
+        public Builder setAdditionalPropertiesProvider(@NonNull final BiFunction<String,Lookup,Map<String,String>> additionalPropertiesProvider) {
+            Parameters.notNull("additionalPropertiesProvider", additionalPropertiesProvider);   //NOI18N
+            this.additionalPropertiesProvider = additionalPropertiesProvider;
+            return this;
+        }
+
+        @NonNull
+        public Builder setConcealedPropertiesProvider(@NonNull final BiFunction<String,Lookup,Set<String>> concealedPropertiesProvider) {
+            Parameters.notNull("concealedPropertiesProvider", concealedPropertiesProvider);   //NOI18N
+            this.concealedPropertiesProvider = concealedPropertiesProvider;
+            return this;
+        }
+
+        @NonNull
         public JavaActionProvider build() {
             final JavaActionProvider ap = new JavaActionProvider(
                     project,
@@ -585,6 +616,8 @@ public final class JavaActionProvider implements ActionProvider {
                     classpaths,
                     actions,
                     jpp,
+                    additionalPropertiesProvider,
+                    concealedPropertiesProvider,
                     cosOpsProvider,
                     mfs);
             mfs.start();
@@ -623,7 +656,7 @@ public final class JavaActionProvider implements ActionProvider {
                 .map((act) -> act.isEnabled(new Context(
                         prj, updateHelper, eval, classpaths,
                         command, context, userPropertiesPolicy,
-                        jpp, null, null, cosOpsProvider,
+                        jpp, additionalPropertiesProvider, concealedPropertiesProvider, cosOpsProvider,
                         listeners)))
                 .orElse(Boolean.FALSE);
     }
@@ -638,7 +671,7 @@ public final class JavaActionProvider implements ActionProvider {
                     final Context ctx = new Context(
                             prj, updateHelper, eval, classpaths,
                             command, context, userPropertiesPolicy,
-                            jpp, null, null, cosOpsProvider,
+                            jpp, additionalPropertiesProvider, concealedPropertiesProvider, cosOpsProvider,
                             listeners);
                     try {
                         act.invoke(ctx);
@@ -676,7 +709,7 @@ public final class JavaActionProvider implements ActionProvider {
             final boolean scanSensitive,
             @NonNull final Supplier<? extends String[]> targets,
             @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs) {
-        return new BaseScriptAction(COMMAND_BUILD, javaModelSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(COMMAND_BUILD, true, javaModelSensitive, scanSensitive, targets) {
 
             @Override
             public String[] getTargetNames(Context context) {
@@ -738,7 +771,7 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final Supplier<? extends String[]> targets,
             @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs,
             @NonNull final Object[] mainClassServices) {
-        return new BaseScriptAction(command, javaModelSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, targets) {
             @Override
             public String[] getTargetNames(Context context) {
                 String[] targets = super.getTargetNames(context);
@@ -818,11 +851,12 @@ public final class JavaActionProvider implements ActionProvider {
     @NonNull
     private static ScriptAction createNonCosAction (
             final String command,
+            final boolean platformSensitive,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
             @NonNull final Supplier<? extends String[]> targets,
             @NullAllowed final Map<String,String> props) {
-        return new BaseScriptAction(command, javaModelSensitive, scanSensitive, targets);
+        return new BaseScriptAction(command, platformSensitive, javaModelSensitive, scanSensitive, targets);
     }
 
     private static final class SimpleAction implements Action {
@@ -861,19 +895,21 @@ public final class JavaActionProvider implements ActionProvider {
 
         BaseScriptAction(
                 @NonNull final String command,
+                final boolean ps,
                 final boolean jms,
                 final boolean sc,
                 Supplier<? extends String[]> targetNames) {
-            this(command, jms, sc, targetNames, Collections.emptyMap());
+            this(command, ps, jms, sc, targetNames, Collections.emptyMap());
         }
 
         BaseScriptAction(
                 @NonNull final String command,
+                final boolean ps,
                 final boolean jms,
                 final boolean sc,
                 @NonNull Supplier<? extends String[]> targetNames,
                 @NonNull Map<String,String> initialProps) {
-            super(command, null, true, true);
+            super(command, null, ps, jms, sc);
             this.targetNames = targetNames;
             this.initialProps = initialProps;
         }

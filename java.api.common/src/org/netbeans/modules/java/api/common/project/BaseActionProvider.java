@@ -359,7 +359,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
         if (Arrays.asList(getPlatformSensitiveActions()).contains(command)) {
             if (getProjectPlatform() == null) {
-                showPlatformWarning ();
+                ActionProviderSupport.showPlatformWarning(project);
                 return null;
             }
         }
@@ -695,6 +695,8 @@ public abstract class BaseActionProvider implements ActionProvider {
     @NonNull
     private JavaActionProvider createDelegate() {
         final JavaActionProvider.Builder builder = JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator, projectSourceRoots, projectTestRoots, classpaths)
+                .setAdditionalPropertiesProvider(this::getAdditionalProperties)
+                .setConcealedPropertiesProvider(this::getConcealedProperties)
                 .setCompileOnSaveOperationsProvider(this::getCompileOnSaveOperations)
                 .setActivePlatformProvider(this::getProjectPlatform)
                 .setProjectMainClassProvider(this::getProjectMainClass)
@@ -1420,30 +1422,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return mainClass;
     }
 
-    @Messages({
-        "CTL_BrokenPlatform_Close=Close",
-        "AD_BrokenPlatform_Close=N/A",
-        "# {0} - project name", "TEXT_BrokenPlatform=<html><p><strong>The project {0} has a broken platform reference.</strong></p><br><p> You have to fix the broken reference and invoke the action again.</p>",
-        "MSG_BrokenPlatform_Title=Broken Platform Reference"
-    })
-    private void showPlatformWarning () {
-        final JButton closeOption = new JButton(CTL_BrokenPlatform_Close());
-        closeOption.getAccessibleContext().setAccessibleDescription(AD_BrokenPlatform_Close());
-        final String projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
-        final DialogDescriptor dd = new DialogDescriptor(
-            TEXT_BrokenPlatform(projectDisplayName),
-            MSG_BrokenPlatform_Title(),
-            true,
-            new Object[] {closeOption},
-            closeOption,
-            DialogDescriptor.DEFAULT_ALIGN,
-            null,
-            null);
-        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-        final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-        dlg.setVisible(true);
-    }
-
     private URL generateAppletHTML(FileObject file) {
         try {
             String buildDirProp = evaluator.getProperty("build.dir"); //NOI18N
@@ -1656,6 +1634,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             super(
                     delegate.getCommand(),
                     null,
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.PLATFORM_SENSITIVE),
                     delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE),
                     delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE));
             this.delegate = delegate;

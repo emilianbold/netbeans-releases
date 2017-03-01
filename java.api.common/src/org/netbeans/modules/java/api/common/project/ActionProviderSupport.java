@@ -161,6 +161,7 @@ final class ActionProviderSupport {
     }
 
     static enum ActionFlag {
+        PLATFORM_SENSITIVE,
         JAVA_MODEL_SENSITIVE,
         SCAN_SENSITIVE
     }
@@ -696,6 +697,30 @@ final class ActionProviderSupport {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @NbBundle.Messages({
+        "CTL_BrokenPlatform_Close=Close",
+        "AD_BrokenPlatform_Close=N/A",
+        "# {0} - project name", "TEXT_BrokenPlatform=<html><p><strong>The project {0} has a broken platform reference.</strong></p><br><p> You have to fix the broken reference and invoke the action again.</p>",
+        "MSG_BrokenPlatform_Title=Broken Platform Reference"
+    })
+    static void showPlatformWarning (@NonNull final Project project) {
+        final JButton closeOption = new JButton(CTL_BrokenPlatform_Close());
+        closeOption.getAccessibleContext().setAccessibleDescription(AD_BrokenPlatform_Close());
+        final String projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
+        final DialogDescriptor dd = new DialogDescriptor(
+            TEXT_BrokenPlatform(projectDisplayName),
+            MSG_BrokenPlatform_Title(),
+            true,
+            new Object[] {closeOption},
+            closeOption,
+            DialogDescriptor.DEFAULT_ALIGN,
+            null,
+            null);
+        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+        final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.setVisible(true);
     }
 
     private static boolean modulesSupported(@NonNull final Project project) {
