@@ -514,7 +514,7 @@ public final class J2SEModularProject implements Project {
                 this, getUpdateHelper(), evaluator(),
                 getSourceRoots(), getTestSourceRoots(), cpProvider)
                 .setCompileOnSaveOperationsProvider(() -> {
-                        return J2SEModularProjectUtil.isCompileOnSaveEnabled(this) ?
+                        return false && J2SEModularProjectUtil.isCompileOnSaveEnabled(this) ?   //TODO: Fixme - for now CoS disabled
                             EnumSet.of(JavaActionProvider.CompileOnSaveOperation.UPDATE, JavaActionProvider.CompileOnSaveOperation.EXECUTE) :
                             Collections.emptySet();
                 })
