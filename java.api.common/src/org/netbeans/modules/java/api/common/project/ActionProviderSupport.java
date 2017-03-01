@@ -46,14 +46,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -61,6 +67,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -75,9 +82,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -97,6 +107,7 @@ import org.netbeans.modules.java.api.common.project.JavaActionProvider.CompileOn
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.ScriptAction.Result;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarning;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -120,6 +131,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -550,6 +562,161 @@ final class ActionProviderSupport {
         return result;
     }
 
+    @NonNull
+    static Map<String,Object> createBaseCoSProperties(
+            @NonNull final JavaActionProvider.Context ctx) {
+        final String command = ctx.getCommand();
+        final Project project = ctx.getProject();
+        final UpdateHelper updateHelper = ctx.getUpdateHelper();
+        final PropertyEvaluator evaluator = ctx.getPropertyEvaluator();
+        final JavaPlatform jp = ctx.getActiveJavaPlatform();
+        final Map<String, Object> execProperties = new HashMap<>();
+        execProperties.put("nb.internal.action.name", command);
+        copyMultiValue(evaluator, execProperties, ProjectProperties.RUN_JVM_ARGS);
+        prepareWorkDir(updateHelper, evaluator, execProperties);
+        execProperties.put(JavaRunner.PROP_PLATFORM, jp);
+        execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
+        String runtimeEnc = evaluator.getProperty(ProjectProperties.RUNTIME_ENCODING);
+        if (runtimeEnc != null) {
+            try {
+                Charset runtimeChs = Charset.forName(runtimeEnc);
+                execProperties.put(JavaRunner.PROP_RUNTIME_ENCODING, runtimeChs); //NOI18N
+            } catch (IllegalCharsetNameException ichsn) {
+                LOG.log(Level.WARNING, "Illegal charset name: {0}", runtimeEnc); //NOI18N
+            } catch (UnsupportedCharsetException uchs) {
+                LOG.log(Level.WARNING, "Unsupported charset : {0}", runtimeEnc); //NOI18N
+            }
+        }
+        Optional.ofNullable(evaluator.getProperty("java.failonerror"))  //NOI18N
+                .map((val) -> Boolean.valueOf(val))
+                .ifPresent((b) -> execProperties.put("java.failonerror", b));    //NOI18N
+        return execProperties;
+    }
+
+    @CheckForNull
+    static Set<String> prepareSystemProperties(
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final Map<String, Object> properties,
+            @NonNull final String command,
+            @NonNull final Lookup context,
+            final boolean test) {
+        String prefix = test ? ProjectProperties.SYSTEM_PROPERTIES_TEST_PREFIX : ProjectProperties.SYSTEM_PROPERTIES_RUN_PREFIX;
+        Map<String, String> evaluated = evaluator.getProperties();
+        if (evaluated == null) {
+            return null;
+        }
+        for (Map.Entry<String, String> e : evaluated.entrySet()) {
+            if (e.getKey().startsWith(prefix) && e.getValue() != null) {
+                putMultiValue(properties, JavaRunner.PROP_RUN_JVMARGS, "-D" + e.getKey().substring(prefix.length()) + "=" + e.getValue());
+            }
+        }
+        //TODO:
+        //collectStartupExtenderArgs(properties, command);
+        //return collectAdditionalProperties(properties, command, context);
+        return Collections.emptySet();
+    }
+
+    static void copyMultiValue(
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final Map<String, Object> properties,
+            @NonNull final String propertyName) {
+        String val = evaluator.getProperty(propertyName);
+        if (val != null) {
+
+            putMultiValue(properties,propertyName, val);
+        }
+    }
+
+    static void bypassAntBuildScript(
+            @NonNull final JavaActionProvider.Context ctx,
+            @NonNull final Map<String, Object> p,
+            @NonNull final AtomicReference<ExecutorTask> task,
+            @NullAllowed final BiFunction <Context,Map<String,Object>,Boolean> cosExecuteInterceptor) throws IllegalArgumentException {
+        final Project project = ctx.getProject();
+        final PropertyEvaluator evaluator = ctx.getPropertyEvaluator();
+        final String command = ctx.getCommand();
+        final Lookup context = ctx.getActiveLookup();
+        final ActionProviderSupport.JavaMainAction javaMainAction = ActionProviderSupport.getJavaMainAction(evaluator);
+        boolean run = javaMainAction != ActionProviderSupport.JavaMainAction.TEST;
+        boolean hasMainMethod = run;
+
+        if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command)) {
+            final String mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
+
+            p.put(JavaRunner.PROP_CLASSNAME, mainClass);
+            if (modulesSupported(project)) {
+                p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, ctx.getProjectClassPath(JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH));
+                p.put(JavaRunner.PROP_EXECUTE_MODULEPATH, ctx.getProjectClassPath(JavaClassPathConstants.MODULE_EXECUTE_PATH));
+            } else {
+                p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, ctx.getProjectClassPath(ClassPath.EXECUTE));
+            }
+            if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
+                p.put("stopclassname", mainClass);
+            }
+        } else {
+//            TODO:
+//            //run single:
+//            FileObject[] files = findSources(context);
+//
+//            if (files == null || files.length != 1) {
+//                files = findTestSources(context, false);
+//                if (files != null && files.length == 1) {
+//                    hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
+//                    run = false;
+//                }
+//            } else if (!hasMainMethod) {
+//                hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
+//            }
+//
+//            if (files == null || files.length != 1) {
+//                return ;//warn the user
+//            }
+//
+//            p.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
+        }
+        boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command);
+        boolean profile = COMMAND_PROFILE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command);
+        try {
+            boolean vote = true;
+            if (cosExecuteInterceptor != null) {
+                vote = cosExecuteInterceptor.apply(ctx, p);
+            }
+            if (vote) {
+                if (run) {
+                    ActionProviderSupport.copyMultiValue(evaluator, p, ProjectProperties.APPLICATION_ARGS);
+                    task.set(JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : (profile ? JavaRunner.QUICK_PROFILE : JavaRunner.QUICK_RUN), p));
+                } else {
+                    if (hasMainMethod) {
+                        task.set(JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : (profile ? JavaRunner.QUICK_PROFILE : JavaRunner.QUICK_RUN), p));
+                    } else {
+                        task.set(JavaRunner.execute(debug ? JavaRunner.QUICK_TEST_DEBUG : (profile ? JavaRunner.QUICK_TEST_PROFILE : JavaRunner.QUICK_TEST), p));
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static boolean modulesSupported(@NonNull final Project project) {
+        return Optional.ofNullable(SourceLevelQuery.getSourceLevel2(project.getProjectDirectory()).getSourceLevel())
+                .map((s) -> new SpecificationVersion(s))
+                .map((sv) -> CommonModuleUtils.JDK9.compareTo(sv) <= 0)
+                .orElse(Boolean.FALSE);
+    }
+
+    private static void putMultiValue(
+            @NonNull final Map<String, Object> properties,
+            @NonNull final String propertyName,
+            @NonNull final String val) {
+        @SuppressWarnings(value = "unchecked")
+        Collection<String> it = (Collection<String>) properties.get(propertyName);
+        if (it == null) {
+            properties.put(propertyName, it = new LinkedList<>());
+        }
+        it.add(val);
+    }
+
     private static void invokeByJavaSource (
             @NonNull final Runnable runnable) throws IOException {
         Parameters.notNull("runnable", runnable);   //NOI18N
@@ -682,6 +849,18 @@ final class ActionProviderSupport {
             sb.append("\n  ").append(FileUtil.getFileDisplayName(expectedRoot));                                        //NOI18N
         }
         return sb.toString ();
+    }
+
+    private static void prepareWorkDir(
+            @NonNull final UpdateHelper updateHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final Map<String, Object> properties) {
+        String val = evaluator.getProperty(ProjectProperties.RUN_WORK_DIR);
+        if (val == null) {
+            val = ".";
+        }
+        final File file = updateHelper.getAntProjectHelper().resolveFile(val);
+        properties.put(JavaRunner.PROP_WORK_DIR, file);
     }
 
 

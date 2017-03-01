@@ -45,6 +45,7 @@ import java.util.EventListener;
 import java.util.EventObject;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -105,7 +106,7 @@ public abstract class AbstractClassPathProvider implements ClassPathProvider {
      * @param type the {@link ClassPath} type
      * @return the project's {@link ClassPath}s
      */
-    @NonNull
+    @CheckForNull
     public abstract ClassPath[] getProjectClassPaths(@NonNull final String type);
 
     /**

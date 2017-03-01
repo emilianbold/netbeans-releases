@@ -52,6 +52,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -93,6 +94,7 @@ public final class JavaActionProvider implements ActionProvider {
     private final Project prj;
     private final UpdateHelper updateHelper;
     private final PropertyEvaluator eval;
+    private final Function<String,ClassPath> classpaths;
     private final Map<String,Action> supportedActions;
     private final List<AntTargetInvocationListener> listeners;
     private final Supplier<? extends JavaPlatform> jpp;
@@ -103,6 +105,7 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final Project project,
             @NonNull final UpdateHelper updateHelper,
             @NonNull final PropertyEvaluator evaluator,
+            @NonNull final Function<String,ClassPath> classpaths,
             @NonNull final Collection<? extends Action> actions,
             @NonNull Supplier<? extends JavaPlatform> javaPlatformProvider,
             @NonNull final Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider,
@@ -110,6 +113,7 @@ public final class JavaActionProvider implements ActionProvider {
         Parameters.notNull("project", project); //NOI18N
         Parameters.notNull("updateHelper", updateHelper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
+        Parameters.notNull("classpaths", classpaths);   //NOI18N
         Parameters.notNull("actions", actions); //NOI18N
         Parameters.notNull("javaPlatformProvider", javaPlatformProvider);   //NOI18N
         Parameters.notNull("cosOpsProvider", cosOpsProvider);   //NOI18N
@@ -117,6 +121,7 @@ public final class JavaActionProvider implements ActionProvider {
         this.prj = project;
         this.updateHelper = updateHelper;
         this.eval = evaluator;
+        this.classpaths = classpaths;
         final Map<String,Action> abn = new HashMap<>();
         for (Action action : actions) {
             abn.put(action.getCommand(), action);
@@ -162,6 +167,7 @@ public final class JavaActionProvider implements ActionProvider {
         private final Project project;
         private final UpdateHelper updateHelper;
         private final PropertyEvaluator eval;
+        private final Function<String,ClassPath> classpaths;
         private final String command;
         private final Lookup lkp;
         private boolean doJavaChecks;
@@ -179,6 +185,7 @@ public final class JavaActionProvider implements ActionProvider {
                 @NonNull final Project project,
                 @NonNull final UpdateHelper updateHelper,
                 @NonNull final PropertyEvaluator eval,
+                @NonNull final Function<String,ClassPath> classpaths,
                 @NonNull final String command,
                 @NonNull final Lookup lookup,
                 @NullAllowed final ActionProviderSupport.UserPropertiesPolicy userPropertiesPolicy,
@@ -190,6 +197,7 @@ public final class JavaActionProvider implements ActionProvider {
             this.project = project;
             this.updateHelper = updateHelper;
             this.eval = eval;
+            this.classpaths = classpaths;
             this.command = command;
             this.lkp = lookup;
             this.doJavaChecks = true;
@@ -246,6 +254,11 @@ public final class JavaActionProvider implements ActionProvider {
                 res = cosOpsCache = cosOpsProvider.get();
             }
             return res;
+        }
+
+        @CheckForNull
+        public ClassPath getProjectClassPath(@NonNull final String classPathId) {
+            return classpaths.apply(classPathId);
         }
 
         @CheckForNull
@@ -328,6 +341,7 @@ public final class JavaActionProvider implements ActionProvider {
         private final String command;
         private final String displayName;
         private final Set<ActionProviderSupport.ActionFlag> actionFlags;
+        private volatile BiFunction<Context,Map<String,Object>,Boolean> cosInterceptor;
 
         public static final class Result {
             private static final Result ABORT = new Result(null);
@@ -392,7 +406,8 @@ public final class JavaActionProvider implements ActionProvider {
 
         @Override
         public final void invoke(@NonNull final Context context) {
-            ActionProviderSupport.invokeTarget(this::getTargetNames,
+            ActionProviderSupport.invokeTarget(
+                    this::getTargetNames,
                     this::performCompileOnSave,
                     context,
                     actionFlags,
@@ -412,6 +427,15 @@ public final class JavaActionProvider implements ActionProvider {
         final Set<ActionProviderSupport.ActionFlag> getActionFlags() {
             return actionFlags;
         }
+
+        @CheckForNull
+        final BiFunction<Context,Map<String,Object>,Boolean> getCoSInterceptor() {
+            return cosInterceptor;
+        }
+
+        final void setCoSInterceptor(@NullAllowed final BiFunction<Context,Map<String,Object>,Boolean> cosInterceptor) {
+            this.cosInterceptor = cosInterceptor;
+        }
     }
 
     public static final class Builder {
@@ -420,6 +444,7 @@ public final class JavaActionProvider implements ActionProvider {
         private final PropertyEvaluator evaluator;
         private final List<Action> actions;
         private final ActionProviderSupport.ModifiedFilesSupport mfs;
+        private final Function<String,ClassPath> classpaths;
         private volatile Object[] mainClassServices;
         private Supplier<? extends JavaPlatform> jpp;
         private Supplier<? extends Set<? extends CompileOnSaveOperation>> cosOpsProvider;
@@ -429,19 +454,21 @@ public final class JavaActionProvider implements ActionProvider {
                 @NonNull final UpdateHelper updateHelper,
                 @NonNull final PropertyEvaluator evaluator,
                 @NonNull final SourceRoots sourceRoots,
-                @NonNull final SourceRoots testSourceRoots) {
+                @NonNull final SourceRoots testSourceRoots,
+                @NonNull final Function<String,ClassPath> projectClassPaths) {
             Parameters.notNull("project", project); //NOI18N
             Parameters.notNull("updateHelper", updateHelper); //NOI18N
             Parameters.notNull("evaluator", evaluator); //NOI18N
             Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
             Parameters.notNull("testSourceRoots", testSourceRoots); //NOI18N
+            Parameters.notNull("projectClassPaths", projectClassPaths); //NOI18N
             this.project = project;
             this.updateHelper = updateHelper;
             this.evaluator = evaluator;
             this.actions = new ArrayList<>();
             this.jpp = createJavaPlatformProvider(ProjectProperties.PLATFORM_ACTIVE);
             this.mfs = ActionProviderSupport.ModifiedFilesSupport.newInstance(project, updateHelper, evaluator);
-            final Function<String,ClassPath> classpaths = (id) -> ClassPath.EMPTY;
+            this.classpaths = projectClassPaths;
             final Function<Boolean,String> pmcp = (validate) -> ActionProviderSupport.getProjectMainClass(project, evaluator, sourceRoots, classpaths, validate);
             final Supplier<Boolean> mcc = () -> ActionProviderSupport.showCustomizer(project, updateHelper, evaluator, sourceRoots, classpaths);
             this.mainClassServices = new Object[] {pmcp, mcc};
@@ -553,6 +580,7 @@ public final class JavaActionProvider implements ActionProvider {
                     project,
                     updateHelper,
                     evaluator,
+                    classpaths,
                     actions,
                     jpp,
                     cosOpsProvider,
@@ -574,8 +602,9 @@ public final class JavaActionProvider implements ActionProvider {
                 @NonNull final UpdateHelper updateHelper,
                 @NonNull final PropertyEvaluator evaluator,
                 @NonNull final SourceRoots sourceRoots,
-                @NonNull final SourceRoots testSourceRoots) {
-            return new Builder(project, updateHelper, evaluator, sourceRoots, testSourceRoots);
+                @NonNull final SourceRoots testSourceRoots,
+                @NonNull final Function<String,ClassPath> projectClassPaths) {
+            return new Builder(project, updateHelper, evaluator, sourceRoots, testSourceRoots, projectClassPaths);
         }
     }
 
@@ -590,7 +619,7 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final Lookup context) throws IllegalArgumentException {
         return Optional.ofNullable(supportedActions.get(command))
                 .map((act) -> act.isEnabled(new Context(
-                        prj, updateHelper, eval,
+                        prj, updateHelper, eval, classpaths,
                         command, context, userPropertiesPolicy,
                         jpp, null, null, cosOpsProvider,
                         listeners)))
@@ -605,7 +634,7 @@ public final class JavaActionProvider implements ActionProvider {
         Optional.ofNullable(supportedActions.get(command))
                 .ifPresent((act) -> {
                     final Context ctx = new Context(
-                            prj, updateHelper, eval,
+                            prj, updateHelper, eval, classpaths,
                             command, context, userPropertiesPolicy,
                             jpp, null, null, cosOpsProvider,
                             listeners);
@@ -707,7 +736,7 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final Supplier<? extends String[]> targets,
             @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs,
             @NonNull final Object[] mainClassServices) {
-        return new BaseScriptAction(command, scanSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(command, javaModelSensitive, scanSensitive, targets) {
             @Override
             public String[] getTargetNames(Context context) {
                 String[] targets = super.getTargetNames(context);
@@ -759,6 +788,27 @@ public final class JavaActionProvider implements ActionProvider {
                     }
                 }
                 return targets;
+            }
+
+            @Override
+            public ScriptAction.Result performCompileOnSave(Context context, String[] targetNames) {
+                final Map<String,Object> execProperties = ActionProviderSupport.createBaseCoSProperties(context);
+                ActionProviderSupport.prepareSystemProperties(
+                        context.getPropertyEvaluator(),
+                        execProperties,
+                        context.getCommand(),
+                        context.getActiveLookup(),
+                        false);
+                AtomicReference<ExecutorTask> _task = new AtomicReference<>();
+                ActionProviderSupport.bypassAntBuildScript(
+                        context,
+                        execProperties,
+                        _task,
+                        getCoSInterceptor());
+                final ExecutorTask t = _task.get();
+                return t == null ?
+                        JavaActionProvider.ScriptAction.Result.abort() :
+                        JavaActionProvider.ScriptAction.Result.success(t);
             }
         };
     }

@@ -52,21 +52,15 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -87,12 +81,10 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -104,7 +96,6 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.applet.AppletSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import static org.netbeans.modules.java.api.common.project.Bundle.*;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarning;
@@ -123,7 +114,6 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -148,6 +138,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     private final AntProjectHelper antProjectHelper;
 
     private final Callback callback;
+    private final Function<String,ClassPath> classpaths;
 
     // Ant project helper of the project
     private UpdateHelper updateHelper;
@@ -175,6 +166,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             SourceRoots sourceRoots, SourceRoots testRoots, AntProjectHelper antProjectHelper, Callback callback) {
         this.antProjectHelper = antProjectHelper;
         this.callback = callback;
+        this.classpaths = (id) -> getCallback().getProjectSourcesClassPath(id);
         this.updateHelper = updateHelper;
         this.project = project;
         this.evaluator = evaluator;
@@ -298,6 +290,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 project,
                 updateHelper,
                 evaluator,
+                classpaths,
                 command,
                 context,
                 userPropertiesPolicy,
@@ -343,17 +336,18 @@ public abstract class BaseActionProvider implements ActionProvider {
                         null)
                 .map((sa) -> {
                     final JavaActionProvider.Context ctx = new JavaActionProvider.Context(
-                        project,
-                        updateHelper,
-                        evaluator,
-                        command,
-                        context,
-                        null,
-                        null,
-                        null,
-                        null,
-                        this::getCompileOnSaveOperations,
-                        Collections.emptyList());
+                            project,
+                            updateHelper,
+                            evaluator,
+                            classpaths,
+                            command,
+                            context,
+                            null,
+                            null,
+                            null,
+                            null,
+                            this::getCompileOnSaveOperations,
+                            Collections.emptyList());
                     final String[] targetNames = sa.getTargetNames(ctx);
                     if (targetNames != null) {
                         Optional.ofNullable(ctx.getProperties())
@@ -675,7 +669,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 project,
                 evaluator,
                 projectSourceRoots,
-                (cpType) -> getCallback().getProjectSourcesClassPath(cpType),
+                classpaths,
                 verify);
     }
 
@@ -703,7 +697,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     @NonNull
     private JavaActionProvider createDelegate() {
-        final JavaActionProvider.Builder builder = JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator, projectSourceRoots, projectTestRoots)
+        final JavaActionProvider.Builder builder = JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator, projectSourceRoots, projectTestRoots, classpaths)
                 .setCompileOnSaveOperationsProvider(this::getCompileOnSaveOperations)
                 .setActivePlatformProvider(this::getProjectPlatform)
                 .setProjectMainClassProvider(this::getProjectMainClass)
@@ -728,6 +722,10 @@ public abstract class BaseActionProvider implements ActionProvider {
                         modelSensitive.contains(cmd),
                         scanSensitive.contains(cmd),
                         targets);
+                    action.setCoSInterceptor((c,m) -> {
+                        updateJavaRunnerClasspath(c.getCommand(), m);
+                        return true;
+                    });
                 } else {
                     String[] jarEnabledTargets, jarDisabledTargets;
                     switch (cmd) {
@@ -836,26 +834,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 //multiple files or package(s) selected so we need to call test target instead of test-single
                 command = COMMAND_TEST;
             }
-            final Map<String, Object> execProperties = new HashMap<>();
-            execProperties.put("nb.internal.action.name", command);
-            copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
-            prepareWorkDir(execProperties);
-            execProperties.put(JavaRunner.PROP_PLATFORM, getProjectPlatform());
-            execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
-            String runtimeEnc = evaluator.getProperty(ProjectProperties.RUNTIME_ENCODING);
-            if (runtimeEnc != null) {
-                try {
-                    Charset runtimeChs = Charset.forName(runtimeEnc);
-                    execProperties.put(JavaRunner.PROP_RUNTIME_ENCODING, runtimeChs); //NOI18N
-                } catch (IllegalCharsetNameException ichsn) {
-                    LOG.log(Level.WARNING, "Illegal charset name: {0}", runtimeEnc); //NOI18N
-                } catch (UnsupportedCharsetException uchs) {
-                    LOG.log(Level.WARNING, "Unsupported charset : {0}", runtimeEnc); //NOI18N
-                }
-            }
-            Optional.ofNullable(evaluator.getProperty("java.failonerror"))  //NOI18N
-                    .map((val) -> Boolean.valueOf(val))
-                    .ifPresent((b) -> execProperties.put("java.failonerror", b));    //NOI18N
+            final Map<String, Object> execProperties = ActionProviderSupport.createBaseCoSProperties(ctx);
             if (targetNames.length == 1 && (JavaRunner.QUICK_RUN_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_DEBUG_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_PROFILE_APPLET.equals(targetNames[0]))) {
                 try {
                     final FileObject[] selectedFiles = findSources(ctx.getActiveLookup());
@@ -864,7 +843,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         String url = ctx.getProperty("applet.url");
                         execProperties.put("applet.url", url);
                         execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                        prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
+                        ActionProviderSupport.prepareSystemProperties(evaluator, execProperties, command, ctx.getActiveLookup(), false);
                         return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(targetNames[0], execProperties));
                     }
                 } catch (IOException ex) {
@@ -872,20 +851,11 @@ public abstract class BaseActionProvider implements ActionProvider {
                 }
                 return JavaActionProvider.ScriptAction.Result.abort();
             }
-            if (!isServerExecution() && (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command))) {
-                prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
-                AtomicReference<ExecutorTask> _task = new AtomicReference<>();
-                bypassAntBuildScript(command, ctx.getActiveLookup(), execProperties, _task);
-                final ExecutorTask t = _task.get();
-                return t == null ?
-                        JavaActionProvider.ScriptAction.Result.abort() :
-                        JavaActionProvider.ScriptAction.Result.success(t);
-            }
             // for example RUN_SINGLE Java file with Servlet must be run on server and not locally
             boolean serverExecution = ctx.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
             ctx.removeProperty(PROPERTY_RUN_SINGLE_ON_SERVER);
             if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command))) {
-                prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), false);
+                ActionProviderSupport.prepareSystemProperties(evaluator,execProperties, command, ctx.getActiveLookup(), false);
                 if (COMMAND_RUN_SINGLE.equals(command)) {
                     execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("run.class"));
                 } else if (COMMAND_DEBUG_SINGLE.equals(command)) {
@@ -893,8 +863,15 @@ public abstract class BaseActionProvider implements ActionProvider {
                 } else {
                     execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("profile.class"));
                 }
-                AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
-                bypassAntBuildScript(command, ctx.getActiveLookup(), execProperties, _task);
+                AtomicReference<ExecutorTask> _task = new AtomicReference<>();
+                ActionProviderSupport.bypassAntBuildScript(
+                        ctx,
+                        execProperties,
+                        _task,
+                        (c,p) -> {
+                            updateJavaRunnerClasspath(c.getCommand(), p);
+                            return true;
+                        });
                 final ExecutorTask t = _task.get();
                 return t == null ?
                         JavaActionProvider.ScriptAction.Result.abort() :
@@ -905,7 +882,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 @SuppressWarnings("MismatchedReadAndWriteOfArray")
                 FileObject[] files = findTestSources(ctx.getActiveLookup(), true);
                 try {
-                    prepareSystemProperties(execProperties, command, ctx.getActiveLookup(), true);
+                    ActionProviderSupport.prepareSystemProperties(evaluator,execProperties, command, ctx.getActiveLookup(), true);
                     execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
                     if (buildDir != null) { // #211543
                         execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
@@ -951,7 +928,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             updateHelper,
             evaluator,
             projectSourceRoots,
-            (cpType) -> getCallback().getProjectSourcesClassPath(cpType));
+            classpaths);
     }
 
     private String[] setupTestFilesOrPackages(Properties p, FileObject[] files) {
@@ -1359,99 +1336,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return srcDir;
     }
 
-    private void bypassAntBuildScript(String command, Lookup context, Map<String, Object> p, AtomicReference<ExecutorTask> task) throws IllegalArgumentException {
-        final ActionProviderSupport.JavaMainAction javaMainAction = ActionProviderSupport.getJavaMainAction(evaluator);
-        boolean run = javaMainAction != ActionProviderSupport.JavaMainAction.TEST;
-        boolean hasMainMethod = run;
-
-        if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command)) {
-            final String mainClass = evaluator.getProperty(ProjectProperties.MAIN_CLASS);
-
-            p.put(JavaRunner.PROP_CLASSNAME, mainClass);
-            if (modulesSupported()) {
-                p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, callback.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH));
-                p.put(JavaRunner.PROP_EXECUTE_MODULEPATH, callback.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_EXECUTE_PATH));
-            } else {
-                p.put(JavaRunner.PROP_EXECUTE_CLASSPATH, callback.getProjectSourcesClassPath(ClassPath.EXECUTE));
-            }
-            if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
-                p.put("stopclassname", mainClass);
-            }
-        } else {
-            //run single:
-            FileObject[] files = findSources(context);
-
-            if (files == null || files.length != 1) {
-                files = findTestSources(context, false);
-                if (files != null && files.length == 1) {
-                    hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
-                    run = false;
-                }
-            } else if (!hasMainMethod) {
-                hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
-            }
-
-            if (files == null || files.length != 1) {
-                return ;//warn the user
-            }
-
-            p.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
-        }
-        boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command);
-        boolean profile = COMMAND_PROFILE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command);
-        try {
-            updateJavaRunnerClasspath(command, p);
-            if (run) {
-                copyMultiValue(ProjectProperties.APPLICATION_ARGS, p);
-                task.set(JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : (profile ? JavaRunner.QUICK_PROFILE : JavaRunner.QUICK_RUN), p));
-            } else {
-                if (hasMainMethod) {
-                    task.set(JavaRunner.execute(debug ? JavaRunner.QUICK_DEBUG : (profile ? JavaRunner.QUICK_PROFILE : JavaRunner.QUICK_RUN), p));
-                } else {
-                    task.set(JavaRunner.execute(debug ? JavaRunner.QUICK_TEST_DEBUG : (profile ? JavaRunner.QUICK_TEST_PROFILE : JavaRunner.QUICK_TEST), p));
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private boolean modulesSupported() {
-        return Optional.ofNullable(SourceLevelQuery.getSourceLevel2(project.getProjectDirectory()).getSourceLevel())
-                .map((s) -> new SpecificationVersion(s))
-                .map((sv) -> CommonModuleUtils.JDK9.compareTo(sv) <= 0)
-                .orElse(Boolean.FALSE);
-    }
-
-    private void prepareWorkDir(Map<String, Object> properties) {
-        String val = evaluator.getProperty(ProjectProperties.RUN_WORK_DIR);
-
-        if (val == null) {
-            val = ".";
-        }
-
-        File file = this.updateHelper.getAntProjectHelper().resolveFile(val);
-        
-        properties.put(JavaRunner.PROP_WORK_DIR, file);
-    }
-
-    private void copyMultiValue(String propertyName, Map<String, Object> properties) {
-        String val = evaluator.getProperty(propertyName);
-        if (val != null) {
-
-            putMultiValue(properties,propertyName, val);
-        }
-    }
-
-    private void putMultiValue(Map<String, Object> properties, String propertyName, String val) {
-        @SuppressWarnings(value = "unchecked")
-        Collection<String> it = (Collection<String>) properties.get(propertyName);
-        if (it == null) {
-            properties.put(propertyName, it = new LinkedList<String>());
-        }
-        it.add(val);
-    }
-
     private List<String> runJvmargsIde(String command) {
         StartupExtender.StartMode mode;
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
@@ -1497,24 +1381,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             return ((Callback3)cb).createConcealedProperties(command, context);
         }
         return null;
-    }
-
-    @CheckForNull
-    private Set<String> prepareSystemProperties(Map<String, Object> properties, String command, Lookup context, boolean test) {
-        String prefix = test ? ProjectProperties.SYSTEM_PROPERTIES_TEST_PREFIX : ProjectProperties.SYSTEM_PROPERTIES_RUN_PREFIX;
-        Map<String, String> evaluated = evaluator.getProperties();
-
-        if (evaluated == null) {
-            return null;
-        }
-        
-        for (Entry<String, String> e : evaluated.entrySet()) {
-            if (e.getKey().startsWith(prefix) && e.getValue() != null) {
-                putMultiValue(properties, JavaRunner.PROP_RUN_JVMARGS, "-D" + e.getKey().substring(prefix.length()) + "=" + e.getValue());
-            }
-        }        
-        collectStartupExtenderArgs(properties, command);
-        return collectAdditionalProperties(properties, command, context);
     }
 
     @Messages({
@@ -1812,6 +1678,15 @@ public abstract class BaseActionProvider implements ActionProvider {
                     throw new IllegalArgumentException(this.getCommand());
                 }
                 return targets;
+            }
+        }
+
+        @Override
+        public Result performCompileOnSave(JavaActionProvider.Context context, String[] targetNames) {
+            if (!isServerExecution()) {
+                return delegate.performCompileOnSave(context, targetNames);
+            } else {
+                return JavaActionProvider.ScriptAction.Result.follow();
             }
         }
 

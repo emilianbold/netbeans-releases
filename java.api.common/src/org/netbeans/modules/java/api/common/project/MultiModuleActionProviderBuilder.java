@@ -42,9 +42,11 @@ package org.netbeans.modules.java.api.common.project;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.AbstractClassPathProvider;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.CompileOnSaveOperation;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -106,7 +108,20 @@ public final class MultiModuleActionProviderBuilder {
             @NonNull final UpdateHelper updateHelper,
             @NonNull final PropertyEvaluator evaluator,
             @NonNull final SourceRoots sourceRoots,
-            @NonNull final SourceRoots testSourceRoots) {
-        return new MultiModuleActionProviderBuilder(JavaActionProvider.Builder.newInstance(project, updateHelper, evaluator, sourceRoots, testSourceRoots));
+            @NonNull final SourceRoots testSourceRoots,
+            @NonNull final AbstractClassPathProvider cpp) {
+        return new MultiModuleActionProviderBuilder(JavaActionProvider.Builder.newInstance(
+                project,
+                updateHelper,
+                evaluator,
+                sourceRoots,
+                testSourceRoots,
+                (id) -> {
+                    final ClassPath[] cps = cpp.getProjectClassPaths(id);
+                    if (cps == null || cps.length < 1) {
+                        return null;
+                    }
+                    return cps[0];
+                }));
     }
 }
