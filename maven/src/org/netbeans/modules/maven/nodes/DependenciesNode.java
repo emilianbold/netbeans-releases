@@ -42,13 +42,14 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import org.netbeans.modules.maven.DependencyType;
+import org.netbeans.modules.maven.ModuleInfoSupport;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -80,7 +81,6 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
-import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -105,30 +105,6 @@ public class DependenciesNode extends AbstractNode {
     
     private static final Logger LOG = Logger.getLogger(DependenciesNode.class.getName());
     
-    enum Type {
-        COMPILE(Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_SYSTEM), 
-        TEST(Artifact.SCOPE_TEST),
-        RUNTIME(Artifact.SCOPE_RUNTIME), 
-        /** any scope */NONCP;
-    
-        final String[] artifactScopes;
-
-        private Type(String... ArtifactScopes) {
-            this.artifactScopes = ArtifactScopes;
-        }        
-        
-        static DependenciesNode.Type forArtifact(Artifact a) {
-            String scope = a.getScope();
-            for (DependenciesNode.Type t : DependenciesNode.Type.values()) {
-                for (String s : t.artifactScopes) {
-                    if (s.equals(scope)) {
-                        return t;
-                    }
-                }
-            }
-            return NONCP;
-        }
-    }
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     private static final @StaticResource String LIBS_BADGE = "org/netbeans/modules/maven/libraries-badge.png";
     private static final @StaticResource String DEF_FOLDER = "org/netbeans/modules/maven/defaultFolder.gif";
@@ -214,12 +190,12 @@ public class DependenciesNode extends AbstractNode {
     static final class DependenciesSet implements PropertyChangeListener {
 
         private NbMavenProjectImpl project;
-        private final Type type;
+        private final DependencyType type;
         private final ChangeSupport cs = new ChangeSupport(this);
         private final ModuleInfoSupport moduleInfoSupport;
 
         @SuppressWarnings("LeakingThisInConstructor")       
-        DependenciesSet(NbMavenProjectImpl project, Type type) {
+        DependenciesSet(NbMavenProjectImpl project, DependencyType type) {
             this.project = project;
             this.type = type;           
             switch (type) {   
@@ -244,7 +220,7 @@ public class DependenciesNode extends AbstractNode {
                 case COMPILE:
                 case TEST:
                 case RUNTIME:
-                    lst = create(arts, longLiving, type.artifactScopes);
+                    lst = create(arts, longLiving, type.artifactScopes());
                     break;
                 default:
                     lst = create(arts, longLiving, (a) -> !a.getArtifactHandler().isAddedToClasspath());
@@ -269,8 +245,7 @@ public class DependenciesNode extends AbstractNode {
             }
         }
 
-        private HashSet<DependencyWrapper> create(Set<Artifact> arts, boolean longLiving, String... scopes) {
-            final List<String> scopesList = Arrays.asList(scopes);
+        private HashSet<DependencyWrapper> create(Set<Artifact> arts, boolean longLiving, List<String> scopesList) {
             return create(arts, longLiving, (a) -> a.getArtifactHandler().isAddedToClasspath() && scopesList.contains(a.getScope()));
         }
 
@@ -406,7 +381,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         @Override public void actionPerformed(ActionEvent event) {
-            String typeString = dependencies.type == Type.RUNTIME ? "runtime" : (dependencies.type == Type.TEST ? "test" : "compile"); //NOI18N
+            String typeString = dependencies.type == DependencyType.RUNTIME ? "runtime" : (dependencies.type == DependencyType.TEST ? "test" : "compile"); //NOI18N
             final String[] data = AddDependencyPanel.show(dependencies.project, true, typeString);
             if (data != null) {
                 RP.post(new Runnable() {

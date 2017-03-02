@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import org.netbeans.modules.maven.ModuleInfoSupport;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -1232,7 +1233,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             if (prjs.size() != 1) {
                 return;
             }
-            ModuleInfoSupport.addRequires(prjs.iterator().next(), artifacts);
+            ModuleInfoSupport.addRequires(prjs.iterator().next().getOriginalMavenProject(), artifacts);
         }
     }
 
