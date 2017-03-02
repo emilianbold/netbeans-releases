@@ -42,7 +42,10 @@
 package org.netbeans.modules.javaee.wildfly.ide;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -57,12 +60,12 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.InputReader;
-import org.netbeans.api.extexecution.input.InputReaderTask;
-import org.netbeans.api.extexecution.input.InputReaders;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.InputReaderTask;
+import org.netbeans.api.extexecution.base.input.InputReaders;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputReader;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.openide.windows.InputOutput;
@@ -146,14 +149,14 @@ public final class WildflyOutputSupport {
         reset();
 
         ExecutionDescriptor descriptor = DESCRIPTOR.inputOutput(io);
-        descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+        descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
 
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
             }
         });
-        descriptor = descriptor.errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+        descriptor = descriptor.errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
 
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -209,9 +212,15 @@ public final class WildflyOutputSupport {
 
     public void start(InputOutput io, final File file) {
         reset();
-
-        InputReader reader = InputReaders.forFile(file, Charset.defaultCharset());
-        InputReaderTask localFileTask = InputReaderTask.newTask(reader, InputProcessors.printing(io.getOut(), false));
+        InputReader reader;
+        try {
+            InputStream in = Files.newInputStream(file.toPath());
+            in.skip(file.length());
+            reader = InputReaders.forStream(in, Charset.defaultCharset());
+        } catch (IOException ex) {
+            reader = InputReaders.forFile(file, Charset.defaultCharset());
+        }
+        InputReaderTask localFileTask = InputReaderTask.newTask(reader, InputProcessors.printing(io.getOut()));
         LOG_FILE_SERVICE.submit(localFileTask);
         synchronized (this) {
             fileTask = localFileTask;
@@ -401,7 +410,7 @@ public final class WildflyOutputSupport {
                     || line.contains("started (with errors) in")) // JBoss 7 with some errors (include wrong deployments) // NOI18N
                     || JBOSS_7_STARTED_ML.matcher(line).matches()
                     || WILDFLY_8_STARTED_ML.matcher(line).matches()
-                    || WILDFLY_9_STARTED_ML.matcher(line).matches()                    
+                    || WILDFLY_9_STARTED_ML.matcher(line).matches()
                     || WILDFLY_10_STARTED_ML.matcher(line).matches()
                     || EAP6_STARTED_ML.matcher(line).matches()
                     || EAP7_STARTED_ML.matcher(line).matches();
