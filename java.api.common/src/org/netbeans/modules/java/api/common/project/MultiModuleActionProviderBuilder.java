@@ -59,22 +59,35 @@ import org.openide.util.Parameters;
 public final class MultiModuleActionProviderBuilder {
 
         private final JavaActionProvider.Builder builder;
+        private final PropertyEvaluator evaluator;
 
         private MultiModuleActionProviderBuilder(
-                @NonNull final JavaActionProvider.Builder builder) {
+                @NonNull final JavaActionProvider.Builder builder,
+                @NonNull final PropertyEvaluator evaluator) {
             Parameters.notNull("builder", builder); //NOI18N
+            Parameters.notNull("evaluator", evaluator); //NOI18N
             this.builder = builder;
+            this.evaluator = evaluator;
         }
 
     @NonNull
     private MultiModuleActionProviderBuilder addProjectSensitiveActions() {
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_CLEAN, false, false, "clean"));
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_BUILD, false, false,  "jar"));
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_REBUILD, false, false,  "clean", "jar"));
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_RUN, false, true, "run"));
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE, false, true, "profile"));
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_TEST, false, false, "test"));
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_CLEAN, false, false, "clean")); //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_BUILD, false, false,  ActionProviderSupport.createConditionalTarget(
+                                    evaluator,
+                                    ActionProviderSupport.createJarEnabledPredicate(),
+                                    new String[] {"jar"},   //NOI18N
+                                    new String[] {"compile"})));    //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_REBUILD, false, false, ActionProviderSupport.createConditionalTarget(
+                                    evaluator,
+                                    ActionProviderSupport.createJarEnabledPredicate(),
+                                    new String[] {"clean", "jar"},  //NOI18N
+                                    new String[] {"clean", "compile"})));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_RUN, false, true, "run"));  //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));  //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE, false, true, "profile"));  //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_TEST, false, false, "test"));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_COMPILE_SINGLE, false, false, "compile-single"));   //NOI18N
         return this;
     }
 
@@ -123,6 +136,6 @@ public final class MultiModuleActionProviderBuilder {
                         return null;
                     }
                     return cps[0];
-                }));
+                }), evaluator);
     }
 }

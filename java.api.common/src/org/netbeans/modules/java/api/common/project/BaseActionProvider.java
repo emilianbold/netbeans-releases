@@ -366,25 +366,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         LOG.log(Level.FINE, "COMMAND: {0}", command);       //NOI18N
         String[] targetNames = new String[0];
         Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
-        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] sourceRoots = projectSourceRoots.getRoots();
-            FileObject[] files = findSourcesAndPackages( context, sourceRoots);
-            boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
-            if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
-                String[] targets = targetsFromConfig.get(command);
-                targetNames = (targets != null) ? targets : getCommands().get(command);
-            } else {
-                FileObject[] testRoots = projectTestRoots.getRoots();
-                files = findSourcesAndPackages(context, testRoots);
-                if (files != null) {
-                    p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]), recursive)); // NOI18N
-                    targetNames = new String[] {"compile-test-single"}; // NOI18N
-                } else {
-                    return null;
-                }
-            }
-        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+        if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             p.setProperty("ignore.failing.tests", "true");  //NOI18N
             final FileObject[] files = findTestSourcesForFiles(context);
             if (files == null) {
@@ -426,13 +408,13 @@ public abstract class BaseActionProvider implements ActionProvider {
             String path;
             String classes = "";    //NOI18N
             if (files != null) {
-                path = FileUtil.getRelativePath(getRoot(projectSourceRoots.getRoots(),files[0]), files[0]);
+                path = FileUtil.getRelativePath(ActionProviderSupport.getRoot(projectSourceRoots.getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
                 classes = getTopLevelClasses(files[0]);
             } else {
                 files = findTestSources(context, false);
                 assert files != null : "findTestSources () can't be null: " + Arrays.toString(projectTestRoots.getRoots());   //NOI18N
-                path = FileUtil.getRelativePath(getRoot(projectTestRoots.getRoots(),files[0]), files[0]);
+                path = FileUtil.getRelativePath(ActionProviderSupport.getRoot(projectTestRoots.getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }
             // Convert foo/FooTest.java -> foo/FooTest
@@ -470,7 +452,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         FileUtil.getFileDisplayName(file));   //NOI18N
                 return null;
             }
-            String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
+            String clazz = FileUtil.getRelativePath(ActionProviderSupport.getRoot(rootz, file), file);
             if (clazz == null) {
                 return null;
             }
@@ -711,7 +693,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         final Set<String> scanSensitive = getScanSensitiveActions();
         final Set<String> modelSensitive = getJavaModelActions();
         final Set<String> disabledByServerExecuion = new HashSet<>(Arrays.asList(COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO));
-        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD, COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO, COMMAND_TEST}) {
+        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD, COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO, COMMAND_TEST, COMMAND_COMPILE_SINGLE}) {
             if (supported.contains(cmd)) {
                 String[] targets = cmds.get(cmd);
                 JavaActionProvider.ScriptAction action;
@@ -932,7 +914,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     private String[] setupTestFilesOrPackages(Properties p, FileObject[] files) {
         if (files != null) {
-            FileObject root = getRoot(projectTestRoots.getRoots(), files[0]);
+            FileObject root = ActionProviderSupport.getRoot(projectTestRoots.getRoots(), files[0]);
             // the replace part is so that we can test everything under a package recusively
             p.setProperty("includes", ActionUtils.antIncludesList(files, root).replace("**", "**/*Test.java")); // NOI18N
         }
@@ -941,7 +923,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     private void setupTestSingleCommon(Properties p, FileObject[] files, SourceRoots sourceRoots) {
         final FileObject[] srcPath = sourceRoots.getRoots();
-        final FileObject root = getRoot(srcPath, files[0]);
+        final FileObject root = ActionProviderSupport.getRoot(srcPath, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
         final String path = FileUtil.getRelativePath(root, files[0]);
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
@@ -969,7 +951,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
         FileObject[] testSrcPath = projectTestRoots.getRoots();
         FileObject testFile = methodSpec.getFile();
-        FileObject root = getRoot(testSrcPath, testFile);
+        FileObject root = ActionProviderSupport.getRoot(testSrcPath, testFile);
         String relPath = FileUtil.getRelativePath(root, testFile);
         String className = getClassName(relPath);
         p.setProperty("javac.includes", relPath); // NOI18N
@@ -983,7 +965,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
         FileObject[] testSrcPath = projectTestRoots.getRoots();
         FileObject testFile = methodSpec.getFile();
-        FileObject root = getRoot(testSrcPath, testFile);
+        FileObject root = ActionProviderSupport.getRoot(testSrcPath, testFile);
         String relPath = FileUtil.getRelativePath(root, testFile);
         String className = getClassName(relPath);
         p.setProperty("javac.includes", relPath); // NOI18N
@@ -1006,10 +988,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             && isCompileOnSaveUpdate()
             && !ActionProviderSupport.allowAntBuild(evaluator, updateHelper)) {
             return false;
-        }
-        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findSourcesAndPackages( context, projectSourceRoots.getRoots()) != null
-                    || findSourcesAndPackages( context, projectTestRoots.getRoots()) != null;
         }
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] fos = findTestSourcesForFiles(context);
@@ -1136,35 +1114,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return null;
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
-        if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
-            //Check if files are either packages of java files
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
-                        return null;
-                    }
-                }
-            }
-            return files;
-        } else {
-            return null;
-        }
-    }
-
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull FileObject[] findSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
-        for (int i=0; i<srcRoots.length; i++) {
-            FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-
     /** Find either selected tests or tests which belong to selected source files
      */
     @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
@@ -1203,7 +1152,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             FileObject[] files = findSources(context, strict, findInPackages);
             if (files != null) {
                 //Try to find the test under the test roots
-                FileObject srcRoot = getRoot(projectSourceRoots.getRoots(), files[0]);
+                FileObject srcRoot = ActionProviderSupport.getRoot(projectSourceRoots.getRoots(), files[0]);
                 for (FileObject testSrcPath : testSrcPaths) {
                     FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBST, strict);
                     if (files2 != null && files2.length != 0) {
@@ -1259,7 +1208,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             } else { // both test and source files were selected, do not return any dublicates
                 testFiles.addAll(Arrays.asList(testSourcesFOs));
                 //Try to find the test under the test roots
-                FileObject srcRoot = getRoot(projectSourceRoots.getRoots(),sourcesFOs[0]);
+                FileObject srcRoot = ActionProviderSupport.getRoot(projectSourceRoots.getRoots(),sourcesFOs[0]);
                 for (FileObject testRoot : projectTestRoots.getRoots()) {
                     FileObject[] files2 = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBST, true);
                     if (files2 != null) {
@@ -1320,19 +1269,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             return null;
         }
         return specs.toArray(new SingleMethod[specs.size()]);
-    }
-
-    private FileObject getRoot (FileObject[] roots, FileObject file) {
-        assert file != null : "File can't be null";   //NOI18N
-        FileObject srcDir = null;
-        for (int i=0; i< roots.length; i++) {
-            assert roots[i] != null : "Source Path Root can't be null"; //NOI18N
-            if (FileUtil.isParentOf(roots[i],file) || roots[i].equals(file)) {
-                srcDir = roots[i];
-                break;
-            }
-        }
-        return srcDir;
     }
 
     private List<String> runJvmargsIde(String command) {

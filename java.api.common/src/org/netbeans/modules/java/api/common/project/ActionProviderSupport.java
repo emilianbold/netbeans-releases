@@ -723,6 +723,51 @@ final class ActionProviderSupport {
         dlg.setVisible(true);
     }
 
+    @CheckForNull
+    static FileObject getRoot (@NonNull final FileObject[] roots, @NonNull final FileObject file) {
+        assert file != null : "File can't be null";   //NOI18N
+        FileObject srcDir = null;
+        for (int i=0; i< roots.length; i++) {
+            assert roots[i] != null : "Source Path Root can't be null"; //NOI18N
+            if (FileUtil.isParentOf(roots[i],file) || roots[i].equals(file)) {
+                srcDir = roots[i];
+                break;
+            }
+        }
+        return srcDir;
+    }
+
+    @CheckForNull
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    static FileObject[] findSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
+        for (int i=0; i<srcRoots.length; i++) {
+            FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    private static  FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
+        if (srcDir != null) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
+            //Check if files are either packages of java files
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
+                        return null;
+                    }
+                }
+            }
+            return files;
+        } else {
+            return null;
+        }
+    }
+
     private static boolean modulesSupported(@NonNull final Project project) {
         return Optional.ofNullable(SourceLevelQuery.getSourceLevel2(project.getProjectDirectory()).getSourceLevel())
                 .map((s) -> new SpecificationVersion(s))

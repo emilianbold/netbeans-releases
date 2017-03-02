@@ -58,9 +58,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
@@ -82,6 +84,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
@@ -456,6 +459,8 @@ public final class JavaActionProvider implements ActionProvider {
         private final Project project;
         private final UpdateHelper updateHelper;
         private final PropertyEvaluator evaluator;
+        private final SourceRoots sourceRoots;
+        private final SourceRoots testRoots;
         private final List<Action> actions;
         private final ActionProviderSupport.ModifiedFilesSupport mfs;
         private final Function<String,ClassPath> classpaths;
@@ -481,6 +486,8 @@ public final class JavaActionProvider implements ActionProvider {
             this.project = project;
             this.updateHelper = updateHelper;
             this.evaluator = evaluator;
+            this.sourceRoots = sourceRoots;
+            this.testRoots = testSourceRoots;
             this.actions = new ArrayList<>();
             this.jpp = createJavaPlatformProvider(ProjectProperties.PLATFORM_ACTIVE);
             this.mfs = ActionProviderSupport.ModifiedFilesSupport.newInstance(project, updateHelper, evaluator);
@@ -551,6 +558,8 @@ public final class JavaActionProvider implements ActionProvider {
                     return createRunAction(command, javaModelSensitive, scanSensitive, targets, mfs, mainClassServices);
                 case ActionProvider.COMMAND_TEST:
                     return createNonCosAction(command, true, javaModelSensitive, scanSensitive, targets, Collections.singletonMap("ignore.failing.tests", "true"));  //NOI18N);
+                case ActionProvider.COMMAND_COMPILE_SINGLE:
+                    return createCompileSingleAction(javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -759,6 +768,58 @@ public final class JavaActionProvider implements ActionProvider {
                         ap.invokeAction(COMMAND_REBUILD, context.getActiveLookup());
                     }
                 }
+            }
+        };
+    }
+
+    @NonNull
+    private static ScriptAction createCompileSingleAction(
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testRoots,
+            @NonNull final Supplier<? extends String[]> targets) {
+        return new BaseScriptAction(COMMAND_COMPILE_SINGLE, true, javaModelSensitive, scanSensitive, targets) {
+
+            @Override
+            public boolean isEnabled(Context context) {
+                return ActionProviderSupport.findSourcesAndPackages(context.getActiveLookup(), sourceRoots.getRoots()) != null
+                    || ActionProviderSupport.findSourcesAndPackages(context.getActiveLookup(), testRoots.getRoots()) != null;
+            }
+
+            @Override
+            public String[] getTargetNames(Context context) {
+                String[] res = super.getTargetNames(context);
+                if (res != null) {
+                    final Lookup lkp = context.getActiveLookup();
+                    FileObject[] srcRoots = sourceRoots.getRoots();
+                    FileObject[] files = ActionProviderSupport.findSourcesAndPackages(lkp, srcRoots);
+                    final boolean recursive = lkp.lookup(NonRecursiveFolder.class) == null;
+                    if (files != null) {
+                        context.setProperty(
+                                "javac.includes",    // NOI18N
+                                ActionUtils.antIncludesList(files, ActionProviderSupport.getRoot(srcRoots,files[0]), recursive));
+                        final String[] cfgTargets = ActionProviderSupport.loadTargetsFromConfig(
+                            context.getProject(),
+                            context.getPropertyEvaluator())
+                            .get(context.getCommand());
+                        if (cfgTargets != null) {
+                            res = cfgTargets;
+                        }
+                    } else {
+                        srcRoots = testRoots.getRoots();
+                        files = ActionProviderSupport.findSourcesAndPackages(context.getActiveLookup(), srcRoots);
+                        if (files != null) {
+                            context.setProperty(
+                                "javac.includes",    // NOI18N
+                                ActionUtils.antIncludesList(files, ActionProviderSupport.getRoot(srcRoots,files[0]), recursive));
+                            res = new String[] {"compile-test-single"}; // NOI18N
+                        } else {
+                            res = null;
+                        }
+                    }
+                }
+                return res;
             }
         };
     }
