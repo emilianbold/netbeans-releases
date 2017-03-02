@@ -39,7 +39,12 @@
  */
 package org.netbeans.modules.java.api.common.project;
 
+import java.awt.Dialog;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -57,6 +62,11 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.lang.model.element.TypeElement;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -65,10 +75,15 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
+import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarning;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_COPY;
@@ -83,8 +98,12 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.MouseUtils;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
@@ -94,6 +113,9 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class JavaActionProvider implements ActionProvider {
+    private static final Logger LOG = Logger.getLogger(JavaActionProvider.class.getName());
+    private static final FileObject[] EMPTY = new FileObject[0];
+
     private final Project prj;
     private final UpdateHelper updateHelper;
     private final PropertyEvaluator eval;
@@ -533,7 +555,7 @@ public final class JavaActionProvider implements ActionProvider {
                 final boolean scanSensitive,
                 @NonNull final String... targets) {
             Parameters.notNull("targets", targets);     //NOI18N
-            return createScriptAction(command, javaModelSensitive, scanSensitive, () -> targets);
+            return createScriptAction(command, javaModelSensitive, scanSensitive, () -> targets, null);
         }
 
         @NonNull
@@ -542,6 +564,16 @@ public final class JavaActionProvider implements ActionProvider {
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
                 @NonNull final Supplier<? extends String[]> targets) {
+            return createScriptAction(command, javaModelSensitive, scanSensitive, targets, null);
+        }
+
+        @NonNull
+        public ScriptAction createScriptAction(
+                @NonNull final String command,
+                final boolean javaModelSensitive,
+                final boolean scanSensitive,
+                @NonNull final Supplier<? extends String[]> targets,
+                @NullAllowed final BiFunction<FileObject, Context, String[]> customFileTarget) {
             Parameters.notNull("command", command);         //NOI18N
             Parameters.notNull("targets", targets);         //NOI18N
             switch (command) {
@@ -560,6 +592,17 @@ public final class JavaActionProvider implements ActionProvider {
                     return createNonCosAction(command, true, javaModelSensitive, scanSensitive, targets, Collections.singletonMap("ignore.failing.tests", "true"));  //NOI18N);
                 case ActionProvider.COMMAND_COMPILE_SINGLE:
                     return createCompileSingleAction(javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
+                case ActionProvider.COMMAND_RUN_SINGLE:
+                case ActionProvider.COMMAND_DEBUG_SINGLE:
+                case ActionProvider.COMMAND_PROFILE_SINGLE:
+                    return createRunSingleAction(
+                            command, javaModelSensitive,scanSensitive,
+                            sourceRoots, testRoots, targets, customFileTarget);
+                case ActionProvider.COMMAND_TEST_SINGLE:
+                    return createTestSingleAction(javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
+                case ActionProvider.COMMAND_DEBUG_TEST_SINGLE:
+                case ActionProvider.COMMAND_PROFILE_TEST_SINGLE:
+                    return createDebugTestSingleAction(command, javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -825,6 +868,257 @@ public final class JavaActionProvider implements ActionProvider {
     }
 
     @NonNull
+    @Messages({
+        "# {0} - file name", "CTL_FileMultipleMain=The file {0} has more main classes.",
+        "CTL_FileMainClass_Title=Run File"
+    })
+    private static ScriptAction createRunSingleAction(
+            @NonNull final String command,
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            final SourceRoots sr,
+            final SourceRoots tr,
+            @NonNull final Supplier<? extends String[]> targets,
+            @NullAllowed final BiFunction<FileObject,Context,String[]> customFileExecutor) {
+        return new BaseRunSingleAction(command, true, javaModelSensitive, scanSensitive, sr, tr, targets) {
+
+            @Override
+            public boolean isEnabled(Context context) {
+                FileObject fos[] = ActionProviderSupport.findSources(getSourceRoots().getRoots(), context.getActiveLookup());
+                if (fos != null && fos.length == 1) {
+                    return true;
+                }
+                fos = ActionProviderSupport.findTestSources(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup(), false);
+                if (fos != null && fos.length == 1) {
+                    return true;
+                }
+                logNoFiles(getSourceRoots(), getTestRoots(), context);
+                return false;
+            }
+
+            @Override
+            public String[] getTargetNames(Context context) {
+                String[] res = super.getTargetNames(context);
+                if (res != null) {
+                    FileObject[] files = ActionProviderSupport.findTestSources(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup(), false);
+                    FileObject[] rootz = getTestRoots().getRoots();
+                    boolean isTest = true;
+                    if (files == null) {
+                        isTest = false;
+                        files = ActionProviderSupport.findSources(getSourceRoots().getRoots(), context.getActiveLookup());
+                        rootz = getSourceRoots().getRoots();
+                    }
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "Is test: {0} Files: {1} Roots: {2}",    //NOI18N
+                                new Object[] {
+                                    isTest,
+                                    asPath(files),
+                                    asPath(rootz)
+                        });
+                    }
+                    if (files == null) {
+                        return null;
+                    }
+                    final FileObject file = files[0];
+                    assert file != null;
+                    if (!file.isValid()) {
+                        LOG.log(Level.WARNING,
+                                "FileObject to execute: {0} is not valid.",
+                                FileUtil.getFileDisplayName(file));   //NOI18N
+                        return null;
+                    }
+                    String[] pathFqn = ActionProviderSupport.pathAndFqn(file, rootz);
+                    if (pathFqn == null) {
+                        return null;
+                    }
+                    context.setProperty("javac.includes", pathFqn[0]); // NOI18N
+                    String clazz = pathFqn[1];
+                    LOG.log(Level.FINE, "Class to run: {0}", clazz);    //NOI18N
+                    final boolean hasMainClassFromTest = MainClassChooser.unitTestingSupport_hasMainMethodResult == null ?
+                            false :
+                            MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue();
+                    if (context.doJavaChecks()) {
+                        final Collection<ElementHandle<TypeElement>> mainClasses = CommonProjectUtils.getMainMethods (file);
+                        LOG.log(Level.FINE, "Main classes: {0} ", mainClasses);
+                        if (!hasMainClassFromTest && mainClasses.isEmpty()) {
+                            final String[] customTargets = customFileExecutor == null ?
+                                    null :
+                                    customFileExecutor.apply(file, context);
+                            if (customTargets != null) {
+                                res = customTargets;
+                            } else {
+                                if (isTest) {
+                                    res = ActionProviderSupport.setupTestSingle(context, files, getTestRoots().getRoots());
+                                } else {
+                                    final ActionProviderSupport.JavaMainAction javaMainAction = ActionProviderSupport.getJavaMainAction(context.getPropertyEvaluator());
+                                    if (javaMainAction == null) {
+                                        NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.LBL_No_Main_Class_Found(clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                                        DialogDisplayer.getDefault().notify(nd);
+                                        return null;
+                                    } else if (javaMainAction == ActionProviderSupport.JavaMainAction.RUN) {
+                                        res = updateTargets(res, clazz, false, context);
+                                    } else if (javaMainAction == ActionProviderSupport.JavaMainAction.TEST) {
+                                        res = ActionProviderSupport.setupTestSingle(context, files, getSourceRoots().getRoots());
+                                    }
+                                }
+                            }
+                        } else {
+                            if (!hasMainClassFromTest) {
+                                if (mainClasses.size() == 1) {
+                                    //Just one main class
+                                    clazz = mainClasses.iterator().next().getBinaryName();
+                                } else {
+                                    //Several main classes, let the user choose
+                                    clazz = showMainClassWarning(file, mainClasses);
+                                    if (clazz == null) {
+                                        return null;
+                                    }
+                                }
+                            }
+                            res = updateTargets(res, clazz, isTest, context);
+                        }
+                    } else {
+                        res = updateTargets(res, clazz, isTest, context);
+                    }
+                }
+                return res;
+            }
+
+            private String[] updateTargets(
+                    @NonNull String[] targets,
+                    @NonNull final String clazz,
+                    final boolean isTest,
+                    @NonNull final Context context) {
+                //The Java model is not ready, we cannot determine if the file is applet or main class or unit test
+                //Acts like everything is main class, maybe for test folder junit is better default?
+                switch (context.getCommand()) {
+                    case COMMAND_RUN_SINGLE:
+                        context.setProperty("run.class", clazz); // NOI18N
+                        if (isTest) {
+                            targets = new String[] {"run-test-with-main"};
+                        }
+                        break;
+                    case COMMAND_DEBUG_SINGLE:
+                        context.setProperty("debug.class", clazz); // NOI18N
+                        if (isTest) {
+                            targets = new String[] {"debug-test-with-main"};
+                        }
+                        break;
+                    default:
+                        context.setProperty("run.class", clazz); // NOI18N
+                        if (isTest) {
+                            targets = new String[] {"profile-test-with-main"};
+                        }
+                        break;
+                }
+                final String[] cfgTargets = ActionProviderSupport.loadTargetsFromConfig(
+                    context.getProject(),
+                    context.getPropertyEvaluator())
+                    .get(command);
+                if (cfgTargets != null) {
+                    targets = cfgTargets;
+                }
+                return targets;
+            }
+
+            private String showMainClassWarning (final FileObject file, final Collection<ElementHandle<TypeElement>> mainClasses) {
+                assert mainClasses != null;
+                String mainClass = null;
+                final JButton okButton = new JButton(Bundle.LBL_MainClassWarning_ChooseMainClass_OK());
+                okButton.getAccessibleContext().setAccessibleDescription(Bundle.AD_MainClassWarning_ChooseMainClass_OK());
+                final MainClassWarning panel = new MainClassWarning(Bundle.CTL_FileMultipleMain(file.getNameExt()), mainClasses);
+                Object[] options = new Object[] {
+                    okButton,
+                    DialogDescriptor.CANCEL_OPTION
+                };
+                panel.addChangeListener ((e) -> {
+                   if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
+                       // click button and the finish dialog with selected class
+                       okButton.doClick ();
+                   } else {
+                       okButton.setEnabled (panel.getSelectedMainClass () != null);
+                   }
+                });
+                DialogDescriptor desc = new DialogDescriptor (panel,
+                    Bundle.CTL_FileMainClass_Title(),
+                    true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
+                desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
+                Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+                dlg.setVisible (true);
+                if (desc.getValue() == options[0]) {
+                    mainClass = panel.getSelectedMainClass ();
+                }
+                dlg.dispose();
+                return mainClass;
+            }
+        };
+    }
+
+    @NonNull
+    private static ScriptAction createTestSingleAction(
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final SourceRoots sr,
+            @NonNull final SourceRoots tr,
+            @NonNull final Supplier<? extends String[]> targets) {
+        return new BaseRunSingleAction(COMMAND_TEST_SINGLE, true, javaModelSensitive, scanSensitive, sr, tr, targets) {
+
+            @Override
+            public boolean isEnabled(Context context) {
+                return ActionProviderSupport.findTestSourcesForFiles(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup()) != null;
+            }
+
+            @Override
+            public String[] getTargetNames(Context context) {
+                context.setProperty("ignore.failing.tests", "true");  //NOI18N
+                final FileObject[] files = ActionProviderSupport.findTestSourcesForFiles(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup());
+                if (files == null) {
+                    return null;
+                }
+                if(files.length == 1 && files[0].isData()) {
+                    //one file or a package containing one file selected
+                    return ActionProviderSupport.setupTestSingle(context, files, getTestRoots().getRoots());
+                } else {
+                    //multiple files or package(s) selected
+                    if (files != null) {
+                        FileObject root = ActionProviderSupport.getRoot(getTestRoots().getRoots(), files[0]);
+                        // the replace part is so that we can test everything under a package recusively
+                        context.setProperty("includes", ActionUtils.antIncludesList(files, root).replace("**", "**/*Test.java")); // NOI18N
+                    }
+                    return new String[]{"test"}; // NOI18N
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private static ScriptAction createDebugTestSingleAction(
+            @NonNull final String command,
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final SourceRoots sr,
+            @NonNull final SourceRoots tr,
+            @NonNull final Supplier<? extends String[]> targets) {
+        return new BaseRunSingleAction(command, true, javaModelSensitive, scanSensitive, sr, tr, targets) {
+
+            @Override
+            public boolean isEnabled(Context context) {
+                FileObject[] fos = ActionProviderSupport.findTestSources(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup(), true);
+                return fos != null && fos.length == 1;
+            }
+
+            @Override
+            public String[] getTargetNames(Context context) {
+                final FileObject[] files = ActionProviderSupport.findTestSources(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup(), true);
+                if (files != null) {
+                    return ActionProviderSupport.setupTestSingle(context, files, getTestRoots().getRoots());
+                }
+                return null;
+            }
+        };
+    }
+
+    @NonNull
     private static ScriptAction createRunAction(
             @NonNull final String command,
             final boolean javaModelSensitive,
@@ -899,6 +1193,8 @@ public final class JavaActionProvider implements ActionProvider {
                 ActionProviderSupport.bypassAntBuildScript(
                         context,
                         execProperties,
+                        EMPTY,  //not needed
+                        EMPTY,  //not needed
                         _task,
                         getCoSInterceptor());
                 final ExecutorTask t = _task.get();
@@ -918,6 +1214,41 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final Supplier<? extends String[]> targets,
             @NullAllowed final Map<String,String> props) {
         return new BaseScriptAction(command, platformSensitive, javaModelSensitive, scanSensitive, targets);
+    }
+
+    private static void logNoFiles(
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testRoots,
+            @NonNull final Context context) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Source Roots: {0} Test Roots: {1} Lookup Content: {2}",    //NOI18N
+                    new Object[]{
+                        asPath(sourceRoots.getRoots()),
+                        asPath(testRoots.getRoots()),
+                        asPath(context.getActiveLookup())
+                    });
+        }
+    }
+
+    @NonNull
+    private static CharSequence asPath(final @NonNull Lookup context) {
+        final Set<FileObject> fos = new HashSet<>();
+        context.lookupAll(DataObject.class).stream()
+                .map(DataObject::getPrimaryFile)
+                .forEach(fos::add);
+        context.lookupAll(FileObject.class).stream()
+                .forEach(fos::add);
+        return asPath(fos.toArray(new FileObject[fos.size()]));
+    }
+
+    @NonNull
+    private static CharSequence asPath(@NonNull final FileObject[] fos) {
+        if (fos == null) {
+            return null;
+        }
+        return Arrays.stream(fos)
+                .map(FileUtil::getFileDisplayName)
+                .collect(Collectors.joining(File.pathSeparator));
     }
 
     private static final class SimpleAction implements Action {
@@ -986,6 +1317,102 @@ public final class JavaActionProvider implements ActionProvider {
                 context.setProperty(e.getKey(), e.getValue());
             }
             return targetNames.get();
+        }
+    }
+
+    private static class BaseRunSingleAction extends BaseScriptAction {
+        private final SourceRoots sourceRoots;
+        private final SourceRoots testRoots;
+
+        BaseRunSingleAction(
+                @NonNull final String command,
+                final boolean ps,
+                final boolean jms,
+                final boolean sc,
+                final SourceRoots sourceRoots,
+                final SourceRoots testRoots,
+                final Supplier<? extends String[]> targetNames) {
+            super(command, ps, jms, sc, targetNames);
+            this.sourceRoots = sourceRoots;
+            this.testRoots = testRoots;
+        }
+
+        @Override
+        public Result performCompileOnSave(Context context, String[] targetNames) {
+            if (Arrays.equals(targetNames, new String[]{"test"})) {
+                return Result.follow();
+            }
+            final String command = context.getCommand();
+            final Map<String,Object> execProperties = ActionProviderSupport.createBaseCoSProperties(context);
+            if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command)) {
+                ActionProviderSupport.prepareSystemProperties(
+                        context.getPropertyEvaluator(),
+                        execProperties,
+                        command,
+                        context.getActiveLookup(),
+                        false);
+                switch (command) {
+                    case COMMAND_RUN_SINGLE:
+                        execProperties.put(JavaRunner.PROP_CLASSNAME, context.getProperty("run.class"));    //NOI18N
+                        break;
+                    case COMMAND_DEBUG_SINGLE:
+                        execProperties.put(JavaRunner.PROP_CLASSNAME, context.getProperty("debug.class"));  //NOI18N
+                        break;
+                    case COMMAND_PROFILE_SINGLE:
+                        execProperties.put(JavaRunner.PROP_CLASSNAME, context.getProperty("profile.class"));
+                        break;
+                    default:
+                        throw new IllegalStateException(command);
+                }
+                final AtomicReference<ExecutorTask> _task = new AtomicReference<>();
+                ActionProviderSupport.bypassAntBuildScript(
+                        context,
+                        execProperties,
+                        sourceRoots.getRoots(),
+                        testRoots.getRoots(),
+                        _task,
+                        getCoSInterceptor());
+                final ExecutorTask t = _task.get();
+                return t == null ?
+                        JavaActionProvider.ScriptAction.Result.abort() :
+                        JavaActionProvider.ScriptAction.Result.success(t);
+            } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command)) {
+                final FileObject[] files = ActionProviderSupport.findTestSources(sourceRoots.getRoots(), testRoots.getRoots(), context.getActiveLookup(), true);
+                try {
+                    ActionProviderSupport.prepareSystemProperties(context.getPropertyEvaluator(), execProperties, command, context.getActiveLookup(), true);
+                    execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
+                    String buildDir = context.getPropertyEvaluator().getProperty(ProjectProperties.BUILD_DIR);
+                    if (buildDir != null) { // #211543
+                        context.setProperty("tmp.dir", context.getUpdateHelper().getAntProjectHelper().resolvePath(buildDir));  //NOI18N
+                    }
+                    boolean vote = true;
+                    final BiFunction<Context, Map<String, Object>, Boolean> cosi = getCoSInterceptor();
+                    if (cosi != null) {
+                        vote = cosi.apply(context, execProperties);
+                    }
+                    if (vote) {
+                        return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(
+                                command.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
+                                           execProperties));
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return JavaActionProvider.ScriptAction.Result.abort();
+            } else {
+                assert false : "Unhandled command:" + command;
+            }
+            return Result.follow();
+        }
+
+        @NonNull
+        final SourceRoots getSourceRoots() {
+            return sourceRoots;
+        }
+
+        @NonNull
+        final SourceRoots getTestRoots() {
+            return testRoots;
         }
     }
 }

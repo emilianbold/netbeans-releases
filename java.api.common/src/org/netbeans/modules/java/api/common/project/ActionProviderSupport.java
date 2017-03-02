@@ -73,6 +73,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -147,6 +148,9 @@ import org.openide.util.lookup.Lookups;
 final class ActionProviderSupport {
     private static final Logger LOG = Logger.getLogger(ActionProviderSupport.class.getName());
     private static final String PROP_JAVA_MAIN_ACTION = "java.main.action"; //NOI18N
+    private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
+    private static final String SUBST = "Test.java"; // NOI18N
+    private static final String SUBSTNG = "NGTest.java"; // NOI18N
     private static final Set<String> NO_SYNC_COMMANDS = Collections.unmodifiableSet(new HashSet<String>(
             Arrays.asList(new String[]{
                 COMMAND_BUILD,
@@ -631,6 +635,8 @@ final class ActionProviderSupport {
     static void bypassAntBuildScript(
             @NonNull final JavaActionProvider.Context ctx,
             @NonNull final Map<String, Object> p,
+            @NonNull final FileObject[] sourceRoots,
+            @NonNull final FileObject[] testRoots,
             @NonNull final AtomicReference<ExecutorTask> task,
             @NullAllowed final BiFunction <Context,Map<String,Object>,Boolean> cosExecuteInterceptor) throws IllegalArgumentException {
         final Project project = ctx.getProject();
@@ -655,25 +661,21 @@ final class ActionProviderSupport {
                 p.put("stopclassname", mainClass);
             }
         } else {
-//            TODO:
-//            //run single:
-//            FileObject[] files = findSources(context);
-//
-//            if (files == null || files.length != 1) {
-//                files = findTestSources(context, false);
-//                if (files != null && files.length == 1) {
-//                    hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
-//                    run = false;
-//                }
-//            } else if (!hasMainMethod) {
-//                hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
-//            }
-//
-//            if (files == null || files.length != 1) {
-//                return ;//warn the user
-//            }
-//
-//            p.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
+            //run single:
+            FileObject[] files = findSources(sourceRoots, context);
+            if (files == null || files.length != 1) {
+                files = findTestSources(sourceRoots, testRoots, context, false);
+                if (files != null && files.length == 1) {
+                    hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
+                    run = false;
+                }
+            } else if (!hasMainMethod) {
+                hasMainMethod = CommonProjectUtils.hasMainMethod(files[0]);
+            }
+            if (files == null || files.length != 1) {
+                return ;//warn the user
+            }
+            p.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
         }
         boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command);
         boolean profile = COMMAND_PROFILE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command);
@@ -747,6 +749,212 @@ final class ActionProviderSupport {
             }
         }
         return null;
+    }
+
+    /** Find selected sources, the sources has to be under single source root,
+     *  @param context the lookup in which files should be found
+     */
+    @CheckForNull
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    static FileObject[] findSources(@NonNull final FileObject[] sourceRoots, @NonNull final Lookup context) {
+        return findSources(sourceRoots, context, true, false);
+    }
+
+    /**
+     * Find selected source files
+     *
+     * @param context the lookup in which files should be found
+     * @param strict if true, all files in the selection have to be accepted
+     * @param findInPackages if true, all files under a selected package in the selection will also be checked
+     */
+    @CheckForNull
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    static FileObject[] findSources(
+            @NonNull final FileObject[] sourceRoots,
+            @NonNull final Lookup context,
+            final boolean strict,
+            final boolean findInPackages) {
+        for (int i=0; i< sourceRoots.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, sourceRoots[i], findInPackages ? null : ".java", strict); // NOI18N
+            if (files != null) {
+                return files;
+            }
+        }
+        return null;
+    }
+
+    /** Find either selected tests or tests which belong to selected source files
+     */
+    @CheckForNull
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    static FileObject[] findTestSources(
+            @NonNull final FileObject[] sourceRoots,
+            @NonNull final FileObject[] testRoots,
+            @NonNull final Lookup context,
+            final boolean checkInSrcDir) {
+        return findTestSources(sourceRoots, testRoots, context, checkInSrcDir, true, false);
+    }
+
+    /**
+     * Find selected tests and/or tests which belong to selected source files
+     *
+     * @param context the lookup in which files should be found
+     * @param checkInSrcDir if true, tests which belong to selected source files will be searched for
+     * @param strict if true, all files in the selection have to be accepted
+     * @param findInPackages if true, all files under a selected package in the selection will also be checked
+     */
+    @CheckForNull
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    static FileObject[] findTestSources(
+            @NonNull final FileObject[] sourceRoots,
+            @NonNull final FileObject[] testRoots,
+            @NonNull final Lookup context,
+            final boolean checkInSrcDir,
+            final boolean strict,
+            final boolean findInPackages) {
+        //XXX: Ugly, should be rewritten
+        for (FileObject testSrcPath : testRoots) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath, findInPackages ? null : ".java", strict); // NOI18N
+            ArrayList<FileObject> testFOs = new ArrayList<>();
+            if (files != null) {
+                for (FileObject file : files) {
+                    if ((file.hasExt("java") || findInPackages && file.isFolder())) {
+                        testFOs.add(file);
+                    }
+                }
+                return testFOs.isEmpty() ?
+                    null:
+                    testFOs.toArray(new FileObject[testFOs.size()]);
+            }
+        }
+        if (checkInSrcDir && testRoots.length > 0) {
+            FileObject[] files = findSources(sourceRoots, context, strict, findInPackages);
+            if (files != null) {
+                //Try to find the test under the test roots
+                FileObject srcRoot = getRoot(sourceRoots, files[0]);
+                for (FileObject testSrcPath : testRoots) {
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBST, strict);
+                    if (files2 != null && files2.length != 0) {
+                        return files2;
+                    }
+                    FileObject[] files2NG = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBSTNG, strict);
+                    if (files2NG != null && files2NG.length != 0) {
+                        return files2NG;
+                    }
+                }
+                // no test files found. The selected FOs might be folders under source packages
+                files = ActionUtils.findSelectedFiles(context, srcRoot, findInPackages ? null : ".java", strict); // NOI18N
+                ArrayList<FileObject> testFOs = new ArrayList<>();
+                if (files != null) {
+                    for (FileObject file : files) {
+                        if (findInPackages && file.isFolder()) {
+                            String relativePath = FileUtil.getRelativePath(srcRoot, file);
+                            if (relativePath != null) {
+                                for (FileObject testSrcPath : testRoots) {
+                                    FileObject testFO = FileUtil.toFileObject(new File(FileUtil.toFile(testSrcPath).getPath().concat(File.separator).concat(relativePath)));
+                                    if (testFO != null) {
+                                        testFOs.add(testFO);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return testFOs.isEmpty() ?
+                        null :
+                        testFOs.toArray(new FileObject[testFOs.size()]);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find selected tests and tests which belong to selected source files
+     * when package(s) or multiple files are selected.
+     *
+     * @param context the lookup in which files should be found
+     */
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    @CheckForNull
+    static FileObject[] findTestSourcesForFiles(
+            @NonNull final FileObject[] sourceRoots,
+            @NonNull final FileObject[] testRoots,
+            @NonNull final Lookup context) {
+        FileObject[] sourcesFOs = findSources(sourceRoots, context, false, true);
+        FileObject[] testSourcesFOs = findTestSources(sourceRoots, testRoots, context, false, false, true);
+        HashSet<FileObject> testFiles = new HashSet<>();
+        if(testSourcesFOs == null) { // no test files were selected
+            return findTestSources(sourceRoots, testRoots, context, true, false, true); // return tests which belong to selected source files, if any
+        } else {
+            if(sourcesFOs == null) { // only test files were selected
+                return testSourcesFOs;
+            } else { // both test and source files were selected, do not return any dublicates
+                testFiles.addAll(Arrays.asList(testSourcesFOs));
+                //Try to find the test under the test roots
+                FileObject srcRoot = getRoot(sourceRoots,sourcesFOs[0]);
+                for (FileObject testRoot : testRoots) {
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBST, true);
+                    if (files2 != null) {
+                        for (FileObject fo : files2) {
+                            if(!testFiles.contains(fo)) {
+                                testFiles.add(fo);
+                            }
+                        }
+                    }
+                    FileObject[] files2NG = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBSTNG, true);
+                    if (files2NG != null) {
+                        for (FileObject fo : files2NG) {
+                            if(!testFiles.contains(fo)) {
+                                testFiles.add(fo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return testFiles.isEmpty() ? null : testFiles.toArray(new FileObject[testFiles.size()]);
+    }
+
+    static String[] setupTestSingle(
+            @NonNull final Context context,
+            @NonNull final FileObject[] files,
+            @NonNull final FileObject[] srcPath) {
+        final FileObject root = getRoot(srcPath, files[0]);
+        // Convert foo/FooTest.java -> foo.FooTest
+        final String path = FileUtil.getRelativePath(root, files[0]);
+        context.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
+        context.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        context.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        switch (context.getCommand()) {
+            case COMMAND_RUN_SINGLE:
+            case COMMAND_TEST_SINGLE:
+                return new String[] {"test-single"}; // NOI18N
+            case COMMAND_DEBUG_SINGLE:
+            case COMMAND_DEBUG_TEST_SINGLE:
+                return new String[] {"debug-test"}; // NOI18N
+            case COMMAND_PROFILE_SINGLE:
+            case COMMAND_PROFILE_TEST_SINGLE:
+                return new String[] {"profile-test"}; // NOI18N
+            default:
+                throw new IllegalArgumentException(context.getCommand());
+        }
+    }
+
+    @CheckForNull
+    static String[] pathAndFqn (
+            @NonNull final FileObject file,
+            @NonNull final FileObject[] roots) {
+        String path = FileUtil.getRelativePath(getRoot(roots, file), file);
+        if (path == null) {
+            return null;
+        }
+        String fqn = path.endsWith(".java") ? //NOI18N
+            path.substring(0, path.length() - 5) :
+            path;
+        return new String[] {
+            path,
+            fqn.replace('/','.')    //NOI18N
+        };
     }
 
     @CheckForNull

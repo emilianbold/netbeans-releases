@@ -85,9 +85,15 @@ public final class MultiModuleActionProviderBuilder {
                                     new String[] {"clean", "compile"})));   //NOI18N
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_RUN, false, true, "run"));  //NOI18N
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));  //NOI18N
-        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE, false, true, "profile"));  //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE, false, false, "profile"));  //NOI18N
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_TEST, false, false, "test"));   //NOI18N
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_COMPILE_SINGLE, false, false, "compile-single"));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_RUN_SINGLE, false, true, "run-single"));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG_SINGLE, false, true, "debug-single"));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE_SINGLE, false, false, "profile-single"));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_TEST_SINGLE, false, false, "test-single"));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, false, false, "debug-test"));   //NOI18N
+        builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, false, false, "profile-test"));   //NOI18N
         return this;
     }
 

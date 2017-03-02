@@ -44,12 +44,9 @@
 
 package org.netbeans.modules.java.api.common.project;
 
-import java.awt.Dialog;
 import java.awt.EventQueue;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -71,46 +68,31 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
-import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.applet.AppletSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import static org.netbeans.modules.java.api.common.project.Bundle.*;
-import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
-import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarning;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.MouseUtils;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -366,32 +348,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         LOG.log(Level.FINE, "COMMAND: {0}", command);       //NOI18N
         String[] targetNames = new String[0];
         Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
-        if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            p.setProperty("ignore.failing.tests", "true");  //NOI18N
-            final FileObject[] files = findTestSourcesForFiles(context);
-            if (files == null) {
-                return null;
-            }
-            if(files.length == 1 && files[0].isData()) {
-                //one file or a package containing one file selected
-            targetNames = setupTestSingle(p, files, projectTestRoots);
-            } else {
-                //multiple files or package(s) selected
-                targetNames = setupTestFilesOrPackages(p, files);
-            }
-        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            final FileObject[] files = findTestSources(context, true);
-            if (files == null) {
-                return null;
-            }
-            targetNames = setupDebugTestSingle(p, files, projectTestRoots);
-        } else if ( command.equals( COMMAND_PROFILE_TEST_SINGLE ) ) {
-            final FileObject[] files = findTestSources(context, true);
-            if (files == null) {
-                return null;
-            }
-            targetNames = setupProfileTestSingle(p, files, projectTestRoots);
-        } else if ( command.equals( SingleMethod.COMMAND_RUN_SINGLE_METHOD ) ) {
+        if ( command.equals( SingleMethod.COMMAND_RUN_SINGLE_METHOD ) ) {
             SingleMethod[] methodSpecs = findTestMethods(context);
             if ((methodSpecs == null) || (methodSpecs.length != 1)) {
                 return new String[0];
@@ -404,7 +361,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
             targetNames = setupDebugSingleTestMethod(p, methodSpecs[0]);
         } else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
-            FileObject[] files = findSources( context );
+            FileObject[] files = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), context);
             String path;
             String classes = "";    //NOI18N
             if (files != null) {
@@ -412,7 +369,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 targetNames = new String[] {"debug-fix"}; // NOI18N
                 classes = getTopLevelClasses(files[0]);
             } else {
-                files = findTestSources(context, false);
+                files = ActionProviderSupport.findTestSources(projectSourceRoots.getRoots(), projectTestRoots.getRoots(), context, false);
                 assert files != null : "findTestSources () can't be null: " + Arrays.toString(projectTestRoots.getRoots());   //NOI18N
                 path = FileUtil.getRelativePath(ActionProviderSupport.getRoot(projectTestRoots.getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
@@ -423,188 +380,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
             p.setProperty("fix.includes", path); // NOI18N
             p.setProperty("fix.classes", classes); // NOI18N
-        } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_PROFILE_SINGLE)) {
-            FileObject[] files = findTestSources(context, false);
-            FileObject[] rootz = projectTestRoots.getRoots();
-            boolean isTest = true;
-            if (files == null) {
-                isTest = false;
-                files = findSources(context);
-                rootz = projectSourceRoots.getRoots();
-            }
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "Is test: {0} Files: {1} Roots: {2}",    //NOI18N
-                        new Object[]{
-                            isTest,
-                            asPaths(files),
-                            asPaths(rootz)
-                });
-            }
-            if (files == null) {
-                //The file was not found under the source roots
-                return null;
-            }
-            final FileObject file = files[0];
-            assert file != null;
-            if (!file.isValid()) {
-                LOG.log(Level.WARNING,
-                        "FileObject to execute: {0} is not valid.",
-                        FileUtil.getFileDisplayName(file));   //NOI18N
-                return null;
-            }
-            String clazz = FileUtil.getRelativePath(ActionProviderSupport.getRoot(rootz, file), file);
-            if (clazz == null) {
-                return null;
-            }
-            p.setProperty("javac.includes", clazz); // NOI18N
-            // Convert foo/FooTest.java -> foo.FooTest
-            if (clazz.endsWith(".java")) { // NOI18N
-                clazz = clazz.substring(0, clazz.length() - 5);
-            }
-            clazz = clazz.replace('/','.');
-            LOG.log(Level.FINE, "Class to run: {0}", clazz);    //NOI18N
-            final boolean hasMainClassFromTest = MainClassChooser.unitTestingSupport_hasMainMethodResult == null ? false :
-                MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue();
-            if (doJavaChecks) {
-                final Collection<ElementHandle<TypeElement>> mainClasses = CommonProjectUtils.getMainMethods (file);
-                LOG.log(Level.FINE, "Main classes: {0} ", mainClasses);
-                if (!hasMainClassFromTest && mainClasses.isEmpty()) {
-                    if (!isTest && AppletSupport.isApplet(file)) {
-
-                        EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String jvmargs = ep.getProperty(ProjectProperties.RUN_JVM_ARGS);
-
-                        // do this only when security policy is not set manually
-                        if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") != -1)) {  //NOI18N
-                            AppletSupport.generateSecurityPolicy(project.getProjectDirectory());
-                            if ((jvmargs == null) || (jvmargs.length() == 0)) {
-                                ep.setProperty(ProjectProperties.RUN_JVM_ARGS, "-Djava.security.policy=applet.policy"); //NOI18N
-                            } else {
-                                ep.setProperty(ProjectProperties.RUN_JVM_ARGS, jvmargs + " -Djava.security.policy=applet.policy"); //NOI18N
-                            }
-                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                            try {
-                                ProjectManager.getDefault().saveProject(project);
-                            } catch (IOException e) {
-                                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + e);
-                            }
-                        }
-                        URL url;
-                        if (file.existsExt("html") || file.existsExt("HTML")) { //NOI18N
-                            url = copyAppletHTML(file, "html"); //NOI18N
-                        } else {
-                            url = generateAppletHTML(file);
-                        }
-                        if (url == null) {
-                            return null;
-                        }
-                        p.setProperty("applet.url", url.toString()); // NOI18N
-                        if (command.equals (COMMAND_RUN_SINGLE)) {
-                            targetNames = new String[] {"run-applet"}; // NOI18N
-                        } else if (COMMAND_DEBUG_SINGLE.equals(command)) {
-                            p.setProperty("debug.class", clazz); // NOI18N
-                            targetNames = new String[] {"debug-applet"}; // NOI18N
-                        } else if (COMMAND_PROFILE_SINGLE.equals(command)) {
-                            p.setProperty("run.class", clazz); // NOI18N
-                            targetNames = new String[]{"profile-applet"}; // NOI18N
-                        }
-                    } else {
-                        List<String> alternativeTargetNames = new ArrayList<>();
-                        if (isTest) {
-                            //Fallback to normal (non-main-method-based) unit test run
-                            if (command.equals(COMMAND_RUN_SINGLE)) {
-                                targetNames = setupTestSingle(p, files, projectTestRoots);
-                            } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-                                targetNames = setupDebugTestSingle(p, files, projectTestRoots);
-                            } else {
-                                targetNames = setupProfileTestSingle(p, files, projectTestRoots);
-                            }
-                        } else if (handleJavaClass(p, file, command, alternativeTargetNames)) {
-                            if (alternativeTargetNames.size() > 0) {
-                                targetNames = alternativeTargetNames.toArray(new String[alternativeTargetNames.size()]);
-                            } else {
-                                return null;
-                            }
-                        } else {
-                            final ActionProviderSupport.JavaMainAction javaMainAction = ActionProviderSupport.getJavaMainAction(evaluator);
-                            if (javaMainAction == null) {
-                                NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Main_Class_Found(clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                                DialogDisplayer.getDefault().notify(nd);
-                                return null;
-                            } else if (javaMainAction == ActionProviderSupport.JavaMainAction.RUN) {
-                                String prop;
-                                switch (command) {
-                                    case COMMAND_RUN_SINGLE:
-                                        prop = "run.class"; //NOI18N
-                                        break;
-                                    case COMMAND_DEBUG_SINGLE:
-                                        prop = "debug.class";   //NOI18N
-                                        break;
-                                    default:
-                                        prop = "run.class"; //NOI18N
-                                }
-                                p.setProperty(prop, clazz);
-                                final String[] targets = targetsFromConfig.get(command);
-                                targetNames = targets != null ? targets : getCommands().get(command);
-                            } else if (javaMainAction == ActionProviderSupport.JavaMainAction.TEST) {
-                                switch (command) {
-                                    case COMMAND_RUN_SINGLE:
-                                        targetNames = setupTestSingle(p, files, projectSourceRoots);
-                                        break;
-                                    case COMMAND_DEBUG_SINGLE:
-                                        targetNames = setupDebugTestSingle(p, files, projectSourceRoots);
-                                        break;
-                                    default:
-                                        targetNames = setupProfileTestSingle(p, files, projectSourceRoots);
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    if (!hasMainClassFromTest) {
-                        if (mainClasses.size() == 1) {
-                            //Just one main class
-                            clazz = mainClasses.iterator().next().getBinaryName();
-                        } else {
-                            //Several main classes, let the user choose
-                            clazz = showMainClassWarning(file, mainClasses);
-                            if (clazz == null) {
-                                return null;
-                            }
-                        }
-                    }
-                    if (command.equals (COMMAND_RUN_SINGLE)) {
-                        p.setProperty("run.class", clazz); // NOI18N
-                        String[] targets = targetsFromConfig.get(command);
-                        targetNames = (targets != null) ? targets : (isTest ? new String[] { "run-test-with-main" } : getCommands().get(COMMAND_RUN_SINGLE));
-                    } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-                        p.setProperty("debug.class", clazz); // NOI18N
-                        String[] targets = targetsFromConfig.get(command);
-                        targetNames = (targets != null) ? targets : (isTest ? new String[] {"debug-test-with-main"} : getCommands().get(COMMAND_DEBUG_SINGLE));
-                    } else {
-                        p.setProperty("run.class", clazz); // NOI18N
-                        String[] targets = targetsFromConfig.get(command);
-                        targetNames = (targets != null) ? targets : (isTest ? new String[] {"profile-test-with-main"} : getCommands().get(COMMAND_PROFILE_SINGLE));
-                    }
-                }
-            } else {
-                //The Java model is not ready, we cannot determine if the file is applet or main class or unit test
-                //Acts like everything is main class, maybe for test folder junit is better default?
-                if (command.equals (COMMAND_RUN_SINGLE)) {
-                        p.setProperty("run.class", clazz); // NOI18N
-                        String[] targets = targetsFromConfig.get(command);
-                        targetNames = (targets != null) ? targets : (isTest ? new String[] { "run-test-with-main" } : getCommands().get(COMMAND_RUN_SINGLE));    //NOI18N
-                } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-                    p.setProperty("debug.class", clazz); // NOI18N
-                    String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : (isTest ? new String[] {"debug-test-with-main"} : getCommands().get(COMMAND_DEBUG_SINGLE));      //NOI18N
-                } else {
-                    p.setProperty("run.class", clazz); // NOI18N
-                    String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : (isTest ? new String[] {"profile-test-with-main"} : getCommands().get(COMMAND_PROFILE_SINGLE));      //NOI18N
-                }
-            }
         } else {
             String[] targets = targetsFromConfig.get(command);
             targetNames = (targets != null) ? targets : getCommands().get(command);
@@ -692,8 +467,17 @@ public abstract class BaseActionProvider implements ActionProvider {
         final Map<String,String[]> cmds = getCommands();
         final Set<String> scanSensitive = getScanSensitiveActions();
         final Set<String> modelSensitive = getJavaModelActions();
+        final CustomRunner cr = new CustomRunner();
         final Set<String> disabledByServerExecuion = new HashSet<>(Arrays.asList(COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO));
-        for (String cmd : new String[] {COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD, COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO, COMMAND_TEST, COMMAND_COMPILE_SINGLE}) {
+        final String[] commands = {
+            COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD,
+            COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO,
+            COMMAND_TEST,
+            COMMAND_COMPILE_SINGLE,
+            COMMAND_RUN_SINGLE, COMMAND_DEBUG_SINGLE, COMMAND_PROFILE_SINGLE,
+            COMMAND_TEST_SINGLE, COMMAND_DEBUG_TEST_SINGLE, COMMAND_PROFILE_TEST_SINGLE
+        };
+        for (String cmd : commands) {
             if (supported.contains(cmd)) {
                 String[] targets = cmds.get(cmd);
                 JavaActionProvider.ScriptAction action;
@@ -702,7 +486,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                         cmd,
                         modelSensitive.contains(cmd),
                         scanSensitive.contains(cmd),
-                        targets);
+                        () -> targets,
+                        cr);
                     action.setCoSInterceptor((c,m) -> {
                         updateJavaRunnerClasspath(c.getCommand(), m);
                         return true;
@@ -811,14 +596,10 @@ public abstract class BaseActionProvider implements ActionProvider {
             @NonNull final String forCommand) {
         return (ctx, targetNames) -> {
             String command = ctx.getCommand();
-            if(COMMAND_TEST_SINGLE.equals(ctx.getCommand()) && Arrays.equals(targetNames, new String[]{COMMAND_TEST})) {
-                //multiple files or package(s) selected so we need to call test target instead of test-single
-                command = COMMAND_TEST;
-            }
             final Map<String, Object> execProperties = ActionProviderSupport.createBaseCoSProperties(ctx);
             if (targetNames.length == 1 && (JavaRunner.QUICK_RUN_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_DEBUG_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_PROFILE_APPLET.equals(targetNames[0]))) {
                 try {
-                    final FileObject[] selectedFiles = findSources(ctx.getActiveLookup());
+                    final FileObject[] selectedFiles = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), ctx.getActiveLookup());
                     if (selectedFiles != null) {
                         FileObject file = selectedFiles[0];
                         String url = ctx.getProperty("applet.url");
@@ -832,51 +613,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 }
                 return JavaActionProvider.ScriptAction.Result.abort();
             }
-            // for example RUN_SINGLE Java file with Servlet must be run on server and not locally
-            boolean serverExecution = ctx.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
-            ctx.removeProperty(PROPERTY_RUN_SINGLE_ON_SERVER);
-            if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command))) {
-                ActionProviderSupport.prepareSystemProperties(evaluator,execProperties, command, ctx.getActiveLookup(), false);
-                if (COMMAND_RUN_SINGLE.equals(command)) {
-                    execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("run.class"));
-                } else if (COMMAND_DEBUG_SINGLE.equals(command)) {
-                    execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("debug.class")); 
-                } else {
-                    execProperties.put(JavaRunner.PROP_CLASSNAME, ctx.getProperty("profile.class"));
-                }
-                AtomicReference<ExecutorTask> _task = new AtomicReference<>();
-                ActionProviderSupport.bypassAntBuildScript(
-                        ctx,
-                        execProperties,
-                        _task,
-                        (c,p) -> {
-                            updateJavaRunnerClasspath(c.getCommand(), p);
-                            return true;
-                        });
-                final ExecutorTask t = _task.get();
-                return t == null ?
-                        JavaActionProvider.ScriptAction.Result.abort() :
-                        JavaActionProvider.ScriptAction.Result.success(t);
-            }
             String buildDir = evaluator.getProperty(ProjectProperties.BUILD_DIR);
-            if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command)) {
-                @SuppressWarnings("MismatchedReadAndWriteOfArray")
-                FileObject[] files = findTestSources(ctx.getActiveLookup(), true);
-                try {
-                    ActionProviderSupport.prepareSystemProperties(evaluator,execProperties, command, ctx.getActiveLookup(), true);
-                    execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
-                    if (buildDir != null) { // #211543
-                        execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
-                    }
-                    updateJavaRunnerClasspath(command, execProperties);
-                    return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(
-                            command.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
-                                       execProperties));
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                return JavaActionProvider.ScriptAction.Result.abort();
-            }
             if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command)) {
                 SingleMethod methodSpec = findTestMethods(ctx.getActiveLookup())[0];
                 try {
@@ -910,40 +647,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             evaluator,
             projectSourceRoots,
             classpaths);
-    }
-
-    private String[] setupTestFilesOrPackages(Properties p, FileObject[] files) {
-        if (files != null) {
-            FileObject root = ActionProviderSupport.getRoot(projectTestRoots.getRoots(), files[0]);
-            // the replace part is so that we can test everything under a package recusively
-            p.setProperty("includes", ActionUtils.antIncludesList(files, root).replace("**", "**/*Test.java")); // NOI18N
-        }
-        return new String[]{"test"}; // NOI18N
-    }
-
-    private void setupTestSingleCommon(Properties p, FileObject[] files, SourceRoots sourceRoots) {
-        final FileObject[] srcPath = sourceRoots.getRoots();
-        final FileObject root = ActionProviderSupport.getRoot(srcPath, files[0]);
-        // Convert foo/FooTest.java -> foo.FooTest
-        final String path = FileUtil.getRelativePath(root, files[0]);
-        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-    }
-
-    private String[] setupTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
-        setupTestSingleCommon(p, files, sourceRoots);
-        return new String[] {"test-single"}; // NOI18N
-    }
-
-    private String[] setupDebugTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
-        setupTestSingleCommon(p, files, sourceRoots);
-        return new String[] {"debug-test"}; // NOI18N
-    }
-
-    private String[] setupProfileTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
-        setupTestSingleCommon(p, files, sourceRoots);
-        return new String[] {"profile-test"}; // NOI18N
     }
 
     private String[] setupRunSingleTestMethod(Properties p, SingleMethod methodSpec) {
@@ -989,25 +692,12 @@ public abstract class BaseActionProvider implements ActionProvider {
             && !ActionProviderSupport.allowAntBuild(evaluator, updateHelper)) {
             return false;
         }
-        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            FileObject[] fos = findTestSourcesForFiles(context);
-            return fos != null;
-        }
-        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] fos = findTestSources(context, true);
-            return fos != null && fos.length == 1;
-        } else if ( command.equals( COMMAND_PROFILE_TEST_SINGLE ) ) {
-            FileObject[] fos = findTestSources(context, true);
-            return fos != null && fos.length == 1;
-        } else if (command.equals(COMMAND_RUN_SINGLE) ||
-                        command.equals(COMMAND_DEBUG_SINGLE) ||
-                        command.equals(COMMAND_PROFILE_SINGLE) ||
-                        command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
-            FileObject fos[] = findSources(context);
+        if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
+            FileObject fos[] = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), context);
             if (fos != null && fos.length == 1) {
                 return true;
             }
-            fos = findTestSources(context, false);
+            fos = ActionProviderSupport.findTestSources(projectSourceRoots.getRoots(), projectTestRoots.getRoots(), context, false);
             if (fos != null && fos.length == 1) {
                 return true;
             }
@@ -1037,12 +727,6 @@ public abstract class BaseActionProvider implements ActionProvider {
 
 
     // Private methods -----------------------------------------------------
-
-
-    private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
-    private static final String SUBST = "Test.java"; // NOI18N
-    private static final String SUBSTNG = "NGTest.java"; // NOI18N
-
 
     /**
      * Lists all top level classes in a String, classes are separated by space (" ")
@@ -1086,152 +770,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
         return classes[0];
     }
-
-    /** Find selected sources, the sources has to be under single source root,
-     *  @param context the lookup in which files should be found
-     */
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull FileObject[] findSources(Lookup context) {
-        return findSources(context, true, false);
-    }
-    
-    /**
-     * Find selected source files
-     *
-     * @param context the lookup in which files should be found
-     * @param strict if true, all files in the selection have to be accepted
-     * @param findInPackages if true, all files under a selected package in the selection will also be checked
-     */
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull FileObject[] findSources(Lookup context, boolean strict, boolean findInPackages) {
-        FileObject[] srcPath = projectSourceRoots.getRoots();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], findInPackages ? null : ".java", strict); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        return null;
-    }
-
-    /** Find either selected tests or tests which belong to selected source files
-     */
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
-        return findTestSources(context, checkInSrcDir, true, false);
-    }
-    
-    /**
-     * Find selected tests and/or tests which belong to selected source files
-     *
-     * @param context the lookup in which files should be found
-     * @param checkInSrcDir if true, tests which belong to selected source files will be searched for
-     * @param strict if true, all files in the selection have to be accepted
-     * @param findInPackages if true, all files under a selected package in the selection will also be checked
-     */
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull
-    FileObject[] findTestSources(Lookup context, boolean checkInSrcDir, boolean strict, boolean findInPackages) {
-        //XXX: Ugly, should be rewritten
-        FileObject[] testSrcPaths = projectTestRoots.getRoots();
-        for (FileObject testSrcPath : testSrcPaths) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath, findInPackages ? null : ".java", strict); // NOI18N
-            ArrayList<FileObject> testFOs = new ArrayList<>();
-            if (files != null) {
-                for (FileObject file : files) {
-                    if ((file.hasExt("java") || findInPackages && file.isFolder())) {
-                        testFOs.add(file);
-                    }
-                }
-                return testFOs.isEmpty() ?
-                    null:
-                    testFOs.toArray(new FileObject[testFOs.size()]);
-            }
-        }
-        if (checkInSrcDir && testSrcPaths.length > 0) {
-            FileObject[] files = findSources(context, strict, findInPackages);
-            if (files != null) {
-                //Try to find the test under the test roots
-                FileObject srcRoot = ActionProviderSupport.getRoot(projectSourceRoots.getRoots(), files[0]);
-                for (FileObject testSrcPath : testSrcPaths) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBST, strict);
-                    if (files2 != null && files2.length != 0) {
-                        return files2;
-                    }
-                    FileObject[] files2NG = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBSTNG, strict);
-                    if (files2NG != null && files2NG.length != 0) {
-                        return files2NG;
-                    }
-                }
-                // no test files found. The selected FOs might be folders under source packages
-                files = ActionUtils.findSelectedFiles(context, srcRoot, findInPackages ? null : ".java", strict); // NOI18N
-                ArrayList<FileObject> testFOs = new ArrayList<>();
-                if (files != null) {
-                    for (FileObject file : files) {
-                        if (findInPackages && file.isFolder()) {
-                            String relativePath = FileUtil.getRelativePath(srcRoot, file);
-                            if (relativePath != null) {
-                                for (FileObject testSrcPath : testSrcPaths) {
-                                    FileObject testFO = FileUtil.toFileObject(new File(FileUtil.toFile(testSrcPath).getPath().concat(File.separator).concat(relativePath)));
-                                    if (testFO != null) {
-                                        testFOs.add(testFO);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    return testFOs.isEmpty() ?
-                        null :
-                        testFOs.toArray(new FileObject[testFOs.size()]);
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Find selected tests and tests which belong to selected source files
-     * when package(s) or multiple files are selected.
-     *
-     * @param context the lookup in which files should be found
-     */
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull FileObject[] findTestSourcesForFiles(Lookup context) {
-        FileObject[] sourcesFOs = findSources(context, false, true);
-        FileObject[] testSourcesFOs = findTestSources(context, false, false, true);
-        HashSet<FileObject> testFiles = new HashSet<>();
-        if(testSourcesFOs == null) { // no test files were selected
-            return findTestSources(context, true, false, true); // return tests which belong to selected source files, if any
-        } else {
-            if(sourcesFOs == null) { // only test files were selected
-                return testSourcesFOs;
-            } else { // both test and source files were selected, do not return any dublicates
-                testFiles.addAll(Arrays.asList(testSourcesFOs));
-                //Try to find the test under the test roots
-                FileObject srcRoot = ActionProviderSupport.getRoot(projectSourceRoots.getRoots(),sourcesFOs[0]);
-                for (FileObject testRoot : projectTestRoots.getRoots()) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBST, true);
-                    if (files2 != null) {
-                        for (FileObject fo : files2) {
-                            if(!testFiles.contains(fo)) {
-                                testFiles.add(fo);
-                            }
-                        }
-                    }
-                    FileObject[] files2NG = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBSTNG, true);
-                    if (files2NG != null) {
-                        for (FileObject fo : files2NG) {
-                            if(!testFiles.contains(fo)) {
-                                testFiles.add(fo);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return testFiles.isEmpty() ? null : testFiles.toArray(new FileObject[testFiles.size()]);
-    }
-
     /**
      * Finds single method specification objects corresponding to JUnit test
      * methods in unit test roots.
@@ -1316,104 +854,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             return ((Callback3)cb).createConcealedProperties(command, context);
         }
         return null;
-    }
-
-    @Messages({
-        "# {0} - file name", "CTL_FileMultipleMain=The file {0} has more main classes.",
-        "CTL_FileMainClass_Title=Run File"
-    })
-    private String showMainClassWarning (final FileObject file, final Collection<ElementHandle<TypeElement>> mainClasses) {
-        assert mainClasses != null;
-        String mainClass = null;
-        final JButton okButton = new JButton(LBL_MainClassWarning_ChooseMainClass_OK());
-        okButton.getAccessibleContext().setAccessibleDescription(AD_MainClassWarning_ChooseMainClass_OK());
-
-        final MainClassWarning panel = new MainClassWarning(CTL_FileMultipleMain(file.getNameExt()), mainClasses);
-        Object[] options = new Object[] {
-            okButton,
-            DialogDescriptor.CANCEL_OPTION
-        };
-
-        panel.addChangeListener (new ChangeListener () {
-            @Override
-           public void stateChanged (ChangeEvent e) {
-               if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
-                   // click button and the finish dialog with selected class
-                   okButton.doClick ();
-               } else {
-                   okButton.setEnabled (panel.getSelectedMainClass () != null);
-               }
-           }
-        });
-        DialogDescriptor desc = new DialogDescriptor (panel,
-            CTL_FileMainClass_Title(),
-            true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
-        desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
-        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-        dlg.setVisible (true);
-        if (desc.getValue() == options[0]) {
-            mainClass = panel.getSelectedMainClass ();
-        }
-        dlg.dispose();
-        return mainClass;
-    }
-
-    private URL generateAppletHTML(FileObject file) {
-        try {
-            String buildDirProp = evaluator.getProperty("build.dir"); //NOI18N
-            String classesDirProp = evaluator.getProperty("build.classes.dir"); //NOI18N
-            FileObject buildDir = buildDirProp != null ? updateHelper.getAntProjectHelper().resolveFileObject(buildDirProp) : null;
-            FileObject classesDir = classesDirProp != null ? updateHelper.getAntProjectHelper().resolveFileObject(classesDirProp) : null;
-
-            if (buildDir == null) {
-                buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
-            }
-
-            if (classesDir == null) {
-                classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
-            }
-            String activePlatformName = evaluator.getProperty("platform.active"); //NOI18N
-            return AppletSupport.generateHtmlFileURL(file, buildDir, classesDir, activePlatformName);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-            return null;
-        }
-    }
-
-    private URL copyAppletHTML(FileObject file, String ext) {
-        URL url = null;
-        try {
-            String buildDirProp = evaluator.getProperty("build.dir"); //NOI18N
-            FileObject buildDir = buildDirProp != null ? updateHelper.getAntProjectHelper().resolveFileObject(buildDirProp) : null;
-
-            if (buildDir == null) {
-                buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
-            }
-
-            FileObject htmlFile = file.getParent().getFileObject(file.getName(), "html"); //NOI18N
-            if (htmlFile == null) {
-                htmlFile = file.getParent().getFileObject(file.getName(), "HTML"); //NOI18N
-            }
-            if (htmlFile == null) {
-                return null;
-            }
-
-            FileObject existingFile = buildDir.getFileObject(htmlFile.getName(), htmlFile.getExt());
-            if (existingFile != null) {
-                existingFile.delete();
-            }
-
-            FileObject targetHtml = htmlFile.copy(buildDir, file.getName(), ext);
-
-            if (targetHtml != null) {
-                String activePlatformName = evaluator.getProperty("platform.active"); //NOI18N
-                url = AppletSupport.getHTMLPageURL(targetHtml, activePlatformName);
-            }
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-            return null;
-        }
-        return url;
     }
 
     /**
@@ -1578,7 +1018,9 @@ public abstract class BaseActionProvider implements ActionProvider {
 
         @Override
         public String[] getTargetNames(JavaActionProvider.Context context) {
-            if (!isServerExecution()) {
+            final boolean justAnotherServerExecution = context.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
+            context.removeProperty(PROPERTY_RUN_SINGLE_ON_SERVER);
+            if (!isServerExecution() && ! justAnotherServerExecution) {
                 return delegate.getTargetNames(context);
             } else {
                 final Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
@@ -1605,6 +1047,146 @@ public abstract class BaseActionProvider implements ActionProvider {
         @Override
         public boolean isEnabled(JavaActionProvider.Context context) {
             return delegate.isEnabled(context);
+        }
+    }
+
+    private class CustomRunner implements BiFunction<FileObject, JavaActionProvider.Context, String[]> {
+        @CheckForNull
+        public String[] apply(
+                @NonNull final FileObject fileToExecute,
+                @NonNull final JavaActionProvider.Context context) {
+            final boolean isTest = ActionProviderSupport.findTestSources(
+                    projectSourceRoots.getRoots(),
+                    projectTestRoots.getRoots(),
+                    context.getActiveLookup(),
+                    false) != null;
+            if (!isTest) {
+                String[] res = getTargetsForApplet(fileToExecute, context);
+                if (res != null) {
+                    return res;
+                }
+                final Properties p = new Properties();
+                final List<String> targetNames = new ArrayList<>();
+                if (handleJavaClass(p, fileToExecute, context.getCommand(), targetNames)) {
+                    for (Map.Entry<Object,Object> e : p.entrySet()) {
+                        context.setProperty((String)e.getKey(), (String)e.getValue());
+                    }
+                    return targetNames.isEmpty() ?
+                            null :  //throw exc?
+                            targetNames.toArray(new String[targetNames.size()]);
+                }
+            }
+            return null;
+        }
+
+        private String[] getTargetsForApplet(
+                @NonNull final FileObject file,
+                @NonNull final JavaActionProvider.Context context) {
+            String[] res = null;
+            if (AppletSupport.isApplet(file)) {
+                EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String jvmargs = ep.getProperty(ProjectProperties.RUN_JVM_ARGS);
+                // do this only when security policy is not set manually
+                if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") != -1)) {  //NOI18N
+                    AppletSupport.generateSecurityPolicy(project.getProjectDirectory());
+                    if ((jvmargs == null) || (jvmargs.length() == 0)) {
+                        ep.setProperty(ProjectProperties.RUN_JVM_ARGS, "-Djava.security.policy=applet.policy"); //NOI18N
+                    } else {
+                        ep.setProperty(ProjectProperties.RUN_JVM_ARGS, jvmargs + " -Djava.security.policy=applet.policy"); //NOI18N
+                    }
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + e);
+                    }
+                }
+                URL url;
+                if (file.existsExt("html") || file.existsExt("HTML")) { //NOI18N
+                    url = copyAppletHTML(file, "html"); //NOI18N
+                } else {
+                    url = generateAppletHTML(file);
+                }
+                if (url == null) {
+                    return null;
+                }
+                context.setProperty("applet.url", url.toString()); // NOI18N
+                String[] pathFqn = ActionProviderSupport.pathAndFqn(file, projectSourceRoots.getRoots());
+                if (pathFqn != null) {
+                    switch(context.getCommand()) {
+                        case COMMAND_RUN_SINGLE:
+                            res = new String[] {"run-applet"}; // NOI18N
+                            break;
+                        case COMMAND_DEBUG_SINGLE:
+                            context.setProperty("debug.class", pathFqn[1]); // NOI18N
+                            res = new String[] {"debug-applet"}; // NOI18N
+                            break;
+                        case COMMAND_PROFILE_SINGLE:
+                            context.setProperty("run.class", pathFqn[1]); // NOI18N
+                            res = new String[]{"profile-applet"}; // NOI18N
+                            break;
+                    }
+                }
+            }
+            return res;
+        }
+
+        private URL copyAppletHTML(FileObject file, String ext) {
+            URL url = null;
+            try {
+                String buildDirProp = evaluator.getProperty("build.dir"); //NOI18N
+                FileObject buildDir = buildDirProp != null ? updateHelper.getAntProjectHelper().resolveFileObject(buildDirProp) : null;
+
+                if (buildDir == null) {
+                    buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
+                }
+
+                FileObject htmlFile = file.getParent().getFileObject(file.getName(), "html"); //NOI18N
+                if (htmlFile == null) {
+                    htmlFile = file.getParent().getFileObject(file.getName(), "HTML"); //NOI18N
+                }
+                if (htmlFile == null) {
+                    return null;
+                }
+
+                FileObject existingFile = buildDir.getFileObject(htmlFile.getName(), htmlFile.getExt());
+                if (existingFile != null) {
+                    existingFile.delete();
+                }
+
+                FileObject targetHtml = htmlFile.copy(buildDir, file.getName(), ext);
+
+                if (targetHtml != null) {
+                    String activePlatformName = evaluator.getProperty("platform.active"); //NOI18N
+                    url = AppletSupport.getHTMLPageURL(targetHtml, activePlatformName);
+                }
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+                return null;
+            }
+            return url;
+        }
+
+        private URL generateAppletHTML(FileObject file) {
+            try {
+                String buildDirProp = evaluator.getProperty("build.dir"); //NOI18N
+                String classesDirProp = evaluator.getProperty("build.classes.dir"); //NOI18N
+                FileObject buildDir = buildDirProp != null ? updateHelper.getAntProjectHelper().resolveFileObject(buildDirProp) : null;
+                FileObject classesDir = classesDirProp != null ? updateHelper.getAntProjectHelper().resolveFileObject(classesDirProp) : null;
+
+                if (buildDir == null) {
+                    buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
+                }
+
+                if (classesDir == null) {
+                    classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
+                }
+                String activePlatformName = evaluator.getProperty("platform.active"); //NOI18N
+                return AppletSupport.generateHtmlFileURL(file, buildDir, classesDir, activePlatformName);
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+                return null;
+            }
         }
     }
 }
