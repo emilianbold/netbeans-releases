@@ -204,6 +204,11 @@ public class JavaClassImpl implements JavaClass {
     }
 
     @Override
+    public Iterator getInstancesIterator() {
+        return getInstances().iterator();
+    }
+
+    @Override
     public int getInstancesCount() {
         if (instanceCount != -1L) {
             return (int) instanceCount;
