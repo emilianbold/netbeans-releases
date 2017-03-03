@@ -43,9 +43,7 @@ package org.netbeans.modules.maven.hints.pom;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
@@ -59,15 +57,10 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.model.pom.Build;
-import org.netbeans.modules.maven.model.pom.BuildBase;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.modules.maven.model.pom.PluginManagement;
-import org.netbeans.modules.maven.model.pom.Profile;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
@@ -79,6 +72,7 @@ import org.openide.util.NbBundle;
 public class CompilerPluginVersionError implements POMErrorFixProvider {
     private final Configuration configuration;
 
+    private static final String COMPILER_SUPPORTING_JDK9_VERSION = "3.6"; // NOI18N
     private static final String MODULE_INFO = "module-info.java"; // NOI18N
     
     @NbBundle.Messages({
@@ -115,7 +109,7 @@ public class CompilerPluginVersionError implements POMErrorFixProvider {
             return toRet;            
         }
                 
-        if(new ComparableVersion(version).compareTo(new ComparableVersion("3.6-SNAPSHOT")) >= 0) { // NOI18N
+        if(new ComparableVersion(version).compareTo(new ComparableVersion(COMPILER_SUPPORTING_JDK9_VERSION)) >= 0) { // NOI18N
             return toRet;
         }
                 
