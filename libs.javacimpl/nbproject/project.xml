@@ -59,6 +59,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.javadoc</friend>
                 <friend>org.netbeans.modules.java.module.graph</friend>
+                <friend>org.netbeans.lib.nbjshell</friend>
                 <friend>org.netbeans.libs.jshell</friend>
                 <friend>org.netbeans.modules.jdk.jshell</friend>
                 <friend>org.netbeans.modules.jshell.support</friend>

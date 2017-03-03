@@ -312,7 +312,7 @@ made subject to such option by the copyright holder.
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="init,download-selected-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build,add-junit" description="Build the IDE but do not create a final ZIP file."/>
+  <target name="build-nozip" depends="init,download-selected-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build,add-junit,clean-jshell" description="Build the IDE but do not create a final ZIP file."/>
   <target name="finish-build" depends="init">
     <loadproperties srcFile="${clusters.list.file}" />
         
@@ -376,6 +376,23 @@ Hg ID:    ${hg.id}
               <include name="*/docs/junit*"/>
           </fileset>
       </delete>
+  </target>
+  <target name="clean-jshell" unless="keep.javashell">
+    <!--
+    <delete dir="../libs.jshell/build" verbose="true"/>
+    -->
+    <delete verbose="true">
+	<fileset dir="${netbeans.dest.dir}">
+	    <include name="*/config/Modules/org-netbeans-libs-jshell.xml"/>
+	<!--
+	    <include name="*/modules/org-netbeans-libs-jshell.jar"/>
+	-->
+	    <include name="*/modules/ext/nb-jshell*.jar"/>
+	<!--
+	-->
+	    <include name="*/update_tracking/org-netbeans-libs-jshell.xml"/>
+	</fileset>
+    </delete>
   </target>
   
   <target name="build" depends="build-nozip"
@@ -1025,6 +1042,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
+      <arg file="/space/java/9"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
