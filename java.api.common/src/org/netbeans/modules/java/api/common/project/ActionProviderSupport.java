@@ -600,13 +600,11 @@ final class ActionProviderSupport {
 
     @CheckForNull
     static Set<String> prepareSystemProperties(
-            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final Context context,
             @NonNull final Map<String, Object> properties,
-            @NonNull final String command,
-            @NonNull final Lookup context,
             final boolean test) {
         String prefix = test ? ProjectProperties.SYSTEM_PROPERTIES_TEST_PREFIX : ProjectProperties.SYSTEM_PROPERTIES_RUN_PREFIX;
-        Map<String, String> evaluated = evaluator.getProperties();
+        Map<String, String> evaluated = context.getPropertyEvaluator().getProperties();
         if (evaluated == null) {
             return null;
         }
@@ -615,10 +613,11 @@ final class ActionProviderSupport {
                 putMultiValue(properties, JavaRunner.PROP_RUN_JVMARGS, "-D" + e.getKey().substring(prefix.length()) + "=" + e.getValue());
             }
         }
-        //TODO:
-        //collectStartupExtenderArgs(properties, command);
-        //return collectAdditionalProperties(properties, command, context);
-        return Collections.emptySet();
+        collectStartupExtenderArgs(context, (k,v) -> {
+            properties.put(k, v);
+            return null;
+        });
+        return context.copyAdditionalProperties(properties);
     }
 
     static void copyMultiValue(
@@ -1051,13 +1050,15 @@ final class ActionProviderSupport {
         return null;
     }
 
-    private static void collectStartupExtenderArgs(@NonNull final Context ctx) {
+    private static void collectStartupExtenderArgs(
+            @NonNull final Context ctx,
+            @NonNull final BiFunction<String,String,Void> consummer) {
         StringBuilder b = new StringBuilder();
         for (String arg : runJvmargsIde(ctx)) {
             b.append(' ').append(arg);
         }
         if (b.length() > 0) {
-            ctx.setProperty(ProjectProperties.RUN_JVM_ARGS_IDE, b.toString());
+            consummer.apply(ProjectProperties.RUN_JVM_ARGS_IDE, b.toString());
         }
     }
 
@@ -1404,7 +1405,10 @@ final class ActionProviderSupport {
                     return t;
                 }
             }
-            collectStartupExtenderArgs(context);
+            collectStartupExtenderArgs(context, (k,v) -> {
+                context.setProperty(k, v);
+                return null;
+            });
             if (targetNames.length == 0) {
                 targetNames = null;
             }

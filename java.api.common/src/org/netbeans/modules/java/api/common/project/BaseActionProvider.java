@@ -592,7 +592,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         String url = ctx.getProperty("applet.url");
                         execProperties.put("applet.url", url);
                         execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                        ActionProviderSupport.prepareSystemProperties(evaluator, execProperties, command, ctx.getActiveLookup(), false);
+                        ActionProviderSupport.prepareSystemProperties(ctx, execProperties, false);
                         return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(targetNames[0], execProperties));
                     }
                 } catch (IOException ex) {
@@ -723,28 +723,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             args.addAll(group.getArguments());
         }
         return args;
-    }
-    
-    private void collectStartupExtenderArgs(Map<? super String,? super String> p, String command) {
-        StringBuilder b = new StringBuilder();
-        for (String arg : runJvmargsIde(command)) {
-            b.append(' ').append(arg);
-        }
-        if (b.length() > 0) {
-            p.put(ProjectProperties.RUN_JVM_ARGS_IDE, b.toString());
-        }
-    }
-
-    @CheckForNull
-    private Set<String> collectAdditionalProperties(Map<? super String,? super String> p, String command, Lookup context) {
-        final Callback cb = getCallback();
-        if (cb instanceof Callback3) {
-            final Map<String,String> additionalProperties = ((Callback3)cb).createAdditionalProperties(command, context);
-            assert additionalProperties != null;
-            p.putAll(additionalProperties);
-            return ((Callback3)cb).createConcealedProperties(command, context);
-        }
-        return null;
     }
 
     /**

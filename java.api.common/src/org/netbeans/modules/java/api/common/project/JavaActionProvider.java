@@ -367,6 +367,20 @@ public final class JavaActionProvider implements ActionProvider {
                     null :
                     concealedProperties;
         }
+
+        @CheckForNull
+        Set<String> copyAdditionalProperties(@NonNull final Map<String,Object> into) {
+            Optional.ofNullable(additionalPropertiesProvider)
+                    .map((p) -> p.apply(getCommand(), getActiveLookup()))
+                    .ifPresent(into::putAll);
+            final Set<String> cps = new HashSet<>(concealedProperties);
+            Optional.ofNullable(concealedPropertiesProvider)
+                    .map((p) -> p.apply(getCommand(), getActiveLookup()))
+                    .ifPresent(cps::addAll);
+            return cps.isEmpty() ?
+                    null :
+                    cps;
+        }
     }
 
 
@@ -1291,10 +1305,8 @@ public final class JavaActionProvider implements ActionProvider {
             public ScriptAction.Result performCompileOnSave(Context context, String[] targetNames) {
                 final Map<String,Object> execProperties = ActionProviderSupport.createBaseCoSProperties(context);
                 ActionProviderSupport.prepareSystemProperties(
-                        context.getPropertyEvaluator(),
+                        context,
                         execProperties,
-                        context.getCommand(),
-                        context.getActiveLookup(),
                         false);
                 AtomicReference<ExecutorTask> _task = new AtomicReference<>();
                 ActionProviderSupport.bypassAntBuildScript(
@@ -1453,10 +1465,8 @@ public final class JavaActionProvider implements ActionProvider {
             final Map<String,Object> execProperties = ActionProviderSupport.createBaseCoSProperties(context);
             if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command)) {
                 ActionProviderSupport.prepareSystemProperties(
-                        context.getPropertyEvaluator(),
+                        context,
                         execProperties,
-                        command,
-                        context.getActiveLookup(),
                         false);
                 switch (command) {
                     case COMMAND_RUN_SINGLE:
@@ -1486,7 +1496,7 @@ public final class JavaActionProvider implements ActionProvider {
             } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command)) {
                 final FileObject[] files = ActionProviderSupport.findTestSources(sourceRoots.getRoots(), testRoots.getRoots(), context.getActiveLookup(), true);
                 try {
-                    ActionProviderSupport.prepareSystemProperties(context.getPropertyEvaluator(), execProperties, command, context.getActiveLookup(), true);
+                    ActionProviderSupport.prepareSystemProperties(context, execProperties, true);
                     execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
                     String buildDir = context.getPropertyEvaluator().getProperty(ProjectProperties.BUILD_DIR);
                     if (buildDir != null) { // #211543
