@@ -441,32 +441,4 @@ public class Utilities {
         });        
     }
     
-    /**
-     * Opens pom at a plugin with the given groupId and artifactId.
-     * 
-     * @param model the model to open
-     * @param groupId the plugin groupId
-     * @param artifactId the plugin artifactId
-     */
-    public static void openAtPlugin(POMModel model, String groupId, String artifactId) {
-        int pos = -1;
-        org.netbeans.modules.maven.model.pom.Project p = model.getProject();
-        Build bld = p.getBuild();
-        if (bld != null) {
-            Plugin plg = bld.findPluginById(groupId, artifactId);
-            if (plg != null) {
-                pos = plg.findPosition();
-            }
-        }    
-
-        if(pos == -1) {
-            pos = p.findPosition();
-        }
-
-        if(pos == -1) {
-            return;
-        }        
-        openAtPosition(model, pos);
-    }
-    
 }

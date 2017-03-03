@@ -65,6 +65,7 @@ import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
+import static org.netbeans.modules.maven.model.Utilities.openAtPosition;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.Dependency;
@@ -73,6 +74,7 @@ import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginManagement;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.maven.options.MavenSettings;
@@ -195,6 +197,74 @@ public final class ModelUtils {
         }
     }    
 
+    /**
+     * Opens pom at a plugin with the given groupId and artifactId.
+     * 
+     * @param model the model to open
+     * @param groupId the plugin groupId
+     * @param artifactId the plugin artifactId
+     */
+    public static void openAtPlugin(POMModel model, String groupId, String artifactId) {
+        int pos = -1;
+        org.netbeans.modules.maven.model.pom.Project p = model.getProject();
+        Build bld = p.getBuild();
+        if (bld != null) {
+            Plugin plg = bld.findPluginById(groupId, artifactId);
+            if (plg != null) {
+                pos = plg.findPosition();
+            }
+        }    
+
+        if(pos == -1) {
+            pos = p.findPosition();
+        }
+
+        if(pos == -1) {
+            return;
+        }        
+        openAtPosition(model, pos);
+    }
+    
+    public static void updatePluginVersion(String groupId, String artifactId, String version, org.netbeans.modules.maven.model.pom.Project prj) {
+        Build bld = prj.getBuild();
+        boolean setInPM = false;
+        boolean setInPlgs = false;
+
+        if (bld != null) {
+            PluginManagement pm = bld.getPluginManagement();
+            if (pm != null) {
+                Plugin p = pm.findPluginById(groupId, artifactId);
+                if (p != null) {
+                    p.setVersion(version);
+                    setInPM = true;
+                }
+            }
+            Plugin p = bld.findPluginById(groupId, artifactId);
+            if (p != null) {
+                if (p.getVersion() != null) {
+                    p.setVersion(version);
+                    setInPlgs = true;
+                } else {
+                    if (!setInPM) {
+                        p.setVersion(version);
+                        setInPlgs = true;
+                    }
+                }
+            }
+        }
+        if (!setInPM && !setInPlgs) {
+            if (bld == null) {
+                bld = prj.getModel().getFactory().createBuild();
+                prj.setBuild(bld);
+            }
+            Plugin p = prj.getModel().getFactory().createPlugin();
+            p.setGroupId(groupId);
+            p.setArtifactId(artifactId);
+            p.setVersion(version);
+            bld.addPlugin(p);
+        }
+    }
+    
     /**
      *
      * @param mdl

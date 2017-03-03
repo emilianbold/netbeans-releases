@@ -70,6 +70,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.ModuleInfoUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -87,12 +88,9 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.DependencyManagement;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.modules.maven.model.pom.PluginManagement;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
@@ -794,9 +792,9 @@ public class ActionProviderImpl implements ActionProvider {
                 findDependency("junit", "junit", newJUnit, prj);
             }
             if (newSurefirePluginVersion != null) {
-                updatePlugin(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, newSurefirePluginVersion, prj);
+                ModelUtils.updatePluginVersion(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, newSurefirePluginVersion, prj);
             }
-            Utilities.openAtPlugin(model, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+            ModelUtils.openAtPlugin(model, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
         }
 
         private void findDependency(String groupId, String artifactID, String newVersion, org.netbeans.modules.maven.model.pom.Project prj) {
@@ -838,48 +836,8 @@ public class ActionProviderImpl implements ActionProvider {
         @Override
         public void performOperation(POMModel model) {
             org.netbeans.modules.maven.model.pom.Project prj = model.getProject();
-            updatePlugin(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "3.6.1", prj);
-            Utilities.openAtPlugin(model, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
-        }
-    }
-    
-    private static void updatePlugin(String groupId, String artifactId, String version, org.netbeans.modules.maven.model.pom.Project prj) {
-        Build bld = prj.getBuild();
-        boolean setInPM = false;
-        boolean setInPlgs = false;
-
-        if (bld != null) {
-            PluginManagement pm = bld.getPluginManagement();
-            if (pm != null) {
-                Plugin p = pm.findPluginById(groupId, artifactId);
-                if (p != null) {
-                    p.setVersion(version);
-                    setInPM = true;
-                }
-            }
-            Plugin p = bld.findPluginById(groupId, artifactId);
-            if (p != null) {
-                if (p.getVersion() != null) {
-                    p.setVersion(version);
-                    setInPlgs = true;
-                } else {
-                    if (!setInPM) {
-                        p.setVersion(version);
-                        setInPlgs = true;
-                    }
-                }
-            }
-        }
-        if (!setInPM && !setInPlgs) {
-            if (bld == null) {
-                bld = prj.getModel().getFactory().createBuild();
-                prj.setBuild(bld);
-            }
-            Plugin p = prj.getModel().getFactory().createPlugin();
-            p.setGroupId(groupId);
-            p.setArtifactId(artifactId);
-            p.setVersion(version);
-            bld.addPlugin(p);
+            ModelUtils.updatePluginVersion(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "3.6.1", prj);
+            ModelUtils.openAtPlugin(model, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
         }
     }
     

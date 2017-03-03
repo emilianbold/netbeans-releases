@@ -97,6 +97,8 @@ public interface Constants {
     public static final String GROUP_APACHE_PLUGINS = "org.apache.maven.plugins"; //NOI18N
     
     public static final String PLUGIN_COMPILER = "maven-compiler-plugin";//NOI18N
+    public static final String PLUGIN_COMPILER_VERSION_SUPPORTING_JDK9 = "3.6"; // NOI18N
+    
     public static final String PLUGIN_WAR = "maven-war-plugin";//NOI18N
     public static final String PLUGIN_SITE = "maven-site-plugin";//NOI18N
     public static final String PLUGIN_RESOURCES = "maven-resources-plugin";//NOI18N

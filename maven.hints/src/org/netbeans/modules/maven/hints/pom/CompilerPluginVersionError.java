@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.hints.pom;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
@@ -49,14 +50,18 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.ModuleInfoUtils;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
@@ -109,10 +114,10 @@ public class CompilerPluginVersionError implements POMErrorFixProvider {
         if(pos == -1) {
             return toRet;
         }        
-        
-        Document baseDocument = model.getBaseDocument();
+               
+        Document baseDocument = model.getBaseDocument();        
         Line line = NbEditorUtilities.getLine(baseDocument, pos, false);
-        toRet.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, Bundle.DESC_ModulesNotSupported(), baseDocument, line.getLineNumber() + 1));
+        toRet.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, Bundle.DESC_ModulesNotSupported(), Collections.<Fix>singletonList(new UpdatePluginVersion(model)), baseDocument, line.getLineNumber() + 1));
         
         return toRet;
     }
@@ -135,4 +140,37 @@ public class CompilerPluginVersionError implements POMErrorFixProvider {
         return configuration;
     }
 
+    @NbBundle.Messages({"TXT_UpdateCompiler=Update maven-compiler-plugin version."})       
+    private static class UpdatePluginVersion implements Fix {
+        private final POMModel mdl;
+
+        UpdatePluginVersion(POMModel model) {
+            mdl = model;            
+        }
+
+        @Override
+        public String getText() {
+            return Bundle.TXT_UpdateCompiler();
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+
+            ChangeInfo info = new ChangeInfo();
+            if (!mdl.getState().equals(Model.State.VALID)) {
+                return info;
+            }
+            
+            PomModelUtils.implementInTransaction(mdl, new Runnable() {
+                @Override
+                public void run() {
+                    org.netbeans.modules.maven.model.pom.Project prj = mdl.getProject();
+                    ModelUtils.updatePluginVersion(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "3.6.1", prj);
+                    ModelUtils.openAtPlugin(mdl, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+                }
+            });
+            
+            return info;
+        }
+    }
 }
