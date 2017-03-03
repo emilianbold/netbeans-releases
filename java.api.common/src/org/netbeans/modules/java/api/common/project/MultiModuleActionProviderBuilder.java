@@ -49,6 +49,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.AbstractClassPathProvider;
 import org.netbeans.modules.java.api.common.project.JavaActionProvider.CompileOnSaveOperation;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Parameters;
 
@@ -94,6 +95,8 @@ public final class MultiModuleActionProviderBuilder {
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_TEST_SINGLE, false, false, "test-single"));   //NOI18N
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, false, false, "debug-test"));   //NOI18N
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, false, false, "profile-test"));   //NOI18N
+        builder.addAction(builder.createScriptAction(SingleMethod.COMMAND_RUN_SINGLE_METHOD, false, true, "test-single-method"));   //NOI18N
+        builder.addAction(builder.createScriptAction(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD, false, true, "debug-single-method"));   //NOI18N
         return this;
     }
 

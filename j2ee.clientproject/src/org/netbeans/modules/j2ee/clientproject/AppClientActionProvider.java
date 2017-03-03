@@ -155,6 +155,8 @@ class AppClientActionProvider extends BaseActionProvider {
         commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
         commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+        commands.put(SingleMethod.COMMAND_RUN_SINGLE_METHOD, new String[] {"test-single-method"}); // NOI18N
+        commands.put(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD, new String[] {"debug-single-method"}); // NOI18N
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
             JavaProjectConstants.COMMAND_DEBUG_FIX
@@ -165,7 +167,9 @@ class AppClientActionProvider extends BaseActionProvider {
             COMMAND_RUN_SINGLE,
             COMMAND_DEBUG,
             COMMAND_DEBUG_SINGLE,
-            COMMAND_DEBUG_STEP_INTO
+            COMMAND_DEBUG_STEP_INTO,
+            SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+            SingleMethod.COMMAND_DEBUG_SINGLE_METHOD
         }));
     }
 

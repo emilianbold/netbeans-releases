@@ -55,7 +55,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,7 +65,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -348,19 +346,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         LOG.log(Level.FINE, "COMMAND: {0}", command);       //NOI18N
         String[] targetNames = new String[0];
         Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
-        if ( command.equals( SingleMethod.COMMAND_RUN_SINGLE_METHOD ) ) {
-            SingleMethod[] methodSpecs = findTestMethods(context);
-            if ((methodSpecs == null) || (methodSpecs.length != 1)) {
-                return new String[0];
-            }
-            targetNames = setupRunSingleTestMethod(p, methodSpecs[0]);
-        } else if ( command.equals( SingleMethod.COMMAND_DEBUG_SINGLE_METHOD ) ) {
-            SingleMethod[] methodSpecs = findTestMethods(context);
-            if ((methodSpecs == null) || (methodSpecs.length != 1)) {
-                return new String[0];
-            }
-            targetNames = setupDebugSingleTestMethod(p, methodSpecs[0]);
-        } else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
+        if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), context);
             String path;
             String classes = "";    //NOI18N
@@ -475,7 +461,8 @@ public abstract class BaseActionProvider implements ActionProvider {
             COMMAND_TEST,
             COMMAND_COMPILE_SINGLE,
             COMMAND_RUN_SINGLE, COMMAND_DEBUG_SINGLE, COMMAND_PROFILE_SINGLE,
-            COMMAND_TEST_SINGLE, COMMAND_DEBUG_TEST_SINGLE, COMMAND_PROFILE_TEST_SINGLE
+            COMMAND_TEST_SINGLE, COMMAND_DEBUG_TEST_SINGLE, COMMAND_PROFILE_TEST_SINGLE,
+            SingleMethod.COMMAND_RUN_SINGLE_METHOD, SingleMethod.COMMAND_DEBUG_SINGLE_METHOD
         };
         for (String cmd : commands) {
             if (supported.contains(cmd)) {
@@ -613,24 +600,6 @@ public abstract class BaseActionProvider implements ActionProvider {
                 }
                 return JavaActionProvider.ScriptAction.Result.abort();
             }
-            String buildDir = evaluator.getProperty(ProjectProperties.BUILD_DIR);
-            if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command)) {
-                SingleMethod methodSpec = findTestMethods(ctx.getActiveLookup())[0];
-                try {
-                    execProperties.put("methodname", methodSpec.getMethodName());//NOI18N
-                    execProperties.put(JavaRunner.PROP_EXECUTE_FILE, methodSpec.getFile());
-                    if (buildDir != null) {
-                        execProperties.put("tmp.dir",updateHelper.getAntProjectHelper().resolvePath(buildDir));
-                    }
-                    updateJavaRunnerClasspath(command, execProperties);
-                    return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(
-                            command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
-                                          execProperties));
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                return JavaActionProvider.ScriptAction.Result.abort();
-            }
             return JavaActionProvider.ScriptAction.Result.follow();
         };
     }
@@ -647,39 +616,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             evaluator,
             projectSourceRoots,
             classpaths);
-    }
-
-    private String[] setupRunSingleTestMethod(Properties p, SingleMethod methodSpec) {
-//        return setupTestSingle(p, new FileObject[] {methodSpec.getFile()});
-
-        FileObject[] testSrcPath = projectTestRoots.getRoots();
-        FileObject testFile = methodSpec.getFile();
-        FileObject root = ActionProviderSupport.getRoot(testSrcPath, testFile);
-        String relPath = FileUtil.getRelativePath(root, testFile);
-        String className = getClassName(relPath);
-        p.setProperty("javac.includes", relPath); // NOI18N
-        p.setProperty("test.class", className); // NOI18N
-        p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
-        return new String[] {"test-single-method"}; // NOI18N
-    }
-
-    private String[] setupDebugSingleTestMethod(Properties p, SingleMethod methodSpec) {
-//        return setupDebugTestSingle(p, new FileObject[] {methodSpec.getFile()});
-
-        FileObject[] testSrcPath = projectTestRoots.getRoots();
-        FileObject testFile = methodSpec.getFile();
-        FileObject root = ActionProviderSupport.getRoot(testSrcPath, testFile);
-        String relPath = FileUtil.getRelativePath(root, testFile);
-        String className = getClassName(relPath);
-        p.setProperty("javac.includes", relPath); // NOI18N
-        p.setProperty("test.class", className); // NOI18N
-        p.setProperty("test.method", methodSpec.getMethodName()); // NOI18N
-        return new String[] {"debug-test-method"}; // NOI18N
-    }
-
-    private static String getClassName(String relPath) {
-        // Convert foo/FooTest.java -> foo.FooTest
-        return relPath.substring(0, relPath.length() - 5).replace('/', '.');
     }
 
     @Override
@@ -710,18 +646,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                         });
             }
             return false;
-        } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD)
-                || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
-//            if (isCompileOnSaveEnabled()) {
-                SingleMethod[] methodSpecs = findTestMethods(context);
-                return (methodSpecs != null) && (methodSpecs.length == 1);
-//            } else {
-//                return false;
-//            }
-        } else {
-            // other actions are global
-            return true;
         }
+        return true;
     }
 
 
@@ -774,41 +700,6 @@ public abstract class BaseActionProvider implements ActionProvider {
      * Finds single method specification objects corresponding to JUnit test
      * methods in unit test roots.
      */
-    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
-    private @CheckForNull SingleMethod[] findTestMethods(Lookup context) {
-        Collection<? extends SingleMethod> methodSpecs
-                                           = context.lookupAll(SingleMethod.class);
-        if (methodSpecs.isEmpty()) {
-            return null;
-        }
-
-        FileObject[] testSrcPath = projectTestRoots.getRoots();
-        if ((testSrcPath == null) || (testSrcPath.length == 0)) {
-            return null;
-        }
-
-        Collection<SingleMethod> specs = new LinkedHashSet<SingleMethod>(); //#50644: remove dupes
-        for (FileObject testRoot : testSrcPath) {
-            for (SingleMethod spec : methodSpecs) {
-                FileObject f = spec.getFile();
-                if (FileUtil.toFile(f) == null) {
-                    continue;
-                }
-                if ((f != testRoot) && !FileUtil.isParentOf(testRoot, f)) {
-                    continue;
-                }
-                if (!f.getNameExt().endsWith(".java")) {                //NOI18N
-                    continue;
-                }
-                specs.add(spec);
-            }
-        }
-        if (specs.isEmpty()) {
-            return null;
-        }
-        return specs.toArray(new SingleMethod[specs.size()]);
-    }
-
     private List<String> runJvmargsIde(String command) {
         StartupExtender.StartMode mode;
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {

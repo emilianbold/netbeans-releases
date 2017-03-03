@@ -51,6 +51,7 @@ import java.util.EnumSet;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -92,6 +93,7 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_MOVE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
 import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -603,6 +605,9 @@ public final class JavaActionProvider implements ActionProvider {
                 case ActionProvider.COMMAND_DEBUG_TEST_SINGLE:
                 case ActionProvider.COMMAND_PROFILE_TEST_SINGLE:
                     return createDebugTestSingleAction(command, javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
+                case SingleMethod.COMMAND_RUN_SINGLE_METHOD:
+                case SingleMethod.COMMAND_DEBUG_SINGLE_METHOD:
+                    return createRunSingleMethodAction(command, javaModelSensitive, scanSensitive, testRoots, targets);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -1114,6 +1119,108 @@ public final class JavaActionProvider implements ActionProvider {
                     return ActionProviderSupport.setupTestSingle(context, files, getTestRoots().getRoots());
                 }
                 return null;
+            }
+        };
+    }
+
+    @NonNull
+    private static final ScriptAction createRunSingleMethodAction(
+            @NonNull final String command,
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final SourceRoots testRoots,
+            @NonNull final Supplier<? extends String[]> targets) {
+        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, targets) {
+
+            @Override
+            public boolean isEnabled(Context context) {
+                SingleMethod[] methodSpecs = findTestMethods(context);
+                return (methodSpecs != null) && (methodSpecs.length == 1);
+            }
+
+            @Override
+            @CheckForNull
+            public String[] getTargetNames(Context context) {
+                String[] res = super.getTargetNames(context);
+                if (res != null) {
+                    SingleMethod[] methodSpecs = findTestMethods(context);
+                    if ((methodSpecs == null) || (methodSpecs.length != 1)) {
+                        return null;
+                    }
+                    final FileObject testFile = methodSpecs[0].getFile();
+                    final String[] pathFqn = ActionProviderSupport.pathAndFqn(testFile, testRoots.getRoots());
+                    if (pathFqn == null) {
+                        return null;
+                    }
+                    context.setProperty("javac.includes", pathFqn[0]); // NOI18N
+                    context.setProperty("test.class", pathFqn[1]); // NOI18N
+                    context.setProperty("test.method", methodSpecs[0].getMethodName()); // NOI18N
+                }
+                return res;
+            }
+
+            @Override
+            @NonNull
+            public ScriptAction.Result performCompileOnSave(@NonNull final Context context, @NonNull final String[] targetNames) {
+                SingleMethod[] methodSpecs = findTestMethods(context);
+                if (methodSpecs != null) {
+                    try {
+                        final Map<String,Object> execProperties = ActionProviderSupport.createBaseCoSProperties(context);
+                        execProperties.put("methodname", methodSpecs[0].getMethodName());//NOI18N
+                        execProperties.put(JavaRunner.PROP_EXECUTE_FILE, methodSpecs[0].getFile());
+                        final String buildDir = context.getPropertyEvaluator().getProperty(ProjectProperties.BUILD_DIR);
+                        if (buildDir != null) {
+                            execProperties.put("tmp.dir", context.getUpdateHelper().getAntProjectHelper().resolvePath(buildDir));
+                        }
+                        boolean vote = true;
+                        final BiFunction<Context, Map<String, Object>, Boolean> cosi = getCoSInterceptor();
+                        if (cosi != null) {
+                            vote = cosi.apply(context, execProperties);
+                        }
+                        if (vote) {
+                            return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(
+                                    command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
+                                                  execProperties));
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return JavaActionProvider.ScriptAction.Result.abort();
+            }
+
+            @CheckForNull
+            @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+            private SingleMethod[] findTestMethods(@NonNull final Context context) {
+                final Collection<? extends SingleMethod> methodSpecs
+                        = context.getActiveLookup().lookupAll(SingleMethod.class);
+                if (methodSpecs.isEmpty()) {
+                    return null;
+                }
+                final FileObject[] testSrcPath = testRoots.getRoots();
+                if ((testSrcPath == null) || (testSrcPath.length == 0)) {
+                    return null;
+                }
+                Collection<SingleMethod> specs = new LinkedHashSet<>(); //#50644: remove dupes
+                for (FileObject testRoot : testSrcPath) {
+                    for (SingleMethod spec : methodSpecs) {
+                        FileObject f = spec.getFile();
+                        if (FileUtil.toFile(f) == null) {
+                            continue;
+                        }
+                        if ((f != testRoot) && !FileUtil.isParentOf(testRoot, f)) {
+                            continue;
+                        }
+                        if (!f.getNameExt().endsWith(".java")) {                //NOI18N
+                            continue;
+                        }
+                        specs.add(spec);
+                    }
+                }
+                if (specs.isEmpty()) {
+                    return null;
+                }
+                return specs.toArray(new SingleMethod[specs.size()]);
             }
         };
     }
