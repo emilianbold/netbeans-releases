@@ -270,6 +270,9 @@ class WildflyStartRunnable implements Runnable {
         env.setVariable("JAVA_HOME", javaHome); // NOI18N
         env.setVariable(JBOSS_HOME, ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR)); // NOI18N
         env.setVariable(JAVA_OPTS, javaOpts); // NOI18N
+        if(Utilities.isWindows()) {
+            env.setVariable("NOPAUSE", "true"); // NOI18N
+        }
     }
 
     private static StartupExtender.StartMode getMode(WildflyStartServer.MODE jbMode) {
