@@ -155,6 +155,9 @@ public final class ShellProjectUtils {
      */
     public static Collection<String> findProjectImportedModules(Project project, Collection<String> in) {
         Collection<String> result = in != null ? in : new HashSet<>();
+        if (project == null) {
+            return result;
+        }
         
         for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             if (isNormalRoot(sg)) {
@@ -176,6 +179,9 @@ public final class ShellProjectUtils {
     
     public static Set<String>   findProjectModules(Project project, Set<String> in) {
         Set<String> result = in != null ? in : new HashSet<>();
+        if (project == null) {
+            return result;
+        }
         
         for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             if (isNormalRoot(sg)) {
@@ -200,6 +206,9 @@ public final class ShellProjectUtils {
      */
     public static Map<String, Collection<String>>   findProjectModulesAndPackages(Project project) {
         Map<String, Collection<String>> result = new HashMap<>();
+        if (project == null) {
+            return result;
+        }
         
         for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             if (isNormalRoot(sg)) {
