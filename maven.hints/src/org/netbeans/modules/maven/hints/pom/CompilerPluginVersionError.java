@@ -41,19 +41,15 @@
  */
 package org.netbeans.modules.maven.hints.pom;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.ModuleInfoUtils;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -71,9 +67,6 @@ import org.openide.util.NbBundle;
  */
 public class CompilerPluginVersionError implements POMErrorFixProvider {
     private final Configuration configuration;
-
-    private static final String COMPILER_SUPPORTING_JDK9_VERSION = "3.6"; // NOI18N
-    private static final String MODULE_INFO = "module-info.java"; // NOI18N
     
     @NbBundle.Messages({
         "TIT_WrongCompilerVersion=Wrong maven-compiler-plugin version.",
@@ -95,21 +88,7 @@ public class CompilerPluginVersionError implements POMErrorFixProvider {
             return toRet;
         }
         
-        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
-        if(nbprj == null) {
-            return toRet;
-        }
-        
-        if(!hasModuleInfo(nbprj)) {
-            return toRet;
-        }
-        
-        String version = PluginPropertyUtils.getPluginVersion(nbprj.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);        
-        if(version == null) {
-            return toRet;            
-        }
-                
-        if(new ComparableVersion(version).compareTo(new ComparableVersion(COMPILER_SUPPORTING_JDK9_VERSION)) >= 0) { // NOI18N
+        if(ModuleInfoUtils.checkModuleInfoAndCompilerFit(prj)) {
             return toRet;
         }
                 
@@ -154,21 +133,6 @@ public class CompilerPluginVersionError implements POMErrorFixProvider {
     @Override
     public Configuration getConfiguration() {
         return configuration;
-    }
-
-    private boolean hasModuleInfo(NbMavenProject nbprj) {
-        MavenProject mavenProject = nbprj.getMavenProject();        
-        return hasModuleInfoInSourceRoot(mavenProject.getCompileSourceRoots()) || 
-               hasModuleInfoInSourceRoot(mavenProject.getTestCompileSourceRoots());
-    }
-
-    private boolean hasModuleInfoInSourceRoot(List<String> sourceRoots) {        
-        for (String sourceRoot : sourceRoots) {
-            if (new File(sourceRoot, MODULE_INFO).exists()) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

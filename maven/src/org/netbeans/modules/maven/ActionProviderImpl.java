@@ -65,10 +65,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.ModuleInfoUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
@@ -224,44 +226,15 @@ public class ActionProviderImpl implements ActionProvider {
     private static final String SUREFIRE_VERSION_SAFE = "2.15"; //2.16 is broken
     private static final String JUNIT_VERSION_SAFE = "4.11";
 
-    @Messages({
-        "run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method.",
-        "TIT_Run_Single_method=Feature requires update of POM",
-        "TXT_Run_Single_method=<html>Executing single test method requires Surefire 2.8+ and JUnit in version 4.8 and bigger. <br/><br/>Update your pom.xml?</html>"
-    })
     @Override public void invokeAction(final String action, final Lookup lookup) {
-        if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
-            if (!runSingleMethodEnabled()) {
-                if (NbPreferences.forModule(ActionProviderImpl.class).getBoolean(SHOW_SUREFIRE_WARNING, true)) {
-                    WarnPanel pnl = new WarnPanel(TXT_Run_Single_method());
-                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(pnl, TIT_Run_Single_method(), NotifyDescriptor.YES_NO_OPTION));
-                    if (pnl.disabledWarning()) {
-                        NbPreferences.forModule(ActionProviderImpl.class).putBoolean(SHOW_SUREFIRE_WARNING, false);
-                    }
-                    if (o == NotifyDescriptor.YES_OPTION) {
-                        RequestProcessor.getDefault().post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Utilities.performPOMModelOperations(
-                                        proj.getProjectDirectory().getFileObject("pom.xml"), 
-                                        Collections.singletonList(new UpdateSurefireOperation(usingSurefire28() ? null : SUREFIRE_VERSION_SAFE, usingJUnit4() || usingTestNG() ? null : JUNIT_VERSION_SAFE)));
-                                //this appears to run too fast, before the resolved model is updated.
-//                                SwingUtilities.invokeLater(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        invokeAction(action, lookup);
-//                                    }
-//                                });
-                            }
-                        });
-                        return;
-                    }
-                } 
-                StatusDisplayer.getDefault().setStatusText(run_single_method_disabled());
-                return;
-            }
+        invokeAction(action, lookup, true);
+    }
+    
+    private void invokeAction(final String action, final Lookup lookup, boolean checkCompiler) {
+        if (!checkSurefire(action) || (checkCompiler && !checkCompilerPlugin(action))) {
+            return;
         }
+        
         if (COMMAND_DELETE.equals(action)) {
             DefaultProjectOperations.performDefaultDeleteOperation(proj);
             return;
@@ -284,9 +257,8 @@ public class ActionProviderImpl implements ActionProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    invokeAction(action, lookup);
+                    invokeAction(action, lookup, false);
                 }
-
             });
             return;
         }
@@ -324,8 +296,83 @@ public class ActionProviderImpl implements ActionProvider {
             }
         }
     }
+    
     private static final String SHOW_SUREFIRE_WARNING = "showSurefireWarning";
 
+    @Messages({
+        "run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method.",
+        "TIT_RequiresUpdateOfPOM=Feature requires update of POM",
+        "TXT_Run_Single_method=<html>Executing single test method requires Surefire 2.8+ and JUnit in version 4.8 and bigger. <br/><br/>Update your pom.xml?</html>"
+    })    
+    private boolean checkSurefire(final String action) {
+        if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+            if (!runSingleMethodEnabled()) {
+                if (NbPreferences.forModule(ActionProviderImpl.class).getBoolean(SHOW_SUREFIRE_WARNING, true)) {
+                    WarnPanel pnl = new WarnPanel(TXT_Run_Single_method());
+                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(pnl, TIT_RequiresUpdateOfPOM(), NotifyDescriptor.YES_NO_OPTION));
+                    if (pnl.disabledWarning()) {
+                        NbPreferences.forModule(ActionProviderImpl.class).putBoolean(SHOW_SUREFIRE_WARNING, false);
+                    }
+                    if (o == NotifyDescriptor.YES_OPTION) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Utilities.performPOMModelOperations(
+                                        proj.getProjectDirectory().getFileObject("pom.xml"),
+                                        Collections.singletonList(new UpdateSurefireOperation(usingSurefire28() ? null : SUREFIRE_VERSION_SAFE, usingJUnit4() || usingTestNG() ? null : JUNIT_VERSION_SAFE)));
+                                //this appears to run too fast, before the resolved model is updated.
+//                                SwingUtilities.invokeLater(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        invokeAction(action, lookup);
+//                                    }
+//                                });
+                            }
+                        });
+                        return false;
+                    }
+                }
+                StatusDisplayer.getDefault().setStatusText(run_single_method_disabled());
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private static final String SHOW_COMPILER_TOO_OLD_WARNING = "showCompilerTooOldWarning";
+    @Messages({                
+        "# {0} - project display name", "TXT_CompilerTooOld=<html>Project {0} contains module-info.java, but modules need maven-compiler-plugin >= 3.6.<br/>Update your pom.xml?</html>"
+    })
+    private boolean checkCompilerPlugin(final String action) {
+        if (action.equals(ActionProvider.COMMAND_BUILD) || 
+            action.equals(ActionProvider.COMMAND_DEBUG) ||
+            action.equals(ActionProvider.COMMAND_PROFILE) ||
+            action.equals(ActionProvider.COMMAND_REBUILD) ||
+            action.equals(ActionProvider.COMMAND_RUN) ||
+            action.equals(ActionProvider.COMMAND_TEST)) 
+        {
+            if (!ModuleInfoUtils.checkModuleInfoAndCompilerFit(proj)) {
+                if (NbPreferences.forModule(ActionProviderImpl.class).getBoolean(SHOW_COMPILER_TOO_OLD_WARNING, true)) {
+                    ProjectInformation info = ProjectUtils.getInformation(proj);
+                    WarnPanel pnl = new WarnPanel(TXT_CompilerTooOld(info.getDisplayName()));
+                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(pnl, TIT_RequiresUpdateOfPOM(), NotifyDescriptor.YES_NO_OPTION));
+                    if (pnl.disabledWarning()) {
+                        NbPreferences.forModule(ActionProviderImpl.class).putBoolean(SHOW_COMPILER_TOO_OLD_WARNING, false);
+                    }
+                    if (o == NotifyDescriptor.YES_OPTION) {
+                        RequestProcessor.getDefault().post(() -> {
+                            Utilities.performPOMModelOperations(
+                                    proj.getProjectDirectory().getFileObject("pom.xml"),
+                                    Collections.singletonList(new UpdateCompilerOperation()));                            
+                        });
+                        return false; // false means do not continue
+                    }
+                }                
+            }
+        }
+        return true;
+    }
+    
     public static Map<String,String> replacements(Project proj, String action, Lookup lookup) {
         Map<String,String> replacements = new HashMap<String,String>();
         for (ReplaceTokenProvider prov : proj.getLookup().lookupAll(ReplaceTokenProvider.class)) {
@@ -747,8 +794,9 @@ public class ActionProviderImpl implements ActionProvider {
                 findDependency("junit", "junit", newJUnit, prj);
             }
             if (newSurefirePluginVersion != null) {
-                findPlugin(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, newSurefirePluginVersion, prj);
+                updatePlugin(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, newSurefirePluginVersion, prj);
             }
+            Utilities.openAtPlugin(model, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
         }
 
         private void findDependency(String groupId, String artifactID, String newVersion, org.netbeans.modules.maven.model.pom.Project prj) {
@@ -784,46 +832,55 @@ public class ActionProviderImpl implements ActionProvider {
                 prj.addDependency(d);
             }
         }
+    }
+    
+    private static class UpdateCompilerOperation implements ModelOperation<POMModel> {
+        @Override
+        public void performOperation(POMModel model) {
+            org.netbeans.modules.maven.model.pom.Project prj = model.getProject();
+            updatePlugin(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "3.6.1", prj);
+            Utilities.openAtPlugin(model, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+        }
+    }
+    
+    private static void updatePlugin(String groupId, String artifactId, String version, org.netbeans.modules.maven.model.pom.Project prj) {
+        Build bld = prj.getBuild();
+        boolean setInPM = false;
+        boolean setInPlgs = false;
 
-        private void findPlugin(String groupId, String artifactId, String version, org.netbeans.modules.maven.model.pom.Project prj) {
-            Build bld = prj.getBuild();
-            boolean setInPM = false;
-            boolean setInPlgs = false;
-            
-            if (bld != null) {
-                PluginManagement pm = bld.getPluginManagement();
-                if (pm != null) {
-                    Plugin p = pm.findPluginById(groupId, artifactId);
-                    if (p != null) {
-                        p.setVersion(version);
-                        setInPM = true;
-                    }
-                }
-                Plugin p = bld.findPluginById(groupId, artifactId);
+        if (bld != null) {
+            PluginManagement pm = bld.getPluginManagement();
+            if (pm != null) {
+                Plugin p = pm.findPluginById(groupId, artifactId);
                 if (p != null) {
-                    if (p.getVersion() != null) {
+                    p.setVersion(version);
+                    setInPM = true;
+                }
+            }
+            Plugin p = bld.findPluginById(groupId, artifactId);
+            if (p != null) {
+                if (p.getVersion() != null) {
+                    p.setVersion(version);
+                    setInPlgs = true;
+                } else {
+                    if (!setInPM) {
                         p.setVersion(version);
                         setInPlgs = true;
-                    } else {
-                        if (!setInPM) {
-                            p.setVersion(version);
-                            setInPlgs = true;
-                        }
                     }
                 }
             }
-            if (!setInPM && !setInPlgs) {
-                if (bld == null) {
-                    bld = prj.getModel().getFactory().createBuild();
-                    prj.setBuild(bld);
-                }
-                Plugin p = prj.getModel().getFactory().createPlugin();
-                p.setGroupId(groupId);
-                p.setArtifactId(artifactId);
-                p.setVersion(version);
-                bld.addPlugin(p);
-            }
         }
-        
+        if (!setInPM && !setInPlgs) {
+            if (bld == null) {
+                bld = prj.getModel().getFactory().createBuild();
+                prj.setBuild(bld);
+            }
+            Plugin p = prj.getModel().getFactory().createPlugin();
+            p.setGroupId(groupId);
+            p.setArtifactId(artifactId);
+            p.setVersion(version);
+            bld.addPlugin(p);
+        }
     }
+    
 }
