@@ -443,10 +443,10 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
         domainPathField.setEnabled(false);
 
-        userField.setVisible(false);
-        userLabel.setVisible(false);
-        passwordField.setVisible(false);
-        passwordLabel.setVisible(false);
+        userField.setVisible(true);
+        userLabel.setVisible(true);
+        passwordField.setVisible(true);
+        passwordLabel.setVisible(true);
 
 
         serverType.setVisible(false);
