@@ -286,6 +286,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         handlerExpert = new GdbHandlerExpert(this);
         disassembly = new GdbDisassembly(this, breakpointModel());
         disStateModel().addListener(disassembly);
+        //need to attach to EditorContext Bridge as we need to 
     }
 
     @Override
@@ -2732,22 +2733,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             send("-break-disable"); //NOI18N
         }
         send("-gdb-set unwindonsignal on"); //NOI18N
-
-        dataMIEval(lp, expr, dis);
-
-        // enable breakpoints and signals
-        if (handlers.length > 0) {
-            StringBuilder command = new StringBuilder();
-            command.append("-break-enable"); // NOI18N
-            for (Handler h : handlers) {
-                if (h.breakpoint().isEnabled()) {
-                    command.append(' ');
-                    command.append(h.getId());
+        Runnable postRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // enable breakpoints and signals
+                if (handlers.length > 0) {
+                    StringBuilder command = new StringBuilder();
+                    command.append("-break-enable"); // NOI18N
+                    for (Handler h : handlers) {
+                        if (h.breakpoint().isEnabled()) {
+                            command.append(' ');
+                            command.append(h.getId());
+                        }
+                    }
+                    send(command.toString());
                 }
+                send("-gdb-set unwindonsignal off"); //NOI18N
             }
-            send(command.toString());
-        }
-        send("-gdb-set unwindonsignal off"); //NOI18N
+        };
+        dataMIEval(lp, expr, dis, postRunnable);
+
+       
     }
 
     @Override
@@ -2865,15 +2871,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            System.out.println("ToolTipSupportPropertyChangeListener.propertyChange=" + evt.getPropertyName());
-            System.out.println("ToolTipSupportPropertyChangeListener.propertyChange=" + v.getMIName());
-            if (!ToolTipSupport.PROP_STATUS.equals(evt.getPropertyName())) {
-                
+            if (!ToolTipSupport.PROP_STATUS.equals(evt.getPropertyName())) {                
                return;//we are interested in status only 
             }
-            System.out.println("ToolTipSupportPropertyChangeListener.status=" + evt.getNewValue());
             if ((((Integer)evt.getNewValue()) == ToolTipSupport.STATUS_HIDDEN)){
-                System.out.println("miVariableName=" + v.getMIName());
                 DeleteMIVarCommand cmd = new DeleteMIVarCommand(v);
                 cmd.dontReportError();
                 sendCommandInt(cmd);
@@ -2913,7 +2914,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
     }
 
-    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis) {
+    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable) {
         String expandedExpr = MacroSupport.expandMacro(this, expr);
         String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         MICommand cmd =
@@ -2935,10 +2936,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         }
                     }
                 } else if (value_string.startsWith("@0x")) { //NOI18N
-                    // See bug 206736 - tooltip for reference-based variable shows address instead of value
-                    balloonEvaluate(lp, "*&" + expr, false); //NOI18N
-                    finish();
-                    return;
+                    try{
+                        // See bug 206736 - tooltip for reference-based variable shows address instead of value
+                        balloonEvaluate(lp, "*&" + expr, false); //NOI18N
+                        finish();                        
+                        return;
+                    } finally {
+                        postRunnable.run();
+                    }
                 } else {
                     value_string = ValuePresenter.getValue(value_string);
                 }
@@ -2946,10 +2951,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 Line line = lp.getLine();
                 DataObject dob = DataEditorSupport.findDataObject(line);
                 if (dob == null) {
+                    postRunnable.run();
                     return;
                 }
                 final EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
                 if (ec == null) {
+                    postRunnable.run();
                     return;
                     // Only for editable dataobjects
                 }
@@ -2957,10 +2964,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 try {
                     doc = ec.openDocument();
                 } catch (IOException ex) {
+                    postRunnable.run();
                     return;
                 }
                 final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
                 if (ep == null || ep.getDocument() != doc) {
+                    postRunnable.run();
                     return ;
                 }      
                 //Object var = null; 
@@ -2972,6 +2981,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 final Runnable onDoneRunnable = new Runnable() {
                     @Override
                     public void run() {
+                        postRunnable.run();
                         //need to execute following code only after the value is update in onDone in createMIVar
                         final Object objectVariable = watch;
                         final String toolTip = expr + "=" + watch.getAsText();//NOI18N
@@ -3004,12 +3014,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
                             }
                         });
+                        
                     }
                 };
                 //this runnable for the case when it is not WATCH
                 final Runnable onErrorRunnable = new Runnable() {
                     @Override
                     public void run() {
+                        postRunnable.run();
                         //need to execute following code only after the value is update in onDone in createMIVar
                         final String toolTip = expr + "=" + data_value_string;//NOI18N
                         final String expression = expr;
@@ -3093,13 +3105,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // see IZ 194721
         // No need to check for duplicates - gdb will create different vars
         GdbWatch gdbWatch = new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-        createMIVar(gdbWatch, true);
-
-        updateMIVar();
+        if (get_watches || WatchBag.isPinOpened(nativeWatch)) {
+            createMIVar(gdbWatch, true);
+            //do not call update if there is no editor opened or watches are opened
+//            if (get_watches || WatchBag.isPinOpened(nativeWatch)) {
+            updateMIVar();
+            //}
+        }
         nativeWatch.setSubWatchFor(gdbWatch, this);
         watches.add(gdbWatch);
         manager().bringDownDialog();
-        watchUpdater().treeChanged();     // causes a pull
+        if (get_watches) {
+            watchUpdater().treeChanged();     // causes a pull
+    }       
     }
 
     @Override
@@ -3163,7 +3181,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (model != null) {
             get_watches = true;
             if (state().isProcess && !state().isRunning) {
-                updateWatches();
+                updateWatches(true);
             }
         } else {
             get_watches = false;
@@ -3174,23 +3192,26 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * Try and re-create vars for watches which don't have var's (mi_name's)
      * yet.
      */
-    private void retryWatches() {
+    private void retryWatches(boolean forceVarCreate) {
 
         for (WatchVariable wv : watches) {
             GdbWatch w = (GdbWatch) wv;
+            if (forceVarCreate || w.getNativeWatch().watch().getPin() != null) {
+                // due to the fix of #197053 it looks safe not to create new vars
+                if (w.getMIName() != null) {
+                    continue;		// we already have a var for this one
+                }
 
-            // due to the fix of #197053 it looks safe not to create new vars
-            if (w.getMIName() != null) {
-                continue;		// we already have a var for this one
+                createMIVar(w, true);
             }
-
-            createMIVar(w, true);
         }
     }
 
-    private void updateWatches() {
-        retryWatches();
-        updateMIVar();
+    private void updateWatches(boolean forceVarCreate) {
+        retryWatches(forceVarCreate);
+        if (forceVarCreate) {
+            updateMIVar();
+        }
     }
 
     private void updateVarAttr(GdbVariable v, MIRecord attr, boolean evalValue) {
@@ -3583,7 +3604,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
     }
 
-        private void updateMIVar() {
+    private void updateMIVar() {
         if (!peculiarity.isLldb()) {
             String cmdString = "-var-update --all-values * "; // NOI18N
             MICommand cmd =
@@ -4073,9 +4094,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (get_threads) {
                 showThreads();
             }
-
-            if (get_watches || watchBag().hasPinnedWatches()) {
-                updateWatches();
+            FileObject fileObj = homeLoc == null || !homeLoc.hasSource() ? null : 
+                    EditorBridge.findFileObject(fmap().engineToWorld(homeLoc.src()), this);                    
+            final boolean updateWatches = get_watches || watchBag().hasPinnedWatchesOpened(fileObj);
+            if (updateWatches) {
+                //do not update non pinned watches if watches window is closed 
+                updateWatches(updateWatches);
             }
 
             if (get_debugging) {

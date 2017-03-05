@@ -51,6 +51,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 import java.util.ArrayList;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.debugger.ui.EditorPin;
+import org.openide.filesystems.FileObject;
 
 public class WatchBag {
     private ArrayList<NativeWatch> watches = new ArrayList<NativeWatch>();
@@ -94,6 +95,50 @@ public class WatchBag {
         }
         return false;
     }
+    
+    public static boolean hasPin(NativeWatch nativeWatch) {
+        final Watch watch = nativeWatch.watch();
+        Watch.Pin pin = watch.getPin();
+        return (pin instanceof EditorPin); 
+    }
+    
+    public static boolean isPinOpened(NativeWatch nativeWatch) {
+        final Watch watch = nativeWatch.watch();
+        Watch.Pin pin = watch.getPin();
+        if (pin instanceof EditorPin) {
+            EditorPin editorPin = (EditorPin)pin;
+            FileObject editorFO = EditorContextBridge.getCurrentFileObject();
+            if (editorFO != null &&  editorFO.equals(editorPin.getFile())) {
+                //the editor is opened for the pinned watch
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Checks if we have watches in the editor for the fileToOpen
+     * @param fileToOpen if <code>null</code>  will check with the EditorContextBridge.getCurrentFileObject()
+     * @return 
+     */
+    public synchronized boolean hasPinnedWatchesOpened(final FileObject fileToOpen) {
+        FileObject editorFO = EditorContextBridge.getCurrentFileObject();
+        if (fileToOpen != null && fileToOpen.isValid()) {
+            editorFO = fileToOpen;
+        }
+        for (NativeWatch nativeWatch : watches) {
+            final Watch watch = nativeWatch.watch();
+            Watch.Pin pin = watch.getPin();
+            if (pin instanceof EditorPin) {
+                EditorPin editorPin = (EditorPin)pin;                
+                if (editorFO != null &&  editorFO.equals(editorPin.getFile())) {
+                    //the editor is opened for the pinned watch
+                    return true;
+                }
+            }
+        }
+        return false;
+    }    
     
     public void postDeleteAllWatches() {
 
