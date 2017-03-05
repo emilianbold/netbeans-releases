@@ -147,6 +147,7 @@ public class WatchBag {
 	assert !watches.contains(oldWatch) :
 	       "WB.remove(): watch still there after removal"; // NOI18N
 	// OLD manager().removeWatch(oldWatch);
+        oldWatch.postDelete(false);
 	watchUpdater().treeChanged();      // causes a pull
     }
 }
