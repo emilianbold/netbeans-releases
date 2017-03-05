@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -2796,7 +2798,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
 
-    private static final class ModelChangeListenerTooltipImpl implements ModelListener {
+    private final class ModelChangeListenerTooltipImpl implements ModelListener {
         private AtomicBoolean isInitilaized = new AtomicBoolean(false);
         private JEditorPane editorPane;
         private  Line.Part lp;
@@ -2819,8 +2821,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
                 if (nodeChanged.getChange() != ModelEvent.NodeChanged.DISPLAY_NAME_MASK) {
                     return;//need to update display name only
+                }                
+                if (!(nodeChanged.getNode() instanceof GdbVariable) ){
+                    return;
                 }
-                final Variable variable = ((Variable) nodeChanged.getNode());
+                final GdbVariable variable = ((GdbVariable) nodeChanged.getNode());
                 if (!tts.isEnabled() || !tts.isToolTipVisible()) {
                     return;
                 }
@@ -2842,6 +2847,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                            final String toolTip = variable.getVariableName() + "=" + variable.getAsText();//NOI18N
                            ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
                            ToolTipSupport tts = toolTipUI.show(editorPane);
+                           tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(variable));
                            variable.getUpdater().removeListener(ModelChangeListenerTooltipImpl.this);
                            //variable.getUpdater().setListener(null);
                        }
@@ -2849,7 +2855,34 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                }
             }
         }
-    }    
+    } 
+    
+    private final class ToolTipSupportPropertyChangeListener implements PropertyChangeListener {
+        private final GdbVariable v;
+
+        ToolTipSupportPropertyChangeListener(GdbVariable v) {
+            this.v = v;
+        }
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            System.out.println("ToolTipSupportPropertyChangeListener.propertyChange=" + evt.getPropertyName());
+            System.out.println("ToolTipSupportPropertyChangeListener.propertyChange=" + v.getMIName());
+            if (!ToolTipSupport.PROP_STATUS.equals(evt.getPropertyName())) {
+                
+               return;//we are interested in status only 
+            }
+            System.out.println("ToolTipSupportPropertyChangeListener.status=" + evt.getNewValue());
+            if ((((Integer)evt.getNewValue()) == ToolTipSupport.STATUS_HIDDEN)){
+                System.out.println("miVariableName=" + v.getMIName());
+                DeleteMIVarCommand cmd = new DeleteMIVarCommand(v);
+                cmd.dontReportError();
+                sendCommandInt(cmd);
+                ((ToolTipSupport)evt.getSource()).removePropertyChangeListener(this);
+            }
+        }
+        
+    }
+    
     private static final class ModelChangeListenerImpl implements ModelListener {
         @Override
         public void modelChanged(ModelEvent event) {
@@ -2965,6 +2998,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
                                 final ToolTipSupport tts = toolTipUI.show(ep);
                                 if (tts != null) {
+                                    tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
                                     mcLImpl.registerToolTip(tts, ep, lp);
                                 }
 
@@ -2997,6 +3031,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
                                 final ToolTipSupport tts = toolTipUI.show(ep);
                                 if (tts != null) {
+                                    tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
                                     mcLImpl.registerToolTip(tts, ep, lp);
                                 }
 
@@ -3548,7 +3583,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         gdb.sendCommand(cmd);
     }
 
-    private void updateMIVar() {
+        private void updateMIVar() {
         if (!peculiarity.isLldb()) {
             String cmdString = "-var-update --all-values * "; // NOI18N
             MICommand cmd =
