@@ -239,7 +239,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String stackListLocalsCommand() {
-        return "-stack-list-locals --no-values"; // NOI18N
+        return "-stack-list-variables --no-values"; // NOI18N
     }
 
     public boolean isSupported() {

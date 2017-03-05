@@ -1979,7 +1979,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             System.out.println("tid_no " + currentThreadId); // NOI18N
             System.out.println("frame " + frame.toString()); // NOI18N
         }
-        GdbFrame f = new GdbFrame(this, frame, null, null);
+        GdbFrame f = new GdbFrame(this, frame, null);
 
         //if (index != -1)
         //threads[index] = new GdbThread(this, threadUpdater, tid_no, f);
@@ -2066,7 +2066,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         String id = thrList.getConstValue("id"); //NOI18N
                         String name = thrList.getConstValue("target-id"); //NOI18N
                         MIValue frame = thrList.valueOf(MI_FRAME);// frame entry
-                        GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                        GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                         f.setCurrent(true);     // in order to let Thread make some updates | GDB response contains only current frame
                         String state = thrList.getConstValue("state"); // NOI18N
                         GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, new Frame[]{f}, state);
@@ -2115,13 +2115,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                         result = (MIResult) results.get(i++);
                                         if (result.matches(MI_FRAME)) {
                                             MIValue frame = result.value();
-                                            f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                                            f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                                         }
                                     } else if (result.matches(MI_FRAME)) {
                                         name = "Thread ".concat(id); //NOI18N
 
                                         MIValue frame = result.value();
-                                        f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                                        f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                                         f.setCurrent(true);     // in order to let Thread make some updates | GDB response contains only current frame
                                     }
 
@@ -2239,7 +2239,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 if (item.matches(MI_FRAME)) {
                                     MIValue frame = item.value();
 
-                                    GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame, null, gdbThread);
+                                    GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame, gdbThread);
                                     if (gdbFrame.getNumber().equals(frameNo)) {
                                         gdbFrame.setCurrent(true);
                                     }
@@ -2260,10 +2260,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
                             MICommand cmd = new MiCommandImpl(peculiarity.stackListFramesCommand(id)) {
                                 @Override
-                                protected void onDone(final MIRecord frames) {
-
+                                protected void onDone(final MIRecord framesRecord) {
+                                    //do not ask for arguments here
+                                    //it is too time expensive and too earlier
                                     // "1" means get both arg's name and value
-                                    String args_command = "-stack-list-arguments 1 --thread " + id; // NOI18N
+                                    String stack_list_args_param = 
+                                            DebuggerOption.ARGS_VALUES_IN_STACK.isEnabled(NativeDebuggerManager.get().globalOptions()) ? "1" :"0";
+                                    String args_command = "-stack-list-arguments " + stack_list_args_param + " --thread " + id; // NOI18N
 
                                     MICommand cmd3 = new MiCommandImpl(args_command) {
 
@@ -2282,7 +2285,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                                 }
                                             }
 
-                                            MITList results = frames.results();
+                                            MITList results = framesRecord.results();
                                             MITList stack_list = (MITList) results.valueOf("stack"); // NOI18N
                                             int size = stack_list.size();
 
@@ -2293,12 +2296,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                                 MIResult frame = (MIResult) stack_list.get(vx);
 
                                                 // try to find frame arguments
+                                                //no args here
+                                                //do not ask it ever
                                                 MIResult frameArgs = null;
                                                 if (args_list != null && vx < args_list.size()) {
                                                     frameArgs = (MIResult) args_list.get(vx);
                                                 }
 
-                                                GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame.value(), frameArgs, gdbThread);    // TODO arguments request
+                                                GdbFrame gdbFrame = 
+                                                        new GdbFrame(GdbDebuggerImpl.this, frame.value(), frameArgs, gdbThread);    // TODO arguments request
                                                 if (gdbFrame.getNumber().equals(frameNo)) {
                                                     gdbFrame.setCurrent(true);
                                                 }
@@ -2363,14 +2369,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             System.out.println("registerStackModel " + model); // NOI18N
         }
         stackUpdater.addListener(model);
-        if (model != null) {
-            get_frames = true;
-//            if (state().isProcess && !state().isRunning) {
-//                showStackFrames();
-//            }
-        } else {
-            get_frames = false;
-        }
+        get_frames = model != null;
+        if (get_frames && state().isProcess && !state().isRunning ) {
+            requestStack();
+        }          
+        
     }
 
     @Override
@@ -2468,7 +2471,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void visitCurrentSrc(GdbFrame f, MIRecord srcRecord) {
         MITList  srcTuple = srcRecord.results();
         if (f == null)
-            f = new GdbFrame(this, null, null, null);
+            f = new GdbFrame(this, null, null);
 
         // create a non-visited location because it may be assigned to
         // homeLoc
@@ -2533,7 +2536,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * framerecords: what we got from -stack-list-frames = stack
      * args: what we got from -stack-list-arguments 1 = stack-args
      */
-    private void setStackWithArgs(MIRecord framerecords, MIRecord args) {
+    //mromashova_bz#269898: we will not do this call ever with the 1 (names and values)
+    //it is too expensive to get all arguments for all frames even for one particular thread
+    //and the only need is Debuggin View, but we will show arg names only without values
+    private void setStackWithArgs(MIRecord framerecords
+            , MIRecord args
+    ) {
         MITList argsresults;
         MITList args_list = null;
         String stringframes;
@@ -2585,9 +2593,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * for whole stack
      * framerecords: what we got from -stack-list-frames
      */
-    private void setStack(final MIRecord framerecords) {
+    private void setStack(final MIRecord framerecords) {     
+        //mromashova_bz#269898:
         // "1" means get both arg's name and value
-        String args_command = "-stack-list-arguments 1"; // NOI18N
+        String stack_list_args_param = 
+                get_frames && DebuggerOption.ARGS_VALUES_IN_STACK.isEnabled(NativeDebuggerManager.get().globalOptions()) 
+                ? "1" :"0";
+        
+        String args_command = "-stack-list-arguments " + stack_list_args_param; // NOI18N
 
         MICommand cmd =
             new MiCommandImpl(args_command) {
@@ -3789,21 +3802,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private void setLocals(boolean update_var, MIRecord locals) {
         MITList localsresults = locals.results();
-        MITList locals_list = (MITList) localsresults.valueOf("locals"); // NOI18N
+        MITList locals_list = (MITList) localsresults.valueOf("variables"); // NOI18N
         int size = locals_list.size();
         int local_count = size;
 
         List<GdbLocal> param_list = null;
         int params_count = 0;
 
-        // paramaters
-        GdbFrame cf = getCurrentFrame();
-        if (cf != null) {
-            param_list = cf.getArgsList();
-            if (param_list != null) {
-                params_count = param_list.size();
-            }
-        }
+        //mromashova_bz#269898: we will use "-stack-list-variables --no-values" not "-stack-list-locals --no-values"
+        //and frame will never keep args
+//        // paramaters
+//        GdbFrame cf = getCurrentFrame();
+//        if (cf != null) {
+//            //ask for the args as we will not ask now
+//            param_list = cf.getArgsList();
+//            if (param_list != null) {
+//                params_count = param_list.size();
+//            }
+//        }
 
         local_count += params_count;
         if (Log.Variable.mi_vars) {
@@ -3818,6 +3834,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         for (int vx = 0; vx < size; vx++) {
             MITListItem localItem = locals_list.get(vx);
             if (peculiarity.isLocalsOutputUnusual()) {
+                localItem = ((MITList) localItem).get(0);
+            }
+            if (localItem instanceof MITList) {
                 localItem = ((MITList) localItem).get(0);
             }
             MIResult localvar = (MIResult) localItem;
@@ -3978,12 +3997,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             // For the scenario that stack view is closed and local view
             // is open, we need frame params info from here.
-            if (get_locals && frameValue != null) {
-                // needs to get args info
-                // frameValue include args  info
-                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null, null)};
-            }
-
+            //mromashova_bz#269898: the above is incorrect anymore
+            //when locals are requested we will get arguments (names and values, no need for this)
+//            if (get_locals && frameValue != null) {
+//                // needs to get args info
+//                // frameValue include args  info
+//                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null)};
+//            }
+        
             if (srcResults != null) {
                 boolean visited = false;
                 stack = srcResults.valueOf("stack").asList(); // NOI18N
@@ -4243,6 +4264,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             gdb.sendCommand(cmd);
         }
     }
+    
+    //call this when Call Stack window is opened
+    private void requestStack() {
+        MICommand cmd =
+            new MiCommandImpl(peculiarity.stackListFramesCommand(currentThreadId)) {
+            @Override
+            protected void onDone(MIRecord record) {
+                setStack(record);
+                finish();
+            }
+            @Override
+            protected void onError(MIRecord record) {
+//                if (get_frames) {
+//                    setStack(record);
+//                }
+//should show some message here I think
+                finish();
+            }
+
+           
+        };
+        gdb.sendCommand(cmd);        
+    }    
 
     protected void requestStack(final MIRecord stopRecord) {
         MICommand cmd =
@@ -5750,10 +5794,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             @Override
             protected void onDone(MIRecord record) {
-                GdbFrame currentFrame = getCurrentFrame();
-                if (currentFrame != null) {
-                    currentFrame.varUpdated(var.getFullName(), value);
-                }
+//                GdbFrame currentFrame = getCurrentFrame();
+//                if (currentFrame != null) {
+//                    currentFrame.varUpdated(var.getFullName(), value);
+//                }
                 updateMIVar();
                 finish();
             }
