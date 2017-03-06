@@ -301,11 +301,11 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @CheckForNull
-        String getProperty(@NonNull final String propName) {
+        public String getProperty(@NonNull final String propName) {
             return properties.getProperty(propName);
         }
 
-        void setProperty(
+        public void setProperty(
                 @NonNull final String propName,
                 @NonNull final String propValue) {
             Parameters.notNull("propName", propName);   //NOI18N
@@ -313,14 +313,14 @@ public final class JavaActionProvider implements ActionProvider {
             properties.put(propName, propValue);
         }
 
+        public void addConcealedProperty(@NonNull final String propName) {
+            Parameters.notNull("propName", propName);   //NOI18N
+            concealedProperties.add(propName);
+        }
+
         void removeProperty(
                 @NonNull final String propName) {
             properties.remove(propName);
-        }
-
-        void addConcealedProperty(@NonNull final String propName) {
-            Parameters.notNull("propName", propName);   //NOI18N
-            concealedProperties.add(propName);
         }
 
         void setJavaChecks(final boolean doJavaChecks) {
