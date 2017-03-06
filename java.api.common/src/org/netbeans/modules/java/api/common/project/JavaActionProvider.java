@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -109,6 +110,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 
@@ -465,19 +467,14 @@ public final class JavaActionProvider implements ActionProvider {
                 ActionProviderSupport.showPlatformWarning(context.getProject());
                 return;
             }
-            ActionProviderSupport.invokeTarget(
-                    this::getTargetNames,
-                    this::performCompileOnSave,
-                    context,
-                    actionFlags,
-                    getDisplayName());
+            ActionProviderSupport.invokeTarget(this, context);
         }
 
         @NonNull
         final String getDisplayName() {
             String res = displayName;
             if (res == null) {
-                res = ActionProviderSupport.getCommandDisplayName(command);
+                res = getCommandDisplayName(command);
             }
             return res;
         }
@@ -495,6 +492,71 @@ public final class JavaActionProvider implements ActionProvider {
         final void setCoSInterceptor(@NullAllowed final BiFunction<Context,Map<String,Object>,Boolean> cosInterceptor) {
             this.cosInterceptor = cosInterceptor;
         }
+
+        @NbBundle.Messages({
+        "ACTION_run=Run Project",
+        "ACTION_run.single=Run File",
+        "ACTION_run.single.method=Run File",
+        "ACTION_debug=Debug Project",
+        "ACTION_debug.single=Debug File",
+        "ACTION_debug.single.method=Debug File",
+        "ACTION_debug.stepinto=Debug Project",
+        "ACTION_debug.fix=Apply Code Changes",
+        "ACTION_debug.test.single=Debug Test",
+        "ACTION_profile=Profile Project",
+        "ACTION_profile.single=Profile File",
+        "ACTION_profile.test.single=Profile Test",
+        "ACTION_rebuild=Rebuild Project",
+        "ACTION_build=Build Project",
+        "ACTION_clean=Clean Project",
+        "ACTION_compile.single=Compile File",
+        "ACTION_javadoc=Generate JavaDoc",
+        "ACTION_test=Test Project",
+        "ACTION_test.single=Test File"
+    })
+    private static String getCommandDisplayName(String command) throws MissingResourceException {
+        if (command.equals("run")) {
+            return Bundle.ACTION_run();
+        } else if (command.equals("run.single")) {
+            return Bundle.ACTION_run_single();
+        } else if (command.equals("run.single.method")) {
+            return Bundle.ACTION_run_single_method();
+        } else if (command.equals("debug")) {
+            return Bundle.ACTION_debug();
+        } else if (command.equals("debug.single")) {
+            return Bundle.ACTION_debug_single();
+        } else if (command.equals("debug.single.method")) {
+            return Bundle.ACTION_debug_single_method();
+        } else if (command.equals("debug.stepinto")) {
+            return Bundle.ACTION_debug_stepinto();
+        } else if (command.equals("debug.fix")) {
+            return Bundle.ACTION_debug_fix();
+        } else if (command.equals("debug.test.single")) {
+            return Bundle.ACTION_debug_test_single();
+        } else if (command.equals("profile")) {
+            return Bundle.ACTION_profile();
+        } else if (command.equals("profile.single")) {
+            return Bundle.ACTION_profile_single();
+        } else if (command.equals("profile.test.single")) {
+            return Bundle.ACTION_profile_test_single();
+        } else if (command.equals("rebuild")) {
+            return Bundle.ACTION_rebuild();
+        } else if (command.equals("build")) {
+            return Bundle.ACTION_build();
+        } else if (command.equals("clean")) {
+            return Bundle.ACTION_clean();
+        } else if (command.equals("compile.single")) {
+            return Bundle.ACTION_compile_single();
+        } else if (command.equals("javadoc")) {
+            return Bundle.ACTION_javadoc();
+        } else if (command.equals("test")) {
+            return Bundle.ACTION_test();
+        } else if (command.equals("test.single")) {
+            return Bundle.ACTION_test_single();
+        } else {
+            return command;
+        }
+    }
     }
 
     public static final class Builder {

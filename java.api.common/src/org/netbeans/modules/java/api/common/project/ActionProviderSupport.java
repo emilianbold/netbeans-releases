@@ -212,83 +212,16 @@ final class ActionProviderSupport {
         }
     }
 
-    @NbBundle.Messages({
-        "ACTION_run=Run Project",
-        "ACTION_run.single=Run File",
-        "ACTION_run.single.method=Run File",
-        "ACTION_debug=Debug Project",
-        "ACTION_debug.single=Debug File",
-        "ACTION_debug.single.method=Debug File",
-        "ACTION_debug.stepinto=Debug Project",
-        "ACTION_debug.fix=Apply Code Changes",
-        "ACTION_debug.test.single=Debug Test",
-        "ACTION_profile=Profile Project",
-        "ACTION_profile.single=Profile File",
-        "ACTION_profile.test.single=Profile Test",
-        "ACTION_rebuild=Rebuild Project",
-        "ACTION_build=Build Project",
-        "ACTION_clean=Clean Project",
-        "ACTION_compile.single=Compile File",
-        "ACTION_javadoc=Generate JavaDoc",
-        "ACTION_test=Test Project",
-        "ACTION_test.single=Test File"
-    })
-    static String getCommandDisplayName(String command) throws MissingResourceException {
-        if (command.equals("run")) {
-            return ACTION_run();
-        } else if (command.equals("run.single")) {
-            return ACTION_run_single();
-        } else if (command.equals("run.single.method")) {
-            return ACTION_run_single_method();
-        } else if (command.equals("debug")) {
-            return ACTION_debug();
-        } else if (command.equals("debug.single")) {
-            return ACTION_debug_single();
-        } else if (command.equals("debug.single.method")) {
-            return ACTION_debug_single_method();
-        } else if (command.equals("debug.stepinto")) {
-            return ACTION_debug_stepinto();
-        } else if (command.equals("debug.fix")) {
-            return ACTION_debug_fix();
-        } else if (command.equals("debug.test.single")) {
-            return ACTION_debug_test_single();
-        } else if (command.equals("profile")) {
-            return ACTION_profile();
-        } else if (command.equals("profile.single")) {
-            return ACTION_profile_single();
-        } else if (command.equals("profile.test.single")) {
-            return ACTION_profile_test_single();
-        } else if (command.equals("rebuild")) {
-            return ACTION_rebuild();
-        } else if (command.equals("build")) {
-            return ACTION_build();
-        } else if (command.equals("clean")) {
-            return ACTION_clean();
-        } else if (command.equals("compile.single")) {
-            return ACTION_compile_single();
-        } else if (command.equals("javadoc")) {
-            return ACTION_javadoc();
-        } else if (command.equals("test")) {
-            return ACTION_test();
-        } else if (command.equals("test.single")) {
-            return ACTION_test_single();
-        } else {
-            return command;
-        }
-    }
-
     static void invokeTarget(
-            @NonNull final Function<Context,String[]> targetProvider,
-            @NonNull final BiFunction<Context,String[],Result> cosPerformer,
-            @NonNull final Context ctx,
-            @NonNull final Set<? extends ActionFlag> flags,
-            @NonNull final String actionDisplayName) {
+            @NonNull final JavaActionProvider.ScriptAction scriptAction,
+            @NonNull final Context ctx) {
         final String userPropertiesFile = verifyUserPropertiesFile(ctx);
-        final JavaModelWork action = new JavaModelWork(targetProvider, cosPerformer, ctx, userPropertiesFile);
+        final JavaModelWork action = new JavaModelWork(scriptAction, ctx, userPropertiesFile);
+        final Set<ActionFlag> flags = scriptAction.getActionFlags();
         if (flags.contains(ActionFlag.JAVA_MODEL_SENSITIVE) ||
                 (ctx.getCompileOnSaveOperations().contains(CompileOnSaveOperation.UPDATE) && flags.contains(ActionFlag.SCAN_SENSITIVE))) {
             //Always have to run with java model
-            ScanDialog.runWhenScanFinished(action, actionDisplayName);
+            ScanDialog.runWhenScanFinished(action, scriptAction.getDisplayName());
         } else if (flags.contains(ActionFlag.SCAN_SENSITIVE)) {
             //Run without model if not yet ready
             try {
@@ -1329,8 +1262,7 @@ final class ActionProviderSupport {
     }
 
     private static final class JavaModelWork implements Runnable {
-        private final Function<Context,String[]> targetProvider;
-        private final BiFunction<Context,String[],Result> cosPerformer;
+        private final JavaActionProvider.ScriptAction scriptAction;
         private final Context context;
         private final String userPropertiesFile;
         private final AtomicReference<Thread> caller;
@@ -1347,12 +1279,11 @@ final class ActionProviderSupport {
         boolean doJavaChecks = true;
 
         JavaModelWork(
-                @NonNull final Function<Context,String[]> targetProvider,
-                @NonNull final BiFunction<Context,String[],Result> cosPerformer,
+                @NonNull final JavaActionProvider.ScriptAction scriptAction,
                 @NonNull final Context context,
                 @NullAllowed final String userPropertiesFile) {
-            this.targetProvider = targetProvider;
-            this.cosPerformer = cosPerformer;
+            Parameters.notNull("scriptAction", scriptAction);   //NOI18N
+            this.scriptAction = scriptAction;
             this.context = context;
             this.userPropertiesFile = userPropertiesFile;
             this.caller = new AtomicReference<>(Thread.currentThread());
@@ -1391,12 +1322,12 @@ final class ActionProviderSupport {
                 context.setProperty("user.properties.file", userPropertiesFile);   //NOI18N
             }
             context.setJavaChecks(doJavaChecks);
-            String[] targetNames = targetProvider.apply(context);
+            String[] targetNames = scriptAction.getTargetNames(context);
             if (targetNames == null) {
                 return null;
             }
             if (context.getCompileOnSaveOperations().contains(CompileOnSaveOperation.EXECUTE)) {
-                final Result r = cosPerformer.apply(context, targetNames);
+                final Result r = scriptAction.performCompileOnSave(context, targetNames);
                 if (r == Result.abort()) {
                     return null;
                 } else if (r != Result.follow()) {

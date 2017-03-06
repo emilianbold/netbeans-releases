@@ -263,12 +263,32 @@ public abstract class BaseActionProvider implements ActionProvider {
                 this::getCompileOnSaveOperations,
                 listeners);
         try {
-            ActionProviderSupport.invokeTarget(
-                    getTargetProvider(command),
-                    (c, tn) -> JavaActionProvider.ScriptAction.Result.follow(),
-                    ctx,
-                    getActionFlags(command),
-                    ActionProviderSupport.getCommandDisplayName(command));
+            ActionProviderSupport.invokeTarget(new JavaActionProvider.ScriptAction(
+                    command,
+                    null,
+                    false,
+                    getJavaModelActions().contains(command),
+                    getScanSensitiveActions().contains(command)) {
+
+                @Override
+                public String[] getTargetNames(JavaActionProvider.Context context) {
+                    final Properties p = new Properties();
+                    final String[] result = BaseActionProvider.this.getTargetNames(
+                            ctx.getCommand(),
+                            ctx.getActiveLookup(),
+                            p,
+                            ctx.doJavaChecks());
+                    for (Map.Entry<Object,Object> e : p.entrySet()) {
+                        ctx.setProperty((String)e.getKey(), (String)e.getValue());
+                    }
+                    return result;
+                }
+
+                @Override
+                public boolean isEnabled(JavaActionProvider.Context context) {
+                    return BaseActionProvider.this.isActionEnabled(command, context.getActiveLookup());
+                }
+            }, ctx);
         } finally {
             userPropertiesPolicy = ctx.getUserPropertiesPolicy();
         }
@@ -531,35 +551,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return Collections.unmodifiableSet(ops);
     }
 
-    @NonNull
-    private Set<? extends ActionProviderSupport.ActionFlag> getActionFlags(@NonNull final String forCommand) {
-        final Set<ActionProviderSupport.ActionFlag> flgs = EnumSet.noneOf(ActionProviderSupport.ActionFlag.class);
-        if (getScanSensitiveActions().contains(forCommand)) {
-            flgs.add(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE);
-        }
-        if (getJavaModelActions().contains(forCommand)) {
-            flgs.add(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE);
-        }
-        return flgs;
-    }
-
-    @NonNull
-    private Function<JavaActionProvider.Context,String[]> getTargetProvider(
-            @NonNull final String forCommand) {
-        return (ctx) -> {
-            final Properties p = new Properties();
-            final String[] result = getTargetNames(
-                    ctx.getCommand(),
-                    ctx.getActiveLookup(),
-                    p,
-                    ctx.doJavaChecks());
-            for (Map.Entry<Object,Object> e : p.entrySet()) {
-                ctx.setProperty((String)e.getKey(), (String)e.getValue());
-            }
-            return result;
-        };
-    }
-
     /**
      * Shows a selector of project main class.
      * @return true if main class was selected, false when project execution was canceled.
@@ -818,6 +809,11 @@ public abstract class BaseActionProvider implements ActionProvider {
             } else {
                 return delegate.getTargetNames(enclosingContext);
             }
+        }
+
+        @Override
+        public Result performCompileOnSave(JavaActionProvider.Context context, String[] targetNames) {
+            return delegate.performCompileOnSave(context, targetNames);
         }
 
         @Override
