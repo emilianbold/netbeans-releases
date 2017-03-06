@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -464,6 +465,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             COMMAND_TEST_SINGLE, COMMAND_DEBUG_TEST_SINGLE, COMMAND_PROFILE_TEST_SINGLE,
             SingleMethod.COMMAND_RUN_SINGLE_METHOD, SingleMethod.COMMAND_DEBUG_SINGLE_METHOD
         };
+        final boolean brokenAPI = overridesGetTargetNames();
         for (String cmd : commands) {
             if (supported.contains(cmd)) {
                 String[] targets = cmds.get(cmd);
@@ -508,11 +510,27 @@ public abstract class BaseActionProvider implements ActionProvider {
                     if (disabledByServerExecuion.contains(cmd)) {
                         action = new ServerExecutionAwareAction(action);
                     }
+                    if (brokenAPI) {
+                        action = new BrokenAPIActionDecorator(action);
+                    }
                     builder.addAction(action);
                 }
             }
         }
         return builder.build();
+    }
+
+    private boolean overridesGetTargetNames() {
+        boolean vote = false;
+        try {
+            Method m = this.getClass().getMethod("getTargetNames", String.class, Lookup.class, Properties.class); //NOI18N
+            vote |= m.getDeclaringClass() != BaseActionProvider.class;
+            m = this.getClass().getDeclaredMethod("getTargetNames", String.class, Lookup.class, Properties.class, Boolean.TYPE);    //NOI18N
+            vote |= m.getDeclaringClass() != BaseActionProvider.class;
+        } catch (NoSuchMethodException e) {
+            vote = true;
+        }
+        return vote;
     }
 
     @NonNull
@@ -910,6 +928,51 @@ public abstract class BaseActionProvider implements ActionProvider {
                 return delegate.performCompileOnSave(context, targetNames);
             } else {
                 return JavaActionProvider.ScriptAction.Result.follow();
+            }
+        }
+
+        @Override
+        public boolean isEnabled(JavaActionProvider.Context context) {
+            return delegate.isEnabled(context);
+        }
+    }
+
+    private final class BrokenAPIActionDecorator extends JavaActionProvider.ScriptAction {
+        private final JavaActionProvider.ScriptAction delegate;
+        private final ThreadLocal<JavaActionProvider.Context> frame;
+
+        BrokenAPIActionDecorator(@NonNull final JavaActionProvider.ScriptAction delegate) {
+            super(
+                    delegate.getCommand(),
+                    null,
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.PLATFORM_SENSITIVE),
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE),
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE));
+            this.delegate = delegate;
+            this.frame = new ThreadLocal<>();
+        }
+
+        @Override
+        public String[] getTargetNames(JavaActionProvider.Context context) {
+            final JavaActionProvider.Context enclosingContext = frame.get();
+            if (enclosingContext == null) {
+                frame.set(context);
+                try {
+                    final Properties p = new Properties();
+                    final String[] res = BaseActionProvider.this.getTargetNames(
+                            context.getCommand(),
+                            context.getActiveLookup(),
+                            p,
+                            context.doJavaChecks());
+                    p.entrySet().forEach((e) -> context.setProperty(
+                            (String) e.getKey(),
+                            (String) e.getValue()));
+                    return res;
+                } finally {
+                    frame.remove();
+                }
+            } else {
+                return delegate.getTargetNames(enclosingContext);
             }
         }
 
