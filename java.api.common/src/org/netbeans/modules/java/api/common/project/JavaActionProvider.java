@@ -76,8 +76,10 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -117,6 +119,8 @@ import org.openide.util.Parameters;
 public final class JavaActionProvider implements ActionProvider {
     private static final Logger LOG = Logger.getLogger(JavaActionProvider.class.getName());
     private static final FileObject[] EMPTY = new FileObject[0];
+
+    /*test*/ static volatile String unitTestingSupport_fixClasses;
 
     private final Project prj;
     private final UpdateHelper updateHelper;
@@ -622,6 +626,8 @@ public final class JavaActionProvider implements ActionProvider {
                 case SingleMethod.COMMAND_RUN_SINGLE_METHOD:
                 case SingleMethod.COMMAND_DEBUG_SINGLE_METHOD:
                     return createRunSingleMethodAction(command, javaModelSensitive, scanSensitive, testRoots, targets);
+                case JavaProjectConstants.COMMAND_DEBUG_FIX:
+                    return createDebugFixAction(command, javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -1138,7 +1144,7 @@ public final class JavaActionProvider implements ActionProvider {
     }
 
     @NonNull
-    private static final ScriptAction createRunSingleMethodAction(
+    private static ScriptAction createRunSingleMethodAction(
             @NonNull final String command,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
@@ -1235,6 +1241,106 @@ public final class JavaActionProvider implements ActionProvider {
                     return null;
                 }
                 return specs.toArray(new SingleMethod[specs.size()]);
+            }
+        };
+    }
+
+    private static ScriptAction createDebugFixAction(
+            @NonNull final String command,
+            final boolean javaModelSensitive,
+            final boolean scanSensitive,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testRoots,
+            @NonNull final Supplier<? extends String[]> targets) {
+        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, targets) {
+
+            @Override
+            public boolean isEnabled(Context context) {
+                FileObject fos[] = ActionProviderSupport.findSources(sourceRoots.getRoots(), context.getActiveLookup());
+                if (fos != null && fos.length == 1) {
+                    return true;
+                }
+                fos = ActionProviderSupport.findTestSources(sourceRoots.getRoots(), testRoots.getRoots(), context.getActiveLookup(), false);
+                if (fos != null && fos.length == 1) {
+                    return true;
+                }
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Source Roots: {0} Test Roots: {1} Lookup Content: {2}",    //NOI18N
+                            new Object[]{
+                                asPath(sourceRoots.getRoots()),
+                                asPath(testRoots.getRoots()),
+                                asPath(context.getActiveLookup())
+                            });
+                }
+                return false;
+            }
+
+            @Override
+            public String[] getTargetNames(Context context) {
+                String[] res = super.getTargetNames(context);
+                if (res != null) {
+                    FileObject[] files = ActionProviderSupport.findSources(sourceRoots.getRoots(), context.getActiveLookup());
+                    String path;
+                    String classes = "";    //NOI18N
+                    if (files != null) {
+                        path = FileUtil.getRelativePath(ActionProviderSupport.getRoot(sourceRoots.getRoots(),files[0]), files[0]);
+                        res = new String[] {"debug-fix"}; // NOI18N
+                        classes = getTopLevelClasses(files[0]);
+                    } else {
+                        files = ActionProviderSupport.findTestSources(sourceRoots.getRoots(), testRoots.getRoots(), context.getActiveLookup(), false);
+                        assert files != null : "findTestSources () can't be null: " + Arrays.toString(testRoots.getRoots());   //NOI18N
+                        path = FileUtil.getRelativePath(ActionProviderSupport.getRoot(testRoots.getRoots(),files[0]), files[0]);
+                        res = new String[] {"debug-fix-test"}; // NOI18N
+                    }
+                    // Convert foo/FooTest.java -> foo/FooTest
+                    if (path.endsWith(".java")) { // NOI18N
+                        path = path.substring(0, path.length() - 5);
+                    }
+                    context.setProperty("fix.includes", path); // NOI18N
+                    context.setProperty("fix.classes", classes); // NOI18N
+                }
+                return res;
+            }
+
+            private String getTopLevelClasses (final FileObject file) {
+                assert file != null;
+                final String utfc = JavaActionProvider.unitTestingSupport_fixClasses;
+                if (utfc != null) {
+                    return utfc;
+                }
+                final String[] classes = new String[] {""}; //NOI18N
+                JavaSource js = JavaSource.forFileObject(file);
+                if (js != null) {
+                    try {
+                        js.runUserActionTask((ci) -> {
+                            if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
+                                LOG.log(
+                                        Level.WARNING,
+                                        "Unable to resolve {0} to phase {1}, current phase = {2}\nDiagnostics = {3}\nFree memory = {4}",    //NOI18N
+                                        new Object[]{
+                                            ci.getFileObject(),
+                                            JavaSource.Phase.RESOLVED,
+                                            ci.getPhase(),
+                                            ci.getDiagnostics(),
+                                            Runtime.getRuntime().freeMemory()
+                                        });
+                                return;
+                            }
+                            final List<? extends TypeElement> types = ci.getTopLevelElements();
+                            if (types.size() > 0) {
+                                for (TypeElement type : types) {
+                                    if (classes[0].length() > 0) {
+                                        classes[0] = classes[0] + " ";            // NOI18N
+                                    }
+                                    classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
+                                }
+                            }
+                        }, true);
+                    } catch (java.io.IOException ioex) {
+                        Exceptions.printStackTrace(ioex);
+                    }
+                }
+                return classes[0];
             }
         };
     }

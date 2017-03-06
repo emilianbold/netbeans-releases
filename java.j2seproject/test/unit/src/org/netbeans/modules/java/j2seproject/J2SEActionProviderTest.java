@@ -72,6 +72,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.java.api.common.project.JavaActionProviderTestSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -303,11 +304,14 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes"));
 
         // test COMMAND_DEBUG_FIX
-        actionProvider.unitTestingSupport_fixClasses = "foo/Bar";
-        p = new Properties();
-        context = Lookups.fixed(someSource1);        
-        targets = actionProvider.getTargetNames(JavaProjectConstants.COMMAND_DEBUG_FIX, context, p);
-        actionProvider.unitTestingSupport_fixClasses = null;
+        JavaActionProviderTestSupport.setUnitTesFixClasses("foo/Bar");
+        try {
+            p = new Properties();
+            context = Lookups.fixed(someSource1);        
+            targets = actionProvider.getTargetNames(JavaProjectConstants.COMMAND_DEBUG_FIX, context, p);
+        } finally {
+            JavaActionProviderTestSupport.setUnitTesFixClasses(null);
+        }
         assertNotNull("Must found some targets for COMMAND_DEBUG_FIX", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_FIX", 1, targets.length);
         assertEquals("Unexpected target name", "debug-fix", targets[0]);

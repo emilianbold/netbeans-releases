@@ -66,21 +66,15 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.applet.AppletSupport;
@@ -98,7 +92,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.lookup.Lookups;
 
 /** Action provider which was originally written for J2SE project and later
  * refactored here so that other EE project types requiring handling of Java
@@ -123,18 +116,9 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     // Ant project helper of the project
     private UpdateHelper updateHelper;
-    
     //Property evaluator
     private final PropertyEvaluator evaluator;
-
-    private Sources src;
-
-    // Used only from unit tests to suppress detection of top level classes. If value
-    // is different from null it will be returned instead.
-    public String unitTestingSupport_fixClasses;
-    
     private volatile String buildXMLName;
-
     private SourceRoots projectSourceRoots;
     private SourceRoots projectTestRoots;
 
@@ -337,44 +321,24 @@ public abstract class BaseActionProvider implements ActionProvider {
                     return targetNames;
                 })
                 .orElse(null);
-        }
-        if (Arrays.asList(getPlatformSensitiveActions()).contains(command)) {
-            if (getProjectPlatform() == null) {
-                ActionProviderSupport.showPlatformWarning(project);
-                return null;
-            }
-        }
-        LOG.log(Level.FINE, "COMMAND: {0}", command);       //NOI18N
-        String[] targetNames = new String[0];
-        Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
-        if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
-            FileObject[] files = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), context);
-            String path;
-            String classes = "";    //NOI18N
-            if (files != null) {
-                path = FileUtil.getRelativePath(ActionProviderSupport.getRoot(projectSourceRoots.getRoots(),files[0]), files[0]);
-                targetNames = new String[] {"debug-fix"}; // NOI18N
-                classes = getTopLevelClasses(files[0]);
-            } else {
-                files = ActionProviderSupport.findTestSources(projectSourceRoots.getRoots(), projectTestRoots.getRoots(), context, false);
-                assert files != null : "findTestSources () can't be null: " + Arrays.toString(projectTestRoots.getRoots());   //NOI18N
-                path = FileUtil.getRelativePath(ActionProviderSupport.getRoot(projectTestRoots.getRoots(),files[0]), files[0]);
-                targetNames = new String[] {"debug-fix-test"}; // NOI18N
-            }
-            // Convert foo/FooTest.java -> foo/FooTest
-            if (path.endsWith(".java")) { // NOI18N
-                path = path.substring(0, path.length() - 5);
-            }
-            p.setProperty("fix.includes", path); // NOI18N
-            p.setProperty("fix.classes", classes); // NOI18N
         } else {
+            //Custom unknown command
+            if (Arrays.asList(getPlatformSensitiveActions()).contains(command)) {
+                if (getProjectPlatform() == null) {
+                    ActionProviderSupport.showPlatformWarning(project);
+                    return null;
+                }
+            }
+            LOG.log(Level.FINE, "COMMAND: {0}", command);       //NOI18N
+            String[] targetNames = new String[0];
+            Map<String,String[]> targetsFromConfig = ActionProviderSupport.loadTargetsFromConfig(project, evaluator);
             String[] targets = targetsFromConfig.get(command);
             targetNames = (targets != null) ? targets : getCommands().get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
+            return targetNames;
         }
-        return targetNames;
     }
 
     /**
@@ -455,7 +419,8 @@ public abstract class BaseActionProvider implements ActionProvider {
         final Set<String> scanSensitive = getScanSensitiveActions();
         final Set<String> modelSensitive = getJavaModelActions();
         final CustomRunner cr = new CustomRunner();
-        final Set<String> disabledByServerExecuion = new HashSet<>(Arrays.asList(COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO));
+        final Set<String> disabledByServerExecuion = new HashSet<>(Arrays.asList(
+                COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO));
         final String[] commands = {
             COMMAND_CLEAN, COMMAND_BUILD, COMMAND_REBUILD,
             COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO,
@@ -463,7 +428,8 @@ public abstract class BaseActionProvider implements ActionProvider {
             COMMAND_COMPILE_SINGLE,
             COMMAND_RUN_SINGLE, COMMAND_DEBUG_SINGLE, COMMAND_PROFILE_SINGLE,
             COMMAND_TEST_SINGLE, COMMAND_DEBUG_TEST_SINGLE, COMMAND_PROFILE_TEST_SINGLE,
-            SingleMethod.COMMAND_RUN_SINGLE_METHOD, SingleMethod.COMMAND_DEBUG_SINGLE_METHOD
+            SingleMethod.COMMAND_RUN_SINGLE_METHOD, SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
+            JavaProjectConstants.COMMAND_DEBUG_FIX
         };
         final boolean brokenAPI = overridesGetTargetNames();
         for (String cmd : commands) {
@@ -641,106 +607,12 @@ public abstract class BaseActionProvider implements ActionProvider {
         if (isSupportedByDelegate(command)) {
             return getDelegate().isActionEnabled(command, context);
         }
-        if (   Arrays.asList(getActionsDisabledForQuickRun()).contains(command)
+        if (Arrays.asList(getActionsDisabledForQuickRun()).contains(command)
             && isCompileOnSaveUpdate()
             && !ActionProviderSupport.allowAntBuild(evaluator, updateHelper)) {
             return false;
         }
-        if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
-            FileObject fos[] = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), context);
-            if (fos != null && fos.length == 1) {
-                return true;
-            }
-            fos = ActionProviderSupport.findTestSources(projectSourceRoots.getRoots(), projectTestRoots.getRoots(), context, false);
-            if (fos != null && fos.length == 1) {
-                return true;
-            }
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "Source Roots: {0} Test Roots: {1} Lookup Content: {2}",    //NOI18N
-                        new Object[]{
-                            asPaths(projectSourceRoots.getRoots()),
-                            asPaths(projectTestRoots.getRoots()),
-                            asPaths(context)
-                        });
-            }
-            return false;
-        }
         return true;
-    }
-
-
-
-    // Private methods -----------------------------------------------------
-
-    /**
-     * Lists all top level classes in a String, classes are separated by space (" ")
-     * Used by debugger fix and continue (list of files to fix)
-     * @param file for which the top level classes should be found
-     * @return list of top levels
-     */
-    private String getTopLevelClasses (final FileObject file) {
-        assert file != null;
-        if (unitTestingSupport_fixClasses != null) {
-            return unitTestingSupport_fixClasses;
-        }
-        final String[] classes = new String[] {""}; //NOI18N
-        JavaSource js = JavaSource.forFileObject(file);
-        if (js != null) {
-            try {
-                js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-                    @Override
-                    public void run(CompilationController ci) throws Exception {
-                        if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
-                            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                    "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                    "\nDiagnostics = "+ci.getDiagnostics()+
-                                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
-                            return;
-                        }
-                        List<? extends TypeElement> types = ci.getTopLevelElements();
-                        if (types.size() > 0) {
-                            for (TypeElement type : types) {
-                                if (classes[0].length() > 0) {
-                                    classes[0] = classes[0] + " ";            // NOI18N
-                                }
-                                classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
-                            }
-                        }
-                    }
-                }, true);
-            } catch (java.io.IOException ioex) {
-                Exceptions.printStackTrace(ioex);
-            }
-        }
-        return classes[0];
-    }
-    /**
-     * Finds single method specification objects corresponding to JUnit test
-     * methods in unit test roots.
-     */
-    private List<String> runJvmargsIde(String command) {
-        StartupExtender.StartMode mode;
-        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
-            mode = StartupExtender.StartMode.NORMAL;
-        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            mode = StartupExtender.StartMode.DEBUG;
-        } else if (command.equals(COMMAND_PROFILE) || command.equals(COMMAND_PROFILE_SINGLE)) {
-            mode = StartupExtender.StartMode.PROFILE;
-        } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
-            mode = StartupExtender.StartMode.TEST_NORMAL;
-        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
-            mode = StartupExtender.StartMode.TEST_DEBUG;
-        } else if (command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
-            mode = StartupExtender.StartMode.TEST_PROFILE;
-        } else {
-            return Collections.emptyList();
-        }
-        List<String> args = new ArrayList<String>();
-        JavaPlatform p = getProjectPlatform();
-        for (StartupExtender group : StartupExtender.getExtenders(Lookups.fixed(project, p != null ? p : JavaPlatformManager.getDefault().getDefaultPlatform()), mode)) {
-            args.addAll(group.getArguments());
-        }
-        return args;
     }
 
     /**

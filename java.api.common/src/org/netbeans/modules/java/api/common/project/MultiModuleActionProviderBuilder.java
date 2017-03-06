@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -97,6 +98,7 @@ public final class MultiModuleActionProviderBuilder {
         builder.addAction(builder.createScriptAction(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, false, false, "profile-test"));   //NOI18N
         builder.addAction(builder.createScriptAction(SingleMethod.COMMAND_RUN_SINGLE_METHOD, false, true, "test-single-method"));   //NOI18N
         builder.addAction(builder.createScriptAction(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD, false, true, "debug-single-method"));   //NOI18N
+        builder.addAction(builder.createScriptAction(JavaProjectConstants.COMMAND_DEBUG_FIX, false, true, "debug-fix"));   //NOI18N
         return this;
     }
 
