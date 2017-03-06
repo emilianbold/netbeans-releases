@@ -539,6 +539,16 @@ public final class JavaActionProvider implements ActionProvider {
             this.mainClassServices = new Object[] {pmcp, mcc};
         }
 
+        public static interface CustomFileExecutor {
+            @CheckForNull
+            String[] getTargetNames(@NonNull final FileObject file, @NonNull Context context);
+
+            @NonNull
+            default ScriptAction.Result performCompileOnSave(@NonNull final Context context, @NonNull final String[] targetNames) {
+                return ScriptAction.Result.follow();
+            }
+        }
+
         @NonNull
         public Builder addAction(@NonNull final Action action) {
             Parameters.notNull("action", action);   //NOI18N
@@ -593,7 +603,7 @@ public final class JavaActionProvider implements ActionProvider {
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
                 @NonNull final Supplier<? extends String[]> targets,
-                @NullAllowed final BiFunction<FileObject, Context, String[]> customFileTarget) {
+                @NullAllowed final CustomFileExecutor customFileExecutor) {
             Parameters.notNull("command", command);         //NOI18N
             Parameters.notNull("targets", targets);         //NOI18N
             switch (command) {
@@ -617,7 +627,7 @@ public final class JavaActionProvider implements ActionProvider {
                 case ActionProvider.COMMAND_PROFILE_SINGLE:
                     return createRunSingleAction(
                             command, javaModelSensitive,scanSensitive,
-                            sourceRoots, testRoots, targets, customFileTarget);
+                            sourceRoots, testRoots, targets, customFileExecutor);
                 case ActionProvider.COMMAND_TEST_SINGLE:
                     return createTestSingleAction(javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
                 case ActionProvider.COMMAND_DEBUG_TEST_SINGLE:
@@ -904,8 +914,9 @@ public final class JavaActionProvider implements ActionProvider {
             final SourceRoots sr,
             final SourceRoots tr,
             @NonNull final Supplier<? extends String[]> targets,
-            @NullAllowed final BiFunction<FileObject,Context,String[]> customFileExecutor) {
+            @NullAllowed final Builder.CustomFileExecutor customFileExecutor) {
         return new BaseRunSingleAction(command, true, javaModelSensitive, scanSensitive, sr, tr, targets) {
+            private static final String PROP_CUSTOM_RUNNER = "JavaActionProvider.invokeByCustomExecutor";   //NOI18N
 
             @Override
             public boolean isEnabled(Context context) {
@@ -919,6 +930,17 @@ public final class JavaActionProvider implements ActionProvider {
                 }
                 logNoFiles(getSourceRoots(), getTestRoots(), context);
                 return false;
+            }
+
+            @Override
+            public ScriptAction.Result performCompileOnSave(Context context, String[] targetNames) {
+                final boolean cr = context.getProperty(PROP_CUSTOM_RUNNER) != null;
+                if (cr) {
+                    context.removeProperty(PROP_CUSTOM_RUNNER);
+                    return customFileExecutor.performCompileOnSave(context, targetNames);
+                } else {
+                    return super.performCompileOnSave(context, targetNames);
+                }
             }
 
             @Override
@@ -968,8 +990,9 @@ public final class JavaActionProvider implements ActionProvider {
                         if (!hasMainClassFromTest && mainClasses.isEmpty()) {
                             final String[] customTargets = customFileExecutor == null ?
                                     null :
-                                    customFileExecutor.apply(file, context);
+                                    customFileExecutor.getTargetNames(file, context);
                             if (customTargets != null) {
+                                context.setProperty(PROP_CUSTOM_RUNNER, Boolean.TRUE.toString());
                                 res = customTargets;
                             } else {
                                 if (isTest) {

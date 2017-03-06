@@ -62,7 +62,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -250,7 +249,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             getDelegate().invokeAction(command, context);
             return;
         }
-
         final JavaActionProvider.Context ctx = new JavaActionProvider.Context(
                 project,
                 updateHelper,
@@ -267,7 +265,7 @@ public abstract class BaseActionProvider implements ActionProvider {
         try {
             ActionProviderSupport.invokeTarget(
                     getTargetProvider(command),
-                    getCoSProvider(command),
+                    (c, tn) -> JavaActionProvider.ScriptAction.Result.follow(),
                     ctx,
                     getActionFlags(command),
                     ActionProviderSupport.getCommandDisplayName(command));
@@ -562,32 +560,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         };
     }
 
-    @NonNull
-    private BiFunction<JavaActionProvider.Context,String[],JavaActionProvider.ScriptAction.Result> getCoSProvider(
-            @NonNull final String forCommand) {
-        return (ctx, targetNames) -> {
-            String command = ctx.getCommand();
-            final Map<String, Object> execProperties = ActionProviderSupport.createBaseCoSProperties(ctx);
-            if (targetNames.length == 1 && (JavaRunner.QUICK_RUN_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_DEBUG_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_PROFILE_APPLET.equals(targetNames[0]))) {
-                try {
-                    final FileObject[] selectedFiles = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), ctx.getActiveLookup());
-                    if (selectedFiles != null) {
-                        FileObject file = selectedFiles[0];
-                        String url = ctx.getProperty("applet.url");
-                        execProperties.put("applet.url", url);
-                        execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                        ActionProviderSupport.prepareSystemProperties(ctx, execProperties, false);
-                        return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(targetNames[0], execProperties));
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                return JavaActionProvider.ScriptAction.Result.abort();
-            }
-            return JavaActionProvider.ScriptAction.Result.follow();
-        };
-    }
-
     /**
      * Shows a selector of project main class.
      * @return true if main class was selected, false when project execution was canceled.
@@ -854,9 +826,9 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
     }
 
-    private class CustomRunner implements BiFunction<FileObject, JavaActionProvider.Context, String[]> {
+    private class CustomRunner implements JavaActionProvider.Builder.CustomFileExecutor {
         @CheckForNull
-        public String[] apply(
+        public String[] getTargetNames(
                 @NonNull final FileObject fileToExecute,
                 @NonNull final JavaActionProvider.Context context) {
             final boolean isTest = ActionProviderSupport.findTestSources(
@@ -881,6 +853,28 @@ public abstract class BaseActionProvider implements ActionProvider {
                 }
             }
             return null;
+        }
+
+        @Override
+        public JavaActionProvider.ScriptAction.Result performCompileOnSave(JavaActionProvider.Context context, String[] targetNames) {
+            if (targetNames.length == 1 && (JavaRunner.QUICK_RUN_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_DEBUG_APPLET.equals(targetNames[0]) || JavaRunner.QUICK_PROFILE_APPLET.equals(targetNames[0]))) {
+                try {
+                    final Map<String, Object> execProperties = ActionProviderSupport.createBaseCoSProperties(context);
+                    final FileObject[] selectedFiles = ActionProviderSupport.findSources(projectSourceRoots.getRoots(), context.getActiveLookup());
+                    if (selectedFiles != null) {
+                        FileObject file = selectedFiles[0];
+                        String url = context.getProperty("applet.url");
+                        execProperties.put("applet.url", url);
+                        execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
+                        ActionProviderSupport.prepareSystemProperties(context, execProperties, false);
+                        return JavaActionProvider.ScriptAction.Result.success(JavaRunner.execute(targetNames[0], execProperties));
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return JavaActionProvider.ScriptAction.Result.abort();
+                }
+            }
+            return JavaActionProvider.ScriptAction.Result.follow();
         }
 
         private String[] getTargetsForApplet(

@@ -357,6 +357,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_RUN_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_RUN_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "run-applet", targets[0]);
+        p.remove("JavaActionProvider.invokeByCustomExecutor");  //NOI18N    - internal property
         assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/Main.java", p.getProperty("javac.includes"));
         FileObject appletHtml = build.getFileObject("Main", "html");
@@ -409,6 +410,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_DEBUG_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "debug-applet", targets[0]);
+        p.remove("JavaActionProvider.invokeByCustomExecutor");  //NOI18N    - internal property
         assertEquals("There must be one target parameter", 3, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/Main.java", p.getProperty("javac.includes"));
         appletHtml = build.getFileObject("Main", "html");
@@ -461,6 +463,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_PROFILE_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_PROFILE_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "profile-applet", targets[0]);
+        p.remove("JavaActionProvider.invokeByCustomExecutor");  //NOI18N    - internal property
         assertEquals("There must be one target parameter", 3, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/Main.java", p.getProperty("javac.includes"));
         appletHtml = build.getFileObject("Main", "html");
