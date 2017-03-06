@@ -78,7 +78,7 @@ public abstract class JavaSourceUtilImplAccessor {
         return impl;
     }
 
-    public abstract long createTaggedCompilationController (JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException;
+    public abstract long createTaggedCompilationController (JavaSourceUtilImpl spi, FileObject fo, int position, long currentTag, Object[] out) throws IOException;
 
     @NonNull
     public abstract Map<String,byte[]> generate(

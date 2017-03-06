@@ -53,7 +53,9 @@ import org.netbeans.lib.profiler.heap.JavaClass;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import java.util.regex.Pattern;
@@ -173,6 +175,45 @@ public class HeapImpl implements Heap {
         return null;
     }
 
+    @Override
+    public Iterator getAllInstancesIterator() {
+        List classes = getAllClasses();
+        
+        if (classes != null && !classes.isEmpty()) {
+            return new InstancesIterator(classes);
+        }
+        return Collections.emptyIterator();
+    }
+
+    private static class InstancesIterator implements Iterator {
+
+        private Iterator clsIt;
+        private Iterator instIt;
+        
+        private InstancesIterator(List classes) {
+            clsIt = classes.iterator();
+            instIt = ((JavaClass)clsIt.next()).getInstances().iterator();
+        }
+        
+        @Override
+        public boolean hasNext() {
+            if (instIt.hasNext()) {
+                return true;
+            }
+            if (clsIt.hasNext()) {
+                instIt = ((JavaClass)clsIt.next()).getInstances().iterator();
+                return hasNext();
+            }
+            return false;
+        }
+
+        @Override
+        public Object next() {
+            if (hasNext()) return instIt.next();
+            throw new NoSuchElementException();
+        }     
+    }
+    
     private static final class DebuggerHeapSummary implements HeapSummary {
         
         private JPDADebugger debugger;

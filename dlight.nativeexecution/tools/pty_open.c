@@ -61,6 +61,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <errno.h>
+#include <string.h>
 
 static int ptm_open(void) {
     int masterfd;

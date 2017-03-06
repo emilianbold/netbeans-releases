@@ -377,6 +377,23 @@ Hg ID:    ${hg.id}
           </fileset>
       </delete>
   </target>
+  <target name="clean-jshell" unless="keep.javashell">
+    <!--
+    <delete dir="../libs.jshell/build" verbose="true"/>
+    -->
+    <delete verbose="true">
+	<fileset dir="${netbeans.dest.dir}">
+	    <include name="*/config/Modules/org-netbeans-libs-jshell.xml"/>
+	<!--
+	    <include name="*/modules/org-netbeans-libs-jshell.jar"/>
+	-->
+	    <include name="*/modules/ext/nb-jshell*.jar"/>
+	<!--
+	-->
+	    <include name="*/update_tracking/org-netbeans-libs-jshell.xml"/>
+	</fileset>
+    </delete>
+  </target>
   
   <target name="build" depends="build-nozip"
           description="Create a complete build including a ZIP distribution (but do not try it).">
@@ -1025,6 +1042,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
+      <arg file="/space/java/9"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>

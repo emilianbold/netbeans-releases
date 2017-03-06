@@ -93,9 +93,30 @@ public class JavaSourceUtil {
     }
 
 
+    /**
+     * Creates a handle for the compilation controller, or return an
+     * existing one if still valid.
+     * <p/>
+     * This form attempts to locate controller that governs the specified
+     * position in the source. If the position was not handled by java 
+     * compilation, returns {@code null}. Use {@code -1} as position value
+     * to locate <b>any</b> compilation controller processing the file.
+     * <p/>
+     * Use this form to locate suitable Controller in a file with several
+     * possibly unrelated embeddings, or when working in a specific context, i.e.
+     * at the editor's caret position.
+     * 
+     * @param position position to locate the correct embedding.
+     * @param file the source file
+     * @param handle existing handle, possibly {@code null}
+     * @return handle to the compilation controller, or {@code null}
+     * @throws IOException on error
+     * @since 1.47
+     */
     @NonNull
     public static Handle createControllerHandle (
             @NonNull final FileObject file,
+            final int position,
             @NullAllowed final Handle handle) throws IOException {
         Parameters.notNull("file", file);   //NOI18N
         final JavaSourceUtilImpl impl = getSPI();
@@ -104,13 +125,31 @@ public class JavaSourceUtil {
         final Object[] param = new Object[] {
           handle == null ? null : handle.compilationController
         };
-        final long newId = JavaSourceUtilImplAccessor.getInstance().createTaggedCompilationController(impl, file, id, param);
+        final long newId = JavaSourceUtilImplAccessor.getInstance().createTaggedCompilationController(impl, file, position, id, param);
         if (newId == id) {
             return handle;
         }
         else {
             return new Handle(param[0], newId);
         }
+    }
+
+    /**
+     * Creates a handle for the compilation controller, or return an
+     * existing one if still valid. If the source file is not a Java
+     * MIME type, locates the first java embedding in the file
+     * and returns its controller.
+     * 
+     * @param file the source file
+     * @param handle existing handle, possibly {@code null}
+     * @return handle to the compilation controller, or {@code null}
+     * @throws IOException on error
+     */
+    @NonNull
+    public static Handle createControllerHandle (
+            @NonNull final FileObject file,
+            @NullAllowed final Handle handle) throws IOException {
+        return createControllerHandle(file, -1, handle);
     }
     
     /**

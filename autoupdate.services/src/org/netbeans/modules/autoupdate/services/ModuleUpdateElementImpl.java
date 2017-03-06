@@ -194,9 +194,9 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
             category = getRawCategory();
             if (isAutoload () || isFixed ()) {
                 category = UpdateUnitFactory.LIBRARIES_CATEGORY;
-            } else if (isEager ()) {
+            } else if (category.isEmpty() && isEager ()) {
                 category = UpdateUnitFactory.BRIDGES_CATEGORY;
-            } else if (category == null || category.length () == 0) {
+            } else if (category.isEmpty()) {
                 category = UpdateUnitFactory.UNSORTED_CATEGORY;
             }
         }

@@ -60,6 +60,8 @@ import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -80,6 +82,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -88,6 +91,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import javax.tools.JavaFileManager;
+import javax.tools.StandardJavaFileManager;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
@@ -726,31 +731,102 @@ public class ShellSession  {
         }
         b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
         ClasspathInfo cpI = getClasspathInfo();
-        System.err.println("Starting jshell with ClasspathInfo:");
-        for (PathKind kind : PathKind.values()) {
-            if (kind == PathKind.OUTPUT) {
-                continue;
+        if (LOG.isLoggable(Level.FINEST)) {
+            StringBuilder sb = new StringBuilder("Starting jshell with ClasspathInfo:");
+            for (PathKind kind : PathKind.values()) {
+                if (kind == PathKind.OUTPUT) {
+                    continue;
+                }
+                sb.append(kind + ": ");
+                ClassPath cp;
+                try {
+                    cp = cpI.getClassPath(kind);
+                } catch (IllegalArgumentException ex) {
+                    sb.append("<not supported>\n");
+                    continue;
+                }
+                if (cp == null) {
+                    sb.append("<null>\n");
+                    continue;
+                }
+                sb.append("\n");
+                for (ClassPath.Entry e : cp.entries()) {
+                    sb.append("\t" + e.getURL() + "\n");
+                }
+                sb.append("---------------\n");
+                LOG.log(Level.FINEST, sb.toString());
             }
-            System.err.print(kind + ": ");
-            ClassPath cp;
-            try {
-                cp = cpI.getClassPath(kind);
-            } catch (IllegalArgumentException ex) {
-                System.err.println("<not supported>");
-                continue;
-            }
-            if (cp == null) {
-                System.err.println("<null>");
-                continue;
-            }
-            System.err.println("");
-            for (ClassPath.Entry e : cp.entries()) {
-                System.err.println("\t" + e.getURL());
-            }
-            System.err.println("---------------");
         }
-        b.fileManager((fm) -> fileman = new SwitchingJavaFileManger(cpI));
+        b.fileManager((Function)this::createJShellFileManager);
         return getEnv().customizeJShell(b);
+    }
+    
+    private Method handleOptionMethod;
+    
+    private void setOption(Object target, String option, String param) {
+        if (handleOptionMethod == null ||
+            !handleOptionMethod.getDeclaringClass().isInstance(target)) {
+            try {
+                Class clazz = Class.forName(JavaFileManager.class.getName(), true, target.getClass().getClassLoader());
+                handleOptionMethod = clazz.getMethod("handleOption", String.class, Iterator.class); // NOI18N
+            } catch (NoSuchMethodException | ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+                throw new InternalError(ex);
+            }
+        }
+        try {
+            handleOptionMethod.invoke(target, option, Collections.singletonList(param).iterator());
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    /**
+     * In case the JFM comes from JDK9 runtime, use reflection to parametrize the
+     * JFM
+     * @return the original object
+     */
+    private Object createJShellFileManager(Object original) {
+        if (original instanceof StandardJavaFileManager) {
+            return fileman = new SwitchingJavaFileManger(getClasspathInfo());
+        }
+        fileman = null;
+        Project p = env.getProject();
+        
+        String systemHome = platform.getSystemProperties().get("java.home"); // NOI18N
+        if (systemHome != null) {
+            if (ShellProjectUtils.isModularJDK(platform)) {
+                setOption(original, "--system", systemHome); // NOI18N
+            } else {
+                setOption(original, "--boot-class-path", getClasspathAsString(PathKind.BOOT));
+            }
+        }
+        JavaPlatform platform = ShellProjectUtils.findPlatform(p);
+        Collection<String> mods = ShellProjectUtils.findProjectImportedModules(p, 
+                ShellProjectUtils.findProjectModules(p, new HashSet<>()));
+        
+        for (String m : mods) {
+            setOption(original, "--add-module", m); // NOI18N
+        }
+        Map<String, Collection<String>> packages = ShellProjectUtils.findProjectModulesAndPackages(p);
+        for (String mod : packages.keySet()) {
+            for (String pack : packages.get(mod)) {
+                setOption(original, "--add-exports", mod + "/" + pack + "=ALL-UNNAMED"); // NOI18N
+            }
+        }
+        String classpath = getClasspathAsString(PathKind.MODULE_CLASS);
+        String modulepath = getClasspathAsString(PathKind.MODULE_COMPILE);
+        
+        if (!classpath.isEmpty()) {
+            setOption(original, "-classpath", classpath); // NOI18N
+        }
+        if (!modulepath.isEmpty()) {
+            setOption(original, "--module-path", modulepath); // NOI18N
+        }
+        
+        return original;
     }
     
     private synchronized Launcher initShellLauncher() throws IOException {
@@ -799,7 +875,7 @@ public class ShellSession  {
     private ShellAccessBridge bridgeImpl = new ShellAccessBridge() {
         @Override
         public <T> T execute(Callable<T> xcode) throws Exception {
-            if (evaluator.isRequestProcessorThread()) {
+            if (fileman == null || evaluator.isRequestProcessorThread()) {
                 return xcode.call();
             } else {
                 return fileman.withLocalManager(xcode);
@@ -937,6 +1013,10 @@ public class ShellSession  {
     }
     
     private Set<Snippet>    excludedSnippets = new HashSet<>();
+    
+    private String getClasspathAsString(PathKind pk) {
+        return addRoots("", getClasspathInfo().getClassPath(pk));
+    }
     
     private String createClasspathString() {
         String sep = System.getProperty("path.separator");
