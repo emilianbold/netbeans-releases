@@ -39,6 +39,10 @@
  */
 package org.netbeans.modules.java.api.common.project;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
@@ -53,5 +57,29 @@ public final class JavaActionProviderTestSupport {
 
     public static void setUnitTesFixClasses(@NullAllowed final String classes) {
         JavaActionProvider.unitTestingSupport_fixClasses = classes;
+    }
+
+    @CheckForNull
+    public static JavaActionProvider getDelegate(@NonNull final BaseActionProvider ap) {
+        try {
+            final Method m = BaseActionProvider.class.getDeclaredMethod("getDelegate");
+            m.setAccessible(true);
+            return (JavaActionProvider) m.invoke(ap);
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
+    public static boolean setUserPropertiesPolicy(
+            @NonNull JavaActionProvider jap,
+            @NullAllowed ActionProviderSupport.UserPropertiesPolicy policy) {
+        try {
+            final Field f = JavaActionProvider.class.getDeclaredField("userPropertiesPolicy");
+            f.setAccessible(true);
+            f.set(jap, policy);
+            return true;
+        } catch (ReflectiveOperationException e) {
+            return false;
+        }
     }
 }

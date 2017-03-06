@@ -1353,7 +1353,15 @@ final class ActionProviderSupport {
                 } else {
                     context.fireAntTargetInvocationListener(0, 0);
                     try {
-                        final ExecutorTask task = ActionUtils.runTarget(buildFo, targetNames, context.getProperties(), context.getConcealedProperties());
+                        final Properties props = context.getProperties();
+                        LOG.log(
+                                Level.FINE,
+                                "runTargets: {0} with pros: {1}",   //NOI18N
+                                new Object[] {
+                                    targetNames,
+                                    props
+                                });
+                        final ExecutorTask task = ActionUtils.runTarget(buildFo, targetNames, props, context.getConcealedProperties());
                         task.addTaskListener((Task t) -> {
                             context.fireAntTargetInvocationListener(1, task.result());
                         });
