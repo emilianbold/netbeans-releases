@@ -2268,7 +2268,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                     //it is too time expensive and too earlier
                                     // "1" means get both arg's name and value
                                     String stack_list_args_param = 
-                                            DebuggerOption.ARGS_VALUES_IN_STACK.isEnabled(NativeDebuggerManager.get().globalOptions()) ? "1" :"0";
+                                            DebuggerOption.ARGS_VALUES_IN_STACK.isEnabled(NativeDebuggerManager.get().globalOptions()) ? "1" :"0";//NOI18N
                                     String args_command = "-stack-list-arguments " + stack_list_args_param + " --thread " + id; // NOI18N
 
                                     MICommand cmd3 = new MiCommandImpl(args_command) {
@@ -2601,7 +2601,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // "1" means get both arg's name and value
         String stack_list_args_param = 
                 get_frames && DebuggerOption.ARGS_VALUES_IN_STACK.isEnabled(NativeDebuggerManager.get().globalOptions()) 
-                ? "1" :"0";
+                ? "1" :"0";//NOI18N
         
         String args_command = "-stack-list-arguments " + stack_list_args_param; // NOI18N
 
