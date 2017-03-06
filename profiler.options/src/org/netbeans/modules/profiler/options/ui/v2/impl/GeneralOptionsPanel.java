@@ -76,7 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
     "GeneralOptionsPanel_CatWindow=Profiler Window",
     "GeneralOptionsPanel_NoDataHint=&Show 'No data collected yet' hint before first profiling session",
     "GeneralOptionsPanel_ProfilerStatus=&Display profiling session status when window is active",
-    "GeneralOptionsPanel_ExpertSetup=&Enable manual setup for Methods and Objects (expert users)",
+//    "GeneralOptionsPanel_ExpertSetup=&Enable manual setup for Methods and Objects (expert users)",
     "GeneralOptionsPanel_CatProfiling=Profiling",
     "GeneralOptionsPanel_ProfilingPort=&Profiling port:",
     "GeneralOptionsPanel_ManageCalibration=Manage calibration data:",
@@ -90,7 +90,7 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
     
     private JCheckBox noDataHintChoice;
     private JCheckBox profilerStatusChoice;
-    private JCheckBox expertConfigChoice;
+//    private JCheckBox expertConfigChoice;
     private JSpinner portSpinner;
     private JButton resetDNSAButton;
     
@@ -107,14 +107,14 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
     public void storeTo(ProfilerIDESettings settings) {
         settings.setShowNoDataHint(noDataHintChoice.isSelected());
         settings.setLogProfilerStatus(profilerStatusChoice.isSelected());
-        settings.setEnableExpertSettings(expertConfigChoice.isSelected());
+//        settings.setEnableExpertSettings(expertConfigChoice.isSelected());
         settings.setPortNo((Integer)portSpinner.getValue());
     }
 
     public void loadFrom(ProfilerIDESettings settings) {
         noDataHintChoice.setSelected(settings.getShowNoDataHint());
         profilerStatusChoice.setSelected(settings.getLogProfilerStatus());
-        expertConfigChoice.setSelected(settings.getEnableExpertSettings());
+//        expertConfigChoice.setSelected(settings.getEnableExpertSettings());
         portSpinner.setValue(settings.getPortNo());
         resetDNSAButton.setEnabled(true);
     }
@@ -122,7 +122,7 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
     public boolean equalsTo(ProfilerIDESettings settings) {
         if (noDataHintChoice.isSelected() != settings.getShowNoDataHint()) return false;
         if (profilerStatusChoice.isSelected() != settings.getLogProfilerStatus()) return false;
-        if (expertConfigChoice.isSelected() != settings.getEnableExpertSettings()) return false;
+//        if (expertConfigChoice.isSelected() != settings.getEnableExpertSettings()) return false;
         if (!Objects.equals(portSpinner.getValue(), settings.getPortNo())) return false;
         return true;
     }
@@ -168,16 +168,16 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(vgap, htab, vgap, 0);
         add(profilerStatusChoice, c);
         
-        expertConfigChoice = new JCheckBox();
-        Mnemonics.setLocalizedText(expertConfigChoice, Bundle.GeneralOptionsPanel_ExpertSetup());
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = y++;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.NONE;
-        c.insets = new Insets(vgap, htab, vgap, 0);
-        add(expertConfigChoice, c);
+//        expertConfigChoice = new JCheckBox();
+//        Mnemonics.setLocalizedText(expertConfigChoice, Bundle.GeneralOptionsPanel_ExpertSetup());
+//        c = new GridBagConstraints();
+//        c.gridx = 0;
+//        c.gridy = y++;
+//        c.gridwidth = GridBagConstraints.REMAINDER;
+//        c.anchor = GridBagConstraints.WEST;
+//        c.fill = GridBagConstraints.NONE;
+//        c.insets = new Insets(vgap, htab, vgap, 0);
+//        add(expertConfigChoice, c);
         
         Separator profilingSeparator = new Separator(Bundle.GeneralOptionsPanel_CatProfiling());
         c = new GridBagConstraints();
