@@ -115,7 +115,8 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 
 /**
- *
+ * The simple {@link ActionProvider} for Java based project.
+ * @since 1.102
  * @author Tomas Zezula
  */
 public final class JavaActionProvider implements ActionProvider {
@@ -641,26 +642,26 @@ public final class JavaActionProvider implements ActionProvider {
         }
 
         @NonNull
-        public ScriptAction createScriptAction(
+        public ScriptAction createDefaultScriptAction(
                 @NonNull final String command,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
                 @NonNull final String... targets) {
             Parameters.notNull("targets", targets);     //NOI18N
-            return createScriptAction(command, javaModelSensitive, scanSensitive, () -> targets, null);
+            return createDefaultScriptAction(command, javaModelSensitive, scanSensitive, () -> targets, null);
         }
 
         @NonNull
-        public ScriptAction createScriptAction(
+        public ScriptAction createDefaultScriptAction(
                 @NonNull final String command,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
                 @NonNull final Supplier<? extends String[]> targets) {
-            return createScriptAction(command, javaModelSensitive, scanSensitive, targets, null);
+            return createDefaultScriptAction(command, javaModelSensitive, scanSensitive, targets, null);
         }
 
         @NonNull
-        public ScriptAction createScriptAction(
+        public ScriptAction createDefaultScriptAction(
                 @NonNull final String command,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,

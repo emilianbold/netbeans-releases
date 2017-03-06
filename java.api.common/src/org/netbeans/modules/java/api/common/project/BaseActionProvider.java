@@ -455,7 +455,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 String[] targets = cmds.get(cmd);
                 JavaActionProvider.ScriptAction action;
                 if (targets != null) {
-                    action = builder.createScriptAction(
+                    action = builder.createDefaultScriptAction(
                         cmd,
                         modelSensitive.contains(cmd),
                         scanSensitive.contains(cmd),
@@ -479,7 +479,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         default:
                             jarEnabledTargets = jarDisabledTargets = null;
                     }
-                    action = jarEnabledTargets != null ? builder.createScriptAction(
+                    action = jarEnabledTargets != null ? builder.createDefaultScriptAction(
                             cmd,
                             modelSensitive.contains(cmd),
                             scanSensitive.contains(cmd),
