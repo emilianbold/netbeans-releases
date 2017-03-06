@@ -1522,8 +1522,8 @@ public final class JavaActionProvider implements ActionProvider {
             final boolean javaModelSensitive,
             final boolean scanSensitive,
             @NonNull final Supplier<? extends String[]> targets,
-            @NullAllowed final Map<String,String> props) {
-        return new BaseScriptAction(command, platformSensitive, javaModelSensitive, scanSensitive, targets);
+            @NonNull final Map<String,String> props) {
+        return new BaseScriptAction(command, platformSensitive, javaModelSensitive, scanSensitive, targets, props);
     }
 
     private static void logNoFiles(
