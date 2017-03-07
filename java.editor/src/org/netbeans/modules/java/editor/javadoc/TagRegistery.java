@@ -60,7 +60,8 @@ final class TagRegistery {
             ElementKind.ENUM_CONSTANT, ElementKind.FIELD,
             ElementKind.INTERFACE, ElementKind.METHOD,
             // OTHER stands for Overview here
-            ElementKind.OTHER, ElementKind.PACKAGE);
+            ElementKind.OTHER, ElementKind.MODULE,
+            ElementKind.PACKAGE);
     
     private static final TagRegistery DEFAULT = new TagRegistery();
     
@@ -85,7 +86,8 @@ final class TagRegistery {
         addTag("@author", false, EnumSet.of(
                 ElementKind.ANNOTATION_TYPE, ElementKind.CLASS,
                 ElementKind.ENUM, ElementKind.INTERFACE,
-                ElementKind.OTHER, ElementKind.PACKAGE));
+                ElementKind.OTHER, ElementKind.MODULE,
+                ElementKind.PACKAGE));
         addTag("@exception", false, EnumSet.of(ElementKind.METHOD, ElementKind.CONSTRUCTOR));
         // deprecated: not in PACKAGE and OVERVIEW!
         addTag("@deprecated", false, EnumSet.<ElementKind>of(
@@ -116,6 +118,9 @@ final class TagRegistery {
                 ElementKind.ENUM,
                 ElementKind.INTERFACE,
                 ElementKind.OTHER, ElementKind.PACKAGE));
+        addTag("@hidden", false, ALL_KINDS);
+        addTag("@provides", false, EnumSet.of(ElementKind.MODULE));
+        addTag("@uses", false, EnumSet.of(ElementKind.MODULE));
         
         addTag("@code", true, ALL_KINDS);
         addTag("@docRoot", true, ALL_KINDS);
