@@ -69,9 +69,10 @@ import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelContr
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-final class NodeJsCustomizerPanel extends JPanel {
+final class NodeJsCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
     private final ProjectCustomizer.Category category;
     private final NodeJsPreferences preferences;
@@ -190,6 +191,11 @@ final class NodeJsCustomizerPanel extends JPanel {
         preferences.setDefaultNode(defaultNode);
         preferences.setDebugPort(debugPort);
         preferences.setSyncEnabled(syncChanges);
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerPanel"); // NOI18N
     }
 
     /**
