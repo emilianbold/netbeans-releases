@@ -367,7 +367,11 @@ public class SourceRoots extends Roots {
             }
         });
     }
-
+    
+    private static class RootInfo {
+        
+    }
+    
     private Map<URL, String> getRootsToProps() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Map<URL, String>>() {
             @Override
