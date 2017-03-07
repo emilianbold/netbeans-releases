@@ -294,6 +294,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
     public void testBootPath() {
         if (systemModules == null) {
             System.out.println("No Java 9, skipping testBootPath"); //NOI18N
+            return;
         }
         ClassPath bcp = ClassPath.getClassPath(mod1a, ClassPath.BOOT);
         assertEquals(
@@ -316,6 +317,10 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
     }
 
     public void testGetProjectClassPaths() {
+        if (systemModules == null) {
+            System.out.println("No Java 9, skipping testBootPath"); //NOI18N
+            return;
+        }
         ClassPathProvider cpp = tp.getLookup().lookup(ClassPathProvider.class);
         assertTrue(cpp instanceof MultiModuleClassPathProvider);
         MultiModuleClassPathProvider mmcpp = (MultiModuleClassPathProvider) cpp;
