@@ -901,6 +901,9 @@ public final class ModuleManager extends Modules {
         if (theHost == null) {
             throw new IllegalStateException("Missing hosting module " + fragmentHost + " for fragment " + m.getCodeName());
         }
+        if (!theHost.isEnabled()) {
+            return null;
+        }
         return theHost.getClassLoader();
     }
     
