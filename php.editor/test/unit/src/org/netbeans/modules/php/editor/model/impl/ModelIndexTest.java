@@ -50,9 +50,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -127,7 +129,15 @@ public class ModelIndexTest extends ModelTestBase {
     void performModelTest(AbstractTestModelTask task, String testFilePath) throws Exception {
         FileObject testFile = getTestFile(testFilePath);
         Source testSource = getTestSource(testFile);
-        ParserManager.parse(Collections.singleton(testSource), task);
+        Map<String, ClassPath> classPaths = createClassPathsForTest();
+        if (classPaths == null || classPaths.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            if (!future.isDone()) {
+                future.get();
+            }
+        }
     }
 
     static <T extends ModelElement> T getFirst(Collection<T> allElements,
