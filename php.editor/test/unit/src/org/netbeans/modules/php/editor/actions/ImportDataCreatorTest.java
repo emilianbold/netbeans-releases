@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -151,8 +152,7 @@ public class ImportDataCreatorTest extends PHPTestBase {
             caretOffset = -1;
         }
         final ImportData[] result = new ImportData[1];
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
-
+        Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
@@ -178,6 +178,9 @@ public class ImportDataCreatorTest extends PHPTestBase {
                 }
             }
         });
+        if (!future.isDone()) {
+            future.get();
+        }
 
         return result[0];
     }
