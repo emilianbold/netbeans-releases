@@ -191,9 +191,6 @@ public enum JsTokenId implements TokenId {
     KEYWORD_SUPER("super", "keyword"), // NOI18N
     KEYWORD_YIELD("yield", "keyword"), // NOI18N
     
-    SPECIAL_KEYWORD_AS("as", "keyword"),//NOI18N
-    SPECIAL_KEYWORD_FROM("from", "keyword"),//NOI18N
-    
     RESERVED_ENUM("enum", "reserved"), // NOI18N
     RESERVED_IMPLEMENTS("implements", "reserved"), // NOI18N
     RESERVED_INTERFACE("interface", "reserved"), // NOI18N
