@@ -399,6 +399,13 @@ public final class J2SEModularProject implements Project {
                     addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
                     setCallback(opsCallback).
                     build(),
+            QuerySupport.createMultiModuleFileBuiltQuery(
+                    helper,
+                    evaluator(),
+                    getModuleRoots(),
+                    getSourceRoots(),
+                    getTestModuleRoots(),
+                    getTestSourceRoots()),
 
             //UNKNOWN FOR MODULAR PROJECT
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),

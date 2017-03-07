@@ -388,6 +388,30 @@ public final class QuerySupport {
     }
 
     /**
+     * Creates a {@link FileBuiltQueryImplementation} for a multi-module project.
+     * @param helper the {@link AntProjectHelper}
+     * @param evaluator the {@link PropertyEvaluator}
+     * @param sourceModules the module roots
+     * @param sourceRoots the source roots
+     * @param testModules the test module roots
+     * @param testRoots the test source roots
+     * @return the {@link FileBuiltQueryImplementation} instance
+     * @since 1.103
+     */
+    @NonNull
+    public static FileBuiltQueryImplementation createMultiModuleFileBuiltQuery(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, sourceRoots);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleFileBuiltQueryImpl(helper, evaluator, srcModel, testModel);
+    }
+
+    /**
      * Creates an implementation of {@link CreateFromTemplateAttributesProvider} providing
      * attributes for the project license and encoding.
      *
