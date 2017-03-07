@@ -151,7 +151,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.jshell</code-name-base>
+                    <code-name-base>org.netbeans.libs.jshell.compile</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                 </dependency>

@@ -459,10 +459,12 @@ final class ModuleListParser {
                     throw new IOException("Have malformed <class-path-extension> in " + projectxml);
                 }
                 String reltext = XMLUtil.findText(runtimeRelativePath);
-                // No need to evaluate property refs in it - it is *not* substitutable-text in the schema.
-                String nball = (String) properties.get("nb_all");
-                resultBin = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
-                resultBin = fixFxRtJar(resultBin, nball);
+                if (reltext != null) {
+                    // No need to evaluate property refs in it - it is *not* substitutable-text in the schema.
+                    String nball = (String) properties.get("nb_all");
+                    resultBin = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
+                    resultBin = fixFxRtJar(resultBin, nball);
+                }
             }
 
             if (origBin != null) {

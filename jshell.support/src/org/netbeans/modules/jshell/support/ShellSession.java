@@ -1028,7 +1028,7 @@ public class ShellSession  {
         
                 
         File remoteProbeJar = InstalledFileLocator.getDefault().locate(agentJar, 
-                "org.netbeans.libs.jshell", false);
+                "org.netbeans.lib.jshell.agent", false);
         StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
         
         if (!modular) {
