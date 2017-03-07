@@ -527,6 +527,19 @@ public final class QuerySupport {
         Parameters.notNull("roots", roots); //NOI18N
         return new SourcesImpl(project, helper, evaluator, roots);
     }
+    
+    /**
+     * Returns {@link MultiModuleGroupQuery} implementation suitable for modular Java projects.
+     * @param helper the {@link AntProjectHelper} of the project, used only to resolve files
+     * @param evaluator the {@link PropertyEvaluator} to evaluate the properties
+     * @param roots the array of {@link Roots} providing the roots 
+     * @param src Sources objects to track changes to project definition
+     * @return multi-module implementation of MultiModuleGroupQuery
+     * @since 1.97
+     */
+    public static MultiModuleGroupQuery createMultiModuleGroupQuery(AntProjectHelper helper, PropertyEvaluator evaluator, Sources src, Roots... roots) {
+        return new MultiModuleGroupQueryImpl(helper, evaluator, src, roots);
+    }
 
     /**
      * Creates a {@link AccessibilityQueryImplementation2} based on the module-info.

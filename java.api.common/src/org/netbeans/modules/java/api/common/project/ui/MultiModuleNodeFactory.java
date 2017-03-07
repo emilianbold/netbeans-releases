@@ -72,6 +72,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
+import org.netbeans.modules.java.api.common.queries.MultiModuleGroupQuery;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -729,6 +730,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
     private static final class ModuleChildren extends Children.Keys<Pair<SourceGroup,Boolean>> implements PropertyChangeListener {
         private final String moduleName;
         private final Sources sources;
+        private final MultiModuleGroupQuery groupQuery;
         private final MultiModule srcModule;
         private final MultiModule testModule;
         private final RequestProcessor.Task refresh;
@@ -738,6 +740,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         private ModuleChildren(
                 @NonNull final String moduleName,
                 @NonNull final Sources sources,
+                @NonNull final MultiModuleGroupQuery groupQuery,
                 @NonNull final MultiModule srcModule,
                 @NonNull final MultiModule testModule) {
             Parameters.notNull("moduleName", moduleName);   //NOI18N
@@ -746,6 +749,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             Parameters.notNull("testModule", testModule);   //NOI18N
             this.moduleName = moduleName;
             this.sources = sources;
+            this.groupQuery = groupQuery;
             this.srcModule = srcModule;
             this.testModule = testModule;
             this.srcPath = new AtomicReference<>();
@@ -791,8 +795,17 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         @NonNull
         protected Node[] createNodes(@NonNull final Pair<SourceGroup,Boolean> key) {
             Node n = PackageView.createPackageView(key.first());
-            if (key.second()) {
-                n = new TestRootNode(n);
+            MultiModuleGroupQuery.Result r = groupQuery.findModuleInfo(key.first());
+            if (r == null) {
+                if (key.second()) {
+                    n = new TestRootNode(n, null);
+                }
+            } else {
+                if (key.second()) {
+                    n = new TestRootNode(n, r.getPathFromModule());
+                } else {
+                    n = new SimpleLabelNode(n, r.getPathFromModule());
+                }
             }
             return new Node[] {n};
         }
@@ -826,6 +839,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return new ModuleChildren(
                     key.getModuleName(),
                     key.getProject().getLookup().lookup(Sources.class),
+                    key.getProject().getLookup().lookup(MultiModuleGroupQuery.class),
                     key.getSourceModules(),
                     key.getTestModules());
         }
@@ -837,13 +851,23 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             }
         }
     }
-
-    private static final class TestRootNode extends FilterNode {
+    
+    private static class SimpleLabelNode extends FilterNode {
+        public SimpleLabelNode(Node original, String dispName) {
+            super(original);
+            if (dispName != null) {
+                disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);
+                setDisplayName(dispName);
+            }
+        }
+    }
+    
+    private static final class TestRootNode extends SimpleLabelNode {
         @StaticResource
         private static final String TEST_BADGE = "org/netbeans/modules/java/api/common/project/ui/resources/test-badge.png";
 
-        TestRootNode(@NonNull final Node original) {
-            super(original);
+        TestRootNode(@NonNull final Node original, String dispName) {
+            super(original, dispName);
         }
 
         @Override

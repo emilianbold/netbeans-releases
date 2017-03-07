@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -82,7 +81,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -221,7 +219,7 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
         }
         return null;
     }
-
+    
     private SourcesHelper initSources() {
         final SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
         for (Roots r : roots) {
@@ -235,6 +233,15 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
         return sourcesHelper;
     }
 
+    @NbBundle.Messages({
+            "# {0} - module name",
+            "# {1} - folder name",
+            "# {2} - source root name",
+            "FMT_ModularSourceRootWithName={1} ({0} - {2})",
+            "# {0} - module name",
+            "# {1} - folder name",
+            "FMT_ModularSourceRootNoName={1} ({0})"
+    })
     private void registerSources(SourcesHelper sourcesHelper, Roots roots) {
         final String hint = RootsAccessor.getInstance().getHint(roots);
         final String type = RootsAccessor.getInstance().getType(roots);
@@ -250,6 +257,7 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
 
             final List<String> locations;
             final List<String> names;
+            
             if (pathProp == null || JavaProjectConstants.SOURCES_TYPE_MODULES.equals(type)) {
                 locations = Collections.singletonList("${" + prop + "}"); // NOI18N
                 names = Collections.singletonList(displayNames[i]);
@@ -272,7 +280,12 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                                         f.getName(),
                                         variant);
                                 locations.add(resolvedSrcPath); //Todo: Should be unevaluated
-                                names.add(variant);
+                                String dispName = displayNames[i];
+                                if (dispName == null || dispName.isEmpty()) {
+                                    names.add(Bundle.FMT_ModularSourceRootNoName(f.getName(), pathToModules));
+                                } else {
+                                    names.add(Bundle.FMT_ModularSourceRootWithName(f.getName(), variant, dispName));
+                                }
                             }
                         }
                     }

@@ -82,19 +82,29 @@ public final class ModuleTestUtilities {
     public boolean updateModuleRoots(
             @NonNull final String modulePath,
             @NonNull final FileObject... folders) {
+        return updateModuleRoots(modulePath, true, folders);
+    }
+
+    public boolean updateModuleRoots(
+            @NonNull final String modulePath,
+            final boolean cleanExisting,
+            @NonNull final FileObject... folders) {
         final boolean[] res = new boolean[1];
         ProjectManager.mutex().writeAccess(() -> {
             final Element root = tp.getUpdateHelper().getPrimaryConfigurationData(true);
             final Element sources = XMLUtil.findElement(root, "source-roots", null);    //NOI18N
             if (sources != null) {
                 final NodeList ch = sources.getChildNodes();
-                while (ch.getLength() > 0) {
-                    sources.removeChild(ch.item(0));
+                if (cleanExisting) {
+                    while (ch.getLength() > 0) {
+                        sources.removeChild(ch.item(0));
+                    }
                 }
                 final Map<Pair<String,String>,FileObject> rbn = new HashMap<>();
+                int base = ch.getLength() + 1;
                 for (int i=0; i<folders.length; i++) {
                     final Element src = root.getOwnerDocument().createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "root");  //NOI18N
-                    final String name = String.format("src.dir_%d",i+1);                //NOI18N
+                    final String name = String.format("src.dir_%d",base + i);                //NOI18N
                     final String path = String.format("%s.path",name);                  //NOI18N
                     src.setAttribute("id", name);                                       //NOI18N
                     src.setAttribute("pathref", path);

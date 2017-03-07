@@ -84,6 +84,7 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 //import org.netbeans.api.project.libraries.Library;
@@ -307,6 +308,7 @@ public final class J2SEModularProject implements Project {
     private Lookup createLookup(final AuxiliaryConfiguration aux, final ProjectOperations.Callback opsCallback) {
 //        final PlatformChangedHook platformChangedHook = new PlatformChangedHook();
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), ProjectProperties.SOURCE_ENCODING);
+        Sources src;
         final Lookup base = Lookups.fixed(J2SEModularProject.this,
             //REVIEWED FOR MODULAR PROJECT
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_MODULE_PROJECT_ICON),
@@ -341,12 +343,17 @@ public final class J2SEModularProject implements Project {
 //                        addClosePostAction(newStopMainUpdaterAction()).
                         build()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
-            QuerySupport.createSources(this, helper, evaluator(),
+                    src = QuerySupport.createSources(this, helper, evaluator(),
                     getSourceRoots(),
                     getTestSourceRoots(),
                     getModuleRoots(),
                     getTestModuleRoots(),
                     Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
+            QuerySupport.createMultiModuleGroupQuery(helper, eval,  src,
+                    getSourceRoots(),
+                    getTestSourceRoots(),
+                    getModuleRoots(),
+                    getTestModuleRoots()),
             new RecommendedTemplatesImpl(getProjectDirectory()),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
