@@ -52,6 +52,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.ChangeSupport;
@@ -64,8 +65,6 @@ import org.openide.util.WeakListeners;
  * @author David Konecny, Jesse Glick
  */
 class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
-
-    private static final String PROP_JAVADOC_DIR = "dist.javadoc.dir";  //NOI18N
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -103,7 +102,7 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
                     lEventId = eventId;
                 }
                 URL[] lResult;
-                String javadocDir = evaluator.getProperty(PROP_JAVADOC_DIR);
+                String javadocDir = evaluator.getProperty(ProjectProperties.DIST_JAVADOC_DIR);
                 if (javadocDir != null) {
                     File f = helper.resolveFile(javadocDir);
                     try {
@@ -140,7 +139,7 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
             }
 
             public void propertyChange(final PropertyChangeEvent event) {
-                if (PROP_JAVADOC_DIR.equals(event.getPropertyName())) {
+                if (ProjectProperties.DIST_JAVADOC_DIR.equals(event.getPropertyName())) {
                     synchronized (this) {
                         result = null;
                         eventId++;

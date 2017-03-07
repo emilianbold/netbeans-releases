@@ -120,7 +120,7 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final String packageName,
             @NonNull final Set<JavaFileObject.Kind> kinds,
             final boolean recursive ) {
-        final ModuleLocation ml = asModuleLocation(l);
+        final ModuleLocation ml = ModuleLocation.cast(l);
         final String folderName = FileObjects.convertPackage2Folder(packageName);
         try {
             final List<Iterable<JavaFileObject>> res = new ArrayList<>();
@@ -185,7 +185,7 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String pkgName,
             @NonNull final String relativeName ) {
-        return findFile(asModuleLocation(l), pkgName, relativeName);
+        return findFile(ModuleLocation.cast(l), pkgName, relativeName);
     }
 
     @Override
@@ -193,7 +193,7 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String className,
             @NonNull final JavaFileObject.Kind kind) {
-        final ModuleLocation ml = asModuleLocation(l);
+        final ModuleLocation ml = ModuleLocation.cast(l);
         final String[] namePair = FileObjects.getParentRelativePathAndName(className);
         final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
         List<? extends String> reloc = null;
@@ -320,7 +320,7 @@ final class ModuleFileManager implements JavaFileManager {
     @Override
     @NullUnknown
     public String inferModuleName(@NonNull final Location location) throws IOException {
-        final ModuleLocation ml = asModuleLocation(location);
+        final ModuleLocation ml = ModuleLocation.cast(location);
         return ml.getModuleName();
     }
 
@@ -413,14 +413,6 @@ final class ModuleFileManager implements JavaFileManager {
         return null;
     }
 
-    @NonNull
-    private static ModuleLocation asModuleLocation (@NonNull final Location l) {
-        if (l.getClass() != ModuleLocation.class) {
-            throw new IllegalArgumentException (String.valueOf(l));
-        }
-        return (ModuleLocation) l;
-    }
-    
     @CheckForNull
     private static Pair<String,List<URL>> parseModulePatches(@NonNull final Iterator<? extends String> tail) {
         if (tail.hasNext()) {

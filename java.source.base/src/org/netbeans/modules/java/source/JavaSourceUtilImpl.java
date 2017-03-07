@@ -174,6 +174,10 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
             if (src == null) {
                 src = ClassPathSupport.createClassPath(srcRoot);
             }
+            ClassPath moduleSrc = ClassPath.getClassPath(srcRoot, JavaClassPathConstants.MODULE_SOURCE_PATH);
+            if (moduleSrc == null) {
+                moduleSrc = ClassPath.EMPTY;
+            }
             ClassPath boot = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
             if (boot == null) {
                 boot = JavaPlatform.getDefault().getBootstrapLibraries();
@@ -222,6 +226,7 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                     moduleCompile,
                     moduleClass,
                     src,
+                    moduleSrc,
                     null,
                     true,
                     true,

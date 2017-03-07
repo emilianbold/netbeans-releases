@@ -125,7 +125,7 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
         }
         synchronized (this) {
             if (delegate == null) {
-                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
+                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, "9");
             }
             return delegate;
         }

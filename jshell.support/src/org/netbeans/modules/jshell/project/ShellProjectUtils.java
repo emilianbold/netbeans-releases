@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.jshell.project;
 
+import com.sun.source.tree.DirectiveTree;
+import com.sun.source.tree.ModuleTree;
+import com.sun.source.tree.RequiresTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,26 +54,41 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.ModuleElement;
+import javax.lang.model.element.ModuleElement.DirectiveKind;
+import javax.lang.model.element.ModuleElement.RequiresDirective;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.jshell.launch.PropertyNames;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -209,7 +229,6 @@ public final class ShellProjectUtils {
         if (project == null) {
             return result;
         }
-        
         for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             if (isNormalRoot(sg)) {
                 URL u = URLMapper.findURL(sg.getRootFolder(), URLMapper.INTERNAL);
@@ -217,19 +236,8 @@ public final class ShellProjectUtils {
                 for (URL u2 : r.getRoots()) {
                     String modName = SourceUtils.getModuleName(u2, true);
                     if (modName != null) {
-                        FileObject root2 = URLMapper.findFileObject(u2);
                         FileObject root = URLMapper.findFileObject(u);
                         Collection<String> pkgs = getPackages(root); //new HashSet<>();
-                        /*
-                        Enumeration en = root.getChildren(true);
-                        while (en.hasMoreElements()) {
-                            FileObject d = (FileObject)en.nextElement();
-                            if (!d.isFolder() || !Utilities.isJavaIdentifier(d.getNameExt())) {
-                                continue;
-                            }
-                            pkgs.add(FileUtil.getRelativePath(root, d).replace("/", "."));
-                        }
-                        */
                         if (!pkgs.isEmpty()) {
                             Collection<String> oldPkgs = result.get(modName);
                             if (oldPkgs != null) {
@@ -247,8 +255,13 @@ public final class ShellProjectUtils {
     
     private static Collection<String> getPackages(FileObject root) {
         ClasspathInfo cpi = ClasspathInfo.create(root);
+        // create CPI from just the single source root, to avoid packages from other
+        // modules
         ClasspathInfo rootCpi = new ClasspathInfo.Builder(
                 cpi.getClassPath(PathKind.BOOT)).
+                setClassPath(cpi.getClassPath(PathKind.COMPILE)).
+                setModuleSourcePath(cpi.getClassPath(PathKind.MODULE_SOURCE)).
+                setModuleCompilePath(cpi.getClassPath(PathKind.MODULE_COMPILE)).
                 setSourcePath(
                     ClassPathSupport.createClassPath(root)
                 ).build();
@@ -257,6 +270,18 @@ public final class ShellProjectUtils {
                 Collections.singleton(SearchScope.SOURCE)));
         pkgs.remove(""); // NOI18N
         return pkgs;
+    }
+    
+    public static boolean isModularProject(Project project) {
+        if (project == null) { 
+            return false;
+        }
+        JavaPlatform platform = findPlatform(project);
+        if (platform == null || !isModularJDK(platform)) {
+            return false;
+        }
+        String s = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
+        return (s != null && new SpecificationVersion("9").compareTo(new SpecificationVersion(s)) <= 0);
     }
     
     public static boolean isModularJDK(JavaPlatform pl) {
@@ -270,21 +295,57 @@ public final class ShellProjectUtils {
         return false;
     }
     
+    /**
+     * Returns classpath to execute the application merged from all source roots of a project.
+     * 
+     * @param project
+     * @return 
+     */
+    public static ClassPath projectRuntimeModulePath(Project project) {
+        List<ClassPath> delegates = new ArrayList<>();
+        for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            ClassPath del = ClassPath.getClassPath(sg.getRootFolder(), JavaClassPathConstants.MODULE_EXECUTE_PATH); 
+            if (del != null && !del.entries().isEmpty()) {
+                delegates.add(del);
+            }
+        }
+        return ClassPathSupport.createProxyClassPath(delegates.toArray(new ClassPath[delegates.size()]));
+    }
+    
+    public static ClassPath projecRuntimeClassPath(Project project) {
+        if (project == null) {
+            return null;
+        }
+        boolean modular = isModularProject(project);
+        List<ClassPath> delegates = new ArrayList<>();
+        for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            ClassPath del = null; 
+            if (modular) {
+                del = ClassPath.getClassPath(sg.getRootFolder(), JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH);
+            } else {
+                del = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.EXECUTE); 
+            }
+            if (del != null && !del.entries().isEmpty()) {
+                delegates.add(del);
+            }
+        }
+        return ClassPathSupport.createProxyClassPath(delegates.toArray(new ClassPath[delegates.size()]));
+    }
+    
     public static List<String> launchVMOptions(Project project) {
-        Collection<String> exportMods = ShellProjectUtils.findProjectImportedModules(project, 
-                ShellProjectUtils.findProjectModules(project, null));
+        List<String> exportMods = new ArrayList<>(
+                ShellProjectUtils.findProjectImportedModules(project, 
+                    ShellProjectUtils.findProjectModules(project, null))
+        );
         ShellProjectUtils.findProjectModules(project, null);
         boolean modular = isModularJDK(findPlatform(project));
         if (exportMods.isEmpty() || !modular) {
             return null;
         }
         List<String> addReads = new ArrayList<>();
-        for (String mod : exportMods) {
-            addReads.add(
-                String.format("--add-reads %s=ALL-UNNAMED",mod) // NOI18N
-            );
-        }
-        addReads.add("--add-modules jdk.jshell");
+        exportMods.add("jdk.jshell");
+        Collections.sort(exportMods);
+        addReads.add("--add-modules " + String.join(",", exportMods));
         addReads.add("--add-reads jdk.jshell=ALL-UNNAMED"); // NOI18N
         
         // now export everything from the project:

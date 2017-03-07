@@ -73,7 +73,6 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -89,7 +88,7 @@ import org.openide.util.WeakListeners;
  * Defines the various class paths for a J2SE project.
  * @since org.netbeans.modules.java.api.common/1 1.5
  */
-public final class ClassPathProviderImpl implements ClassPathProvider {
+public final class ClassPathProviderImpl extends AbstractClassPathProvider {
 
     private static final String buildGeneratedDir = "build.generated.sources.dir"; // NOI18N
     private static final String[] processorTestClasspath = new String[]{"javac.test.processorpath"};  //NOI18N
@@ -935,6 +934,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
                                 projectDirectory,
                                 evaluator,
+                                null,
                                 type == 0 ? modulePath : testModulePath))));
                 });
             default:
@@ -1003,6 +1003,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     return ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
+                        null,
                         props);
                 };
                 break;
@@ -1014,6 +1015,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     return ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
+                        null,
                         props);
                 };
                 break;

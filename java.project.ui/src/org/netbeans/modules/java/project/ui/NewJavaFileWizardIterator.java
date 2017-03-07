@@ -305,8 +305,30 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                     }
                 }
             }
-            DataObject dTemplate = DataObject.find( template );                
-            DataObject dobj = dTemplate.createFromTemplate( df, targetName, Collections.singletonMap("moduleName", createModuleName(ProjectUtils.getInformation(project).getDisplayName(), srcs.length > 0)));
+            final String moduleName;
+            final ClassPath msp = ClassPath.getClassPath(dir, JavaClassPathConstants.MODULE_SOURCE_PATH);
+            if (msp == null) {
+                //Single module project
+                moduleName = createModuleName(
+                        ProjectUtils.getInformation(project).getDisplayName(),
+                        srcs.length > 0);
+            } else {
+                //Multi module project
+                final String path = msp.getResourceName(dir);
+                if (path == null) {
+                    moduleName = null;
+                } else {
+                    final int index = path.indexOf('/');  //NOI18N
+                    moduleName = index < 0 ?
+                            path :
+                            path.substring(0, index);
+                }
+            }
+            DataObject dTemplate = DataObject.find( template );
+            DataObject dobj = dTemplate.createFromTemplate(
+                    df,
+                    targetName,
+                    Collections.singletonMap("moduleName", moduleName)); //NOI18N
             createdFile = dobj.getPrimaryFile();
         } else {
             DataObject dTemplate = DataObject.find( template );                

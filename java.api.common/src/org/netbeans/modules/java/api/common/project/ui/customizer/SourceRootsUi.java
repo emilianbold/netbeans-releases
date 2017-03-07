@@ -84,7 +84,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.java.api.common.ModuleRoots;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
@@ -115,6 +117,19 @@ public final class SourceRootsUi {
         }
         return new SourceRootsModel(data);
                 
+    }
+    
+    public static DefaultTableModel createModel( ModuleRoots roots ) {
+        
+        URL[] rootURLs = roots.getRootURLs(false);
+        String[] rootPaths = roots.getRootPathProperties();
+        Object[][] data = new Object[rootURLs.length] [2];
+        for (int i = 0; i < rootURLs.length; i++) {
+            data[i][0] = Utilities.toFile(URI.create (rootURLs[i].toExternalForm()));
+            data[i][1] = roots.getRootPath(rootPaths[i]);
+        }
+        return new SourceRootsModel(data);
+ 
     }
     
     public static EditMediator registerEditMediator( Project master,
@@ -155,9 +170,11 @@ public final class SourceRootsUi {
         em.valueChanged( null );
         
         DefaultTableModel model = (DefaultTableModel)rootsList.getModel();
+        String type = RootsAccessor.getInstance().getType(sourceRoots);
+        boolean isModule = JavaProjectConstants.SOURCES_TYPE_MODULES.equals(type);
         String[] columnNames = new String[2];
-        columnNames[0]  = NbBundle.getMessage( SourceRootsUi.class,"CTL_PackageFolders");
-        columnNames[1]  = NbBundle.getMessage( SourceRootsUi.class,"CTL_PackageLabels");
+        columnNames[0]  = NbBundle.getMessage( SourceRootsUi.class, isModule ? "CTL_ModuleFolders" : "CTL_PackageFolders");
+        columnNames[1]  = NbBundle.getMessage( SourceRootsUi.class, isModule ? "CTL_ModulePaths" : "CTL_PackageLabels");
         model.setColumnIdentifiers(columnNames);
         rootsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
@@ -203,7 +220,7 @@ public final class SourceRootsUi {
             null);
         DialogDisplayer.getDefault().notify(dd);
     }
-        
+
     // Private innerclasses ----------------------------------------------------
 
     public static class EditMediator implements ActionListener, ListSelectionListener, CellEditorListener {
@@ -274,10 +291,12 @@ public final class SourceRootsUi {
                 // Let user search for the Jar file
                 FileChooserBuilder builder = new FileChooserBuilder(SourceRootsUi.class).setDirectoriesOnly(true);
                 builder.setDefaultWorkingDirectory(FileUtil.toFile(this.project.getProjectDirectory()));
+                String type = RootsAccessor.getInstance().getType(sourceRoots);
+                boolean isModule = JavaProjectConstants.SOURCES_TYPE_MODULES.equals(type);
                 if (sourceRoots.isTest()) {
-                    builder.setTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_TestFolder_DialogTitle"));  // NOI18N
+                    builder.setTitle(NbBundle.getMessage(SourceRootsUi.class, isModule ? "LBL_TestModuleFolder_DialogTitle" : "LBL_TestFolder_DialogTitle"));  // NOI18N
                 } else {
-                    builder.setTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_SourceFolder_DialogTitle")); // NOI18N
+                    builder.setTitle(NbBundle.getMessage(SourceRootsUi.class, isModule ? "LBL_ModuleFolder_DialogTitle" : "LBL_SourceFolder_DialogTitle")); // NOI18N
                 }
                 File files[] = builder.showMultiOpenDialog();
                 if ( files != null ) {
@@ -344,7 +363,9 @@ public final class SourceRootsUi {
             selectionModel.clearSelection();
             Set<File> rootsFromOtherProjects = new HashSet<File>();
             Set<File> rootsFromRelatedSourceRoots = new HashSet<File>();
-out:            for( int i = 0; i < files.length; i++ ) {
+            String type = RootsAccessor.getInstance().getType(sourceRoots);
+            boolean isModule = JavaProjectConstants.SOURCES_TYPE_MODULES.equals(type);
+out:        for( int i = 0; i < files.length; i++ ) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 Project p;
                 if (ownedFolders.contains(normalizedFile)) {
@@ -391,7 +412,9 @@ out:            for( int i = 0; i < files.length; i++ ) {
                     }
                 }
                 int current = lastIndex + 1 + i;
-                rootsModel.insertRow( current, new Object[] {normalizedFile, sourceRoots.createInitialDisplayName(normalizedFile)}); //NOI18N
+                rootsModel.insertRow( current, new Object[] {normalizedFile, isModule
+                            ? ((ModuleRoots)sourceRoots).createInitialPath()
+                            : sourceRoots.createInitialDisplayName(normalizedFile)});
                 selectionModel.addSelectionInterval(current,current);
                 this.ownedFolders.add (normalizedFile);
             }

@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -135,108 +136,17 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     
     @Override
     public Iterable<JavaFileObject> list( Location l, String packageName, Set<JavaFileObject.Kind> kinds, boolean recursive ) {
-        String folderName = FileObjects.convertPackage2Folder( packageName );
-        List<Iterable<JavaFileObject>> idxs = new LinkedList<>();
-        List<? extends String> prefixes = null;
-        final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
-        for(ClassPath.Entry entry : this.cp.entries()) {
-            try {
-                Archive archive = provider.getArchive( entry.getURL(), cacheFile );
-                if (archive != null) {
-                    final Iterable<JavaFileObject> entries;
-                    if (supportsMultiRelease && archive.isMultiRelease()) {
-                        if (prefixes == null) {
-                            prefixes = multiReleaseRelocations();
-                        }
-                        final java.util.Map<String,JavaFileObject> fqn2f = new HashMap<>();
-                        final Set<String> seenPackages = new HashSet<>();
-                        for (String prefix : prefixes) {
-                            Iterable<JavaFileObject> fos = archive.getFiles(
-                                    join(prefix, folderName),
-                                    ignoreExcludes ? null : entry,
-                                    kinds,
-                                    filter,
-                                    recursive);
-                            for (JavaFileObject fo : fos) {
-                                final boolean base = prefix.isEmpty();
-                                if (!base) {
-                                    fo = new MultiReleaseJarFileObject((InferableJavaFileObject)fo, prefix);    //Always inferable in this branch
-                                }
-                                final String fqn = inferBinaryName(l, fo);
-                                final String pkg = FileObjects.getPackageAndName(fqn)[0];
-                                if (base) {
-                                    seenPackages.add(pkg);
-                                    fqn2f.put(fqn, fo);
-                                } else if (seenPackages.contains(pkg)) {
-                                    fqn2f.put(fqn, fo);
-                                }
-                            }
-                        }
-                        entries = fqn2f.values();
-                    } else {
-                        entries = archive.getFiles(folderName, ignoreExcludes ? null : entry, kinds, filter, recursive);
-                    }
-                    idxs.add(entries);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        logListedFiles(l, entry.getURL(), packageName, kinds, entries);
-                    }
-                } else if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.finest(String.format("No archive for: %s", entry.getURL().toExternalForm()));           //NOI18N
-                }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return Iterators.chained(idxs);
+        return listImpl(l, this.cp.entries(), packageName, kinds, recursive);
     }
 
     @Override
     public javax.tools.FileObject getFileForInput( Location l, String pkgName, String relativeName ) {
-        return findFile(pkgName, relativeName);
+        return getFileForInputImpl(this.cp.entries(), pkgName, relativeName);
     }
 
     @Override
     public JavaFileObject getJavaFileForInput (Location l, String className, JavaFileObject.Kind kind) {
-        final String[] namePair = FileObjects.getParentRelativePathAndName(className);
-        final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
-        List<? extends String> reloc = null;
-        for( ClassPath.Entry root : this.cp.entries()) {
-            try {
-                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
-                if (archive != null) {
-                    final List<? extends String> prefixes;
-                    if (supportsMultiRelease && archive.isMultiRelease()) {
-                        if (reloc == null) {
-                            reloc = multiReleaseRelocations();
-                        }
-                        prefixes = reloc;
-                    } else {
-                        prefixes = Collections.singletonList("");   //NOI18N
-                    }
-                    for (int i = prefixes.size() - 1; i >=0; i--) {
-                        final String prefix = prefixes.get(i);
-                        Iterable<JavaFileObject> files = archive.getFiles(
-                                join(prefix,namePair[0]),
-                                ignoreExcludes ? null : root,
-                                null,
-                                filter,
-                                false);
-                        for (JavaFileObject e : files) {
-                            final String ename = e.getName();
-                            if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
-                                kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
-                                return prefix.isEmpty() ?
-                                        e :
-                                        new MultiReleaseJarFileObject((InferableJavaFileObject)e, prefix);  //Always inferable
-                            }
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return null;
+        return getJavaFileForInputImpl(this.cp.entries(), className, kind);
     }
 
 
@@ -246,7 +156,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         if (!allowOutput) {
             throw new UnsupportedOperationException("Output is unsupported.");  //NOI18N
         }
-        javax.tools.JavaFileObject file = findFile (pkgName, relativeName);
+        javax.tools.JavaFileObject file = getFileForInputImpl(this.cp.entries(), pkgName, relativeName);
         if (file == null) {
             final List<ClassPath.Entry> entries = this.cp.entries();
             if (!entries.isEmpty()) {
@@ -324,7 +234,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
             provider.clear();
         }
     }
-
+    
     @Override
     public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
         return Collections.emptyList();
@@ -340,13 +250,129 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         return null;
     }
 
-    private javax.tools.JavaFileObject findFile(final String pkgName, String relativeName) {
+    //Protected impl methods for subclasses
+
+    protected final ClassPath getClassPath() {
+        return this.cp;
+    }
+
+    protected final Iterable<JavaFileObject> listImpl(
+            final Location l,
+            final Collection<? extends ClassPath.Entry> roots,
+            final String packageName,
+            final Set<JavaFileObject.Kind> kinds,
+            final boolean recursive) {
+        String folderName = FileObjects.convertPackage2Folder( packageName );
+        List<Iterable<JavaFileObject>> idxs = new LinkedList<>();
+        List<? extends String> prefixes = null;
+        final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
+        for(ClassPath.Entry entry : roots) {
+            try {
+                Archive archive = provider.getArchive( entry.getURL(), cacheFile );
+                if (archive != null) {
+                    final Iterable<JavaFileObject> entries;
+                    if (supportsMultiRelease && archive.isMultiRelease()) {
+                        if (prefixes == null) {
+                            prefixes = multiReleaseRelocations();
+                        }
+                        final java.util.Map<String,JavaFileObject> fqn2f = new HashMap<>();
+                        final Set<String> seenPackages = new HashSet<>();
+                        for (String prefix : prefixes) {
+                            Iterable<JavaFileObject> fos = archive.getFiles(
+                                    join(prefix, folderName),
+                                    ignoreExcludes ? null : entry,
+                                    kinds,
+                                    filter,
+                                    recursive);
+                            for (JavaFileObject fo : fos) {
+                                final boolean base = prefix.isEmpty();
+                                if (!base) {
+                                    fo = new MultiReleaseJarFileObject((InferableJavaFileObject)fo, prefix);    //Always inferable in this branch
+                                }
+                                final String fqn = inferBinaryName(l, fo);
+                                final String pkg = FileObjects.getPackageAndName(fqn)[0];
+                                if (base) {
+                                    seenPackages.add(pkg);
+                                    fqn2f.put(fqn, fo);
+                                } else if (seenPackages.contains(pkg)) {
+                                    fqn2f.put(fqn, fo);
+                                }
+                            }
+                        }
+                        entries = fqn2f.values();
+                    } else {
+                        entries = archive.getFiles(folderName, ignoreExcludes ? null : entry, kinds, filter, recursive);
+                    }
+                    idxs.add(entries);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        logListedFiles(l, entry.getURL(), packageName, kinds, entries);
+                    }
+                } else if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest(String.format("No archive for: %s", entry.getURL().toExternalForm()));           //NOI18N
+                }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return Iterators.chained(idxs);
+    }
+
+    protected final JavaFileObject getJavaFileForInputImpl(
+            final Collection<? extends ClassPath.Entry> roots,
+            final String className,
+            final JavaFileObject.Kind kind) {
+        final String[] namePair = FileObjects.getParentRelativePathAndName(className);
+        final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
+        List<? extends String> reloc = null;
+        for( ClassPath.Entry root : roots) {
+            try {
+                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
+                if (archive != null) {
+                    final List<? extends String> prefixes;
+                    if (supportsMultiRelease && archive.isMultiRelease()) {
+                        if (reloc == null) {
+                            reloc = multiReleaseRelocations();
+                        }
+                        prefixes = reloc;
+                    } else {
+                        prefixes = Collections.singletonList("");   //NOI18N
+                    }
+                    for (int i = prefixes.size() - 1; i >=0; i--) {
+                        final String prefix = prefixes.get(i);
+                        Iterable<JavaFileObject> files = archive.getFiles(
+                                join(prefix,namePair[0]),
+                                ignoreExcludes ? null : root,
+                                null,
+                                filter,
+                                false);
+                        for (JavaFileObject e : files) {
+                            final String ename = e.getName();
+                            if (namePair[1].equals(FileObjects.stripExtension(ename)) &&
+                                kind == FileObjects.getKind(FileObjects.getExtension(ename))) {
+                                return prefix.isEmpty() ?
+                                        e :
+                                        new MultiReleaseJarFileObject((InferableJavaFileObject)e, prefix);  //Always inferable
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return null;
+    }
+
+    protected final javax.tools.JavaFileObject getFileForInputImpl(
+            final Collection<? extends ClassPath.Entry> roots,
+            final String pkgName,
+            String relativeName) {
         assert pkgName != null;
         assert relativeName != null;
         final String resourceName = FileObjects.resolveRelativePath(pkgName,relativeName);
         final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
         List<? extends String> reloc = null;
-        for( ClassPath.Entry root : this.cp.entries()) {
+        for( ClassPath.Entry root : roots) {
             try {
                 final Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 if (archive != null) {

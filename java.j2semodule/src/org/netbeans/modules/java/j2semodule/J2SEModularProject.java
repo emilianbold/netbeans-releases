@@ -55,13 +55,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -74,6 +77,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -85,17 +89,21 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 //import org.netbeans.api.project.libraries.Library;
 //import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.api.common.ModuleRoots;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
-import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.MultiModuleClassPathProvider;
+import org.netbeans.modules.java.api.common.project.JavaActionProvider;
+import org.netbeans.modules.java.api.common.project.MultiModuleActionProviderBuilder;
 import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectOperations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl;
 //import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 //import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 //import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
@@ -145,6 +153,7 @@ import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.Pair;
+import org.openide.util.Utilities;
 /**
  * Represents one plain J2SE modular project.
  * @author Jesse Glick, et al.
@@ -190,9 +199,9 @@ public final class J2SEModularProject implements Project {
     private final UpdateHelper updateHelper;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
-    private SourceRoots moduleRoots;
-    private SourceRoots testModuleRoots;
-    private final ClassPathProviderImpl cpProvider;
+    private ModuleRoots moduleRoots;
+    private ModuleRoots testModuleRoots;
+    private final MultiModuleClassPathProvider cpProvider;
     private final ClassPathModifier cpMod;
 
     private AntBuildExtender buildExtender;
@@ -225,11 +234,16 @@ public final class J2SEModularProject implements Project {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEModularExtenderImplementation(), refHelper);
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
 
-        this.cpProvider = ClassPathProviderImpl.Builder.create(helper, evaluator(), getSourceRoots(), getTestSourceRoots())
-                .setProject(this)
+        this.cpProvider = MultiModuleClassPathProvider.Builder.newInstance(
+                helper,
+                evaluator(),
+                getModuleRoots(),
+                getSourceRoots(),
+                getTestModuleRoots(),
+                getTestSourceRoots())
                 .build();
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
-        lookup = createLookup(aux, null/*newProjectOperationsCallback(this, updateProject)*/);//TODO
+        lookup = createLookup(aux, newProjectOperationsCallback(this, updateProject));
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -238,7 +252,9 @@ public final class J2SEModularProject implements Project {
             public String getClassPathProperty(SourceGroup sg, String type) {
                 assert sg != null : "SourceGroup cannot be null";  //NOI18N
                 assert type != null : "Type cannot be null";  //NOI18N
-                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+//              TODO: Commented as wery strange for Multi-Module project
+//                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+                String[] classPathProperty = null;
                 if (classPathProperty == null || classPathProperty.length == 0) {
                     throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
@@ -292,24 +308,15 @@ public final class J2SEModularProject implements Project {
 //        final PlatformChangedHook platformChangedHook = new PlatformChangedHook();
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), ProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(J2SEModularProject.this,
+            //REVIEWED FOR MODULAR PROJECT
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_MODULE_PROJECT_ICON),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
-            refHelper.createSubprojectProvider(),
-            LogicalViewProviders.createBuilder(
-                this,
-                eval,
-                "org-netbeans-modules-java-j2semodule").   //NOI18N
-                setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2semodule.ui.J2SEModularLogicalViewProvider.J2SEModularLogicalViewRootNode")).    //NOI18N
-//                setCompileOnSaveBadge(newCoSBadge()).
-                build(),
-            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
-//            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
-//            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
-//            new AntArtifactProviderImpl(),
+            QuerySupport.createMultiModuleSourceForBinaryQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
+            QuerySupport.createMultiModuleBinaryForSourceQuery(helper, evaluator(), getModuleRoots(), getSourceRoots(), getTestModuleRoots(), getTestSourceRoots()),
+            QuerySupport.createMultiModuleJavadocForBinaryQuery(helper, evaluator(), getModuleRoots(), getSourceRoots()),
             ProjectHooks.createProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper).
                     setBuildImplTemplate(J2SEModularProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                     setBuildTemplate(J2SEModularProject.class.getResource("resources/build.xsl")).             //NOI18N
@@ -324,6 +331,7 @@ public final class J2SEModularProject implements Project {
                         addClassPathType(ClassPath.BOOT).
                         addClassPathType(ClassPath.COMPILE).
                         addClassPathType(ClassPath.SOURCE).
+                        addClassPathType(JavaClassPathConstants.MODULE_COMPILE_PATH).   //For DefaultClassPathProvider
                         setBuildImplTemplate(J2SEModularProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2SEModularProject.class.getResource("resources/build.xsl")).             //NOI18N
 //                        addOpenPostAction(newStartMainUpdaterAction()).
@@ -332,58 +340,84 @@ public final class J2SEModularProject implements Project {
 //                        addOpenPostAction(newUpdateCopyLibsAction()).
 //                        addClosePostAction(newStopMainUpdaterAction()).
                         build()),
-//            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
-            QuerySupport.createSources(this, helper, evaluator(), getModuleRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
-//            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            QuerySupport.createSources(this, helper, evaluator(),
+                    getSourceRoots(),
+                    getTestSourceRoots(),
+                    getModuleRoots(),
+                    getTestModuleRoots(),
+                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
+            new RecommendedTemplatesImpl(getProjectDirectory()),
+            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+            UILookupMergerSupport.createRecommendedTemplatesMerger(),
+            LookupProviderSupport.createSourcesMerger(),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
+            QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
+            LookupMergerSupport.createCompilerOptionsQueryMerger(),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, evaluator()),
+            LookupMergerSupport.createSFBLookupMerger(),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, evaluator()),
+            LookupMergerSupport.createJFBLookupMerger(),
+            QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
+            LookupProviderSupport.createActionProviderMerger(),
+            LogicalViewProviders.createBuilder(
+                this,
+                eval,
+                "org-netbeans-modules-java-j2semodule").   //NOI18N
+                setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2semodule.ui.J2SEModularLogicalViewProvider.J2SEModularLogicalViewRootNode")).    //NOI18N
+//                setCompileOnSaveBadge(newCoSBadge()).
+                build(),
+            QuerySupport.createModuleInfoAccessibilityQuery(
+                    getModuleRoots(),
+                    getSourceRoots(),
+                    getTestModuleRoots(),
+                    getTestSourceRoots()),
+            QuerySupport.createMultiModuleAntArtifactProvider(
+                    helper,
+                    evaluator(),
+                    getModuleRoots(),
+                    getSourceRoots()),
+            QuerySupport.createSharabilityQuery2(
+                    helper,
+                    evaluator(),
+                    getModuleRoots(),
+                    getTestModuleRoots()),
+            refHelper.createSubprojectProvider(),
+            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
+            newActionProvider(),
+            ProjectOperations.createBuilder(this, evaluator(), updateHelper, refHelper, getModuleRoots(), getTestModuleRoots()).
+                    addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
+                    addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
+                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
+                    setCallback(opsCallback).
+                    build(),
+
+            //UNKNOWN FOR MODULAR PROJECT
+//            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
 //            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
-            new RecommendedTemplatesImpl(),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
-//            ProjectOperations.createBuilder(this, eval, updateHelper, refHelper, sourceRoots, testRoots).
-//                    addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
-//                    addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
-//                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
-//                    addUpdatedNameProperty(ProjectProperties.DIST_JAR, "$'{'dist.dir'}'/{0}.jar", true).    //NOI18N
-//                    addUpdatedNameProperty(J2SEProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
-//                    setCallback(opsCallback).
-//                    build(),
             ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).
                     addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
 //                    setCustomizerAction(newConfigCustomizerAction()).
                     build(),
 //            new J2SEPersistenceProvider(this, cpProvider),
-            UILookupMergerSupport.createPrivilegedTemplatesMerger(),
-            UILookupMergerSupport.createRecommendedTemplatesMerger(),
-            LookupProviderSupport.createSourcesMerger(),
-            encodingQuery,
 //            new J2SEPropertyEvaluatorImpl(evaluator()),
-            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
-            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, evaluator()),
-            LookupMergerSupport.createSFBLookupMerger(),
-            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, evaluator()),
-            LookupMergerSupport.createJFBLookupMerger(),
-            QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
-            QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
-            LookupProviderSupport.createActionProviderMerger(),
 //            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
 //            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, platformChangedHook, J2SEProjectUtil.getBreakableProperties(this), new String[]{ProjectProperties.PLATFORM_ACTIVE}),
 //            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
-//            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
 //            UILookupMergerSupport.createProjectProblemsProviderMerger(),
 //            new J2SEProjectPlatformImpl(this),
-            QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
-            QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots),
-            QuerySupport.createModuleInfoAccessibilityQuery(sourceRoots, testRoots),
-            LookupMergerSupport.createCompilerOptionsQueryMerger()
+            QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots)
 //            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2semodule/Lookup"); //NOI18N
     }
 
-    public ClassPathProviderImpl getClassPathProvider () {
+    private MultiModuleClassPathProvider getClassPathProvider () {
         return this.cpProvider;
     }
 
@@ -413,17 +447,17 @@ public final class J2SEModularProject implements Project {
         return this.testRoots;
     }
 
-    public synchronized SourceRoots getModuleRoots() {
+    public synchronized ModuleRoots getModuleRoots() {
         if (this.moduleRoots == null) { //Local caching, no project metadata access
-            this.moduleRoots = SourceRoots.createModule(updateHelper, evaluator(), getReferenceHelper(),
+            this.moduleRoots = ModuleRoots.create(updateHelper, evaluator(), getReferenceHelper(),
                     J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
         }
         return this.moduleRoots;
     }
 
-    public synchronized SourceRoots getTestModuleRoots() {
+    public synchronized ModuleRoots getTestModuleRoots() {
         if (this.testModuleRoots == null) { //Local caching, no project metadata access
-            this.testModuleRoots = SourceRoots.createModule(updateHelper, evaluator(), getReferenceHelper(),
+            this.testModuleRoots = ModuleRoots.create(updateHelper, evaluator(), getReferenceHelper(),
                     J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testModuleRoots;
@@ -474,41 +508,81 @@ public final class J2SEModularProject implements Project {
         this.projectPropertiesSave.set(value);
     }
 
-    // Private innerclasses ----------------------------------------------------    
-//    /**
-//     * Exports the main JAR as an official build product for use from other scripts.
-//     * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
-//     */
-//    private final class AntArtifactProviderImpl implements AntArtifactProvider {
-//
-//        @Override
-//        public AntArtifact[] getBuildArtifacts() {
-//            return new AntArtifact[] {
-//                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean", ProjectProperties.BUILD_SCRIPT), // NOI18N
-//            };
-//        }
-//
-//    }
+    @NonNull
+    private ActionProvider newActionProvider() {
+        return MultiModuleActionProviderBuilder.newInstance(
+                this, getUpdateHelper(), evaluator(),
+                getSourceRoots(), getTestSourceRoots(), cpProvider)
+                .setCompileOnSaveOperationsProvider(() -> {
+                        return false && J2SEModularProjectUtil.isCompileOnSaveEnabled(this) ?   //TODO: Fixme - for now CoS disabled
+                            EnumSet.of(JavaActionProvider.CompileOnSaveOperation.UPDATE, JavaActionProvider.CompileOnSaveOperation.EXECUTE) :
+                            Collections.emptySet();
+                })
+                .build();
+    }
 
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         // List of primarily supported templates
-        private static final String[] TEMPLATES = new String[] {
+        private static final String[] PROJECT_TEMPLATES = new String[] {
+            "java-modules",         // NOI18N
             "simple-files"          // NOI18N
         };
 
-        private static final String[] PRIVILEGED_NAMES = new String[] {
+        private static final String[] MODULE_TEMPLATES = new String[] {
+            "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
+            "java-forms",           // NOI18N
+            "gui-java-application", // NOI18N
+            "java-beans",           // NOI18N
+            "persistence",          // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            "web-service-clients",  // NOI18N
+            "REST-clients",         // NOI18N
+            "wsdl",                 // NOI18N
+            // "servlet-types",     // NOI18N
+            // "web-types",         // NOI18N
+            "junit",                // NOI18N
+            // "MIDP",              // NOI18N
+            "simple-files"          // NOI18N
+        };
+
+        private static final String[] PRIVILEGED_PROJECT_NAMES = new String[] {
             "Templates/J2SEModule/module-info.java" // NOI18N
         };
 
+        private static final String[] PRIVILEGED_MODULE_NAMES = new String[] {
+            "Templates/Classes/Class.java", // NOI18N
+            "Templates/Classes/Package", // NOI18N
+            "Templates/Classes/Interface.java", // NOI18N
+            "Templates/GUIForms/JPanel.java", // NOI18N
+            "Templates/GUIForms/JFrame.java", // NOI18N
+            "Templates/Persistence/Entity.java", // NOI18N
+            "Templates/Persistence/RelatedCMP", // NOI18N
+            "Templates/WebServices/WebServiceClient"   // NOI18N
+        };
+        
+        private final FileObject projectDir;
+
+        private RecommendedTemplatesImpl(FileObject projectDir) {
+            this.projectDir = projectDir;
+        }
+
         @Override
-        public String[] getRecommendedTypes() {            
-            return TEMPLATES;
+        public String[] getRecommendedTypes() {
+            return isProject() ? PROJECT_TEMPLATES : MODULE_TEMPLATES;
         }
 
         @Override
         public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES;
+            return isProject() ? PRIVILEGED_PROJECT_NAMES : PRIVILEGED_MODULE_NAMES;
+        }
+        
+        private boolean isProject() {
+            return projectDir == Utilities.actionsGlobalContext().lookup(FileObject.class);
         }
     }
 
@@ -873,29 +947,29 @@ public final class J2SEModularProject implements Project {
 //            }
 //        };
 //    }
-//
-//    @NonNull
-//    private static ProjectOperations.Callback newProjectOperationsCallback (
-//        @NonNull final J2SEModularProject project,
-//        @NonNull final UpdateProjectImpl projectUpdate) {
-//        return new ProjectOperations.Callback() {
-//            @Override
-//            public void beforeOperation(@NonNull final ProjectOperations.Callback.Operation operation) {
-//            }
-//            @Override
-//            @SuppressWarnings("fallthrough")
-//            public void afterOperation(
-//                    @NonNull final ProjectOperations.Callback.Operation operation,
-//                    @NullAllowed final String newName,
-//                    @NullAllowed final Pair<File, Project> oldProject) {
-//                switch (operation) {
-//                    case COPY:
-//                        projectUpdate.setTransparentUpdate(true);
-//                    case MOVE:
-//                    case RENAME:
-//                        project.setName(newName);
-//                }
-//            }
-//        };
-//    }
+
+    @NonNull
+    private static ProjectOperations.Callback newProjectOperationsCallback (
+        @NonNull final J2SEModularProject project,
+        @NonNull final UpdateProjectImpl projectUpdate) {
+        return new ProjectOperations.Callback() {
+            @Override
+            public void beforeOperation(@NonNull final ProjectOperations.Callback.Operation operation) {
+            }
+            @Override
+            @SuppressWarnings("fallthrough")
+            public void afterOperation(
+                    @NonNull final ProjectOperations.Callback.Operation operation,
+                    @NullAllowed final String newName,
+                    @NullAllowed final Pair<File, Project> oldProject) {
+                switch (operation) {
+                    case COPY:
+                        projectUpdate.setTransparentUpdate(true);
+                    case MOVE:
+                    case RENAME:
+                        project.setName(newName);
+                }
+            }
+        };
+    }
 }

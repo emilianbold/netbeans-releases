@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation2;
@@ -62,6 +63,7 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -78,6 +80,7 @@ import org.w3c.dom.Element;
 /**
  * Support class for creating different types of queries implementations.
  * @author Tomas Mysik
+ * @author Tomas Zezula
  */
 public final class QuerySupport {
 
@@ -98,6 +101,36 @@ public final class QuerySupport {
             PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
         return createCompiledSourceForBinaryQuery(helper,
             evaluator, srcRoots, testRoots, new String[]{"build.classes.dir", "dist.jar"}, new String[]{"build.test.classes.dir"});
+    }
+
+    /**
+     * Creates a {@link SourceForBinaryQueryImplementation} for multi-module project.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory
+     * @param eval {@link PropertyEvaluator} used for obtaining project properties
+     * @param sourceModules the module roots
+     * @param srcRoots the source roots
+     * @param testModules the test module roots
+     * @param testRoots the test source roots
+     * @return the {@link SourceForBinaryQueryImplementation}
+     * @since 1.93
+     */
+    @NonNull
+    public static SourceForBinaryQueryImplementation createMultiModuleSourceForBinaryQuery(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, srcRoots);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleSourceForBinaryQueryImpl(
+                helper,
+                eval,
+                srcModel,
+                testModel,
+                new String[] {ProjectProperties.DIST_DIR, ProjectProperties.BUILD_MODULES_DIR},
+                new String[] {});
     }
 
     /**
@@ -157,6 +190,30 @@ public final class QuerySupport {
             PropertyEvaluator evaluator) {
 
         return createJavadocForBinaryQuery(helper, evaluator, new String[]{"build.classes.dir", "dist.jar"});
+    }
+
+    /**
+     * Creates a {@link JavadocForBinaryQueryImplementation} for multi-module project.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory
+     * @param eval {@link PropertyEvaluator} used for obtaining project properties
+     * @param sourceModules the module roots
+     * @param srcRoots the source roots
+     * @return the {@link JavadocForBinaryQueryImplementation}
+     * @since 1.94
+     */
+    @NonNull
+    public static JavadocForBinaryQueryImplementation createMultiModuleJavadocForBinaryQuery(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots srcRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, srcRoots);
+        return new MultiModuleJavadocForBinaryQueryImpl(
+                helper,
+                eval,
+                srcModel,
+                new String[] {ProjectProperties.DIST_DIR, ProjectProperties.BUILD_MODULES_DIR},
+                ProjectProperties.DIST_JAVADOC_DIR);
     }
 
     /**
@@ -387,7 +444,41 @@ public final class QuerySupport {
                 new String[] {ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.DIST_JAR},
                 new String[] {ProjectProperties.BUILD_TEST_CLASSES_DIR});
     }
-    
+
+
+    /**
+     * Creates a {@link BinaryForSourceQueryImplementation} for multi-module project.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory
+     * @param eval {@link PropertyEvaluator} used for obtaining project properties
+     * @param sourceModules the module roots
+     * @param srcRoots the source roots
+     * @param testModules the test module roots
+     * @param testRoots the test source roots
+     * @return the {@link BinaryForSourceQueryImplementation}
+     * @since 1.93
+     */
+    @NonNull
+    public static BinaryForSourceQueryImplementation createMultiModuleBinaryForSourceQuery(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, srcRoots);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleBinaryForSourceQueryImpl(
+                helper,
+                eval,
+                srcModel,
+                testModel,
+                new String[] {
+                    String.format("${%s}/${module.name}",ProjectProperties.BUILD_MODULES_DIR),   //NOI18N
+                    String.format("${%s}/${module.name}.jar",ProjectProperties.DIST_DIR)       //NOI18N
+                },
+                new String[] {});
+    }
+
     /**Create a new query to provide annotation processing configuration data.
      * 
      * @param helper project's AntProjectHelper
@@ -448,7 +539,51 @@ public final class QuerySupport {
     public static AccessibilityQueryImplementation2 createModuleInfoAccessibilityQuery(
             @NonNull final SourceRoots sources,
             @NonNull final SourceRoots tests) {
-        return new ModuleInfoAccessibilityQueryImpl(sources, tests);
+        return new ModuleInfoAccessibilityQueryImpl(null, sources, null, tests);
+    }
+
+    /**
+     * Creates a {@link AccessibilityQueryImplementation2} based on the module-info for multi module projects.
+     * @param sourceModules the module roots
+     * @param sources the source roots
+     * @param testModules the test module roots
+     * @param tests the test roots
+     * @return the {@link AccessibilityQueryImplementation2} instance
+     * @since 1.97
+     */
+    @NonNull
+    public static AccessibilityQueryImplementation2 createModuleInfoAccessibilityQuery(
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots sources,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots tests) {
+        Parameters.notNull("sourceModules", sourceModules);     //NOI18N
+        Parameters.notNull("testModules", testModules);         //NOI18N
+        return new ModuleInfoAccessibilityQueryImpl(
+                sourceModules, sources, testModules, tests);
+    }
+
+    /**
+     * Creates a {@link AntArtifactProvider} for multi-module project.
+     * @param helper the {@link AntProjectHelper}
+     * @param eval the {@link PropertyEvaluator}
+     * @param sourceModules the module roots
+     * @param sources the source roots
+     * @return the {@link AntArtifactProvider} instance
+     * @since 1.98
+     */
+    @NonNull
+    public static AntArtifactProvider createMultiModuleAntArtifactProvider(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots sources) {
+        return new MultiModuleAntArtifactProvider(
+                helper,
+                eval,
+                MultiModule.getOrCreate(sourceModules, sources),
+                "jar",      //NOI18N
+                "clean");   //NOI18N
     }
 
     private static class AntHelper extends ProjectInfoImpl {
