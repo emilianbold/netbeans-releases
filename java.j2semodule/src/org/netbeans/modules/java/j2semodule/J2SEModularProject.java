@@ -365,6 +365,11 @@ public final class J2SEModularProject implements Project {
                     getSourceRoots(),
                     getTestModuleRoots(),
                     getTestSourceRoots()), this),
+            QuerySupport.createMultiModuleUnitTestForSourceQuery(
+                    getModuleRoots(),
+                    getSourceRoots(),
+                    getTestModuleRoots(),
+                    getTestSourceRoots()),
             ProjectConfigurations.createConfigurationProviderBuilder(this, evaluator(), updateHelper).
                     addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
                     setCustomizerAction(newConfigCustomizerAction()).
@@ -373,7 +378,6 @@ public final class J2SEModularProject implements Project {
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
 
             //UNKNOWN FOR MODULAR PROJECT
-//            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,

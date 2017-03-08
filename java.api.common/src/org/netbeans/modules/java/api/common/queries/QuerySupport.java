@@ -369,6 +369,26 @@ public final class QuerySupport {
     }
 
     /**
+     * Creates a {@link MultipleRootsUnitTestForSourceQueryImplementation} for a multi-module project.
+     * @param sourceModules the module roots
+     * @param sourceRoots the source roots
+     * @param testModules the test module roots
+     * @param testRoots the test source roots
+     * @return the newly created {@link MultipleRootsUnitTestForSourceQueryImplementation}
+     * @since 1.104
+    */
+    @NonNull
+    public static MultipleRootsUnitTestForSourceQueryImplementation createMultiModuleUnitTestForSourceQuery(
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, sourceRoots);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleUnitTestForSourceQueryImpl(srcModel, testModel);
+    }
+
+    /**
      * Create a new query to test whether a file can be considered to be built (up to date). The returned query
      * listens to the changes in particular source roots.
      * @param helper {@link AntProjectHelper} used for creating a query itself.
