@@ -64,7 +64,7 @@ public class JsKeywords {
     };
 
     protected final static Map<String, CompletionDescription> KEYWORDS = new HashMap<>();
-    protected final static Map<String, CompletionDescription> SPECIAL_KEYWORDS_IMPORTEXPORT = new HashMap<>();//not in ECMAScript 6,7
+    protected final static Map<String, CompletionDescription> SPECIAL_KEYWORDS_IMPORTEXPORT = new HashMap<>();
     
     static {
         KEYWORDS.put(JsTokenId.KEYWORD_BREAK.fixedText(), new CompletionDescription(CompletionType.ENDS_WITH_SEMICOLON));
