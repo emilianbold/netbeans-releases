@@ -44,52 +44,28 @@
 
 package org.netbeans.modules.java.j2semodule;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
-//import org.netbeans.api.project.libraries.Library;
-//import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.ModuleRoots;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -106,53 +82,35 @@ import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2semodule.ui.customizer.J2SECompositePanelProvider;
-//import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
-//import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-//import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
-//import org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider;
-//import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-//import org.netbeans.modules.java.j2seproject.ui.wizards.J2SEFileWizardIterator;
-//import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 //import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
@@ -411,6 +369,8 @@ public final class J2SEModularProject implements Project {
                     addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
                     setCustomizerAction(newConfigCustomizerAction()).
                     build(),
+            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
+            UILookupMergerSupport.createProjectProblemsProviderMerger(),
 
             //UNKNOWN FOR MODULAR PROJECT
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
@@ -418,12 +378,8 @@ public final class J2SEModularProject implements Project {
             buildExtender,
             cpMod,
 //            new J2SEPersistenceProvider(this, cpProvider),
-//            new J2SEPropertyEvaluatorImpl(evaluator()),
-//            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
 //            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, platformChangedHook, J2SEProjectUtil.getBreakableProperties(this), new String[]{ProjectProperties.PLATFORM_ACTIVE}),
 //            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
-//            UILookupMergerSupport.createProjectProblemsProviderMerger(),
-//            new J2SEProjectPlatformImpl(this),
             QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots)
 //            J2SEFileWizardIterator.create()
         );
@@ -599,17 +555,6 @@ public final class J2SEModularProject implements Project {
             return projectDir == Utilities.actionsGlobalContext().lookup(FileObject.class);
         }
     }
-
-//    private static final class J2SEPropertyEvaluatorImpl implements J2SEPropertyEvaluator {
-//        private PropertyEvaluator evaluator;
-//        public J2SEPropertyEvaluatorImpl (PropertyEvaluator eval) {
-//            evaluator = eval;
-//        }
-//        @Override
-//        public PropertyEvaluator evaluator() {
-//            return evaluator;
-//        }
-//    }
 
     private class J2SEModularExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..

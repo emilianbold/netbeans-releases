@@ -205,6 +205,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
+                <friend>org.netbeans.modules.java.j2semodule</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.javaee.project</friend>
                 <friend>org.netbeans.modules.javafx2.editor</friend>
