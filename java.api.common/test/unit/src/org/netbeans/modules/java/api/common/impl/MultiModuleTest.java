@@ -113,7 +113,7 @@ public class MultiModuleTest extends NbTestCase {
         assertNotNull(m1);
         final FileObject m2 = modulesFolder.createFolder("m2");         //NOI18N
         assertNotNull(m2);
-        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:resources", modulesFolder));   //NOI18N
         final SourceRoots sources = mtu.newSourceRoots(false);
         assertEquals(
                 Arrays.stream(new FileObject[]{m1, m2})
@@ -137,7 +137,7 @@ public class MultiModuleTest extends NbTestCase {
         assertNotNull(m1);
         final FileObject m2 = modulesFolder.createFolder("m2");     //NOI18N
         assertNotNull(m2);
-        assertTrue(mtu.updateModuleRoots("{classes,resources}", modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,resources}", modulesFolder));   //NOI18N
         final SourceRoots sources = mtu.newSourceRoots(false);
         assertEquals(
                 Arrays.stream(new FileObject[]{m1, m2})
@@ -154,7 +154,7 @@ public class MultiModuleTest extends NbTestCase {
     }
 
     public void testModel() {
-        assertTrue(mtu.updateModuleRoots(src1,src2));
+        assertTrue(mtu.updateModuleRoots(false, src1,src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -192,7 +192,7 @@ public class MultiModuleTest extends NbTestCase {
     }
 
     public void testModulePathChanges() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -219,7 +219,7 @@ public class MultiModuleTest extends NbTestCase {
         assertNotNull(scp);
         assertEquals(Arrays.asList(mod1d), Arrays.asList(scp.getRoots()));
 
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod2c, mod1d, mod2d})
@@ -246,7 +246,7 @@ public class MultiModuleTest extends NbTestCase {
         assertNotNull(scp);
         assertEquals(Arrays.asList(mod1d, mod2d), Arrays.asList(scp.getRoots()));
 
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         assertTrue(Arrays.equals(new FileObject[]{src2}, modules.getRoots()));
         assertEquals(
                 Arrays.stream(new FileObject[]{mod2c, mod2d})
@@ -270,7 +270,7 @@ public class MultiModuleTest extends NbTestCase {
     }
 
     public void testModulePathChangesFires() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -299,14 +299,14 @@ public class MultiModuleTest extends NbTestCase {
 
         final MockPropertyChangeListener l = new MockPropertyChangeListener(MultiModule.PROP_MODULES);
         model.addPropertyChangeListener(l);
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         l.assertEventCount(1);
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         l.assertEventCount(1);
     }
 
     public void testModulesSetChanges() throws IOException {
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -342,7 +342,7 @@ public class MultiModuleTest extends NbTestCase {
     }
 
     public void testModulesSetChangesFires() throws IOException {
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -385,7 +385,7 @@ public class MultiModuleTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -416,7 +416,7 @@ public class MultiModuleTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);

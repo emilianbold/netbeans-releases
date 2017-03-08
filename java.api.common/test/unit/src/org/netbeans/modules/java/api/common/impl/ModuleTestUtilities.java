@@ -75,24 +75,37 @@ public final class ModuleTestUtilities {
         this.tp = tp;
     }
 
-    public boolean updateModuleRoots(@NonNull final FileObject... folders) {
-        return updateModuleRoots("classes", folders);
+    public boolean updateModuleRoots(
+            final boolean tests,
+            @NonNull final FileObject... folders) {
+        return updateModuleRoots(tests, tests ? "tests" : "classes", folders);  //NOI18N
     }
 
     public boolean updateModuleRoots(
+            final boolean tests,
             @NonNull final String modulePath,
             @NonNull final FileObject... folders) {
-        return updateModuleRoots(modulePath, true, folders);
+        return updateModuleRoots(tests, modulePath, true, folders);
     }
 
     public boolean updateModuleRoots(
+            final boolean tests,
             @NonNull final String modulePath,
             final boolean cleanExisting,
             @NonNull final FileObject... folders) {
         final boolean[] res = new boolean[1];
         ProjectManager.mutex().writeAccess(() -> {
+            String[] cfg = tests ?
+                    new String[] {
+                        "test-roots", //NOI18N
+                        "test.dir_%d"    //NOI18N
+                    } :
+                    new String[] {
+                        "source-roots", //NOI18N
+                        "src.dir_%d"    //NOI18N
+                    };
             final Element root = tp.getUpdateHelper().getPrimaryConfigurationData(true);
-            final Element sources = XMLUtil.findElement(root, "source-roots", null);    //NOI18N
+            final Element sources = XMLUtil.findElement(root, cfg[0], null);    //NOI18N
             if (sources != null) {
                 final NodeList ch = sources.getChildNodes();
                 if (cleanExisting) {
@@ -104,7 +117,7 @@ public final class ModuleTestUtilities {
                 int base = ch.getLength() + 1;
                 for (int i=0; i<folders.length; i++) {
                     final Element src = root.getOwnerDocument().createElementNS(TestProject.PROJECT_CONFIGURATION_NAMESPACE, "root");  //NOI18N
-                    final String name = String.format("src.dir_%d",base + i);                //NOI18N
+                    final String name = String.format(cfg[1],base + i);                //NOI18N
                     final String path = String.format("%s.path",name);                  //NOI18N
                     src.setAttribute("id", name);                                       //NOI18N
                     src.setAttribute("pathref", path);

@@ -153,14 +153,14 @@ public class MultiModuleGroupQueryImplTest extends NbTestCase {
     }
     
     public void testFindModuleInfo() throws Exception {
-        assertTrue(mtu.updateModuleRoots("classes:i386", src1));   //NOI18N
-        assertTrue(mtu.updateModuleRoots("classes:amd64", false, src2));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:i386", src1));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:amd64", false, src2));   //NOI18N
         testModInfoCommon();
     }
 
     public void testFindModuleInfoAlternatives() throws Exception {
-        assertTrue(mtu.updateModuleRoots("{classes,i386}", src1));   //NOI18N
-        assertTrue(mtu.updateModuleRoots("{classes,amd64}", false, src2));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,i386}", src1));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,amd64}", false, src2));   //NOI18N
         testModInfoCommon();
     }
 
@@ -168,16 +168,16 @@ public class MultiModuleGroupQueryImplTest extends NbTestCase {
      * Checks that caches are flushed after project changes
      */
     public void testFindModuleInfoTrackChanges() throws Exception {
-        assertTrue(mtu.updateModuleRoots("{classes,i386}", src1));   //NOI18N
-        assertTrue(mtu.updateModuleRoots("{classes,amd64}", false, src2));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,i386}", src1));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,amd64}", false, src2));   //NOI18N
         MultiModuleGroupQuery mq = testModInfoCommon();
         SourceGroup[] grps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         SourceGroup grp1c = find(grps, mod1c, true);
         assertNotNull(mq.findModuleInfo(grp1c));
         
         // change project definition:
-        assertTrue(mtu.updateModuleRoots("{classes,xxx}", src1));   //NOI18N
-        assertTrue(mtu.updateModuleRoots("{classes,xamd64}", false, src2));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,xxx}", src1));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,xamd64}", false, src2));   //NOI18N
         
         grps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         MultiModuleGroupQuery.Result r;
@@ -226,8 +226,8 @@ public class MultiModuleGroupQueryImplTest extends NbTestCase {
     }
     
     public void testFilterModuleGroups() throws Exception {
-        assertTrue(mtu.updateModuleRoots("{classes,i386}", src1));   //NOI18N
-        assertTrue(mtu.updateModuleRoots("{classes,amd64}", false, src2));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,i386}", src1));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "{classes,amd64}", false, src2));   //NOI18N
         MultiModuleGroupQuery mq = QuerySupport.createMultiModuleGroupQuery(helper, eval, src, testRoots);
         SourceGroup[] grps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
 

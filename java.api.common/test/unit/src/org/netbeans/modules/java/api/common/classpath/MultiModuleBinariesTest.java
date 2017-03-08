@@ -122,7 +122,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
     }
 
     public void testBinaryPath() {
-        assertTrue(mtu.updateModuleRoots(src1,src2));
+        assertTrue(mtu.updateModuleRoots(false,src1,src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -166,7 +166,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
     }
 
     public void testModulePathChanges() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false,src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -208,7 +208,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .collect(Collectors.toList()));
 
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         assertEquals(
                 Arrays.stream(new FileObject[]{mod1a, mod1b, mod2c, mod1d, mod2d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
@@ -221,7 +221,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
                     .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
                     .collect(Collectors.toList()));
 
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         assertEquals(
                 Arrays.stream(new FileObject[]{mod2c, mod2d})
                     .flatMap((fo) -> Arrays.stream(new URL[]{
@@ -236,7 +236,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
     }
 
     public void testModulePathChangesFires() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -280,15 +280,15 @@ public final class MultiModuleBinariesTest extends NbTestCase {
 
         final MockPropertyChangeListener l = new MockPropertyChangeListener();
         cp.addPropertyChangeListener(l);
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
 
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
     }
 
     public void testModuleSetChanges() throws IOException {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -357,7 +357,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
     }
 
     public void testModuleSetChangesFires() throws IOException {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -408,7 +408,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
     }
 
     public void testDistFolderChanges() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -474,7 +474,7 @@ public final class MultiModuleBinariesTest extends NbTestCase {
     }
 
     public void testDistFolderChangesFires() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
