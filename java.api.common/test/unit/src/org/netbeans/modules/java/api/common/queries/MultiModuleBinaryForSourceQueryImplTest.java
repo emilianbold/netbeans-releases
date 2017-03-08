@@ -107,7 +107,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
     }
 
     public void testQuery() {
-        assertTrue(mtu.updateModuleRoots(src1,src2));
+        assertTrue(mtu.updateModuleRoots(false, src1,src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -178,7 +178,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
     }
 
     public void testDistFolderChanges() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -243,7 +243,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
     }
 
     public void testDistFolderChangesFires() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -304,7 +304,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
     }
 
     public void testModulePathChanges() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -337,7 +337,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         r = q.findBinaryRoots(mod2c.toURL());
         assertNull(r);
 
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         r = q.findBinaryRoots(mod1a.toURL());
         assertNotNull(r);
@@ -356,7 +356,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
                 ),
                 Arrays.asList(r.getRoots()));
 
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         assertTrue(Arrays.equals(new FileObject[]{src2}, modules.getRoots()));
         r = q.findBinaryRoots(mod1a.toURL());
         assertNull(r);
@@ -372,7 +372,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
     }
 
     public void testModulePathChangesFires() {
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -414,7 +414,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         r1.addChangeListener(l1);
         final MockChangeListener l2 = new MockChangeListener();
         r2.addChangeListener(l2);
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         l1.assertEventCount(0);
         l2.assertEventCount(1);
@@ -425,7 +425,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:resources", modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -465,7 +465,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
                 ),
                 Arrays.asList(r2.getRoots()));
 
-        assertTrue(mtu.updateModuleRoots("resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "resources", modulesFolder));   //NOI18N
         assertEquals(
                 Collections.emptyList(),
                 Arrays.asList(r1.getRoots()));
@@ -489,7 +489,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:resources", modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -533,7 +533,7 @@ public final class MultiModuleBinaryForSourceQueryImplTest extends NbTestCase {
         r1.addChangeListener(l1);
         final MockChangeListener l2 = new MockChangeListener();
         r2.addChangeListener(l2);
-        assertTrue(mtu.updateModuleRoots("resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "resources", modulesFolder));   //NOI18N
         l1.assertEventCount(1);
         l2.assertEventCount(0);
     }

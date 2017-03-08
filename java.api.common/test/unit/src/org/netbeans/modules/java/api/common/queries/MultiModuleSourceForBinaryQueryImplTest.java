@@ -109,7 +109,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
 
 
     public void testQueryForDistFolder() {
-        assertTrue(mtu.updateModuleRoots(src1,src2));
+        assertTrue(mtu.updateModuleRoots(false, src1,src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -157,7 +157,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
     }
 
     public void testBuildFolder() {
-        assertTrue(mtu.updateModuleRoots(src1,src2));
+        assertTrue(mtu.updateModuleRoots(false, src1,src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -205,7 +205,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
     }
 
     public void testDistFolderChanges() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -255,7 +255,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
     }
     
     public void testDistFolderChangesFires() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -315,7 +315,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -356,7 +356,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         final FileObject modulesFolder = wd.createFolder("modules"); //NOI18N
         assertNotNull(modulesFolder);
         final FileObject classesFolder = modulesFolder.createFolder("module").createFolder("classes");        //NOI18N
-        assertTrue(mtu.updateModuleRoots("classes:resources",modulesFolder));   //NOI18N
+        assertTrue(mtu.updateModuleRoots(false, "classes:resources",modulesFolder));   //NOI18N
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{modulesFolder}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -401,7 +401,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
     }
 
     public void testModulePathChanges() {
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -425,7 +425,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         res = q.findSourceRoots2(mtu.buildFor(mod2c.getParent().getNameExt()));
         assertNull(res);
 
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         //Result for new module path entry should be returned
         res = q.findSourceRoots2(mtu.buildFor(mod1a.getParent().getNameExt()));
@@ -433,7 +433,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         res = q.findSourceRoots2(mtu.buildFor(mod2c.getParent().getNameExt()));
         assertNotNull(res);
 
-        assertTrue(mtu.updateModuleRoots(src2));
+        assertTrue(mtu.updateModuleRoots(false, src2));
         assertTrue(Arrays.equals(new FileObject[]{src2}, modules.getRoots()));
         //Result for removed module path entry should not be returned
         res = q.findSourceRoots2(mtu.buildFor(mod1a.getParent().getNameExt()));
@@ -443,7 +443,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
     }
 
     public void testModulePathChangesFires() {
-        assertTrue(mtu.updateModuleRoots(src1, src2));
+        assertTrue(mtu.updateModuleRoots(false, src1, src2));
         final SourceRoots modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         final SourceRoots sources = mtu.newSourceRoots(false);
@@ -474,7 +474,7 @@ public final class MultiModuleSourceForBinaryQueryImplTest extends NbTestCase {
         res1.addChangeListener(l1);
         res2.addChangeListener(l2);
 
-        assertTrue(mtu.updateModuleRoots(src1));
+        assertTrue(mtu.updateModuleRoots(false, src1));
         l1.assertEventCount(0);
         assertEquals(Arrays.asList(mod1a), Arrays.asList(res1.getRoots()));
         l2.assertEventCount(1);

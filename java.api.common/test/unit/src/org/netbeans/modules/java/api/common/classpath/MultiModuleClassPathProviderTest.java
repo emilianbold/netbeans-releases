@@ -180,7 +180,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         assertNotNull(mtu);
 
         //Set module roots
-        assertTrue(mtu.updateModuleRoots(src1,src2));
+        assertTrue(mtu.updateModuleRoots(false, src1,src2));
         modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         sources = mtu.newSourceRoots(false);
