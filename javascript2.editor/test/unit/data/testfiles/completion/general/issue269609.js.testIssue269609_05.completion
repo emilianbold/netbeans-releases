@@ -1,5 +1,5 @@
 Code completion result for source line:
-import * a|
+export { foo a|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 KEYWORD    as                                         ECMAScript 6

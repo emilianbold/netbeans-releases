@@ -115,8 +115,8 @@ public class JsKeywords {
     }
    
     static {
-        SPECIAL_KEYWORDS_IMPORTEXPORT.put("as", new CompletionDescription(CompletionType.ENDS_WITH_SPACE));
-        SPECIAL_KEYWORDS_IMPORTEXPORT.put("from", new CompletionDescription(CompletionType.ENDS_WITH_SPACE));
+        SPECIAL_KEYWORDS_IMPORTEXPORT.put("as", new CompletionDescription(CompletionType.ENDS_WITH_SPACE, JsVersion.ECMA6));
+        SPECIAL_KEYWORDS_IMPORTEXPORT.put("from", new CompletionDescription(CompletionType.ENDS_WITH_SPACE, JsVersion.ECMA6));
     }    
 
     public static class CompletionDescription {
