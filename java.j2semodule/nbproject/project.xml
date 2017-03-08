@@ -216,6 +216,14 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.whitelist</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.24</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
