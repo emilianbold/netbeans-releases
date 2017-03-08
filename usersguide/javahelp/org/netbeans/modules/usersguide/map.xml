@@ -10344,10 +10344,14 @@
   <!-- "Project Properties Window: JavaScript Frameworks: RequireJS"-->
   <mapID target="NBCSH4356" url="f1_html011.htm#NBCSH4356" />
   <!-- "Related Topics"-->
-  <mapID target="f1_html012.htm-sthref586" url="f1_html012.htm#sthref586" />
-  <!-- "Project Properties Window: Run"-->
-  <mapID target="f1_html013.htm-sthref588" url="f1_html013.htm#sthref588" />
+  <mapID target="org.netbeans.modules.html.ojet.ui.OJETPanel" url="f1_html012.htm#org.netbeans.modules.html.ojet.ui.OJETPanel" />
   <!-- "Project Properties Window: JavaScript: Oracle JET"-->
+  <mapID target="f1_html012.htm-sthref586" url="f1_html012.htm#sthref586" />
+  <!-- "Project Properties Window: JavaScript: Oracle JET"-->
+  <mapID target="org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerPanel" url="f1_html013.htm#org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerPanel" />
+  <!-- "Project Properties Window: Node.js"-->
+  <mapID target="f1_html013.htm-sthref588" url="f1_html013.htm#sthref588" />
+  <!-- "Project Properties Window: Node.js"-->
   <mapID target="org.netbeans.modules.web.browser.ui.ResizeOptionsCustomizer" url="f1_html014.htm#org.netbeans.modules.web.browser.ui.ResizeOptionsCustomizer" />
   <!-- "Project Properties Window: Node.js"-->
   <mapID target="NBCSH4357" url="f1_html014.htm#NBCSH4357" />
