@@ -105,6 +105,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.java.j2semodule.ui.customizer.J2SECompositePanelProvider;
 //import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 //import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 //import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
@@ -406,16 +407,16 @@ public final class J2SEModularProject implements Project {
                     getSourceRoots(),
                     getTestModuleRoots(),
                     getTestSourceRoots()), this),
+            ProjectConfigurations.createConfigurationProviderBuilder(this, evaluator(), updateHelper).
+                    addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
+                    setCustomizerAction(newConfigCustomizerAction()).
+                    build(),
 
             //UNKNOWN FOR MODULAR PROJECT
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
-            ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).
-                    addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
-//                    setCustomizerAction(newConfigCustomizerAction()).
-                    build(),
 //            new J2SEPersistenceProvider(this, cpProvider),
 //            new J2SEPropertyEvaluatorImpl(evaluator()),
 //            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
@@ -821,16 +822,13 @@ public final class J2SEModularProject implements Project {
 //        };
 //    }
 //
-//    @NonNull
-//    private Runnable newConfigCustomizerAction() {
-//        return new Runnable() {
-//            @Override
-//            public void run() {
-//                J2SEModularProject.this.getLookup().lookup(CustomizerProviderImpl.class).
-//                    showCustomizer(J2SECompositePanelProvider.RUN);
-//            }
-//        };
-//    }
+    @NonNull
+    private Runnable newConfigCustomizerAction() {
+        return () -> {
+            J2SEModularProject.this.getLookup().lookup(CustomizerProviderImpl.class).
+                showCustomizer(J2SECompositePanelProvider.RUN);
+        };
+    }
 
     @NonNull
     private LogicalViewProviders.CompileOnSaveBadge newCoSBadge() {
