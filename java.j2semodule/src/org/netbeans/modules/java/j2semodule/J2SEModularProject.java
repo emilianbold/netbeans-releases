@@ -373,7 +373,7 @@ public final class J2SEModularProject implements Project {
                 eval,
                 "org-netbeans-modules-java-j2semodule").   //NOI18N
                 setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2semodule.ui.J2SEModularLogicalViewProvider.J2SEModularLogicalViewRootNode")).    //NOI18N
-//                setCompileOnSaveBadge(newCoSBadge()).
+                setCompileOnSaveBadge(newCoSBadge()).
                 build(),
             QuerySupport.createModuleInfoAccessibilityQuery(
                     getModuleRoots(),
@@ -399,17 +399,16 @@ public final class J2SEModularProject implements Project {
                     addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
                     setCallback(opsCallback).
                     build(),
-            QuerySupport.createMultiModuleFileBuiltQuery(
+            new CoSAwareFileBuiltQueryImpl(QuerySupport.createMultiModuleFileBuiltQuery(
                     helper,
                     evaluator(),
                     getModuleRoots(),
                     getSourceRoots(),
                     getTestModuleRoots(),
-                    getTestSourceRoots()),
+                    getTestSourceRoots()), this),
 
             //UNKNOWN FOR MODULAR PROJECT
 //            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
-//            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
@@ -641,119 +640,6 @@ public final class J2SEModularProject implements Project {
 //        }
 //    }
 //
-//    private static final class CoSAwareFileBuiltQueryImpl implements FileBuiltQueryImplementation, PropertyChangeListener {
-//
-//        private final FileBuiltQueryImplementation delegate;
-//        private final J2SEModularProject project;
-//        private final AtomicBoolean cosEnabled = new AtomicBoolean();
-//        private final Map<FileObject, Reference<StatusImpl>> file2Status = new WeakHashMap<FileObject, Reference<StatusImpl>>();
-//
-//        @SuppressWarnings("LeakingThisInConstructor")
-//        public CoSAwareFileBuiltQueryImpl(FileBuiltQueryImplementation delegate, J2SEModularProject project) {
-//            this.delegate = delegate;
-//            this.project = project;
-//
-//            project.evaluator().addPropertyChangeListener(this);
-//
-//            setCoSEnabledAndXor();
-//        }
-//
-//        private synchronized StatusImpl readFromCache(FileObject file) {
-//            Reference<StatusImpl> r = file2Status.get(file);
-//
-//            return r != null ? r.get() : null;
-//        }
-//
-//        @Override
-//        public Status getStatus(FileObject file) {
-//            StatusImpl result = readFromCache(file);
-//
-//            if (result != null) {
-//                return result;
-//            }
-//
-//            Status status = delegate.getStatus(file);
-//
-//            if (status == null) {
-//                return null;
-//            }
-//
-//            synchronized (this) {
-//                StatusImpl foisted = readFromCache(file);
-//
-//                if (foisted != null) {
-//                    return foisted;
-//                }
-//
-//                file2Status.put(file, new WeakReference<StatusImpl>(result = new StatusImpl(cosEnabled, status)));
-//            }
-//
-//            return result;
-//        }
-//
-//        boolean setCoSEnabledAndXor() {
-//            boolean nue = J2SEProjectUtil.isCompileOnSaveEnabled(project);
-//            boolean old = cosEnabled.getAndSet(nue);
-//
-//            return old != nue;
-//        }
-//
-//        @Override
-//        public void propertyChange(PropertyChangeEvent evt) {
-//            if (!setCoSEnabledAndXor()) {
-//                return ;
-//            }
-//
-//            Collection<Reference<StatusImpl>> toRefresh;
-//
-//            synchronized (this) {
-//                toRefresh = new LinkedList<Reference<StatusImpl>>(file2Status.values());
-//            }
-//
-//            for (Reference<StatusImpl> r : toRefresh) {
-//                StatusImpl s = r.get();
-//
-//                if (s != null) {
-//                    s.stateChanged(null);
-//                }
-//            }
-//        }
-//
-//        private static final class StatusImpl implements Status, ChangeListener {
-//
-//            private final ChangeSupport cs = new ChangeSupport(this);
-//            private final AtomicBoolean cosEnabled;
-//            private final Status delegate;
-//
-//            @SuppressWarnings("LeakingThisInConstructor")
-//            public StatusImpl(AtomicBoolean cosEnabled, Status delegate) {
-//                this.cosEnabled = cosEnabled;
-//                this.delegate = delegate;
-//                this.delegate.addChangeListener(this);
-//            }
-//
-//            @Override
-//            public boolean isBuilt() {
-//                return cosEnabled.get() || delegate.isBuilt();
-//            }
-//
-//            @Override
-//            public void addChangeListener(ChangeListener l) {
-//                cs.addChangeListener(l);
-//            }
-//
-//            @Override
-//            public void removeChangeListener(ChangeListener l) {
-//                cs.removeChangeListener(l);
-//            }
-//
-//            @Override
-//            public void stateChanged(ChangeEvent e) {
-//                cs.fireChange();
-//            }
-//
-//        }
-//    }
 //
 //    private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
 //        @Override
@@ -945,22 +831,22 @@ public final class J2SEModularProject implements Project {
 //            }
 //        };
 //    }
-//
-//    @NonNull
-//    private LogicalViewProviders.CompileOnSaveBadge newCoSBadge() {
-//        return new LogicalViewProviders.CompileOnSaveBadge() {
-//            @Override
-//            public boolean isBadgeVisible() {
-//                return !J2SEProjectUtil.isCompileOnSaveEnabled(J2SEModularProject.this) &&
-//                    J2SEProjectUtil.isCompileOnSaveSupported(J2SEModularProject.this);
-//            }
-//            @Override
-//            public boolean isImportant(@NonNull final String propertyName) {
-//                return ProjectProperties.COMPILE_ON_SAVE.equals(propertyName) ||
-//                propertyName.startsWith(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX);
-//            }
-//        };
-//    }
+
+    @NonNull
+    private LogicalViewProviders.CompileOnSaveBadge newCoSBadge() {
+        return new LogicalViewProviders.CompileOnSaveBadge() {
+            @Override
+            public boolean isBadgeVisible() {
+                return !J2SEModularProjectUtil.isCompileOnSaveEnabled(J2SEModularProject.this) &&
+                    J2SEModularProjectUtil.isCompileOnSaveSupported(J2SEModularProject.this);
+            }
+            @Override
+            public boolean isImportant(@NonNull final String propertyName) {
+                return ProjectProperties.COMPILE_ON_SAVE.equals(propertyName) ||
+                propertyName.startsWith(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX);
+            }
+        };
+    }
 
     @NonNull
     private static ProjectOperations.Callback newProjectOperationsCallback (
