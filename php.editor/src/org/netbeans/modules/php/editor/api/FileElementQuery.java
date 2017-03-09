@@ -374,5 +374,10 @@ public final class FileElementQuery extends AbstractElementQuery implements Elem
             }
             return name;
         }
+
+        @Override
+        public boolean isNullableType() {
+            return false;
+        }
     }
 }

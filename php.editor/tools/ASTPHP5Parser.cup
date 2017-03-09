@@ -1764,6 +1764,11 @@ optional_return_type ::=
 {:
 	RESULT = className;
 :}
+
+| T_NEKUDOTAIM:e T_QUESTION_MARK:nullable class_type:className
+{:
+	RESULT = new NullableType(nullableleft, classNameright, className);
+:}
 ;
 
 optional_class_type ::=
@@ -1775,6 +1780,11 @@ optional_class_type ::=
 | class_type:className
 {:
 	RESULT = className;
+:}
+
+| T_QUESTION_MARK:start class_type:className
+{:
+	RESULT = new NullableType(startleft, classNameright, className);
 :}
 ;
 

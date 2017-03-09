@@ -106,32 +106,37 @@ class DocumentSwitcherTable extends SwitcherTable {
         int selCol = getSelectedColumn();
         if( selRow < 0 || selCol < 0 )
             return false;
-        Rectangle rect = getCellRect( selRow, selCol, false );
-        if( rect.contains( p ) ) {
-            Dimension size = btnClose.getPreferredSize();
-            int x = rect.x+rect.width-size.width;
-            int y = rect.y + (rect.height-size.height)/2;
-            Rectangle btnRect = new Rectangle( x, y, size.width, size.height);
-            boolean inButton = btnRect.contains( p );
-            boolean mustRepaint = inCloseButtonRect != inButton;
-            inCloseButtonRect = inButton;
-            if( inButton ) {
-                if( e.getID() == MouseEvent.MOUSE_PRESSED ) {
-                    Item item = ( Item ) getModel().getValueAt( selRow, selCol );
-                    TabData tab = item.getTabData();
-                    int tabIndex = displayer.getModel().indexOf( tab );
-                    if( tabIndex >= 0 ) {
-                        TabActionEvent evt = new TabActionEvent( displayer, TabDisplayer.COMMAND_CLOSE, tabIndex);
-                        displayer.postActionEvent( evt );
-                        return true;
+        Item item = ( Item ) getModel().getValueAt( selRow, selCol );
+        // #268040 - check whether the item is closable
+        if (isClosable(item)) {
+            Rectangle rect = getCellRect( selRow, selCol, false );
+            if( rect.contains( p ) ) {
+                Dimension size = btnClose.getPreferredSize();
+                int x = rect.x+rect.width-size.width;
+                int y = rect.y + (rect.height-size.height)/2;
+                Rectangle btnRect = new Rectangle( x, y, size.width, size.height);
+                boolean inButton = btnRect.contains( p );
+                boolean mustRepaint = inCloseButtonRect != inButton;
+                inCloseButtonRect = inButton;
+                if( inButton ) {
+                    if( e.getID() == MouseEvent.MOUSE_PRESSED ) {
+                        TabData tab = item.getTabData();
+                        int tabIndex = displayer.getModel().indexOf( tab );
+                        if( tabIndex >= 0 ) {
+                            TabActionEvent evt = new TabActionEvent( displayer, TabDisplayer.COMMAND_CLOSE, tabIndex);
+                            displayer.postActionEvent( evt );
+                            return true;
+                        }
                     }
                 }
+                if( mustRepaint && lastRow == selRow && lastCol == selCol )
+                    repaint( btnRect );
+                lastCol = selCol;
+                lastRow = selRow;
+                return inButton;
             }
-            if( mustRepaint && lastRow == selRow && lastCol == selCol )
-                repaint( btnRect );
-            lastCol = selCol;
-            lastRow = selRow;
-            return inButton;
+        } else {
+            inCloseButtonRect = false;
         }
         return false;
     }

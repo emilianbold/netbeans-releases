@@ -97,6 +97,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
@@ -589,6 +590,11 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(NamespaceName namespaceName) {
         scan(namespaceName.getSegments());
+    }
+
+    @Override
+    public void visit(NullableType nullableType) {
+        scan(nullableType.getType());
     }
 
     @Override

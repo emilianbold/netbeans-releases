@@ -138,6 +138,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.openide.filesystems.FileObject;
 
 import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
+import org.openide.util.Pair;
 
 /**
  *
@@ -1456,9 +1457,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                     }
                     final Collection<? extends String> typeNames = varName.getTypeNames(request.anchor);
                     String typeName = typeNames.size() > 1 ? Type.MIXED : ModelUtils.getFirst(typeNames);
-                    final Set<QualifiedName> qualifiedNames = typeName != null
-                            ? Collections.singleton(QualifiedName.create(typeName))
-                            : Collections.<QualifiedName>emptySet();
+                    final Set<Pair<QualifiedName, Boolean>> qualifiedNames = typeName != null
+                            ? Collections.singleton(Pair.of(QualifiedName.create(typeName), false))
+                            : Collections.<Pair<QualifiedName, Boolean>>emptySet();
                     if (realFileObject != null) {
                         //#183928 -  Extend model to allow CTRL + click for 'view/action' variables
                         proposals.put(name, new PHPCompletionItem.VariableItem(

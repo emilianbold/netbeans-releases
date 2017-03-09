@@ -375,6 +375,9 @@ public final class NavigatorScanner {
                                     if (deprecatedType) {
                                         formatter.deprecated(true);
                                     }
+                                    if (typeResolver.isNullableType()) {
+                                        formatter.appendText(CodeUtils.NULLABLE_TYPE_PREFIX);
+                                    }
                                     formatter.appendText(typeName.toString());
                                     if (deprecatedType) {
                                         formatter.deprecated(false);
