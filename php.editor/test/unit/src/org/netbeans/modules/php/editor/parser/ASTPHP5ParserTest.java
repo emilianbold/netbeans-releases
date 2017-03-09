@@ -781,6 +781,19 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/issue262144");
     }
 
+    // PHP7.1
+    public void testNullableTypes_01() throws Exception {
+        performTest("parser/nullableTypes_01");
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        performTest("parser/nullableTypes_02");
+    }
+
+    public void testNullableTypes_03() throws Exception {
+        performTest("parser/nullableTypes_03");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.openide.util.Pair;
 
 /**
  *
@@ -63,7 +64,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  */
 public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
 
-    private final Map<String, List<QualifiedName>> paramDocTypes;
+    private final Map<String, List<Pair<QualifiedName, Boolean>>> paramDocTypes;
 
 
     protected FunctionDeclarationInfo(Program program, FunctionDeclaration node) {

@@ -585,6 +585,15 @@ public class PHPIndexTest extends PHPNavTestBase {
         checkIndexer(getTestPath());
     }
 
+    // PHP7.1
+    public void testNullableTypesForFunctions() throws Exception {
+        checkIndexer(getTestPath());
+    }
+
+    public void testNullableTypesForMethods() throws Exception {
+        checkIndexer(getTestPath());
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         final File folder = new File(getDataDir(), getTestFolderPath());

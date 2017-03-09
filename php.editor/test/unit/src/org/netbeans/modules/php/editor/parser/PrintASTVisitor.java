@@ -481,6 +481,13 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
+    public void visit(NullableType nullableType) {
+        XMLPrintNode printNode = new XMLPrintNode(nullableType, "NullableType");
+        printNode.addChild(nullableType.getType());
+        printNode.print(this);
+    }
+
+    @Override
     public void visit(Identifier identifier) {
         (new XMLPrintNode(identifier, "Identifier", new String[]{"name", identifier.getName()})).print(this);
     }

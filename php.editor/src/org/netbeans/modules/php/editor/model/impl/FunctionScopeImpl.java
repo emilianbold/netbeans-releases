@@ -53,6 +53,7 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -211,7 +212,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         if (StringUtils.hasText(types)) {
             final String[] typeNames = types.split(TYPE_SEPARATOR_REGEXP);
             Collection<TypeScope> retval = new HashSet<>();
-            for (String typeName : typeNames) {
+            for (String t : typeNames) {
+                String typeName = t;
+                if (CodeUtils.isNullableType(typeName)) {
+                    typeName = t.substring(1);
+                }
                 if (isSpecialTypeName(typeName)) {
                     continue;
                 }

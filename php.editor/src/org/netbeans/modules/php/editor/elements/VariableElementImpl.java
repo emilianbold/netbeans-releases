@@ -158,10 +158,11 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
 
     public static VariableElement fromFrameworks(final PhpVariable variable, final ElementQuery elementQuery) {
         Parameters.notNull("variable", variable);
+        // XXX check nullable type?
         PhpType variableType = variable.getType();
         Set<TypeResolver> typeResolvers = variableType == null
                     ? Collections.<TypeResolver>emptySet()
-                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variableType.getFullyQualifiedName()));
+                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variableType.getFullyQualifiedName(), false));
         VariableElementImpl retval = new VariableElementImpl(variable.getName(), variable.getOffset(), null, elementQuery,
                 typeResolvers, typeResolvers, false);
         retval.setFileObject(variable.getFile());

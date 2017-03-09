@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,77 +36,29 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Represents a function formal parameter
- * <pre>e.g.<pre> $a,
- * MyClass $a,
- * $a = 3,
- * int $a = 3
+ * Holds a Nullable Type(PHP7.1+)<br>
+ * uses for return type and parameter type.
+ * <pre>e.g.
+ * ?int,
+ * ?MyClass,
+ * ?\My\Foo
+ * </pre>
  */
-public class FormalParameter extends ASTNode {
+public class NullableType extends Expression {
 
-    private Expression parameterType;
-    private Expression parameterName;
-    private Expression defaultValue;
+    private final Expression type;
 
-    public FormalParameter(int start, int end, Expression type, final Expression parameterName, Expression defaultValue) {
+    public NullableType(int start, int end, Expression expression) {
         super(start, end);
-
-        this.parameterName = parameterName;
-        this.parameterType = type;
-        this.defaultValue = defaultValue;
+        this.type = expression; // Identifier, NamespaceName
     }
 
-    public FormalParameter(int start, int end, Expression type, final Reference parameterName, Expression defaultValue) {
-        this(start, end, type, (Expression) parameterName, defaultValue);
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Expression parameterName) {
-        this(start, end, type, (Expression) parameterName, null);
-    }
-
-    public FormalParameter(int start, int end, Expression type, final Reference parameterName) {
-        this(start, end, type, (Expression) parameterName, null);
-    }
-
-    public Expression getDefaultValue() {
-        return defaultValue;
-    }
-
-    public boolean isMandatory() {
-        return getDefaultValue() == null && !isVariadic();
-    }
-
-    public boolean isOptional() {
-        return !isMandatory();
-    }
-
-    public boolean isVariadic() {
-        if (isReference()) {
-            return ((Reference)getParameterName()).getExpression() instanceof Variadic;
-        }
-        return getParameterName() instanceof Variadic;
-    }
-
-    public boolean isReference() {
-        return getParameterName() instanceof Reference;
-    }
-
-    public boolean isNullableType() {
-        return getParameterType() instanceof NullableType;
-    }
-
-    public Expression getParameterName() {
-        return parameterName;
-    }
-
-    public Expression getParameterType() {
-        return parameterType;
+    public Expression getType() {
+        return type;
     }
 
     @Override
@@ -116,7 +68,7 @@ public class FormalParameter extends ASTNode {
 
     @Override
     public String toString() {
-        return getParameterType() + " " + getParameterName() + (isMandatory() ? "" : " = " + getDefaultValue()); //NOI18N
+        return "?" + getType(); // NOI18N
     }
 
 }

@@ -681,4 +681,17 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/issue262144.php");
     }
 
+    // PHP7.1
+    public void testNullableTypes_01() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_01.php");
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_02.php");
+    }
+
+    public void testNullableTypes_03() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_03.php");
+    }
+
 }

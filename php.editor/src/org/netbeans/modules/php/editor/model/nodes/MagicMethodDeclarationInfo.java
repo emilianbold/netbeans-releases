@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -62,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.openide.util.Pair;
 
 /**
  * @author Radek Matous
@@ -95,10 +97,15 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
         }
 
         for (PHPDocVarTypeTag parameter : node.getParameters()) {
-            Collection<QualifiedName> names = new LinkedList<>();
+            Collection<Pair<QualifiedName, Boolean>> names = new LinkedList<>();
             for (PHPDocTypeNode type : parameter.getTypes()) {
-                QualifiedName qualifiedName = QualifiedName.create(type.getValue());
-                names.add(qualifiedName);
+                String typeName = type.getValue();
+                boolean isNullableType = CodeUtils.isNullableType(typeName);
+                if (isNullableType) {
+                    typeName = typeName.substring(1);
+                }
+                QualifiedName qualifiedName = QualifiedName.create(typeName);
+                names.add(Pair.of(qualifiedName, isNullableType));
             }
             Set<TypeResolver> types = TypeResolverImpl.forNames(names);
             String name = parameter.getVariable().getValue();
