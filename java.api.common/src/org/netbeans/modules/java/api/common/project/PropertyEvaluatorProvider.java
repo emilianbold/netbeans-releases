@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,30 +34,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
  */
+package org.netbeans.modules.java.api.common.project;
 
-package org.netbeans.modules.java.j2seproject.api;
-
-import org.netbeans.modules.java.api.common.project.PropertyEvaluatorProvider;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
- * Readonly access to project properties through PropertyEvaluator,
- * an instance will be in lookup of the j2seproject.
- * 
- * @author Milan Kubec
- * @since 1.10
+ * An optional interface which implementation can be provided in
+ * the project's {@link Lookup} to allow access to project's {@link PropertyEvaluator}.
+ * @author Tomas Zezula
+ * @since 1.105
  */
-public interface J2SEPropertyEvaluator extends PropertyEvaluatorProvider {
-    /**
-     * Gives PropertyEvaluator for resolving project properties
-     *
-     * @return PropertyEvaluator for given project
-     */
-    PropertyEvaluator evaluator();
-
-    @Override
-    public default PropertyEvaluator getPropertyEvaluator() {
-        return evaluator();
-    }
+public interface PropertyEvaluatorProvider {
+    @NonNull
+    PropertyEvaluator getPropertyEvaluator();
 }

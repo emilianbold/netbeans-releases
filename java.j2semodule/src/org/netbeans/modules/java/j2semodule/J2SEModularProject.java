@@ -78,6 +78,7 @@ import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectOperations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.PropertyEvaluatorProvider;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl;
@@ -113,6 +114,7 @@ import org.w3c.dom.NodeList;
 //import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Pair;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 /**
  * Represents one plain J2SE modular project.
@@ -376,6 +378,7 @@ public final class J2SEModularProject implements Project {
                     build(),
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
+            new PropertyEvaluatorProviderImpl(evaluator()),
 
             //UNKNOWN FOR MODULAR PROJECT
             ProjectClassPathModifier.extenderForModifier(cpMod),
@@ -818,5 +821,20 @@ public final class J2SEModularProject implements Project {
                 }
             }
         };
+    }
+
+    private static final class PropertyEvaluatorProviderImpl implements PropertyEvaluatorProvider {
+        private final PropertyEvaluator eval;
+
+        PropertyEvaluatorProviderImpl(@NonNull final PropertyEvaluator eval) {
+            Parameters.notNull("eval", eval);   //NOI18N
+            this.eval = eval;
+        }
+
+        @NonNull
+        @Override
+        public PropertyEvaluator getPropertyEvaluator() {
+            return this.eval;
+        }
     }
 }
