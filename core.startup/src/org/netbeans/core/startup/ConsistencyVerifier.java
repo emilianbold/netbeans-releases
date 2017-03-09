@@ -148,6 +148,10 @@ public class ConsistencyVerifier {
                 }
                 boolean autoload = "true".equals(man.getValue("autoload"));
                 boolean eager = "true".equals(man.getValue("eager"));
+                if (autoload) {
+                    // discard dependency on JDK: will allow other modules, dependent on these autoloads, to enable
+                    man.remove(new Attributes.Name("OpenIDE-Module-Java-Dependencies"));
+                }
                 Module mod = mgr.createFixed(m, null, ClassLoader.getSystemClassLoader(), autoload, eager);
                 mods.add(mod);
                 if (!autoload && !eager) {
