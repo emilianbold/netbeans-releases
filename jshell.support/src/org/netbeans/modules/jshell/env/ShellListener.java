@@ -77,4 +77,11 @@ public interface ShellListener extends EventListener {
      * @param ev 
      */
     public void shellShutdown(ShellEvent ev);
+    
+    /**
+     * Fired when shell settings change. This includes library changes, project
+     * change, ... 
+     * @param ev 
+     */
+    public void shellSettingsChanged(ShellEvent ev);
 }

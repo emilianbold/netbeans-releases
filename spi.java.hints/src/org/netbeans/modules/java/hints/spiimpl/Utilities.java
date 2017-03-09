@@ -766,7 +766,6 @@ public class Utilities {
             resolve.disableAccessibilityChecks();
             
             JCCompilationUnit cut = compiler.parse(jfo);
-
             compiler.enterTrees(compiler.initModules(com.sun.tools.javac.util.List.of(cut)));
 
             Todo todo = compiler.todo;

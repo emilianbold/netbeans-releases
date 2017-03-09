@@ -92,7 +92,7 @@ import org.openide.windows.TopComponent;
 @TopComponent.Description(
         preferredID = "JShellEditor",
         iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png",
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS
+        persistenceType = TopComponent.PERSISTENCE_NEVER
 )
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
 public class ConsoleEditor extends CloneableEditor {
@@ -100,7 +100,7 @@ public class ConsoleEditor extends CloneableEditor {
     private ShellSession session;
     private CL cl;
     private Lookup lookup;
-    
+
     public ConsoleEditor(CloneableEditorSupport support, Lookup lookup) {
         super(support);
         this.lookup = lookup;
@@ -511,9 +511,11 @@ public class ConsoleEditor extends CloneableEditor {
         }
 
         @Override
-        public void shellCreated(ShellEvent ev) {
-        }
+        public void shellCreated(ShellEvent ev) {}
 
+        @Override
+        public void shellSettingsChanged(ShellEvent ev) {}
+        
         @Override
         public void shellStatusChanged(ShellEvent ev) {
             SwingUtilities.invokeLater(ConsoleEditor.this::updateStatusAndActivate);
@@ -530,7 +532,7 @@ public class ConsoleEditor extends CloneableEditor {
         public void shellShutdown(ShellEvent ev) {
             env.removeShellListener(this);
         }
-        
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == session &&

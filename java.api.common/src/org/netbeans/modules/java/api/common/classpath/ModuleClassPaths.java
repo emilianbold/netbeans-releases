@@ -78,6 +78,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -90,7 +91,8 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -162,14 +164,7 @@ final class ModuleClassPaths {
             @NonNull final String platformType) {
         return new PlatformModulePath(eval, platformType);
     }
-    
-    static ClassPathImplementation createPropertyBasedModulePath(
-            @NonNull final File projectDir,
-            @NonNull final PropertyEvaluator eval,
-            @NonNull final String... props) {
-        return createPropertyBasedModulePath(projectDir, eval, null, props);
-    }
-    
+
     @NonNull
     static ClassPathImplementation createPropertyBasedModulePath(
             @NonNull final File projectDir,
@@ -177,6 +172,100 @@ final class ModuleClassPaths {
             @NullAllowed final Function<URL,Boolean> filter,
             @NonNull final String... props) {
         return new PropertyModulePath(projectDir, eval, filter, props);
+    }
+
+    @NonNull
+    static ClassPathImplementation createMultiModuleBinariesPath(
+            @NonNull final MultiModule model,
+            final boolean archives) {
+        return new MultiModuleBinaries(model, archives);
+    }
+
+    private static final class MultiModuleBinaries extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener {
+        private final MultiModule model;
+        private final boolean archives;
+        //@GuardedBy("this")
+        private Collection<BinaryForSourceQuery.Result> currentResults;
+
+        MultiModuleBinaries(
+                @NonNull final MultiModule model,
+                final boolean archives) {
+            Parameters.notNull("model", model); //NOI18N
+            this.model = model;
+            this.archives = archives;
+            this.model.addPropertyChangeListener(WeakListeners.propertyChange(this, this.model));
+        }
+
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = getCache();
+            if (res != null) {
+                return res;
+            }
+            final List<BinaryForSourceQuery.Result> results = new ArrayList<>();
+            res = createResources(results);
+            synchronized (this) {
+                assert res != null;
+                if (getCache() == null) {
+                    setCache(res);
+                    if (currentResults != null) {
+                        currentResults.forEach((r)->r.removeChangeListener(this));
+                    }
+                    results.forEach((r)->r.addChangeListener(this));
+                    currentResults = results;
+                } else {
+                    res = getCache();
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (MultiModule.PROP_MODULES.equals(propName)) {
+                resetCache(PROP_RESOURCES);
+            }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        private List<PathResourceImplementation> createResources(Collection<? super BinaryForSourceQuery.Result> results) {
+            final Set<URL> binaries = new LinkedHashSet<>();
+            for (String moduleName : model.getModuleNames()) {
+                final ClassPath scp = model.getModuleSources(moduleName);
+                if (scp != null) {
+                    for (ClassPath.Entry e : scp.entries()) {
+                        final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(e.getURL());
+                        results.add(r);
+                        binaries.addAll(filterArtefact(archives, r.getRoots()));
+                    }
+                }
+            }
+            return binaries.stream()
+                    .map((url) -> org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
+                    .collect(Collectors.toList());
+        }
+
+        private static Collection<? extends URL> filterArtefact(
+                final boolean archive,
+                @NonNull final URL... urls) {
+            final Collection<URL> res = new ArrayList<>(urls.length);
+            for (URL url : urls) {
+                if ((archive && FileUtil.isArchiveArtifact(url)) ||
+                    (!archive && !FileUtil.isArchiveArtifact(url))) {
+                    res.add(url);
+                    break;
+                }
+            }
+            if (res.isEmpty()) {
+                Collections.addAll(res, urls);
+            }
+            return res;
+        }
     }
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {

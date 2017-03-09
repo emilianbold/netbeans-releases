@@ -406,7 +406,7 @@ public class ShellSession  {
         return snippetRegistry.snippetFile(snippet, editedSnippetIndex);
     }
     
-    public JShellTool   getJShellTool() {
+    public synchronized JShellTool   getJShellTool() {
         return launcher;
     }
     
@@ -562,6 +562,9 @@ public class ShellSession  {
     private RemoteJShellService exec;
     
     private String addRoots(String prev, ClassPath cp) {
+        if (cp == null) {
+            return prev;
+        }
         FileObject[] roots = cp.getRoots();
         StringBuilder sb = new StringBuilder(prev);
         
@@ -582,7 +585,8 @@ public class ShellSession  {
     }
     
     private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
-        String cp = createProjectClasspath();
+        ClassPath compile = getEnv().getCompilerClasspath();
+        String cp = addRoots("", compile);
         JShellAccessor.resetCompileClasspath(jshell, cp);
     }
     
@@ -603,21 +607,11 @@ public class ShellSession  {
      * @return 
      */
     private SpecificationVersion findSourceVersion() {
-        Project p = env.getProject();
-        if (p == null) {
-            return findTargetVersion();
-        }
-        Result r = SourceLevelQuery.getSourceLevel2(p.getProjectDirectory());
-        String s = r.getSourceLevel();
-        if (s != null) {
-            return new SpecificationVersion(s);
-        } else {
-            return findTargetVersion();
-        }
+        return env.getSourceLevel();
     }
     
     private SpecificationVersion findTargetVersion() {
-        return env.getPlatform().getSpecification().getVersion();
+        return env.getTargetLevel();
     }
     
     private Preferences createShellPreferences() {
@@ -996,13 +990,16 @@ public class ShellSession  {
     
     private boolean scrollbackEndsWithNewline() {
         boolean[] ret = new boolean[1];
+        ConsoleSection s = model.getInputSection();
+        int end = s == null ? -1 : s.getStart();
         consoleDocument.render(() -> {
             int l = consoleDocument.getLength();
             if (l == 0) {
                 ret[0] = true;
             } else {
+                int e = end == -1 ? consoleDocument.getLength() : end;
                 try {
-                    ret[0] = consoleDocument.getText(consoleDocument.getLength() - 1, 1).charAt(0) == '\n';
+                    ret[0] = consoleDocument.getText(e - 1, 1).charAt(0) == '\n';
                 } catch (BadLocationException ex) {
                     ret[0] = false;
                 }
@@ -1031,15 +1028,15 @@ public class ShellSession  {
         
                 
         File remoteProbeJar = InstalledFileLocator.getDefault().locate(agentJar, 
-                "org.netbeans.libs.jshell", false);
+                "org.netbeans.lib.jshell.agent", false);
         StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
         
         if (!modular) {
-            File replJar = 
-                    InstalledFileLocator.getDefault().locate(
-                            "modules/ext/nb-jshell.jar", 
-                            "org.netbeans.libs.jshell", false);
-            sb.append(sep).append(replJar.getAbsolutePath());
+//            File replJar = 
+//                    InstalledFileLocator.getDefault().locate(
+//                            "modules/ext/nb-jshell.jar", 
+//                            "org.netbeans.libs.jshell", false);
+//            sb.append(sep).append(replJar.getAbsolutePath());
 
             File toolsJar = null;
             for (FileObject jdkInstallDir : platform.getInstallFolders()) {
@@ -1058,7 +1055,10 @@ public class ShellSession  {
             }
         }
         
-        String projectCp = createProjectClasspath();
+        // classpath construction
+        
+        ClassPath compile = getEnv().getVMClassPath();
+        String projectCp = addRoots("", compile); // NOi18N
         sb.append(sep).append(projectCp);
         return sb.toString();
     }

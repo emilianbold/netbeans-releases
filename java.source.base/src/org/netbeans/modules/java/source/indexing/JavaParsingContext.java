@@ -137,6 +137,10 @@ final class JavaParsingContext {
             if (srcPath == null) {
                 srcPath = ClassPath.EMPTY;
             }
+            ClassPath moduleSrcPath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_SOURCE_PATH);
+            if (moduleSrcPath == null) {
+                moduleSrcPath = ClassPath.EMPTY;
+            }
             cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
                 bootPath,
                 moduleBootPath,
@@ -144,6 +148,7 @@ final class JavaParsingContext {
                 moduleCompilePath,
                 moduleClassPath,
                 srcPath,
+                moduleSrcPath,
                 null,
                 true,
                 context.isSourceForBinaryRootIndexing(),
@@ -155,12 +160,12 @@ final class JavaParsingContext {
         }
     }
 
-    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath moduleClassPath, final ClassPath sourcePath,
+    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath moduleClassPath, final ClassPath sourcePath, final ClassPath moduleSourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException {
         ctx = context;
         rootNotNeeded = false;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, sourcePath,
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, sourcePath, moduleSourcePath,
                 filter, true, context.isSourceForBinaryRootIndexing(),
                 !virtualSources.isEmpty(), context.checkForEditorModifications(), null);
         registerVirtualSources(cpInfo, virtualSources);

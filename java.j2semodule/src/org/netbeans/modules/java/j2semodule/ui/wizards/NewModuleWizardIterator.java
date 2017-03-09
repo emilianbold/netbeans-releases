@@ -40,11 +40,17 @@
 package org.netbeans.modules.java.j2semodule.ui.wizards;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -54,8 +60,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -74,7 +81,15 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
     private transient WizardDescriptor.Panel panel;
     private transient WizardDescriptor wiz;
 
-    @TemplateRegistration(folder = "J2SEModule", position = 1, content = "../resources/module-info.java.template", scriptEngine = "freemarker", displayName = "#moduleWizard", iconBase = JavaTemplates.JAVA_ICON, description = "../resources/module.html")
+    @TemplateRegistration(
+            folder = "J2SEModule",
+            position = 1,
+            content = "../resources/module-info.java.template",
+            scriptEngine = "freemarker",
+            displayName = "#moduleWizard",
+            iconBase = "org/netbeans/modules/java/j2semodule/ui/resources/module.png",
+            description = "../resources/module.html",
+            category = {"java-modules"})
     @NbBundle.Messages("moduleWizard=Module")
     public static NewModuleWizardIterator moduleWizard() {
         return new NewModuleWizardIterator();
@@ -85,35 +100,42 @@ public class NewModuleWizardIterator implements WizardDescriptor.AsynchronousIns
         FileObject dir = Templates.getTargetFolder(wiz);        
         String targetName = Templates.getTargetName(wiz);
         FileObject template = Templates.getTemplate(wiz);
-        
-        FileObject createdFolder = FileUtil.createFolder(dir, targetName);
+
+        final List<FileObject> createdFolders = new ArrayList<>();
+        final FileObject moduleFolder = FileUtil.createFolder(dir, targetName);
+        createdFolders.add(moduleFolder);
 
         Project p = Templates.getProject(wiz);
         J2SEModularProject project = p != null ? p.getLookup().lookup(J2SEModularProject.class) : null;
         if (project != null) {
-            for (String rootProp : project.getSourceRoots().getRootProperties()) {
-                String rootPath = project.evaluator().getProperty(rootProp);
-                int idx = rootPath.indexOf("/*/");
-                if (idx >= 0) {
-                    FileObject root = project.getAntProjectHelper().resolveFileObject(rootPath.substring(0, idx));
-                    if (root == dir) {
-                        String path = rootPath.substring(idx + 3);
-                        if (!path.isEmpty()) {
-                            createdFolder = createdFolder.createFolder(path);
-                        }
-                        break;
+            String[] rootProperties = project.getModuleRoots().getRootProperties();
+            String[] rootPathProperties = project.getModuleRoots().getRootPathProperties();
+            assert rootProperties.length == rootPathProperties.length;
+            for (int i = 0; i < rootProperties.length; i++) {
+                String rootProp = project.evaluator().getProperty(rootProperties[i]);
+                if (rootProp != null && dir == project.getAntProjectHelper().resolveFileObject(rootProp)) {
+                    final Collection<? extends String> spVariants =
+                            Arrays.stream(PropertyUtils.tokenizePath(project.evaluator().getProperty(rootPathProperties[i])))
+                            .map((pe) -> CommonModuleUtils.parseSourcePathVariants(pe))
+                            .flatMap((lv) -> lv.stream())
+                            .collect(Collectors.toList());
+                    for (String variant : spVariants) {
+                        if (!variant.isEmpty()) {
+                            createdFolders.add(FileUtil.createFolder(moduleFolder, variant.replace(File.separatorChar, '/')));
+                        }                        
                     }
                 }
             }
         }
 
-        DataFolder df = DataFolder.findFolder(createdFolder);
-        DataObject dTemplate = DataObject.find(template);                
+        final DataFolder df = DataFolder.findFolder(createdFolders.get(
+                createdFolders.size() > 1 ? 1 : 0));
+        DataObject dTemplate = DataObject.find(template);
         DataObject dobj = dTemplate.createFromTemplate(df, null, Collections.singletonMap("moduleName", targetName)); //NOI18N
         FileObject createdFile = dobj.getPrimaryFile();
 
         final Set<FileObject> res = new HashSet<>();
-        res.add(createdFolder);
+        res.addAll(createdFolders);
         res.add(createdFile);
         return Collections.unmodifiableSet(res);
     }

@@ -42,26 +42,35 @@
 
 package org.netbeans.modules.java.api.common.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.AbstractClassPathProvider;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -84,7 +93,9 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MOD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_PROJECT_XML;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
+import org.openide.modules.PatchedPublic;
 import org.openide.modules.Places;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -107,11 +118,21 @@ public final class ProjectHooks {
      * @param eval the project {@link PropertyEvaluator}
      * @param updateHelper the project {@link UpdateHelper}
      * @param genFilesHelper the project {@link GeneratedFilesHelper}
-     * @param cpProviderImpl the project {@link ClassPathProviderImpl}
+     * @param cpProvider the project {@link AbstractClassPathProvider}
      * @return a new {@link ProjectOpenedHookBuilder}
      */
     @NonNull
     public static ProjectOpenedHookBuilder createProjectOpenedHookBuilder(
+        @NonNull final Project project,
+        @NonNull final PropertyEvaluator eval,
+        @NonNull final UpdateHelper updateHelper,
+        @NonNull final GeneratedFilesHelper genFilesHelper,
+        @NonNull final AbstractClassPathProvider cpProvider) {
+        return new ProjectOpenedHookBuilder(project, eval, updateHelper, genFilesHelper, cpProvider);
+    }
+
+    @PatchedPublic
+    private static ProjectOpenedHookBuilder createProjectOpenedHookBuilder(
         @NonNull final Project project,
         @NonNull final PropertyEvaluator eval,
         @NonNull final UpdateHelper updateHelper,
@@ -144,7 +165,7 @@ public final class ProjectHooks {
         private final PropertyEvaluator eval;
         private final UpdateHelper updateHelper;
         private final GeneratedFilesHelper genFilesHelper;
-        private final ClassPathProviderImpl cpProviderImpl;
+        private final AbstractClassPathProvider cpProvider;
         private final Set<String> classPathTypes = new HashSet<String>();
         private final List<Runnable> preOpen = new LinkedList<Runnable>();
         private final List<Runnable> postOpen = new LinkedList<Runnable>();
@@ -159,17 +180,17 @@ public final class ProjectHooks {
             @NonNull final PropertyEvaluator eval,
             @NonNull final UpdateHelper updateHelper,
             @NonNull final GeneratedFilesHelper genFilesHelper,
-            @NonNull final ClassPathProviderImpl cpProviderImpl) {
+            @NonNull final AbstractClassPathProvider cpProvider) {
             Parameters.notNull("project", project); //NOI18N
             Parameters.notNull("eval", eval);   //NOI18N
             Parameters.notNull("updateHelper", updateHelper);   //NOI18N
             Parameters.notNull("genFilesHelper", genFilesHelper);   //NOI18N
-            Parameters.notNull("cpProviderImpl", cpProviderImpl);   //NOI18N
+            Parameters.notNull("cpProviderImpl", cpProvider);   //NOI18N
             this.project = project;
             this.eval = eval;
             this.updateHelper = updateHelper;
             this.genFilesHelper = genFilesHelper;
-            this.cpProviderImpl = cpProviderImpl;
+            this.cpProvider = cpProvider;
         }
 
         /**
@@ -282,7 +303,7 @@ public final class ProjectHooks {
                 eval,
                 updateHelper,
                 genFilesHelper,
-                cpProviderImpl,
+                cpProvider,
                 classPathTypes,
                 preOpen,
                 postOpen,
@@ -421,7 +442,7 @@ public final class ProjectHooks {
 
 
 
-    private static final class ProjectOpenedHookImpl extends ProjectOpenedHook {
+    private static final class ProjectOpenedHookImpl extends ProjectOpenedHook implements AbstractClassPathProvider.ClassPathsChangeListener {
 
         private static final RequestProcessor PROJECT_OPENED_RP = new RequestProcessor(ProjectOpenedHookImpl.class);
 
@@ -429,7 +450,7 @@ public final class ProjectHooks {
         private final PropertyEvaluator eval;
         private final UpdateHelper updateHelper;
         private final GeneratedFilesHelper genFilesHelper;
-        private final ClassPathProviderImpl cpProviderImpl;
+        private final AbstractClassPathProvider cpProvider;
         private final Set<String> classPathTypes;
         private final List<? extends Runnable> preClose;
         private final List<? extends Runnable> postClose;
@@ -438,13 +459,15 @@ public final class ProjectHooks {
         private final URL buildTemplate;
         private final URL buildImplTemplate;
         private final String buildScriptProperty;
+        private final Map</*@GuardedBy("cpCache")*/String,Set<ClassPath>> cpCache;
+        private final AtomicReference<AbstractClassPathProvider.ClassPathsChangeListener> cpListener;
 
         ProjectOpenedHookImpl(
             @NonNull final Project project,
             @NonNull final PropertyEvaluator eval,
             @NonNull final UpdateHelper updateHelper,
             @NonNull final GeneratedFilesHelper genFilesHelper,
-            @NonNull final ClassPathProviderImpl cpProviderImpl,
+            @NonNull final AbstractClassPathProvider cpProvider,
             @NonNull final Set<String> classPathTypes,
             @NonNull final List<? extends Runnable> preOpen,
             @NonNull final List<? extends Runnable> postOpen,
@@ -457,18 +480,18 @@ public final class ProjectHooks {
             Parameters.notNull("eval", eval);       //NOI18
             Parameters.notNull("updateHelper", updateHelper);   //NOI18N
             Parameters.notNull("genFilesHelper", genFilesHelper);   //NOI18N
-            Parameters.notNull("cpProviderImpl", cpProviderImpl);   //NOI18N
+            Parameters.notNull("cpProvider", cpProvider);           //NOI18N
             Parameters.notNull("classPathTypes", classPathTypes);   //NOI18N
             Parameters.notNull("preOpen", preOpen);                 //NOI18N
             Parameters.notNull("postOpen", postOpen);               //NOI18N
             Parameters.notNull("preClose", preClose);               //NOI18N
-            Parameters.notNull("postClose", postClose);             //NOI18N            
+            Parameters.notNull("postClose", postClose);             //NOI18N
             Parameters.notNull("buildScriptProperty", buildScriptProperty);   //NOI18N
             this.project = project;
             this.eval = eval;
             this.updateHelper = updateHelper;
             this.genFilesHelper = genFilesHelper;
-            this.cpProviderImpl = cpProviderImpl;
+            this.cpProvider = cpProvider;
             this.classPathTypes = classPathTypes;
             this.preOpen = preOpen;
             this.postOpen = postOpen;
@@ -477,6 +500,8 @@ public final class ProjectHooks {
             this.buildImplTemplate = buildImplTemplate;
             this.buildTemplate = buildTemplate;
             this.buildScriptProperty = buildScriptProperty;
+            this.cpCache = new HashMap<>();
+            this.cpListener = new AtomicReference<>();
         }
 
         @Override
@@ -513,9 +538,20 @@ public final class ProjectHooks {
             });
 
             // register project's classpaths to GlobalPathRegistry
-            final GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
+            final Map<String,Set<ClassPath>> snapshot = new HashMap<>();
             for (String classPathType : classPathTypes) {
-                gpr.register(classPathType, cpProviderImpl.getProjectClassPaths(classPathType));
+                final ClassPath[] cps = cpProvider.getProjectClassPaths(classPathType);
+                final Set<ClassPath> newCps = Collections.newSetFromMap(new IdentityHashMap<>());
+                Collections.addAll(newCps,cps);
+                snapshot.put(classPathType, newCps);
+            }
+            updateClassPathCache(snapshot);
+            AbstractClassPathProvider.ClassPathsChangeListener l = cpListener.get();
+            if (l == null) {
+                l = WeakListeners.create(AbstractClassPathProvider.ClassPathsChangeListener.class, this, this.cpProvider);
+                if (cpListener.compareAndSet(null, l)) {
+                    this.cpProvider.addClassPathsChangeListener(l);
+                }
             }
             runAtomic(new Runnable() {
                 @Override
@@ -553,10 +589,17 @@ public final class ProjectHooks {
                         }
                     }
                     // unregister project's classpaths to GlobalPathRegistry
-                    final GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
-                    for (String classPathType : classPathTypes) {
-                        gpr.unregister(classPathType, cpProviderImpl.getProjectClassPaths(classPathType));
+                    AbstractClassPathProvider.ClassPathsChangeListener l = cpListener.get();
+                    if (l != null) {
+                        if (cpListener.compareAndSet(l, null)) {
+                            cpProvider.removeClassPathsChangeListener(l);
+                        }
                     }
+                    final Map<String,Set<ClassPath>> snapshot = new HashMap<>();
+                    for (String classPathType : classPathTypes) {
+                        snapshot.put(classPathType, Collections.emptySet());
+                    }
+                    updateClassPathCache(snapshot);
                     for (Runnable r : postClose) {
                         runSafe(r);
                     }
@@ -566,6 +609,42 @@ public final class ProjectHooks {
                 PROJECT_OPENED_RP.execute(r);
             } else {
                 r.run();
+            }
+        }
+
+        @Override
+        public void classPathsChange(AbstractClassPathProvider.ClassPathsChangeEvent event) {
+            final Map<String,Set<ClassPath>> snapshot = new HashMap<>();
+            for (String cpType : event.getChangedClassPathTypes()) {
+                if (classPathTypes.contains(cpType)) {
+                    final ClassPath[] cps = cpProvider.getProjectClassPaths(cpType);
+                    final Set<ClassPath> newCps = Collections.newSetFromMap(new IdentityHashMap<>());
+                    Collections.addAll(newCps, cps);
+                    snapshot.put(cpType, newCps);
+                }
+            }
+            if (!snapshot.isEmpty()) {
+                updateClassPathCache(snapshot);
+            }
+        }
+
+        private void updateClassPathCache(@NonNull final Map<String,Set<ClassPath>> snapshot) {
+            final GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
+            synchronized (cpCache) {
+                for (Map.Entry<String,Set<ClassPath>> e : snapshot.entrySet()) {
+                    final String id = e.getKey();
+                    final Set<ClassPath> newCps = e.getValue();
+                    final Set<ClassPath> oldCps = cpCache.getOrDefault(id, Collections.emptySet());
+                    final Set<ClassPath> toAdd = Collections.newSetFromMap(new IdentityHashMap<>());
+                    toAdd.addAll(newCps);
+                    toAdd.removeAll(oldCps);
+                    final Set<ClassPath> toRemove = Collections.newSetFromMap(new IdentityHashMap<>());
+                    toRemove.addAll(oldCps);
+                    toRemove.removeAll(newCps);
+                    cpCache.put(id, newCps);
+                    gpr.unregister(id, toRemove.toArray(new ClassPath[toRemove.size()]));
+                    gpr.register(id, toAdd.toArray(new ClassPath[toAdd.size()]));
+                }
             }
         }
 

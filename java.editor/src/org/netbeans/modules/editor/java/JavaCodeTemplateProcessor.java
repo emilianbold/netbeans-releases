@@ -119,15 +119,22 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private JavaCodeTemplateProcessor(CodeTemplateInsertRequest request) {
         this.request = request;
         for (CodeTemplateParameter param : request.getMasterParameters()) {
+            for (String hint : param.getHints().keySet()) {
+                if (INSTANCE_OF.equals(hint)
+                        || ARRAY.equals(hint)
+                        || ITERABLE.equals(hint)
+                        || NEW_VAR_NAME.equals(hint)
+                        || TYPE_VAR.equals(hint)) {
+                    initParsing(true);
+                    return;
+                }
+            }
             if (CodeTemplateParameter.SELECTION_PARAMETER_NAME.equals(param.getName())) {
-                initParsing();
+                initParsing(false);
                 return;
             }
             for (String hint : param.getHints().keySet()) {
                 if (UNCAUGHT_EXCEPTION_CATCH_STATEMENTS.equals(hint)
-                        || INSTANCE_OF.equals(hint)
-                        || ARRAY.equals(hint)
-                        || ITERABLE.equals(hint)
                         || TYPE.equals(hint)
                         || ITERABLE_ELEMENT_TYPE.equals(hint)
                         || LEFT_SIDE_TYPE.equals(hint)
@@ -140,7 +147,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         || CURRENT_METHOD_NAME.equals(hint)
                         || ITERABLE_ELEMENT_TYPE.equals(hint)
                         || UNCAUGHT_EXCEPTION_TYPE.equals(hint)) {
-                    initParsing();
+                    initParsing(false);
                     return;
                 }
             }
@@ -1071,9 +1078,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         return type;
     }
     
-    private void initParsing() {
+    private void initParsing(final boolean localsNeeded) {
         if (cInfo == null) {
-            JTextComponent c = request.getComponent();
+            final JTextComponent c = request.getComponent();
             caretOffset = c.getSelectionStart();
             final Document doc = c.getDocument();
             final FileObject fo = NbEditorUtilities.getFileObject(doc);
@@ -1104,56 +1111,58 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     enclClass = (TypeElement)controller.getTrees().getElement(TreePath.getPath(cut, it.next()));
                                 }
                             }
-                            final Trees trees = controller.getTrees();
-                            final SourcePositions sp = trees.getSourcePositions();
-                            final Collection<? extends Element> illegalForwardRefs = SourceUtils.getForwardReferences(treePath, embeddedCaret, sp, trees);
-                            final Collection<CharSequence> illegalForwardRefNames = new HashSet<>(illegalForwardRefs.size());
-                            for (Element element : illegalForwardRefs) {
-                                illegalForwardRefNames.add(element.getSimpleName());
-                            }
-                            final ExecutableElement method = scope.getEnclosingMethod();
-                            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                                @Override
-                                public boolean accept(Element e, TypeMirror t) {
-                                    switch (e.getKind()) {
-                                    case TYPE_PARAMETER:
-                                        return true;
-                                    case LOCAL_VARIABLE:
-                                    case RESOURCE_VARIABLE:
-                                    case EXCEPTION_PARAMETER:
-                                    case PARAMETER:
-                                        return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
-                                                !illegalForwardRefNames.contains(e.getSimpleName());
-                                    case FIELD:
-                                        if (e.getSimpleName().contentEquals("this")) { //NOI18N
-                                            return !isStatic && e.asType().getKind() == TypeKind.DECLARED && ((DeclaredType)e.asType()).asElement() == enclClass;
-                                        }
-                                        if (e.getSimpleName().contentEquals("super")) { //NOI18N
-                                            return false;
-                                        }
-                                        if (illegalForwardRefNames.contains(e.getSimpleName())) {
-                                            return false;
-                                        }
-                                    default:
-                                        return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, (DeclaredType)t);
-                                    }
-                                }
-                            };
                             locals = new ArrayList<>();
                             typeVars = new ArrayList<>();
-                            for (Element element : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
-                                switch(element.getKind()) {
-                                    case TYPE_PARAMETER:
-                                        typeVars.add(element);
-                                        break;
-                                    default:
-                                        locals.add(element);
+                            if (localsNeeded) {
+                                final Trees trees = controller.getTrees();
+                                final SourcePositions sp = trees.getSourcePositions();
+                                final Collection<? extends Element> illegalForwardRefs = SourceUtils.getForwardReferences(treePath, embeddedCaret, sp, trees);
+                                final Collection<CharSequence> illegalForwardRefNames = new HashSet<>(illegalForwardRefs.size());
+                                for (Element element : illegalForwardRefs) {
+                                    illegalForwardRefNames.add(element.getSimpleName());
+                                }
+                                final ExecutableElement method = scope.getEnclosingMethod();
+                                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                                    @Override
+                                    public boolean accept(Element e, TypeMirror t) {
+                                        switch (e.getKind()) {
+                                        case TYPE_PARAMETER:
+                                            return true;
+                                        case LOCAL_VARIABLE:
+                                        case RESOURCE_VARIABLE:
+                                        case EXCEPTION_PARAMETER:
+                                        case PARAMETER:
+                                            return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
+                                                    !illegalForwardRefNames.contains(e.getSimpleName());
+                                        case FIELD:
+                                            if (e.getSimpleName().contentEquals("this")) { //NOI18N
+                                                return !isStatic && e.asType().getKind() == TypeKind.DECLARED && ((DeclaredType)e.asType()).asElement() == enclClass;
+                                            }
+                                            if (e.getSimpleName().contentEquals("super")) { //NOI18N
+                                                return false;
+                                            }
+                                            if (illegalForwardRefNames.contains(e.getSimpleName())) {
+                                                return false;
+                                            }
+                                        default:
+                                            return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, (DeclaredType)t);
+                                        }
+                                    }
+                                };
+                                for (Element element : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
+                                    switch(element.getKind()) {
+                                        case TYPE_PARAMETER:
+                                            typeVars.add(element);
+                                            break;
+                                        default:
+                                            locals.add(element);
+                                    }
                                 }
                             }
                             cInfo = controller;
                         } catch(IOException ioe) {
                             Exceptions.printStackTrace(ioe);
-                        }
+                        }                        
                     }
                 }, NbBundle.getMessage(JavaCodeTemplateProcessor.class, "JCT-init"), cancel, false); //NOI18N
             }

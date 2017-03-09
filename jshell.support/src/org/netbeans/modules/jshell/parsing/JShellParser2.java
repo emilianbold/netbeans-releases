@@ -425,6 +425,12 @@ public class JShellParser2 {
             return;
         }
         // wtf ?
+        // it is an output, does not start with a message -- so it is a plain
+        // command output
+        createSection(Type.OUTPUT);
+        // PENDING: the section should contain info on the markers
+        extendSection(section, p(endLine()));
+        consumed();
         s = State.COMMAND_OUTPUT;
     }
 
@@ -564,7 +570,9 @@ public class JShellParser2 {
     }
     
     private void appendNewline() {
-        extendWithPart(0, len());
+        if (!ranges.isEmpty()) {
+            extendWithPart(0, len());
+        }
         consumed();
     }
 

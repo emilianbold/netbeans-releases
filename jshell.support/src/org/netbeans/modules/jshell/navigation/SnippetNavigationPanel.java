@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.navigation;
 
+import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
@@ -48,6 +49,8 @@ import org.netbeans.modules.jshell.model.SnippetHandle;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +63,15 @@ public class SnippetNavigationPanel implements NavigatorPanel {
     private SnippetPanelUI ui;
     
     private static SnippetNavigationPanel INSTANCE = null;
+    private Lookup context;
+    private Lookup.Result<FileObject> lkp;
     
+    private LookupListener lookupL = new LookupListener() {
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            navigateToFile(context.lookup(FileObject.class));
+        }
+    };
     
     public static void navigate(SnippetHandle h) {
         if (INSTANCE != null) {
@@ -84,16 +95,23 @@ public class SnippetNavigationPanel implements NavigatorPanel {
     public JComponent getComponent() {
         return getUI();
     }
-
-    @Override
-    public void panelActivated(Lookup context) {
-        FileObject file = context.lookup(FileObject.class);
+    
+    private void navigateToFile(FileObject file) {
         JShellEnvironment env = ShellRegistry.get().get(file);
         if (env == null) {
             return;
         }
         getUI().navigate(env);
-        
+    }
+
+    @Override
+    public void panelActivated(Lookup context) {
+        lkp = context.lookupResult(FileObject.class);
+        lkp.addLookupListener(lookupL);
+        Collection<? extends FileObject> l = lkp.allInstances();
+        FileObject file = l.isEmpty()? null : l.iterator().next();
+        navigateToFile(file);
+        this.context = context;
         INSTANCE = this;
     }
     
@@ -106,8 +124,12 @@ public class SnippetNavigationPanel implements NavigatorPanel {
 
     @Override
     public void panelDeactivated() {
+        if (lkp != null) {
+            lkp.removeLookupListener(lookupL);
+        }
         INSTANCE = null;
         getUI().unselectAll();
+        context = null;
     }
 
     @Override
