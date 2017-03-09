@@ -50,7 +50,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.Deque;
 import java.util.LinkedList;
 import javax.lang.model.element.Element;
@@ -58,7 +57,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  * If not in method or a lambda, it detects all assignments/compound assignments
@@ -67,17 +67,17 @@ import org.netbeans.api.java.source.CompilationInfo;
  * If a method is invoked on a created instance,
  * class scopes
  */
-public class SideEffectVisitor extends TreePathScanner {
+public class SideEffectVisitor extends CancellableTreePathScanner {
     private int nestingLevel;
     private int invocationChainLevel;
     private final boolean nonLocals;
-    private final CompilationInfo ci;
+    private final HintContext ctx;
     private Deque<TypeElement> enclosingElements = new LinkedList<TypeElement>();
     private Tree invocationTree;
     private boolean stopOnUnknownMethods;
 
-    public SideEffectVisitor(CompilationInfo ci) {
-        this.ci = ci;
+    public SideEffectVisitor(HintContext ctx) {
+        this.ctx = ctx;
         this.nonLocals = false;
     }
     
@@ -87,11 +87,11 @@ public class SideEffectVisitor extends TreePathScanner {
      * and QName.super qualifiers are recognized as local calls. Called methods are still
      * inspected for side effects
      * 
-     * @param ci context
+     * @param ctx context
      * @param nonLocals if true, any call to a different object is reported as potential side effect
      */
-    public SideEffectVisitor(CompilationInfo ci, boolean nonLocals) {
-        this.ci = ci;
+    public SideEffectVisitor(HintContext ctx, boolean nonLocals) {
+        this.ctx = ctx;
         this.nonLocals = false;
     }
 
@@ -132,7 +132,7 @@ public class SideEffectVisitor extends TreePathScanner {
         if (nestingLevel == 0) {
             stop(subNode);
         }
-        Element el = ci.getTrees().getElement(checkVar == getCurrentPath().getLeaf() ? getCurrentPath() : new TreePath(getCurrentPath(), checkVar));
+        Element el = ctx.getInfo().getTrees().getElement(checkVar == getCurrentPath().getLeaf() ? getCurrentPath() : new TreePath(getCurrentPath(), checkVar));
         if (el != null && el.getKind() == ElementKind.FIELD) {
             Element x = el.getEnclosingElement();
             if (!enclosingElements.contains(x)) {
@@ -153,7 +153,7 @@ public class SideEffectVisitor extends TreePathScanner {
 
     @Override
     public Object visitClass(ClassTree node, Object p) {
-        Element e = ci.getTrees().getElement(getCurrentPath());
+        Element e = ctx.getInfo().getTrees().getElement(getCurrentPath());
         Object r = scan(node.getModifiers(), p);
         r = scanAndReduce(node.getTypeParameters(), p, r);
         r = scanAndReduce(node.getExtendsClause(), p, r);
@@ -168,7 +168,7 @@ public class SideEffectVisitor extends TreePathScanner {
 
     @Override
     public Object visitNewClass(NewClassTree node, Object p) {
-        Element e = ci.getTrees().getElement(getCurrentPath());
+        Element e = ctx.getInfo().getTrees().getElement(getCurrentPath());
         if (e == null) {
             return super.visitNewClass(node, p);
         } else {
@@ -213,7 +213,7 @@ public class SideEffectVisitor extends TreePathScanner {
         }
         Object o = reduce(r, x);
 
-        Element e = ci.getTrees().getElement(getCurrentPath());
+        Element e = ctx.getInfo().getTrees().getElement(getCurrentPath());
         if (e != null && e.getKind() != ElementKind.METHOD) {
             return o;
         }
@@ -224,7 +224,7 @@ public class SideEffectVisitor extends TreePathScanner {
             return o;
         }
         ExecutableElement el = (ExecutableElement) e;
-        TreePath target = ci.getTrees().getPath(el);
+        TreePath target = ctx.getInfo().getTrees().getPath(el);
         if (target != null) {
             invocationChainLevel++;
             nestingLevel++;
@@ -242,6 +242,11 @@ public class SideEffectVisitor extends TreePathScanner {
         return o;
     }
 
+    @Override
+    protected boolean isCanceled() {
+        return ctx.isCanceled();
+    }
+    
     // helper methods
     private Object scanAndReduce(Tree node, Object p, Object r) {
         return reduce(scan(node, p), r);

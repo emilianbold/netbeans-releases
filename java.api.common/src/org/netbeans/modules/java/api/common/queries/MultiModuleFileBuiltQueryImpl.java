@@ -126,6 +126,11 @@ final class MultiModuleFileBuiltQueryImpl implements FileBuiltQueryImplementatio
                         invalidate();
                     }
                     break;
+                case ClassPath.PROP_ENTRIES:
+                    final Object src = evt.getSource();
+                    if ((src instanceof ClassPath) && isCurrentPath((ClassPath)src)) {
+                        invalidate();
+                    }
             }
         }
     }
@@ -164,6 +169,15 @@ final class MultiModuleFileBuiltQueryImpl implements FileBuiltQueryImplementatio
             }
         }
         return res;
+    }
+
+    private synchronized boolean isCurrentPath(@NonNull final ClassPath cp) {
+        for (Pair<ClassPath,PropertyChangeListener> p : currentPaths) {
+            if (p.first() == cp) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private synchronized void invalidate() {
