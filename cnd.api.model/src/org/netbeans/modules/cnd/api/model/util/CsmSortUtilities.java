@@ -72,7 +72,7 @@ import org.openide.util.CharSequences;
  */
 @SuppressWarnings("unchecked")
 public class CsmSortUtilities {
-    private static boolean CAMEL_CASE_COMPLETION = Boolean.getBoolean("cnd.api.model.util.camelcase");
+    private static boolean CAMEL_CASE_COMPLETION = true;
     
     /* ------------------- COMPARATORS --------------------------- */
     public static final Comparator CLASS_NAME_COMPARATOR = new DefaultClassNameComparator();
@@ -121,10 +121,10 @@ public class CsmSortUtilities {
 
     public static boolean startsWith(String theString, String prefix, boolean match, boolean caseSensitive) {
         if (CAMEL_CASE_COMPLETION) {
-            return isCamelCasePrefix(prefix) && !match
+            return !match && isCamelCasePrefix(prefix)
                     ? caseSensitive
                             ? startsWithCamelCase(theString, prefix)
-                            : startsWithCamelCase(theString, prefix) || CsmSortUtilities.matchName(theString, prefix, match, caseSensitive)
+                            : CsmSortUtilities.matchName(theString, prefix, match, caseSensitive) || startsWithCamelCase(theString, prefix)
                     : CsmSortUtilities.matchName(theString, prefix, match, caseSensitive);
         } else {
             return CsmSortUtilities.matchName(theString, prefix, match, caseSensitive);
