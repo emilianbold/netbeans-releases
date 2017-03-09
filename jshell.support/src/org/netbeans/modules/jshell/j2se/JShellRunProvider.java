@@ -56,7 +56,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
         service = J2SECategoryExtensionProvider.class,
          projectType = {
             "org-netbeans-modules-java-j2seproject",
-            "org.netbeans.modules.java.j2semodule"
+            "org-netbeans-modules-java-j2semodule"
         }
 )
 public class JShellRunProvider implements J2SECategoryExtensionProvider{

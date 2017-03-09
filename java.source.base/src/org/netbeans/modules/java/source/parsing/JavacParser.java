@@ -1027,7 +1027,7 @@ public class JavacParser extends Parser {
             if (option.startsWith("-Xmodule:") && !xmoduleSeen) {   //NOI18N
                 res.add(option);
                 xmoduleSeen = true;
-            } else if (option.equals("-parameters")) {     //NOI18N
+            } else if (option.equals("-parameters") || option.startsWith("-Xlint")) {     //NOI18N
                 res.add(option);
             } else if (i+1 < options.size() && (
                     option.equals("--add-modules") ||   //NOI18N
