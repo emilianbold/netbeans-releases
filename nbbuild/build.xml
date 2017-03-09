@@ -1042,7 +1042,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
-      <arg file="/space/java/9"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
