@@ -377,24 +377,6 @@ Hg ID:    ${hg.id}
           </fileset>
       </delete>
   </target>
-  <target name="clean-jshell" unless="keep.javashell">
-    <!--
-    <delete dir="../libs.jshell/build" verbose="true"/>
-    -->
-    <delete verbose="true">
-	<fileset dir="${netbeans.dest.dir}">
-	    <include name="*/config/Modules/org-netbeans-libs-jshell.xml"/>
-	<!--
-	    <include name="*/modules/org-netbeans-libs-jshell.jar"/>
-	-->
-	    <include name="*/modules/ext/nb-jshell*.jar"/>
-	<!--
-	-->
-	    <include name="*/update_tracking/org-netbeans-libs-jshell.xml"/>
-	</fileset>
-    </delete>
-  </target>
-  
   <target name="build" depends="build-nozip"
           description="Create a complete build including a ZIP distribution (but do not try it).">
     <delete file="NetBeans-${buildnum}.zip"/>
@@ -949,7 +931,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   <target name="tryme-setup-debug-args" if="debug.port" >
     <property name="debug.pause" value="y" />
     <property name="debug.server" value="y" />
-    
+    <property name="tryme.jdkhome" value="${nbjdk.home}"/>
     <property name="tryme.debug.args" value="-J-agentlib:jdwp=transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
   </target>
           
@@ -1031,7 +1013,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="run.args.ide" value=""/>
     <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans${jvm.arch.string}.exe" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
+      <arg file="${tryme.jdkhome}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
