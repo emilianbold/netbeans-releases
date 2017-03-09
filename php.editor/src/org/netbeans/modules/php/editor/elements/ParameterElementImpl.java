@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
@@ -310,6 +311,9 @@ public final class ParameterElementImpl implements ParameterElement {
             } else {
                 for (TypeResolver typeResolver : typesResolvers) {
                     if (typeResolver.isResolved()) {
+                        if (typeResolver.isNullableType()) {
+                            sb.append(CodeUtils.NULLABLE_TYPE_PREFIX);
+                        }
                         sb.append(typeNameResolver.resolve(typeResolver.getTypeName(false))).append(' '); //NOI18N
                         break;
                     }

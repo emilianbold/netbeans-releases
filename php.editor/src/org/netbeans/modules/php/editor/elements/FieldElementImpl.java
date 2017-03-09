@@ -164,9 +164,10 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
     static FieldElement fromFrameworks(final TypeElement type, final PhpType.Field field, final ElementQuery elementQuery) {
         Parameters.notNull("field", field);
         Parameters.notNull("elementQuery", elementQuery);
+        // XXX check nullable type?
         final PhpType fldType = field.getType();
         final Set<TypeResolver> typeResolvers = fldType != null
-                ? Collections.<TypeResolver>singleton(new TypeResolverImpl(fldType.getFullyQualifiedName()))
+                ? Collections.<TypeResolver>singleton(new TypeResolverImpl(fldType.getFullyQualifiedName(), false))
                 : Collections.<TypeResolver>emptySet();
         FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(),
                 PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers, typeResolvers, false);
