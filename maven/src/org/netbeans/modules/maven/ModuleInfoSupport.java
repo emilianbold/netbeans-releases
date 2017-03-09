@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.maven.nodes;
+package org.netbeans.modules.maven;
 
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.Tree;
@@ -46,13 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +61,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import static org.netbeans.modules.maven.classpath.ClassPathProviderImpl.MODULE_INFO_JAVA;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -77,12 +73,12 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-class ModuleInfoSupport {
+public class ModuleInfoSupport {
 
     private static final Logger LOG = Logger.getLogger(ModuleInfoSupport.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ModuleInfoSupport.class.getName());
         
-    private final DependenciesNode.Type type;
+    private final DependencyType type;
     private final NbMavenProjectImpl project;
     private FileObject moduleInfo;
     
@@ -111,11 +107,11 @@ class ModuleInfoSupport {
         }
     };
     
-    ModuleInfoSupport(NbMavenProjectImpl project, DependenciesNode.Type type) {
+    public ModuleInfoSupport(NbMavenProjectImpl project, DependencyType type) {
         this.project = project;
         this.type = type;        
         
-        Collection<String> roots = getRoots(project, type);
+        Collection<String> roots = getRoots(project.getOriginalMavenProject(), type);
         for (String root : roots) {
             FileUtil.addFileChangeListener(moduleInfoListener, new File(root));
         }        
@@ -125,9 +121,8 @@ class ModuleInfoSupport {
         }
     }
 
-    private static Collection<String> getRoots(NbMavenProjectImpl project, DependenciesNode.Type type) {
-        MavenProject mp = project.getOriginalMavenProject();
-        final Collection<String> roots = type == DependenciesNode.Type.TEST ? mp.getTestCompileSourceRoots() : mp.getCompileSourceRoots();
+    private static Collection<String> getRoots(MavenProject mp, DependencyType type) {
+        final Collection<String> roots = type == DependencyType.TEST ? mp.getTestCompileSourceRoots() : mp.getCompileSourceRoots();
         return roots;
     }
 
@@ -146,7 +141,7 @@ class ModuleInfoSupport {
         } 
     }
 
-    synchronized boolean canAddToModuleInfo(String name) {
+    public synchronized boolean canAddToModuleInfo(String name) {
         if(moduleInfo == null || !moduleInfo.isValid()) {
             return false;
         }
@@ -155,7 +150,7 @@ class ModuleInfoSupport {
     
     private FileObject getModuleInfo() {
         MavenProject mp = project.getOriginalMavenProject();
-        Collection<String> roots = type == DependenciesNode.Type.TEST ? mp.getTestCompileSourceRoots() : mp.getCompileSourceRoots();
+        Collection<String> roots = type == DependencyType.TEST ? mp.getTestCompileSourceRoots() : mp.getCompileSourceRoots();
         return getModuleInfo(roots);
     }
     
@@ -210,11 +205,11 @@ class ModuleInfoSupport {
         log("Declared modules:", declaredModuleNames); // NOI18N
         return declaredModuleNames;
     }
-    
-    static void addRequires(NbMavenProjectImpl project, Collection<? extends Artifact> artifacts) {
-        artifacts.stream().collect(Collectors.groupingBy(DependenciesNode.Type::forArtifact))
-                          .entrySet().forEach((e) -> addRequires(getModuleInfo(getRoots(project, e.getKey())), e.getValue()));
-    }   
+        
+    public static void addRequires(MavenProject mp, Collection<? extends Artifact> artifacts) {
+        artifacts.stream().collect(Collectors.groupingBy(DependencyType::forArtifact))
+                          .entrySet().forEach((e) -> addRequires(getModuleInfo(getRoots(mp, e.getKey())), e.getValue()));
+    }
     
     private static void addRequires(FileObject moduleInfo, Collection<? extends Artifact> artifacts) {
         RP.post(() -> {

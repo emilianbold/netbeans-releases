@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.java.api.common.classpath;
 
+import java.net.URL;
+import java.util.function.Function;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -120,4 +122,23 @@ public final class ClassPathSupportFactory {
         return new SourcePathImplementation(sourceRoots, projectHelper, evaluator);
     }
 
+    /**
+     * 
+     * @param base
+     * @param sourceRoots
+     * @param systemModules
+     * @param userModules
+     * @param legacyClassPath
+     * @param filter
+     * @return 
+     */
+    public static ClassPathImplementation createModuleInfoBasedPath(
+            @NonNull final ClassPath base,
+            @NonNull final ClassPath sourceRoots,
+            @NonNull final ClassPath systemModules,
+            @NonNull final ClassPath userModules,
+            @NullAllowed final ClassPath legacyClassPath,
+            @NullAllowed final Function<URL,Boolean> filter) {
+        return ModuleClassPaths.createModuleInfoBasedPath(base, sourceRoots, systemModules, userModules, legacyClassPath, filter);
+    }
 }

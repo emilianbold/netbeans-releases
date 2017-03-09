@@ -2,4 +2,4 @@ Code completion result for source line:
 import * a|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-KEYWORD    as                                         null
+KEYWORD    as                                         ECMAScript 6

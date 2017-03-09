@@ -59,29 +59,29 @@ public class JavaClassPathConstants {
      *
      * @since 1.22
      */
-    public static final String PROCESSOR_PATH = "classpath/processor";
+    public static final String PROCESSOR_PATH = "classpath/processor";  //NOI18N
     
     /**
      * A part of the compilation classpath which is not included into runtime classpath.
      * @since 1.39
      */
-    public static final String COMPILE_ONLY = "classpath/compile_only";
+    public static final String COMPILE_ONLY = "classpath/compile_only"; //NOI18N
 
     /**
      * Module path for bootstrap modules.
      * @since 1.64
      */
-    public static final String MODULE_BOOT_PATH = "modules/boot";
+    public static final String MODULE_BOOT_PATH = "modules/boot";   //NOI18N
     /**
      * Module path for user modules.
      * @since 1.64
      */
-    public static final String MODULE_COMPILE_PATH = "modules/compile";
+    public static final String MODULE_COMPILE_PATH = "modules/compile"; //NOI18N
     /**
      * Additional classpath for modular compilation.
      * @since 1.64
      */
-    public static final String MODULE_CLASS_PATH = "modules/classpath";
+    public static final String MODULE_CLASS_PATH = "modules/classpath"; //NOI18N
     
     /**
      * Runtime module path for user modules.
@@ -94,4 +94,10 @@ public class JavaClassPathConstants {
      * @since 1.64
      */
     public static final String MODULE_EXECUTE_CLASS_PATH = "modules/execute-classpath"; //NOI18N
+
+    /**
+     * Module source path.
+     * @since 1.65
+     */
+    public static final String MODULE_SOURCE_PATH ="modules/source";    //NOI18N
 }

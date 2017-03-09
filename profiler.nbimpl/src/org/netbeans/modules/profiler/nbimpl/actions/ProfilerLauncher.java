@@ -401,7 +401,8 @@ public class ProfilerLauncher {
         @ProjectType(id="org-netbeans-modules-j2ee-earproject"),
         @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
         @ProjectType(id="org-netbeans-modules-web-project"),
-        @ProjectType(id="org-netbeans-modules-autoproject")
+        @ProjectType(id="org-netbeans-modules-autoproject"),
+        @ProjectType(id="org-netbeans-modules-java-j2semodule")
     })
     final public static class AntLauncherFactory implements LauncherFactory {
         final private Project prj;

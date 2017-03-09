@@ -44,15 +44,19 @@ package org.netbeans.modules.jshell.support;
 import org.netbeans.modules.jshell.parsing.JShellParser;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 import jdk.jshell.JShell;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.Rng;
+import org.netbeans.modules.jshell.parsing.JShellParser2;
 
 /**
  *
@@ -72,6 +76,7 @@ public class ContentParserTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        ConsoleModel.initModel();
         super.setUp(); 
         state = createJShell();
     }
@@ -82,8 +87,10 @@ public class ContentParserTest extends NbTestCase {
         super.tearDown();
     }
     
-    private JShell createJShell() {
-        return JShell.create();
+    private JShell createJShell() throws Exception {
+        File jarFile = new File(JShell.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        assertTrue(jarFile.exists() && jarFile.isFile());
+        return JShell.builder().remoteVMOptions("-classpath", jarFile.toPath().toString()).build();
     }
     
     private void parseOutput() throws Exception {
@@ -98,15 +105,15 @@ public class ContentParserTest extends NbTestCase {
             }
         }
         
-//        JShellParser2 parser = new JShellParser2(state, sb);
-//        this.content = sb.toString();
-//        parser.execute();
-//        this.parser = parser;
+        JShellParser2 parser = new JShellParser2(state, sb, 0);
+        this.content = sb.toString();
+        parser.execute();
+        this.parser = parser;
     }
     
     private String content;
     
-    private JShellParser parser;
+    private JShellParser2 parser;
     
     public void testParsedSections() throws Exception {
         parseOutput();
@@ -147,7 +154,7 @@ public class ContentParserTest extends NbTestCase {
                             fail();
                     }
                     current = sects.next();
-                    assertEquals("Invalid section: " + current, lastType, current.getType());
+                    assertEquals("Invalid section: " + s  + ", section: " + current, lastType, current.getType());
                 }
                 if (s.charAt(1) != ':') {
                     assertTrue(current.isIncomplete());

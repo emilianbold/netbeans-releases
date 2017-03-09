@@ -1454,6 +1454,10 @@ public final class ParseProjectXml extends Task {
                 throw new BuildException("Have malformed <class-path-extension> in " + getProjectFile(), getLocation());
             }
             String reltext = XMLUtil.findText(runtimeRelativePath);
+            // interpret empty string as indication there's NO runtime-relative path
+            if (reltext == null) {
+                continue;
+            }
             if (list == null) {
                 list = new StringBuffer();
             } else {

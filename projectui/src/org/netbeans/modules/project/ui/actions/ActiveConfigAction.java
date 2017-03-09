@@ -58,9 +58,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -433,7 +433,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                     }
                     
                 }
-                Map<String, Collection<Wrapper>> name2pc = new HashMap<String, Collection<Wrapper>>();
+                Map<String, Collection<Wrapper>> name2pc = new LinkedHashMap<>();
                 
                 for (ProjectConfigurationProvider<?> pcp : pcps) {
                     for (ProjectConfiguration config : getConfigurations(pcp)) {

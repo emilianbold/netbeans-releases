@@ -54,7 +54,13 @@ import org.openide.filesystems.FileUtil;
  *
  * @author sdedic
  */
-@ProjectServiceProvider( service = ShellHistory.class, projectType = "org-netbeans-modules-java-j2seproject")
+@ProjectServiceProvider( service = ShellHistory.class, 
+         projectType = {
+            "org-netbeans-modules-java-j2seproject",
+            "org.netbeans.modules.java.j2semodule"
+        }
+)
+
 public class NbProjectShellHistory extends FileHistory {
     private static final String HISTORY_FILENAME = "nbproject/private/jshell.history"; // NOI18N
     private final Project project;

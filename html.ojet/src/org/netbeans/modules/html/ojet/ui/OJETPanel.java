@@ -52,13 +52,14 @@ import org.netbeans.modules.html.ojet.data.OJETPreferences;
 import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl
  */
-public class OJETPanel extends javax.swing.JPanel implements CustomizerPanelImplementation {
+public class OJETPanel extends javax.swing.JPanel implements CustomizerPanelImplementation, HelpCtx.Provider {
 
     public static final String IDENTIFIER = "ojet"; // NOI18N
     
@@ -182,5 +183,10 @@ public class OJETPanel extends javax.swing.JPanel implements CustomizerPanelImpl
     public void save() {
         DataProviderImpl.getInstance().setCurrentVersion((String)cbVersion.getSelectedItem());
         OJETPreferences.put(project, OJETPreferences.VERSION, (String)cbVersion.getSelectedItem());
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.html.ojet.ui.OJETPanel"); // NOI18N
     }
 }

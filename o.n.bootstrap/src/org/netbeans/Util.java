@@ -306,7 +306,7 @@ public final class Util {
             // so the dependent modules are enabled before the host+fragment merged
             // classloader will activate
             Collection<Module> frags = fragments.get(m1.getCodeNameBase());
-            if (frags != null) {
+            if (frags != null && !frags.isEmpty()) {
                 frags = new HashSet<>(frags);
                 frags.retainAll(modules);
             
@@ -335,7 +335,9 @@ public final class Util {
                         }
                     }
                 }
-                l.remove(m1);
+                if (l != null) {
+                    l.remove(m1);
+                }
             }
             if (l != null) {
                 m.put(m1, l);

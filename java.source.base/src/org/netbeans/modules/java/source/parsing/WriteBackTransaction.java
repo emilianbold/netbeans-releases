@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.util.Pair;
 import org.openide.util.BaseUtilities;
@@ -86,12 +87,17 @@ class WriteBackTransaction extends FileManagerTransaction {
      */
     static boolean disableCache;
     
-    private URL root;
+    private final URL root;
+    private final URL classesFolder;
 
-    WriteBackTransaction(URL root) {
+    WriteBackTransaction(@NonNull final URL root) {
         super(true);
         this.root = root;
-        
+        try {
+            this.classesFolder = BaseUtilities.toURI(JavaIndex.getClassFolder(root)).toURL();
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
         deleted = new HashSet<File>();
         createCacheRef();
     }
@@ -269,14 +275,40 @@ class WriteBackTransaction extends FileManagerTransaction {
     private Map<String, Map<File, CachedFileObject>> getCacheLine(
             @NonNull final Location location,
             final boolean readOnly) {
-        if (location == StandardLocation.CLASS_OUTPUT) {
+        final Pair<Location,Collection<? extends URL>> p = baseLocation(location);
+        final Location baseLocation = p.first();
+        final Collection<? extends URL> roots = p.second();
+        if (roots != null && !roots.contains(classesFolder)) {
+            if (readOnly) {
+                return Collections.emptyMap();
+            } else {
+                throw new IllegalStateException(String.format(
+                        "Transaction for src root: %s (cache folder: %s), request to write to different location: %s", //NOI18N
+                        root,
+                        classesFolder,
+                        roots));
+            }
+        }
+        if (baseLocation == StandardLocation.CLASS_OUTPUT) {
             return contentCache.first();
-        } else if (location == StandardLocation.SOURCE_OUTPUT) {
+        } else if (baseLocation == StandardLocation.SOURCE_OUTPUT) {
             return contentCache.second();
-        } else if (readOnly && location == StandardLocation.CLASS_PATH) {
+        } else if (readOnly && baseLocation == StandardLocation.CLASS_PATH) {
             return contentCache.first();
         } else {
             throw new IllegalArgumentException("Unsupported Location: " + location);    //NOI18N
+        }
+    }
+
+    @NonNull
+    private static Pair<Location,Collection<? extends URL>> baseLocation(@NullAllowed final Location location) {
+        if (ModuleLocation.isInstance(location)) {
+            final ModuleLocation ml = ModuleLocation.cast(location);
+            return Pair.of(
+                    ml.getBaseLocation(),
+                    ml.getModuleRoots());
+        } else {
+            return Pair.of(location,null);
         }
     }
 

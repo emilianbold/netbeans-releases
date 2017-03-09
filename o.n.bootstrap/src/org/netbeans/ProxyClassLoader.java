@@ -483,7 +483,9 @@ public class ProxyClassLoader extends ClassLoader {
                 pkg = par.getPackageFast(name, false);
                 if (pkg != null) break;
             }
-            if (pkg == null && shouldDelegateResource(path, null)) {
+            // pretend the resource ends with "/". This works better with hidden package and
+            // prefix-based checks.
+            if (pkg == null && shouldDelegateResource(path + "/", null)) {
                 // Cannot access either Package.getSystemPackages nor ClassLoader.getPackage
                 // from here, so do the best we can though it will cause unnecessary
                 // duplication of the package cache (PCL.packages vs. CL.packages):
