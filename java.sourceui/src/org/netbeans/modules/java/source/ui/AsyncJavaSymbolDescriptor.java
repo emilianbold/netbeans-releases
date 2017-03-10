@@ -54,6 +54,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,6 +77,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
@@ -321,10 +323,11 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         JavacTaskImpl javac;
         Reference<JavacTaskImpl> ref = javacRef;
         if (ref == null || (javac = ref.get()) == null) {
+            String sourceLevel = SourceLevelQuery.getSourceLevel(root);
             javac = (JavacTaskImpl)JavacTool.create().getTask(null,
                     new RootChange(root),
                     new Listener(),
-                    Collections.<String>emptySet(),
+                    sourceLevel != null ? Arrays.asList("-source", sourceLevel) : Collections.<String>emptySet(), //NOI18N
                     Collections.<String>emptySet(),
                     Collections.<JavaFileObject>emptySet());
             javacRef = new WeakReference<>(javac);
