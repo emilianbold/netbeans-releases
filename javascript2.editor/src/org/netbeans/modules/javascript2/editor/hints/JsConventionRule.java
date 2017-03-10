@@ -404,7 +404,8 @@ public class JsConventionRule extends JsAstRule {
                             }  else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
                                 state = State.AFTER_CURLY;
                                 isGetterSetter = false;
-                            }
+                            }  else if (id == JsTokenId.BRACKET_LEFT_PAREN)
+                                state = State.AFTER_PAREN;
                             break;
                         case AFTER_COLON:
                             if (id == JsTokenId.OPERATOR_COMMA) {
