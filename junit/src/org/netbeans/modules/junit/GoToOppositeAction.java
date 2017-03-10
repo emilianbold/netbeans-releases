@@ -244,17 +244,11 @@ public final class GoToOppositeAction implements TestLocator {
         }
         
         public void run() {
-            if (!EventQueue.isDispatchThread()) {
-                findOppositeLocation();
-                if (oppoLocation != null || oppoLocationIT != null || sourceToTest) {
-                    EventQueue.invokeLater(this);
-                }
-            } else {
-                if (oppoLocation != null || oppoLocationIT != null) {
-                    goToOppositeLocation();
-                } else if (sourceToTest) {
-                    displayNoOppositeLocationFound();
-                }
+            findOppositeLocation();
+            if (oppoLocation != null || oppoLocationIT != null) {
+                goToOppositeLocation();
+            } else if (sourceToTest) {
+                displayNoOppositeLocationFound();
             }
         }
         

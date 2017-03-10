@@ -45,9 +45,12 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -192,7 +195,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
             return;
         }
         
-        final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
+        final List<RenameRefactoring> renameRefactoringsList = Collections.synchronizedList(new LinkedList<RenameRefactoring>());
         final ElementKind elementKind = treePathHandle.getElementHandle().getKind();
 
         if(SUPPORTED.contains(elementKind)) {
@@ -201,35 +204,26 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
             for (final TestLocator testLocator : testLocators) {
                 if(testLocator.appliesTo(fileObject)) {
                     if(testLocator.asynchronous()) {
-                        final Lock lock = new ReentrantLock();
-                        final Condition condition = lock.newCondition();
-                        lock.lock();
-                        try {
-                            testLocator.findOpposite(fileObject, -1, new TestLocator.LocationListener() {
-
-                                @Override
-                                public void foundLocation(FileObject fo, LocationResult location) {
-                                    lock.lock();
-                                    try {
-					if(elementKind == ElementKind.CLASS) {
-					    addIfMatch(location, testLocator, fo, renameRefactoringsList);
-					} else if(elementKind == ElementKind.METHOD) {
-					    addIfMatchMethod(location, testLocator, renameRefactoringsList);
-					}
-                                        condition.signalAll();
-                                    } finally {
-                                        lock.unlock();
+                        CountDownLatch latch = new CountDownLatch(1);
+                        testLocator.findOpposite(fileObject, -1, new TestLocator.LocationListener() {
+                            @Override
+                            public void foundLocation(FileObject fo, LocationResult location) {
+                                try {
+                                    if(elementKind == ElementKind.CLASS) {
+                                        addIfMatch(location, testLocator, fo, renameRefactoringsList);
+                                    } else if(elementKind == ElementKind.METHOD) {
+                                        addIfMatchMethod(location, testLocator, renameRefactoringsList);
                                     }
+                                } finally {
+                                    latch.countDown();
                                 }
-                            });
-                            try {
-                                condition.awaitNanos(10000000000L);
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(RenamePropertyRefactoringPlugin.class.getName())
-                                        .fine("Finding test class took too long, or it was interupted"); //NOI18N
                             }
-                        } finally {
-                            lock.unlock();
+                        });
+                        try {
+                            latch.await();
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(RenamePropertyRefactoringPlugin.class.getName())
+                                    .fine("Finding test class took too long, or it was interupted"); //NOI18N
                         }
                     } else {
                         LocationResult location = testLocator.findOpposite(fileObject, -1);
@@ -254,7 +248,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         return testName.replace(testedName, newName);
     }
     
-    private void addIfMatch(LocationResult location, final TestLocator testLocator, final FileObject fileObject, final LinkedList<RenameRefactoring> renameRefactoringsList) {
+    private void addIfMatch(LocationResult location, final TestLocator testLocator, final FileObject fileObject, final List<RenameRefactoring> renameRefactoringsList) {
         if(location.getFileObject() != null && testLocator.getFileType(location.getFileObject()).equals(TestLocator.FileType.TEST)) {
             RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(location.getFileObject()));
             renameRefactoring.setNewName(newName(fileObject, location.getFileObject(), refactoring.getNewName()));
@@ -263,7 +257,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
 
-    private void addIfMatchMethod(final LocationResult location, final TestLocator testLocator, final LinkedList<RenameRefactoring> renameRefactoringsList) {
+    private void addIfMatchMethod(final LocationResult location, final TestLocator testLocator, final List<RenameRefactoring> renameRefactoringsList) {
         if(location.getFileObject() != null && testLocator.getFileType(location.getFileObject()).equals(TestLocator.FileType.TEST)) {
 	    try {
 		JavaSource.forFileObject(location.getFileObject()).runUserActionTask(new Task<CompilationController>() {
