@@ -48,6 +48,8 @@ import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -110,9 +112,25 @@ public class PHP71UnhandledError extends UnhandledErrorRule {
             super.visit(nullable);
         }
 
+        @Override
+        public void visit(CatchClause catchClause) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
+            checkMultiCatch(catchClause);
+            super.visit(catchClause);
+        }
+
         private void checkNullableType(NullableType nullableType) {
             if (nullableType != null) {
                 createError(nullableType);
+            }
+        }
+
+        private void checkMultiCatch(CatchClause catchClause) {
+            List<Expression> classNames = catchClause.getClassNames();
+            if (classNames.size() > 1) {
+                createError(catchClause);
             }
         }
 

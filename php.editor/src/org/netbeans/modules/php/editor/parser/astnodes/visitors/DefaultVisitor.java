@@ -209,7 +209,7 @@ public class DefaultVisitor implements Visitor {
 
     @Override
     public void visit(CatchClause node) {
-        scan(node.getClassName());
+        scan(node.getClassNames());
         scan(node.getVariable());
         scan(node.getBody());
     }

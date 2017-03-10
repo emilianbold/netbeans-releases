@@ -259,20 +259,23 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(CatchClause node) {
-        Identifier className = (node.getClassName() != null) ? CodeUtils.extractUnqualifiedIdentifier(node.getClassName()) : null;
-        AttributedElement ae;
-        if (className != null) {
-            String name = className.getName();
-            Collection<AttributedElement> namedGlobalElements =
-                    getNamedGlobalElements(Kind.CLASS, name);
-            if (!namedGlobalElements.isEmpty()) {
-                ae = lookup(name, Kind.CLASS);
-                node2Element.put(className, ae);
-            } else {
-                ae = lookup(name, Kind.IFACE);
-                node2Element.put(className, ae);
+        for (Expression clsName : node.getClassNames()) {
+            Identifier className = (clsName != null) ? CodeUtils.extractUnqualifiedIdentifier(clsName) : null;
+            AttributedElement ae;
+            if (className != null) {
+                String name = className.getName();
+                Collection<AttributedElement> namedGlobalElements
+                        = getNamedGlobalElements(Kind.CLASS, name);
+                if (!namedGlobalElements.isEmpty()) {
+                    ae = lookup(name, Kind.CLASS);
+                    node2Element.put(className, ae);
+                } else {
+                    ae = lookup(name, Kind.IFACE);
+                    node2Element.put(className, ae);
+                }
             }
         }
+
         Variable var = node.getVariable();
         final String name = extractVariableName(var);
 

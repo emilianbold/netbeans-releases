@@ -252,7 +252,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
                 return;
             }
             initializeVariable(node.getVariable());
-            scan(node.getClassName());
+            scan(node.getClassNames());
             scan(node.getBody());
         }
 

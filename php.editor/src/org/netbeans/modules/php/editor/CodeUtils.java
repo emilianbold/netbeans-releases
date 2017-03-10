@@ -291,10 +291,18 @@ public final class CodeUtils {
         return typeName != null ? extractUnqualifiedName(typeName) : null;
     }
 
-    public static String extractUnqualifiedTypeName(CatchClause catchClause) {
+    public static List<String> extractUnqualifiedTypeName(CatchClause catchClause) {
         Parameters.notNull("catchClause", catchClause);
-        Expression typeName = catchClause.getClassName();
-        return typeName != null ? extractUnqualifiedName(typeName) : null;
+        List<String> typeNames = new ArrayList<>();
+        for (Expression className : catchClause.getClassNames()) {
+            if (className != null) {
+                String typeName = extractUnqualifiedName(className);
+                if (typeName != null) {
+                    typeNames.add(typeName);
+                }
+            }
+        }
+        return typeNames;
     }
 
     public static String extractUnqualifiedSuperClassName(ClassDeclaration clsDeclaration) {
