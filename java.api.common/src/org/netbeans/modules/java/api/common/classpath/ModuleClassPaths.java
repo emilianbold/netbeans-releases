@@ -347,6 +347,7 @@ final class ModuleClassPaths {
     }
 
     private static final class PropertyModulePath extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
+        private static final String MODULE_INFO_CLASS = "module-info.class";    //NOI18N
 
         private final File projectDir;
         private final PropertyEvaluator eval;
@@ -512,9 +513,12 @@ final class ModuleClassPaths {
             //No project's dist folder do File.list
             File[] modules = modulesFolder.listFiles((File f) -> {
                 try {
-                    return f.isFile() &&
-                            !f.getName().startsWith(".") &&
-                            FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL());
+                    if (f.getName().startsWith(".")) {
+                        return false;
+                    }
+                    return f.isFile() ?
+                            FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL()) :
+                            new File(f, MODULE_INFO_CLASS).exists();
                 } catch (MalformedURLException e) {
                     Exceptions.printStackTrace(e);
                     return false;
