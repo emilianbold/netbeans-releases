@@ -220,7 +220,7 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
                             }
                         });
                         try {
-                            latch.await();
+                            latch.await(10000000000L, TimeUnit.NANOSECONDS);
                         } catch (InterruptedException ex) {
                             Logger.getLogger(RenamePropertyRefactoringPlugin.class.getName())
                                     .fine("Finding test class took too long, or it was interupted"); //NOI18N
