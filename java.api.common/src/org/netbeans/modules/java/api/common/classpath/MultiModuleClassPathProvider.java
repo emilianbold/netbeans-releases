@@ -41,8 +41,10 @@ package org.netbeans.modules.java.api.common.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,9 +56,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -70,11 +75,14 @@ import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
@@ -86,6 +94,7 @@ import org.openide.util.WeakListeners;
  */
 public final class MultiModuleClassPathProvider extends AbstractClassPathProvider {
     private static final Logger LOG = Logger.getLogger(MultiModuleClassPathProvider.class.getName());
+    private static final String INTERNAL_MOUDLE_BINARIES_PATH = "internal-module-bin-path"; //NOI18N
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator eval;
@@ -103,6 +112,9 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
     private final String[] processorClassPath;
     private final String[] testProcessorClassPath;
     private final String platformType;
+    private final String buildModulesDirProperty;
+    private final Map</*@GuardedBy("this")*/String,URL> urlCache = new ConcurrentHashMap<>();
+    private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new ConcurrentHashMap<>();
 
     private MultiModuleClassPathProvider(
             @NonNull final AntProjectHelper helper,
@@ -119,7 +131,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             @NonNull final String[] testExecuteClassPath,
             @NonNull final String[] processorClassPath,
             @NonNull final String[] testProcessorClassPath,
-            @NonNull final String platformType) {
+            @NonNull final String platformType,
+            @NonNull final String buildModulesDirProperty) {
         Parameters.notNull("helper", helper);   //NOI18N
         Parameters.notNull("eval", eval);   //NOI18N
         Parameters.notNull("modules", modules); //NOI18N
@@ -135,6 +148,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         Parameters.notNull("processorClassPath", processorClassPath);           //NOI18N
         Parameters.notNull("testProcessorClassPath", testProcessorClassPath);   //NOI18N
         Parameters.notNull("platformType", platformType);   //NOI18N
+        Parameters.notNull("buildModulesDirProperty", buildModulesDirProperty);
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         this.eval = eval;
@@ -156,6 +170,45 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         this.processorClassPath = processorClassPath;
         this.testProcessorClassPath = testProcessorClassPath;
         this.platformType = platformType;
+        this.buildModulesDirProperty = buildModulesDirProperty;
+    }
+
+    @CheckForNull
+    private URL getURL(@NonNull final String propname) {
+        URL u = urlCache.get(propname);
+        if (u == null) {
+            final String prop = eval.getProperty(propname);
+            if (prop != null) {
+                final File file = helper.resolveFile(prop);
+                if (file != null) {
+                    try {
+                        u = BaseUtilities.toURI(file).toURL();
+                        urlCache.put (propname, u);
+                    } catch (MalformedURLException e) {
+                        LOG.log(
+                                Level.WARNING,
+                                "Cannot convert to URL: {0}",   //NOI18N
+                                file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        return u;
+    }
+
+    @CheckForNull
+    private FileObject getDir(@NonNull final String propname) {
+        FileObject fo = dirCache.get(propname);
+        if (fo == null || !fo.isValid()) {
+            final URL u = getURL(propname);
+            if (u != null) {
+                fo = URLMapper.findFileObject(u);
+                if (fo != null) {
+                    dirCache.put (propname, fo);
+                }
+            }
+        }
+        return fo;
     }
 
     @CheckForNull
@@ -213,17 +266,33 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             return cacheFor(owner).computeIfAbsent(
                     null,
                     JavaClassPathConstants.MODULE_COMPILE_PATH,
-                    (mods) -> {
-                        ClassPathImplementation impl = ModuleClassPaths.createPropertyBasedModulePath(
-                                projectDirectory,
-                                eval,
-                                null,
-                                owner.isTest() ? testModulePath : modulePath);
-                        impl = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation(
-                                ModuleClassPaths.createMultiModuleBinariesPath(mods, true),
-                                impl);
-                        return ClassPathFactory.createClassPath(impl);
-                    });
+                    !owner.isTest() ?
+                            (mods) -> {
+                                ClassPath impl = ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
+                                        projectDirectory,
+                                        eval,
+                                        null,
+                                        modulePath));
+                                impl = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
+                                        getMultiModuleBinariesPath(Owner.GLOBAL_SOURCE),
+                                        impl);
+                                return impl;
+                            }:
+                          (mods) -> {
+                              ClassPath impl = ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
+                                        projectDirectory,
+                                        eval,
+                                        (root) -> {
+                                            final URL buildModules = getURL(buildModulesDirProperty);
+                                            return buildModules == null || !isParentOf(buildModules, root);
+                                        },
+                                        testModulePath));
+                                impl = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
+                                        getMultiModuleBinariesPath(Owner.GLOBAL_TESTS),
+                                        ClassPathFactory.createClassPath(new TranslateBuildModules(getMultiModuleBinariesPath(Owner.GLOBAL_SOURCE), testModulePath)),
+                                        impl);
+                                return impl;
+                          });
         } else {
             return null;
         }
@@ -448,6 +517,14 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
     }
 
     @NonNull
+    private ClassPath getMultiModuleBinariesPath(@NonNull final Owner owner) {
+        return cacheFor(owner).computeIfAbsent(
+                null,
+                INTERNAL_MOUDLE_BINARIES_PATH,
+                (mods) -> ClassPathFactory.createClassPath(ModuleClassPaths.createMultiModuleBinariesPath(mods, true)));
+    }
+
+    @NonNull
     private Function<URL,Boolean> getFilter(@NonNull final Owner owner) {
         if (owner.isTest()) {
             //Todo: Correct test modules properties
@@ -476,9 +553,94 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         }
     }
 
+    private static boolean isParentOf(
+            @NonNull final URL folder,
+            @NonNull final URL file) {
+        String sfld = folder.toExternalForm();
+        if (sfld.charAt(sfld.length()-1) != '/') {  //NOI18N
+            sfld = sfld + '/';                      //NOI18N
+        }
+        final String sfil = file.toExternalForm();
+        return sfil.startsWith(sfld);
+    }
+
     @NonNull
     private Cache cacheFor(@NonNull final Owner owner) {
         return owner.isTest() ? testCache : sourceCache;
+    }
+
+    private final class TranslateBuildModules implements ClassPathImplementation, PropertyChangeListener {
+        private final ClassPath delegate;
+        private final Collection<String> props;
+        private final AtomicReference<List<PathResourceImplementation>> cache;
+        private final PropertyChangeSupport listeners;
+
+        TranslateBuildModules(
+                @NonNull final ClassPath delegate,
+                @NonNull final String... props) {
+            this.delegate = delegate;
+            this.props = new HashSet<>();
+            Collections.addAll(this.props, props);
+            this.cache = new AtomicReference<>();
+            this.listeners = new PropertyChangeSupport(this);
+            this.delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, this.delegate));
+            eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+        }
+
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = cache.get();
+            if (res == null) {
+                final Set<File> seen = props.stream()
+                        .map((p) -> eval.getProperty(p))
+                        .filter((p) -> p != null)
+                        .flatMap((p) -> Arrays.stream(PropertyUtils.tokenizePath(p)))
+                        .map((p) -> helper.resolveFile(p))
+                        .collect(Collectors.toSet());
+                final URL url = getURL(buildModulesDirProperty);
+                res = Collections.emptyList();
+                if (url != null) {
+                    try {
+                        final File buildModules = BaseUtilities.toFile(url.toURI());
+                        if (seen.contains(buildModules)) {  //TODO: If contains only module under buildModules add just the module
+                            res = Collections.unmodifiableList(delegate.entries().stream()
+                                .map((e) -> org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
+                                .collect(Collectors.toList()));
+                        }
+                    } catch (URISyntaxException e) {
+                        LOG.log(
+                                Level.WARNING,
+                                "Cannot convert to URI: {0}",   //NOI18N
+                                url);
+                    }
+                }
+                if (!cache.compareAndSet(null, res)) {
+                    res = Optional.ofNullable(cache.get()).orElse(res);
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            listeners.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            listeners.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (ClassPath.PROP_ENTRIES.equals(propName) ||
+                propName == null ||
+                props.contains(propName)) {
+                cache.set(null);
+                listeners.firePropertyChange(PROP_RESOURCES, null, null);
+            }
+        }
     }
 
     private static final class Filter implements Function<URL, Boolean>, PropertyChangeListener {
@@ -826,6 +988,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         private String[] processorClassPath = new String[] {ProjectProperties.JAVAC_PROCESSORPATH};
         private String[] testProcessorClassPath = new String[] {"javac.test.processorpath"};    //NOI18N
         private String platformType = CommonProjectUtils.J2SE_PLATFORM_TYPE;
+        private String buildModulesDirProperty = ProjectProperties.BUILD_MODULES_DIR;
 
         private Builder(
                 @NonNull final AntProjectHelper helper,
@@ -1000,6 +1163,19 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         }
 
         /**
+         * Sets a property name containing build modules directory.
+         * @param buildModulesDirProperty  the name of property containing the build modules directory, by default {@link ProjectProperties#BUILD_MODULES_DIR}
+         * @return {@link Builder}
+         * @since 1.106
+         */
+        @NonNull
+        public Builder setBuildModulesDirProperty(@NonNull final String buildModulesDirProperty) {
+            Parameters.notNull("buildModulesDirProperty", buildModulesDirProperty);   //NOI18N
+            this.buildModulesDirProperty = buildModulesDirProperty;
+            return this;
+        }
+
+        /**
          * Creates a new {@link MultiModuleClassPathProvider}.
          * @return the {@link MultiModuleClassPathProvider} instance
          */
@@ -1020,7 +1196,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     testExecuteClassPath,
                     processorClassPath,
                     testProcessorClassPath,
-                    platformType);
+                    platformType,
+                    buildModulesDirProperty);
         }
     }
 }
