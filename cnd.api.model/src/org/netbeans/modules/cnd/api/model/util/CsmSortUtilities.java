@@ -62,6 +62,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -72,7 +73,7 @@ import org.openide.util.CharSequences;
  */
 @SuppressWarnings("unchecked")
 public class CsmSortUtilities {
-    private static boolean CAMEL_CASE_COMPLETION = true;
+    private static boolean CAMEL_CASE_COMPLETION = CndUtils.getBoolean("cnd.api.model.util.camelcase", true);
     
     /* ------------------- COMPARATORS --------------------------- */
     public static final Comparator CLASS_NAME_COMPARATOR = new DefaultClassNameComparator();
