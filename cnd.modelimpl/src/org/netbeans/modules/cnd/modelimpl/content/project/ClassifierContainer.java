@@ -163,8 +163,12 @@ public class ClassifierContainer extends ProjectComponent {
         return result;
     }
 
-    public Collection<CsmInheritance> getInheritances(CharSequence name){
+    public Collection<CsmInheritance> getInheritances(CharSequence name) {
         Collection<CsmUID<CsmInheritance>> inh;
+        int i = CharSequenceUtils.lastIndexOf(name, "::"); //NOI18N
+        if (i >= 0) {
+            name = name.subSequence(i + 2, name.length());
+        }
         name = CharSequences.create(name);
         try {
             declarationsLock.readLock().lock();
