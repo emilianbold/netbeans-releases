@@ -794,6 +794,18 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/nullableTypes_03");
     }
 
+    public void testMultiCatchInFirstCatchClause() throws Exception {
+        performTest("parser/multiCatchInFirstCatchClause");
+    }
+
+    public void testMultiCatchInSecondCatchClause() throws Exception {
+        performTest("parser/multiCatchInSecondCatchClause");
+    }
+
+    public void testMultiCatchWithFinally() throws Exception {
+        performTest("parser/multiCatchWithFinally");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

@@ -61,6 +61,21 @@
         <Statements>
             <TryStatement start='7' end='66'>
                 <CatchClauses>
+                    <CatchClause start='28' end='66'>
+                        <ClassNames>
+                            <NamespaceName start='35' end='44' isCurrent='false' isGlobal='false'>
+                                <Identifier start='35' end='44' name='Exception'/>
+                            </NamespaceName>
+                        </ClassNames>
+                        <Variable start='45' end='48' isDollared='true'>
+                            <Identifier start='46' end='48' name='ex'/>
+                        </Variable>
+                        <Block start='50' end='66' isCurly='true'>
+                            <EchoStatement start='56' end='64'>
+                                <Scalar start='61' end='63' type='STRING' value='""'/>
+                            </EchoStatement>
+                        </Block>
+                    </CatchClause>
                 </CatchClauses>
                 <Block start='11' end='27' isCurly='true'>
                     <EchoStatement start='17' end='25'>

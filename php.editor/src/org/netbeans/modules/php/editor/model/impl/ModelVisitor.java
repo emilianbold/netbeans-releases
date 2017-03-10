@@ -1038,23 +1038,29 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(CatchClause node) {
         Variable variable = node.getVariable();
         Scope scope = modelBuilder.getCurrentScope();
+        List<Expression> classNames = node.getClassNames();
         if (scope instanceof VariableNameFactory) {
+            // add variable assignments
             VariableNameImpl varNameImpl = createVariable((VariableNameFactory) scope, variable);
             if (varNameImpl != null) {
-                VarAssignmentImpl varAssignment = varNameImpl.createAssignment(
-                        scope,
-                        true,
-                        new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                        VariableNameImpl.toOffsetRange(variable),
-                        CodeUtils.extractQualifiedName(node.getClassName()));
-                varNameImpl.addElement(varAssignment);
+                for (Expression className : classNames) {
+                    VarAssignmentImpl varAssignment = varNameImpl.createAssignment(
+                            scope,
+                            true,
+                            new OffsetRange(node.getStartOffset(), node.getEndOffset()),
+                            VariableNameImpl.toOffsetRange(variable),
+                            CodeUtils.extractQualifiedName(className));
+                    varNameImpl.addElement(varAssignment);
+                }
             }
         }
-        Expression className = node.getClassName();
-        if (className instanceof NamespaceName) {
-            occurencesBuilder.prepare((NamespaceName) className, scope);
-        } else {
-            occurencesBuilder.prepare(Kind.CLASS, className, scope);
+
+        for (Expression className : classNames) {
+            if (className instanceof NamespaceName) {
+                occurencesBuilder.prepare((NamespaceName) className, scope);
+            } else {
+                occurencesBuilder.prepare(Kind.CLASS, className, scope);
+            }
         }
         occurencesBuilder.prepare(variable, scope);
         scan(node.getBody());

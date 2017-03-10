@@ -274,9 +274,10 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(CatchClause node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "CatchClause");
-        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChildrenGroup("ClassNames", node.getClassNames());
         printNode.addChild(node.getVariable());
         printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
     @Override

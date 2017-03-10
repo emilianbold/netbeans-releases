@@ -694,4 +694,16 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/nullableTypes_03.php");
     }
 
+    public void testMultiCatchInFirstCatchClause() throws Exception {
+        checkErrors("testfiles/parser/multiCatchInFirstCatchClause.php");
+    }
+
+    public void testMultiCatchInSecondCatchClause() throws Exception {
+        checkErrors("testfiles/parser/multiCatchInSecondCatchClause.php");
+    }
+
+    public void testMultiCatchWithFinally() throws Exception {
+        checkErrors("testfiles/parser/multiCatchWithFinally.php");
+    }
+
 }
