@@ -181,8 +181,20 @@ public final class ModuleTestUtilities {
 
     @NonNull
     public URL buildFor(@NonNull final String moduleName) {
+        return buildForImpl(moduleName, ProjectProperties.BUILD_CLASSES_DIR);
+    }
+
+    @NonNull
+    public URL testBuildFor(@NonNull final String moduleName) {
+        return buildForImpl(moduleName, ProjectProperties.BUILD_TEST_MODULES_DIR);
+    }
+
+    @NonNull
+    private URL buildForImpl(
+            @NonNull final String moduleName,
+            @NonNull final String targetProp) {
         final File dist = tp.getUpdateHelper().getAntProjectHelper().resolveFile(
-                tp.getEvaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR));
+                tp.getEvaluator().getProperty(targetProp));
         final File builtModule = new File(dist, moduleName);
         try {
             URL url = BaseUtilities.toURI(builtModule).toURL();

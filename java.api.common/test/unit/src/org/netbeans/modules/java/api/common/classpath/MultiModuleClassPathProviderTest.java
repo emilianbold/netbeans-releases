@@ -44,7 +44,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,6 +99,12 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
     private FileObject mod2c;   // in src2
     private FileObject mod1d;   // in src1
     private FileObject mod2d;   // in src2
+    //Unit tests
+    private FileObject mod1aTests;   // in src1
+    private FileObject mod1bTests;   // in src1
+    private FileObject mod2cTests;   // in src2
+    private FileObject mod1dTests;   // in src1
+    private FileObject mod2dTests;   // in src2
     //Module Path
     private FileObject mp;
     private FileObject modliba;
@@ -139,7 +147,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
                     modules,
                     sources,
                     testModules,
-                    testModules);
+                    testSources);
         });
         MockLookup.setInstances(TestProject.createProjectType(factories), new MockJPProvider());
         final FileObject wd = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
@@ -161,6 +169,16 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         createModuleInfo(mod2d, "lib.event", "java.base","java.xml");  //NOI18N
         mod1d = src1.createFolder("lib.event").createFolder("classes");         //NOI18N
         assertNotNull(mod1d);
+        mod1aTests = src1.getFileObject("lib.common").createFolder("tests");        //NOI18N
+        assertNotNull(mod1aTests);
+        mod1bTests = src1.getFileObject("lib.util").createFolder("tests");          //NOI18N
+        assertNotNull(mod1bTests);
+        mod2cTests = src2.getFileObject("lib.discovery").createFolder("tests");     //NOI18N
+        assertNotNull(mod2cTests);
+        mod1dTests = src1.getFileObject("lib.event").createFolder("tests");         //NOI18N
+        assertNotNull(mod1dTests);
+        mod2dTests = src2.getFileObject("lib.event").createFolder("tests");         //NOI18N
+        assertNotNull(mod2dTests);
         mp = wd.createFolder("modules");    //NOI18N
         assertNotNull(mp);
         modliba = createJar(mp, "modliba.jar");   //NOI18N
@@ -184,8 +202,9 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         modules = mtu.newModuleRoots(false);
         assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
         sources = mtu.newSourceRoots(false);
+        assertTrue(mtu.updateModuleRoots(true, src1,src2));
         testModules = mtu.newModuleRoots(true);
-        assertTrue(Arrays.equals(new FileObject[]{}, testModules.getRoots()));
+        assertTrue(Arrays.equals(new FileObject[]{src1,src2}, testModules.getRoots()));
         testSources = mtu.newSourceRoots(true);
         //Set classpath, modulepath, build.module.dir, javac.test.classpath
         ProjectManager.mutex(true, prj).writeAccess(() -> {
@@ -193,6 +212,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
             ep.setProperty(ProjectProperties.JAVAC_MODULEPATH, org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(mp).toString());
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(cpRoot1, cpRoot2).toString());
             ep.setProperty(ProjectProperties.BUILD_MODULES_DIR, "build/modules");   //NOI18N
+            ep.setProperty(ProjectProperties.BUILD_TEST_MODULES_DIR, "build/test/modules");   //NOI18N
             ep.setProperty(ProjectProperties.JAVAC_TEST_CLASSPATH, "${"+ProjectProperties.JAVAC_CLASSPATH+"}"); //NOI18N
             tp.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         });
@@ -332,7 +352,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         assertNotNull(cps);
         assertEquals(2, cps.length);
         assertEquals(urls(src1, src2), urls(cps[0]));
-        assertEquals(Collections.emptyList(), urls(cps[1]));
+        assertEquals(urls(src1, src2), urls(cps[1]));
         cps = mmcpp.getProjectClassPaths(JavaClassPathConstants.MODULE_CLASS_PATH);
         assertNotNull(cps);
         assertEquals(2, cps.length);
@@ -350,16 +370,25 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
                 mtu.distFor("lib.discovery"),   //NOI18N
                 mtu.distFor("lib.event")),      //NOI18N
             urls(cps[0]));
-        assertEquals(Collections.emptyList(), urls(cps[1]));
+        assertEquals(urls(
+                mtu.testBuildFor("lib.common"),      //NOI18N
+                mtu.testBuildFor("lib.util"),        //NOI18N
+                mtu.testBuildFor("lib.discovery"),   //NOI18N
+                mtu.testBuildFor("lib.event")),
+            urls(cps[1]));
         cps = mmcpp.getProjectClassPaths(ClassPath.SOURCE);
         assertNotNull(cps);
-        assertEquals(4+0, cps.length);
-        Set<List<URL>> expected = new HashSet<List<URL>>() {
+        assertEquals(4+4, cps.length);
+        Collection<List<URL>> expected = new HashSet<List<URL>>() {
             {
                 add(Collections.singletonList(mod1a.toURL()));
                 add(Collections.singletonList(mod1b.toURL()));
                 add(Collections.singletonList(mod2c.toURL()));
                 add(urls(mod1d, mod2d));
+                add(Collections.singletonList(mod1aTests.toURL()));
+                add(Collections.singletonList(mod1bTests.toURL()));
+                add(Collections.singletonList(mod2cTests.toURL()));
+                add(urls(mod1dTests, mod2dTests));
             }
         };
         for (ClassPath cp : cps) {
@@ -368,13 +397,18 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         assertTrue(expected.isEmpty());
         cps = mmcpp.getProjectClassPaths(ClassPath.BOOT);
         assertNotNull(cps);
-        assertEquals(4+0, cps.length);
-        expected = new HashSet<List<URL>>() {
+        assertEquals(4+4, cps.length);
+        expected = new ArrayList<List<URL>>() {
             {
                 add(filter(urls(systemModules),"java.base"));   //NOI18N
                 add(filter(urls(systemModules),"java.base","java.logging"));    //NOI18N
                 add(filter(urls(systemModules),"java.base","java.compiler"));   //NOI18N
                 add(filter(urls(systemModules),"java.base","java.xml"));    //NOI18N
+                //Tests - todo not currect now as there is no CompilerOpsQuery
+                add(Collections.emptyList());    //NOI18N
+                add(Collections.emptyList());    //NOI18N
+                add(Collections.emptyList());    //NOI18N
+                add(Collections.emptyList());    //NOI18N
             }
         };
         for (ClassPath cp : cps) {
@@ -383,10 +417,10 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         assertTrue(expected.isEmpty());
         cps = mmcpp.getProjectClassPaths(ClassPath.COMPILE);
         assertNotNull(cps);
-        assertEquals(4+0, cps.length);
+        assertEquals(4+4, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.EXECUTE);
         assertNotNull(cps);
-        assertEquals(4+0, cps.length);
+        assertEquals(4+4, cps.length);
     }
 
     public void testEvents() throws IOException {
@@ -397,67 +431,67 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         mmcpp.addClassPathsChangeListener(ml);
         final FileObject modFoo = src2.createFolder("lib.foo").createFolder("classes"); //NOI18N
         final FileObject fooModInfo = createModuleInfo(modFoo, "lib.foo", "java.base"); //NOI18N
-        ml.assertEventCount(1);
+        ml.assertEventCount(2);
         ml.assertChangedTypes(ClassPath.BOOT, ClassPath.COMPILE, ClassPath.SOURCE, ClassPath.EXECUTE);
         ml.reset();
         ClassPath[] cps = mmcpp.getProjectClassPaths(ClassPath.SOURCE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.BOOT);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.COMPILE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.EXECUTE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         final FileObject modBoo = src2.createFolder("lib.boo").createFolder("classes"); //NOI18N
         final FileObject booModInfo = createModuleInfo(modBoo, "lib.boo", "java.base"); //NOI18N
-        ml.assertEventCount(1);
+        ml.assertEventCount(2);
         ml.assertChangedTypes(ClassPath.BOOT, ClassPath.COMPILE, ClassPath.SOURCE, ClassPath.EXECUTE);
         ml.reset();
         cps = mmcpp.getProjectClassPaths(ClassPath.SOURCE);
-        assertEquals(6+0, cps.length);
+        assertEquals(12+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.BOOT);
-        assertEquals(6+0, cps.length);
+        assertEquals(12+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.COMPILE);
-        assertEquals(6+0, cps.length);
+        assertEquals(12+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.EXECUTE);
-        assertEquals(6+0, cps.length);
+        assertEquals(12+0, cps.length);
         modFoo.getParent().delete();
-        ml.assertEventCount(1);
+        ml.assertEventCount(2);
         ml.assertChangedTypes(ClassPath.BOOT, ClassPath.COMPILE, ClassPath.SOURCE, ClassPath.EXECUTE);
         ml.reset();
         cps = mmcpp.getProjectClassPaths(ClassPath.SOURCE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.BOOT);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.COMPILE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.EXECUTE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         modBoo.getParent().delete();
-        ml.assertEventCount(1);
+        ml.assertEventCount(2);
         ml.assertChangedTypes(ClassPath.BOOT, ClassPath.COMPILE, ClassPath.SOURCE, ClassPath.EXECUTE);
         ml.reset();
         cps = mmcpp.getProjectClassPaths(ClassPath.SOURCE);
-        assertEquals(4+0, cps.length);
+        assertEquals(8+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.BOOT);
-        assertEquals(4+0, cps.length);
+        assertEquals(8+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.COMPILE);
-        assertEquals(4+0, cps.length);
+        assertEquals(8+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.EXECUTE);
-        assertEquals(4+0, cps.length);
+        assertEquals(8+0, cps.length);
         final FileObject modZoo = src2.createFolder("lib.zoo").createFolder("classes"); //NOI18N
         final FileObject zooModInfo = createModuleInfo(modZoo, "lib.zoo", "java.base"); //NOI18N
-        ml.assertEventCount(1);
+        ml.assertEventCount(2);
         ml.assertChangedTypes(ClassPath.BOOT, ClassPath.COMPILE, ClassPath.SOURCE, ClassPath.EXECUTE);
         ml.reset();
         cps = mmcpp.getProjectClassPaths(ClassPath.SOURCE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.BOOT);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.COMPILE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
         cps = mmcpp.getProjectClassPaths(ClassPath.EXECUTE);
-        assertEquals(5+0, cps.length);
+        assertEquals(10+0, cps.length);
     }
 
 
@@ -498,6 +532,52 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
                     return false;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public void testTestModulePath() {
+        ProjectManager.mutex(true, tp).writeAccess(() -> {
+            final AntProjectHelper helper = tp.getUpdateHelper().getAntProjectHelper();
+            final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            ep.setProperty(ProjectProperties.BUILD_MODULES_DIR, String.format("${%s}/modules", ProjectProperties.BUILD_DIR));   //NOI18N
+            ep.setProperty(ProjectProperties.JAVAC_TEST_MODULEPATH, String.format("${%s}", ProjectProperties.JAVAC_MODULEPATH));    //NOI18N
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        });
+        ClassPathProvider cpp = tp.getLookup().lookup(ClassPathProvider.class);
+        assertTrue(cpp instanceof MultiModuleClassPathProvider);
+        MultiModuleClassPathProvider mmcpp = (MultiModuleClassPathProvider) cpp;
+        ClassPath[] cps = mmcpp.getProjectClassPaths(JavaClassPathConstants.MODULE_COMPILE_PATH);
+        assertNotNull(cps);
+        assertEquals(2, cps.length);
+        assertEquals(urls(
+                    modliba.toURL(),
+                    modlibb.toURL(),
+                    mtu.testBuildFor("lib.common"),      //NOI18N
+                    mtu.testBuildFor("lib.util"),        //NOI18N
+                    mtu.testBuildFor("lib.discovery"),   //NOI18N
+                    mtu.testBuildFor("lib.event")),      //NOI18N
+                urls(cps[1]));
+        //Put "build/modules" on tests module path => all modules should appear on module compile path.
+        ProjectManager.mutex(true, tp).writeAccess(() -> {
+            final AntProjectHelper helper = tp.getUpdateHelper().getAntProjectHelper();
+            final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            ep.setProperty(ProjectProperties.JAVAC_TEST_MODULEPATH, String.format(
+                    "${%s}:${%s}",  //NOI18N
+                    ProjectProperties.JAVAC_MODULEPATH,
+                    ProjectProperties.BUILD_MODULES_DIR));
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        });
+        assertEquals(urls(
+                    modliba.toURL(),
+                    modlibb.toURL(),
+                    mtu.testBuildFor("lib.common"),      //NOI18N
+                    mtu.testBuildFor("lib.util"),        //NOI18N
+                    mtu.testBuildFor("lib.discovery"),   //NOI18N
+                    mtu.testBuildFor("lib.event"),      //NOI18N
+                    mtu.distFor("lib.common"),      //NOI18N
+                    mtu.distFor("lib.util"),        //NOI18N
+                    mtu.distFor("lib.discovery"),   //NOI18N
+                    mtu.distFor("lib.event")),
+                urls(cps[1]));
     }
 
     private static FileObject createJar(
