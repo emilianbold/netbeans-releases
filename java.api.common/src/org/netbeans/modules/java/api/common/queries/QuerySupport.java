@@ -520,7 +520,9 @@ public final class QuerySupport {
                     String.format("${%s}/${module.name}",ProjectProperties.BUILD_MODULES_DIR),   //NOI18N
                     String.format("${%s}/${module.name}.jar",ProjectProperties.DIST_DIR)       //NOI18N
                 },
-                new String[] {});
+                new String[] {
+                    String.format("${%s}/${module.name}",ProjectProperties.BUILD_TEST_MODULES_DIR),   //NOI18N
+                });
     }
 
     /**Create a new query to provide annotation processing configuration data.

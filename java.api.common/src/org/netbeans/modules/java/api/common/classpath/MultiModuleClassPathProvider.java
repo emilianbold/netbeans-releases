@@ -521,7 +521,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         return cacheFor(owner).computeIfAbsent(
                 null,
                 INTERNAL_MOUDLE_BINARIES_PATH,
-                (mods) -> ClassPathFactory.createClassPath(ModuleClassPaths.createMultiModuleBinariesPath(mods, true)));
+                (mods) -> ClassPathFactory.createClassPath(ModuleClassPaths.createMultiModuleBinariesPath(mods, !owner.isTest())));
     }
 
     @NonNull
