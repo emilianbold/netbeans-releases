@@ -55,6 +55,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -108,11 +109,14 @@ public class StreamTerm extends Term {
         
         @Override
         public void sendChars(final char c[], final int offset, final int count) {
+            final char[] copy = new char[count];
+            System.arraycopy(c, offset, copy, 0, count);
+            
             singlePool.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        outputStreamWriter.write(c, offset, count);
+                        outputStreamWriter.write(copy, 0, count);
                         outputStreamWriter.flush();
                     } catch (IOException x) {
                         // no-op
