@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -188,6 +189,15 @@ public class ModifiersCheckHintError extends HintErrorRule {
             }
             processInterfaceMethodScope(methodScope);
         }
+
+        // PHP7.1
+        Collection<? extends ClassConstantElement> declaredConstants = interfaceScope.getDeclaredConstants();
+        for (ClassConstantElement declaredConstant : declaredConstants) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
+            processInterfaceClassConstant(declaredConstant);
+        }
     }
 
     @Messages({
@@ -216,6 +226,26 @@ public class ModifiersCheckHintError extends HintErrorRule {
         } else if (methodScope.getBlockRange() != null && methodScope.getBlockRange().getLength() != 1) {
             fixes = Collections.<HintFix>singletonList(new RemoveBodyFix(doc, methodScope));
             hints.add(new SimpleHint(Bundle.IfaceMethodWithBlock(methodScope.getName()), methodScope.getNameRange(), fixes));
+        }
+    }
+
+    @Messages({
+        "# {0} - Constant name",
+        "# {1} - Modifier name",
+        "InvalidIfaceConstant=Interface const \"{0}\" can not be declared {1}",
+    })
+    private void processInterfaceClassConstant(ClassConstantElement classConstant) {
+        PhpModifiers phpModifiers = classConstant.getPhpModifiers();
+        List<HintFix> fixes;
+        String invalidModifier;
+        if (phpModifiers.isPrivate()) {
+            invalidModifier = "private"; // NOI18N
+            fixes = Collections.<HintFix>singletonList(new RemoveModifierFix(doc, invalidModifier, classConstant.getOffset()));
+            hints.add(new SimpleHint(Bundle.InvalidIfaceConstant(classConstant.getName(), invalidModifier), classConstant.getNameRange(), fixes));
+        } else if (phpModifiers.isProtected()) {
+            invalidModifier = "protected"; // NOI18N
+            fixes = Collections.<HintFix>singletonList(new RemoveModifierFix(doc, invalidModifier, classConstant.getOffset()));
+            hints.add(new SimpleHint(Bundle.InvalidIfaceConstant(classConstant.getName(), invalidModifier), classConstant.getNameRange(), fixes));
         }
     }
 
@@ -366,7 +396,8 @@ public class ModifiersCheckHintError extends HintErrorRule {
                 Token t = ts.token();
                 if (t.id() != PHPTokenId.PHP_PUBLIC && t.id() != PHPTokenId.PHP_PROTECTED && t.id() != PHPTokenId.PHP_PRIVATE
                         && t.id() != PHPTokenId.PHP_STATIC && t.id() != PHPTokenId.PHP_FINAL && t.id() != PHPTokenId.PHP_ABSTRACT
-                        && t.id() != PHPTokenId.PHP_FUNCTION && t.id() != PHPTokenId.WHITESPACE && t.id() != PHPTokenId.PHP_CLASS) {
+                        && t.id() != PHPTokenId.PHP_FUNCTION && t.id() != PHPTokenId.WHITESPACE && t.id() != PHPTokenId.PHP_CLASS
+                        && t.id() != PHPTokenId.PHP_CONST) {
                     ts.moveNext();
                     if (lastTokenId == PHPTokenId.WHITESPACE) {
                         ts.moveNext();

@@ -235,13 +235,25 @@
                     </Block>
                 </Statement>
                 <Value>
-                    <ListVariable start='92' end='106'>
-                        <Variable start='97' end='100' isDollared='true'>
-                            <Identifier start='98' end='100' name='v1'/>
-                        </Variable>
-                        <Variable start='102' end='105' isDollared='true'>
-                            <Identifier start='103' end='105' name='v2'/>
-                        </Variable>
+                    <ListVariable start='92' end='106' type='OLD'>
+                        <ArrayElement start='97' end='100'>
+                            <Key>
+                            </Key>
+                            <Value>
+                                <Variable start='97' end='100' isDollared='true'>
+                                    <Identifier start='98' end='100' name='v1'/>
+                                </Variable>
+                            </Value>
+                        </ArrayElement>
+                        <ArrayElement start='102' end='105'>
+                            <Key>
+                            </Key>
+                            <Value>
+                                <Variable start='102' end='105' isDollared='true'>
+                                    <Identifier start='103' end='105' name='v2'/>
+                                </Variable>
+                            </Value>
+                        </ArrayElement>
                     </ListVariable>
                 </Value>
             </ForEachStatement>

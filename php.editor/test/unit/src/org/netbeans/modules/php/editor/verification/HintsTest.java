@@ -614,6 +614,18 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new FieldRedeclarationHintError(), "testIssue268557.php");
     }
 
+    public void testConstantModifiersCheckHint() throws Exception {
+        checkHints(new ModifiersCheckHintError(), "testConstantModifiersCheckHint.php");
+    }
+
+    public void testConstantModifiersCheckFix_01() throws Exception {
+        applyHint(new ModifiersCheckHintError(), "testConstantModifiersCheckFix.php", "private const PRIVATE_INT^ERFACE_CONST = 2;", "Remove modifier");
+    }
+
+    public void testConstantModifiersCheckFix_02() throws Exception {
+        applyHint(new ModifiersCheckHintError(), "testConstantModifiersCheckFix.php", "protected const P^ROTECTED_INTERFACE_CONST = 3;", "Remove modifier");
+    }
+
     //~ Inner classes
 
     private static final class ImplementAbstractMethodsHintErrorStub extends ImplementAbstractMethodsHintError {

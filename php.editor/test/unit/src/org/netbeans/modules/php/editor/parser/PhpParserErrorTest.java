@@ -706,4 +706,16 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/multiCatchWithFinally.php");
     }
 
+    public void testClassConstantVisibility_01() throws Exception {
+        checkErrors("testfiles/parser/classConstantVisibility_01.php");
+    }
+
+    public void testKeyedList_01() throws Exception {
+        checkErrors("testfiles/parser/keyedList_01.php");
+    }
+
+    public void testSymmetricArrayDestructuring_01() throws Exception {
+        checkErrors("testfiles/parser/symmetricArrayDestructuring_01.php");
+    }
+
 }

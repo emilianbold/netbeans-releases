@@ -282,7 +282,12 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(ConstantDeclaration node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ClassConstantDeclaration");
+        XMLPrintNode printNode;
+        if (node.isGlobal()) {
+            printNode = new XMLPrintNode(node, "GlobalConstantDeclaration");
+        } else {
+            printNode = new XMLPrintNode(node, "ClassConstantDeclaration", new String[]{"modifier", node.getModifierString() });
+        }
         printNode.addChildrenGroup("Names", node.getNames());
         printNode.addChildrenGroup("Initializers", node.getInitializers());
         printNode.print(this);
@@ -624,8 +629,8 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(ListVariable node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ListVariable");
-        printNode.addChildren(node.getVariables());
+        XMLPrintNode printNode = new XMLPrintNode(node, "ListVariable", new String[]{"type", node.getSyntaxType().name()});
+        printNode.addChildren(node.getElements());
         printNode.print(this);
     }
 

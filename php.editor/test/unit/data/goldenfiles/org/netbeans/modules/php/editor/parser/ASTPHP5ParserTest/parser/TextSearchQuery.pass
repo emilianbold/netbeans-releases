@@ -23578,13 +23578,25 @@
                                 </IfStatement>
                                 <ExpressionStatement start='37091' end='37138'>
                                     <Assignment start='37091' end='37137' operator='EQUAL'>
-                                        <ListVariable start='37091' end='37109'>
-                                            <Variable start='37097' end='37102' isDollared='true'>
-                                                <Identifier start='37098' end='37102' name='type'/>
-                                            </Variable>
-                                            <Variable start='37104' end='37108' isDollared='true'>
-                                                <Identifier start='37105' end='37108' name='val'/>
-                                            </Variable>
+                                        <ListVariable start='37091' end='37109' type='OLD'>
+                                            <ArrayElement start='37097' end='37102'>
+                                                <Key>
+                                                </Key>
+                                                <Value>
+                                                    <Variable start='37097' end='37102' isDollared='true'>
+                                                        <Identifier start='37098' end='37102' name='type'/>
+                                                    </Variable>
+                                                </Value>
+                                            </ArrayElement>
+                                            <ArrayElement start='37104' end='37108'>
+                                                <Key>
+                                                </Key>
+                                                <Value>
+                                                    <Variable start='37104' end='37108' isDollared='true'>
+                                                        <Identifier start='37105' end='37108' name='val'/>
+                                                    </Variable>
+                                                </Value>
+                                            </ArrayElement>
                                         </ListVariable>
                                         <FieldAccess start='37112' end='37137'>
                                             <Variable start='37112' end='37117' isDollared='true'>
