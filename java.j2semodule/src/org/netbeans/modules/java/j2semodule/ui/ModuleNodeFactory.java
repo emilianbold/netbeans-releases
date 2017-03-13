@@ -39,6 +39,8 @@
  */
 package org.netbeans.modules.java.j2semodule.ui;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.project.ui.MultiModuleNodeFactory;
