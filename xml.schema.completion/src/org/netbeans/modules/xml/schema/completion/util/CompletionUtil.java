@@ -65,10 +65,15 @@ import org.netbeans.modules.xml.schema.completion.*;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.Import;
+import org.netbeans.modules.xml.schema.model.Include;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.schema.model.visitor.FindSubstitutions;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -618,14 +623,31 @@ public class CompletionUtil {
             QName qname) {
         if(parent == null)
             return null;
-        for(AbstractElement element : parent.getChildElements()) {
-            if(!(element instanceof Element))
+        for(AXIComponent element : parent.getChildElements()) {
+            if(!(element instanceof Element)) {
                 continue;
+            }
             Element e = (Element)element;
             if(qname.getLocalPart().equals(e.getName()))
                 return element;
         }
-        
+        for (AXIComponent c : parent.getChildren()) {
+            if (c instanceof SchemaReference) {
+                SchemaReference ref = (SchemaReference)c;
+                SchemaModelReference in = (SchemaModelReference)ref.getPeer();
+                SchemaModel model;
+                try {
+                    model = in.resolveReferencedModel();
+                    AXIModel am = AXIModelFactory.getDefault().getModel(model);
+                    AXIComponent check = findChildElement(am.getRoot(), qname);
+                    if (check != null) {
+                        return check;
+                    }
+                } catch (CatalogModelException ex) {
+                    // ignore
+                }
+            }
+        }
         return null;
     }
         

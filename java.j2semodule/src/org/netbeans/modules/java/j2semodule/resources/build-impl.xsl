@@ -371,7 +371,7 @@ is divided into following sections:
                             </filterchain>
                         </loadresource>
                 
-                        <call/>
+                        <call unless:blank="@{{paths}}"/>
                 
                         <condition property="moreElements" value="true" else="false">
                             <contains string="@{{paths}}" substring="@{{separator}}"/>
@@ -389,6 +389,9 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
                 <property name="modules.supported.internal" value="true"/>
+                <condition property="file.separator.string" value="\\${{file.separator}}" else="${{file.separator}}">
+                    <equals arg1="${{file.separator}}" arg2="\\"/>
+                </condition>
             </target>
 
             <target name="-post-init">
@@ -693,7 +696,7 @@ is divided into following sections:
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
                             <jvmarg value="--module-path"/>
-                            <jvmarg path="${{run.test.modulepath}}:${{empty.dir}}"/>
+                            <jvmarg path="${{run.modulepath}}${{path.separator}}${{run.test.modulepath}}${{path.separator}}${{empty.dir}}"/>
                             <jvmarg line="${{run.test.jvmargs}}"/>
                             <customizePrototype/>
                         </junit>
@@ -1571,10 +1574,14 @@ is divided into following sections:
                 suffixes.push(item);
             });
             var tail = "";
-            if (filepattern && filepattern != tail) {
-                tail = separator + filepattern;
+            var separatorString = separator;
+            if (separatorString == "\\") {
+                separatorString = "\\\\";
             }
-            return "([^" + separator +"]+)\\Q" + separator + "\\E(" + suffixes.join("|") + ")" + tail;
+            if (filepattern && filepattern != tail) {
+                tail = separatorString + filepattern;
+            }
+            return "([^" + separatorString +"]+)\\Q" + separator + "\\E(" + suffixes.join("|") + ")" + tail;
         }
                 self.project.setProperty(attributes.get("property"), 
                     toRegexp2(attributes.get("modsource"), attributes.get("filepattern"), self.project.getProperty("file.separator")));
@@ -1804,7 +1811,7 @@ is divided into following sections:
                 </resources>
                 <pathconvert property="module.name">
                     <fileset dir="${{run.modules.dir}}" includes="**/${{toString:main.class.relativepath}}"/>
-                    <regexpmapper from="${{run.modules.dir}}\Q${{file.separator}}\E([^${{file.separator}}]+)\Q${{file.separator}}\E.*\.class" to="\1"/>
+                    <regexpmapper from="${{run.modules.dir}}\Q${{file.separator}}\E([^${{file.separator.string}}]+)\Q${{file.separator}}\E.*\.class" to="\1"/>
                 </pathconvert>
                 <fail message="Could not determine module of the main class and module.name is not set">
                     <condition>
@@ -2166,12 +2173,12 @@ is divided into following sections:
                         <filtermapper>
                             <replacestring from="${{build.test.modules.dir.abs.internal}}/" to=""/>
                         </filtermapper>
-                        <regexpmapper from="^([^${{file.separator}}]*)\Q${{file.separator}}\E(.*)\Q${{file.separator}}\E.*\.class$$" to="\1${{path.separator}}\2"/>
+                        <regexpmapper from="^([^${{file.separator.string}}]*)\Q${{file.separator}}\E(.*)\Q${{file.separator}}\E.*\.class$$" to="\1${{path.separator}}\2"/>
                         <filtermapper>
                             <uniqfilter/>
                             <replacestring from="${{file.separator}}" to="."/>
                         </filtermapper>
-                        <regexpmapper from="([^${{file.separator}}]+)${{path.separator}}(.*)" to="--add-exports \1/\2=ALL-UNNAMED"/>
+                        <regexpmapper from="([^${{file.separator.string}}]+)${{path.separator}}(.*)" to="--add-exports \1/\2=ALL-UNNAMED"/>
                     </chainedmapper>
                 </pathconvert>
                 <property name="build.test.modules.location" location="${{build.test.modules.dir}}"/>
@@ -2194,7 +2201,7 @@ is divided into following sections:
                         <filtermapper>
                             <uniqfilter/>
                         </filtermapper>
-                        <regexpmapper from=".*\Q${{file.separator}}\E([^${{file.separator}}]+)$" to="--patch-module \1=\0"/>
+                        <regexpmapper from=".*\Q${{file.separator}}\E([^${{file.separator.string}}]+)$" to="--patch-module \1=\0"/>
                     </chainedmapper>
                 </pathconvert>
                 <j2semodularproject1:coalesce_keyvalue property="run.test.patchmodules" value="${{run.test.patchmodules.list}}" value-sep="=" entry-sep="${{path.separator}}" multi-sep="--patch-module "/>
@@ -2205,7 +2212,7 @@ is divided into following sections:
                     <map from="${{build.test.modules.location}}" to=""/>
                     <dirset dir="${{build.test.modules.dir}}" includes="*"/>
                     <chainedmapper>
-                        <regexpmapper from="^${{build.test.modules.location}}(.*)" to="\1"/>
+                        <regexpmapper from="^${{build.test.modules.location}}${{file.separator.string}}(.*)" to="\1"/>
                         <regexpmapper from="(.*)" to="--add-reads \1=ALL-UNNAMED"/>
                         <filtermapper>
                             <uniqfilter/>
@@ -2215,9 +2222,8 @@ is divided into following sections:
                 <property name="run.test.jvmargs" value="${{run.test.addmodules.internal}} ${{run.test.addreads.internal}} ${{run.test.addexports.internal}} ${{run.test.patchmodules}}"/>
             </target>
             <target name="-init-test-javac-module-properties" depends="-init-source-module-properties">
-                <echo message="Test root dirs = ${{toString:have.tests.patchset}}"/>
                 <pathconvert pathsep=" " property="compile.test.patchmodule.internal" refid="have.tests.patchset">
-                    <regexpmapper from="(.*\Q${{file.separator}}\E)([^${{file.separator}}]+)\Q${{file.separator}}\E(.*)$$" to="--patch-module \2=\1\2${{file.separator}}\3"/>
+                    <regexpmapper from="(.*\Q${{file.separator}}\E)([^${{file.separator.string}}]+)\Q${{file.separator}}\E(.*)$$" to="--patch-module \2=\1\2${{file.separator.string}}\3"/>
                 </pathconvert>
                 <pathconvert property="compile.test.addreads" pathsep=" ">
                     <union refid="have.tests.set"/>

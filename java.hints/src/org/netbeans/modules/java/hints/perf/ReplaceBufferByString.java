@@ -448,6 +448,7 @@ public class ReplaceBufferByString {
     private static final Set<String> INCOMPATIBLE_METHOD_NAMES = new HashSet<String>(Arrays.<String>asList(
         "append", // NOI18N
         "delete", // NOI18N
+        "deleteCharAt", // NOI18N
         "insert", // NOI18N
         "replace", // NOI18N
         "reverse",  // NOI18N
