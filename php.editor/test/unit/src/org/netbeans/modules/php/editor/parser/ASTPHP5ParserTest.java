@@ -810,6 +810,14 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/classConstantVisibility_01");
     }
 
+    public void testKeyedList_01() throws Exception {
+        performTest("parser/keyedList_01");
+    }
+
+    public void testSymmetricArrayDestructuring_01() throws Exception {
+        performTest("parser/symmetricArrayDestructuring_01");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

@@ -405,7 +405,7 @@ public class DefaultVisitor implements Visitor {
 
     @Override
     public void visit(ListVariable node) {
-        scan(node.getVariables());
+        scan(node.getElements());
     }
 
     @Override

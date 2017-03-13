@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -89,6 +90,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -345,7 +347,9 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ArrayElement node) {
-        boolean multilinedArray = isMultilinedNode(getParentArrayCreation());
+        // ArrayCreation and ListVariable has ArrayElements
+        ArrayCreation arrayCreation = getParentArrayCreation();
+        boolean multilinedArray = arrayCreation != null ? isMultilinedNode(arrayCreation) : false;
         if (node.getKey() != null && node.getValue() != null) {
             scan(node.getKey());
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
@@ -371,10 +375,14 @@ public class FormatVisitor extends DefaultVisitor {
         return result;
     }
 
+    @CheckForNull
     private ArrayCreation getParentArrayCreation() {
         ArrayCreation result = null;
         for (int i = 0; i < path.size(); i++) {
             ASTNode parentInPath = path.get(i);
+            if (parentInPath instanceof ListVariable) {
+                break;
+            }
             if (parentInPath instanceof ArrayCreation) {
                 result = (ArrayCreation) parentInPath;
                 break;

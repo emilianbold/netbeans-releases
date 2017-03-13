@@ -629,8 +629,8 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(ListVariable node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ListVariable");
-        printNode.addChildren(node.getVariables());
+        XMLPrintNode printNode = new XMLPrintNode(node, "ListVariable", new String[]{"type", node.getSyntaxType().name()});
+        printNode.addChildren(node.getElements());
         printNode.print(this);
     }
 

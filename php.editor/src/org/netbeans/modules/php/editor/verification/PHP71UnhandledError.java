@@ -48,10 +48,12 @@ import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -134,6 +136,16 @@ public class PHP71UnhandledError extends UnhandledErrorRule {
             super.visit(node);
         }
 
+        @Override
+        public void visit(ListVariable node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
+            checkNewSyntax(node);
+            checkKeyedList(node.getElements());
+            super.visit(node);
+        }
+
         private void checkNullableType(NullableType nullableType) {
             if (nullableType != null) {
                 createError(nullableType);
@@ -149,6 +161,23 @@ public class PHP71UnhandledError extends UnhandledErrorRule {
 
         private void checkConstantVisibility(ConstantDeclaration node) {
             if (!BodyDeclaration.Modifier.isImplicitPublic(node.getModifier())) {
+                createError(node);
+            }
+        }
+
+        private void checkKeyedList(List<ArrayElement> elements) {
+            // list("id" => $id, "name" => $name) = $data[0];
+            for (ArrayElement element : elements) {
+                if (element.getKey() != null) {
+                    createError(element);
+                    break;
+                }
+            }
+        }
+
+        private void checkNewSyntax(ListVariable node) {
+            // [$a, $b] = [1, 2];
+            if (node.getSyntaxType() == ListVariable.SyntaxType.NEW) {
                 createError(node);
             }
         }

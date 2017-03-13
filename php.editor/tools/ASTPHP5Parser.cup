@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
+ * Portions Copyrighted 2017 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
 
@@ -452,9 +452,9 @@ non terminal VariableBase object_property;
 non terminal VariableBase object_dim_list;
 non terminal VariableBase variable_name;
 non terminal Integer simple_indirect_reference;
-non terminal List assignment_list;
-non terminal VariableBase assignment_list_element;
 non terminal List array_pair_list;
+non terminal ArrayElement possible_array_pair;
+non terminal ArrayElement array_pair;
 non terminal List non_empty_array_pair_list;
 non terminal List encaps_list;
 non terminal VariableBase encaps_var;
@@ -1511,9 +1511,15 @@ variable:var
 	RESULT = reference;
 :}
 
-| T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:end
+| T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:end
 {:
-	ListVariable vars = new ListVariable(startleft, endright, varList);
+	ListVariable vars = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.OLD);
+	RESULT = vars;
+:}
+
+| T_OPEN_RECT:start array_pair_list:varList T_CLOSE_RECT:end
+{:
+	ListVariable vars = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.NEW);
 	RESULT = vars;
 :}
 ;
@@ -2523,9 +2529,16 @@ expr_without_variable_and_class_instance:ex
 ;
 
 expr_without_variable_and_class_instance ::=
-T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close T_EQUAL expr:expr
+T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:close T_EQUAL expr:expr
 {:
-	ListVariable vars = new ListVariable(startleft, closeright, varList);
+	ListVariable vars = new ListVariable(startleft, closeright, varList, ListVariable.SyntaxType.OLD);
+	Assignment list = new Assignment(startleft, exprright, vars, Assignment.Type.EQUAL, expr);
+	RESULT = list;
+:}
+
+| T_OPEN_RECT:start array_pair_list:varList T_CLOSE_RECT:close T_EQUAL expr:expr
+{:
+	ListVariable vars = new ListVariable(startleft, closeright, varList, ListVariable.SyntaxType.NEW);
 	Assignment list = new Assignment(startleft, exprright, vars, Assignment.Type.EQUAL, expr);
 	RESULT = list;
 :}
@@ -4154,120 +4167,84 @@ T_DOLLAR
 :}
 ;
 
-assignment_list ::=
-assignment_list:listElements T_COMMA assignment_list_element:element
-{:
-	if (element != null) {
-		listElements.add(element);
-	}
-	RESULT = listElements;
-:}
-
-| assignment_list_element:var
-{:
-	List listElements = new LinkedList();
-	if (var != null) {
-		listElements.add(var);
-	}
-	RESULT = listElements;
-	;
-:}
-;
-
-assignment_list_element ::=
-variable:var
-{:
-	RESULT = var;
-:}
-
-| T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:end
-{:
-	ListVariable vars = new ListVariable(startleft, endright, varList);
-	RESULT = vars;
-:}
-
-| /* empty */
-{:
-	RESULT = null;
-:}
-;
-
 array_pair_list ::=
-/* empty */
-{:
-	List list = new LinkedList();
-	RESULT = list;
-:}
-
-| non_empty_array_pair_list:list possible_comma
+non_empty_array_pair_list:list
 {:
 	RESULT = list;
 :}
 ;
 
 non_empty_array_pair_list ::=
-non_empty_array_pair_list:list T_COMMA expr:key T_DOUBLE_ARROW expr:value
+non_empty_array_pair_list:list T_COMMA possible_array_pair:pair
 {:
-	ArrayElement element = new ArrayElement(keyleft, valueright, key, value);
-	list.add(element);
+	if(pair != null) {
+		list.add(pair);
+	}
 	RESULT = list;
 :}
 
-| non_empty_array_pair_list:list T_COMMA expr:expr
-{:
-	ArrayElement element = new ArrayElement(exprleft, exprright, expr);
-	list.add(element);
-	RESULT = list;
-:}
-
-| expr:key T_DOUBLE_ARROW expr:value
+| possible_array_pair:pair
 {:
 	List list = new LinkedList();
-	ArrayElement element = new ArrayElement(keyleft, valueright, key, value);
-	list.add(element);
+	if(pair != null) {
+		list.add(pair);
+	}
 	RESULT = list;
+:}
+;
+
+possible_array_pair ::=
+/* empty */
+{:
+	RESULT = null;
+:}
+
+| array_pair:pair
+{:
+	RESULT = pair;
+:}
+;
+
+array_pair ::=
+expr:key T_DOUBLE_ARROW expr:value
+{:
+	ArrayElement element = new ArrayElement(keyleft, valueright, key, value);
+	RESULT = element;
 :}
 
 | expr:expr
 {:
-	List list = new LinkedList();
 	ArrayElement element = new ArrayElement(exprleft, exprright, expr);
-	list.add(element);
-	RESULT = list;
+	RESULT = element;
 :}
 
-| non_empty_array_pair_list:list T_COMMA expr:key T_DOUBLE_ARROW T_REFERENCE:start w_variable:var
+| expr:expr T_DOUBLE_ARROW T_REFERENCE:start w_variable:var
 {:
 	Reference value = new Reference(startleft, varright, var);
-	ArrayElement element = new ArrayElement(keyleft, varright, key, value);
-	list.add(element);
-	RESULT = list;
+	ArrayElement element = new ArrayElement(exprleft, varright, expr, value);
+	RESULT = element;
 :}
 
-| non_empty_array_pair_list:list T_COMMA T_REFERENCE:start w_variable:var
-{:
-	Reference ref = new Reference(startleft, varright, var);
-	ArrayElement element = new ArrayElement(startleft, varright, ref);
-	list.add(element);
-	RESULT = list;
-:}
-
-| expr:key T_DOUBLE_ARROW T_REFERENCE:start w_variable:var
-{:
-	List list = new LinkedList();
-	Reference value = new Reference(startleft, varright, var);
-	ArrayElement element = new ArrayElement(keyleft, varright, key, value);
-	list.add(element);
-	RESULT = list;
-:}
 
 | T_REFERENCE:start w_variable:var
 {:
-	List list = new LinkedList();
 	Reference ref = new Reference(startleft, varright, var);
 	ArrayElement element = new ArrayElement(startleft, varright, ref);
-	list.add(element);
-	RESULT = list;
+	RESULT = element;
+:}
+
+| expr:expr T_DOUBLE_ARROW T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:end
+{:
+	ListVariable value = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.OLD);
+	ArrayElement element = new ArrayElement(exprleft, endright, expr, value);
+	RESULT = element;
+:}
+
+| T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:end
+{:
+	ListVariable vars = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.OLD);
+        ArrayElement element = new ArrayElement(startleft, endright, vars);
+	RESULT = element;
 :}
 ;
 
