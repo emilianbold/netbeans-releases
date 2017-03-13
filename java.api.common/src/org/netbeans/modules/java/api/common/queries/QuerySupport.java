@@ -354,6 +354,28 @@ public final class QuerySupport {
     }
 
     /**
+     * Create a new query to set up explicit compiler options needed for unit test compilation in a multi module project.
+     * @param project the project to create a query for
+     * @param sourceModules the module roots
+     * @param sourceRoots the source roots
+     * @param testModules the test module roots
+     * @param testRoots the test source roots
+     * @return a {@link CompilerOptionsQueryImplementation} to find out unit test compiler options
+     * @since 1.107
+     */
+    @NonNull
+    public static CompilerOptionsQueryImplementation createMultiModuleUnitTestsCompilerOptionsQuery(
+            @NonNull final Project project,
+            @NonNull final SourceRoots sourceModules,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testModules,
+            @NonNull final SourceRoots testRoots) {
+        final MultiModule srcModel = MultiModule.getOrCreate(sourceModules, sourceRoots);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testRoots);
+        return new MultiModuleUnitTestsCompilerOptionsQueryImpl(project, srcModel, testModel);
+    }
+
+    /**
      * Create a new query to find Java package roots of unit tests for Java package root of sources and vice versa.
      * @param sourceRoots a list of source roots.
      * @param testRoots a list of test roots.
