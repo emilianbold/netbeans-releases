@@ -14,7 +14,7 @@
                 </NamespaceName>
             </Interfaces>
             <Block start='52' end='286' isCurly='true'>
-                <ClassConstantDeclaration start='56' end='84'>
+                <ClassConstantDeclaration start='56' end='84' modifier='public'>
                     <Names>
                         <Identifier start='62' end='74' name='VARNAME_VIEW'/>
                     </Names>
@@ -22,7 +22,7 @@
                         <Scalar start='77' end='83' type='STRING' value='&apos;view&apos;'/>
                     </Initializers>
                 </ClassConstantDeclaration>
-                <ClassConstantDeclaration start='87' end='113'>
+                <ClassConstantDeclaration start='87' end='113' modifier='public'>
                     <Names>
                         <Identifier start='93' end='104' name='VARNAME_ADD'/>
                     </Names>

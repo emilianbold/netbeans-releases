@@ -103,6 +103,10 @@ public abstract class BodyDeclaration extends Statement {
          */
         public static final int FINAL = 0x00000010;
         /**
+         * The <code>int</code> value representing the implicit <code>public</code> modifier.
+         */
+        public static final int IMPLICIT_PUBLIC = 0x00000020;
+        /**
          * The <code>int</code> value representing the <code>abstract</code> modifier.
          */
         public static final int ABSTRACT = 0x00000400;
@@ -116,7 +120,19 @@ public abstract class BodyDeclaration extends Statement {
          * <tt>public</tt> modifier; <tt>false</tt> otherwise.
          */
         public static boolean isPublic(int mod) {
-            return (mod & PUBLIC) != 0;
+            return (mod & PUBLIC) != 0 || (mod & IMPLICIT_PUBLIC) != 0;
+        }
+
+        /**
+         * Return <tt>true</tt> if the integer argument includes the
+         * implicit <tt>public</tt> modifer, <tt>false</tt> otherwise.
+         *
+         * @param 	mod a set of modifers
+         * @return <tt>true</tt> if <code>mod</code> includes the
+         * implicit <tt>public</tt> modifier; <tt>false</tt> otherwise.
+         */
+        public static boolean isImplicitPublic(int mod) {
+            return (mod & IMPLICIT_PUBLIC) != 0;
         }
 
         /**
@@ -182,7 +198,7 @@ public abstract class BodyDeclaration extends Statement {
         public static String toString(int mod) {
             StringBuffer sb = new StringBuffer();
 
-            if ((mod & PUBLIC) != 0) {
+            if ((mod & PUBLIC) != 0 || (mod & IMPLICIT_PUBLIC) != 0) {
                 sb.append("public "); //$NON-NLS-1$
             }
             if ((mod & PROTECTED) != 0) {

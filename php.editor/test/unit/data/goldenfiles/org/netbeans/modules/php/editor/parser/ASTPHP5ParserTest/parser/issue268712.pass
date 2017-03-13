@@ -661,7 +661,7 @@
         <Statements>
             <NamespaceDeclaration start='7' end='48' isBracketed='true'>
                 <Block start='17' end='48' isCurly='true'>
-                    <ClassConstantDeclaration start='24' end='45'>
+                    <GlobalConstantDeclaration start='24' end='45'>
                         <Names>
                             <Identifier start='30' end='35' name='TEST1'/>
                         </Names>
@@ -683,7 +683,7 @@
                                 </ArrayElement>
                             </ArrayCreation>
                         </Initializers>
-                    </ClassConstantDeclaration>
+                    </GlobalConstantDeclaration>
                 </Block>
             </NamespaceDeclaration>
             <NamespaceDeclaration start='50' end='139' isBracketed='true'>
@@ -691,7 +691,7 @@
                     <Identifier start='60' end='73' name='Issue268712_A'/>
                 </NamespaceName>
                 <Block start='74' end='139' isCurly='true'>
-                    <ClassConstantDeclaration start='81' end='107'>
+                    <GlobalConstantDeclaration start='81' end='107'>
                         <Names>
                             <Identifier start='87' end='92' name='TEST2'/>
                         </Names>
@@ -728,8 +728,8 @@
                                 </ArrayElement>
                             </ArrayCreation>
                         </Initializers>
-                    </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='112' end='136'>
+                    </GlobalConstantDeclaration>
+                    <GlobalConstantDeclaration start='112' end='136'>
                         <Names>
                             <Identifier start='118' end='123' name='TEST3'/>
                         </Names>
@@ -745,7 +745,7 @@
                                 </ArrayDimension>
                             </ExpressionArrayAccess>
                         </Initializers>
-                    </ClassConstantDeclaration>
+                    </GlobalConstantDeclaration>
                 </Block>
             </NamespaceDeclaration>
             <NamespaceDeclaration start='141' end='225' isBracketed='true'>
@@ -754,7 +754,7 @@
                     <Identifier start='165' end='168' name='Sub'/>
                 </NamespaceName>
                 <Block start='169' end='225' isCurly='true'>
-                    <ClassConstantDeclaration start='175' end='223'>
+                    <GlobalConstantDeclaration start='175' end='223'>
                         <Names>
                             <Identifier start='181' end='184' name='SUB'/>
                         </Names>
@@ -793,7 +793,7 @@
                                 </ArrayElement>
                             </ArrayCreation>
                         </Initializers>
-                    </ClassConstantDeclaration>
+                    </GlobalConstantDeclaration>
                 </Block>
             </NamespaceDeclaration>
             <NamespaceDeclaration start='227' end='862' isBracketed='true'>
@@ -801,7 +801,7 @@
                     <Identifier start='237' end='250' name='Issue268712_B'/>
                 </NamespaceName>
                 <Block start='251' end='862' isCurly='true'>
-                    <ClassConstantDeclaration start='258' end='293'>
+                    <GlobalConstantDeclaration start='258' end='293'>
                         <Names>
                             <Identifier start='264' end='269' name='TEST4'/>
                         </Names>
@@ -811,8 +811,8 @@
                                 <Identifier start='287' end='292' name='TEST3'/>
                             </NamespaceName>
                         </Initializers>
-                    </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='298' end='339'>
+                    </GlobalConstantDeclaration>
+                    <GlobalConstantDeclaration start='298' end='339'>
                         <Names>
                             <Identifier start='304' end='309' name='TEST5'/>
                         </Names>
@@ -836,8 +836,8 @@
                                 </ArrayDimension>
                             </ExpressionArrayAccess>
                         </Initializers>
-                    </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='344' end='396'>
+                    </GlobalConstantDeclaration>
+                    <GlobalConstantDeclaration start='344' end='396'>
                         <Names>
                             <Identifier start='350' end='355' name='TEST6'/>
                         </Names>
@@ -876,7 +876,7 @@
                                 </ArrayElement>
                             </ArrayCreation>
                         </Initializers>
-                    </ClassConstantDeclaration>
+                    </GlobalConstantDeclaration>
                     <ExpressionStatement start='402' end='412'>
                         <Assignment start='402' end='411' operator='EQUAL'>
                             <Variable start='402' end='407' isDollared='true'>

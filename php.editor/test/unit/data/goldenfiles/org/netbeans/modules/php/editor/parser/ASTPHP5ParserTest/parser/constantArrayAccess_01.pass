@@ -850,7 +850,7 @@
                     <Scalar start='15' end='16' type='INT' value='0'/>
                 </Assignment>
             </ExpressionStatement>
-            <ClassConstantDeclaration start='18' end='43'>
+            <GlobalConstantDeclaration start='18' end='43'>
                 <Names>
                     <Identifier start='24' end='33' name='CONSTANT1'/>
                 </Names>
@@ -872,8 +872,8 @@
                         </ArrayElement>
                     </ArrayCreation>
                 </Initializers>
-            </ClassConstantDeclaration>
-            <ClassConstantDeclaration start='44' end='75'>
+            </GlobalConstantDeclaration>
+            <GlobalConstantDeclaration start='44' end='75'>
                 <Names>
                     <Identifier start='50' end='59' name='CONSTANT2'/>
                 </Names>
@@ -887,8 +887,8 @@
                         </ArrayDimension>
                     </ExpressionArrayAccess>
                 </Initializers>
-            </ClassConstantDeclaration>
-            <ClassConstantDeclaration start='76' end='120'>
+            </GlobalConstantDeclaration>
+            <GlobalConstantDeclaration start='76' end='120'>
                 <Names>
                     <Identifier start='82' end='91' name='CONSTANT3'/>
                 </Names>
@@ -912,8 +912,8 @@
                         </ExpressionArrayAccess>
                     </InfixExpression>
                 </Initializers>
-            </ClassConstantDeclaration>
-            <ClassConstantDeclaration start='121' end='149'>
+            </GlobalConstantDeclaration>
+            <GlobalConstantDeclaration start='121' end='149'>
                 <Names>
                     <Identifier start='127' end='136' name='CONSTANT4'/>
                 </Names>
@@ -942,8 +942,8 @@
                         </ArrayDimension>
                     </ExpressionArrayAccess>
                 </Initializers>
-            </ClassConstantDeclaration>
-            <ClassConstantDeclaration start='150' end='207'>
+            </GlobalConstantDeclaration>
+            <GlobalConstantDeclaration start='150' end='207'>
                 <Names>
                     <Identifier start='156' end='165' name='CONSTANT5'/>
                 </Names>
@@ -974,8 +974,8 @@
                         </ArrayDimension>
                     </ExpressionArrayAccess>
                 </Initializers>
-            </ClassConstantDeclaration>
-            <ClassConstantDeclaration start='208' end='261'>
+            </GlobalConstantDeclaration>
+            <GlobalConstantDeclaration start='208' end='261'>
                 <Names>
                     <Identifier start='214' end='223' name='CONSTANT6'/>
                 </Names>
@@ -1029,8 +1029,8 @@
                         </ArrayElement>
                     </ArrayCreation>
                 </Initializers>
-            </ClassConstantDeclaration>
-            <ClassConstantDeclaration start='262' end='309'>
+            </GlobalConstantDeclaration>
+            <GlobalConstantDeclaration start='262' end='309'>
                 <Names>
                     <Identifier start='268' end='277' name='CONSTANT7'/>
                 </Names>
@@ -1058,7 +1058,7 @@
                         </ArrayDimension>
                     </ExpressionArrayAccess>
                 </Initializers>
-            </ClassConstantDeclaration>
+            </GlobalConstantDeclaration>
             <ExpressionStatement start='311' end='324'>
                 <ExpressionArrayAccess start='311' end='323'>
                     <Identifier start='311' end='320' name='CONSTANT1'/>
@@ -1119,7 +1119,7 @@
                 <Interfaces>
                 </Interfaces>
                 <Block start='416' end='879' isCurly='true'>
-                    <ClassConstantDeclaration start='423' end='458'>
+                    <ClassConstantDeclaration start='423' end='458' modifier='public'>
                         <Names>
                             <Identifier start='429' end='444' name='CLASS_CONSTANT1'/>
                         </Names>
@@ -1142,7 +1142,7 @@
                             </ArrayCreation>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='463' end='512'>
+                    <ClassConstantDeclaration start='463' end='512' modifier='public'>
                         <Names>
                             <Identifier start='469' end='484' name='CLASS_CONSTANT2'/>
                         </Names>
@@ -1174,7 +1174,7 @@
                             </StaticConstantAccess>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='517' end='569'>
+                    <ClassConstantDeclaration start='517' end='569' modifier='public'>
                         <Names>
                             <Identifier start='523' end='538' name='CLASS_CONSTANT3'/>
                         </Names>
@@ -1199,7 +1199,7 @@
                             </InfixExpression>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='574' end='667'>
+                    <ClassConstantDeclaration start='574' end='667' modifier='public'>
                         <Names>
                             <Identifier start='580' end='595' name='CLASS_CONSTANT4'/>
                         </Names>
@@ -1254,7 +1254,7 @@
                             </ArrayCreation>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='672' end='737'>
+                    <ClassConstantDeclaration start='672' end='737' modifier='public'>
                         <Names>
                             <Identifier start='678' end='693' name='CLASS_CONSTANT5'/>
                         </Names>
@@ -1467,7 +1467,7 @@
                     <Identifier start='1004' end='1021' name='ConstantInterface'/>
                 </Name>
                 <Block start='1022' end='1194' isCurly='true'>
-                    <ClassConstantDeclaration start='1029' end='1068'>
+                    <ClassConstantDeclaration start='1029' end='1068' modifier='public'>
                         <Names>
                             <Identifier start='1035' end='1054' name='INTERFACE_CONSTANT1'/>
                         </Names>
@@ -1490,7 +1490,7 @@
                             </ArrayCreation>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='1073' end='1130'>
+                    <ClassConstantDeclaration start='1073' end='1130' modifier='public'>
                         <Names>
                             <Identifier start='1079' end='1098' name='INTERFACE_CONSTANT2'/>
                         </Names>
@@ -1522,7 +1522,7 @@
                             </StaticConstantAccess>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='1135' end='1191'>
+                    <ClassConstantDeclaration start='1135' end='1191' modifier='public'>
                         <Names>
                             <Identifier start='1141' end='1160' name='INTERFACE_CONSTANT3'/>
                         </Names>

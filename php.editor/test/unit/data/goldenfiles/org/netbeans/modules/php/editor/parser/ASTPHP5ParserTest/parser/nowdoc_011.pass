@@ -98,7 +98,7 @@
                 <Interfaces>
                 </Interfaces>
                 <Block start='100' end='205' isCurly='true'>
-                    <ClassConstantDeclaration start='111' end='202'>
+                    <ClassConstantDeclaration start='111' end='202' modifier='public'>
                         <Names>
                             <Identifier start='117' end='118' name='E'/>
                         </Names>

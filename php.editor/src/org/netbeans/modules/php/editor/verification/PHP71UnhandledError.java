@@ -48,7 +48,9 @@ import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -121,6 +123,17 @@ public class PHP71UnhandledError extends UnhandledErrorRule {
             super.visit(catchClause);
         }
 
+        @Override
+        public void visit(ConstantDeclaration node) {
+            if (CancelSupport.getDefault().isCancelled()) {
+                return;
+            }
+            if (!node.isGlobal()) {
+                checkConstantVisibility(node);
+            }
+            super.visit(node);
+        }
+
         private void checkNullableType(NullableType nullableType) {
             if (nullableType != null) {
                 createError(nullableType);
@@ -131,6 +144,12 @@ public class PHP71UnhandledError extends UnhandledErrorRule {
             List<Expression> classNames = catchClause.getClassNames();
             if (classNames.size() > 1) {
                 createError(catchClause);
+            }
+        }
+
+        private void checkConstantVisibility(ConstantDeclaration node) {
+            if (!BodyDeclaration.Modifier.isImplicitPublic(node.getModifier())) {
+                createError(node);
             }
         }
 

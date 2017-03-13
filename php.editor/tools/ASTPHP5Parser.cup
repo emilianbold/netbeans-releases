@@ -48,6 +48,7 @@ import org.openide.util.Pair;
 parser code {:
     private static short[][] getActionTable() {}
 
+	protected final static Integer IMPLICIT_PUBLIC = Integer.valueOf(BodyDeclaration.Modifier.IMPLICIT_PUBLIC);
 	protected final static Integer PUBLIC = Integer.valueOf(BodyDeclaration.Modifier.PUBLIC);
 	protected final static Integer PRIVATE = Integer.valueOf(BodyDeclaration.Modifier.PRIVATE);
 	protected final static Integer PROTECTED = Integer.valueOf(BodyDeclaration.Modifier.PROTECTED);
@@ -487,6 +488,7 @@ non terminal Expression class_name;
 non terminal NamespaceName fully_qualified_class_name;
 non terminal List class_variable_declaration;
 non terminal List constant_declaration;
+non terminal Integer constant_modifiers;
 non terminal Integer method_modifiers;
 non terminal Block method_body;
 non terminal List method_or_not;
@@ -714,7 +716,7 @@ statement:statement
 
 | constant_declaration:list T_SEMICOLON:e
 {:
-	RESULT = new ConstantDeclaration(listleft, eright, list);
+	RESULT = new ConstantDeclaration(listleft, eright, ASTPHP5Parser.IMPLICIT_PUBLIC, list, true);
 :}
 ;
 
@@ -1337,9 +1339,11 @@ interface_statement_list:list interface_statement:interfaceStatement
 ;
 
 interface_statement ::=
-constant_declaration:list T_SEMICOLON:end
+constant_modifiers:modifier constant_declaration:list T_SEMICOLON:end
 {:
-	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(listleft, endright, list);
+	int constantStart = modifier == null ? listleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.IMPLICIT_PUBLIC : modifier;
+	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(constantStart, endright, modifier, list, false);
 	RESULT = classConstantDeclaration;
 :}
 
@@ -2016,9 +2020,11 @@ variable_modifiers:modifier class_variable_declaration:decList T_SEMICOLON:end
 	RESULT = fieldsDeclaration;
 :}
 
-| constant_declaration:list T_SEMICOLON:end
+| constant_modifiers:modifier constant_declaration:list T_SEMICOLON:end
 {:
-	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(listleft, endright, list);
+	int constantStart = modifier == null ? listleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.IMPLICIT_PUBLIC : modifier;
+	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(constantStart, endright, modifier, list, false);
 	RESULT = classConstantDeclaration;
 :}
 
@@ -2200,6 +2206,18 @@ T_SEMICOLON /* abstract method */
 {:
 	Block block = new Block(startleft, endright, statementList);
 	RESULT = block;
+:}
+;
+
+constant_modifiers ::=
+/* empty */
+{:
+	RESULT = null;
+:}
+
+| ppp_modifiers:modifier
+{:
+	RESULT = modifier;
 :}
 ;
 
