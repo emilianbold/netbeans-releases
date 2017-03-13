@@ -109,7 +109,7 @@ Contributor(s):
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>sh buildall.sh -b32</buildCommand>
+          <buildCommand>sh buildall.sh -b 32</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
         </makeTool>
@@ -283,7 +283,7 @@ Contributor(s):
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>sh buildall.sh -b64</buildCommand>
+          <buildCommand>sh buildall.sh -b 64</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
         </makeTool>
@@ -457,7 +457,7 @@ Contributor(s):
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>sh buildall.sh --debug -b64</buildCommand>
+          <buildCommand>sh buildall.sh --debug -b 64</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
         </makeTool>

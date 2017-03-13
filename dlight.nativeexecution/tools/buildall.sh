@@ -47,33 +47,19 @@ CFLAGS_EXTRA=""
 LDFLAGS_EXTRA=""
 
 
-while true; do
-  case "$1" in
-    -d | --debug )
-        DEBUG=TRUE;
-        dlight=${dlight:-"/tmp/dlight_ilia/eb486d37"}
-        CFLAGS_EXTRA="${CFLAGS_EXTRA} -g -O0"
-        shift;
-    ;;
-    -b32 )
-        CFLAGS_EXTRA="${CFLAGS_EXTRA} -m32"
-        shift;
-    ;;
-    -b64 )
-        CFLAGS_EXTRA="${CFLAGS_EXTRA} -m64"
-        shift;
-    ;;
-    * ) break ;;
-  esac
-done
+case "$1" in
+  -d | --debug )
+      DEBUG=TRUE;
+      dlight=${dlight:-"/tmp/dlight_ilia/eb486d37"}
+      CFLAGS_EXTRA="${CFLAGS_EXTRA} -g -O0"
+      shift
+      ;;
+esac
 
 if [ -z "$DEBUG" ]; then
     CFLAGS_EXTRA="${CFLAGS_EXTRA} -s -O2"
     LDFLAGS_EXTRA="${LDFLAGS_EXTRA} -s"
 fi
-
-export CFLAGS_EXTRA
-export LDFLAGS_EXTRA
 
 sources=". pty killall unbuffer"
 
@@ -82,8 +68,9 @@ script_dir=`pwd`
 for dir in $sources; do
     (
         cd $dir
-        sh "${script_dir}/build.sh" clean-all
-        sh "${script_dir}/build.sh" -b
+        sh "${script_dir}/build.sh" clean
+        sh "${script_dir}/build.sh" clean-all 2> /dev/null
+        sh "${script_dir}/build.sh" $@ CFLAGS_EXTRA=\"$CFLAGS_EXTRA\" LDFLAGS_EXTRA=\"$LDFLAGS_EXTRA\"
         cd -
     )
 done
