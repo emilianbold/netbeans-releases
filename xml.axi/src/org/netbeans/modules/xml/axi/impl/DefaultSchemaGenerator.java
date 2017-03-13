@@ -181,7 +181,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
             }
         }
     }
-        
+
     public void visit(Compositor compositor) {
         int index = -1;
         if(getMode() != SchemaGenerator.Mode.TRANSFORM)
