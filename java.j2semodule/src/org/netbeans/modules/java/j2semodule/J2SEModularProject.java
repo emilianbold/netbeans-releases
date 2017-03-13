@@ -111,7 +111,6 @@ import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-//import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -379,15 +378,20 @@ public final class J2SEModularProject implements Project {
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
             new PropertyEvaluatorProviderImpl(evaluator()),
+            QuerySupport.createMultiModuleUnitTestsCompilerOptionsQuery(
+                    this,
+                    getModuleRoots(),
+                    getSourceRoots(),
+                    getTestModuleRoots(),
+                    getTestSourceRoots()),
 
             //UNKNOWN FOR MODULAR PROJECT
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
-            cpMod,
+            cpMod
 //            new J2SEPersistenceProvider(this, cpProvider),
 //            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, platformChangedHook, J2SEProjectUtil.getBreakableProperties(this), new String[]{ProjectProperties.PLATFORM_ACTIVE}),
 //            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
-            QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots)
 //            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
