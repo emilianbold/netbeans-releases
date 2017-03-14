@@ -43,16 +43,13 @@
  */
 package org.netbeans.modules.xml.axi.impl;
 
-import com.sun.org.apache.xml.internal.resolver.CatalogException;
 import java.util.List;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.SchemaReference;
 import org.netbeans.modules.xml.schema.model.*;
-import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
  * Creates and populates children for a parent AXIComponent.
