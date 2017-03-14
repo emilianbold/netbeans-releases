@@ -86,6 +86,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,6 +97,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
@@ -115,6 +117,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
@@ -139,6 +142,7 @@ import org.netbeans.lib.nbjavac.services.NBMessager;
 import org.netbeans.lib.nbjavac.services.NBResolve;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker;
 import org.netbeans.lib.nbjavac.services.PartialReparser;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -726,7 +730,25 @@ public class JavacParser extends Parser {
             flags.add(ConfigFlags.MODULE_INFO);
         }
         try(final ModuleOraculum mo = ModuleOraculum.getInstance()) {
-            mo.installModuleName(root, file);
+            final Set<String> additionalModules = new HashSet<>();
+            if (!mo.installModuleName(root, file) && file == null) {
+                ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
+                if (cp != null) {
+                    cp.entries().stream()
+                            .map((e) -> {
+                                try {
+                                    return JavaIndex.getAttribute(e.getURL(), "moduleName", null);
+                                } catch (IOException ioe) {
+                                    return null;
+                                }
+                            })
+                            .filter((modName) -> modName != null)
+                            .forEach(additionalModules::add);
+                }
+                if (additionalModules.isEmpty()) {
+                    additionalModules.add("ALL-MODULE-PATH");
+                }
+            }
             final FileObject artefact = root != null ?
                     root :
                     file;
@@ -749,7 +771,8 @@ public class JavacParser extends Parser {
                     dcc,
                     parser == null ? null : new DefaultCancelService(parser),
                     APTUtils.get(root),
-                    compilerOptions);
+                    compilerOptions,
+                    additionalModules);
             Context context = javacTask.getContext();
             TreeLoader.preRegister(context, cpInfo, detached);
             return javacTask;
@@ -776,7 +799,8 @@ public class JavacParser extends Parser {
                 dcc,
                 cancelService,
                 aptUtils,
-                compilerOptions);
+                compilerOptions,
+                Collections.emptySet());
     }
 
     private static enum ConfigFlags {
@@ -795,7 +819,8 @@ public class JavacParser extends Parser {
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
             @NullAllowed final APTUtils aptUtils,
-            @NullAllowed final CompilerOptionsQuery.Result compilerOptions) {
+            @NullAllowed final CompilerOptionsQuery.Result compilerOptions,
+            @NonNull final Collection<? extends String> additionalModules) {
         final boolean backgroundCompilation = flags.contains(ConfigFlags.BACKGROUND_COMPILATION);
         final boolean multiSource = flags.contains(ConfigFlags.MULTI_SOURCE);
         final List<String> options = new ArrayList<>();
@@ -870,6 +895,10 @@ public class JavacParser extends Parser {
             for (String compilerOption : validateCompilerOptions(compilerOptions.getArguments())) {
                 options.add(compilerOption);
             }
+        }
+        if (!additionalModules.isEmpty()) {
+            options.add("--add-modules");       //NOI18N
+            options.add(additionalModules.stream().collect(Collectors.joining(",")));   //NOI18N
         }
 
         Context context = new Context();

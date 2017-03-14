@@ -318,7 +318,12 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                         }
                     }
                     if (!moduleName.assigned) {
-                        ModuleElement module = Modules.instance(jtFin.getContext()).getDefaultModule();
+                        ModuleElement module = !trees.isEmpty() ?
+                            ((JCTree.JCCompilationUnit)trees.getFirst()).modle :
+                            null;
+                        if (module == null) {
+                            module = Modules.instance(jtFin.getContext()).getDefaultModule();
+                        }
                         moduleName.name = module == null || module.isUnnamed() ?
                             null :
                             module.getQualifiedName().toString();
