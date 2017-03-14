@@ -101,6 +101,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
@@ -1018,37 +1019,46 @@ public class SourceUtils {
     public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject[] sourceRoots) {
         final List<ElementHandle<TypeElement>> result = new LinkedList<> ();
         for (final FileObject root : sourceRoots) {
-            try {               
+            try {
                 final File rootFile = FileUtil.toFile(root);
-                ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
-                ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
-                ClassPath srcPath = ClassPathSupport.createClassPath(new FileObject[] {root});
-                ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
+                final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+                final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+//                final ClassPath srcPath = ClassPathSupport.createClassPath(new FileObject[] {root});
+                final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+                final ClassPath systemModules = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_BOOT_PATH);
+                final ClassPath modulePath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                final ClassPath allUnnamed = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_CLASS_PATH);
+                final ClassPath moduleSourcePath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_SOURCE_PATH);
+                final ClasspathInfo cpInfo = new ClasspathInfo.Builder(bootPath)
+                        .setClassPath(compilePath)
+                        .setSourcePath(srcPath)
+                        .setModuleBootPath(systemModules)
+                        .setModuleCompilePath(modulePath)
+                        .setModuleClassPath(allUnnamed)
+                        .setModuleSourcePath(moduleSourcePath)
+                        .build();
                 JavaSource js = JavaSource.create(cpInfo);
-                js.runUserActionTask(new Task<CompilationController>() {
-                    @Override
-                    public void run(CompilationController control) throws Exception {
-                        control.toPhase(Phase.ELEMENTS_RESOLVED);
-                        final URL rootURL = root.toURL();
-                        Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
-                        List<ElementHandle<TypeElement>> classes = new LinkedList<>();
-                        for (URL mainClass : mainClasses) {
-                            File mainFo = BaseUtilities.toFile(URI.create(mainClass.toExternalForm()));
-                            if (mainFo.exists()) {
-                                classes.addAll(JavaCustomIndexer.getRelatedTypes(mainFo, rootFile));
-                            }
+                js.runUserActionTask((CompilationController control) -> {
+                    control.toPhase(Phase.ELEMENTS_RESOLVED);
+                    final URL rootURL = root.toURL();
+                    Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);
+                    List<ElementHandle<TypeElement>> classes = new LinkedList<>();
+                    for (URL mainClass : mainClasses) {
+                        File mainFo = BaseUtilities.toFile(URI.create(mainClass.toExternalForm()));
+                        if (mainFo.exists()) {
+                            classes.addAll(JavaCustomIndexer.getRelatedTypes(mainFo, rootFile));
                         }
-                        for (ElementHandle<TypeElement> cls : classes) {
-                            TypeElement te = cls.resolve(control);
-                            if (te != null) {
-                                Iterable<? extends ExecutableElement> methods = ElementFilter.methodsIn(te.getEnclosedElements());
-                                for (ExecutableElement method : methods) {
-                                    if (isMainMethod(method)) {
-                                        if (isIncluded(cls, control.getClasspathInfo())) {
-                                            result.add (cls);
-                                        }
-                                        break;
+                    }
+                    for (ElementHandle<TypeElement> cls : classes) {
+                        TypeElement te = cls.resolve(control);
+                        if (te != null) {
+                            Iterable<? extends ExecutableElement> methods = ElementFilter.methodsIn(te.getEnclosedElements());
+                            for (ExecutableElement method : methods) {
+                                if (isMainMethod(method)) {
+                                    if (isIncluded(cls, control.getClasspathInfo())) {
+                                        result.add (cls);
                                     }
+                                    break;
                                 }
                             }
                         }
