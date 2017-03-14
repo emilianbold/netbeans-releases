@@ -153,7 +153,6 @@ import org.openide.util.BaseUtilities;
  */
 public class SourceUtils {
 
-    private static final String MODULE_NAME = "moduleName";   //NOI18N
     private static final java.util.regex.Pattern AUTO_NAME_PATTERN = java.util.regex.Pattern.compile("-(\\d+(\\.|$))"); //NOI18N
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
 
@@ -1650,7 +1649,7 @@ public class SourceUtils {
             String moduleName = null;
             for (URL srcRootURL : srcRootURLs) {
                 try {
-                    moduleName = JavaIndex.getAttribute(srcRootURL, MODULE_NAME, null);
+                    moduleName = JavaIndex.getAttribute(srcRootURL, JavaIndex.ATTR_MODULE_NAME, null);
                     if (moduleName != null) {
                         break;
                     }

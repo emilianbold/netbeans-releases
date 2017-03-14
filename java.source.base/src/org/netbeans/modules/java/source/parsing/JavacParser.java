@@ -737,7 +737,7 @@ public class JavacParser extends Parser {
                     cp.entries().stream()
                             .map((e) -> {
                                 try {
-                                    return JavaIndex.getAttribute(e.getURL(), "moduleName", null);
+                                    return JavaIndex.getAttribute(e.getURL(), JavaIndex.ATTR_MODULE_NAME, null);
                                 } catch (IOException ioe) {
                                     return null;
                                 }
@@ -1028,7 +1028,7 @@ public class JavacParser extends Parser {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_9) >= 0 &&
                     !hasResource("java/util/zip/CRC32C", new ClassPath[] {moduleBoot}, new ClassPath[] {moduleCompile, moduleAllUnnamed}, new ClassPath[] {srcClassPath})) { //NOI18N
                     LOGGER.log(warnLevel,
-                               "Even though the source level of {0} is set to: {1}, java.util.zip.CRC32C cannot be found on the bootclasspath: {2}\n" +   //NOI18N
+                               "Even though the source level of {0} is set to: {1}, java.util.zip.CRC32C cannot be found on the system module path: {2}\n" +   //NOI18N
                                "Changing source level to 1.8",  //NOI18N
                                new Object[]{srcClassPath, sourceLevel, bootClassPath}); //NOI18N
                     return com.sun.tools.javac.code.Source.JDK1_8;

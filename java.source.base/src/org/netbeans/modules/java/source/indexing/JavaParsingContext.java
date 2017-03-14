@@ -90,8 +90,6 @@ import org.openide.util.lookup.Lookups;
 //@NotThreadSafe
 final class JavaParsingContext {
 
-    static final String ATTR_MODULE_NAME = "moduleName"; //NOI18N
-
     private final Context ctx;
     private final boolean rootNotNeeded;    
     private final ClasspathInfo cpInfo;
@@ -250,7 +248,7 @@ final class JavaParsingContext {
     @CheckForNull
     String getModuleName() {
         try {
-            return JavaIndex.getAttribute(ctx.getRootURI(), ATTR_MODULE_NAME, null);
+            return JavaIndex.getAttribute(ctx.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
         } catch (IOException ioe) {
             return null;
         }
