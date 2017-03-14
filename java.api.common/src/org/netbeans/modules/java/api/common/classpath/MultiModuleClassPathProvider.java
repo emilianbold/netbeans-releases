@@ -985,7 +985,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             }
             if (JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH.equals(type)) {
                 return new ClassPath[] {
-                    getModuleLegacyExecuteClassPath(Owner.GLOBAL_TESTS),
+                    getModuleLegacyExecuteClassPath(Owner.GLOBAL_SOURCE),
                     getModuleLegacyExecuteClassPath(Owner.GLOBAL_TESTS),
                 };
             }
