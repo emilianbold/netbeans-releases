@@ -259,11 +259,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                         clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
                         if (isModuleInfo[0]) {
-                            final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                            final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
                             removedModule = moduleName == null ?
                                     null :
                                     ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);
-                            JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                            JavaIndex.setAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
                         }
                     }
                     for (CompileTuple tuple : virtualSourceTuples) {
@@ -307,7 +307,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                     }
                     if (moduleName != null) {
-                        JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, moduleName);
+                        JavaIndex.setAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, moduleName);
                     }
                     finished = compileResult.success;
 
@@ -472,8 +472,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             for (Indexable i : files) {
                 clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
                 if (isModuleInfo[0]) {
-                    final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
-                    JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                    final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
+                    JavaIndex.setAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
                     module = moduleName == null ?
                             null :
                             ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);

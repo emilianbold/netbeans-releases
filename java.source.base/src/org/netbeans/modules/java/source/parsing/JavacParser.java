@@ -737,7 +737,7 @@ public class JavacParser extends Parser {
                     cp.entries().stream()
                             .map((e) -> {
                                 try {
-                                    return JavaIndex.getAttribute(e.getURL(), "moduleName", null);
+                                    return JavaIndex.getAttribute(e.getURL(), JavaIndex.ATTR_MODULE_NAME, null);
                                 } catch (IOException ioe) {
                                     return null;
                                 }
