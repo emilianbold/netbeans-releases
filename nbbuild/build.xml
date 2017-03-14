@@ -931,7 +931,6 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   <target name="tryme-setup-debug-args" if="debug.port" >
     <property name="debug.pause" value="y" />
     <property name="debug.server" value="y" />
-    <property name="tryme.jdkhome" value="${nbjdk.home}"/>
     <property name="tryme.debug.args" value="-J-agentlib:jdwp=transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
   </target>
           
@@ -999,6 +998,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         }
         project.setNewProperty('tryme.args', v)
     </script>
+    <property name="tryme.jdkhome" value="${nbjdk.home}"/>
     <property name="tryme.debug.args" value="" />
     <property environment="env"/>
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
@@ -1023,7 +1023,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <exec osfamily="unix" executable="sh" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
+      <arg file="${tryme.jdkhome}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
