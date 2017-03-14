@@ -404,8 +404,11 @@ public class JsConventionRule extends JsAstRule {
                             }  else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
                                 state = State.AFTER_CURLY;
                                 isGetterSetter = false;
-                            }  else if (id == JsTokenId.BRACKET_LEFT_PAREN)
+                            } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
                                 state = State.AFTER_PAREN;
+                            } else if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                state = State.AFTER_BRACKET;
+                            }
                             break;
                         case AFTER_COLON:
                             if (id == JsTokenId.OPERATOR_COMMA) {
