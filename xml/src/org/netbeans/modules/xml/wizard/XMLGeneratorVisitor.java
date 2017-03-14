@@ -133,8 +133,8 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             elemPrefix =defaultPrefix;
         this.axiModel = AXIModelFactory.getDefault().getModel(model);
         rElement = findAXIGlobalElement(rootElement);
-        primaryTNS = rElement.getTargetNamespace();
         if(rElement != null) {
+            primaryTNS = rElement.getTargetNamespace();
             this.visit(rElement);
         }
         contentAttr.setNamespaceToPrefixMap(namespaceToPrefix);
