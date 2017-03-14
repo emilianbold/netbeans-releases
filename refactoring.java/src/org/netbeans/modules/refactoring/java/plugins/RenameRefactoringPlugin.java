@@ -143,7 +143,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     protected Problem checkParameters(CompilationController info) throws IOException {
-        
         Problem checkProblem = null;
         int steps = 0;
         if (overriddenByMethodsCount != null) {
@@ -530,6 +529,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     protected Problem preCheck(CompilationController info) throws IOException {
+        JavaRenameProperties properties = refactoring.getContext().lookup(JavaRenameProperties.class);
+        if (properties==null) {
+            properties = new JavaRenameProperties();
+            refactoring.getContext().add(properties);
+        }
         Problem preCheckProblem = null;
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
         info.toPhase(JavaSource.Phase.RESOLVED);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,66 +34,18 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-/*
- * DefaultVisitor.java
  *
- * Created on March 10, 2006, 12:08 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * Contributor(s):
  */
-
 package org.netbeans.modules.xml.axi.visitor;
 
-import org.netbeans.modules.xml.axi.AXIDocument;
-import org.netbeans.modules.xml.axi.AnyAttribute;
-import org.netbeans.modules.xml.axi.AnyElement;
-import org.netbeans.modules.xml.axi.Attribute;
-import org.netbeans.modules.xml.axi.Compositor;
-import org.netbeans.modules.xml.axi.Element;
-import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.SchemaReference;
-import org.netbeans.modules.xml.axi.datatype.Datatype;
 
 /**
- *
- * @author Samaresh (Samaresh.Panda@Sun.Com)
+ * Extended interface, which also visits SchemaRef.
+ * @author sdedic
+ * @since 1.33
  */
-public abstract class DefaultVisitor implements AXIVisitor2 {
-        
-    /**
-     * Creates a new instance of DefaultVisitor
-     */
-    public DefaultVisitor() {
-    }
-    
-    public void visit(AXIDocument root) {        
-    }
-    
-    public void visit(Element element) {        
-    }
-    
-    public void visit(AnyElement element) {
-    }
-    
-    public void visit(Attribute attribute) {        
-    }
-        
-    public void visit(AnyAttribute attribute) {        
-    }
-    
-    public void visit(Compositor compositor) {
-    }
-    
-    public void visit(ContentModel contentModel) {      
-    }
-    
-    public void visit(Datatype datatype) {      
-    }	
-
-    @Override
-    public void visit(SchemaReference ref) {
-    }
+public interface AXIVisitor2 extends AXIVisitor {
+    public void visit(SchemaReference ref);
 }

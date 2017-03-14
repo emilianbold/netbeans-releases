@@ -62,6 +62,7 @@ import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import java.util.List;
 import org.netbeans.modules.xml.axi.AXIType;
+import org.netbeans.modules.xml.axi.SchemaReference;
 import org.netbeans.modules.xml.axi.impl.ElementImpl.AnonymousType;
 /**
  * Utility class.
@@ -225,6 +226,17 @@ public class Util {
                 (org.netbeans.modules.xml.schema.model.AnyAttribute)attribute.getPeer();
         attribute.setProcessContents(anyAttr.getProcessContentsEffective());
         attribute.setTargetNamespace(anyAttr.getNameSpaceEffective());
+    }
+    
+    public static void updateSchemaReference(SchemaReference schemaRef) {
+        if (schemaRef.isImport()) {
+            Import orig = (Import)schemaRef.getPeer();
+            schemaRef.setTargetNamespace(orig.getNamespace());
+            schemaRef.setSchemaLocation(orig.getSchemaLocation());
+        } else if (schemaRef.isInclude()) {
+            Include orig = (Include)schemaRef.getPeer();
+            schemaRef.setSchemaLocation(orig.getSchemaLocation());
+        }
     }
     
     public static void updateAXIDocument(AXIDocument document) {

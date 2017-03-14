@@ -55,8 +55,10 @@ import org.netbeans.modules.xml.axi.impl.CompositorProxy;
 import org.netbeans.modules.xml.axi.impl.ElementImpl;
 import org.netbeans.modules.xml.axi.impl.ElementProxy;
 import org.netbeans.modules.xml.axi.impl.ElementRef;
+import org.netbeans.modules.xml.axi.impl.SchemaReferenceProxy;
 import org.netbeans.modules.xml.axi.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 
 /**
  * Factory class to help create various AXI components.
@@ -211,6 +213,34 @@ public class AXIComponentFactory {
     }
     
     /**
+     * Creates schema reference based on existing schema model element.
+     * @param component the model element, must not be {@code null}
+     * @return new AXI schema reference
+     * @since 1.33
+     */
+    public SchemaReference createSchemaReference(SchemaComponent component) {
+        return new SchemaReference(model, (SchemaModelReference)component);
+    }
+    
+    /**
+     * Creates an empty include
+     * @return include element
+     * @since 1.33
+     */
+    public SchemaReference createInclude() {
+        return new SchemaReference(model, true);
+    }
+    
+    /**
+     * Creates an empty import
+     * @return import element
+     * @since 1.33
+     */
+    public SchemaReference createImport() {
+        return new SchemaReference(model, false);
+    }
+    
+    /**
      * Creates a new instance AnyElement.
      */
     public AnyElement createAnyElement() {
@@ -330,6 +360,11 @@ public class AXIComponentFactory {
         public void visit(Compositor compositor) {
             proxyComponent = new CompositorProxy(model, compositor);
         }        
+
+        @Override
+        public void visit(SchemaReference ref) {
+            proxyComponent = new SchemaReferenceProxy(model, ref);
+        }
     }
     
     /**
@@ -429,6 +464,15 @@ public class AXIComponentFactory {
             copiedComponent = model.getComponentFactory().
                     createContentModel(contentModel.getType());
         }        
+
+        @Override
+        public void visit(SchemaReference ref) {
+            copiedComponent = ref.isInclude() ?
+                    model.getComponentFactory().createInclude() :
+                    model.getComponentFactory().createImport();
+            ((SchemaReference)copiedComponent).setSchemaLocation(ref.getSchemaLocation());
+            ((SchemaReference)copiedComponent).setTargetNamespace(ref.getTargetNamespace());
+        }
     }
         
     /////////////////////////////////////////////////////////////////////

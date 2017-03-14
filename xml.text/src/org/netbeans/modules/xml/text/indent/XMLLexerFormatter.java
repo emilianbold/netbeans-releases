@@ -141,6 +141,9 @@ public class XMLLexerFormatter {
         CharSequence temp = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc, previousEndOffset, so - previousEndOffset);
         if(noNewline || so == 0 || CharSequences.indexOf(temp, "\n") != -1){ // NOI18N
             int i = LineDocumentUtils.getLineFirstNonWhitespace(doc, so);
+            if (i == -1) {
+                i = LineDocumentUtils.getLineEnd(doc, so);
+            }
             int rowStart = LineDocumentUtils.getLineStart(doc, so);
             
             String currentIndent = doc.getText(rowStart, i - rowStart);

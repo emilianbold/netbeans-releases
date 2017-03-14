@@ -91,6 +91,20 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         assertTrue (compare(formattedDoc, outputDoc));
     }
 
+    /**
+     * Cheks formatting when empty comment (blank line) is present
+     * See defect #269073
+     */
+    public void testFormatEmptyComment() throws Exception {
+        LineDocument inputDoc = getDocument("indent/input_emptyComment.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        LineDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        LineDocument outputDoc = getDocument("indent/output_emptyComment.xml");
+        assertTrue (compare(formattedDoc, outputDoc));
+    }
+
     public void testFormatSubsection() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_sub.xml");
         //format a subsection of the inputDoc
