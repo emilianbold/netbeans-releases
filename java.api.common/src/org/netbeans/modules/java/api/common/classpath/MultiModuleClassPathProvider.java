@@ -846,7 +846,16 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             }
             return ProjectManager.mutex().readAccess(()-> {
                 synchronized(this) {
-                    return globals.computeIfAbsent(cpType, (k) -> factory.apply(modules));
+                    //Map.computeIfAbsent cannot be used as factory may be reentrant
+                    ClassPath cp = globals.get(cpType);
+                    if (cp == null) {
+                        cp = factory.apply(modules);
+                        ClassPath oldCp = globals.putIfAbsent(cpType, cp);
+                        if (oldCp != null) {
+                            cp = oldCp;
+                        }
+                    }
+                    return cp;
                 }
             });
         }
@@ -867,7 +876,16 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             return ProjectManager.mutex().readAccess(() -> {
                 synchronized (this) {
                     final Map<String,ClassPath> moduleCps = perModule.computeIfAbsent(module, (mn) -> new HashMap<>());
-                    return moduleCps.computeIfAbsent(cpType, (k) -> factory.apply(modules));
+                    //Map.computeIfAbsent cannot be used as factory may be reentrant
+                    ClassPath cp = moduleCps.get(cpType);
+                    if (cp == null) {
+                        cp = factory.apply(modules);
+                        ClassPath oldCp = moduleCps.putIfAbsent(cpType, cp);
+                        if (oldCp != null) {
+                            cp = oldCp;
+                        }
+                    }
+                    return cp;
                 }
             });
         }
@@ -957,6 +975,18 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                 return new ClassPath[] {
                     getProcessorClasspath(Owner.GLOBAL_SOURCE),
                     getProcessorClasspath(Owner.GLOBAL_TESTS)
+                };
+            }
+            if (JavaClassPathConstants.MODULE_EXECUTE_PATH.equals(type)) {
+                return new ClassPath[] {
+                    getModuleExecutePath(Owner.GLOBAL_SOURCE),
+                    getModuleExecutePath(Owner.GLOBAL_TESTS),
+                };
+            }
+            if (JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH.equals(type)) {
+                return new ClassPath[] {
+                    getModuleLegacyExecuteClassPath(Owner.GLOBAL_TESTS),
+                    getModuleLegacyExecuteClassPath(Owner.GLOBAL_TESTS),
                 };
             }
             final Function<Owner,ClassPath> f = modSensitivePrjPathFcts.get(type);
