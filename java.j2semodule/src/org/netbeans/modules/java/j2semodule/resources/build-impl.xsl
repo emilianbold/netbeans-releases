@@ -389,8 +389,8 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
                 <property name="modules.supported.internal" value="true"/>
-                <condition property="file.separator.string" value="\\${{file.separator}}" else="${{file.separator}}">
-                    <equals arg1="${{file.separator}}" arg2="\\"/>
+                <condition property="file.separator.string" value="\${{file.separator}}" else="${{file.separator}}">
+                    <equals arg1="${{file.separator}}" arg2="\"/>
                 </condition>
             </target>
 
@@ -1283,7 +1283,7 @@ is divided into following sections:
                     <sequential>
                         <nbjpdareload>
                             <fileset includes="${{fix.classes}}" dir="@{{dir}}" >
-                                <include name="${{fix.includes}}*.class"/>
+                                <include name="*/${{fix.includes}}*.class"/>
                             </fileset>
                         </nbjpdareload>
                     </sequential>
@@ -1809,9 +1809,10 @@ is divided into following sections:
                         <unpackagemapper from="*" to="*.class" />
                     </mappedresources>
                 </resources>
+                <property name="run.modules.dir.location" location="${{run.modules.dir}}"/>
                 <pathconvert property="module.name">
                     <fileset dir="${{run.modules.dir}}" includes="**/${{toString:main.class.relativepath}}"/>
-                    <regexpmapper from="${{run.modules.dir}}\Q${{file.separator}}\E([^${{file.separator.string}}]+)\Q${{file.separator}}\E.*\.class" to="\1"/>
+                    <regexpmapper from="\Q${{run.modules.dir.location}}${{file.separator}}\E([^${{file.separator.string}}]+)\Q${{file.separator}}\E.*\.class" to="\1"/>
                 </pathconvert>
                 <fail message="Could not determine module of the main class and module.name is not set">
                     <condition>
@@ -1927,7 +1928,7 @@ is divided into following sections:
             <target name="-do-debug-fix">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
-                 <property name="debug.modules.dir" value="${{build.modules.dir}}"/>
+                 <property name="debug.modules.dir" location="${{build.modules.dir}}"/>
                 <j2semodularproject1:nbjpdareload/>
             </target>
             
@@ -2212,7 +2213,7 @@ is divided into following sections:
                     <map from="${{build.test.modules.location}}" to=""/>
                     <dirset dir="${{build.test.modules.dir}}" includes="*"/>
                     <chainedmapper>
-                        <regexpmapper from="^${{build.test.modules.location}}${{file.separator.string}}(.*)" to="\1"/>
+                        <regexpmapper from="^\Q${{build.test.modules.location}}${{file.separator}}\E(.*)" to="\1"/>
                         <regexpmapper from="(.*)" to="--add-reads \1=ALL-UNNAMED"/>
                         <filtermapper>
                             <uniqfilter/>
