@@ -125,8 +125,21 @@ public class TranslateClassPath extends Task {
         return cp.toString();
     }
     
-    private File[] translateEntry(String path, boolean disableSources) throws BuildException {
-        final File entryFile = new File(path);
+    private File[] translateEntry(final String path, boolean disableSources) throws BuildException {
+        class HackedFile extends File {
+            private HackedFile(String path) {
+                super(path);
+            }
+            @Override
+            public boolean isDirectory() {
+                return path.endsWith(File.separator);
+            }
+            @Override
+            public File getAbsoluteFile() {
+                return this;
+            }
+        }
+        final File entryFile = new HackedFile(path);
         try {
             final URL entry = FileUtil.urlForArchiveOrDir(entryFile);
             final SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
