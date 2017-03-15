@@ -758,7 +758,11 @@ public class ElementJavadoc {
                         doc.entrySet().forEach((entry) -> {
                             if (entry.getKey() instanceof Element) {
                                 thrs.append("<code>"); //NOI18N
-                                createLink(thrs, (Element)entry.getKey(), ((Element)entry.getKey()).getSimpleName());
+                                if (((Element)entry.getKey()).getKind() == ElementKind.TYPE_PARAMETER) {
+                                    thrs.append(((Element)entry.getKey()).getSimpleName());
+                                } else {
+                                    createLink(thrs, (Element)entry.getKey(), ((Element)entry.getKey()).getSimpleName());
+                                }
                                 thrs.append("</code> - "); //NOI18N
                                 thrs.append(entry.getValue());
                                 thrs.append("<br>"); //NOI18N
@@ -1048,7 +1052,7 @@ public class ElementJavadoc {
                         }
                     }
                     for (TypeMirror thrownType : ((ExecutableElement)element).getThrownTypes()) {
-                        Element e = ((DeclaredType)thrownType).asElement();
+                        Element e = thrownType.getKind() == TypeKind.TYPEVAR ? ((TypeVariable)thrownType).asElement() : ((DeclaredType)thrownType).asElement();
                         if (!ret.containsKey(e)) {
                             if (inheritedDoc == null && !inheritedDocNeeded.getAndSet(true)) {
                                 inheritedDoc = getInherited((ExecutableElement)element, (TypeElement)element.getEnclosingElement(), info, funct);
