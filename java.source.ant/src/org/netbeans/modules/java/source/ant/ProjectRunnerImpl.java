@@ -437,9 +437,26 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                     }
                 }
             }
-            if (modulesSupported || !execModule.entries().isEmpty()) {
+            if (modulesSupported) {
                 //When execModule is set explicitelly pass it to script even when modules are not supported
-                setProperty(antProps, "modulepath", execModule.toString(ClassPath.PathConversionMode.FAIL));
+                StringBuilder cpBuilder = new StringBuilder();
+                for (ClassPath.Entry entry : execModule.entries()) {
+                    final URL u = entry.getURL();
+                    boolean folder = "file".equals(u.getProtocol());
+                    File f = FileUtil.archiveOrDirForURL(u);
+                    if (f != null) {
+                        if (cpBuilder.length() > 0) {
+                            cpBuilder.append(File.pathSeparatorChar);
+                        }
+                        cpBuilder.append(f.getAbsolutePath());
+                        if (folder) {
+                            cpBuilder.append(File.separatorChar);
+                        }
+                    }                    
+                }
+                if (cpBuilder.length() > 0) {
+                    setProperty(antProps, "modulepath", cpBuilder.toString());
+                }
             }
         }
 

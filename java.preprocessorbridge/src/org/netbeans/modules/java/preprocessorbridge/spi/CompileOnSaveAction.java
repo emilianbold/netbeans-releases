@@ -244,6 +244,15 @@ public interface CompileOnSaveAction {
         }
         
         /**
+         * Returns the target folder.
+         * @return the target folder.
+         */
+        @CheckForNull
+        public URL getTargetURL() {
+            return getTargetURL(srcRoot);
+        }
+        
+        /**
          * Returns the root owner.
          * The operation is valid only for {@link Operation#SYNC}.
          * @return the owner
@@ -358,6 +367,36 @@ public interface CompileOnSaveAction {
                 } catch (MalformedURLException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+
+            return result;
+        }
+        /**
+         * Returns the target folder for source root.
+         * @param srcRoot the source root to return target folder for
+         * @return the target folder
+         */
+
+        @CheckForNull
+        public static URL getTargetURL(@NonNull URL srcRoot) {
+            BinaryForSourceQuery.Result binaryRoots = BinaryForSourceQuery.findBinaryRoots(srcRoot);
+        
+            URL result = null;
+
+            for (URL u : binaryRoots.getRoots()) {
+                assert u != null : "Null in BinaryForSourceQuery.Result.roots: " + binaryRoots; //NOI18N
+                if (u == null || !"file".equals(u.getProtocol())) {
+                    continue;
+                }
+                if (result != null) {
+                    Logger.getLogger(CompileOnSaveAction.class.getName()).log(
+                            Level.WARNING,
+                            "More than one binary directory for root: {0}",
+                            srcRoot.toExternalForm());
+                    return null;
+                }
+
+                result = u;
             }
 
             return result;
