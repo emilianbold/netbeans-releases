@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -320,7 +321,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 int end = error.getCurrentToken().right;
                 int start = error.getCurrentToken().left;
                 String replace = source.substring(start, end);
-                if ("}".equals(replace)) {
+                if ("}".equals(replace)) { // NOI18N
                     return false;
                 }
                 context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
@@ -334,8 +335,14 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 String source = context.getBaseSource();
                 int end = error.getPreviousToken().right;
                 int start = error.getPreviousToken().left;
-                if (source.substring(start, end).equals("}")) {
+                String replace = source.substring(start, end);
+                if ("}".equals(replace)) { // NOI18N
                     return false;
+                }
+
+                // check nullable type prefix(?)
+                if (CodeUtils.NULLABLE_TYPE_PREFIX.equals(replace)) {
+                    start = sanitizingStartPositionForNullableTypes(start, source);
                 }
                 context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
                 return true;
@@ -407,6 +414,40 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             }
         }
         return false;
+    }
+
+    private int sanitizingStartPositionForNullableTypes(int start, String source) {
+        // e.g.
+        // function name() : ? {
+        // function name(string $id, ?)
+        int targetPosition = start;
+        boolean found = false;
+        boolean finished = false;
+        int rowStart = Utils.getRowStart(source, start);
+        for (int i = start - 1; i >= rowStart; i--) {
+            char c = source.charAt(i);
+            switch (c) {
+                case ' ': // no break
+                case '\t':
+                    targetPosition--;
+                    break;
+                case ',': // no break
+                case ':':
+                    found = true;
+                    targetPosition--;
+                    break;
+                default:
+                    finished = true;
+                    break;
+            }
+            if (finished) {
+                break;
+            }
+            if (found) {
+                return targetPosition;
+            }
+        }
+        return start;
     }
 
     protected boolean sanitizeRequireAndInclude(Context context, int start, int end) {
