@@ -261,7 +261,7 @@ public class SourceFileManager implements JavaFileManager {
     }
 
     @Override
-    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
         return null;
     }
 

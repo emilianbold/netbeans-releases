@@ -238,7 +238,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
 
     @Override
     @CheckForNull
-    public Location getLocationForModule(Location location, JavaFileObject jfo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject jfo) throws IOException {
         final FileObject fo = URLMapper.findFileObject(jfo.toUri().toURL());
         if (fo != null) {
             for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocations(location)) {
