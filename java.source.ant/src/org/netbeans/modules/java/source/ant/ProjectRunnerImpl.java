@@ -285,10 +285,9 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         }
 
         LOG.log(Level.FINE, "execute classpath={0}", exec);
-        String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
         Map<String,String> antProps = new TreeMap<String,String>();
         setProperty(antProps, "platform.bootcp", boot.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.INCLUDE));
-        setProperty(antProps, "classpath", cp);
+        setProperty(antProps, "classpath", pathToString(exec));
         setProperty(antProps, "classname", className);
         setProperty(antProps, "platform.java", javaTool);
         setProperty(antProps, "work.dir", workDir);
@@ -437,26 +436,9 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                     }
                 }
             }
-            if (modulesSupported) {
+            if (modulesSupported || !execModule.entries().isEmpty()) {
                 //When execModule is set explicitelly pass it to script even when modules are not supported
-                StringBuilder cpBuilder = new StringBuilder();
-                for (ClassPath.Entry entry : execModule.entries()) {
-                    final URL u = entry.getURL();
-                    boolean folder = "file".equals(u.getProtocol());
-                    File f = FileUtil.archiveOrDirForURL(u);
-                    if (f != null) {
-                        if (cpBuilder.length() > 0) {
-                            cpBuilder.append(File.pathSeparatorChar);
-                        }
-                        cpBuilder.append(f.getAbsolutePath());
-                        if (folder) {
-                            cpBuilder.append(File.separatorChar);
-                        }
-                    }                    
-                }
-                if (cpBuilder.length() > 0) {
-                    setProperty(antProps, "modulepath", cpBuilder.toString());
-                }
+                setProperty(antProps, "modulepath", pathToString(execModule));
             }
         }
 
@@ -465,12 +447,32 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
                 antProps.put(e.getKey(), (String) e.getValue());
             }
         }
-        
+
         projectNameOut[0] = projectName;
-        
+
         return antProps;
     }
-    
+
+    @NonNull
+    private static String pathToString(@NonNull final ClassPath path) {
+        final StringBuilder cpBuilder = new StringBuilder();
+        for (ClassPath.Entry entry : path.entries()) {
+            final URL u = entry.getURL();
+            boolean folder = "file".equals(u.getProtocol());
+            File f = FileUtil.archiveOrDirForURL(u);
+            if (f != null) {
+                if (cpBuilder.length() > 0) {
+                    cpBuilder.append(File.pathSeparatorChar);
+                }
+                cpBuilder.append(f.getAbsolutePath());
+                if (folder) {
+                    cpBuilder.append(File.separatorChar);
+                }
+            }
+        }
+        return cpBuilder.toString();
+    }
+
     @CheckForNull
     private static FileObject findSource(
         @NonNull final String className,

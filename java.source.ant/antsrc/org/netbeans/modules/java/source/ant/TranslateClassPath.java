@@ -132,7 +132,9 @@ public class TranslateClassPath extends Task {
             }
             @Override
             public boolean isDirectory() {
-                return path.endsWith(File.separator);
+                return exists() ?
+                        super.isDirectory() :
+                        path.endsWith(File.separator);
             }
             @Override
             public File getAbsoluteFile() {
