@@ -813,6 +813,7 @@ final class CompletionContextFinder {
                         isCompletionSeparator = true;
                         contextForSeparator = CompletionContext.DEFAULT_PARAMETER_VALUE;
                     } else if (isParamSeparator(cToken)
+                            || isNullableTypesPrefix(cToken)
                             || isReturnTypeSeparator(cToken)
                             || isArray(token)
                             || isCallable(token)) {
@@ -894,6 +895,11 @@ final class CompletionContextFinder {
     private static boolean isReturnTypeSeparator(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN)
                 && TokenUtilities.textEquals(token.text(), ":"); // NOI18N
+    }
+
+    private static boolean isNullableTypesPrefix(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_TOKEN)
+                && TokenUtilities.textEquals(token.text(), "?"); // NOI18N
     }
 
     private static boolean isArray(Token<PHPTokenId> token) {
