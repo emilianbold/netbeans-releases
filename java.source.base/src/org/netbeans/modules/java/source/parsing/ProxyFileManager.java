@@ -352,7 +352,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     @CheckForNull
-    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
@@ -360,7 +360,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 case 0:
                     return null;
                 case 1:
-                    return jfms[0].getLocationForModule(location, fo, pkgName);
+                    return jfms[0].getLocationForModule(location, fo);
                 default:
                     throw new IllegalStateException(String.format(
                             "Expected single JavaFileManager for module location: %s",    //NOI18N

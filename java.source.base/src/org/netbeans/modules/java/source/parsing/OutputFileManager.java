@@ -304,7 +304,7 @@ public class OutputFileManager extends CachingFileManager {
     }
 
     @Override
-    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
         final URL foUrl = fo.toUri().toURL();
         for (Set<Location> s :  listLocationsForModules(location)) {
             for (Location l : s) {
