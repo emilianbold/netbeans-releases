@@ -268,7 +268,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                     null,
                     false,
                     getJavaModelActions().contains(command),
-                    getScanSensitiveActions().contains(command)) {
+                    getScanSensitiveActions().contains(command),
+                    !Arrays.asList(getActionsDisabledForQuickRun()).contains(command)) {
 
                 @Override
                 public String[] getTargetNames(JavaActionProvider.Context context) {
@@ -436,6 +437,8 @@ public abstract class BaseActionProvider implements ActionProvider {
         final Map<String,String[]> cmds = getCommands();
         final Set<String> scanSensitive = getScanSensitiveActions();
         final Set<String> modelSensitive = getJavaModelActions();
+        final Set<String> disabledForCos = new HashSet<>();
+        Collections.addAll(disabledForCos, getActionsDisabledForQuickRun());
         final CustomRunner cr = new CustomRunner();
         final Set<String> disabledByServerExecuion = new HashSet<>(Arrays.asList(
                 COMMAND_RUN, COMMAND_DEBUG, COMMAND_PROFILE, COMMAND_DEBUG_STEP_INTO));
@@ -459,6 +462,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         cmd,
                         modelSensitive.contains(cmd),
                         scanSensitive.contains(cmd),
+                        !disabledForCos.contains(cmd),
                         () -> targets,
                         cr);
                     action.setCoSInterceptor((c,m) -> {
@@ -483,6 +487,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                             cmd,
                             modelSensitive.contains(cmd),
                             scanSensitive.contains(cmd),
+                            !disabledForCos.contains(cmd),
                             ActionProviderSupport.createConditionalTarget(
                                     evaluator,
                                     ActionProviderSupport.createJarEnabledPredicate(),
@@ -734,7 +739,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                     null,
                     delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.PLATFORM_SENSITIVE),
                     delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE),
-                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE));
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE),
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.COS_ENABLED));
             this.delegate = delegate;
         }
 
@@ -782,7 +788,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                     null,
                     delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.PLATFORM_SENSITIVE),
                     delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.JAVA_MODEL_SENSITIVE),
-                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE));
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE),
+                    delegate.getActionFlags().contains(ActionProviderSupport.ActionFlag.COS_ENABLED));
             this.delegate = delegate;
             this.frame = new ThreadLocal<>();
         }

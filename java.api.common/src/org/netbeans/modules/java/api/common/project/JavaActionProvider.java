@@ -433,7 +433,8 @@ public final class JavaActionProvider implements ActionProvider {
                 @NullAllowed final String dispalyName,
                 final boolean platformSensitive,
                 final boolean javaModelSensitive,
-                final boolean scanSensitive) {
+                final boolean scanSensitive,
+                final boolean cosEnabled) {
             Parameters.notNull("command", command); //NOI18N
             this.command = command;
             this.displayName = dispalyName;
@@ -447,6 +448,9 @@ public final class JavaActionProvider implements ActionProvider {
             if (scanSensitive) {
                 this.actionFlags.add(ActionProviderSupport.ActionFlag.SCAN_SENSITIVE);
             }
+            if (cosEnabled) {
+                this.actionFlags.add(ActionProviderSupport.ActionFlag.COS_ENABLED);
+            }
         }
 
         @CheckForNull
@@ -455,6 +459,16 @@ public final class JavaActionProvider implements ActionProvider {
         @NonNull
         public Result performCompileOnSave(@NonNull final Context context, @NonNull final String[] targetNames) {
             return Result.follow();
+        }
+
+        @Override
+        public boolean isEnabled(Context context) {
+            if (!this.actionFlags.contains(ActionProviderSupport.ActionFlag.COS_ENABLED) &&
+                    !context.getCompileOnSaveOperations().isEmpty() &&
+                    !ActionProviderSupport.allowAntBuild(context.getPropertyEvaluator(), context.getUpdateHelper())) {
+                return false;
+            }
+            return true;
         }
 
         @Override
@@ -646,9 +660,10 @@ public final class JavaActionProvider implements ActionProvider {
                 @NonNull final String command,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
+                final boolean enabledInCoS,
                 @NonNull final String... targets) {
             Parameters.notNull("targets", targets);     //NOI18N
-            return createDefaultScriptAction(command, javaModelSensitive, scanSensitive, () -> targets, null);
+            return createDefaultScriptAction(command, javaModelSensitive, scanSensitive, enabledInCoS, () -> targets, null);
         }
 
         @NonNull
@@ -656,8 +671,9 @@ public final class JavaActionProvider implements ActionProvider {
                 @NonNull final String command,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
+                final boolean enabledInCoS,
                 @NonNull final Supplier<? extends String[]> targets) {
-            return createDefaultScriptAction(command, javaModelSensitive, scanSensitive, targets, null);
+            return createDefaultScriptAction(command, javaModelSensitive, scanSensitive, enabledInCoS, targets, null);
         }
 
         @NonNull
@@ -665,42 +681,43 @@ public final class JavaActionProvider implements ActionProvider {
                 @NonNull final String command,
                 final boolean javaModelSensitive,
                 final boolean scanSensitive,
+                final boolean enabledInCoS,
                 @NonNull final Supplier<? extends String[]> targets,
                 @NullAllowed final CustomFileExecutor customFileExecutor) {
             Parameters.notNull("command", command);         //NOI18N
             Parameters.notNull("targets", targets);         //NOI18N
             switch (command) {
                 case ActionProvider.COMMAND_CLEAN:
-                    return createNonCosAction(command, false, javaModelSensitive, scanSensitive, targets, Collections.emptyMap());
+                    return createNonCosAction(command, false, javaModelSensitive, scanSensitive, enabledInCoS, targets, Collections.emptyMap());
                 case ActionProvider.COMMAND_REBUILD:
-                    return createNonCosAction(command, true, javaModelSensitive, scanSensitive, targets, Collections.emptyMap());
+                    return createNonCosAction(command, true, javaModelSensitive, scanSensitive, enabledInCoS, targets, Collections.emptyMap());
                 case ActionProvider.COMMAND_BUILD:
-                    return createBuildAction(javaModelSensitive, scanSensitive, targets, mfs);
+                    return createBuildAction(javaModelSensitive, scanSensitive, enabledInCoS, targets, mfs);
                 case ActionProvider.COMMAND_RUN:
                 case ActionProvider.COMMAND_DEBUG:
                 case ActionProvider.COMMAND_DEBUG_STEP_INTO:
                 case ActionProvider.COMMAND_PROFILE:
-                    return createRunAction(command, javaModelSensitive, scanSensitive, targets, mfs, mainClassServices);
+                    return createRunAction(command, javaModelSensitive, scanSensitive, enabledInCoS, targets, mfs, mainClassServices);
                 case ActionProvider.COMMAND_TEST:
-                    return createNonCosAction(command, true, javaModelSensitive, scanSensitive, targets, Collections.singletonMap("ignore.failing.tests", "true"));  //NOI18N);
+                    return createNonCosAction(command, true, javaModelSensitive, scanSensitive, enabledInCoS, targets, Collections.singletonMap("ignore.failing.tests", "true"));  //NOI18N);
                 case ActionProvider.COMMAND_COMPILE_SINGLE:
-                    return createCompileSingleAction(javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
+                    return createCompileSingleAction(javaModelSensitive, scanSensitive, enabledInCoS, sourceRoots, testRoots, targets);
                 case ActionProvider.COMMAND_RUN_SINGLE:
                 case ActionProvider.COMMAND_DEBUG_SINGLE:
                 case ActionProvider.COMMAND_PROFILE_SINGLE:
                     return createRunSingleAction(
-                            command, javaModelSensitive,scanSensitive,
+                            command, javaModelSensitive, scanSensitive, enabledInCoS,
                             sourceRoots, testRoots, targets, customFileExecutor);
                 case ActionProvider.COMMAND_TEST_SINGLE:
-                    return createTestSingleAction(javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
+                    return createTestSingleAction(javaModelSensitive, scanSensitive, enabledInCoS, sourceRoots, testRoots, targets);
                 case ActionProvider.COMMAND_DEBUG_TEST_SINGLE:
                 case ActionProvider.COMMAND_PROFILE_TEST_SINGLE:
-                    return createDebugTestSingleAction(command, javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
+                    return createDebugTestSingleAction(command, javaModelSensitive, scanSensitive, enabledInCoS, sourceRoots, testRoots, targets);
                 case SingleMethod.COMMAND_RUN_SINGLE_METHOD:
                 case SingleMethod.COMMAND_DEBUG_SINGLE_METHOD:
-                    return createRunSingleMethodAction(command, javaModelSensitive, scanSensitive, testRoots, targets);
+                    return createRunSingleMethodAction(command, javaModelSensitive, scanSensitive, enabledInCoS, testRoots, targets);
                 case JavaProjectConstants.COMMAND_DEBUG_FIX:
-                    return createDebugFixAction(command, javaModelSensitive, scanSensitive, sourceRoots, testRoots, targets);
+                    return createDebugFixAction(command, javaModelSensitive, scanSensitive, enabledInCoS, sourceRoots, testRoots, targets);
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported command: %s", command)); //NOI18N
             }
@@ -857,9 +874,10 @@ public final class JavaActionProvider implements ActionProvider {
     private static ScriptAction createBuildAction (
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final Supplier<? extends String[]> targets,
             @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs) {
-        return new BaseScriptAction(COMMAND_BUILD, true, javaModelSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(COMMAND_BUILD, true, javaModelSensitive, scanSensitive, enabledInCoS, targets) {
 
             @Override
             public String[] getTargetNames(Context context) {
@@ -917,10 +935,11 @@ public final class JavaActionProvider implements ActionProvider {
     private static ScriptAction createCompileSingleAction(
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final SourceRoots sourceRoots,
             @NonNull final SourceRoots testRoots,
             @NonNull final Supplier<? extends String[]> targets) {
-        return new BaseScriptAction(COMMAND_COMPILE_SINGLE, true, javaModelSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(COMMAND_COMPILE_SINGLE, true, javaModelSensitive, scanSensitive, enabledInCoS, targets) {
 
             @Override
             public boolean isEnabled(Context context) {
@@ -974,11 +993,12 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final String command,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             final SourceRoots sr,
             final SourceRoots tr,
             @NonNull final Supplier<? extends String[]> targets,
             @NullAllowed final Builder.CustomFileExecutor customFileExecutor) {
-        return new BaseRunSingleAction(command, true, javaModelSensitive, scanSensitive, sr, tr, targets) {
+        return new BaseRunSingleAction(command, true, javaModelSensitive, scanSensitive, enabledInCoS, sr, tr, targets) {
             private static final String PROP_CUSTOM_RUNNER = "JavaActionProvider.invokeByCustomExecutor";   //NOI18N
 
             @Override
@@ -1169,10 +1189,11 @@ public final class JavaActionProvider implements ActionProvider {
     private static ScriptAction createTestSingleAction(
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final SourceRoots sr,
             @NonNull final SourceRoots tr,
             @NonNull final Supplier<? extends String[]> targets) {
-        return new BaseRunSingleAction(COMMAND_TEST_SINGLE, true, javaModelSensitive, scanSensitive, sr, tr, targets) {
+        return new BaseRunSingleAction(COMMAND_TEST_SINGLE, true, javaModelSensitive, scanSensitive, enabledInCoS, sr, tr, targets) {
 
             @Override
             public boolean isEnabled(Context context) {
@@ -1207,10 +1228,11 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final String command,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final SourceRoots sr,
             @NonNull final SourceRoots tr,
             @NonNull final Supplier<? extends String[]> targets) {
-        return new BaseRunSingleAction(command, true, javaModelSensitive, scanSensitive, sr, tr, targets) {
+        return new BaseRunSingleAction(command, true, javaModelSensitive, scanSensitive, enabledInCoS, sr, tr, targets) {
 
             @Override
             public boolean isEnabled(Context context) {
@@ -1234,9 +1256,10 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final String command,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final SourceRoots testRoots,
             @NonNull final Supplier<? extends String[]> targets) {
-        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, enabledInCoS, targets) {
 
             @Override
             public boolean isEnabled(Context context) {
@@ -1335,10 +1358,11 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final String command,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final SourceRoots sourceRoots,
             @NonNull final SourceRoots testRoots,
             @NonNull final Supplier<? extends String[]> targets) {
-        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, enabledInCoS, targets) {
 
             @Override
             public boolean isEnabled(Context context) {
@@ -1436,10 +1460,11 @@ public final class JavaActionProvider implements ActionProvider {
             @NonNull final String command,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final Supplier<? extends String[]> targets,
             @NonNull final ActionProviderSupport.ModifiedFilesSupport mfs,
             @NonNull final Object[] mainClassServices) {
-        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, targets) {
+        return new BaseScriptAction(command, true, javaModelSensitive, scanSensitive, enabledInCoS, targets) {
             @Override
             public String[] getTargetNames(Context context) {
                 String[] targets = super.getTargetNames(context);
@@ -1522,9 +1547,10 @@ public final class JavaActionProvider implements ActionProvider {
             final boolean platformSensitive,
             final boolean javaModelSensitive,
             final boolean scanSensitive,
+            final boolean enabledInCoS,
             @NonNull final Supplier<? extends String[]> targets,
             @NonNull final Map<String,String> props) {
-        return new BaseScriptAction(command, platformSensitive, javaModelSensitive, scanSensitive, targets, props);
+        return new BaseScriptAction(command, platformSensitive, javaModelSensitive, scanSensitive, enabledInCoS, targets, props);
     }
 
     private static void logNoFiles(
@@ -1601,8 +1627,9 @@ public final class JavaActionProvider implements ActionProvider {
                 final boolean ps,
                 final boolean jms,
                 final boolean sc,
+                final boolean cos,
                 Supplier<? extends String[]> targetNames) {
-            this(command, ps, jms, sc, targetNames, Collections.emptyMap());
+            this(command, ps, jms, sc, cos, targetNames, Collections.emptyMap());
         }
 
         BaseScriptAction(
@@ -1610,16 +1637,12 @@ public final class JavaActionProvider implements ActionProvider {
                 final boolean ps,
                 final boolean jms,
                 final boolean sc,
+                final boolean cos,
                 @NonNull Supplier<? extends String[]> targetNames,
                 @NonNull Map<String,String> initialProps) {
-            super(command, null, ps, jms, sc);
+            super(command, null, ps, jms, sc, cos);
             this.targetNames = targetNames;
             this.initialProps = initialProps;
-        }
-
-        @Override
-        public boolean isEnabled(JavaActionProvider.Context context) {
-            return true;
         }
 
         @Override
@@ -1640,10 +1663,11 @@ public final class JavaActionProvider implements ActionProvider {
                 final boolean ps,
                 final boolean jms,
                 final boolean sc,
+                final boolean cos,
                 final SourceRoots sourceRoots,
                 final SourceRoots testRoots,
                 final Supplier<? extends String[]> targetNames) {
-            super(command, ps, jms, sc, targetNames);
+            super(command, ps, jms, sc, cos, targetNames);
             this.sourceRoots = sourceRoots;
             this.testRoots = testRoots;
         }

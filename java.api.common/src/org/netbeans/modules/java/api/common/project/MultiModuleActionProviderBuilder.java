@@ -75,31 +75,31 @@ public final class MultiModuleActionProviderBuilder {
 
     @NonNull
     private MultiModuleActionProviderBuilder addProjectSensitiveActions() {
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_CLEAN, false, false, "clean")); //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_BUILD, false, false,  ActionProviderSupport.createConditionalTarget(
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_CLEAN, false, false, true, "clean")); //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_BUILD, false, false,  true, ActionProviderSupport.createConditionalTarget(
                                     evaluator,
                                     ActionProviderSupport.createJarEnabledPredicate(),
                                     new String[] {"jar"},   //NOI18N
                                     new String[] {"compile"})));    //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_REBUILD, false, false, ActionProviderSupport.createConditionalTarget(
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_REBUILD, false, false, true, ActionProviderSupport.createConditionalTarget(
                                     evaluator,
                                     ActionProviderSupport.createJarEnabledPredicate(),
                                     new String[] {"clean", "jar"},  //NOI18N
                                     new String[] {"clean", "compile"})));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_RUN, false, true, "run"));  //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_DEBUG, false, true, "debug"));  //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_PROFILE, false, false, "profile"));  //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_TEST, false, false, "test"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_COMPILE_SINGLE, false, false, "compile-single"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_RUN_SINGLE, false, true, "run-single"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_DEBUG_SINGLE, false, true, "debug-single"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_PROFILE_SINGLE, false, false, "profile-single"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_TEST_SINGLE, false, false, "test-single"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, false, false, "debug-test"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, false, false, "profile-test"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(SingleMethod.COMMAND_RUN_SINGLE_METHOD, false, true, "test-single-method"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD, false, true, "debug-single-method"));   //NOI18N
-        builder.addAction(builder.createDefaultScriptAction(JavaProjectConstants.COMMAND_DEBUG_FIX, false, true, "debug-fix"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_RUN, false, true, true, "run"));  //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_DEBUG, false, true, true, "debug"));  //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_PROFILE, false, false, true, "profile"));  //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_TEST, false, false, true, "test"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_COMPILE_SINGLE, false, false, false, "compile-single"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_RUN_SINGLE, false, true, true, "run-single"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_DEBUG_SINGLE, false, true, true, "debug-single"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_PROFILE_SINGLE, false, false, true, "profile-single"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_TEST_SINGLE, false, false, true, "test-single"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, false, false, true, "debug-test"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(ActionProvider.COMMAND_PROFILE_TEST_SINGLE, false, false, true, "profile-test"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(SingleMethod.COMMAND_RUN_SINGLE_METHOD, false, true, true, "test-single-method"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD, false, true, true, "debug-single-method"));   //NOI18N
+        builder.addAction(builder.createDefaultScriptAction(JavaProjectConstants.COMMAND_DEBUG_FIX, false, true, false, "debug-fix"));   //NOI18N
         return this;
     }
 

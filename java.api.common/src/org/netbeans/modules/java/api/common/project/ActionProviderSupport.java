@@ -165,7 +165,8 @@ final class ActionProviderSupport {
     static enum ActionFlag {
         PLATFORM_SENSITIVE,
         JAVA_MODEL_SENSITIVE,
-        SCAN_SENSITIVE
+        SCAN_SENSITIVE,
+        COS_ENABLED
     }
 
     static enum UserPropertiesPolicy {
