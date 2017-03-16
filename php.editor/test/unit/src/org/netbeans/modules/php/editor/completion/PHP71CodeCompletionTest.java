@@ -1,0 +1,330 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ */
+package org.netbeans.modules.php.editor.completion;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
+
+    public PHP71CodeCompletionTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[]{
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/php71/" + getTestDirName()))
+            })
+        );
+    }
+
+    private String getTestDirName() {
+        String name = getName();
+        int indexOf = name.indexOf("_");
+        if (indexOf != -1) {
+            name = name.substring(0, indexOf);
+        }
+        return name;
+    }
+
+    private String getTestPath(String fileName) {
+        return String.format("testfiles/completion/lib/php71/%s/%s.php", getTestDirName(), fileName);
+    }
+
+    // after nullable type prefix
+    public void testNullableTypes_ReturnType01() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function classReturnType(): ?^Foo {", false);
+    }
+
+    public void testNullableTypes_ReturnType02() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function classReturnType(): ?F^oo {", false);
+    }
+
+    public void testNullableTypes_ReturnType03() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function classReturnTypeStatic(): ?^Foo {", false);
+    }
+
+    public void testNullableTypes_ReturnType04() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function classReturnTypeStatic(): ?F^oo {", false);
+    }
+
+    public void testNullableTypes_ReturnType05() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function traitReturnType(): ?^Foo {", false);
+    }
+
+    public void testNullableTypes_ReturnType06() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function traitReturnType(): ?Fo^o {", false);
+    }
+
+    public void testNullableTypes_ReturnType07() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function traitReturnTypeStatic(): ?\\My\\S^ub\\Foo {", false);
+    }
+
+    public void testNullableTypes_ReturnType08() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function traitReturnTypeStatic(): ?\\My\\Sub\\F^oo {", false);
+    }
+
+    public void testNullableTypes_ReturnType09() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function interfaceReturnType(?string $string): ?^Foo;", false);
+    }
+
+    public void testNullableTypes_ReturnType10() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function interfaceReturnType(?string $string): ?Fo^o;", false);
+    }
+
+    public void testNullableTypes_ReturnType11() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function interfaceReturnTypeStatic(): ?^Foo;", false);
+    }
+
+    public void testNullableTypes_ReturnType12() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function interfaceReturnTypeStatic(): ?F^oo;", false);
+    }
+
+    public void testNullableTypes_ReturnType13() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "function returnType(?Foo $foo): ?^Foo {", false);
+    }
+
+    public void testNullableTypes_ReturnType14() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "function returnType(?Foo $foo): ?Fo^o {", false);
+    }
+
+    public void testNullableTypes_ReturnTypeDispatch01() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "$nullableType->classReturnType()->^publicFooMethod();", false);
+    }
+
+    public void testNullableTypes_ReturnTypeDispatch02() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "NullableType::classReturnTypeStatic()->p^ublicFooMethod();", false);
+    }
+
+    public void testNullableTypes_ReturnTypeDispatch03() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "NullableTypeTrait::traitReturnTypeStatic()->^publicFooMethod();", false);
+    }
+
+    public void testNullableTypes_ReturnTypeDispatch04() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "NullableTypeInterface::interfaceReturnTypeStatic()->^publicFooMethod();", false);
+    }
+
+    public void testNullableTypes_ReturnTypeDispatch05() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "returnType()->^publicFooMethod();", false);
+    }
+
+    // after nullable type prefix
+    public void testNullableTypes_ParameterType01() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function classParameterType(?^Foo $foo, ?string $stirng) {", false);
+    }
+
+    public void testNullableTypes_ParameterType02() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function classParameterType(?F^oo $foo, ?string $stirng) {", false);
+    }
+
+    public void testNullableTypes_ParameterType03() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function classParameterTypeStatic(?Foo $foo, ?^string $stirng) {", false);
+    }
+
+    public void testNullableTypes_ParameterType04() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function classParameterTypeStatic(?Foo $foo, ?st^ring $stirng) {", false);
+    }
+
+    public void testNullableTypes_ParameterType05() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function traitParameterType(?\\M^y\\Sub\\Foo $foo, ?string $stirng): Foo {", false);
+    }
+
+    public void testNullableTypes_ParameterType06() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function traitParameterType(?\\My\\Sub\\F^oo $foo, ?string $stirng): Foo {", false);
+    }
+
+    public void testNullableTypes_ParameterType07() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function traitParameterTypeStatic(?Foo $foo, ?^string $stirng) {", false);
+    }
+
+    public void testNullableTypes_ParameterType08() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function traitParameterTypeStatic(?Foo $foo, ?st^ring $stirng) {", false);
+    }
+
+    public void testNullableTypes_ParameterType09() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function interfaceParameterType(?^Foo $foo, ?string $stirng);", false);
+    }
+
+    public void testNullableTypes_ParameterType10() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public function interfaceParameterType(?F^oo $foo, ?string $stirng);", false);
+    }
+
+    public void testNullableTypes_ParameterType11() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function interfaceParameterTypeStatic(?Foo $foo, ?^string $stirng): ?string;", false);
+    }
+
+    public void testNullableTypes_ParameterType12() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "public static function interfaceParameterTypeStatic(?Foo $foo, ?st^ring $stirng): ?string;", false);
+    }
+
+    public void testNullableTypes_ParameterType13() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "function parameterType(?^Foo $foo): Foo {", false);
+    }
+
+    public void testNullableTypes_ParameterType14() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "function parameterType(?Fo^o $foo): Foo {", false);
+    }
+
+    public void testNullableTypes_ParameterTypeDispatch01() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "$foo->^publicFooMethod(); // CC class", false);
+    }
+
+    public void testNullableTypes_ParameterTypeDispatch02() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "$foo->^publicFooMethod(); // CC class static", false);
+    }
+
+    public void testNullableTypes_ParameterTypeDispatch03() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "$foo->^publicFooMethod(); // CC trait", false);
+    }
+
+    public void testNullableTypes_ParameterTypeDispatch04() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "$foo->^publicFooMethod(); // CC trait static", false);
+    }
+
+    public void testNullableTypes_ParameterTypeDispatch05() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "$foo->^publicFooMethod(); // CC function", false);
+    }
+
+    public void testNullableTypes_TypingReturnType01() throws Exception {
+        checkCompletion(getTestPath("typingReturnType01"), "function mytest():?^", false);
+    }
+
+    public void testNullableTypes_TypingReturnType02() throws Exception {
+        checkCompletion(getTestPath("typingReturnType02"), "function mytest(): ?^", false);
+    }
+
+    public void testNullableTypes_TypingReturnType03() throws Exception {
+        checkCompletion(getTestPath("typingReturnType03"), "function mytest():?^{", false);
+    }
+
+    public void testNullableTypes_TypingReturnType04() throws Exception {
+        checkCompletion(getTestPath("typingReturnType04"), "function mytest(): ?^{", false);
+    }
+
+    public void testNullableTypes_TypingReturnType05() throws Exception {
+        checkCompletion(getTestPath("typingReturnType05"), "function test():?^", false);
+    }
+
+    public void testNullableTypes_TypingReturnType06() throws Exception {
+        checkCompletion(getTestPath("typingReturnType06"), "function test(): ?^", false);
+    }
+
+    public void testNullableTypes_TypingReturnType07() throws Exception {
+        checkCompletion(getTestPath("typingReturnType07"), "function test():?^;", false);
+    }
+
+    public void testNullableTypes_TypingReturnType08() throws Exception {
+        checkCompletion(getTestPath("typingReturnType08"), "function test(): ?^;", false);
+    }
+
+    public void testNullableTypes_TypingReturnType09() throws Exception {
+        checkCompletion(getTestPath("typingReturnType09"), "function test():?^", false);
+    }
+
+    public void testNullableTypes_TypingReturnType10() throws Exception {
+        checkCompletion(getTestPath("typingReturnType10"), "function test(): ?^", false);
+    }
+
+    public void testNullableTypes_TypingReturnType11() throws Exception {
+        checkCompletion(getTestPath("typingReturnType11"), "function test():?^{", false);
+    }
+
+    public void testNullableTypes_TypingReturnType12() throws Exception {
+        checkCompletion(getTestPath("typingReturnType12"), "function test(): ?^;", false);
+    }
+
+    public void testNullableTypes_TypingParameterType01() throws Exception {
+        checkCompletion(getTestPath("typingParameterType01"), "function mytest(?^", false);
+    }
+
+    public void testNullableTypes_TypingParameterType02() throws Exception {
+        checkCompletion(getTestPath("typingParameterType02"), "function mytest(?^)", false);
+    }
+
+    public void testNullableTypes_TypingParameterType03() throws Exception {
+        checkCompletion(getTestPath("typingParameterType03"), "function mytest(?^) {", false);
+    }
+
+    public void testNullableTypes_TypingParameterType04() throws Exception {
+        checkCompletion(getTestPath("typingParameterType04"), "function mytest(?string $test, ?^) {", false);
+    }
+
+    public void testNullableTypes_TypingParameterType05() throws Exception {
+        checkCompletion(getTestPath("typingParameterType05"), "public function mytest(?^", false);
+    }
+
+    public void testNullableTypes_TypingParameterType06() throws Exception {
+        checkCompletion(getTestPath("typingParameterType06"), "public function mytest(?^)", false);
+    }
+
+    public void testNullableTypes_TypingParameterType07() throws Exception {
+        checkCompletion(getTestPath("typingParameterType07"), "public function mytest(?^) {", false);
+    }
+
+    public void testNullableTypes_TypingParameterType08() throws Exception {
+        checkCompletion(getTestPath("typingParameterType08"), "public function mytest(?string $test, ?^) {", false);
+    }
+
+    public void testNullableTypes_TypingParameterType09() throws Exception {
+        checkCompletion(getTestPath("typingParameterType09"), "public function mytest(?^", false);
+    }
+
+    public void testNullableTypes_TypingParameterType10() throws Exception {
+        checkCompletion(getTestPath("typingParameterType10"), "public function mytest(?^)", false);
+    }
+
+    public void testNullableTypes_TypingParameterType11() throws Exception {
+        checkCompletion(getTestPath("typingParameterType11"), "public function mytest(?^);", false);
+    }
+
+    public void testNullableTypes_TypingParameterType12() throws Exception {
+        checkCompletion(getTestPath("typingParameterType12"), "public function mytest(?string $test, ?^);", false);
+    }
+
+}

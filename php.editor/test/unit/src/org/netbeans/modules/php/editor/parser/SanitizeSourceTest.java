@@ -190,6 +190,50 @@ public class SanitizeSourceTest extends ParserTestBase {
         performTest("sanitize/issue149424");
     }
 
+    public void testNullableTypePrefix01() throws Exception {
+        performTest("sanitize/nullableTypes01");
+    }
+
+    public void testNullableTypePrefix02() throws Exception {
+        performTest("sanitize/nullableTypes02");
+    }
+
+    public void testNullableTypePrefix03() throws Exception {
+        performTest("sanitize/nullableTypes03");
+    }
+
+    public void testNullableTypePrefix04() throws Exception {
+        performTest("sanitize/nullableTypes04");
+    }
+
+    public void testNullableTypePrefix05() throws Exception {
+        performTest("sanitize/nullableTypes05");
+    }
+
+    public void testNullableTypePrefix06() throws Exception {
+        performTest("sanitize/nullableTypes06");
+    }
+
+    public void testNullableTypePrefix07() throws Exception {
+        performTest("sanitize/nullableTypes07");
+    }
+
+    public void testNullableTypePrefix08() throws Exception {
+        performTest("sanitize/nullableTypes08");
+    }
+
+    public void testNullableTypePrefix09() throws Exception {
+        performTest("sanitize/nullableTypes09");
+    }
+
+    public void testNullableTypePrefix10() throws Exception {
+        performTest("sanitize/nullableTypes10");
+    }
+
+    public void testNullableTypePrefix11() throws Exception {
+        performTest("sanitize/nullableTypes11");
+    }
+
     protected String getTestResult(String filename) throws Exception {
         return getTestResult(filename, null);
     }
