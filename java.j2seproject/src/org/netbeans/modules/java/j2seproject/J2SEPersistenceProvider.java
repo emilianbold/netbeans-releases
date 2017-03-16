@@ -217,10 +217,13 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     }
 
     private EntityMappingsMetadataModelHelper createEntityMappingsHelper() {
-        return EntityMappingsMetadataModelHelper.create(
-                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
-                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE));
+        return new EntityMappingsMetadataModelHelper.Builder(cpProvider.getProjectSourcesClassPath(ClassPath.BOOT))
+                .setModuleBootPath(cpProvider.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_BOOT_PATH))
+                .setClassPath(cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE))
+                .setModuleCompilePath(cpProvider.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_COMPILE_PATH))
+                .setModuleClassPath(cpProvider.getProjectSourcesClassPath(JavaClassPathConstants.MODULE_CLASS_PATH))
+                .setSourcePath(cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE))
+                .build();
     }
 
     @Override
