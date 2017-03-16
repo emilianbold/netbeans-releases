@@ -943,8 +943,8 @@ public final class JavaActionProvider implements ActionProvider {
 
             @Override
             public boolean isEnabled(Context context) {
-                return ActionProviderSupport.findSourcesAndPackages(context.getActiveLookup(), sourceRoots.getRoots()) != null
-                    || ActionProviderSupport.findSourcesAndPackages(context.getActiveLookup(), testRoots.getRoots()) != null;
+                return super.isEnabled(context) && (ActionProviderSupport.findSourcesAndPackages(context.getActiveLookup(), sourceRoots.getRoots()) != null
+                    || ActionProviderSupport.findSourcesAndPackages(context.getActiveLookup(), testRoots.getRoots()) != null);
             }
 
             @Override
@@ -1003,15 +1003,17 @@ public final class JavaActionProvider implements ActionProvider {
 
             @Override
             public boolean isEnabled(Context context) {
-                FileObject fos[] = ActionProviderSupport.findSources(getSourceRoots().getRoots(), context.getActiveLookup());
-                if (fos != null && fos.length == 1) {
-                    return true;
+                if (super.isEnabled(context)) {
+                    FileObject fos[] = ActionProviderSupport.findSources(getSourceRoots().getRoots(), context.getActiveLookup());
+                    if (fos != null && fos.length == 1) {
+                        return true;
+                    }
+                    fos = ActionProviderSupport.findTestSources(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup(), false);
+                    if (fos != null && fos.length == 1) {
+                        return true;
+                    }
+                    logNoFiles(getSourceRoots(), getTestRoots(), context);
                 }
-                fos = ActionProviderSupport.findTestSources(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup(), false);
-                if (fos != null && fos.length == 1) {
-                    return true;
-                }
-                logNoFiles(getSourceRoots(), getTestRoots(), context);
                 return false;
             }
 
@@ -1197,7 +1199,8 @@ public final class JavaActionProvider implements ActionProvider {
 
             @Override
             public boolean isEnabled(Context context) {
-                return ActionProviderSupport.findTestSourcesForFiles(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup()) != null;
+                return super.isEnabled(context) &&
+                        ActionProviderSupport.findTestSourcesForFiles(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup()) != null;
             }
 
             @Override
@@ -1236,6 +1239,9 @@ public final class JavaActionProvider implements ActionProvider {
 
             @Override
             public boolean isEnabled(Context context) {
+                if (!super.isEnabled(context)) {
+                    return false;
+                }
                 FileObject[] fos = ActionProviderSupport.findTestSources(getSourceRoots().getRoots(), getTestRoots().getRoots(), context.getActiveLookup(), true);
                 return fos != null && fos.length == 1;
             }
@@ -1263,6 +1269,9 @@ public final class JavaActionProvider implements ActionProvider {
 
             @Override
             public boolean isEnabled(Context context) {
+                if (!super.isEnabled(context)) {
+                    return false;
+                }
                 SingleMethod[] methodSpecs = findTestMethods(context);
                 return (methodSpecs != null) && (methodSpecs.length == 1);
             }
@@ -1366,21 +1375,23 @@ public final class JavaActionProvider implements ActionProvider {
 
             @Override
             public boolean isEnabled(Context context) {
-                FileObject fos[] = ActionProviderSupport.findSources(sourceRoots.getRoots(), context.getActiveLookup());
-                if (fos != null && fos.length == 1) {
-                    return true;
-                }
-                fos = ActionProviderSupport.findTestSources(sourceRoots.getRoots(), testRoots.getRoots(), context.getActiveLookup(), false);
-                if (fos != null && fos.length == 1) {
-                    return true;
-                }
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Source Roots: {0} Test Roots: {1} Lookup Content: {2}",    //NOI18N
-                            new Object[]{
-                                asPath(sourceRoots.getRoots()),
-                                asPath(testRoots.getRoots()),
-                                asPath(context.getActiveLookup())
-                            });
+                if (super.isEnabled(context)) {
+                    FileObject fos[] = ActionProviderSupport.findSources(sourceRoots.getRoots(), context.getActiveLookup());
+                    if (fos != null && fos.length == 1) {
+                        return true;
+                    }
+                    fos = ActionProviderSupport.findTestSources(sourceRoots.getRoots(), testRoots.getRoots(), context.getActiveLookup(), false);
+                    if (fos != null && fos.length == 1) {
+                        return true;
+                    }
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "Source Roots: {0} Test Roots: {1} Lookup Content: {2}",    //NOI18N
+                                new Object[]{
+                                    asPath(sourceRoots.getRoots()),
+                                    asPath(testRoots.getRoots()),
+                                    asPath(context.getActiveLookup())
+                                });
+                    }
                 }
                 return false;
             }
