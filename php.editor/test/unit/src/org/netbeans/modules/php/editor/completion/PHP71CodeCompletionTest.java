@@ -327,4 +327,109 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion(getTestPath("typingParameterType12"), "public function mytest(?string $test, ?^);", false);
     }
 
+    // Multi Catch
+    public void testMultiCatch_UnqualifiedName01() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "} catch (^ExceptionType1 | ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedName02() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "} catch (ExceptionType1 | ^ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedName03() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "} catch (ExceptionType1 | ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameWithoutWS01() throws Exception {
+        checkCompletion(getTestPath("unqualifiedNameWithoutWS"), "} catch(^ExceptionType1|ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameWithoutWS02() throws Exception {
+        checkCompletion(getTestPath("unqualifiedNameWithoutWS"), "} catch(ExceptionType1|^ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameWithoutWS03() throws Exception {
+        checkCompletion(getTestPath("unqualifiedNameWithoutWS"), "} catch(ExceptionType1|ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameDispatch01() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "echo $e->^getTraceAsString(); // multi", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameDispatch02() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "echo $e->^getTraceAsString(); // single", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName01() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (^\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName02() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\E^xceptionType1 | \\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName03() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\ExceptionType1 | ^\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName04() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\Except^ionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName05() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS01() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(^\\Test\\Sub\\ExceptionType1|\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS02() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\E^xceptionType1|\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS03() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\ExceptionType1|^\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS04() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\ExceptionType1|\\Test\\Sub\\Except^ionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS05() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\ExceptionType1|\\Test\\Sub\\ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameDispatch01() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "echo $e->^getTraceAsString(); // multi", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameDispatch02() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "echo $e->^getTraceAsString(); // single", false);
+    }
+
+    public void testMultiCatch_TypingType01a() throws Exception {
+        checkCompletion(getTestPath("typingType01"), "} catch (ExceptionType2 |^ ", false);
+    }
+
+    public void testMultiCatch_TypingType01b() throws Exception {
+        checkCompletion(getTestPath("typingType01"), "} catch (ExceptionType2 | ^", false);
+    }
+
+    public void testMultiCatch_TypingType02a() throws Exception {
+        checkCompletion(getTestPath("typingType02"), "} catch (ExceptionType2 |^ )", false);
+    }
+
+    public void testMultiCatch_TypingType02b() throws Exception {
+        checkCompletion(getTestPath("typingType02"), "} catch (ExceptionType2 | ^)", false);
+    }
+
+    public void testMultiCatch_TypingType03a() throws Exception {
+        checkCompletion(getTestPath("typingType03"), "} catch (ExceptionType2 |^ ) {", false);
+    }
+
+    public void testMultiCatch_TypingType03b() throws Exception {
+        checkCompletion(getTestPath("typingType03"), "} catch (ExceptionType2 | ^) {", false);
+    }
+
 }

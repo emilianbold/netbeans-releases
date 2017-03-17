@@ -366,6 +366,10 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         TypeResolutionKind useTypeResolutionKind = arrayAccess ? TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
             AssignmentImpl assignment = findVarAssignment(offset);
+            // for multi catch
+            if (assignment != null && assignment.isCatchClause()) {
+                return getSameBlockRangeTypes(assignment.getBlockRange());
+            }
             while (assignment != null) {
                 if (assignment.isConditionalBlock()) {
                     if (!assignment.getBlockRange().containsInclusive(offset)) {
@@ -404,6 +408,16 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         for (VarAssignmentImpl vAssignment : varAssignments) {
             types.addAll(vAssignment.getTypes());
         }
+        return types;
+    }
+
+    private Collection<TypeScope> getSameBlockRangeTypes(OffsetRange blockRange) {
+        Collection<TypeScope> types = new HashSet<>();
+        List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+        varAssignments.stream()
+                .filter(varAssignment -> (blockRange.equals(varAssignment.getBlockRange())))
+                .forEach(varAssignment -> types.addAll(varAssignment.getTypes()));
+        // empty when assignment cannot resolve types
         return types;
     }
 
