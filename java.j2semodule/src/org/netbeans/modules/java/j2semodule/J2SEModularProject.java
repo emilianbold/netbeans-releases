@@ -164,7 +164,7 @@ public final class J2SEModularProject implements Project {
     private ModuleRoots testModuleRoots;
     private final MultiModuleClassPathProvider cpProvider;
     private final ClassPathModifier cpMod;
-
+    private MainClassUpdater mainClassUpdater;
     private AntBuildExtender buildExtender;
 
     /**
@@ -296,11 +296,11 @@ public final class J2SEModularProject implements Project {
                         addClassPathType(JavaClassPathConstants.MODULE_COMPILE_PATH).   //For DefaultClassPathProvider
                         setBuildImplTemplate(J2SEModularProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2SEModularProject.class.getResource("resources/build.xsl")).             //NOI18N
-//                        addOpenPostAction(newStartMainUpdaterAction()).
+                        addOpenPostAction(newStartMainUpdaterAction()).
 //                        addOpenPostAction(newWebServicesAction()).
 //                        addOpenPostAction(newMissingPropertiesAction()).
 //                        addOpenPostAction(newUpdateCopyLibsAction()).
-//                        addClosePostAction(newStopMainUpdaterAction()).
+                        addClosePostAction(newStopMainUpdaterAction()).
                         build()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
                     src = QuerySupport.createSources(this, helper, evaluator(),
@@ -605,36 +605,30 @@ public final class J2SEModularProject implements Project {
 //        }
 //    }
 //
-//    @NonNull
-//    private Runnable newStartMainUpdaterAction() {
-//        return new Runnable() {
-//            @Override
-//            public void run() {
-//                //register updater of main.class
-//                //the updater is active only on the opened projects
-//                mainClassUpdater = new MainClassUpdater (
-//                        J2SEModularProject.this,
-//                        evaluator(),
-//                        updateHelper,
-//                        cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0],
-//                        ProjectProperties.MAIN_CLASS);
-//                mainClassUpdater.start();
-//            }
-//        };
-//    }
-//
-//    @NonNull
-//    private Runnable newStopMainUpdaterAction() {
-//        return new Runnable() {
-//            @Override
-//            public void run() {
-//                if (mainClassUpdater != null) {
-//                    mainClassUpdater.stop();
-//                    mainClassUpdater = null;
-//                }
-//            }
-//        };
-//    }
+    @NonNull
+    private Runnable newStartMainUpdaterAction() {
+        return () -> {
+            //register updater of main.class
+            //the updater is active only on the opened projects
+            mainClassUpdater = new MainClassUpdater (
+                    J2SEModularProject.this,
+                    evaluator(),
+                    updateHelper,
+                    getSourceRoots(),
+                    ProjectProperties.MAIN_CLASS);
+            mainClassUpdater.start();
+        };
+    }
+
+    @NonNull
+    private Runnable newStopMainUpdaterAction() {
+        return () -> {
+            if (mainClassUpdater != null) {
+                mainClassUpdater.stop();
+                mainClassUpdater = null;
+            }
+        };
+    }
 //
 //    @NonNull
 //    private Runnable newWebServicesAction() {
