@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -653,6 +654,77 @@ public final class JavaActionProvider implements ActionProvider {
                     throw new IllegalArgumentException(command);
             }
             return new SimpleAction(command, performer);
+        }
+
+        /**
+         * Creates a simple {@link ScriptAction} for given command performing given targets.
+         * The action just calls the given targets in project's build file.
+         * The action does not support Compile On Save.
+         * @param command the action command
+         * @param requiresValidJavaPlatform if true the action is not executed when the project has invalid platform
+         * @param javaModelSensitive if true the action requires java model
+         * @param scanSensitive if true the action needs to wait for scan finish
+         * @param enabledInCoS if true the action is enabled in compile on save mode
+         * @param targets the targets to execute
+         * @return the newly created {@link ScriptAction}
+         * @since 1.109
+         */
+        @NonNull
+        public ScriptAction createSimpleScriptAction(
+                @NonNull final String command,
+                final boolean requiresValidJavaPlatform,
+                final boolean javaModelSensitive,
+                final boolean scanSensitive,
+                final boolean enabledInCoS,
+                @NonNull final String... targets) {
+            Parameters.notNull("targets", targets); //NOI18N
+            return createSimpleScriptAction(
+                    command,
+                    requiresValidJavaPlatform,
+                    javaModelSensitive,
+                    scanSensitive,
+                    enabledInCoS,
+                    (ctx) -> true,
+                    () -> targets);
+        }
+
+        /**
+         * Creates a simple {@link ScriptAction} for given command performing given targets.
+         * The action just calls the given targets in project's build file.
+         * The action does not support Compile On Save.
+         * @param command the action command
+         * @param requiresValidJavaPlatform if true the action is not executed when the project has invalid platform
+         * @param javaModelSensitive if true the action requires java model
+         * @param scanSensitive if true the action needs to wait for scan finish
+         * @param enabledInCoS if true the action is enabled in compile on save mode
+         * @param enabled the {@link Predicate} to enable the action
+         * @param targets the {@link Supplier} of targets to execute
+         * @return the newly created {@link ScriptAction}
+         * @since 1.109
+         */
+        @NonNull
+        public ScriptAction createSimpleScriptAction(
+                @NonNull final String command,
+                final boolean requiresValidJavaPlatform,
+                final boolean javaModelSensitive,
+                final boolean scanSensitive,
+                final boolean enabledInCoS,
+                @NonNull final Predicate<Context> enabled,
+                @NonNull final Supplier<? extends String[]> targets) {
+            Parameters.notNull("enabled", enabled); //NOI18N
+            Parameters.notNull("targets", targets); //NOI18N
+            return new BaseScriptAction(
+                    command,
+                    requiresValidJavaPlatform,
+                    javaModelSensitive,
+                    scanSensitive,
+                    enabledInCoS,
+                    targets) {
+                @Override
+                public boolean isEnabled(Context context) {
+                    return super.isEnabled(context) && enabled.test(context);
+                }
+            };
         }
 
         @NonNull
