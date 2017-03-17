@@ -352,7 +352,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public void initLogicalFolders(Iterator<? extends SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
             Iterator<? extends SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, 
-            String mainFilePath, /*DataObject mainFileTemplate,*/ boolean addGeneratedMakefileToLogicalView) {
+            String mainFilePath, PredefinedToolKind mainFileTool, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             headerFileItems = rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -403,6 +403,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (srcFolder != null) {
                 Item added = srcFolder.addItem(ItemFactory.getDefault().createInFileSystem(baseDirFS, mainFilePath));
                 PredefinedToolKind defaultToolForItem = added.getDefaultTool(); //Item.getDefaultToolForItem(mainFileTemplate, added);
+                if (mainFileTool == PredefinedToolKind.CCCompiler) {
+                    //C++ compiler
+                    defaultToolForItem = PredefinedToolKind.CCCompiler;
+                } else if (mainFileTool == PredefinedToolKind.CCompiler) {
+                    //C compiler
+                    defaultToolForItem = PredefinedToolKind.CCompiler;
+                }
                 for (ItemConfiguration ic : added.getItemConfigurations()) {
                     ic.setTool(defaultToolForItem);
                 }

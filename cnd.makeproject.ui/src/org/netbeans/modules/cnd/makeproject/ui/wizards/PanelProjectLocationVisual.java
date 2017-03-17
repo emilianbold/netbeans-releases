@@ -623,7 +623,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 text.contains("\"") || // NOI18N
                 text.contains("<") || // NOI18N
                 text.contains(">") || // NOI18N
-                text.contains("|");  // NOI18N
+                text.contains("|") ||  // NOI18N
+                text.contains("$") ||  // NOI18N
+                text.contains("{") ||  // NOI18N
+                text.contains("}") ||  // NOI18N
+                text.contains("(") ||  // NOI18N
+                text.contains(")");  // NOI18N
+
     }
 
     @Override
