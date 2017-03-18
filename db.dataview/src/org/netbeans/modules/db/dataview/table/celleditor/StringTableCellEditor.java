@@ -51,18 +51,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
-import java.awt.event.KeyEvent;
-import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
@@ -74,8 +69,11 @@ import org.openide.windows.WindowManager;
 
 public class StringTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor, ActionListener {
 
-    private JXButton customEditorButton = new JXButton("...");
-    private int row, column;
+    private final JXButton customEditorButton = new JXButton("...");
+    private JTextComponent tc;
+    private TableModel tableModel;
+    private String columnName;
+    private int modelRow, modelColumn;
     
     public StringTableCellEditor(final JTextField textField) {
         super(textField);
@@ -90,36 +88,19 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
 
     @Override
     public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, final int row, final int column) {
-        this.table = table;
-        final JComponent c = (JComponent) super.getTableCellEditorComponent(table, value, isSelected, row, column);        
-        final JTextComponent tc = c instanceof JTextComponent ? (JTextComponent) c : null;
+        final JComponent c = (JComponent) super.getTableCellEditorComponent(table, value, isSelected, row, column);      
+        
+        this.tableModel = table.getModel();
+        this.columnName = table.getColumnName(column);
+        this.modelRow = table.convertRowIndexToModel(row);
+        this.modelColumn = table.convertColumnIndexToModel(column);  
+        this.tc = c instanceof JTextComponent ? (JTextComponent) c : null;
 
         JXPanel panel = new JXPanel(new BorderLayout()) {
-
             @Override
             public void addNotify() {
                 super.addNotify();
                 c.requestFocus();
-            }
-
-            @Override
-            protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-                InputMap map = c.getInputMap(condition);
-                ActionMap am = c.getActionMap();
-                
-                if (tc != null && ks.isOnKeyRelease()) {
-                    table.getModel().setValueAt(tc.getText(), table.convertRowIndexToModel(row), table.convertColumnIndexToModel(column));
-                }
-
-                if (map != null && am != null && isEnabled()) {
-                    Object binding = map.get(ks);
-                    Action action = (binding == null) ? null : am.get(binding);
-                    if (action != null) {
-                        return SwingUtilities.notifyAction(action, ks, e, c,
-                                e.getModifiers());
-                    }
-                }
-                return false;
             }
         };
         panel.add(c);
@@ -130,43 +111,38 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
         panel.revalidate();
         panel.repaint();
 
-        this.row = row;
-        this.column = column;
         return panel;
     }
 
     @Override
     public final void actionPerformed(ActionEvent e) {
-        assert table != null;
         super.cancelCellEditing();
-        editCell(table, row, column);
+        editCell();
     }
 
-    protected void editCell(JTable table, int row, int column) {
+    private void editCell() {
+        assert tc != null : "String TableCellEditor called without a TextComponent";
+        
         JTextArea textArea = new JTextArea(20, 80);
         // Work aroung JDK bugs 7027598 (this bug suggests this work-around) #233347
         textArea.setDropTarget(null);
-        TableModel tm = table.getModel();
-        int modelRow = table.convertRowIndexToModel(row);
-        int modelColumn = table.convertColumnIndexToModel(column);
-        boolean editable = tm.isCellEditable(modelRow, modelColumn);
-        Object value = tm.getValueAt(modelRow, modelColumn);
-        if (value != null) {
-            textArea.setText(value.toString());
-            textArea.setCaretPosition(0);
-            textArea.setEditable(editable);
-        }
+        boolean editable = tableModel.isCellEditable(modelRow, modelColumn);
+
+        textArea.setText(tc.getText());
+        textArea.setCaretPosition(0);
+        textArea.setEditable(editable);
+        
         JScrollPane pane = new JScrollPane(textArea);
         pane.addHierarchyListener(new MakeResizableListener(pane));
         Component parent = WindowManager.getDefault().getMainWindow();
 
         if (editable) {
-            int result = JOptionPane.showOptionDialog(parent, pane, table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+            int result = JOptionPane.showOptionDialog(parent, pane, columnName, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
             if (result == JOptionPane.OK_OPTION) {
-                tm.setValueAt(textArea.getText(), modelRow, modelColumn);
+                tableModel.setValueAt(textArea.getText(), modelRow, modelColumn);
             }
         } else {
-            JOptionPane.showMessageDialog(parent, pane, table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);
+            JOptionPane.showMessageDialog(parent, pane, columnName, JOptionPane.PLAIN_MESSAGE, null);
         }
     }
 
