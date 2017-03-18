@@ -133,6 +133,12 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
                 v = Util.fixSymLinks (k,v, instFolders);
                 m.put(k, v);
             }
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(
+                        Level.FINEST,
+                        "Platform properties: {0}", //NOI18N
+                        m);
+            }
             this.setSystemProperties(Util.filterProbe(m, probePath));
             this.valid = true;
             f.delete();
