@@ -1685,6 +1685,9 @@ public class TokenFormatter {
                                     case WHITESPACE_AFTER_RETURN_TYPE_SEPARATOR:
                                         countSpaces = 1;
                                         break;
+                                    case WHITESPACE_AFTER_NULLABLE_TYPE_PREFIX:
+                                        countSpaces = 0;
+                                        break;
                                     default:
                                     //no-op
                                 }

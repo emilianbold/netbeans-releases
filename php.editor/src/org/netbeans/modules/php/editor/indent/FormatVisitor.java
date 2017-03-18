@@ -94,6 +94,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
@@ -1175,12 +1176,20 @@ public class FormatVisitor extends DefaultVisitor {
         if (returnType == null) {
             return;
         }
+        int endPosition = returnType.getEndOffset();
+        if (returnType instanceof NullableType) {
+            NullableType nullableType = (NullableType) returnType;
+            endPosition = nullableType.getStartOffset();
+        }
         while (ts.moveNext()
-                && ts.offset() < returnType.getEndOffset()
+                && ts.offset() < endPosition
                 && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         ts.movePrevious();
+        if (returnType instanceof NullableType) {
+            scan((NullableType) returnType);
+        }
     }
 
     @Override
@@ -1693,6 +1702,18 @@ public class FormatVisitor extends DefaultVisitor {
         addRestOfLine();
         super.visit(node);
     }
+
+    @Override
+    public void visit(NullableType nullableType) {
+        if (ts.moveNext()) {
+            assert TokenUtilities.equals(ts.token().text(), "?"); // NOI18N
+            addFormatToken(formatTokens); // add "?"
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NULLABLE_TYPE_PREFIX, ts.offset() + 1));
+            Expression type = nullableType.getType();
+            scan(type);
+        }
+    }
+
     private int lastIndex = -1;
 
     private String showAssertionFor188809() {
