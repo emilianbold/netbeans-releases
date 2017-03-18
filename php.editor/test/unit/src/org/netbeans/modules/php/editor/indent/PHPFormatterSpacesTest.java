@@ -1294,4 +1294,54 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed09.php", options);
     }
 
+    public void testSpacesAroundMultiCatch01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch01.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch02.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch03.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch04.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch05.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch06.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch07.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch08.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch09.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch10() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch10.php", options);
+    }
+
 }

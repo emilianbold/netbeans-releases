@@ -1562,6 +1562,23 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(CatchClause node) {
+        addAllUntilOffset(node.getStartOffset());
+        List<Expression> classNames = node.getClassNames();
+        boolean addIndent = !classNames.isEmpty() && classNames.size() > 1;
+        if (addIndent) {
+            addAllUntilOffset(classNames.get(0).getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        }
+        scan(node.getClassNames());
+        scan(node.getVariable());
+        if (addIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize * -1));
+        }
+        scan(node.getBody());
+    }
+
+    @Override
     public void visit(WhileStatement node) {
         scan(node.getCondition());
         ASTNode body = node.getBody();
@@ -1990,6 +2007,11 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), txt2.toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                } else if (TokenUtilities.textEquals(txt2, "|") // NOI18N
+                        && path.get(0) instanceof CatchClause) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_MULTI_CATCH_SEPARATOR, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_MULTI_CATCH_SEPARATOR, ts.offset() + ts.token().length()));
                 } else {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }
