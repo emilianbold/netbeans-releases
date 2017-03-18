@@ -327,4 +327,178 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion(getTestPath("typingParameterType12"), "public function mytest(?string $test, ?^);", false);
     }
 
+    // Multi Catch
+    public void testMultiCatch_UnqualifiedName01() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "} catch (^ExceptionType1 | ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedName02() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "} catch (ExceptionType1 | ^ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedName03() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "} catch (ExceptionType1 | ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameWithoutWS01() throws Exception {
+        checkCompletion(getTestPath("unqualifiedNameWithoutWS"), "} catch(^ExceptionType1|ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameWithoutWS02() throws Exception {
+        checkCompletion(getTestPath("unqualifiedNameWithoutWS"), "} catch(ExceptionType1|^ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameWithoutWS03() throws Exception {
+        checkCompletion(getTestPath("unqualifiedNameWithoutWS"), "} catch(ExceptionType1|ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameDispatch01() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "echo $e->^getTraceAsString(); // multi", false);
+    }
+
+    public void testMultiCatch_UnqualifiedNameDispatch02() throws Exception {
+        checkCompletion(getTestPath("unqualifiedName"), "echo $e->^getTraceAsString(); // single", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName01() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (^\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName02() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\E^xceptionType1 | \\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName03() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\ExceptionType1 | ^\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName04() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\Except^ionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedName05() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS01() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(^\\Test\\Sub\\ExceptionType1|\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS02() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\E^xceptionType1|\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS03() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\ExceptionType1|^\\Test\\Sub\\ExceptionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS04() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\ExceptionType1|\\Test\\Sub\\Except^ionType2 $e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameWithoutWS05() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedNameWithoutWS"), "} catch(\\Test\\Sub\\ExceptionType1|\\Test\\Sub\\ExceptionType2 ^$e) {", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameDispatch01() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "echo $e->^getTraceAsString(); // multi", false);
+    }
+
+    public void testMultiCatch_FullyQualifiedNameDispatch02() throws Exception {
+        checkCompletion(getTestPath("fullyQualifiedName"), "echo $e->^getTraceAsString(); // single", false);
+    }
+
+    public void testMultiCatch_TypingType01a() throws Exception {
+        checkCompletion(getTestPath("typingType01"), "} catch (ExceptionType2 |^ ", false);
+    }
+
+    public void testMultiCatch_TypingType01b() throws Exception {
+        checkCompletion(getTestPath("typingType01"), "} catch (ExceptionType2 | ^", false);
+    }
+
+    public void testMultiCatch_TypingType02a() throws Exception {
+        checkCompletion(getTestPath("typingType02"), "} catch (ExceptionType2 |^ )", false);
+    }
+
+    public void testMultiCatch_TypingType02b() throws Exception {
+        checkCompletion(getTestPath("typingType02"), "} catch (ExceptionType2 | ^)", false);
+    }
+
+    public void testMultiCatch_TypingType03a() throws Exception {
+        checkCompletion(getTestPath("typingType03"), "} catch (ExceptionType2 |^ ) {", false);
+    }
+
+    public void testMultiCatch_TypingType03b() throws Exception {
+        checkCompletion(getTestPath("typingType03"), "} catch (ExceptionType2 | ^) {", false);
+    }
+
+    // Class Constant Visibility
+    public void testClassConstantVisibility_InClass01() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ParentClass::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in class", false);
+    }
+
+    public void testClassConstantVisibility_InClass02() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in class", false);
+    }
+
+    public void testClassConstantVisibility_InClass03() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^PRIVATE_PARENT_CONST; // CC in class", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass01() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass::^IMPLICIT_PUBLIC_CHILD_CONST; // CC in ex", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass02() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_PUBLIC_CHILD_CONST; // CC in ex", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass03() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^IMPLICIT_PUBLIC_CHILD_CONST; // CC in ex", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass04() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "TestInterfaceImpl::^IMPLICIT_INTERFACE_PUBLIC_CONST; // CC in impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass05() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_INTERFACE_PUBLIC_CONST; // CC in impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass06() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^IMPLICIT_INTERFACE_PUBLIC_CONST; // CC in impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass07() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass2::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass08() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass09() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass10() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::IM^PLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal01() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ParentClass::^IMPLICIT_PUBLIC_PARENT_CONST; // CC global", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal02() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass::^IMPLICIT_PUBLIC_CHILD_CONST; // CC global", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal03() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "TestInterfaceImpl::^IMPLICIT_PUBLIC_INTERFACE_IMPL_CONST; // CC global", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal04() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass2::^PUBLIC_CHILD2_CONST; // CC global", false);
+    }
+
 }

@@ -68,6 +68,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private OffsetRange scopeRange;
     private boolean arrayAccess;
     private boolean conditionalBlock;
+    private boolean catchClause;
 
     AssignmentImpl(
             Container container,
@@ -214,5 +215,13 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
      */
     public void setConditionalBlock(boolean conditionalBlock) {
         this.conditionalBlock = conditionalBlock;
+    }
+
+    public boolean isCatchClause() {
+        return catchClause;
+    }
+
+    void setCatchClause(boolean catchClause) {
+        this.catchClause = catchClause;
     }
 }
