@@ -432,4 +432,73 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion(getTestPath("typingType03"), "} catch (ExceptionType2 | ^) {", false);
     }
 
+    // Class Constant Visibility
+    public void testClassConstantVisibility_InClass01() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ParentClass::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in class", false);
+    }
+
+    public void testClassConstantVisibility_InClass02() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in class", false);
+    }
+
+    public void testClassConstantVisibility_InClass03() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^PRIVATE_PARENT_CONST; // CC in class", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass01() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass::^IMPLICIT_PUBLIC_CHILD_CONST; // CC in ex", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass02() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_PUBLIC_CHILD_CONST; // CC in ex", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass03() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^IMPLICIT_PUBLIC_CHILD_CONST; // CC in ex", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass04() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "TestInterfaceImpl::^IMPLICIT_INTERFACE_PUBLIC_CONST; // CC in impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass05() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_INTERFACE_PUBLIC_CONST; // CC in impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass06() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^IMPLICIT_INTERFACE_PUBLIC_CONST; // CC in impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass07() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass2::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass08() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "self::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass09() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::^IMPLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InExtendingClass10() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "static::IM^PLICIT_PUBLIC_PARENT_CONST; // CC in ex and impl", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal01() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ParentClass::^IMPLICIT_PUBLIC_PARENT_CONST; // CC global", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal02() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass::^IMPLICIT_PUBLIC_CHILD_CONST; // CC global", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal03() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "TestInterfaceImpl::^IMPLICIT_PUBLIC_INTERFACE_IMPL_CONST; // CC global", false);
+    }
+
+    public void testClassConstantVisibility_InGlobal04() throws Exception {
+        checkCompletion(getTestPath("classConstantVisibility"), "ChildClass2::^PUBLIC_CHILD2_CONST; // CC global", false);
+    }
+
 }
