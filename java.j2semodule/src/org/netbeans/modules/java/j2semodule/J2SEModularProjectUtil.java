@@ -59,6 +59,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 
 /**
@@ -66,6 +67,9 @@ import org.openide.util.Parameters;
  * @author  Jiri Rechtacek
  */
 public class J2SEModularProjectUtil {
+
+    public static final SpecificationVersion MIN_SOURCE_LEVEL = new SpecificationVersion("9");  //NOI18N
+
     private static final String MODULE_INFO_JAVA = "module-info.java"; //NOI18N
     private static final String[] BREAKABLE_PROPERTIES = {
         ProjectProperties.JAVAC_CLASSPATH,

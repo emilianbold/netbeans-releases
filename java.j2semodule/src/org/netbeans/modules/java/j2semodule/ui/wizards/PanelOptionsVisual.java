@@ -41,18 +41,18 @@ package org.netbeans.modules.java.j2semodule.ui.wizards;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.ComboBoxModel;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.java.j2semodule.J2SEModularProjectUtil;
+import org.netbeans.modules.java.j2semodule.ui.customizer.J2SEModularProjectProperties;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.WeakListeners;
 
 /**
@@ -60,8 +60,6 @@ import org.openide.util.WeakListeners;
  * @author Dusan Balek
  */
 public class PanelOptionsVisual extends SettingsPanel {
-
-    private static final SpecificationVersion PLATFORM_SPEC_VERSION= new SpecificationVersion("9"); //NOI18N
 
     private PanelConfigureProject panel;    
     
@@ -87,7 +85,7 @@ public class PanelOptionsVisual extends SettingsPanel {
 
     @Override
     boolean valid(WizardDescriptor d) {
-        return isModular(getSelectedPlatform());
+        return J2SEModularProjectProperties.MODULAR_PLATFORM_FILTER.accept(getSelectedPlatform());
     }
 
     @Override
@@ -161,19 +159,9 @@ public class PanelOptionsVisual extends SettingsPanel {
     }
 
     private ComboBoxModel createPlatformComboBoxModel() {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, PLATFORM_SPEC_VERSION));
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, J2SEModularProjectUtil.MIN_SOURCE_LEVEL));
         return PlatformUiSupport.createPlatformComboBoxModel(platforms.length > 0 ? platforms[0].getProperties().get("platform.ant.name") : null, //NOI18N
-                Arrays.<PlatformFilter>asList(new PlatformFilter() {
-                    @Override
-                    public boolean accept(JavaPlatform platform) {
-                        return isModular(platform);
-                    }                    
-                }));
-    }
-
-    private boolean isModular(JavaPlatform platform) {
-        Specification spec = platform.getSpecification();
-        return CommonProjectUtils.J2SE_PLATFORM_TYPE.contentEquals(spec.getName()) && PLATFORM_SPEC_VERSION.compareTo(spec.getVersion()) <= 0;
+                Collections.singleton(J2SEModularProjectProperties.MODULAR_PLATFORM_FILTER));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
