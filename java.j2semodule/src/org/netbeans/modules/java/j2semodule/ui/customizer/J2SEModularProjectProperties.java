@@ -85,13 +85,13 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.api.common.ModuleRoots;
-import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -132,7 +132,6 @@ public class J2SEModularProjectProperties {
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
     private static final String COS_MARK = ".netbeans_automatic_build";     //NOI18N
-    private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEModularProjectProperties.class.getName());
     private Integer javacDebugBooleanKind;
     private Integer doJarBooleanKind;
@@ -155,6 +154,12 @@ public class J2SEModularProjectProperties {
 
     //Name of ant platform name property
     public static final String PROP_PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
+
+    public static final PlatformFilter MODULAR_PLATFORM_FILTER = (jp) -> {
+        final Specification spec = jp.getSpecification();
+        return CommonProjectUtils.J2SE_PLATFORM_TYPE.contentEquals(spec.getName()) &&
+                J2SEModularProjectUtil.MIN_SOURCE_LEVEL.compareTo(spec.getVersion()) <= 0;
+    };
 
     private static final String[] CONFIG_AWARE_PROPERTIES = {
         ProjectProperties.MAIN_CLASS,
@@ -329,10 +334,12 @@ public class J2SEModularProjectProperties {
         RUN_TEST_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_MODULEPATH)));
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH)));
-        final Collection<? extends PlatformFilter> filters = project.getLookup().lookupAll(PlatformFilter.class);
+        final Collection<PlatformFilter> filters = new ArrayList<>();
+        filters.add(MODULAR_PLATFORM_FILTER);
+        filters.addAll(project.getLookup().lookupAll(PlatformFilter.class));
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (project, evaluator, evaluator.getProperty(PLATFORM_ACTIVE), filters);
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
+        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), J2SEModularProjectUtil.MIN_SOURCE_LEVEL);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
         JAVAC_PROFILE_MODEL = PlatformUiSupport.createProfileComboBoxModel(JAVAC_SOURCE_MODEL, evaluator.getProperty(JAVAC_PROFILE), null);
         JAVAC_PROFILE_RENDERER = PlatformUiSupport.createProfileListCellRenderer();
@@ -1059,7 +1066,7 @@ public class J2SEModularProjectProperties {
 
     private boolean isNamedModule() {
         final String sl = SourceLevelQuery.getSourceLevel2(project.getProjectDirectory()).getSourceLevel();
-        if (sl == null || JDK9.compareTo(new SpecificationVersion(sl)) > 0) {
+        if (sl == null || J2SEModularProjectUtil.MIN_SOURCE_LEVEL.compareTo(new SpecificationVersion(sl)) > 0) {
             return false;
         }
         return J2SEModularProjectUtil.hasModuleInfo(project.getSourceRoots());
