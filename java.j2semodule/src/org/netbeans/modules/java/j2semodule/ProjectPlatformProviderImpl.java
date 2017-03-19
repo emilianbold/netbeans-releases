@@ -51,6 +51,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectPlatformProvider;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2semodule.ui.customizer.J2SEModularProjectProperties;
@@ -68,13 +69,13 @@ import org.w3c.dom.Element;
  *
  * @author Tomas Zezula
  */
-class ProjectPlatformImpl implements PropertyChangeListener {
+final class ProjectPlatformProviderImpl implements ProjectPlatformProvider, PropertyChangeListener {
 
     private final J2SEModularProject project;
     private final PropertyChangeSupport support;
     private final PropertyEvaluator eval;
 
-    ProjectPlatformImpl(@NonNull final J2SEModularProject project) {
+    ProjectPlatformProviderImpl(@NonNull final J2SEModularProject project) {
         assert project != null;
         this.support = new PropertyChangeSupport(this);
         this.project = project;
@@ -83,20 +84,19 @@ class ProjectPlatformImpl implements PropertyChangeListener {
     }
 
     @CheckForNull
+    @Override
     public JavaPlatform getProjectPlatform() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<JavaPlatform>(){
-            @Override
-            public JavaPlatform run() {
-                JavaPlatform jp =  CommonProjectUtils.getActivePlatform(
-                    project.evaluator().getProperty(ProjectProperties.PLATFORM_ACTIVE));
-                if (jp == null) {
-                    jp = ProjectPlatform.forProject(project, eval, CommonProjectUtils.J2SE_PLATFORM_TYPE);
-                }
-                return jp;
+        return ProjectManager.mutex().readAccess((Mutex.Action<JavaPlatform>) () -> {
+            JavaPlatform jp =  CommonProjectUtils.getActivePlatform(
+                    eval.getProperty(ProjectProperties.PLATFORM_ACTIVE));
+            if (jp == null) {
+                jp = ProjectPlatform.forProject(project, eval, CommonProjectUtils.J2SE_PLATFORM_TYPE);
             }
+            return jp;
         });
     }
 
+    @Override
     public void setProjectPlatform(@NonNull final JavaPlatform platform) throws IOException {
         Parameters.notNull("platform", platform);
         if (!CommonProjectUtils.J2SE_PLATFORM_TYPE.equals(platform.getSpecification().getName())) {
@@ -128,11 +128,13 @@ class ProjectPlatformImpl implements PropertyChangeListener {
         }
     }
 
+    @Override
     public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
         Parameters.notNull("listener", listener);   //NOI18N
         support.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
         Parameters.notNull("listener", listener);   //NOI18N
         support.removePropertyChangeListener(listener);

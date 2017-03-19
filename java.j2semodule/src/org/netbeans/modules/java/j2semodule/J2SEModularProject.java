@@ -397,6 +397,7 @@ public final class J2SEModularProject implements Project {
                     new String[] {
                             ProjectProperties.PLATFORM_ACTIVE
             }),
+            new ProjectPlatformProviderImpl(this),
             //UNKNOWN FOR MODULAR PROJECT
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
@@ -843,7 +844,7 @@ public final class J2SEModularProject implements Project {
     private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
         @Override
         public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
-            ProjectPlatformImpl.updateProjectXml(platform, updateHelper);
+            ProjectPlatformProviderImpl.updateProjectXml(platform, updateHelper);
         }
     }
 }

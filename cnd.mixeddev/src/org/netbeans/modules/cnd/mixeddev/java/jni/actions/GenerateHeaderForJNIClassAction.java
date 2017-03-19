@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
-import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
+import org.netbeans.modules.java.api.common.project.ProjectPlatformProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -229,7 +229,7 @@ public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
         ClassPath compileCP = ClassPath.getClassPath(javaFile, ClassPath.COMPILE);
         FileObject sr = sourceCP != null ? sourceCP.findOwnerRoot(javaFile) : null;
         Project javaProject = FileOwnerQuery.getOwner(sr);
-        J2SEProjectPlatform pp = javaProject.getLookup().lookup(J2SEProjectPlatform.class);
+        ProjectPlatformProvider pp = javaProject.getLookup().lookup(ProjectPlatformProvider.class);
         JavaPlatform jp = pp.getProjectPlatform();
         final FileObject binFO = jp.findTool("javah"); // NOI18N
         return JNISupport.generateJNIHeader(binFO, sr, javaFile, headerPath, sourceCP, compileCP);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,19 +36,52 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.j2seproject.api;
+package org.netbeans.modules.java.api.common.project;
 
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.java.api.common.project.ProjectPlatformProvider;
 
 /**
- * Active {@link JavaPlatform} for J2SE project extensions.
- * Allows J2SE project extensions to obtain and set the active project platform
+ * A provider of project's active {@link JavaPlatform}.
+ * Allows client to obtain and set the active project platform
  * @author Tomas Zezula
- * @since 1.63
+ * @since 1.111
  */
-public interface J2SEProjectPlatform extends ProjectPlatformProvider {
+public interface ProjectPlatformProvider {
+    /**
+     * Name of the "projectPlatform" property.
+     */
+    String PROP_PROJECT_PLATFORM = "projectPlatform";   //NOI18N
+
+    /**
+     * Return the active project platform.
+     * @return the active {@link JavaPlatform} or null if the
+     * active platform cannot be resolved (it's broken)
+     */
+    @CheckForNull
+    JavaPlatform getProjectPlatform();
+
+    /**
+     * Sets active project platform.
+     * @param platform the platform to become active project active platform
+     * @throws IOException in case of IO error.
+     * @throws IllegalArgumentException if the platform is not a valid platform supported by the project type.
+     */
+    void setProjectPlatform(@NonNull JavaPlatform platform) throws IOException;
+
+    /**
+     * Adds {@link PropertyChangeListener} for listening on project platform changes.
+     * @param listener the listener to be added
+     */
+    void addPropertyChangeListener(@NonNull PropertyChangeListener listener);
+
+    /**
+     * Removes {@link PropertyChangeListener} for listening on project platform changes.
+     * @param listener the listener to be removed
+     */
+    void removePropertyChangeListener(@NonNull PropertyChangeListener listener);
 }
