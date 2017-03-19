@@ -46,16 +46,12 @@ package org.netbeans.modules.java.j2semodule.ui.customizer;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.util.LinkedList;
-import java.util.Map;
 import javax.swing.Box;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
-import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
-import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
+//import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
+//import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -71,7 +67,7 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
     private File lastImageFolder;
     private J2SEModularProject project;
     
-    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
+//    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
     private int nextExtensionYPos;
     
     /** Creates new form CustomizerApplication */
@@ -84,14 +80,14 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         splashTextField.setDocument(props.APPLICATION_SPLASH_DOC);
 
         this.project = props.getProject();
-        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
-            if( compProvider.getCategory() == J2SECategoryExtensionProvider.ExtensibleCategory.APPLICATION ) {
-                if( addExtPanel(project,compProvider,nextExtensionYPos) ) {
-                    compProviders.add(compProvider);
-                    nextExtensionYPos++;
-                }
-            }
-        }
+//        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
+//            if( compProvider.getCategory() == J2SECategoryExtensionProvider.ExtensibleCategory.APPLICATION ) {
+//                if( addExtPanel(project,compProvider,nextExtensionYPos) ) {
+//                    compProviders.add(compProvider);
+//                    nextExtensionYPos++;
+//                }
+//            }
+//        }
         addPanelFiller(nextExtensionYPos);
     }
     
@@ -326,25 +322,25 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         return new HelpCtx(CustomizerApplication.class);
     }
     
-    private boolean addExtPanel(Project p, J2SECategoryExtensionProvider compProvider, int gridY) {
-        if (compProvider != null) {
-            J2SECategoryExtensionProvider.ConfigChangeListener ccl = new J2SECategoryExtensionProvider.ConfigChangeListener() {
-                public void propertiesChanged(Map<String, String> updates) {
-                }
-            };
-            JComponent comp = compProvider.createComponent(p, ccl);
-            if (comp != null) {
-                java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
-                constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-                constraints.gridx = 0;
-                constraints.gridy = gridY;
-                constraints.weightx = 1.0;
-                extPanel.add(comp, constraints);
-                return true;
-            }
-        }
-        return false;
-    }
+//    private boolean addExtPanel(Project p, J2SECategoryExtensionProvider compProvider, int gridY) {
+//        if (compProvider != null) {
+//            J2SECategoryExtensionProvider.ConfigChangeListener ccl = new J2SECategoryExtensionProvider.ConfigChangeListener() {
+//                public void propertiesChanged(Map<String, String> updates) {
+//                }
+//            };
+//            JComponent comp = compProvider.createComponent(p, ccl);
+//            if (comp != null) {
+//                java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
+//                constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+//                constraints.gridx = 0;
+//                constraints.gridy = gridY;
+//                constraints.weightx = 1.0;
+//                extPanel.add(comp, constraints);
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     private void addPanelFiller(int gridY) {
         java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
