@@ -71,10 +71,18 @@ public class J2SEProjectUtil {
         ProjectProperties.JAVAC_CLASSPATH,
         ProjectProperties.RUN_CLASSPATH,
         ProjectProperties.DEBUG_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
         ProjectProperties.RUN_TEST_CLASSPATH,
         ProjectProperties.DEBUG_TEST_CLASSPATH,
+
         ProjectProperties.ENDORSED_CLASSPATH,
-        ProjectProperties.JAVAC_TEST_CLASSPATH,
+
+        ProjectProperties.JAVAC_MODULEPATH,
+        ProjectProperties.RUN_MODULEPATH,
+        ProjectProperties.DEBUG_MODULEPATH,
+        ProjectProperties.JAVAC_TEST_MODULEPATH,
+        ProjectProperties.RUN_TEST_MODULEPATH,
+        ProjectProperties.DEBUG_TEST_MODULEPATH
     };
 
     private static final Logger LOG = Logger.getLogger(J2SEProjectUtil.class.getName());

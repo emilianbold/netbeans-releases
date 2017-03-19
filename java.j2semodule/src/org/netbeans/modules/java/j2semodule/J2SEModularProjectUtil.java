@@ -75,10 +75,18 @@ public class J2SEModularProjectUtil {
         ProjectProperties.JAVAC_CLASSPATH,
         ProjectProperties.RUN_CLASSPATH,
         ProjectProperties.DEBUG_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
         ProjectProperties.RUN_TEST_CLASSPATH,
         ProjectProperties.DEBUG_TEST_CLASSPATH,
+
         ProjectProperties.ENDORSED_CLASSPATH,
-        ProjectProperties.JAVAC_TEST_CLASSPATH,
+
+        ProjectProperties.JAVAC_MODULEPATH,
+        ProjectProperties.RUN_MODULEPATH,
+        ProjectProperties.DEBUG_MODULEPATH,
+        ProjectProperties.JAVAC_TEST_MODULEPATH,
+        ProjectProperties.RUN_TEST_MODULEPATH,
+        ProjectProperties.DEBUG_TEST_MODULEPATH
     };
 
     private static final Logger LOG = Logger.getLogger(J2SEModularProjectUtil.class.getName());
@@ -197,12 +205,12 @@ public class J2SEModularProjectUtil {
      * @param project to return property names for
      * @return the list of breakable properties
      */
-    public static String[] getBreakableProperties(@NonNull final J2SEModularProject project) {
-        SourceRoots roots = project.getSourceRoots();
-        String[] srcRootProps = roots.getRootProperties();
-        roots = project.getTestSourceRoots();
-        String[] testRootProps = roots.getRootProperties();
-        String[] result = new String [BREAKABLE_PROPERTIES.length + srcRootProps.length + testRootProps.length];
+    public static String[] getBreakableProperties(
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testRoot) {
+        final String[] srcRootProps = sourceRoots.getRootProperties();
+        final String[] testRootProps = testRoot.getRootProperties();
+        final String[] result = new String [BREAKABLE_PROPERTIES.length + srcRootProps.length + testRootProps.length];
         System.arraycopy(BREAKABLE_PROPERTIES, 0, result, 0, BREAKABLE_PROPERTIES.length);
         System.arraycopy(srcRootProps, 0, result, BREAKABLE_PROPERTIES.length, srcRootProps.length);
         System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);

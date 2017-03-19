@@ -60,6 +60,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -85,6 +86,7 @@ import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl
 import org.netbeans.modules.java.j2semodule.ui.customizer.J2SECompositePanelProvider;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
@@ -266,7 +268,7 @@ public final class J2SEModularProject implements Project {
     }
 
     private Lookup createLookup(final AuxiliaryConfiguration aux, final ProjectOperations.Callback opsCallback) {
-//        final PlatformChangedHook platformChangedHook = new PlatformChangedHook();
+        final PlatformChangedHook platformChangedHook = new PlatformChangedHook();
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), ProjectProperties.SOURCE_ENCODING);
         Sources src;
         final Lookup base = Lookups.fixed(J2SEModularProject.this,
@@ -384,13 +386,22 @@ public final class J2SEModularProject implements Project {
                     getSourceRoots(),
                     getTestModuleRoots(),
                     getTestSourceRoots()),
-
+            BrokenReferencesSupport.createReferenceProblemsProvider(
+                    helper,
+                    refHelper,
+                    evaluator(),
+                    platformChangedHook,
+                    J2SEModularProjectUtil.getBreakableProperties(
+                            getSourceRoots(),
+                            getTestSourceRoots()),
+                    new String[] {
+                            ProjectProperties.PLATFORM_ACTIVE
+            }),
             //UNKNOWN FOR MODULAR PROJECT
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod
 //            new J2SEPersistenceProvider(this, cpProvider),
-//            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, platformChangedHook, J2SEProjectUtil.getBreakableProperties(this), new String[]{ProjectProperties.PLATFORM_ACTIVE}),
 //            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
 //            J2SEFileWizardIterator.create()
         );
@@ -597,13 +608,6 @@ public final class J2SEModularProject implements Project {
 //        }
 //    }
 //
-//
-//    private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
-//        @Override
-//        public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
-//            J2SEProjectPlatformImpl.updateProjectXml(platform, updateHelper);
-//        }
-//    }
 //
     @NonNull
     private Runnable newStartMainUpdaterAction() {
@@ -833,6 +837,13 @@ public final class J2SEModularProject implements Project {
         @Override
         public PropertyEvaluator getPropertyEvaluator() {
             return this.eval;
+        }
+    }
+
+    private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
+        @Override
+        public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
+            ProjectPlatformImpl.updateProjectXml(platform, updateHelper);
         }
     }
 }
