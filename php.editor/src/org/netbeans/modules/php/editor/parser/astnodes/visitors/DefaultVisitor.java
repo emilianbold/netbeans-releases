@@ -322,8 +322,8 @@ public class DefaultVisitor implements Visitor {
 
     @Override
     public void visit(FormalParameter node) {
-        scan(node.getParameterName());
         scan(node.getParameterType());
+        scan(node.getParameterName());
         scan(node.getDefaultValue());
     }
 
