@@ -65,13 +65,17 @@ public final class FixProjectSourceLevel extends javax.swing.JPanel {
     public FixProjectSourceLevel(
             @NonNull final String type,
             @NonNull final SpecificationVersion minVersion,
-            @NonNull final SpecificationVersion platformVersion) {
+            @NonNull final SpecificationVersion platformVersion,
+            @NonNull final SpecificationVersion minProjectSupportedVersion) {
         Parameters.notNull("type", type);
         Parameters.notNull("minVersion", minVersion);
+        Parameters.notNull("minProjectSupportedVersion", minProjectSupportedVersion);
         this.platformVersion = platformVersion;
-        this.minVersion = minVersion;
+        this.minVersion =  minVersion.compareTo(minProjectSupportedVersion) < 0 ?
+                minProjectSupportedVersion :
+                minVersion;
         initComponents();
-        postInit(type, minVersion);
+        postInit(type, minVersion, platformVersion.compareTo(minProjectSupportedVersion)>=0);
     }
 
 
@@ -180,10 +184,12 @@ public final class FixProjectSourceLevel extends javax.swing.JPanel {
 
     private void postInit(
             @NonNull String type,
-            @NonNull SpecificationVersion minVersion) {
+            @NonNull SpecificationVersion minVersion,
+            final boolean allowDowngrade) {
         useOtherPlatform.setSelected(true);
         platforms.setModel(new PlatformModel(type, minVersion));
         platforms.setRenderer(new PlatformRenderer());
+        downgradeLevel.setEnabled(allowDowngrade);
     }
 
 

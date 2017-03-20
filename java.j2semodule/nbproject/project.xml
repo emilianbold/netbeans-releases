@@ -149,7 +149,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.69</specification-version>
+                        <specification-version>1.74</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
