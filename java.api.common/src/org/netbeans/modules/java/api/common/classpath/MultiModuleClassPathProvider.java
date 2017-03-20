@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -947,6 +948,47 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         return res;
     }
 
+    public String[] getPropertyName (SourceGroup sg, String type) {
+        FileObject root = sg.getRootFolder();
+        Owner fOwner = getOwner(root);
+        if (fOwner == null) {
+            return null;
+        }
+        if (sourceCache.getModules().getModuleName(root) != null) {
+            switch (type) {
+                case ClassPath.COMPILE:
+                    return javacClassPath;
+                case ClassPath.EXECUTE:
+                    return executeClassPath;
+                case JavaClassPathConstants.PROCESSOR_PATH:
+                    return processorClassPath;
+                case JavaClassPathConstants.MODULE_CLASS_PATH:
+                    return modulePath;
+                case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                    return executeModulePath;
+                default:
+                    return null;
+            }
+        }
+        if (testCache.getModules().getModuleName(root) != null) {
+            switch (type) {
+                case ClassPath.COMPILE:
+                    return testJavacClassPath;
+                case ClassPath.EXECUTE:
+                    return testExecuteClassPath;
+                case JavaClassPathConstants.PROCESSOR_PATH:
+                    return testProcessorClassPath;
+                case JavaClassPathConstants.MODULE_CLASS_PATH:
+                    return testModulePath;
+                case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                    return testExecuteModulePath;
+                default:
+                    return null;
+            }
+        }
+        return null;
+    }
+    
     @Override
     public ClassPath[] getProjectClassPaths(String type) {
         return ProjectManager.mutex().readAccess(() -> {

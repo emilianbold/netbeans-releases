@@ -109,6 +109,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectModulesModifier">
+            <api name="java_project"/>
+            <summary>Added a SPI to manipulate with project's <code>module-info.java</code> declarations</summary>
+            <version major="1" minor="70"/>
+            <date day="16" month="3" year="2017"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added a SPI interface, which should be implemented on project to provide backwards compatibility for
+                <code>ProjectClassPathModifier</code> for modular projects. 
+            </description>
+            <class package="org.netbeans.spi.java.project.classpath" name="ProjectModulesModifier"/>
+        </change>
         <change id="CompilerOptionsQueryMerger">
             <api name="java_project"/>
             <summary>Added a <code>LookupMerger</code> for <code>CompilerOptionsQueryImplementation</code>s</summary>
