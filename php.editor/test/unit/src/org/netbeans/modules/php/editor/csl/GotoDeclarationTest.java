@@ -1560,6 +1560,78 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "public function testInterfaceParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestInterf^ace $testInterface);", "interface ^TestInterface {}");
     }
 
+    public void testMultiCatch_01() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (Exceptio^nType1 | ExceptionType2 $ex) {", "class ^ExceptionType1 extends \\Exception {");
+    }
+
+    public void testMultiCatch_02() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (ExceptionType1 | ExceptionT^ype2 $ex) {", "class ^ExceptionType2 extends \\Exception {");
+    }
+
+    public void testMultiCatch_03() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (^ExceptionType3 $ex) {", "class ^ExceptionType3 extends \\Exception {");
+    }
+
+    public void testMultiCatch_04() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (E^xceptionType1 | ExceptionType2 | ExceptionType3 $ex) {", "class ^ExceptionType1 extends \\Exception {");
+    }
+
+    public void testMultiCatch_05() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (ExceptionType1 | ^ExceptionType2 | ExceptionType3 $ex) {", "class ^ExceptionType2 extends \\Exception {");
+    }
+
+    public void testMultiCatch_06() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (ExceptionType1 | ExceptionType2 | ExceptionTyp^e3 $ex) {", "class ^ExceptionType3 extends \\Exception {");
+    }
+
+    public void testMultiCatch_07() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (ExceptionTyp^e1 $ex) {", "class ^ExceptionType1 extends \\Exception {");
+    }
+
+    public void testMultiCatch_08() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (Exceptio^nType2 | ExceptionType3 $ex) {", "class ^ExceptionType2 extends \\Exception {");
+    }
+
+    public void testMultiCatch_09() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (ExceptionType2 | Excepti^onType3 $ex) {", "class ^ExceptionType3 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_01() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\Exceptio^nType1 | \\Test\\Sub\\ExceptionType2 $ex) {", "class ^ExceptionType1 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_02() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\ExceptionT^ype2 $ex) {", "class ^ExceptionType2 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_03() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\^ExceptionType3 $ex) {", "class ^ExceptionType3 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_04() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\E^xceptionType1 | \\Test\\Sub\\ExceptionType2 | \\Test\\Sub\\ExceptionType3 $ex) {", "class ^ExceptionType1 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_05() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\^ExceptionType2 | \\Test\\Sub\\ExceptionType3 $ex) {", "class ^ExceptionType2 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_06() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\ExceptionType2 | \\Test\\Sub\\ExceptionTyp^e3 $ex) {", "class ^ExceptionType3 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_07() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\ExceptionTyp^e1 $ex) {", "class ^ExceptionType1 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_08() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\Exceptio^nType2 | \\Test\\Sub\\ExceptionType3 $ex) {", "class ^ExceptionType2 extends \\Exception {");
+    }
+
+    public void testMultiCatchFQN_09() throws Exception {
+        checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType2 | \\Test\\Sub\\Excepti^onType3 $ex) {", "class ^ExceptionType3 extends \\Exception {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

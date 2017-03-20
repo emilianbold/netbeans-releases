@@ -2044,6 +2044,102 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "public function testInterfaceParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestInter^face $testInterface);", true);
     }
 
+    public void testMultiCatch_01() throws Exception {
+        checkOccurrences(getTestPath(), "class ^ExceptionType1 extends \\Exception {", true);
+    }
+
+    public void testMultiCatch_02() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (Exceptio^nType1 | ExceptionType2 $ex) {", true);
+    }
+
+    public void testMultiCatch_03() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (Except^ionType1 | ExceptionType2 | ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatch_04() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (Excepti^onType1 $ex) {", true);
+    }
+
+    public void testMultiCatch_05() throws Exception {
+        checkOccurrences(getTestPath(), "class Exceptio^nType2 extends \\Exception {", true);
+    }
+
+    public void testMultiCatch_06() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (ExceptionType1 | ^ExceptionType2 $ex) {", true);
+    }
+
+    public void testMultiCatch_07() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (ExceptionType1 | Exc^eptionType2 | ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatch_08() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (Exceptio^nType2 | ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatch_09() throws Exception {
+        checkOccurrences(getTestPath(), "class Ex^ceptionType3 extends \\Exception {", true);
+    }
+
+    public void testMultiCatch_10() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (^ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatch_11() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (ExceptionType1 | ExceptionType2 | Exceptio^nType3 $ex) {", true);
+    }
+
+    public void testMultiCatch_12() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (ExceptionType2 | ^ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_01() throws Exception {
+        checkOccurrences(getTestPath(), "class ^ExceptionType1 extends \\Exception {", true);
+    }
+
+    public void testMultiCatchFQN_02() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\Exceptio^nType1 | \\Test\\Sub\\ExceptionType2 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_03() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\Except^ionType1 | \\Test\\Sub\\ExceptionType2 | \\Test\\Sub\\ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_04() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\Excepti^onType1 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_05() throws Exception {
+        checkOccurrences(getTestPath(), "class Exceptio^nType2 extends \\Exception {", true);
+    }
+
+    public void testMultiCatchFQN_06() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\^ExceptionType2 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_07() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\Exc^eptionType2 | \\Test\\Sub\\ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_08() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\Exceptio^nType2 | \\Test\\Sub\\ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_09() throws Exception {
+        checkOccurrences(getTestPath(), "class Ex^ceptionType3 extends \\Exception {", true);
+    }
+
+    public void testMultiCatchFQN_10() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\^ExceptionType3 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_11() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType1 | \\Test\\Sub\\ExceptionType2 | \\Test\\Sub\\Exceptio^nType3 $ex) {", true);
+    }
+
+    public void testMultiCatchFQN_12() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType2 | \\Test\\Sub\\^ExceptionType3 $ex) {", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
