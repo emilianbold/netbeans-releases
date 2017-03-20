@@ -203,7 +203,7 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             // sun.misc.Cleaner in JDK8
             // java.lang.ref.Cleaner in JDK9
             Object cleaner = cleanerMethod.invoke(buffer);
-            Method cleanMethod = cleaner.getClass().getMethod("clean");
+            Method cleanMethod = cleaner.getClass().getMethod("clean"); //NOI18N
             cleanMethod.setAccessible(true);
             cleanMethod.invoke(cleaner);
         } catch (Throwable e) {
