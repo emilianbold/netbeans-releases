@@ -1907,6 +1907,143 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "const S^UB = [\"sub\" => \"sub\"];", true);
     }
 
+    // PHP7.1
+    public void testNullableTypes_01() throws Exception {
+        checkOccurrences(getTestPath(), "class TestC^lass {}", true);
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        checkOccurrences(getTestPath(), "function testReturnType(): ?Test^Class {", true);
+    }
+
+    public void testNullableTypes_03() throws Exception {
+        checkOccurrences(getTestPath(), "function testParameterType(?TestCl^ass $testClass, ?TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_04() throws Exception {
+        checkOccurrences(getTestPath(), "public function testClassReturnType(): ?TestC^lass {", true);
+    }
+
+    public void testNullableTypes_05() throws Exception {
+        checkOccurrences(getTestPath(), "public function testClassParameterType(?TestCl^ass $testClass, ?TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_06() throws Exception {
+        checkOccurrences(getTestPath(), "public static function testStaticClassParameterType(?TestC^lass $testClass, ?TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_07() throws Exception {
+        checkOccurrences(getTestPath(), "public function testTraitReturnType(): ?Tes^tClass {", true);
+    }
+
+    public void testNullableTypes_08() throws Exception {
+        checkOccurrences(getTestPath(), "public function testTraitParameterType(?TestC^lass $testClass, ?TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_09() throws Exception {
+        checkOccurrences(getTestPath(), "public function testInterfaceReturnType(): ?TestCl^ass;", true);
+    }
+
+    public void testNullableTypes_10() throws Exception {
+        checkOccurrences(getTestPath(), "public function testInterfaceParameterType(?TestC^lass $testClass, ?TestInterface $testInterface);", true);
+    }
+
+    public void testNullableTypes_11() throws Exception {
+        checkOccurrences(getTestPath(), "interface TestInterfa^ce {}", true);
+    }
+
+    public void testNullableTypes_12() throws Exception {
+        checkOccurrences(getTestPath(), "function testParameterType(?TestClass $testClass, ?TestInte^rface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_13() throws Exception {
+        checkOccurrences(getTestPath(), "public function testClassParameterType(?TestClass $testClass, ?TestIn^terface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_14() throws Exception {
+        checkOccurrences(getTestPath(), "public static function testStaticClassReturnType(): ?TestIn^terface {", true);
+    }
+
+    public void testNullableTypes_15() throws Exception {
+        checkOccurrences(getTestPath(), "public static function testStaticClassParameterType(?TestClass $testClass, ?TestInt^erface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_16() throws Exception {
+        checkOccurrences(getTestPath(), "public function testTraitParameterType(?TestClass $testClass, ?TestInt^erface $testInterface) {", true);
+    }
+
+    public void testNullableTypes_17() throws Exception {
+        checkOccurrences(getTestPath(), "public function testInterfaceParameterType(?TestClass $testClass, ?TestInter^face $testInterface);", true);
+    }
+
+    public void testNullableTypesFQN_01() throws Exception {
+        checkOccurrences(getTestPath(), "class TestC^lass {}", true);
+    }
+
+    public void testNullableTypesFQN_02() throws Exception {
+        checkOccurrences(getTestPath(), "function testReturnType(): ?\\Test\\Sub\\Test^Class {", true);
+    }
+
+    public void testNullableTypesFQN_03() throws Exception {
+        checkOccurrences(getTestPath(), "function testParameterType(?\\Test\\Sub\\TestCl^ass $testClass, ?\\Test\\Sub\\TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_04() throws Exception {
+        checkOccurrences(getTestPath(), "public function testClassReturnType(): ?\\Test\\Sub\\TestC^lass {", true);
+    }
+
+    public void testNullableTypesFQN_05() throws Exception {
+        checkOccurrences(getTestPath(), "public function testClassParameterType(?\\Test\\Sub\\TestCl^ass $testClass, ?\\Test\\Sub\\TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_06() throws Exception {
+        checkOccurrences(getTestPath(), "public static function testStaticClassParameterType(?\\Test\\Sub\\TestC^lass $testClass, ?\\Test\\Sub\\TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_07() throws Exception {
+        checkOccurrences(getTestPath(), "public function testTraitReturnType(): ?\\Test\\Sub\\Tes^tClass {", true);
+    }
+
+    public void testNullableTypesFQN_08() throws Exception {
+        checkOccurrences(getTestPath(), "public function testTraitParameterType(?\\Test\\Sub\\TestC^lass $testClass, ?\\Test\\Sub\\TestInterface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_09() throws Exception {
+        checkOccurrences(getTestPath(), "public function testInterfaceReturnType(): ?\\Test\\Sub\\TestCl^ass;", true);
+    }
+
+    public void testNullableTypesFQN_10() throws Exception {
+        checkOccurrences(getTestPath(), "public function testInterfaceParameterType(?\\Test\\Sub\\TestC^lass $testClass, ?\\Test\\Sub\\TestInterface $testInterface);", true);
+    }
+
+    public void testNullableTypesFQN_11() throws Exception {
+        checkOccurrences(getTestPath(), "interface TestInterfa^ce {}", true);
+    }
+
+    public void testNullableTypesFQN_12() throws Exception {
+        checkOccurrences(getTestPath(), "function testParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestInte^rface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_13() throws Exception {
+        checkOccurrences(getTestPath(), "public function testClassParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestIn^terface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_14() throws Exception {
+        checkOccurrences(getTestPath(), "public static function testStaticClassReturnType(): ?\\Test\\Sub\\TestIn^terface {", true);
+    }
+
+    public void testNullableTypesFQN_15() throws Exception {
+        checkOccurrences(getTestPath(), "public static function testStaticClassParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestInt^erface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_16() throws Exception {
+        checkOccurrences(getTestPath(), "public function testTraitParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestInt^erface $testInterface) {", true);
+    }
+
+    public void testNullableTypesFQN_17() throws Exception {
+        checkOccurrences(getTestPath(), "public function testInterfaceParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestInter^face $testInterface);", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
