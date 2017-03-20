@@ -213,9 +213,7 @@ public final class J2SEModularProject implements Project {
             public String getClassPathProperty(SourceGroup sg, String type) {
                 assert sg != null : "SourceGroup cannot be null";  //NOI18N
                 assert type != null : "Type cannot be null";  //NOI18N
-//              TODO: Commented as wery strange for Multi-Module project
-//                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
-                String[] classPathProperty = null;
+                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
                 if (classPathProperty == null || classPathProperty.length == 0) {
                     throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
