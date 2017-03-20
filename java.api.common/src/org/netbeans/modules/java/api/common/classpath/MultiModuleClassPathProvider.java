@@ -962,7 +962,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     return executeClassPath;
                 case JavaClassPathConstants.PROCESSOR_PATH:
                     return processorClassPath;
-                case JavaClassPathConstants.MODULE_CLASS_PATH:
+                case JavaClassPathConstants.MODULE_COMPILE_PATH:
                     return modulePath;
                 case JavaClassPathConstants.MODULE_EXECUTE_PATH:
                     return executeModulePath;
@@ -978,7 +978,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     return testExecuteClassPath;
                 case JavaClassPathConstants.PROCESSOR_PATH:
                     return testProcessorClassPath;
-                case JavaClassPathConstants.MODULE_CLASS_PATH:
+                case JavaClassPathConstants.MODULE_COMPILE_PATH:
                     return testModulePath;
                 case JavaClassPathConstants.MODULE_EXECUTE_PATH:
                     return testExecuteModulePath;
