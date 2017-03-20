@@ -45,35 +45,37 @@
 package org.netbeans.modules.java.j2semodule.ui.customizer;
 
 import java.awt.Dimension;
-import java.util.LinkedList;
 import javax.swing.Box;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
+//import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 
 /** Customizer for general project attributes.
  */
 public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
     private J2SEModularProject project;
-    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
+//    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
     
     public CustomizerJar( J2SEModularProjectProperties uiProperties ) {
         initComponents();
+        
+        // NOT APPLICABLE FOR J2SEMODULARPROJECT
+        distDirLabel.setVisible(false);
+        distDirField.setVisible(false);
+        copyLibs.setVisible(false);
 
         int nextExtensionYPos = 0;
         this.project = uiProperties.getProject();
-        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
-            if( compProvider.getCategory() == J2SECategoryExtensionProvider.ExtensibleCategory.PACKAGING ) {
-                if( addExtPanel(project,compProvider,nextExtensionYPos) ) {
-                    compProviders.add(compProvider);
-                    nextExtensionYPos++;
-                }
-            }
-        }
+//        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
+//            if( compProvider.getCategory() == J2SECategoryExtensionProvider.ExtensibleCategory.PACKAGING ) {
+//                if( addExtPanel(project,compProvider,nextExtensionYPos) ) {
+//                    compProviders.add(compProvider);
+//                    nextExtensionYPos++;
+//                }
+//            }
+//        }
         addPanelFiller(nextExtensionYPos);
         
         distDirField.setDocument(uiProperties.DIST_JAR_MODEL);
@@ -216,21 +218,21 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     private javax.swing.JPanel mainPanel;
     // End of variables declaration//GEN-END:variables
 
-    private boolean addExtPanel(Project p, J2SECategoryExtensionProvider compProvider, int gridY) {
-        if (compProvider != null) {
-            JComponent comp = compProvider.createComponent(p, null);
-            if (comp != null) {
-                java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
-                constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-                constraints.gridx = 0;
-                constraints.gridy = gridY;
-                constraints.weightx = 1.0;
-                extPanel.add(comp, constraints);
-                return true;
-            }
-        }
-        return false;
-    }
+//    private boolean addExtPanel(Project p, J2SECategoryExtensionProvider compProvider, int gridY) {
+//        if (compProvider != null) {
+//            JComponent comp = compProvider.createComponent(p, null);
+//            if (comp != null) {
+//                java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
+//                constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+//                constraints.gridx = 0;
+//                constraints.gridy = gridY;
+//                constraints.weightx = 1.0;
+//                extPanel.add(comp, constraints);
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     private void addPanelFiller(int gridY) {
         java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();

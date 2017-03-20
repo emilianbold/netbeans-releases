@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.java.j2semodule.ui.customizer;
 
-import org.netbeans.modules.java.j2seproject.api.J2SECustomPropertySaver;
+//import org.netbeans.modules.java.j2seproject.api.J2SECustomPropertySaver;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
@@ -56,7 +56,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -201,9 +200,9 @@ public class CustomizerProviderImpl implements CustomizerProvider3, ProjectShara
         
         public void actionPerformed(ActionEvent e) {
             uiProperties.save();
-            for (J2SECustomPropertySaver saver : project.getLookup().lookupAll(J2SECustomPropertySaver.class)) {
-                saver.save(project);
-            }
+//            for (J2SECustomPropertySaver saver : project.getLookup().lookupAll(J2SECustomPropertySaver.class)) {
+//                saver.save(project);
+//            }
         }
     }
     
