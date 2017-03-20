@@ -255,7 +255,7 @@ public class ElfReader extends ByteStreamReader {
                 //libhello3lib_dll_iname (mingw and cygwin start to use without _)
                 if (string.endsWith("_dll_iname")) { //NOI18N
                     String lib = string.substring(0,string.length()-10)+".dll"; //NOI18N
-                    if (string.startsWith("_")) {
+                    if (string.startsWith("_")) { //NOI18N
                         lib = lib.substring(1);
                     }
                     sharedLibraries.addDll(lib);
