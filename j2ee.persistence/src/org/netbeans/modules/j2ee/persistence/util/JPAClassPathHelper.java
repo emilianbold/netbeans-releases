@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.persistence.util;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +66,11 @@ public class JPAClassPathHelper {
     private final Set<ClassPath> boot;
     private final Set<ClassPath> compile;
     private final Set<ClassPath> source;
+
+    private Set<ClassPath> moduleBoot;
+    private Set<ClassPath> moduleCompile;
+    private Set<ClassPath> moduleClass;
+    private Set<ClassPath> moduleSource;
     
     /**
      * Creates a new JPAClassPathHelper. 
@@ -82,6 +88,37 @@ public class JPAClassPathHelper {
         this.source = new HashSet<ClassPath>(source);
     }
     
+    public JPAClassPathHelper setModuleBootPaths(Set<ClassPath> moduleBoot) {
+        if (moduleBoot == null) {
+            moduleBoot = Collections.emptySet();
+        }
+        this.moduleBoot = moduleBoot;
+        return this;
+    }
+
+    public JPAClassPathHelper setModuleCompilePaths(Set<ClassPath> moduleCompile) {
+        if (moduleCompile == null) {
+            moduleCompile = Collections.emptySet();
+        }
+        this.moduleCompile = moduleCompile;
+        return this;
+    }
+
+    public JPAClassPathHelper setModuleClassPaths(Set<ClassPath> moduleClass) {
+        if (moduleClass == null) {
+            moduleClass = Collections.emptySet();
+        }
+        this.moduleClass = moduleClass;
+        return this;
+    }
+
+    public JPAClassPathHelper setModuleSourcePaths(Set<ClassPath> moduleSource) {
+        if (moduleSource == null) {
+            moduleSource = Collections.emptySet();
+        }
+        this.moduleSource = moduleSource;
+        return this;
+    }
     /**
      * Creates a ClassPathInfo (based on our class paths) that can be used for generating entities.
      * Ensures that the compile class path has the Java Persistence API present by checking
@@ -100,11 +137,14 @@ public class JPAClassPathHelper {
             throw new IllegalStateException("Cannot find a Java Persistence API library"); // NOI18N
         }
         
-        return ClasspathInfo.create(
-                createProxyClassPath(boot),
-                createProxyClassPath(compile),
-                createProxyClassPath(source)
-                );
+        return new ClasspathInfo.Builder(createProxyClassPath(boot))
+                .setModuleBootPath(createProxyClassPath(moduleBoot))
+                .setClassPath(createProxyClassPath(compile))
+                .setModuleCompilePath(createProxyClassPath(moduleCompile))
+                .setModuleClassPath(createProxyClassPath(moduleClass))
+                .setSourcePath(createProxyClassPath(source))
+                .setModuleSourcePath(createProxyClassPath(moduleSource))
+                .build();
     }
     
     /**
@@ -141,6 +181,6 @@ public class JPAClassPathHelper {
     
     
     private ClassPath createProxyClassPath(Set<ClassPath> classPaths) {
-        return ClassPathSupport.createProxyClassPath(classPaths.toArray(new ClassPath[classPaths.size()]));
+        return classPaths.isEmpty() ? ClassPath.EMPTY : ClassPathSupport.createProxyClassPath(classPaths.toArray(new ClassPath[classPaths.size()]));
     }
 }
