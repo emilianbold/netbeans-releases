@@ -254,6 +254,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             ClassPath.COMPILE,
             ClassPath.EXECUTE,
             JavaClassPathConstants.COMPILE_ONLY,
+            JavaClassPathConstants.MODULE_COMPILE_PATH,
+            JavaClassPathConstants.MODULE_EXECUTE_PATH,
             JavaClassPathConstants.PROCESSOR_PATH
         };
     }
@@ -379,7 +381,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
     }
     
     private static String findScope(SourceGroup grp, String type) {
-        String scope = ClassPath.EXECUTE.equals(type) ? Artifact.SCOPE_RUNTIME : null; //NOI18N
+        String scope = ClassPath.EXECUTE.equals(type) || JavaClassPathConstants.MODULE_EXECUTE_PATH.equals(type)? Artifact.SCOPE_RUNTIME : null; //NOI18N
         //figure if we deal with test or regular sources.
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
