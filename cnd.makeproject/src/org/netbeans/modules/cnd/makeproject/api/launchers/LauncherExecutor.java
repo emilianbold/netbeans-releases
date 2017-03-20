@@ -39,9 +39,12 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.launchers;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -50,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -58,9 +62,15 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.UIGesturesSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -185,10 +195,14 @@ public final class LauncherExecutor {
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         Map<String, String> env = launcher.getEnv();    //Environment
         Env e = new Env();
-        if (env != null) {
+        if (env != null && !env.isEmpty()) {
+            MacroConverter converter = new MacroConverter(conf.getDevelopmentHost().getExecutionEnvironment());
             env.keySet().forEach((key) -> {
                 String value = env.get(key);
                 value = preprocessValueField(value, conf);
+                if (value.indexOf('$')>=0) {
+                    value = converter.expand(value);
+                }
                 e.putenv(key, value);
             });
         }
@@ -242,10 +256,14 @@ public final class LauncherExecutor {
             profile.setRunDir(runDir);
             Map<String, String> env = launcher.getEnv();    //Environment
             Env e = new Env();
-            if (env != null) {
+            if (env != null && !env.isEmpty()) {
+                MacroConverter converter = new MacroConverter(conf.getDevelopmentHost().getExecutionEnvironment());
                 env.keySet().forEach((key) -> {
                     String value = env.get(key);
                     value = preprocessValueField(value, conf);
+                    if (value.indexOf('$')>=0) {
+                        value = converter.expand(value);
+                    }
                     e.putenv(key, value);
                 });
             }
@@ -340,5 +358,43 @@ public final class LauncherExecutor {
         }
                 
     }
+    
+    private static final class MacroConverter {
+
+        private final MacroExpanderFactory.MacroExpander expander;
+        private final Map<String, String> envVariables;
+        private String homeDir;
+
+        public MacroConverter(ExecutionEnvironment env) {
+            envVariables = new HashMap<>();
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    envVariables.putAll(hostInfo.getEnvironment());
+                    homeDir = hostInfo.getUserDir();
+                } catch (IOException | ConnectionManager.CancellationException ex) {
+                    // should never == null occur if isHostInfoAvailable(env) => report
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                LOG.log(Level.INFO, "Host info should be available here!", new Exception());
+            }
+            TempEnv.getInstance(env).addTemporaryEnv(envVariables);
+            this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);
+        }
+
+        public String expand(String in) {
+            try {
+                if (in.startsWith("~") && homeDir != null) { //NOI18N
+                    in = homeDir+in.substring(1);
+                }
+                return expander != null ? expander.expandMacros(in, envVariables) : in;
+            } catch (ParseException ex) {
+                //nothing to do
+            }
+            return in;
+        }
+    }
+
 
 }
