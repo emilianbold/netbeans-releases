@@ -102,10 +102,10 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         "LBL_ExecutionFinished=Execution finished after {0,number,0.###} s, {1,choice,0#no errors|1#1 error|1.0<{1,number,integer} errors} occurred."})
     public void finish(long executionTime) {
         try (OutputWriter writer = inputOutput.getOut()) {
+            writer.println(""); // NOI18N
             writer.println(LBL_ExecutionFinished(
                     executionTime / 1000d,
                     errorCount));
-            writer.println(""); // NOI18N
         }
         inputOutput.select();
     }
@@ -124,15 +124,20 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
     }
 
     private void logWarnings(SQLExecutionResult result) {
-        try (OutputWriter writer = inputOutput.getOut()) {
-            for(SQLWarning s: result.getWarnings()) {
-                writeSQLWarning(s, writer);
+        if (!result.getWarnings().isEmpty()) {
+            try (OutputWriter writer = inputOutput.getOut()) {
+                for (SQLWarning s : result.getWarnings()) {
+                    writeSQLWarning(s, writer);
+                }
+
+                writer.println(""); // NOI18N
             }
-            
-            writer.println(""); // NOI18N
         }
     }
     
+    @NbBundle.Messages({
+        "# {0} - execution time",
+        "LBL_ExecutionFailed=Failed in {0,number,0.###} s."})
     private void logException(SQLExecutionResult result) {
         errorCount++;
 
@@ -142,6 +147,8 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         }
 
         try (OutputWriter writer = inputOutput.getErr()) {
+            startLineColumn(writer, result, Bundle.LBL_ExecutionFailed(result.getExecutionTime() / 1000d));
+
             for(Throwable e: result.getExceptions()) {
                 if (e instanceof SQLException) {
                     writeSQLException((SQLException)e, writer);
@@ -204,7 +211,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         "LBL_ExecutedSuccessfullyTime=Executed successfully in {0,number,0.###} s."})
     private void logSuccess(SQLExecutionResult result) {
         try (OutputWriter writer = inputOutput.getOut()) {
-            writer.println(LBL_ExecutedSuccessfullyTime(result.getExecutionTime() / 1000d));
+            startLineColumn(writer, result, LBL_ExecutedSuccessfullyTime(result.getExecutionTime() / 1000d));
             
             List<Integer> updateCounts = result.getUpdateCounts();
             List<Long> fetchTimes = result.getFetchTimes();
@@ -219,11 +226,23 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
                     writer.println(LBL_ExecutedFetchTime(fetchTime / 1000d));
                 }
             }
-            printLineColumn(writer, result, false);
             writer.println(""); // NOI18N
         }
     }
 
+    private void startLineColumn(OutputWriter writer, SQLExecutionResult result, String message) {
+        int line = result.getStatementInfo().getStartLine();
+        int col = result.getStatementInfo().getStartColumn();
+        String text = String.format("[%d:%d] %s", line + 1, col + 1, message);
+        Hyperlink link = new Hyperlink(line, col);
+        
+        try {
+            writer.println(text, link);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+    
     @NbBundle.Messages({
         "# {0} - line number", 
         "# {1} - column number", 
@@ -233,7 +252,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         int errLine = errorCoords[0];
         int errCol = errorCoords[1];
         
-        String lineColumn = LBL_LineColumn(errLine + 1, errCol + 1);
+        String lineColumn = "  " + LBL_LineColumn(errLine + 1, errCol + 1);
 
         try {
             if (hyperlink) {
