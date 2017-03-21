@@ -980,7 +980,7 @@ public final class ProxyFileManager implements JavaFileManager {
                     peersMap.getOrDefault(moduleCompile, ROOT_TO_COLLECTION),
                     sourceLevel,
                     StandardLocation.MODULE_PATH,
-                    true);
+                    false);
             }
             return emitted[USER_MODULES];
         }
