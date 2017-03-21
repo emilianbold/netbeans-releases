@@ -39,11 +39,15 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
+import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -108,8 +112,70 @@ final class MultiModuleAntArtifactProvider implements AntArtifactProvider {
                     buildTarget,
                     cleanTarget,
                     ProjectProperties.BUILD_SCRIPT);
-            artifacts.add(artifact);
+            artifacts.add(new ModuleIdDecorator(modName, artifact));
         }
         return artifacts.toArray(new AntArtifact[artifacts.size()]);
+    }
+
+    private static final class ModuleIdDecorator extends AntArtifact {
+        private final String moduleName;
+        private final AntArtifact delegate;
+
+        ModuleIdDecorator(
+                String moduleName,
+                AntArtifact delegate) {
+            Parameters.notNull("moduleName", moduleName);   //NOI18N
+            Parameters.notNull("delegate", delegate);   //NOI18N
+            this.moduleName = moduleName;
+            this.delegate = delegate;
+        }
+
+        @Override
+        public String getType() {
+            return delegate.getType();
+        }
+
+        @Override
+        public File getScriptLocation() {
+            return delegate.getScriptLocation();
+        }
+
+        @Override
+        public String getTargetName() {
+            return delegate.getTargetName();
+        }
+
+        @Override
+        public String getCleanTargetName() {
+            return delegate.getCleanTargetName();
+        }
+
+        @Override
+        public URI[] getArtifactLocations() {
+            return delegate.getArtifactLocations();
+        }
+
+        @Override
+        public URI getArtifactLocation() {
+            return delegate.getArtifactLocation();
+        }
+
+        @Override
+        public Project getProject() {
+            return delegate.getProject();
+        }
+
+        @Override
+        public Properties getProperties() {
+            return delegate.getProperties();
+        }
+
+        @Override
+        public String getID() {
+            return String.format(
+                    "%s.%s",    //NOI18N
+                    moduleName,
+                    super.getID());
+        }
     }
 }
