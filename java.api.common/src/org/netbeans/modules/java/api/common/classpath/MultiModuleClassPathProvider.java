@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -945,6 +946,45 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                 "Result: ",   //NOI18N
                 res);
         return res;
+    }
+
+    @Override
+    public String[] getPropertyName (SourceGroup sg, String type) {
+        FileObject root = sg.getRootFolder();
+        final Owner fOwner = getOwner(root);
+        if (fOwner == null) {
+            return null;
+        } else if (fOwner.isTest()) {
+            switch (type) {
+                case ClassPath.COMPILE:
+                    return testJavacClassPath;
+                case ClassPath.EXECUTE:
+                    return testExecuteClassPath;
+                case JavaClassPathConstants.PROCESSOR_PATH:
+                    return testProcessorClassPath;
+                case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                    return testModulePath;
+                case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                    return testExecuteModulePath;
+                default:
+                    return null;
+            }
+        } else {
+            switch (type) {
+                case ClassPath.COMPILE:
+                    return javacClassPath;
+                case ClassPath.EXECUTE:
+                    return executeClassPath;
+                case JavaClassPathConstants.PROCESSOR_PATH:
+                    return processorClassPath;
+                case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                    return modulePath;
+                case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                    return executeModulePath;
+                default:
+                    return null;
+            }
+        }
     }
 
     @Override

@@ -48,6 +48,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.util.Parameters;
 
@@ -108,6 +109,16 @@ public abstract class AbstractClassPathProvider implements ClassPathProvider {
      */
     @CheckForNull
     public abstract ClassPath[] getProjectClassPaths(@NonNull final String type);
+
+    /**
+     * Returns the names of path properties storing the path type for given {@link SourceGroup}.
+     * @param sg the {@link SourceGroup} to return the properties for
+     * @param type the {@link ClassPath} type
+     * @return the property names or null when the type is not supported or given {@link SourceGroup} is unknown.
+     * @since 1.113
+     */
+    @CheckForNull
+    public abstract String[] getPropertyName (@NonNull SourceGroup sg, @NonNull String type);
 
     /**
      * Adds the {@link ClassPathsChangeListener}.

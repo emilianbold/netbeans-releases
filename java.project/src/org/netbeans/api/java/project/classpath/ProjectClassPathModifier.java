@@ -46,16 +46,26 @@ package org.netbeans.api.java.project.classpath;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.java.project.classpath.ProjectModulesModifier;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -63,6 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
 /**
@@ -73,6 +84,7 @@ import org.openide.util.Parameters;
  * @since org.netbeans.modules.java.project/1 1.10
  */
 public class ProjectClassPathModifier {
+    private static final Logger LOG = Logger.getLogger(ProjectClassPathModifier.class.getName());
     
     private ProjectClassPathModifier() {}
     
@@ -94,7 +106,10 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.addLibraries (libraries, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.addLibraries (libraries, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && 
+                    addRootsToModinfo(classPathType, projectArtifact, toURLs(libraries));
+            return r1 || r2;
         } else {
             boolean result = false;
             for (Library library : libraries) {
@@ -121,7 +136,10 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.removeLibraries (libraries, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.removeLibraries (libraries, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && 
+                    removeRootsFromModinfo(classPathType, projectArtifact, toURLs(libraries));
+            return r1 || r2;
         } else {
             throw new UnsupportedOperationException("Cannot remove libraries using " + extensible); // NOI18N
         }
@@ -146,7 +164,9 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.addRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.addRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && addRootsToModinfo(classPathType, projectArtifact, Arrays.asList(classPathRoots));
+            return r1 || r2;
         } else {
             boolean result = false;
             for (URL urlToAdd : classPathRoots) {
@@ -183,7 +203,10 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.addRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.addRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && 
+                            addRootsToModinfo(classPathType, projectArtifact, toURLs(Arrays.asList(classPathRoots)));
+            return r1 || r2;
         } else {
             boolean result = false;
             final Project project = FileOwnerQuery.getOwner(projectArtifact);
@@ -226,7 +249,10 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.removeRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.removeRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && 
+                    removeRootsFromModinfo(classPathType, projectArtifact, Arrays.asList(classPathRoots));
+            return r1 || r2;
         } else {
             throw new UnsupportedOperationException("Cannot remove roots from " + extensible); // NOI18N
         }
@@ -279,7 +305,10 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.addAntArtifacts (artifacts, artifactElements, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.addAntArtifacts (artifacts, artifactElements, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && 
+                            addRootsToModinfo(classPathType, projectArtifact, toURLs(Arrays.asList(artifactElements)));
+            return r1 || r2;
         } else {
             boolean result = false;
             for (int i=0; i< artifacts.length; i++) {
@@ -312,7 +341,10 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.addProjects (projects, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.addProjects (projects, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && 
+                            addRootsToModinfo(classPathType, projectArtifact, toURLs(projects));
+            return r1 || r2;
         } else {
             throw new UnsupportedOperationException("Cannot add project as dependency. Missing ProjectClassPathModifierImplementation service in project type.");
         }
@@ -339,7 +371,10 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            return ProjectClassPathModifierAccessor.INSTANCE.removeAntArtifacts (artifacts, artifactElements, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.removeAntArtifacts (artifacts, artifactElements, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r2 = !extensible.classPathType.equals(classPathType) && 
+                            removeRootsFromModinfo(classPathType, projectArtifact, toURLs(Arrays.asList(artifactElements)));
+            return r1 || r2;
         } else {
             throw new UnsupportedOperationException("Cannot remove artifacts from " + extensible); // NOI18N
         }
@@ -368,6 +403,10 @@ public class ProjectClassPathModifier {
             throw new UnsupportedOperationException("No project found to correspond to " + FileUtil.getFileDisplayName(projectArtifact)); // NOI18N
         }
         final ProjectClassPathModifierImplementation pm = project.getLookup().lookup(ProjectClassPathModifierImplementation.class);
+        final ProjectModulesModifier pmm = Lookup.getDefault().lookup(ProjectModulesModifier.class);
+        
+        String substModulePath = pmm == null ? null : pmm.provideModularClasspath(projectArtifact, classPathType);
+        final String _classPathType = substModulePath == null ? classPathType : substModulePath;
         if (pm != null) {            
             final SourceGroup[] sgs = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleSourceGroups(pm);
             assert sgs != null   : "Class: " + pm.getClass() + " returned null as source groups.";    //NOI18N
@@ -375,26 +414,33 @@ public class ProjectClassPathModifier {
                 if ((projectArtifact == sg.getRootFolder() || FileUtil.isParentOf(sg.getRootFolder(),projectArtifact)) && sg.contains(projectArtifact)) {
                     final String[] types = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleClassPathTypes(pm,sg);
                     assert types != null : "Class: " + pm.getClass() + " returned null as classpath types.";    //NOI18N
+                    boolean originalFound = false;
                     for (String type : types) {
-                        if (classPathType.equals(type)) {
-                            String label = "ProjectClassPathModifierImplementation for " + classPathType + " on " + FileUtil.getFileDisplayName(sg.getRootFolder()); // NOI18N
+                        if (_classPathType.equals(type)) {
+                            String label = "ProjectClassPathModifierImplementation for " + _classPathType + " on " + FileUtil.getFileDisplayName(sg.getRootFolder()); // NOI18N
                             return new Extensible(pm, sg, type,label);
+                        } else if (classPathType.equals(type)) {
+                            originalFound = true;
                         }
+                    }
+                    if (originalFound) {
+                        String label = "ProjectClassPathModifierImplementation for " + classPathType + " on " + FileUtil.getFileDisplayName(sg.getRootFolder()); // NOI18N
+                        return new Extensible(pm, sg, classPathType,label);
                     }
                 }
             }
             throw new UnsupportedOperationException("Project in " + FileUtil.getFileDisplayName(project.getProjectDirectory()) + " of " + project.getClass() +
-                    " has a ProjectClassPathModifierImplementation but it will not handle " + classPathType + " for " + FileUtil.getFileDisplayName(projectArtifact) +
+                    " has a ProjectClassPathModifierImplementation but it will not handle " + _classPathType + " for " + FileUtil.getFileDisplayName(projectArtifact) +
                     " extensible source groups: " + sourceGroupsToString(sgs)); // NOI18N
         } else {
             final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pe =
                     project.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
             if (pe != null) {
-                if (classPathType.equals(ClassPath.COMPILE)) {
+                if (_classPathType.equals(ClassPath.COMPILE)) {
                     return new Extensible(pe, "ProjectClassPathExtender for " + FileUtil.getFileDisplayName(project.getProjectDirectory())); // NOI18N
                 } else {
                     throw new UnsupportedOperationException("Project in " + FileUtil.getFileDisplayName(project.getProjectDirectory()) + " of " + project.getClass() +
-                            " has a ProjectClassPathExtender in its lookup but no ProjectClassPathModifierImplementation to handle " + classPathType); // NOI18N
+                            " has a ProjectClassPathExtender in its lookup but no ProjectClassPathModifierImplementation to handle " + _classPathType); // NOI18N
                 }
             } else {
                 throw new UnsupportedOperationException("Project in " + FileUtil.getFileDisplayName(project.getProjectDirectory()) + " of " + project.getClass() +
@@ -550,5 +596,62 @@ public class ProjectClassPathModifier {
             }
         };
     }
-
+    
+    private static Collection<URL> toURLs(Collection<URI> libs)  {
+        URL[] urls = new URL[libs.size()];
+        int index = 0;
+        for (URI u : libs) {
+            try {
+                urls[index++] = u.toURL();
+            } catch (MalformedURLException ex) {
+                return Collections.emptyList();
+            }
+        }
+        return Arrays.asList(urls);
+    }
+    
+    private static Collection<URL> toURLs(Project[] prjs) {
+        return
+            toURLs(
+            Arrays.asList(prjs).stream().flatMap(
+                (prj) -> Arrays.asList(
+                        AntArtifactQuery.findArtifactsByType(prj, JavaProjectConstants.ARTIFACT_TYPE_JAR)
+                ).stream()).
+                flatMap((a) -> Arrays.asList(a.getArtifactLocations()).stream()).
+                collect(Collectors.toList())
+            );
+    }
+    
+    private static Collection<URL> toURLs(Library[] libraries) {
+        return Arrays.stream(libraries).flatMap((l) -> l.getContent("classpath").stream()).
+                collect(Collectors.toList());
+    }
+    
+    private static boolean removeRootsFromModinfo(String originalPathType, FileObject artifact, Collection<URL> libs) {
+        ProjectModulesModifier pmm = Lookup.getDefault().lookup(ProjectModulesModifier.class);
+        if (pmm == null) {
+            return false;
+        } else {
+            try {
+                return pmm.removeRequiredModules(originalPathType, artifact, libs);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Could not remove module requires", ex);
+                return false;
+            }
+        }
+    }
+    
+    private static boolean addRootsToModinfo(String originalPathType, FileObject artifact, Collection<URL> libs) {
+        ProjectModulesModifier pmm = Lookup.getDefault().lookup(ProjectModulesModifier.class);
+        if (pmm == null) {
+            return false;
+        } else {
+            try {
+                return pmm.addRequiredModules(originalPathType, artifact, libs);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Could not declare module requires", ex);
+                return false;
+            }
+        }
+    }
 }

@@ -104,6 +104,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 bCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
@@ -119,6 +120,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 mvCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
@@ -137,6 +139,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 bCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
@@ -152,6 +155,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 mvCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
@@ -170,6 +174,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 bCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
@@ -185,6 +190,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 mvCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
@@ -203,6 +209,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 bCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         JavaFileManager.Location l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())
@@ -218,6 +225,7 @@ public class MRJARModuleFileManagerTest extends NbTestCase {
                 mvCp,
                 (u)->Collections.singleton(u),
                 Source.JDK1_9,
+                StandardLocation.MODULE_PATH,
                 false);
         l = StreamSupport.stream(fm.listLocationsForModules(StandardLocation.MODULE_PATH).spliterator(), true)
                 .flatMap((s)->s.stream())

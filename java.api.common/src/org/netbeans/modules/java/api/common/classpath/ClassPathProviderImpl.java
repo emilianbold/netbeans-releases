@@ -1315,7 +1315,8 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
             }
         }
     }
-    
+
+    @Override
     public String[] getPropertyName (SourceGroup sg, String type) {
         if (ClassPathSupport.ENDORSED.equals(type)) {
             return endorsedClasspath;
@@ -1324,40 +1325,38 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
         FileObject[] path = getPrimarySrcPath();
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
-                if (ClassPath.COMPILE.equals(type)) {
-                    return javacClasspath;
-                }
-                else if (ClassPath.EXECUTE.equals(type)) {
-                    return runClasspath;
-                }
-                else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
-                    return processorClasspath;
-                }
-                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
-                    return modulePath;
-                }
-                else {
-                    return null;
+                switch (type) {
+                    case ClassPath.COMPILE:
+                        return javacClasspath;
+                    case ClassPath.EXECUTE:
+                        return runClasspath;
+                    case JavaClassPathConstants.PROCESSOR_PATH:
+                        return processorClasspath;
+                    case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                        return modulePath;
+                    case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                        return moduleExecutePath;
+                    default:
+                        return null;
                 }
             }
         }
         path = getTestSrcDir();
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
-                if (ClassPath.COMPILE.equals(type)) {
-                    return javacTestClasspath;
-                }
-                else if (ClassPath.EXECUTE.equals(type)) {
-                    return runTestClasspath;
-                }
-                else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
-                    return processorTestClasspath;
-                }
-                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
-                    return testModulePath;
-                }
-                else {
-                    return null;
+                switch (type) {
+                    case ClassPath.COMPILE:
+                        return javacTestClasspath;
+                    case ClassPath.EXECUTE:
+                        return runTestClasspath;
+                    case JavaClassPathConstants.PROCESSOR_PATH:
+                        return processorTestClasspath;
+                    case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                        return testModulePath;
+                    case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                        return moduleExecutePath;
+                    default:
+                        return null;
                 }
             }
         }

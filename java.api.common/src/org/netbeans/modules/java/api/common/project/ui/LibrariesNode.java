@@ -128,6 +128,7 @@ import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.DefaultProjectModulesModifier;
 import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactItem;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
@@ -1187,53 +1188,7 @@ public final class LibrariesNode extends AbstractNode {
                                     .map((url) -> SourceUtils.getModuleName(url, true))
                                     .filter((name) -> name != null)
                                     .collect(Collectors.toSet());
-                            if (!modules.isEmpty()) {
-                                try {
-                                    final JavaSource js = JavaSource.forFileObject(moduleInfo);
-                                    if (js != null) {
-                                        js.runModificationTask((wc) -> {
-                                            wc.toPhase(JavaSource.Phase.PARSED);
-                                            final CompilationUnitTree cu = wc.getCompilationUnit();
-                                            final Set<DirectiveTree> toRemove = new HashSet<>();
-                                            final ModuleTree[] module = new ModuleTree[1];
-                                            cu.accept(
-                                                    new TreeScanner<Void, Set<DirectiveTree>>() {
-                                                        @Override
-                                                        public Void visitModule(final ModuleTree node, Set<DirectiveTree> param) {
-                                                            module[0] = node;
-                                                            return super.visitModule(node, param);
-                                                        }
-                                                        @Override
-                                                        public Void visitRequires(final RequiresTree node, final Set<DirectiveTree> param) {
-                                                            final String fqn = node.getModuleName().toString();
-                                                            if (modules.contains(fqn)) {
-                                                                param.add(node);
-                                                            }
-                                                            return super.visitRequires(node, param);
-                                                        }
-                                                    },
-                                                    toRemove);
-                                            if (!toRemove.isEmpty()) {
-                                                final List<DirectiveTree> newDirectives = new ArrayList<>(module[0].getDirectives().size());
-                                                for (DirectiveTree dt : module[0].getDirectives()) {
-                                                    if (!toRemove.contains(dt)) {
-                                                        newDirectives.add(dt);
-                                                    }
-                                                }
-                                                final ModuleTree newModule = wc.getTreeMaker().Module(
-                                                        wc.getTreeMaker().Modifiers(0, module[0].getAnnotations()),
-                                                        module[0].getModuleType(),
-                                                        module[0].getName(),
-                                                        newDirectives);
-                                                wc.rewrite(module[0], newModule);
-                                            }
-                                        }).commit();
-                                        save(moduleInfo);
-                                    }
-                                } catch (IOException ioe) {
-                                    Exceptions.printStackTrace(ioe);
-                                }
-                            }
+                            DefaultProjectModulesModifier.removeRequiredModules(moduleInfo, modules);
                         }
                     }
                 }
@@ -1483,7 +1438,7 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
     }
-
+    
     private static class AddProjectAction extends AbstractAction {
 
         private final Project project;
@@ -1529,9 +1484,7 @@ public final class LibrariesNode extends AbstractNode {
                         ClassPath.COMPILE;
                 ProjectClassPathModifier.addAntArtifacts(artifacts, artifactURIs,
                         projectSourcesArtifact, cpType);
-                if (moduleInfo != null) {
-                    extendModuleInfo(moduleInfo, toURLs(artifactItems));
-                }
+                DefaultProjectModulesModifier.extendModuleInfo(moduleInfo, Arrays.asList(toURLs(artifactItems)));
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             } catch (UnsupportedOperationException e) {
@@ -1582,9 +1535,7 @@ public final class LibrariesNode extends AbstractNode {
                         ClassPath.COMPILE;
                 ProjectClassPathModifier.addLibraries(libraries,
                         projectSourcesArtifact, cpType);
-                if (moduleInfo != null) {
-                    extendModuleInfo(moduleInfo, toURLs(libraries));
-                }
+                DefaultProjectModulesModifier.extendModuleInfo(moduleInfo, Arrays.asList(toURLs(libraries)));
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             } catch (UnsupportedOperationException e) {
@@ -1731,9 +1682,7 @@ public final class LibrariesNode extends AbstractNode {
                         findSourceGroup(projectSourcesArtifact, modifierImpl),
                         cpType,
                         ClassPathModifier.ADD_NO_HEURISTICS);
-                    if (moduleInfo != null) {
-                        extendModuleInfo(moduleInfo, toAddURLs.toArray(new URL[toAddURLs.size()]));
-                    }
+                    DefaultProjectModulesModifier.extendModuleInfo(moduleInfo, toAddURLs);
                 }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
@@ -1781,76 +1730,6 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
         return res.toArray(new URL[res.size()]);
-    }
-    
-    private static void extendModuleInfo(
-            @NonNull final FileObject info,
-            @NonNull final  URL... modules) throws IOException {
-        final Collection<String> moduleNames = Arrays.stream(modules)
-                .map((url) -> SourceUtils.getModuleName(url, true))
-                .filter((name) -> name != null)
-                .collect(Collectors.toList());
-        if (!moduleNames.isEmpty()) {
-            final JavaSource js = JavaSource.forFileObject(info);
-            if (js != null) {
-                js.runModificationTask((wc) -> {
-                    wc.toPhase(JavaSource.Phase.RESOLVED);
-                    final CompilationUnitTree cu = wc.getCompilationUnit();
-                    final Set<String> knownModules = new HashSet<>();
-                    final ModuleTree[] module = new ModuleTree[1];
-                    final RequiresTree[] lastRequires = new RequiresTree[1];
-                    cu.accept(new TreeScanner<Void, Void>() {
-                                @Override
-                                public Void visitModule(ModuleTree m, Void p) {
-                                    module[0] = m;
-                                    return super.visitModule(m, p);
-                                }
-                                @Override
-                                public Void visitRequires(RequiresTree r, Void p) {
-                                    lastRequires[0] = r;
-                                    knownModules.add(r.getModuleName().toString());
-                                    return super.visitRequires(r, p);
-                                }
-                            },
-                            null);
-                    if (module[0] != null) {
-                        moduleNames.removeAll(knownModules);
-                        final TreeMaker tm = wc.getTreeMaker();
-                        final List<RequiresTree> newRequires = moduleNames.stream()
-                                .map((name) -> tm.Requires(false, false, tm.QualIdent(name)))
-                                .collect(Collectors.toList());
-
-                        final List<DirectiveTree> newDirectives = new ArrayList<>(
-                                module[0].getDirectives().size() + newRequires.size());
-                        if (lastRequires[0] == null) {
-                            newDirectives.addAll(newRequires);
-                        }
-                        for (DirectiveTree dt : module[0].getDirectives()) {
-                            newDirectives.add(dt);
-                            if (dt == lastRequires[0]) {
-                                newDirectives.addAll(newRequires);
-                            }
-                        }
-                        final ModuleTree newModule = tm.Module(
-                                tm.Modifiers(0, module[0].getAnnotations()),
-                                module[0].getModuleType(),
-                                module[0].getName(),
-                                newDirectives);
-                        wc.rewrite(module[0], newModule);
-                    }                    
-                })
-                .commit();
-                save(info);
-            }
-        }
-    }
-    
-    private static void save(@NonNull final FileObject file) throws IOException {
-        final DataObject dobj = DataObject.find(file);
-        final Savable save = dobj.getLookup().lookup(Savable.class);
-        if (save != null) {
-            save.save();
-        }
     }
     
     private static SourceGroup findSourceGroup(FileObject fo, ClassPathModifier modifierImpl) {
