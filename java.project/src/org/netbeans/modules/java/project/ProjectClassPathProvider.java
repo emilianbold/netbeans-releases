@@ -76,7 +76,7 @@ public class ProjectClassPathProvider implements ClassPathProvider {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "findClassPath({0}, {1}) -> {2} from {3}", new Object[] {file, type, result, cpp});
                 }
-                return result != null ? result : ClassPath.EMPTY;
+                return result;
             } else {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "cpp.findClassPath({0}, {1}) -> null", new Object[] {file, type});
