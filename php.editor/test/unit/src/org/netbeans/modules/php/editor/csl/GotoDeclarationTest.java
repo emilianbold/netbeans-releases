@@ -1632,6 +1632,134 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "} catch (\\Test\\Sub\\ExceptionType2 | \\Test\\Sub\\Excepti^onType3 $ex) {", "class ^ExceptionType3 extends \\Exception {");
     }
 
+    public void testClassConstantVisibility_01() throws Exception {
+        checkDeclaration(getTestPath(), "ParentClass::IMPLICIT_PUBLIC^_PARENT_CONST;", "const ^IMPLICIT_PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_02() throws Exception {
+        checkDeclaration(getTestPath(), "self::PUBLIC_PARENT_CO^NST;", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_03() throws Exception {
+        checkDeclaration(getTestPath(), "static::PRI^VATE_PARENT_CONST;", "private const ^PRIVATE_PARENT_CONST = \"private\";");
+    }
+
+    public void testClassConstantVisibility_04() throws Exception {
+        checkDeclaration(getTestPath(), "ParentClass::PROTECTED_PARENT_C^ONST[0];", "protected const ^PROTECTED_PARENT_CONST = [0, 1];");
+    }
+
+    public void testClassConstantVisibility_05() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass::IMPLICIT_P^UBLIC_PARENT_CONST;", "const ^IMPLICIT_PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_06() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass::PUBLIC_PAR^ENT_CONST;", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_07() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass::PROTECTED_PAR^ENT_CONST[0];", "protected const ^PROTECTED_PARENT_CONST = [0, 1];");
+    }
+
+    public void testClassConstantVisibility_08() throws Exception {
+        checkDeclaration(getTestPath(), "TestInterfaceImpl::IMPLICIT_PUBLIC_INTE^RFACE_CONST;", "const ^IMPLICIT_PUBLIC_INTERFACE_CONST = 1;");
+    }
+
+    public void testClassConstantVisibility_09() throws Exception {
+        checkDeclaration(getTestPath(), "TestInterfaceImpl::PUBLIC_INTERFA^CE_CONST;", "const ^PUBLIC_INTERFACE_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_10() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass2::IMPLICIT_PU^BLIC_PARENT_CONST;", "const ^IMPLICIT_PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_11() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass2::PUBLIC_PA^RENT_CONST;", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_12() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass2::PROTECTED_PAREN^T_CONST[1];", "protected const ^PROTECTED_PARENT_CONST = [0, 1];");
+    }
+
+    public void testClassConstantVisibility_13() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass2::IMPLICIT_PUBLIC_INT^ERFACE_CONST;", "const ^IMPLICIT_PUBLIC_INTERFACE_CONST = 1;");
+    }
+
+    public void testClassConstantVisibility_14() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass2::PUBLIC_IN^TERFACE_CONST;", "const ^PUBLIC_INTERFACE_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_15() throws Exception {
+        checkDeclaration(getTestPath(), "ParentClass::IMPLICIT_PU^BLIC_PARENT_CONST; // global", "const ^IMPLICIT_PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_16() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass::^IMPLICIT_PUBLIC_PARENT_CONST; // global", "const ^IMPLICIT_PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_17() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass2::^IMPLICIT_PUBLIC_PARENT_CONST; // global", "const ^IMPLICIT_PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_18() throws Exception {
+        checkDeclaration(getTestPath(), "ParentClass::^PUBLIC_PARENT_CONST; // global", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_19() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass::PUBLIC_PAR^ENT_CONST; // global", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_20() throws Exception {
+        checkDeclaration(getTestPath(), "ChildClass2::PUBLIC_PA^RENT_CONST; // global", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_21() throws Exception {
+        checkDeclaration(getTestPath(), "TestInterface::IMPLICIT_PUBL^IC_INTERFACE_CONST; // global", "const ^IMPLICIT_PUBLIC_INTERFACE_CONST = 1;");
+    }
+
+    public void testClassConstantVisibility_22() throws Exception {
+        checkDeclaration(getTestPath(), "TestInterfaceImpl::IMPLICIT^_PUBLIC_INTERFACE_CONST; // global", "const ^IMPLICIT_PUBLIC_INTERFACE_CONST = 1;");
+    }
+
+    public void testClassConstantVisibility_23() throws Exception {
+        checkDeclaration(getTestPath(), "TestInterface::PUBLIC_INTE^RFACE_CONST; // global", "const ^PUBLIC_INTERFACE_CONST = 0;");
+    }
+
+    public void testClassConstantVisibility_24() throws Exception {
+        checkDeclaration(getTestPath(), "TestInterfaceImpl::PUBLIC_IN^TERFACE_CONST; // global", "const ^PUBLIC_INTERFACE_CONST = 0;");
+    }
+
+    public void testClassConstantVisibilityFQN_01() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\ParentClass::^IMPLICIT_PUBLIC_PARENT_CONST[1];", "const ^IMPLICIT_PUBLIC_PARENT_CONST = [0, 1];");
+    }
+
+    public void testClassConstantVisibilityFQN_02() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\ParentClass::PUBLIC_PARENT_CON^ST;", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibilityFQN_03() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\ChildClass::IMPLICIT_PUBLIC_P^ARENT_CONST[0];", "const ^IMPLICIT_PUBLIC_PARENT_CONST = [0, 1];");
+    }
+
+    public void testClassConstantVisibilityFQN_04() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\ChildClass::PUBLIC_PARENT_CO^NST;", "public const ^PUBLIC_PARENT_CONST = 0;");
+    }
+
+    public void testClassConstantVisibilityFQN_05() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\TestInterface::IMPLICIT_PUBLIC_I^NTERFACE_CONST;", "const ^IMPLICIT_PUBLIC_INTERFACE_CONST = 1;");
+    }
+
+    public void testClassConstantVisibilityFQN_06() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\TestInterface::PUBLIC_INTERFA^CE_CONST;", "public const ^PUBLIC_INTERFACE_CONST = 0;");
+    }
+
+    public void testClassConstantVisibilityFQN_07() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\TestInterfaceImpl::IMPLICIT_PU^BLIC_INTERFACE_CONST;", "const ^IMPLICIT_PUBLIC_INTERFACE_CONST = 1;");
+    }
+
+    public void testClassConstantVisibilityFQN_08() throws Exception {
+        checkDeclaration(getTestPath(), "\\Test\\Sub\\TestInterfaceImpl::PUBLIC_INTER^FACE_CONST;", "public const ^PUBLIC_INTERFACE_CONST = 0;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
