@@ -190,19 +190,6 @@ if [ ! -x "${jdkhome}/bin/java" ] ; then
     exit 2
 fi
 
-# Make sure native code libraries of jdk7 are found
-# setting of the LD_LIBRARY_PATH is unnecessary on JDK8, and should be removed when only JDK8 is supported:
-case "`uname`" in
-    SunOS*)
-        LD_LIBRARY_PATH=${jdkhome}/jre/lib/amd64/client:${jdkhome}/jre/lib/amd64/server:${jdkhome}/jre/lib/i386/client:${jdkhome}/jre/lib/i386/server:${LD_LIBRARY_PATH}
-        export LD_LIBRARY_PATH
-        ;;
-    *)
-        LD_LIBRARY_PATH=${jdkhome}/jre/lib/amd64:${jdkhome}/jre/lib/i386:${LD_LIBRARY_PATH}
-        export LD_LIBRARY_PATH
-        ;;
-esac
-
 # fixes 225762: Can't open project from a folder with UTF-8 letters on Mac OS X
 if [ `uname` = "Darwin" ] ; then
     if [ x${LC_CTYPE} = x ] ; then
