@@ -82,6 +82,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.PropertyEvaluatorProvider;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2semodule.ui.customizer.J2SECompositePanelProvider;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
@@ -397,13 +398,21 @@ public final class J2SEModularProject implements Project {
                     new String[] {
                             ProjectProperties.PLATFORM_ACTIVE
             }),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(
+                    helper,
+                    evaluator(),
+                    platformChangedHook,
+                    CommonProjectUtils.J2SE_PLATFORM_TYPE,
+                    J2SEModularProjectUtil.MIN_SOURCE_LEVEL,
+                    ProjectProperties.PLATFORM_ACTIVE,
+                    ProjectProperties.JAVAC_SOURCE,
+                    ProjectProperties.JAVAC_TARGET),
             new ProjectPlatformProviderImpl(this),
             //UNKNOWN FOR MODULAR PROJECT
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod
 //            new J2SEPersistenceProvider(this, cpProvider),
-//            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, platformChangedHook, JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
 //            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup

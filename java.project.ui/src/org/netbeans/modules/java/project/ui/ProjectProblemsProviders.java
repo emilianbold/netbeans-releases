@@ -164,6 +164,7 @@ public class ProjectProblemsProviders {
             @NonNull final PropertyEvaluator evaluator,
             @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack hook,
             @NonNull final String platformType,
+            @NonNull final SpecificationVersion minimalVersion,
             @NonNull final String platformProperty,
             @NonNull final String... platformVersionProperties) {
         final PlatformVersionProblemProviderImpl pp = new PlatformVersionProblemProviderImpl(
@@ -171,6 +172,7 @@ public class ProjectProblemsProviders {
                 evaluator,
                 hook,
                 platformType,
+                minimalVersion,
                 platformProperty,
                 platformVersionProperties);
         pp.attachListeners();
@@ -984,6 +986,7 @@ public class ProjectProblemsProviders {
         private final Collection<? extends String> invalidVersionProps;
         private final SpecificationVersion minVersion;
         private final SpecificationVersion platformVersion;
+        private final SpecificationVersion minProjectSupportedVersion;
         private final Reference<AntProjectHelper> helperRef;
         private final BrokenReferencesSupport.PlatformUpdatedCallBack hook;
 
@@ -994,13 +997,15 @@ public class ProjectProblemsProviders {
             @NonNull final String platformProp,
             @NonNull final Collection<? extends String> invalidVersionProps,
             @NonNull final SpecificationVersion minVersion,
-            @NonNull final SpecificationVersion platformVersion) {
+            @NonNull final SpecificationVersion platformVersion,
+            @NonNull final SpecificationVersion minProjectSupportedVersion) {
             Parameters.notNull("helper", helper);   //NOI18N
             Parameters.notNull("type", type);   //NOI18N
             Parameters.notNull("platformProp", platformProp);   //NOI18N
             Parameters.notNull("invalidVersionProps", invalidVersionProps); //NOI18N
             Parameters.notNull("minVersion", minVersion);   //NOI18N
             Parameters.notNull("platformVersion", platformVersion); //NOI18N
+            Parameters.notNull("minProjectSupportedVersion", minProjectSupportedVersion);   //NOI18N
             this.helperRef = new WeakReference<AntProjectHelper>(helper);
             this.hook = hook;
             this.type = type;
@@ -1008,6 +1013,7 @@ public class ProjectProblemsProviders {
             this.invalidVersionProps = invalidVersionProps;
             this.minVersion = minVersion;
             this.platformVersion = platformVersion;
+            this.minProjectSupportedVersion = minProjectSupportedVersion;
         }
 
 
@@ -1017,45 +1023,36 @@ public class ProjectProblemsProviders {
             final AntProjectHelper helper = helperRef.get();
             if (helper != null) {
                 final Project project = FileOwnerQuery.getOwner(helper.getProjectDirectory());
-                final FixProjectSourceLevel changeVersion = new FixProjectSourceLevel(type, minVersion, platformVersion);
+                final FixProjectSourceLevel changeVersion = new FixProjectSourceLevel(type, minVersion, platformVersion, minProjectSupportedVersion);
                 final DialogDescriptor dd = new DialogDescriptor(changeVersion, LBL_ResolveJDKVersion(ProjectUtils.getInformation(project).getDisplayName()));
                 if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
-                    final Callable<ProjectProblemsProvider.Result> resultFnc =
-                            new Callable<Result>() {
-                        @Override
-                        public Result call() throws Exception {
-                            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Result>(){
-                                @Override
-                                public Result run() throws IOException {
-                                    if (changeVersion.isDowngradeLevel()) {
-                                        final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                        for (String p : invalidVersionProps) {
-                                            props.put(p, platformVersion.toString());
-                                        }
-                                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                        ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
-                                        return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
-                                    } else {
-                                        final JavaPlatform jp = changeVersion.getSelectedPlatform();
-                                        if (jp != null) {
-                                            final String antName = jp.getProperties().get(PLAT_PROP_ANT_NAME);
-                                            if (antName != null) {
-                                                final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                                props.setProperty(platformProp, antName);
-                                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                                if (hook != null) {
-                                                    hook.platformPropertyUpdated(jp);
-                                                }
-                                                ProjectManager.getDefault().saveProject(project);
-                                                return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
-                                            }
-                                        }
+                    final Callable<ProjectProblemsProvider.Result> resultFnc = () -> ProjectManager.mutex().writeAccess((Mutex.ExceptionAction<Result>) () -> {
+                        if (changeVersion.isDowngradeLevel()) {
+                            final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            for (String p : invalidVersionProps) {
+                                props.put(p, platformVersion.toString());
+                            }
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
+                            return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
+                        } else {
+                            final JavaPlatform jp = changeVersion.getSelectedPlatform();
+                            if (jp != null) {
+                                final String antName = jp.getProperties().get(PLAT_PROP_ANT_NAME);
+                                if (antName != null) {
+                                    final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                    props.setProperty(platformProp, antName);
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                    if (hook != null) {
+                                        hook.platformPropertyUpdated(jp);
                                     }
-                                    return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED);
+                                    ProjectManager.getDefault().saveProject(project);
+                                    return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
                                 }
-                            });
+                            }
                         }
-                    };
+                        return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED);
+                    });
                     final RunnableFuture<Result> result = new FutureTask<Result>(resultFnc);
                     RP.post(result);
                     return result;
@@ -1365,6 +1362,7 @@ public class ProjectProblemsProviders {
         private final PropertyEvaluator eval;
         private final BrokenReferencesSupport.PlatformUpdatedCallBack hook;
         private final String platformType;
+        private final SpecificationVersion minimalVersion;
         private final String platformProp;
         private final Set<String> versionProps;
 
@@ -1373,17 +1371,20 @@ public class ProjectProblemsProviders {
                 @NonNull final PropertyEvaluator eval,
                 @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack hook,
                 @NonNull final String platformType,
+                @NonNull final SpecificationVersion minimalVersion,
                 @NonNull final String platformProp,
                 @NonNull final String... versionProps) {
             assert helper != null;
             assert eval != null;
             assert platformType != null;
+            assert minimalVersion != null;
             assert platformProp != null;
             assert versionProps != null;
             this.helper = helper;
             this.eval = eval;
             this.hook = hook;
             this.platformType = platformType;
+            this.minimalVersion = minimalVersion;
             this.platformProp = platformProp;
             this.versionProps = new HashSet<String>(Arrays.asList(versionProps));
         }
@@ -1408,50 +1409,44 @@ public class ProjectProblemsProviders {
             "HINT_Unsupported_Source=The project source/binary format is older than minimal supported one ({0})."
         })
         public Collection<? extends ProjectProblem> getProblems() {
-            return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
-                @Override
-                public Collection<? extends ProjectProblemsProvider.ProjectProblem> collectProblems() {
-                    Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess(
-                            new Mutex.Action<Collection<? extends ProjectProblem>>() {
-                                @Override
-                                public Collection<? extends ProjectProblem> run() {
-                                    final JavaPlatform activePlatform = getActivePlatform();
-                                    final SpecificationVersion platformVersion = activePlatform == null ?
-                                        null:
-                                        activePlatform.getSpecification().getVersion();
-                                    final Collection<String> invalidVersionProps = new ArrayList<String>(versionProps.size());
-                                    SpecificationVersion minVersion = getInvalidJdkVersion(
-                                            platformVersion,
-                                            invalidVersionProps);
-                                    if (minVersion != null) {
-                                        return Collections.singleton(ProjectProblem.createError(
-                                            LBL_Invalid_JDK_Version(),
-                                            HINT_Invalid_JDK_Vernsion(),
-                                            new SourceTargetResolver(
-                                                helper,
-                                                hook,
-                                                platformType,
-                                                platformProp,
-                                                invalidVersionProps,
-                                                minVersion,
-                                                platformVersion)));
-                                    }
-                                    invalidVersionProps.clear();
-                                    if (getOutdatedJdkVersion(invalidVersionProps, SourceLevelQuery.MINIMAL_SOURCE_LEVEL)) {
-                                        return Collections.singleton(ProjectProblem.createError(
-                                                LBL_Unsupported_Source(),
-                                                HINT_Unsupported_Source(SourceLevelQuery.MINIMAL_SOURCE_LEVEL),
-                                                new UpgradeSourceTargetResolver(
-                                                    helper,
-                                                    invalidVersionProps,
-                                                    SourceLevelQuery.MINIMAL_SOURCE_LEVEL)
-                                                ));
-                                    }
-                                    return Collections.<ProjectProblem>emptySet();
-                                }
-                        });
-                    return currentProblems;
-                }
+            return problemsProviderSupport.getProblems(() -> {
+                Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess((Mutex.Action<Collection<? extends ProjectProblem>>) () -> {
+                    final JavaPlatform activePlatform = getActivePlatform();
+                    final SpecificationVersion platformVersion = activePlatform == null ?
+                            null:
+                            activePlatform.getSpecification().getVersion();
+                    final Collection<String> invalidVersionProps = new ArrayList<>(versionProps.size());
+                    SpecificationVersion minVersion = getInvalidJdkVersion(
+                            platformVersion,
+                            invalidVersionProps);
+                    if (minVersion != null) {
+                        return Collections.singleton(ProjectProblem.createError(
+                                LBL_Invalid_JDK_Version(),
+                                HINT_Invalid_JDK_Vernsion(),
+                                new SourceTargetResolver(
+                                        helper,
+                                        hook,
+                                        platformType,
+                                        platformProp,
+                                        invalidVersionProps,
+                                        minVersion,
+                                        platformVersion,
+                                        minimalVersion)));
+                    }
+                    invalidVersionProps.clear();
+                    if (getOutdatedJdkVersion(invalidVersionProps, minimalVersion)) {
+                        return Collections.singleton(ProjectProblem.createError(
+                                LBL_Unsupported_Source(),
+                                HINT_Unsupported_Source(minimalVersion),
+                                new UpgradeSourceTargetResolver(
+                                        helper,
+                                        invalidVersionProps,
+                                        minimalVersion)
+                        ));
+                    }
+                    return Collections.<ProjectProblem>emptySet();
+                });
+                return currentProblems;
             });
         }
 
