@@ -112,20 +112,6 @@ public final class CommandLine {
         }
         return new CommandLine(arr);
     }
-    
-public Object create() {
-        try {
-            return Object.class.newInstance();
-        } catch (InstantiationException ex) {
-            throw raise(RuntimeException.class, ex);
-        } catch (IllegalAccessException ex) {
-            throw raise(RuntimeException.class, ex);
-        }
-}
-
-private static <E extends Throwable> E raise(Class<E> type, Throwable t) throws E {
-    throw (E)t;
-}
 
     /** Process the array of arguments and invoke associated {@link OptionProcessor}s.
      * 
