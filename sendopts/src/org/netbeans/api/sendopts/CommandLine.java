@@ -87,7 +87,8 @@ public final class CommandLine {
     /** Creates new command line processor based on options defined in
      * the provided <code>classes</code>. These classes are scanned for
      * fields annotated with {@code @}{@link org.netbeans.spi.sendopts.Arg} 
-     * annotation.
+     * annotation or (since version 2.37) checked whether they implement
+     * {@link org.netbeans.spi.sendopts.OptionProcessor @OptionProcessor}.
      * 
      * @param classes classes that declare the options
      * @return new command line object that contains options declared in the
@@ -97,12 +98,35 @@ public final class CommandLine {
     public static CommandLine create(Class<?>... classes) {
         List<OptionProcessor> arr = new ArrayList<OptionProcessor>();
         for (Class<?> c : classes) {
-            arr.add(DefaultProcessor.create(c));
+            if (OptionProcessor.class.isAssignableFrom(c)) {
+                try {
+                    arr.add((OptionProcessor) c.newInstance());
+                } catch (InstantiationException ex) {
+                    throw new IllegalStateException(ex);
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            } else {
+                arr.add(DefaultProcessor.create(c));
+            }
         }
         return new CommandLine(arr);
     }
     
-    
+public Object create() {
+        try {
+            return Object.class.newInstance();
+        } catch (InstantiationException ex) {
+            throw raise(RuntimeException.class, ex);
+        } catch (IllegalAccessException ex) {
+            throw raise(RuntimeException.class, ex);
+        }
+}
+
+private static <E extends Throwable> E raise(Class<E> type, Throwable t) throws E {
+    throw (E)t;
+}
+
     /** Process the array of arguments and invoke associated {@link OptionProcessor}s.
      * 
      * @param args the array of strings to process
