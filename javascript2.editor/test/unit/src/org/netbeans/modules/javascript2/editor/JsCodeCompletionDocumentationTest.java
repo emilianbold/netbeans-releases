@@ -74,4 +74,36 @@ public class JsCodeCompletionDocumentationTest extends JsCodeCompletionBase {
     public void testIssue226631() throws Exception {
         checkCompletionDocumentation("testfiles/completion/documentation/issue226631.js", "/*HERE*/ maxipe^", false, "maxipe");
     }
-}
+
+    public void testIssue255966_1() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "personsArr^.push({});", false, "personsArr");
+    }
+    
+    public void testIssue255966_2() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "arrS^tr.push(\"test\");", false, "arrS");
+    }
+    
+    
+    public void testIssue255966_3() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "arrO^bj[1]", false, "arrO");
+    }
+    
+    public void testIssue255966_4() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "personO^bj[\"firstName\"];", false, "personO");
+    }
+
+   
+    public void testIssue255966_5() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "personsN^ew.push({});", false, "personsN");
+    }
+    
+    public void testIssue255966_6() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "printOb^js(persons);", false, "printOb");
+    }
+    public void testIssue255966_7() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "anotherFun^c(\"test\");", false, "anotherFun");
+    }
+    public void testIssue255966_8() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "getTmp^Object();", false, "getTmp");
+    }
+}    

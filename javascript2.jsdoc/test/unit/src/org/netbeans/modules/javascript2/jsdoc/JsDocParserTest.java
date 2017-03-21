@@ -137,7 +137,7 @@ public class JsDocParserTest extends JsTestBase {
         assertTrue(tags.get(0) instanceof NamedParameterElement);
         NamedParameterElement namedParameter = (NamedParameterElement) tags.get(0);
         assertEquals(1, namedParameter.getParamTypes().size());
-        assertEquals("function(department,calls)", namedParameter.getParamTypes().get(0).getType());
+        assertEquals("function(department, calls)", namedParameter.getParamTypes().get(0).getType());
         assertEquals(15, namedParameter.getParamTypes().get(0).getOffset());
         assertEquals("onSuccess", namedParameter.getParamName().getName());
         assertEquals(44, namedParameter.getParamName().getOffsetRange().getStart());

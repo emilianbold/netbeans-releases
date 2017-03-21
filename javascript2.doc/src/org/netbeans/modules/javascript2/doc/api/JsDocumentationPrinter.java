@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.UIManager;
+import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.javascript2.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.types.api.Type;
@@ -346,7 +347,7 @@ public final class JsDocumentationPrinter {
             sb.append(delimiter).append(type.getType());
             delimiter = " | "; //NOI18N
         }
-        return sb.toString();
+        return StringEscapeUtils.escapeHtml(sb.toString());
     }
 
     private static <T> T getDefault(T obj, T defaultValue) {
@@ -376,5 +377,6 @@ public final class JsDocumentationPrinter {
 	    hex = "0" + hex; // NOI18N
 	}
 	return hex;
-    }
+    }  
+   
 }

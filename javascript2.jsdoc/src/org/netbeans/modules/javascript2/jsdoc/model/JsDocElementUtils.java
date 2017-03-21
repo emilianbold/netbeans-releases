@@ -161,38 +161,42 @@ public class JsDocElementUtils {
         String[] parts = elementText.split("[\\s]+"); //NOI18N
 
         if (parts.length > process) {
-            // get type value if any
-            if (parts[0].startsWith("{")) { //NOI18N
+            //extract type info, handle {} inside of type
+            //e.g. {{a: number, b: string}} myObj
+            int curlyStart = elementText.indexOf("{");
+            int curlyEnd = -1;
+            if (curlyStart != -1) {
                 typeOffset = descStartOffset + 1;
-                int rparIndex = parts[0].indexOf("}"); //NOI18N
-                if (rparIndex == -1) {
-                    // issue #224205 - search for ending } curly braces, spaces in its type
-                    int actualProcessed = process;
-                    StringBuilder typesSB = new StringBuilder(parts[0].substring(1));
-                    while ((actualProcessed < parts.length - 1)  && (actualProcessed < LIMIT_SPACES_IN_TYPE)) {
-                       actualProcessed++;
-                       rparIndex = parts[actualProcessed].indexOf("}"); //NOI18N
-                       if (rparIndex != -1) {
-                           typesSB.append(parts[actualProcessed].substring(0, rparIndex));
-                           process = actualProcessed;
-                           types = typesSB.toString();
-                           break;
-                       } else {
-                           typesSB.append(parts[actualProcessed]);
-                       }
-                    }
-                    if (types.isEmpty()) {
-                        types = parts[0].trim();
-                    }
-                } else {
-                    types = parts[0].substring(1, rparIndex);
-                    if (types.trim().equals("*")) {
-                        types = "";
+                int openCurlyBracesForType = 0;
+                char[] cArray = elementText.toCharArray();
+                for (int i = 0; i < cArray.length; i++) {
+                    if (cArray[i] == '{') {
+                        openCurlyBracesForType++;
+                    } else if (cArray[i] == '}') {
+                        openCurlyBracesForType--;
+                        if (openCurlyBracesForType == 0) {
+                            curlyEnd = i;
+                            break;
+                        }
                     }
                 }
-                process++;
+                if (curlyEnd != -1) {
+                    String typeInfo = elementText.substring(curlyStart + 1, curlyEnd);//within curly braces
+                    types = typeInfo.trim();
+                } else {
+                    types = parts[0].trim();
+                    process++;
+                }
+                if (types.trim().equals("*")) {
+                    types = "";
+                }
             }
 
+            //extract name and desc from the remaining text after matching '}'
+            if (curlyEnd != -1) {
+                parts = elementText.substring(curlyEnd + 1).trim().split("[\\s]+");
+            }
+        
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());
