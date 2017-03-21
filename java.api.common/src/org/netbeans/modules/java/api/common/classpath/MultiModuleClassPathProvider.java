@@ -948,13 +948,28 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         return res;
     }
 
+    @Override
     public String[] getPropertyName (SourceGroup sg, String type) {
         FileObject root = sg.getRootFolder();
-        Owner fOwner = getOwner(root);
+        final Owner fOwner = getOwner(root);
         if (fOwner == null) {
             return null;
-        }
-        if (sourceCache.getModules().getModuleName(root) != null) {
+        } else if (fOwner.isTest()) {
+            switch (type) {
+                case ClassPath.COMPILE:
+                    return testJavacClassPath;
+                case ClassPath.EXECUTE:
+                    return testExecuteClassPath;
+                case JavaClassPathConstants.PROCESSOR_PATH:
+                    return testProcessorClassPath;
+                case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                    return testModulePath;
+                case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                    return testExecuteModulePath;
+                default:
+                    return null;
+            }
+        } else {
             switch (type) {
                 case ClassPath.COMPILE:
                     return javacClassPath;
@@ -970,25 +985,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     return null;
             }
         }
-        if (testCache.getModules().getModuleName(root) != null) {
-            switch (type) {
-                case ClassPath.COMPILE:
-                    return testJavacClassPath;
-                case ClassPath.EXECUTE:
-                    return testExecuteClassPath;
-                case JavaClassPathConstants.PROCESSOR_PATH:
-                    return testProcessorClassPath;
-                case JavaClassPathConstants.MODULE_COMPILE_PATH:
-                    return testModulePath;
-                case JavaClassPathConstants.MODULE_EXECUTE_PATH:
-                    return testExecuteModulePath;
-                default:
-                    return null;
-            }
-        }
-        return null;
     }
-    
+
     @Override
     public ClassPath[] getProjectClassPaths(String type) {
         return ProjectManager.mutex().readAccess(() -> {

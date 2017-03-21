@@ -1315,7 +1315,8 @@ public final class ClassPathProviderImpl extends AbstractClassPathProvider {
             }
         }
     }
-    
+
+    @Override
     public String[] getPropertyName (SourceGroup sg, String type) {
         if (ClassPathSupport.ENDORSED.equals(type)) {
             return endorsedClasspath;
