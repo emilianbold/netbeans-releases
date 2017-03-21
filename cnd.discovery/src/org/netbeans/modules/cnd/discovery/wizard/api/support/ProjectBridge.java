@@ -333,6 +333,7 @@ public class ProjectBridge {
     private boolean isDifferentCompilePath(String name, String path){
         if (Utilities.isWindows()) {
             name = name.replace('\\', '/'); // NOI18N
+            path = path.replace('\\', '/'); // NOI18N
         }
         int i = name.lastIndexOf('/'); // NOI18N
         if (i > 0) {
