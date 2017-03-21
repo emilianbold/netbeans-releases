@@ -1704,6 +1704,7 @@ public class SourceUtils {
             moduleName = moduleName.substring(0, start);
         }
         moduleName =  moduleName
+            .replaceAll("(\\.|\\d)*$", "")    // remove trailing version
             .replaceAll("[^A-Za-z0-9]", ".")  // replace non-alphanumeric
             .replaceAll("(\\.)(\\1)+", ".")   // collapse repeating dots
             .replaceAll("^\\.", "")           // drop leading dots

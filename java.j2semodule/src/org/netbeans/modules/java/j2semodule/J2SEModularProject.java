@@ -406,10 +406,10 @@ public final class J2SEModularProject implements Project {
                     ProjectProperties.JAVAC_SOURCE,
                     ProjectProperties.JAVAC_TARGET),
             new ProjectPlatformProviderImpl(this),
-            //UNKNOWN FOR MODULAR PROJECT
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod
+            //UNKNOWN FOR MODULAR PROJECT
 //            new J2SEPersistenceProvider(this, cpProvider),
 //            J2SEFileWizardIterator.create()
         );
