@@ -158,7 +158,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     addModulePathProperties(ProjectProperties.RUN_MODULEPATH).
                     addModulePathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
                     setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.EXECUTE)[0]).
-                    setSourceRoots(project.getSourceRoots()).
+                    setSourcePath(project.getClassPathProvider().getProjectClassPaths(ClassPath.SOURCE)[0]).
                     build();
             } else if (key == TEST_LIBRARIES) {
                 return new LibrariesNode.Builder(project,evaluator, helper, resolver, cs).
@@ -180,7 +180,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             ProjectProperties.JAVAC_MODULEPATH,
                             ProjectProperties.BUILD_CLASSES_DIR).
                     setModuleInfoBasedPath(project.getClassPathProvider().getProjectClassPaths(ClassPath.EXECUTE)[1]).
-                    setSourceRoots(project.getTestSourceRoots()).
+                    setSourcePath(project.getClassPathProvider().getProjectClassPaths(ClassPath.SOURCE)[1]).
                     build();
                     
             }

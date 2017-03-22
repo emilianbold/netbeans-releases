@@ -39,8 +39,6 @@
  */
 package org.netbeans.modules.java.j2semodule.ui;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.project.ui.MultiModuleNodeFactory;
@@ -75,6 +73,9 @@ public final class ModuleNodeFactory implements NodeFactory {
     @NonNull
     private NodeFactory getDelegate(@NonNull final J2SEModularProject mp) {
         final NodeFactory res = MultiModuleNodeFactory.create(
+                mp.getUpdateHelper(),
+                mp.evaluator(),
+                mp.getReferenceHelper(),
                 mp.getModuleRoots(),
                 mp.getSourceRoots(),
                 mp.getTestModuleRoots(),
