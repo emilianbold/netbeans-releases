@@ -66,14 +66,20 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.MultiModuleGroupQuery;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -118,54 +124,95 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  *
  * @author Tomas Zezula
+ * @since 1.114
  */
 public final class MultiModuleNodeFactory implements NodeFactory {
     private static final Logger LOG = Logger.getLogger(MultiModuleNodeFactory.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(MultiModuleNodeFactory.class);
+    private final UpdateHelper helper;
+    private final PropertyEvaluator eval;
+    private final ReferenceHelper refHelper;
     private final MultiModule sourceModules;
     private final MultiModule testModules;
+    private final ClassPathSupport cs;
 
     private MultiModuleNodeFactory(
+            @NonNull final UpdateHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final ReferenceHelper refHelper,
             @NonNull final MultiModule sourceModules,
             @NonNull final MultiModule testModules) {
+        Parameters.notNull("helper", helper);               //NOI18N
+        Parameters.notNull("eval", eval);                   //NOI18N
+        Parameters.notNull("refHelper", refHelper);         //NOI18N
         Parameters.notNull("sourceModules", sourceModules); //NOI18N
         Parameters.notNull("testModules", testModules);     //NOI18N
+        this.helper = helper;
+        this.eval = eval;
+        this.refHelper = refHelper;
         this.sourceModules = sourceModules;
         this.testModules = testModules;
+        this.cs = new ClassPathSupport(eval, refHelper, helper.getAntProjectHelper(), helper, null);
     }
 
     @Override
     public NodeList<?> createNodes(@NonNull final Project project) {
-        return new Nodes(project, sourceModules, testModules);
+        return new Nodes(
+                project,
+                helper,
+                eval,
+                refHelper,
+                sourceModules,
+                testModules,
+                cs);
     }
 
     @NonNull
     public static MultiModuleNodeFactory create(
+            @NonNull final UpdateHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final ReferenceHelper refHelper,
             @NonNull final SourceRoots sourceModules,
             @NonNull final SourceRoots srcRoots,
             @NonNull final SourceRoots testModules,
             @NonNull final SourceRoots testRoots) {
         final MultiModule mods = MultiModule.getOrCreate(sourceModules, srcRoots);
         final MultiModule testMods = MultiModule.getOrCreate(testModules, testRoots);
-        return new MultiModuleNodeFactory(mods, testMods);
+        return new MultiModuleNodeFactory(helper, eval, refHelper, mods, testMods);
     }
 
     private static final class Nodes implements NodeList<ModuleKey>, PropertyChangeListener {
         private final Project project;
+        private final UpdateHelper helper;
+        private final PropertyEvaluator eval;
+        private final ReferenceHelper refHelper;
         private final MultiModule sourceModules;
         private final MultiModule testModules;
+        private final ClassPathSupport cs;
         private final ChangeSupport listeners;
 
         Nodes(
                 @NonNull final Project project,
+                @NonNull final UpdateHelper helper,
+                @NonNull final PropertyEvaluator eval,
+                @NonNull final ReferenceHelper refHelper,
                 @NonNull final MultiModule sourceModules,
-                @NonNull final MultiModule testModules) {
+                @NonNull final MultiModule testModules,
+                @NonNull final ClassPathSupport cs) {
             Parameters.notNull("project", project);     //NOI18N
+            Parameters.notNull("helper", helper);     //NOI18N
+            Parameters.notNull("eval", eval);           //NOI18N
+            Parameters.notNull("refHelper", refHelper); //NOI18N
             Parameters.notNull("sourceModules", sourceModules); //NOI18N
             Parameters.notNull("testModules", testModules);     //NOI18N
+            Parameters.notNull("cs", cs);   //NOI18N
             this.project = project;
+            this.helper = helper;
+            this.eval = eval;
+            this.refHelper = refHelper;
             this.sourceModules = sourceModules;
             this.testModules = testModules;
+            this.cs = cs;
             this.listeners = new ChangeSupport(this);
         }
 
@@ -176,7 +223,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                     this.testModules.getModuleNames().stream())
                 .sorted()
                 .distinct()
-                .map((name) -> new ModuleKey(project, name, sourceModules, testModules))
+                .map((name) -> new ModuleKey(project, helper, eval, refHelper, name, sourceModules, testModules, cs))
                 .collect(Collectors.toList());
         }
 
@@ -217,23 +264,39 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
     private static final class ModuleKey {
         private final Project project;
+        private final UpdateHelper helper;
+        private final PropertyEvaluator eval;
+        private final ReferenceHelper refHelper;
         private final MultiModule sourceModules;
         private final MultiModule testModules;
         private final String moduleName;
+        private final ClassPathSupport cs;
 
         ModuleKey(
                 @NonNull final Project project,
+                @NonNull final UpdateHelper helper,
+                @NonNull final PropertyEvaluator eval,
+                @NonNull final ReferenceHelper refHelper,
                 @NonNull final String moduleName,
                 @NonNull final MultiModule sourceModules,
-                @NonNull final MultiModule testModules) {
-            Parameters.notNull("project", project);
+                @NonNull final MultiModule testModules,
+                @NonNull final ClassPathSupport cs) {
+            Parameters.notNull("project", project);             //NOI18N
+            Parameters.notNull("helper", helper);               //NOI18N
+            Parameters.notNull("eval", eval);                   //NOI18N
+            Parameters.notNull("refHelper", refHelper);         //NOI18N
             Parameters.notNull("moduleName", moduleName);       //NOI18N
             Parameters.notNull("sourceModules", sourceModules); //NOI18N
             Parameters.notNull("testModules", testModules);     //NOI18N
+            Parameters.notNull("cs", cs);                       //NOI18N
             this.project = project;
+            this.helper = helper;
+            this.eval = eval;
+            this.refHelper = refHelper;
             this.moduleName = moduleName;
             this.sourceModules = sourceModules;
             this.testModules = testModules;
+            this.cs = cs;
         }
 
         @NonNull
@@ -254,6 +317,26 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         @NonNull
         Project getProject() {
             return project;
+        }
+
+        @NonNull
+        UpdateHelper getUpdateHelper() {
+            return helper;
+        }
+
+        @NonNull
+        PropertyEvaluator getPropertyEvaluator() {
+            return eval;
+        }
+
+        @NonNull
+        ReferenceHelper getReferenceHelper() {
+            return refHelper;
+        }
+
+        @NonNull
+        ClassPathSupport getClassPathSupport() {
+            return cs;
         }
 
         @Override
@@ -302,7 +385,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         }
 
         private ModuleNode(@NonNull final ModuleKey key, @NonNull final DynLkp lookup) {
-            super(ModuleChildren.create(key), lookup);
+            super(new ModuleChildren (key), lookup);
             this.prj = key.getProject();
             this.modules = key.getSourceModules();
             this.testModules = key.getTestModules();
@@ -727,31 +810,33 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         }
     }
 
-    private static final class ModuleChildren extends Children.Keys<Pair<SourceGroup,Boolean>> implements PropertyChangeListener {
+    private static final class ModuleChildren extends Children.Keys<ModuleChildren.Key> implements PropertyChangeListener {
         private final String moduleName;
+        private final Project project;
+        private final UpdateHelper helper;
+        private final PropertyEvaluator eval;
+        private final ReferenceHelper refHelper;
         private final Sources sources;
         private final MultiModuleGroupQuery groupQuery;
         private final MultiModule srcModule;
         private final MultiModule testModule;
+        private final ClassPathSupport cs;
         private final RequestProcessor.Task refresh;
         private final AtomicReference<ClassPath> srcPath;
         private final AtomicReference<ClassPath> testPath;
 
-        private ModuleChildren(
-                @NonNull final String moduleName,
-                @NonNull final Sources sources,
-                @NonNull final MultiModuleGroupQuery groupQuery,
-                @NonNull final MultiModule srcModule,
-                @NonNull final MultiModule testModule) {
-            Parameters.notNull("moduleName", moduleName);   //NOI18N
-            Parameters.notNull("sources", sources);         //NOI18N
-            Parameters.notNull("srcModule", srcModule);     //NOI18N
-            Parameters.notNull("testModule", testModule);   //NOI18N
-            this.moduleName = moduleName;
-            this.sources = sources;
-            this.groupQuery = groupQuery;
-            this.srcModule = srcModule;
-            this.testModule = testModule;
+        private ModuleChildren(final ModuleKey key) {
+            Parameters.notNull("key", key);
+            this.moduleName = key.getModuleName();
+            this.project = key.getProject();
+            this.helper = key.getUpdateHelper();
+            this.eval = key.getPropertyEvaluator();
+            this.refHelper = key.getReferenceHelper();
+            this.sources = project.getLookup().lookup(Sources.class);
+            this.groupQuery = project.getLookup().lookup(MultiModuleGroupQuery.class);
+            this.srcModule = key.getSourceModules();
+            this.testModule = key.getTestModules();
+            this.cs = key.getClassPathSupport();
             this.srcPath = new AtomicReference<>();
             this.testPath = new AtomicReference<>();
             refresh = RP.create(()->setKeys(createKeys()));
@@ -793,31 +878,63 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
         @Override
         @NonNull
-        protected Node[] createNodes(@NonNull final Pair<SourceGroup,Boolean> key) {
-            Node n = PackageView.createPackageView(key.first());
-            MultiModuleGroupQuery.Result r = groupQuery.findModuleInfo(key.first());
-            if (r == null) {
-                if (key.second()) {
-                    n = new TestRootNode(n, null);
-                }
-            } else {
-                if (key.second()) {
-                    n = new TestRootNode(n, r.getPathFromModule());
+        protected Node[] createNodes(@NonNull final Key key) {
+            if (key.isSource()) {
+                Node n = PackageView.createPackageView(key.getSourceGroup());
+                MultiModuleGroupQuery.Result r = groupQuery.findModuleInfo(key.getSourceGroup());
+                if (r == null) {
+                    if (key.isTests()) {
+                        n = new TestRootNode(n, null);
+                    }
                 } else {
-                    n = new SimpleLabelNode(n, r.getPathFromModule());
+                    if (key.isTests()) {
+                        n = new TestRootNode(n, r.getPathFromModule());
+                    } else {
+                        n = new SimpleLabelNode(n, r.getPathFromModule());
+                    }
+                }
+                return new Node[] {n};
+            } else {
+                final ClassPath srcPath = key.getSourcePath();
+                final FileObject[] roots = srcPath.getRoots();
+                if (roots.length > 0) {
+                    if (key.isTests()) {
+                        return new Node[] {
+                            new LibrariesNode.Builder(this.project, eval, helper, refHelper, cs)
+                                .setName(NbBundle.getMessage(MultiModuleNodeFactory.class,"CTL_TestLibrariesNode"))
+                                .addClassPathProperties(ProjectProperties.RUN_TEST_CLASSPATH)
+                                .addModulePathProperties(ProjectProperties.RUN_TEST_MODULEPATH)
+                                .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
+                                .setSourcePath(srcPath)
+                                .build()
+                        };
+                    } else {
+                        return new Node[] {
+                            new LibrariesNode.Builder(this.project, eval, helper, refHelper, cs)
+                                .addClassPathProperties(ProjectProperties.RUN_CLASSPATH)
+                                .addModulePathProperties(ProjectProperties.RUN_MODULEPATH)
+                                .setBootPath(ClassPath.getClassPath(roots[0], ClassPath.BOOT))
+                                .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
+                                .setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE)
+                                .setSourcePath(srcPath)
+                                .setModuleSourcePath(ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_SOURCE_PATH))
+                                .build()
+                        };
+                    }
+                } else {
+                    return new Node[0];
                 }
             }
-            return new Node[] {n};
         }
 
         @NonNull
-        private Collection<? extends Pair<SourceGroup,Boolean>> createKeys() {
+        private Collection<? extends Key> createKeys() {
             final java.util.Map<FileObject,SourceGroup> grpsByRoot = new HashMap<>();
             for (SourceGroup g : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 grpsByRoot.put(g.getRootFolder(), g);
             }
             final Comparator<FileObject> foc = (a,b) -> a.getNameExt().compareTo(b.getNameExt());
-            return Stream.concat(
+            return Stream.concat(Stream.concat(
                     Arrays.stream(srcPath.get().getRoots())
                         .sorted(foc)
                         .map((fo) -> Pair.of(fo,false)),
@@ -828,20 +945,14 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                         final SourceGroup g = grpsByRoot.get(p.first());
                         return g == null ?
                                 null :
-                                Pair.of(g,p.second());
+                                new Key(g,p.second());
                      })
-                    .filter((p) -> p != null)
+                    .filter((p) -> p != null),
+                    Stream.of(
+                        new Key(srcPath.get(), false),
+                        new Key(testPath.get(), true)
+                    ))
                     .collect(Collectors.toList());
-        }
-
-        @NonNull
-        static ModuleChildren create(@NonNull final ModuleKey key) {
-            return new ModuleChildren(
-                    key.getModuleName(),
-                    key.getProject().getLookup().lookup(Sources.class),
-                    key.getProject().getLookup().lookup(MultiModuleGroupQuery.class),
-                    key.getSourceModules(),
-                    key.getTestModules());
         }
 
         @Override
@@ -850,8 +961,82 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 refresh.schedule(100);
             }
         }
+
+        private final static class Key {
+            private final boolean sources;
+            private final boolean tests;
+            private final SourceGroup sg;
+            private final ClassPath sourcePath;
+
+            Key(
+                    @NonNull final SourceGroup sg,
+                    final boolean tests) {
+                assert sg != null;
+                this.sources = true;
+                this.sg = sg;
+                this.sourcePath = null;
+                this.tests = tests;
+            }
+
+            Key(
+                    @NonNull final ClassPath sourcePath,
+                    final boolean tests) {
+                assert sourcePath != null;
+                this.sources = false;
+                this.sg = null;
+                this.sourcePath = sourcePath;
+                this.tests = tests;
+            }
+
+            boolean isSource() {
+                return sources;
+            }
+
+            boolean isTests() {
+                return tests;
+            }
+
+            @NonNull
+            SourceGroup getSourceGroup() {
+                if (!sources) {
+                    throw new IllegalStateException("Not a source key.");   //NOI18N
+                }
+                return sg;
+            }
+
+            @NonNull
+            private ClassPath getSourcePath() {
+                if (sources) {
+                    throw new IllegalStateException("Not a dependency key.");   //NOI18N
+                }
+                return sourcePath;
+            }
+
+            @Override
+            public int hashCode() {
+                int res = 17;
+                res = res * 31 + (sources ? 0 : 1);
+                res = res * 31 + (tests ? 0 : 1);
+                res = res * 31 + (sg == null ? 0 :sg.hashCode());
+                return res;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == this) {
+                    return true;
+                }
+                if (!(obj instanceof Key)) {
+                    return false;
+                }
+                final Key other = (Key) obj;
+                return  (sources == other.sources) &&
+                        (tests == other.tests) &&
+                        (sg == null ? other.sg == null : sg.equals(other.sg));
+            }
+        }
     }
-    
+
     private static class SimpleLabelNode extends FilterNode {
         public SimpleLabelNode(Node original, String dispName) {
             super(original);
