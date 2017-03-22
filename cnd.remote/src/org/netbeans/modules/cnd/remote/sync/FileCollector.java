@@ -441,15 +441,14 @@ import org.openide.util.Utilities;
             res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot); // NOI18N
         }
         if (res.isOK()) {
-           timeStampFile = res.getOutputString().trim();
-           if (RemoteUtil.getOSFamilyIfAvailable(execEnv) == HostInfo.OSFamily.SUNOS) {
-               // On Solaris, "find -newer" does not print files if time difference is less than one second.
-               // So we have to sacrifice one second, otherwise new file discovery results are unstable
-               try {
-                   Thread.sleep(1000);
-               } catch (InterruptedException ex) {
-               }
-           }
+            timeStampFile = res.getOutputString().trim();
+            // On Linux, file precision is 1 second :(
+            // Solaris is more precise, but, "find -newer" does not print files if time difference is less than one second!
+            // So we have to sacrifice one second, otherwise new file discovery results are unstable.
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+            }
            return true;
         } else {
             timeStampFile = null;
