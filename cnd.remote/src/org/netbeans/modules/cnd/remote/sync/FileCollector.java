@@ -102,6 +102,14 @@ import org.openide.util.Utilities;
     private final ExecutionEnvironment execEnv;
     private final PrintWriter err;
 
+    /**
+     * Collector's behaviour differs for Rfs (auto copy) and SFTP.
+     * In the case of Rfs (auto copy), rfs machinery deals with files that are in "controlled files list",
+     * so collector is needed only for files that are not there.
+     * In the case of SFTP, it should deal with all files.
+     */
+    private final boolean allFiles;
+
     private final Set<File> remoteUpdates = new HashSet<>();
 
     /**
@@ -115,7 +123,7 @@ import org.openide.util.Utilities;
     private static final RequestProcessor RP = new RequestProcessor("FileCollector", 1); // NOI18N
 
     public FileCollector(File[] files, List<File> buildResults, RemoteUtil.PrefixedLogger logger, RemotePathMap mapper, SharabilityFilter filter,
-            FileData fileData, ExecutionEnvironment execEnv, PrintWriter err) {
+            FileData fileData, ExecutionEnvironment execEnv, PrintWriter err, boolean allFiles) {
         this.files = new ArrayList<>(files.length);
         this.files.addAll(Arrays.asList(files));
         this.buildResults = new ArrayList<>(buildResults);
@@ -125,6 +133,7 @@ import org.openide.util.Utilities;
         this.fileData = fileData;
         this.execEnv = execEnv;
         this.err = err;
+        this.allFiles = allFiles;
     }
 
     public List<FileCollectorInfo> getFiles() {
@@ -433,6 +442,14 @@ import org.openide.util.Utilities;
         }
         if (res.isOK()) {
            timeStampFile = res.getOutputString().trim();
+           if (RemoteUtil.getOSFamilyIfAvailable(execEnv) == HostInfo.OSFamily.SUNOS) {
+               // On Solaris, "find -newer" does not print files if time difference is less than one second.
+               // So we have to sacrifice one second, otherwise new file discovery results are unstable
+               try {
+                   Thread.sleep(1000);
+               } catch (InterruptedException ex) {
+               }
+           }
            return true;
         } else {
             timeStampFile = null;
@@ -478,7 +495,7 @@ import org.openide.util.Utilities;
         logger.log(Level.FINE, "registering %d updated files", remoteUpdates.size());
     }
 
-    public void runNewFilesDiscovery(boolean srcOnly) throws IOException, InterruptedException, ConnectionManager.CancellationException {
+    public void runNewFilesDiscovery() throws IOException, InterruptedException, ConnectionManager.CancellationException {
         if (timeStampFile == null) {
             return;
         }
@@ -507,30 +524,32 @@ import org.openide.util.Utilities;
             }
         }
 
-        StringBuilder extOptions = new StringBuilder();
-        if (srcOnly) {
-            Collection<Collection<String>> values = new ArrayList<>();
-            values.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
-            values.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
-            values.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
-            for (Collection<String> v : values) {
-                for (String ext : v) {
-                    if (extOptions.length() > 0) {
-                        extOptions.append(" -o "); // NOI18N
-                    }
-                    extOptions.append("-name \"*."); // NOI18N
-                    extOptions.append(ext);
-                    extOptions.append("\""); // NOI18N
+        StringBuilder extOptions = new StringBuilder(" \\( "); // NOI18N
+        Collection<Collection<String>> values = new ArrayList<>();
+        values.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
+        values.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        values.add(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
+        boolean first = true;
+        for (Collection<String> v : values) {
+            for (String ext : v) {
+                if (first) {
+                    first = false;
+                } else {
+                    extOptions.append(" -o "); // NOI18N
                 }
-            }
-            if (extOptions.length() > 0) {
-                extOptions.append(" -o "); // NOI18N
-            }
-            extOptions.append(" -name Makefile"); // NOI18N
-            for (File file : buildResults) {
-                extOptions.append(" -o -name ").append(file.getName()); // NOI18N
+                extOptions.append("-name \"*."); // NOI18N
+                extOptions.append(ext);
+                extOptions.append("\""); // NOI18N
             }
         }
+        if (extOptions.length() > 0) {
+            extOptions.append(" -o "); // NOI18N
+        }
+        extOptions.append(" -name Makefile"); // NOI18N
+        for (File file : buildResults) {
+            extOptions.append(" -o -name ").append(file.getName()); // NOI18N
+        }
+        extOptions.append(" \\) "); // NOI18N
 
         String script = String.format(
             "for F in `find %s %s -newer %s`; do test -f $F &&  echo $F;  done;", // NOI18N
@@ -555,7 +574,7 @@ import org.openide.util.Utilities;
                     boolean add = false;
                     if (buildResults.contains(localFile)) {
                         add = true;
-                    } else if (fileData == null || fileData.getFileInfo(localFile) == null) { // this is only for files we don't control
+                    } else if (allFiles || fileData == null || fileData.getFileInfo(localFile) == null) {
                         if (filter.accept(localFile)) {
                             add = true;
                         }
@@ -574,6 +593,9 @@ import org.openide.util.Utilities;
             public void close() {}
         };
 
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "Started new files discovery at %s: %s", execEnv, script);
+        }
         ShellScriptRunner ssr = new ShellScriptRunner(execEnv, script, lp);
         ssr.setErrorProcessor(new ShellScriptRunner.LoggerLineProcessor(getClass().getSimpleName())); //NOI18N
         int rc = ssr.execute();
