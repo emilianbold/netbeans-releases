@@ -92,7 +92,10 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void test_LexYacc_BuildLocalAndRemote() throws Exception {
-        MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Build");
+        doTest_LexYacc_BuildLocalAndRemote(Sync.RFS);
+    }
+    private void doTest_LexYacc_BuildLocalAndRemote(Sync sync) throws Exception {
+        MakeProject makeProject = prepareSampleProject(sync, Toolchain.GNU, "LexYacc", "LexYacc_Build");
         int timeout = getSampleBuildTimeout();
         changeProjectHost(makeProject, ExecutionEnvironmentFactory.getLocal());
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
@@ -109,7 +112,11 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void test_LexYacc_Updates() throws Exception {
-        MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates");
+        doTest_LexYacc_Updates(Sync.RFS);
+    }
+
+    private void doTest_LexYacc_Updates(Sync sync) throws Exception {
+        MakeProject makeProject = prepareSampleProject(sync, Toolchain.GNU, "LexYacc", "LexYacc_Updates");
         int timeout = getSampleBuildTimeout();
         buildProject(makeProject, ActionProvider.COMMAND_CLEAN, timeout, TimeUnit.SECONDS);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
@@ -124,8 +131,12 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void testNonProjectUpdates() throws Exception {
+        doTestNonProjectUpdates(Sync.RFS);
+    }
+    
+    private void doTestNonProjectUpdates(Sync sync) throws Exception {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        MakeProject makeProject = openProject("TestNonProjectUpdates", execEnv, Sync.RFS, Toolchain.GNU);
+        MakeProject makeProject = openProject("TestNonProjectUpdates", execEnv, sync, Toolchain.GNU);
         changeProjectHost(makeProject, execEnv);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
         File projectDirFile = CndFileUtils.toFile(makeProject.getProjectDirectory());
