@@ -245,6 +245,7 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
             }
         });
         volumesTable.setEnabled(false);
+        volumesTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(volumesTable);
         if (volumesTable.getColumnModel().getColumnCount() > 0) {
             volumesTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.volumesTable.columnModel.title0")); // NOI18N
