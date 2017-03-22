@@ -74,7 +74,7 @@ import org.openide.util.WeakListeners;
  * @author Alexander Simon
  * @author Tomas Stupka
  */
-public final class VCSFileProxy {
+public final class VCSFileProxy implements Comparable<VCSFileProxy>{
 
     private final String path;
     private final VCSFileProxyOperations proxy;
@@ -452,6 +452,11 @@ public final class VCSFileProxy {
             return proxy.normalize(this);
         }
     }    
+
+    @Override
+    public int compareTo(VCSFileProxy o) {
+        return path.compareTo(o.path);
+    }
     
     @Override
     public String toString() {
@@ -521,4 +526,5 @@ public final class VCSFileProxy {
     VCSFileProxyOperations getFileProxyOperations() {
          return proxy;
     }
+
 }
