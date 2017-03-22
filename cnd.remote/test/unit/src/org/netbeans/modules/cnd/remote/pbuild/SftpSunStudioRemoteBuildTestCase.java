@@ -37,52 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.test;
+package org.netbeans.modules.cnd.remote.pbuild;
 
+import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.full.FullRemoteBuildTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.LinuxTouchRfsBuildTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.RemoteBuildLinksTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.RemoteBuildMakefileTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.RemoteBuildRequiredProjectsTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.RemoteBuildSamplesTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.RfsGnuRemoteBuildTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.RfsSunStudioRemoteBuildTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.SftpGnuRemoteBuildTestCase;
-import org.netbeans.modules.cnd.remote.pbuild.SftpSunStudioRemoteBuildTestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
-
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.api.MakeProject;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.spi.project.ActionProvider;
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class RemoteDevelopment4Test extends CndBaseTestSuite {
+public class SftpSunStudioRemoteBuildTestCase extends RemoteBuildTestBase {
 
-   public RemoteDevelopment4Test() {
-       this("Remote Development", // NOI18N           
-           RfsSunStudioRemoteBuildTestCase.class,
-           SftpSunStudioRemoteBuildTestCase.class,
-           LinuxTouchRfsBuildTestCase.class,
-           RemoteBuildLinksTestCase.class,
-           RemoteBuildRequiredProjectsTestCase.class,
-           RemoteBuildSamplesTestCase.class,
-           RfsGnuRemoteBuildTestCase.class,
-           SftpGnuRemoteBuildTestCase.class,
-           RemoteBuildMakefileTestCase.class,
-           FullRemoteBuildTestCase.class
-       );
-   }
+    public SftpSunStudioRemoteBuildTestCase(String testName) {
+        super(testName);
+    }
 
-    private RemoteDevelopment4Test(String name, Class... testClasses) {
-        super(name, "remote.platforms", testClasses);
+    public SftpSunStudioRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost(Sync.FTP.ID);
+    }
+
+    @ForAllEnvironments
+    public void testBuildRfsSampleArgsSunStudio() throws Exception {
+        setDefaultCompilerSet(Toolchain.SUN.ID);
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopment4Test();
-        return suite;
+        return new RemoteDevelopmentTest(SftpSunStudioRemoteBuildTestCase.class);
     }
 }
