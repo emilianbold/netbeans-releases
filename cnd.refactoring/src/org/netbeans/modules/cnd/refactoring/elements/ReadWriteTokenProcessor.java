@@ -156,6 +156,9 @@ public class ReadWriteTokenProcessor {
                             case SCOPE: // x.
                                 rw = CsmRefactoringElementImpl.RW.Read;
                                 return;
+                            case LPAREN: // x(
+                                rw = CsmRefactoringElementImpl.RW.Write;
+                                return;
                             case COLON:
                             case SEMICOLON:
                             case RBRACKET:
