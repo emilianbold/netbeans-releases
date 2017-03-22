@@ -59,7 +59,7 @@ class ModuleLocation implements Location {
     private final String moduleName;
     private final Collection<? extends URL> moduleRoots;
 
-    private ModuleLocation(
+    ModuleLocation(
             @NonNull final Location base,
             @NonNull final String moduleName,
             @NonNull final Collection<? extends URL> moduleRoots) {
