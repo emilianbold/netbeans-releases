@@ -57,6 +57,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.ConnectException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -782,5 +784,34 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     
     protected static void threadsDump(String header, String footer) {
         NativeExecutionTestSupport.threadsDump(header, footer);
+    }
+
+    protected static boolean isDebugged() {
+        return DebugChecker.DEBUGGED;
+    }
+    
+    private static class DebugChecker {
+
+        public static final boolean DEBUGGED = checkIfDebugged();
+
+        private static boolean checkIfDebugged() {
+            try {
+                RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+                List<String> args = runtime.getInputArguments();
+                for (String arg : args) {
+                    if ("-Xdebug".equals(arg)) { // NOI18N
+                        return true;                        
+                    } else if ("-agentlib:jdwp".equals(arg)) { // NOI18N
+                        // The idea of checking -agentlib:jdwp 
+                        // is taken from org.netbeans.modules.sampler.InternalSampler
+                        return true;
+                    } else if (arg.startsWith("-agentlib:jdwp=")) { // NOI18N
+                        return true;
+                    }
+                }
+            } catch (SecurityException ex) {                
+            }
+            return false;
+        }
     }
 }
