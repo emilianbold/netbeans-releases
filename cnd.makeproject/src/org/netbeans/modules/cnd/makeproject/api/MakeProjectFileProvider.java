@@ -236,7 +236,7 @@ public class MakeProjectFileProvider {
                             } else {
                                 env = ExecutionEnvironmentFactory.getLocal();
                             }
-                            res = defaultSearch(project, fileName, env);
+                            res = defaultSearch(project, fileName, env, conf);
                             if (res != null && res.size() > 0) {
                                 return res;
                             }
@@ -249,7 +249,7 @@ public class MakeProjectFileProvider {
                 if (env == null) {
                     env = ExecutionEnvironmentFactory.getLocal();
                 }
-                res = defaultSearch(project, fileName, env);
+                res = defaultSearch(project, fileName, env, null);
                 if (res != null && res.size() > 0) {
                     return res;
                 }
@@ -257,7 +257,7 @@ public class MakeProjectFileProvider {
             return Collections.<FSPath>emptyList();
         }
 
-        private Collection<FSPath> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env) {
+        private Collection<FSPath> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env, MakeConfiguration conf) {
             Collection<FSPath> res = null;
             if (env == null) {
                 env = ExecutionEnvironmentFactory.getLocal();
@@ -272,7 +272,7 @@ public class MakeProjectFileProvider {
             }
             if (!packageSearch.isEmpty() && isDoSearch) {
                 for (UserOptionsProvider userOptionsProvider : packageSearch) {
-                    NativeFileSearch search = userOptionsProvider.getPackageFileSearch(env);
+                    NativeFileSearch search = userOptionsProvider.getPackageFileSearch(env, conf);
                     if (search != null) {
                         res = search.searchFile(project, fileName);
                         if(res != null) {

@@ -59,9 +59,11 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
+import org.netbeans.modules.cnd.toolchain.support.ToolchainUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -70,7 +72,6 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -88,9 +89,9 @@ public class PkgConfigImpl implements PkgConfig {
     private String drivePrefix;
     private final ExecutionEnvironment env;
 
-    public PkgConfigImpl(ExecutionEnvironment env) {
+    public PkgConfigImpl(ExecutionEnvironment env, MakeConfiguration conf) {
         this.env = env;
-        initPackages();
+        initPackages(conf);
     }
 
     private boolean isWindows() {
@@ -142,10 +143,10 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
     
-    private void initPackages() {
+    private void initPackages(MakeConfiguration conf) {
         if (isWindows()){
             // at first find pkg-config.exe in paths
-            String baseDirectory = getPkgConfihPath();
+            String baseDirectory = getPkgConfihPath(conf);
             if (baseDirectory == null) {
                 CompilerSet set = null;
                 for(CompilerSet cs : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
@@ -197,8 +198,24 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
-    private String getPkgConfihPath(){
-        for(String path : Path.getPath()){
+    private String getPkgConfihPath(MakeConfiguration conf){
+        List<String> buildPaths = null;
+        if (conf != null) {
+            CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+            if (cs != null) {
+                Map<String, String> envMap = new HashMap<String, String>();
+                org.openide.util.Pair<String, String> toolCollectionPath = ToolchainUtilities.modifyPathEnvVariable(env, envMap, cs, ""); // NOI18N
+                String[] split = toolCollectionPath.second().split(";"); // NOI18N
+                buildPaths = new ArrayList<String>(split.length);
+                for(String s : split) {
+                    buildPaths.add(s);
+                }
+            }
+        }
+        if (buildPaths == null) {
+            buildPaths = Path.getPath();
+        }
+        for(String path : buildPaths){
             File file = new File(path+File.separator+"pkg-config.exe"); // NOI18N
             if (file.exists()) {
                 path = path.replace('\\', '/'); // NOI18N
