@@ -194,6 +194,7 @@ public final class BuildOptionsVisual extends JPanel {
                 return types [columnIndex];
             }
         });
+        buildargsTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         buildargsTable.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 buildargsTablePropertyChange(evt);
