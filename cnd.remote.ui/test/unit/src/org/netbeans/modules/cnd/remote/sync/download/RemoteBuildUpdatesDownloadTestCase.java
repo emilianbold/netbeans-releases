@@ -94,6 +94,12 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     public void test_LexYacc_BuildLocalAndRemote() throws Exception {
         doTest_LexYacc_BuildLocalAndRemote(Sync.RFS);
     }
+
+    @ForAllEnvironments
+    public void test_LexYacc_BuildLocalAndRemoteFtp() throws Exception {
+        doTest_LexYacc_BuildLocalAndRemote(Sync.FTP);
+    }
+    
     private void doTest_LexYacc_BuildLocalAndRemote(Sync sync) throws Exception {
         MakeProject makeProject = prepareSampleProject(sync, Toolchain.GNU, "LexYacc", "LexYacc_Build");
         int timeout = getSampleBuildTimeout();
@@ -114,6 +120,10 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     public void test_LexYacc_Updates() throws Exception {
         doTest_LexYacc_Updates(Sync.RFS);
     }
+    @ForAllEnvironments
+    public void test_LexYacc_UpdatesFtp() throws Exception {
+        doTest_LexYacc_Updates(Sync.FTP);
+    }
 
     private void doTest_LexYacc_Updates(Sync sync) throws Exception {
         MakeProject makeProject = prepareSampleProject(sync, Toolchain.GNU, "LexYacc", "LexYacc_Updates");
@@ -132,6 +142,11 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     @ForAllEnvironments
     public void testNonProjectUpdates() throws Exception {
         doTestNonProjectUpdates(Sync.RFS);
+    }
+    
+    @ForAllEnvironments
+    public void testNonProjectUpdatesFtp() throws Exception {
+        doTestNonProjectUpdates(Sync.FTP);
     }
     
     private void doTestNonProjectUpdates(Sync sync) throws Exception {
