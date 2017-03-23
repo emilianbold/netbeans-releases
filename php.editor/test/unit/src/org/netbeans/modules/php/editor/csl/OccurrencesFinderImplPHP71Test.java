@@ -39,9 +39,9 @@
  */
 package org.netbeans.modules.php.editor.csl;
 
-public class PHP71OccurrencesFinderImplTest extends OccurrencesFinderImplTestBase {
+public class OccurrencesFinderImplPHP71Test extends OccurrencesFinderImplTestBase {
 
-    public PHP71OccurrencesFinderImplTest(String testName) {
+    public OccurrencesFinderImplPHP71Test(String testName) {
         super(testName);
     }
 
