@@ -113,12 +113,11 @@ class Commandline {
         
         command.commandStarted();
         try {
-            ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
             String[] args = command.getCliArguments();
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.fine("cli: process created");                        // NOI18N
             }
-            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir("/", getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args); //NOI18N
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir("/", getEnvVar(), command.hasBinaryOutput(), canceled, VCSFileProxy.createFileProxy(fileSystem.getRoot()), executable, args); //NOI18N
 
             if(command.hasBinaryOutput()) {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {

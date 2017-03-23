@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -58,6 +59,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.remote.cli.ApiUtils;
 import org.netbeans.modules.git.remote.cli.GitClient;
@@ -73,6 +75,7 @@ import org.netbeans.modules.git.remote.cli.progress.StatusListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -99,6 +102,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     public AbstractGitTestCase (String testName) throws IOException {
         super(testName);
         System.setProperty("work.dir", getWorkDirPath());
+        System.setProperty("file.encoding", "UTF-8");
         workDir = VCSFileProxy.createFileProxy(getWorkDir());
         repositoryLocation = VCSFileProxy.createFileProxy(workDir, "repo");
         wc = VCSFileProxy.createFileProxy(workDir, getName() + "_wc");
@@ -167,7 +171,8 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     protected void write(VCSFileProxy file, String str) throws IOException {
         OutputStreamWriter w = null;
         try {
-            w = new OutputStreamWriter(VCSFileProxySupport.getOutputStream(file));
+            Charset encoding = RemoteVcsSupport.getEncoding(file);
+            w = new OutputStreamWriter(VCSFileProxySupport.getOutputStream(file), encoding);
             w.write(str);
             w.flush();
         } finally {
@@ -181,7 +186,8 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         StringBuilder sb = new StringBuilder();
         BufferedReader r = null;
         try {
-            r = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            Charset encoding = RemoteVcsSupport.getEncoding(file);
+            r = new BufferedReader(new InputStreamReader(file.getInputStream(false), encoding));
             String s = r.readLine();
             if (s != null) {
                 while( true ) {
@@ -429,9 +435,8 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         String[] args = command.toArray(new String[command.size()]);
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(workdir);
         VCSFileProxySupport.mkdirs(workdir);
-        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, processBuilder, gitPath, args);
+        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, workdir, gitPath, args);
         return Arrays.asList(executeInDir.output.split("\n"));
     }
     
@@ -494,8 +499,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         private String getVersion(ExecutionEnvironment execEnv, FileObject binary) {
             ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
             String[] args = new String[]{"--version"};
-            org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(VCSFileProxy.createFileProxy(binary.getParent()));
-            ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(binary.getParent().getPath(), null, false, canceled, processBuilder, binary.getPath(), args);
+            ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(binary.getParent().getPath(), null, false, canceled, VCSFileProxy.createFileProxy(binary.getParent()), binary.getPath(), args);
             List<String> outputLines = Arrays.asList(executeInDir.output.split("\n"));
             String aVersion = "0.0.0";
             if (outputLines.size() > 0) {

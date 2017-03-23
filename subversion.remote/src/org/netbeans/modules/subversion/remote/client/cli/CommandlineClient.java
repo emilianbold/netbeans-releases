@@ -767,14 +767,7 @@ public class CommandlineClient implements SvnClient {
         Annotation[] annotations = blameCmd.getAnnotation();
         exec(catCmd);
         InputStream is = catCmd.getOutput();
-        FileObject fo = file.toFileObject();
-        Charset encoding = null;
-        if (fo != null) {
-            encoding = FileEncodingQuery.getEncoding(fo);
-        }
-        if (encoding == null) {
-            encoding = FileEncodingQuery.getDefaultEncoding();
-        }
+        Charset encoding = RemoteVcsSupport.getEncoding(file);
 
         Annotations ret = new Annotations();
         BufferedReader r = new BufferedReader(new InputStreamReader(is, encoding));

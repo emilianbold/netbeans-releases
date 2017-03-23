@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.git.remote.cli.jgit.commands;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitException;
@@ -53,7 +56,9 @@ import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.jgit.Utils;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -138,13 +143,22 @@ public class CatCommand extends GitCommand {
 
                 @Override
                 public void outputParser(String output) throws GitException {
+                    BufferedWriter bw = null;
                     try {
                         found = true;
-                        for(int i = 0; i < output.length(); i++)  {
-                            os.write(output.charAt(i));
-                        }
+                        Charset encoding = RemoteVcsSupport.getEncoding(file);
+                        bw = new BufferedWriter(new OutputStreamWriter(os, encoding));
+                        bw.write(output);
+                        bw.flush();
                     } catch (Exception e) {
                         throw new GitException(e);
+                    } finally {
+                        if (bw != null) {
+                            try {
+                                bw.close();
+                            } catch (IOException ex) {
+                            }
+                        }
                     }
                 }
 

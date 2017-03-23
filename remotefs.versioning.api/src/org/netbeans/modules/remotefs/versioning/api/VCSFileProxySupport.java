@@ -144,7 +144,7 @@ public final class VCSFileProxySupport {
             return javaFile.mkdir();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), file,
                     "mkdir", file.getPath()); //NOI18N
             if (!status.isOK()) {
                 LOG.log(Level.INFO, "mkdir {0} failed: {1}", new Object[]{file.getPath(), status.toString()}); //NOI18N
@@ -161,7 +161,7 @@ public final class VCSFileProxySupport {
             return javaFile.mkdirs();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(null, null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
+            ExitStatus status = ProcessUtils.executeInDir(null, null, false, new ProcessUtils.Canceler(), file,
                     "mkdir", "-p", file.getPath()); //NOI18N
             if (!status.isOK()) {
                 LOG.log(Level.INFO, "mkdir -p {0} failed: {1}", new Object[]{file, status}); //NOI18N
@@ -298,7 +298,7 @@ public final class VCSFileProxySupport {
         if (!parentFile.exists()) {
             mkdirs(parentFile);
         }
-         ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
+         ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), file,
                  "touch", file.getName()); //NOI18N
         if (!status.isOK()) {
             LOG.log(Level.INFO, "touch {0} failed: {1}", new Object[]{file, status}); //NOI18N
@@ -394,8 +394,7 @@ public final class VCSFileProxySupport {
         } else {
             // TODO: rewrite it with using sftp
             ExitStatus status = ProcessUtils.executeInDir(from.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(),
-                    VersioningSupport.createProcessBuilder(from),
-                    "mv", "-f", from.getName(), to.getPath()); //NOI18N
+                    from, "mv", "-f", from.getName(), to.getPath()); //NOI18N
             if (!status.isOK()) {
                 LOG.log(Level.INFO, "mv -f {0} {1} failed: {2}", new Object[]{from, to, status});   //NOI18N                        
                 return false;
@@ -932,7 +931,7 @@ public final class VCSFileProxySupport {
         if (fo == null || fo.isFolder()) {
             return;
         }
-        Charset c = FileEncodingQuery.getEncoding(fo);
+        Charset c = RemoteVcsSupport.getEncoding(referenceFile);
         if (c == null) {
             return;
         }
