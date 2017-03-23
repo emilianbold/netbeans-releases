@@ -212,7 +212,7 @@ final class CompletionContextFinder {
 
     public static enum CompletionContext {
 
-        EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
+        EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, RETURN_TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD,
         GROUP_USE_KEYWORD, GROUP_USE_CONST_KEYWORD, GROUP_USE_FUNCTION_KEYWORD,
@@ -825,6 +825,7 @@ final class CompletionContextFinder {
         CompletionContext contextForSeparator = null;
         boolean isNamespaceSeparator = false;
         boolean testCompletionSeparator = true;
+        boolean checkReturnTypeSeparator = false;
         int orgOffset = tokenSequence.offset();
         tokenSequence.moveNext();
         boolean first = true;
@@ -853,12 +854,18 @@ final class CompletionContextFinder {
                         isCompletionSeparator = true;
                         contextForSeparator = CompletionContext.DEFAULT_PARAMETER_VALUE;
                     } else if (isParamSeparator(cToken)
-                            || isNullableTypesPrefix(cToken)
-                            || isReturnTypeSeparator(cToken)
-                            || isArray(token)
-                            || isCallable(token)) {
+                            || isNullableTypesPrefix(cToken)) {
                         isCompletionSeparator = true;
                         contextForSeparator = CompletionContext.TYPE_NAME;
+                    } else if (isArray(token)
+                            || isCallable(token)
+                            || isIterable(token)) {
+                        isCompletionSeparator = true;
+                        contextForSeparator = CompletionContext.TYPE_NAME;
+                        checkReturnTypeSeparator = true;
+                    } else if (isReturnTypeSeparator(cToken)) {
+                        isCompletionSeparator = true;
+                        contextForSeparator = CompletionContext.RETURN_TYPE_NAME;
                     } else if (isAcceptedPrefix(cToken)) {
                         if (isNamespaceSeparator(cToken)) {
                             isNamespaceSeparator = true;
@@ -878,6 +885,13 @@ final class CompletionContextFinder {
                         continue;
                     } else if (!isCommentToken(tokenSequence)) {
                         testCompletionSeparator = false;
+                    }
+                } else if (checkReturnTypeSeparator) {
+                    if (!isWhiteSpace(cToken)) {
+                        checkReturnTypeSeparator = false;
+                    }
+                    if (isReturnTypeSeparator(cToken)) {
+                        contextForSeparator = CompletionContext.RETURN_TYPE_NAME;
                     }
                 } else if (isFunctionDeclaration(cToken)) {
                     isFunctionDeclaration = true;
@@ -955,6 +969,10 @@ final class CompletionContextFinder {
         return token.id().equals(PHPTokenId.PHP_CALLABLE);
     }
 
+    private static boolean isIterable(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_ITERABLE);
+    }
+
     private static boolean isAcceptedPrefix(Token<PHPTokenId> token) {
         return isVariable(token) || isReference(token)
                 || isRightBracket(token) || isString(token) || isWhiteSpace(token) || isNamespaceSeparator(token)
@@ -966,7 +984,8 @@ final class CompletionContextFinder {
         return id.equals(PHPTokenId.PHP_TYPE_BOOL)
                 || id.equals(PHPTokenId.PHP_TYPE_FLOAT)
                 || id.equals(PHPTokenId.PHP_TYPE_INT)
-                || id.equals(PHPTokenId.PHP_TYPE_STRING);
+                || id.equals(PHPTokenId.PHP_TYPE_STRING)
+                || id.equals(PHPTokenId.PHP_TYPE_VOID);
     }
 
     private static boolean isComma(Token<PHPTokenId> token) {
