@@ -63,7 +63,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.setup.support.HostUpdatesRegistry;
@@ -494,6 +493,7 @@ import org.openide.util.Utilities;
         logger.log(Level.FINE, "registering %d updated files", remoteUpdates.size());
     }
 
+    @SuppressWarnings("deprecation")
     public void runNewFilesDiscovery() throws IOException, InterruptedException, ConnectionManager.CancellationException {
         if (timeStampFile == null) {
             return;
@@ -556,7 +556,7 @@ import org.openide.util.Utilities;
 
         final AtomicInteger lineCnt = new AtomicInteger();
 
-        LineProcessor lp = new LineProcessor() {
+        org.netbeans.api.extexecution.input.LineProcessor lp = new org.netbeans.api.extexecution.input.LineProcessor() {
             @Override
             public void processLine(String remoteFile) {
                 lineCnt.incrementAndGet();

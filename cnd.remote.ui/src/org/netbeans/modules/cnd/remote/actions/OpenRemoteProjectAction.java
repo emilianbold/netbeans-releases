@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction", category = "Project")
-@ActionRegistration(iconInMenu = true, displayName = "#OpenRemoteProjectAction.submenu.title")
+@ActionRegistration(iconInMenu = true, displayName = "#OpenRemoteProjectAction.submenu.title", lazy = true)
 @ActionReferences({
     //@ActionReference(path = "Menu/File", position = 520),
     @ActionReference(path = "Toolbars/Remote", position = 2000)
