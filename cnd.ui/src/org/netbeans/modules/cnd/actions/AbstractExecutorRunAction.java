@@ -564,14 +564,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             closeOutputListener();
 
             NativeProcess process = processRef.get();
-            try {
-                if (process != null && listener != null) {
-                    listener.executionFinished(process.exitValue());
-                }
-            } finally {
-                if (syncWorker != null) {
-                    syncWorker.shutdown();
-                }
+            if (syncWorker != null) {
+                syncWorker.shutdown();
+            }
+            if (process != null && listener != null) {
+                listener.executionFinished(process.exitValue());
             }
         }
 

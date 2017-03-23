@@ -54,6 +54,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
 import org.netbeans.modules.cnd.api.remote.*;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -227,7 +228,7 @@ public class ExecuteCommand {
             }
         }
         traceExecutable(executable, buildDir, args, execEnv.toString(), mm.toMap());
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
+        AbstractExecutorRunAction.ProcessChangeListener processChangeListener = new AbstractExecutorRunAction.ProcessChangeListener(listener, outputListener,
                 new CompilerLineConvertor(project, getCompilerSet(), execEnv, RemoteFileUtil.getFileObject(buildDir, execEnv), inputOutput), syncWorker); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
@@ -437,95 +438,5 @@ public class ExecuteCommand {
             }
         }
         return Collections.singletonMap(pi.getPathName(), defaultPath);
-    }
-
-
-    private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
-
-        private final AtomicReference<NativeProcess> processRef = new AtomicReference<>();
-        private final ExecutionListener listener;
-        private Writer outputListener;
-        private final LineConvertor lineConvertor;
-        private final RemoteSyncWorker syncWorker;
-
-        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor, RemoteSyncWorker syncWorker) {
-            this.listener = listener;
-            this.outputListener = outputListener;
-            this.lineConvertor = lineConvertor;
-            this.syncWorker = syncWorker;
-        }
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            if (!(e instanceof NativeProcessChangeEvent)) {
-                return;
-            }
-
-            final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-            processRef.compareAndSet(null, (NativeProcess) event.getSource());
-
-            if (NativeProcess.State.RUNNING == event.state) {
-                if (listener != null) {
-                    listener.executionStarted(event.pid);
-                }
-            }
-        }
-
-        @Override
-        public void run() {
-            closeOutputListener();
-
-            NativeProcess process = processRef.get();
-            try {
-                if (process != null && listener != null) {
-                    listener.executionFinished(process.exitValue());
-                }
-            } finally {
-                if (syncWorker != null) {
-                    syncWorker.shutdown();
-                }
-            }
-        }
-
-        @Override
-        public LineConvertor newLineConvertor() {
-            return new LineConvertor() {
-
-                @Override
-                public List<ConvertedLine> convert(String line) {
-                    return ProcessChangeListener.this.convert(line);
-                }
-            };
-        }
-
-        private synchronized void closeOutputListener() {
-            if (outputListener != null) {
-                try {
-                    outputListener.flush();
-                    outputListener.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                }
-                outputListener = null;
-            }
-            if (lineConvertor instanceof ChangeListener) {
-                ((ChangeListener)lineConvertor).stateChanged(new ChangeEvent(this));
-            }
-        }
-
-        private synchronized List<ConvertedLine> convert(String line) {
-            if (outputListener != null) {
-                try {
-                    outputListener.write(line);
-                    outputListener.write("\n"); // NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            if (lineConvertor != null) {
-                return lineConvertor.convert(line);
-            }
-            return null;
-        }
     }
 }
