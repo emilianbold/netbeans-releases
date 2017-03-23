@@ -96,18 +96,52 @@ public final class CommandLine {
      * @since 2.20
      */
     public static CommandLine create(Class<?>... classes) {
+        return createImpl(classes);
+    }
+
+    /** Creates new command line processor based on options defined in
+     * the provided <code>objects</code>. The objects can implement
+     * the {@link org.netbeans.spi.sendopts.OptionProcessor processor}
+     * interface or (if they don't) their classes are scanned
+     * for fields annotated with {@code @}{@link org.netbeans.spi.sendopts.Arg}
+     * annotation. Alternatively one can register {@link Class} instances with
+     * default constructor - such classes will be instantiated and then
+     * processed as described above.
+     *
+     * @param instances objects that declare the command line options
+     * @return new command line object that contains options declared in the
+     *   provided classes
+     * @since 2.37
+     */
+    public static CommandLine create(Object... instances) {
+        return createImpl(instances);
+    }
+
+    private static CommandLine createImpl(Object[] instances) {
         List<OptionProcessor> arr = new ArrayList<OptionProcessor>();
-        for (Class<?> c : classes) {
+        for (Object o : instances) {
+            Class<?> c;
+            Object instance;
+            if (o instanceof Class<?>) {
+                c = (Class<?>)o;
+                instance = null;
+            } else {
+                c = o.getClass();
+                instance = o;
+            }
             if (OptionProcessor.class.isAssignableFrom(c)) {
                 try {
-                    arr.add((OptionProcessor) c.newInstance());
+                    if (instance == null) {
+                        instance = c.newInstance();
+                    }
+                    arr.add((OptionProcessor) instance);
                 } catch (InstantiationException ex) {
                     throw new IllegalStateException(ex);
                 } catch (IllegalAccessException ex) {
                     throw new IllegalStateException(ex);
                 }
             } else {
-                arr.add(DefaultProcessor.create(c));
+                arr.add(DefaultProcessor.create(c, instance));
             }
         }
         return new CommandLine(arr);
