@@ -27,11 +27,11 @@
           <Component id="noCacheCheckBox" alignment="0" max="32767" attributes="0"/>
           <Component id="jLabel1" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="jScrollPane2" min="-2" pref="347" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" pref="347" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addVariableButton" max="32767" attributes="0"/>
-                  <Component id="deleteVariableButton" pref="94" max="32767" attributes="0"/>
+                  <Component id="deleteVariableButton" min="-2" pref="94" max="-2" attributes="0"/>
+                  <Component id="addVariableButton" min="-2" pref="94" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>

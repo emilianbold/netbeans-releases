@@ -34,11 +34,11 @@
           <Component id="privilegedCheckBox" alignment="0" max="32767" attributes="0"/>
           <Component id="mountVolumesCheckBox" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="jScrollPane2" min="-2" pref="447" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" pref="447" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addButton" max="32767" attributes="0"/>
-                  <Component id="deleteButton" pref="87" max="32767" attributes="0"/>
+                  <Component id="addButton" min="-2" pref="88" max="-2" attributes="0"/>
+                  <Component id="deleteButton" min="-2" pref="88" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
