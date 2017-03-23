@@ -46,8 +46,10 @@ package org.netbeans.modules.cnd.remote.sync.download;
 
 import java.io.*;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -56,8 +58,14 @@ class HostUpdatesPersistence {
 
     private final Properties data;
     private final FileObject dataFile;
-    private static final String VERSION = "1.0"; // NOI18N
-    // NOI18N
+
+    // In version 2.0 value has format
+    // (0|1)(p|v)  
+    // where 1 means "on" and 0 means "off"
+    // and p means "permanent" (i.e. user checked "remember my choice") 
+    // and v means, in contrary, "volatile" 
+    private static final String VERSION = "2.0"; // NOI18N
+
     private static final String VERSION_KEY = "____VERSION"; // NOI18N
 
     public HostUpdatesPersistence(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
@@ -114,33 +122,19 @@ class HostUpdatesPersistence {
     }
 
     public boolean getFileSelected(File file, boolean defaultValue) {
-        return getBoolean(file.getAbsolutePath(), defaultValue);
-    }
-
-    public void setFileSelected(File file, boolean selected) {
-        setBoolean(file.getAbsolutePath(), selected);
-    }
-
-    public boolean getRememberChoice() {
-        return getBoolean("", false);
-    }
-
-    public void setRememberChoice(boolean value) {
-        setBoolean("", value);
-    }
-
-    private boolean getBoolean(String key, boolean defaultValue) {
+        final String key = file.getAbsolutePath();
         Object value = data.get(key);
-        if ("1".equals(value)) { // NOI18N
-            return true;
-        } else if ("0".equals(value)) { // NOI18N
-            return false;
-        } else {
-            return defaultValue;
-        }
+        return (value instanceof String && ((String) value).startsWith("1"));
     }
 
-    private void setBoolean(String key, boolean value) {
-        data.put(key, value ? "1" : "0"); // NOI18N
+    public void setFileSelected(File file, boolean selected, boolean markAsPermanent) {
+        final String key = file.getAbsolutePath();
+        data.put(key, (selected ? "1" : "0") + (markAsPermanent ? 'p' : 'v')); // NOI18N
+    }
+    
+    public boolean isAnswerPersistent(File file) {
+        final String key = file.getAbsolutePath();
+        Object value = data.get(key);
+        return (value instanceof String && ((String) value).endsWith("p"));
     }
 }
