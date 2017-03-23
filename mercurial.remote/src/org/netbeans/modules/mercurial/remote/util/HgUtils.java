@@ -101,6 +101,7 @@ import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.ui.status.SyncFileNode;
 import org.netbeans.modules.remotefs.versioning.api.FileObjectIndexingBridgeProvider;
 import org.netbeans.modules.remotefs.versioning.api.FileSelector;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -1374,14 +1375,7 @@ itor tabs #66700).
         }
         BufferedReader r1 = null;
         BufferedReader r2 = null;
-        Charset encoding = null;
-        FileObject fo = fileToOpen.toFileObject();
-        if (fo != null) {
-            encoding = FileEncodingQuery.getEncoding(fo);
-        }
-        if (encoding == null) {
-            encoding = Charset.forName("UTF-8"); //NOI18N
-        }
+        Charset encoding = RemoteVcsSupport.getEncoding(fileToOpen);
         try {
             r1 = new BufferedReader(new InputStreamReader(fileRevision1.getInputStream(false), encoding));
             r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false), encoding));
