@@ -42,7 +42,9 @@ package org.netbeans.modules.java.j2semodule.ui;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.project.ui.MultiModuleNodeFactory;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
+import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerLibraries;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileUtil;
@@ -72,14 +74,25 @@ public final class ModuleNodeFactory implements NodeFactory {
 
     @NonNull
     private NodeFactory getDelegate(@NonNull final J2SEModularProject mp) {
-        final NodeFactory res = MultiModuleNodeFactory.create(
-                mp.getUpdateHelper(),
-                mp.evaluator(),
-                mp.getReferenceHelper(),
-                mp.getModuleRoots(),
-                mp.getSourceRoots(),
-                mp.getTestModuleRoots(),
-                mp.getTestSourceRoots());
+        final NodeFactory res = MultiModuleNodeFactory.Builder.create()
+                .setSources(mp.getModuleRoots(),mp.getSourceRoots())
+                .setTests(mp.getTestModuleRoots(), mp.getTestSourceRoots())
+                .addLibrariesNodes(mp.getUpdateHelper(), mp.evaluator(), mp.getReferenceHelper())
+                .addLibrariesNodeActions(
+//                                    LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
+//                                    LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getSourceRoots(), null),
+//                                    LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
+//                                    null,
+                    ProjectUISupport.createPreselectPropertiesAction(mp, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
+                )
+                .addTestLibrariesNodeActions(
+//                                    LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
+//                                    LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
+//                                    LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
+//                                    null,
+                    ProjectUISupport.createPreselectPropertiesAction(mp, "Libraries", CustomizerLibraries.COMPILE_TESTS)    //NOI18N
+                )
+                .build();
         return res;
     }
 }
