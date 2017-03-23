@@ -124,7 +124,7 @@ class HostUpdatesPersistence {
     public boolean getFileSelected(File file, boolean defaultValue) {
         final String key = file.getAbsolutePath();
         Object value = data.get(key);
-        return (value instanceof String && ((String) value).startsWith("1"));
+        return (value instanceof String && ((String) value).startsWith("1")); // NOI18N
     }
 
     public void setFileSelected(File file, boolean selected, boolean markAsPermanent) {
@@ -135,6 +135,6 @@ class HostUpdatesPersistence {
     public boolean isAnswerPersistent(File file) {
         final String key = file.getAbsolutePath();
         Object value = data.get(key);
-        return (value instanceof String && ((String) value).endsWith("p"));
+        return (value instanceof String && ((String) value).endsWith("p")); // NOI18N
     }
 }
