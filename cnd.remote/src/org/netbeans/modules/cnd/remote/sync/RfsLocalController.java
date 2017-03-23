@@ -156,7 +156,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private final AtomicReference<CountDownLatch> shutDownLatch = new AtomicReference();
+    private final AtomicReference<CountDownLatch> shutDownLatch = new AtomicReference<>();
 
     /*package*/ void waitShutDownFinished() {
         CountDownLatch latch = shutDownLatch.get();

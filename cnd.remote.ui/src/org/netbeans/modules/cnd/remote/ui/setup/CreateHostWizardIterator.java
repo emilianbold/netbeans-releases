@@ -94,7 +94,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         fireStateChanged();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanelsUnchecked() {
 
         List<WizardDescriptor.Panel<WizardDescriptor>> pList = new ArrayList<>();

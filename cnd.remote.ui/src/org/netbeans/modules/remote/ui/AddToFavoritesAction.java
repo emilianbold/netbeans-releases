@@ -82,7 +82,7 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Voskresensky
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.AddToFavoritesAction", category = "NativeRemote")
-@ActionRegistration(displayName = "AddToFavoritesMenuItem")
+@ActionRegistration(displayName = "AddToFavoritesMenuItem", lazy = true)
 @ActionReference(path = "Remote/Host/Actions", name = "AddToFavoritesAction", position = 600)
 public class AddToFavoritesAction extends SingleHostAction {
 

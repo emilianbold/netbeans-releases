@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.ConnectAction", category = "NativeRemote")
-@ActionRegistration(displayName = "ConnectMenuItem")
+@ActionRegistration(displayName = "ConnectMenuItem", lazy = true)
 @ActionReference(path = "Remote/Host/Actions", name = "ConnectAction", position = 100)
 public class ConnectAction extends SingleHostAction {
     
