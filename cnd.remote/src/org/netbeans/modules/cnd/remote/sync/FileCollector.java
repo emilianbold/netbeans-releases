@@ -560,7 +560,7 @@ import org.openide.util.Utilities;
             @Override
             public void processLine(String remoteFile) {
                 lineCnt.incrementAndGet();
-                logger.log(Level.FINEST, " Updates check: %s", remoteFile);
+                logger.log(Level.FINEST, "Updates check: %s", remoteFile);
                 String realPath = canonicalToAbsolute.get(remoteFile);
                 if (realPath != null) {
                     remoteFile = realPath;
@@ -579,6 +579,7 @@ import org.openide.util.Utilities;
                         }
                     }
                     if (add) {
+                        logger.log(Level.FINEST, "Updated %s", remoteFile);
                         remoteUpdates.add(localFile);
                         RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
                     }
