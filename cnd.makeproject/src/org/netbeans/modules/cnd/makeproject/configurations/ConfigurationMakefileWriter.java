@@ -323,14 +323,14 @@ public class ConfigurationMakefileWriter {
                     break;
                 }
                 if (line.contains("<PN>")) { // NOI18N
-                    line = line.replaceFirst("<PN>", projectName); // NOI18N
+                    line = line.replace("<PN>", projectName); // NOI18N
                 } else if (line.contains("<CNS>")) { // NOI18N
-                    line = line.replaceFirst("<CNS>", configurations.toString()); // NOI18N
+                    line = line.replace("<CNS>", configurations.toString()); // NOI18N
                 } else if (line.contains("<CN>")) { // NOI18N
                     if (projectDescriptor.getConfs().getConf(0) != null) {
-                        line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
+                        line = line.replace("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
                     } else {
-                        line = line.replaceFirst("<CN>", ""); // NOI18N
+                        line = line.replace("<CN>", ""); // NOI18N
                     }
                 }
                 bw.write(line + "\n"); // NOI18N
