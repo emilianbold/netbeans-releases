@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -89,8 +90,7 @@ public class PHP71UnhandledError extends UnhandledErrorRule {
     }
 
     private static boolean appliesTo(FileObject fileObject) {
-        // XXX use PhpVersion
-        return CodeUtils.isLessThanPhp71(fileObject);
+        return CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_71);
     }
 
     //~ Inner classes
