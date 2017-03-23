@@ -44,11 +44,6 @@
 
 package org.netbeans.modules.java.api.common.project.ui;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.DirectiveTree;
-import com.sun.source.tree.ModuleTree;
-import com.sun.source.tree.RequiresTree;
-import com.sun.source.util.TreeScanner;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -89,7 +84,6 @@ import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.api.actions.Savable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -116,12 +110,11 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
@@ -146,7 +139,6 @@ import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
@@ -206,6 +198,7 @@ public final class LibrariesNode extends AbstractNode {
             webModuleElementName,
             cs,
             extraKeys,
+            null,
             null);
     }
 
@@ -224,10 +217,11 @@ public final class LibrariesNode extends AbstractNode {
             @NullAllowed final String webModuleElementName,
             @NonNull final ClassPathSupport cs,
             @NullAllowed final Callback extraKeys,
-            @NullAllowed final SourceRoots roots) {
+            @NullAllowed final ClassPath sourcePath,
+            @NullAllowed final ClassPath moduleSourcePath) {
         super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperties,
                     classPathIgnoreRef, boot, modulePath, modulePathIgnoreRef,
-                    webModuleElementName, cs, extraKeys, roots),
+                    webModuleElementName, cs, extraKeys, sourcePath, moduleSourcePath),
                 Lookups.fixed(project, new PathFinder()));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
@@ -253,7 +247,8 @@ public final class LibrariesNode extends AbstractNode {
         private Pair<Set<String>,ClassPath> modulePath;
         private String webModuleElementName;
         private NodeList<Key> extraNodes;
-        private SourceRoots roots;
+        private ClassPath sourcePath;
+        private ClassPath moduleSourcePath;
 
         public Builder(
             @NonNull final Project project,
@@ -410,7 +405,7 @@ public final class LibrariesNode extends AbstractNode {
                     moduleInfoBasedClassPath);
             return this;
         }
-        
+
         /**
          * Adds module path properties.
          * @param props the properties to be added
@@ -443,16 +438,30 @@ public final class LibrariesNode extends AbstractNode {
         }
         
         /**
-         * Sets the main {@link SourceRoots} for the {@link LibrariesNode}.
-         * The given source roots are used as a hint for module-info lookup.
-         * @param roots the related {@link SourceRoots}
+         * Sets the main source path for the {@link LibrariesNode}.
+         * The given source path is used as a hint for module-info lookup.
+         * @param sourcePath the source {@link ClassPath}
          * @return the {@link Builder}
-         * @since 1.89
+         * @since 1.114
          */
         @NonNull
-        public Builder setSourceRoots(@NonNull final SourceRoots roots) {
-            Parameters.notNull("roots", roots); //NOI18N
-            this.roots = roots;
+        public Builder setSourcePath(@NonNull final ClassPath sourcePath) {
+            Parameters.notNull("sourcePath", sourcePath); //NOI18N
+            this.sourcePath = sourcePath;
+            return this;
+        }
+
+        /**
+         * Sets the module source path for multi module project.
+         * The module source path is used to lookup project own modules.
+         * @param moduleSourcePath  the project module source path
+         * @return the {@link Builder}
+         * @since 1.114
+         */
+        @NonNull
+        public Builder setModuleSourcePath(@NonNull final ClassPath moduleSourcePath) {
+            Parameters.notNull("moduleSourcePath", moduleSourcePath);
+            this.moduleSourcePath = moduleSourcePath;
             return this;
         }
 
@@ -485,7 +494,8 @@ public final class LibrariesNode extends AbstractNode {
                 webModuleElementName,
                 cs,
                 extraNodes != null ? new CallBackImpl(extraNodes) : null,
-                roots);
+                sourcePath,
+                moduleSourcePath);
         }
 
         private static final class CallBackImpl implements Callback {
@@ -644,7 +654,8 @@ public final class LibrariesNode extends AbstractNode {
         private final String webModuleElementName;
         private final ClassPathSupport cs;
         private final SourceLevelQuery.Result slResult;
-        private final SourceRoots roots;
+        private final ClassPath sourcePath;
+        private final ClassPath moduleSourcePath;
         
         private Callback extraKeys;
         private Project project;
@@ -670,7 +681,8 @@ public final class LibrariesNode extends AbstractNode {
                 @NullAllowed final String webModuleElementName,
                 @NonNull final ClassPathSupport cs,
                 @NullAllowed final Callback extraKeys,
-                @NullAllowed final SourceRoots roots) {
+                @NullAllowed final ClassPath sourcePath,
+                @NullAllowed final ClassPath moduleSourcePath) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
@@ -687,7 +699,8 @@ public final class LibrariesNode extends AbstractNode {
             this.project = project;
             this.slResult = SourceLevelQuery.getSourceLevel2(
                     this.helper.getAntProjectHelper().getProjectDirectory());
-            this.roots = roots;
+            this.sourcePath = sourcePath;
+            this.moduleSourcePath = moduleSourcePath;
             this.coResult = new AtomicReference<>();
             this.sourceRootsListener = new AtomicReference<>();
         }
@@ -800,6 +813,13 @@ public final class LibrariesNode extends AbstractNode {
                     result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
                 }
+                case Key.TYPE_MODULE:
+                {
+                    result = new Node[] {
+                        new ModuleNode(key.getEntryId(), key.getArtifactLocation())
+                    };
+                    break;
+                }
                 case Key.TYPE_OTHER:
                     result = extraKeys.createNodes(key);
                     break;
@@ -817,6 +837,53 @@ public final class LibrariesNode extends AbstractNode {
             EditableProperties privateProps = PropertyUtils.getGlobalProperties();
             List<URL> rootsList = new ArrayList<>();
             List<Key> result = new ArrayList<>();
+            final String sl = slResult.getSourceLevel();
+            final boolean supportsModules = sl != null && CommonModuleUtils.JDK9.compareTo(new SpecificationVersion(sl)) <= 0;
+            if (supportsModules && moduleSourcePath != null && sourcePath != null) {
+                final Collection<URL> srcRoots = sourcePath.entries().stream()
+                        .map((e) -> e.getURL())
+                        .collect(Collectors.toList());
+                final Collection<Pair<String,URL>> modRoots = Arrays.stream(moduleSourcePath.getRoots())
+                        .flatMap((fo) -> Arrays.stream(fo.getChildren()))
+                        .map((fo) -> {
+                            if (fo.isFolder() && !fo.getName().startsWith(".")) {   //NOI18N
+                                return Pair.of(fo.getNameExt(),fo.toURL());
+                            } else {
+                                return null;
+                            }
+                        })
+                        .filter((p) -> p != null)
+                        .sorted((a,b) -> a.first().compareTo(b.first()))
+                        .collect(Collectors.toList());
+                final Set<String> relPaths = new HashSet<>();
+                for (Pair<String,URL> modRoot : modRoots) {
+                    for (URL srcRoot : srcRoots) {
+                        final String sef = srcRoot.toExternalForm();
+                        final String mef = modRoot.second().toExternalForm();
+                        if (sef.startsWith(mef)) {
+                            relPaths.add(sef.substring(mef.length()));
+                        }
+                    }
+                }
+                modRoots.stream()
+                        .map((p) -> {
+                            try {
+                                final URL srcRoot = new URL(p.second().toExternalForm() + relPaths.iterator().next());
+                                final URL bin = Arrays.stream(BinaryForSourceQuery.findBinaryRoots(srcRoot).getRoots())
+                                        .filter(FileUtil::isArchiveArtifact)
+                                        .findFirst()
+                                        .orElse(null);
+                                if (bin != null) {
+                                    return Key.module(p.first(), bin.toURI());
+                                }
+                            } catch (MalformedURLException | URISyntaxException e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                            return null;
+                        })
+                        .filter((k) -> k != null)
+                        .forEach(result::add);
+            }
             for (String classPathProperty : classPathProperties) {
                 result.addAll(getKeys(
                         projectSharedProps,
@@ -829,12 +896,11 @@ public final class LibrariesNode extends AbstractNode {
                         null,
                         rootsList));
             }
-            final String sl = slResult.getSourceLevel();
-            if (sl != null && CommonModuleUtils.JDK9.compareTo(new SpecificationVersion(sl))<=0) {
+            if (supportsModules) {
                 final RemoveFromModuleInfo rfmi = new RemoveFromModuleInfo(
                         helper,
                         eval,
-                        roots);
+                        sourcePath);
                 for (String modulePathProperty : modulePath.first()) {
                     result.addAll(getKeys(
                             projectSharedProps,
@@ -1026,8 +1092,8 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void listenOnCompilerOptions() {
-            if (coResult.get() == null && roots != null) {
-                final FileObject[] rootFos = roots.getRoots();
+            if (coResult.get() == null && sourcePath != null) {
+                final FileObject[] rootFos = sourcePath.getRoots();
                 if (rootFos.length > 0) {
                     sourceRootsListener.set(null);
                     final CompilerOptionsQuery.Result cor = CompilerOptionsQuery.getOptions(rootFos[0]);
@@ -1039,13 +1105,13 @@ public final class LibrariesNode extends AbstractNode {
                     PropertyChangeListener l = sourceRootsListener.get();
                     if (l == null) {
                         l = (e) -> {
-                            if (SourceRoots.PROP_ROOTS.equals(e.getPropertyName())) {
+                            if (ClassPath.PROP_ROOTS.equals(e.getPropertyName())) {
                                 listenOnCompilerOptions();
                                 reset(false);
                             }
                         };
                         if (sourceRootsListener.compareAndSet(null,l)) {
-                            roots.addPropertyChangeListener(WeakListeners.propertyChange(l, roots));
+                            sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(l, sourcePath));
                         }
                     }
                 }
@@ -1162,15 +1228,15 @@ public final class LibrariesNode extends AbstractNode {
         private static final class RemoveFromModuleInfo implements Consumer<Pair<String,String>> {
             private final UpdateHelper helper;
             private final PropertyEvaluator eval;
-            private final SourceRoots roots;
+            private final ClassPath sourcePath;
             
             RemoveFromModuleInfo(
                     @NonNull final UpdateHelper helper,
                     @NonNull final PropertyEvaluator eval,
-                    @NullAllowed final SourceRoots roots) {
+                    @NullAllowed final ClassPath sourcePath) {
                 this.helper = helper;
                 this.eval = eval;
-                this.roots = roots;
+                this.sourcePath = sourcePath;
             }
 
             @Override
@@ -1198,10 +1264,12 @@ public final class LibrariesNode extends AbstractNode {
             private FileObject[][] findSourceRoots() {
                 final List<FileObject[]> res = new ArrayList<>();
                 final Predicate<FileObject> accepts;
-                if (roots != null) {
-                    res.add(roots.getRoots());
+                if (sourcePath != null) {
+                    res.add(sourcePath.getRoots());
                     final Set<URL> rs = new HashSet<>();
-                    Collections.addAll(rs, roots.getRootURLs());
+                    sourcePath.entries().stream()
+                            .map(ClassPath.Entry::getURL)
+                            .forEach(rs::add);
                     accepts = (p) -> {
                         final List<URL> s4t = Arrays.asList(UnitTestForSourceQuery.findSources(p));
                         return !s4t.isEmpty() && rs.containsAll(s4t);
@@ -1220,7 +1288,7 @@ public final class LibrariesNode extends AbstractNode {
                                 res.add(sr);
                             }
                         }
-                    }                    
+                    }
                 }
                 return res.toArray(new FileObject[res.size()][]);
             }
@@ -1236,6 +1304,7 @@ public final class LibrariesNode extends AbstractNode {
         static final int TYPE_PROJECT = 3;          //project
         static final int TYPE_OTHER = 4;            //extension provided by Callback
         static final int TYPE_FILE = 5;             //direct file not added by ReferenceHelper
+        static final int TYPE_MODULE = 6;           //module form same multi module proejct
 
         private int type;
         private String classPathId;
@@ -1289,6 +1358,13 @@ public final class LibrariesNode extends AbstractNode {
             return new Key(TYPE_FILE, sg, classPathId, entryId, preRemoveAction, postRemoveAction);
         }
 
+        @NonNull
+        private static Key module(
+                @NonNull final String moduleName,
+                @NonNull final URI uri) {
+            return new Key(moduleName, uri);
+        }
+
         public Key (String anID) {
             this.type = TYPE_OTHER;
             this.anID = anID;
@@ -1297,6 +1373,17 @@ public final class LibrariesNode extends AbstractNode {
 
         private Key () {
             type = TYPE_PLATFORM;
+            preRemoveAction = postRemoveAction = null;
+        }
+
+        private Key(
+                @NonNull final String moduleName,
+                @NonNull final URI uri) {
+            assert moduleName != null;
+            assert uri != null;
+            this.type = TYPE_MODULE;
+            this.entryId = moduleName;
+            this.uri = uri;
             preRemoveAction = postRemoveAction = null;
         }
 
@@ -1375,6 +1462,8 @@ public final class LibrariesNode extends AbstractNode {
                             }
                         })
                         .orElse(null);
+            } else if (type == TYPE_MODULE){
+                return uri;
             } else {
                 return null;
             }
@@ -1401,6 +1490,9 @@ public final class LibrariesNode extends AbstractNode {
                     break;
                 case TYPE_PROJECT:
                     hashCode ^= this.antArtifact == null ? 0 : this.antArtifact.hashCode();
+                    break;
+                case TYPE_MODULE:
+                    hashCode ^= entryId.hashCode();
                     break;
                 case TYPE_OTHER:
                     hashCode ^= anID.hashCode();
@@ -1431,6 +1523,9 @@ public final class LibrariesNode extends AbstractNode {
                         (this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId));
                 case TYPE_PLATFORM:
                     return true;
+                case TYPE_MODULE:
+                    return entryId.equals(other.entryId) &&
+                            uri.equals(other.uri);
                 case TYPE_OTHER:
                     return anID.equals(other.anID);
                 default:

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,32 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.java.j2semodule.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
+import java.net.URI;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.api.common.project.ui.MultiModuleNodeFactory;
-import org.netbeans.modules.java.j2semodule.J2SEModularProject;
-import org.netbeans.spi.project.ui.support.NodeFactory;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Parameters;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  *
  * @author Tomas Zezula
  */
-public final class ModuleNodeFactory implements NodeFactory {
+final class ModuleNode extends AbstractNode {
+    @StaticResource
+    private static final String MODULE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png"; //NOI18N
 
-    public ModuleNodeFactory() {
-    }
+    private final String moduleName;
+    private final URI uri;
 
-    @Override
-    public NodeList<?> createNodes(@NonNull final Project project) {
-        Parameters.notNull("project", project);
-        final J2SEModularProject modularProject = project.getLookup().lookup(J2SEModularProject.class);
-        if (modularProject == null) {
-            throw new IllegalStateException(
-                    String.format("Not a J2SEModularProject: %s (%s)",          //NOI18N
-                    project,
-                    FileUtil.getFileDisplayName(project.getProjectDirectory())));
-        }
-        return getDelegate(modularProject).createNodes(project);
-    }
-
-    @NonNull
-    private NodeFactory getDelegate(@NonNull final J2SEModularProject mp) {
-        final NodeFactory res = MultiModuleNodeFactory.create(
-                mp.getUpdateHelper(),
-                mp.evaluator(),
-                mp.getReferenceHelper(),
-                mp.getModuleRoots(),
-                mp.getSourceRoots(),
-                mp.getTestModuleRoots(),
-                mp.getTestSourceRoots());
-        return res;
+    ModuleNode(
+            @NonNull final String moduleName,
+            @NonNull final URI uri) {
+        super(Children.LEAF);
+        this.moduleName = moduleName;
+        this.uri = uri;
+        setName(moduleName);
+        setIconBaseWithExtension(MODULE_ICON);
     }
 }
