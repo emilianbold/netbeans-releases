@@ -41,6 +41,7 @@ package org.netbeans.modules.java.j2semodule.ui;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.java.api.common.project.ui.MultiModuleNodeFactory;
 import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
@@ -79,10 +80,10 @@ public final class ModuleNodeFactory implements NodeFactory {
                 .setTests(mp.getTestModuleRoots(), mp.getTestSourceRoots())
                 .addLibrariesNodes(mp.getUpdateHelper(), mp.evaluator(), mp.getReferenceHelper())
                 .addLibrariesNodeActions(
-//                                    LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
-//                                    LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getSourceRoots(), null),
-//                                    LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
-//                                    null,
+                    LibrariesNode.createAddProjectAction(mp, mp.getSourceRoots()),
+                    LibrariesNode.createAddLibraryAction(mp.getReferenceHelper(), mp.getSourceRoots(), null),
+                    LibrariesNode.createAddFolderAction(mp.getAntProjectHelper(), mp.getSourceRoots()),
+                    null,
                     ProjectUISupport.createPreselectPropertiesAction(mp, "Libraries", CustomizerLibraries.COMPILE) // NOI18N
                 )
                 .addTestLibrariesNodeActions(
