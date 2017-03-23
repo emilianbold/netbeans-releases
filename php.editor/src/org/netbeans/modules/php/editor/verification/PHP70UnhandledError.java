@@ -130,6 +130,7 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
             TYPES_FOR_SOURCES = new HashSet<>(Type.getTypesForEditor());
             TYPES_FOR_SOURCES.remove(Type.ARRAY);
             TYPES_FOR_SOURCES.remove(Type.CALLABLE);
+            TYPES_FOR_SOURCES.remove(Type.ITERABLE);
         }
 
 

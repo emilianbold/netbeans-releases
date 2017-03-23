@@ -448,6 +448,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 autoCompleteTypeNames(completionResult, request);
                 autoCompleteKeywords(completionResult, request, Type.getTypesForEditor());
                 break;
+            case RETURN_TYPE_NAME:
+                autoCompleteNamespaces(completionResult, request);
+                autoCompleteTypeNames(completionResult, request);
+                autoCompleteKeywords(completionResult, request, Type.getTypesForReturnType());
+                break;
             case STRING:
                 // LOCAL VARIABLES
                 completionResult.addAll(getVariableProposals(request, null));

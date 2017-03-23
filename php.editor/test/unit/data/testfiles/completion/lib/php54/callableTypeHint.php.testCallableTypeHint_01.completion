@@ -16,4 +16,5 @@ KEYWORD    bool                                       null
 KEYWORD    callable                                   null
 KEYWORD    float                                      null
 KEYWORD    int                                        null
+KEYWORD    iterable                                   null
 KEYWORD    string                                     null

@@ -78,6 +78,7 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
     }
 
     // after nullable type prefix
+    // "void" is invalid
     public void testNullableTypes_ReturnType01() throws Exception {
         checkCompletion(getTestPath("nullableTypes"), "public function classReturnType(): ?^Foo {", false);
     }
@@ -132,6 +133,14 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
 
     public void testNullableTypes_ReturnType14() throws Exception {
         checkCompletion(getTestPath("nullableTypes"), "function returnType(?Foo $foo): ?Fo^o {", false);
+    }
+
+    public void testNullableTypes_ReturnType15() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "function returnType2(?Foo $foo): ?^iterable { // CC", false);
+    }
+
+    public void testNullableTypes_ReturnType16() throws Exception {
+        checkCompletion(getTestPath("nullableTypes"), "function returnType2(?Foo $foo): ?i^terable { // CC", false);
     }
 
     public void testNullableTypes_ReturnTypeDispatch01() throws Exception {
@@ -499,6 +508,50 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
 
     public void testClassConstantVisibility_InGlobal04() throws Exception {
         checkCompletion(getTestPath("classConstantVisibility"), "ChildClass2::^PUBLIC_CHILD2_CONST; // CC global", false);
+    }
+
+    public void testVoidReturnType_Function01() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "function voidReturnType(): ^void { // func", false);
+    }
+
+    public void testVoidReturnType_Function02() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "function voidReturnType(): vo^id { // func", false);
+    }
+
+    public void testVoidReturnType_Function03() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "function invalidInParameter(v^oid $void): void { // func", false);
+    }
+
+    public void testVoidReturnType_Class01() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "public function returnType(): ^void { // class", false);
+    }
+
+    public void testVoidReturnType_Class02() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "public function returnType(): voi^d { // class", false);
+    }
+
+    public void testVoidReturnType_Class03() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "public function invalidInParameter(v^oid $void): void { // class", false);
+    }
+
+    public void testVoidReturnType_Interface01() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "public function returnType(): ^void; // interface", false);
+    }
+
+    public void testVoidReturnType_Interface02() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "public function returnType(): voi^d; // interface", false);
+    }
+
+    public void testVoidReturnType_Interface03() throws Exception {
+        checkCompletion(getTestPath("voidReturnType"), "public function invalidInParameter(vo^id $void): void; // interface", false);
+    }
+
+    public void testIterableKeyword_ReturnType01() throws Exception {
+        checkCompletion(getTestPath("iterable"), "function iteratorReturnType(): iter^able {", false);
+    }
+
+    public void testIterableKeyword_ParameterType01() throws Exception {
+        checkCompletion(getTestPath("iterable"), "function iteratorParameterType(itera^ble $iterator) {", false);
     }
 
 }

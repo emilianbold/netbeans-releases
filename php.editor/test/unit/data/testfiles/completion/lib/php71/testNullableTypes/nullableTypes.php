@@ -89,6 +89,9 @@ NullableTypeInterface::interfaceReturnTypeStatic()->publicFooMethod(); // CC
 function returnType(?Foo $foo): ?Foo { // CC
 }
 
+function returnType2(?Foo $foo): ?iterable { // CC
+}
+
 function parameterType(?Foo $foo): Foo { // CC
     $foo->publicFooMethod(); // CC function
 }
