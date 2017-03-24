@@ -265,26 +265,28 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                 locations = new ArrayList<>();
                 names = new ArrayList<>();
                 final String pathToModules = evaluator.getProperty(prop);
-                final File file = helper.resolveFile(pathToModules);
-                if (file.isDirectory()) {
-                    final Collection<? extends String> spVariants = Arrays.stream(PropertyUtils.tokenizePath(evaluator.getProperty(pathProp)))
-                            .map((p) -> CommonModuleUtils.parseSourcePathVariants(p))
-                            .flatMap((lv) -> lv.stream())
-                            .collect(Collectors.toList());
-                    for (File f : file.listFiles()) {
-                        if (f.isDirectory()) {
-                            for (String variant : spVariants) {
-                                final String resolvedSrcPath = String.format(
-                                        "%s/%s/%s", //NOI18N
-                                        pathToModules,
-                                        f.getName(),
-                                        variant);
-                                locations.add(resolvedSrcPath); //Todo: Should be unevaluated
-                                String dispName = displayNames[i];
-                                if (dispName == null || dispName.isEmpty()) {
-                                    names.add(Bundle.FMT_ModularSourceRootNoName(f.getName(), pathToModules));
-                                } else {
-                                    names.add(Bundle.FMT_ModularSourceRootWithName(f.getName(), variant, dispName));
+                if (pathToModules != null) {
+                    final File file = helper.resolveFile(pathToModules);
+                    if (file.isDirectory()) {
+                        final Collection<? extends String> spVariants = Arrays.stream(PropertyUtils.tokenizePath(evaluator.getProperty(pathProp)))
+                                .map((p) -> CommonModuleUtils.parseSourcePathVariants(p))
+                                .flatMap((lv) -> lv.stream())
+                                .collect(Collectors.toList());
+                        for (File f : file.listFiles()) {
+                            if (f.isDirectory()) {
+                                for (String variant : spVariants) {
+                                    final String resolvedSrcPath = String.format(
+                                            "%s/%s/%s", //NOI18N
+                                            pathToModules,
+                                            f.getName(),
+                                            variant);
+                                    locations.add(resolvedSrcPath); //Todo: Should be unevaluated
+                                    String dispName = displayNames[i];
+                                    if (dispName == null || dispName.isEmpty()) {
+                                        names.add(Bundle.FMT_ModularSourceRootNoName(f.getName(), pathToModules));
+                                    } else {
+                                        names.add(Bundle.FMT_ModularSourceRootWithName(f.getName(), variant, dispName));
+                                    }
                                 }
                             }
                         }
