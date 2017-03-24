@@ -104,7 +104,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>1.114</specification-version>
+                        <specification-version>1.115</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -185,6 +185,15 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.54</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.libraries.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.53</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

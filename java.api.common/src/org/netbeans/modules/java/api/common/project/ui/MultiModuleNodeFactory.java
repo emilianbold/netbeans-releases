@@ -53,6 +53,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -124,106 +125,126 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  *
  * @author Tomas Zezula
- * @since 1.114
+ * @since 1.115
  */
 public final class MultiModuleNodeFactory implements NodeFactory {
     private static final Logger LOG = Logger.getLogger(MultiModuleNodeFactory.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(MultiModuleNodeFactory.class);
-    private final UpdateHelper helper;
-    private final PropertyEvaluator eval;
-    private final ReferenceHelper refHelper;
     private final MultiModule sourceModules;
     private final MultiModule testModules;
-    private final ClassPathSupport cs;
+    private final LibrariesSupport libsSupport;
 
     private MultiModuleNodeFactory(
-            @NonNull final UpdateHelper helper,
-            @NonNull final PropertyEvaluator eval,
-            @NonNull final ReferenceHelper refHelper,
-            @NonNull final MultiModule sourceModules,
-            @NonNull final MultiModule testModules) {
-        Parameters.notNull("helper", helper);               //NOI18N
-        Parameters.notNull("eval", eval);                   //NOI18N
-        Parameters.notNull("refHelper", refHelper);         //NOI18N
-        Parameters.notNull("sourceModules", sourceModules); //NOI18N
-        Parameters.notNull("testModules", testModules);     //NOI18N
-        this.helper = helper;
-        this.eval = eval;
-        this.refHelper = refHelper;
+            @NullAllowed final MultiModule sourceModules,
+            @NullAllowed final MultiModule testModules,
+            @NullAllowed final LibrariesSupport libsSupport) {
         this.sourceModules = sourceModules;
         this.testModules = testModules;
-        this.cs = new ClassPathSupport(eval, refHelper, helper.getAntProjectHelper(), helper, null);
+        this.libsSupport = libsSupport;
     }
 
     @Override
     public NodeList<?> createNodes(@NonNull final Project project) {
         return new Nodes(
                 project,
-                helper,
-                eval,
-                refHelper,
                 sourceModules,
                 testModules,
-                cs);
+                libsSupport);
     }
 
-    @NonNull
-    public static MultiModuleNodeFactory create(
-            @NonNull final UpdateHelper helper,
-            @NonNull final PropertyEvaluator eval,
-            @NonNull final ReferenceHelper refHelper,
-            @NonNull final SourceRoots sourceModules,
-            @NonNull final SourceRoots srcRoots,
-            @NonNull final SourceRoots testModules,
-            @NonNull final SourceRoots testRoots) {
-        final MultiModule mods = MultiModule.getOrCreate(sourceModules, srcRoots);
-        final MultiModule testMods = MultiModule.getOrCreate(testModules, testRoots);
-        return new MultiModuleNodeFactory(helper, eval, refHelper, mods, testMods);
+    public static final class Builder {
+        private LibrariesSupport libSupport;
+        private MultiModule mods;
+        private MultiModule testMods;
+
+        private Builder() {
+        }
+
+        @NonNull
+        public Builder setSources(
+                @NonNull final SourceRoots sourceModules,
+                @NonNull final SourceRoots srcRoots) {
+           mods = MultiModule.getOrCreate(sourceModules, srcRoots);
+           return this;
+        }
+
+        @NonNull
+        public Builder setTests(
+                @NonNull final SourceRoots testModules,
+                @NonNull final SourceRoots testRoots) {
+            testMods = MultiModule.getOrCreate(testModules, testRoots);
+            return this;
+        }
+
+        @NonNull
+        public Builder addLibrariesNodes(
+                @NonNull final UpdateHelper helper,
+                @NonNull final PropertyEvaluator evaluator,
+                @NonNull final ReferenceHelper refHelper) {
+            libSupport = new LibrariesSupport(helper, evaluator, refHelper);
+            return this;
+        }
+
+        @NonNull
+        public Builder addLibrariesNodeActions(@NonNull final Action... actions) {
+            if (libSupport == null) {
+                throw new IllegalStateException("Libraries are not enabled");   //NOI18N
+            }
+            libSupport.addActions(false, actions);
+            return this;
+        }
+
+        @NonNull
+        public Builder addTestLibrariesNodeActions(@NonNull final Action... actions) {
+            if (libSupport == null) {
+                throw new IllegalStateException("Libraries are not enabled");   //NOI18N
+            }
+            libSupport.addActions(true, actions);
+            return this;
+        }
+
+        @NonNull
+        public MultiModuleNodeFactory build() {
+            return new MultiModuleNodeFactory(
+                    mods,
+                    testMods,
+                    libSupport);
+        }
+
+        @NonNull
+        public static Builder create() {
+            return new Builder();
+        }
     }
 
     private static final class Nodes implements NodeList<ModuleKey>, PropertyChangeListener {
         private final Project project;
-        private final UpdateHelper helper;
-        private final PropertyEvaluator eval;
-        private final ReferenceHelper refHelper;
         private final MultiModule sourceModules;
         private final MultiModule testModules;
-        private final ClassPathSupport cs;
+        private final LibrariesSupport libsSupport;
         private final ChangeSupport listeners;
 
         Nodes(
                 @NonNull final Project project,
-                @NonNull final UpdateHelper helper,
-                @NonNull final PropertyEvaluator eval,
-                @NonNull final ReferenceHelper refHelper,
-                @NonNull final MultiModule sourceModules,
-                @NonNull final MultiModule testModules,
-                @NonNull final ClassPathSupport cs) {
+                @NullAllowed final MultiModule sourceModules,
+                @NullAllowed final MultiModule testModules,
+                @NullAllowed final LibrariesSupport libsSupport) {
             Parameters.notNull("project", project);     //NOI18N
-            Parameters.notNull("helper", helper);     //NOI18N
-            Parameters.notNull("eval", eval);           //NOI18N
-            Parameters.notNull("refHelper", refHelper); //NOI18N
-            Parameters.notNull("sourceModules", sourceModules); //NOI18N
-            Parameters.notNull("testModules", testModules);     //NOI18N
-            Parameters.notNull("cs", cs);   //NOI18N
             this.project = project;
-            this.helper = helper;
-            this.eval = eval;
-            this.refHelper = refHelper;
             this.sourceModules = sourceModules;
             this.testModules = testModules;
-            this.cs = cs;
+            this.libsSupport = libsSupport;
             this.listeners = new ChangeSupport(this);
         }
 
         @Override
         public List<ModuleKey> keys() {
             return Stream.concat(
-                    this.sourceModules.getModuleNames().stream(),
-                    this.testModules.getModuleNames().stream())
+                    this.sourceModules == null ? Stream.empty() : this.sourceModules.getModuleNames().stream(),
+                    this.testModules == null ? Stream.empty() : this.testModules.getModuleNames().stream())
                 .sorted()
                 .distinct()
-                .map((name) -> new ModuleKey(project, helper, eval, refHelper, name, sourceModules, testModules, cs))
+                .map((name) -> new ModuleKey(project, name, sourceModules, testModules, libsSupport))
                 .collect(Collectors.toList());
         }
 
@@ -244,14 +265,22 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
         @Override
         public void addNotify() {
-            this.sourceModules.addPropertyChangeListener(this);
-            this.testModules.addPropertyChangeListener(this);
+            if (this.sourceModules != null) {
+                this.sourceModules.addPropertyChangeListener(this);
+            }
+            if (this.testModules != null) {
+                this.testModules.addPropertyChangeListener(this);
+            }
         }
 
         @Override
         public void removeNotify() {
-            this.sourceModules.removePropertyChangeListener(this);
-            this.testModules.removePropertyChangeListener(this);
+            if (this.sourceModules != null) {
+                this.sourceModules.removePropertyChangeListener(this);
+            }
+            if (this.testModules != null) {
+                this.testModules.removePropertyChangeListener(this);
+            }
         }
 
         @Override
@@ -264,39 +293,24 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
     private static final class ModuleKey {
         private final Project project;
-        private final UpdateHelper helper;
-        private final PropertyEvaluator eval;
-        private final ReferenceHelper refHelper;
         private final MultiModule sourceModules;
         private final MultiModule testModules;
         private final String moduleName;
-        private final ClassPathSupport cs;
+        private final LibrariesSupport libsSupport;
 
         ModuleKey(
                 @NonNull final Project project,
-                @NonNull final UpdateHelper helper,
-                @NonNull final PropertyEvaluator eval,
-                @NonNull final ReferenceHelper refHelper,
                 @NonNull final String moduleName,
-                @NonNull final MultiModule sourceModules,
-                @NonNull final MultiModule testModules,
-                @NonNull final ClassPathSupport cs) {
+                @NullAllowed final MultiModule sourceModules,
+                @NullAllowed final MultiModule testModules,
+                @NullAllowed final LibrariesSupport libsSupport) {
             Parameters.notNull("project", project);             //NOI18N
-            Parameters.notNull("helper", helper);               //NOI18N
-            Parameters.notNull("eval", eval);                   //NOI18N
-            Parameters.notNull("refHelper", refHelper);         //NOI18N
             Parameters.notNull("moduleName", moduleName);       //NOI18N
-            Parameters.notNull("sourceModules", sourceModules); //NOI18N
-            Parameters.notNull("testModules", testModules);     //NOI18N
-            Parameters.notNull("cs", cs);                       //NOI18N
             this.project = project;
-            this.helper = helper;
-            this.eval = eval;
-            this.refHelper = refHelper;
             this.moduleName = moduleName;
             this.sourceModules = sourceModules;
             this.testModules = testModules;
-            this.cs = cs;
+            this.libsSupport = libsSupport;
         }
 
         @NonNull
@@ -304,12 +318,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return moduleName;
         }
 
-        @NonNull
+        @CheckForNull
         MultiModule getSourceModules() {
             return sourceModules;
         }
 
-        @NonNull
+        @CheckForNull
         MultiModule getTestModules() {
             return testModules;
         }
@@ -319,24 +333,9 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return project;
         }
 
-        @NonNull
-        UpdateHelper getUpdateHelper() {
-            return helper;
-        }
-
-        @NonNull
-        PropertyEvaluator getPropertyEvaluator() {
-            return eval;
-        }
-
-        @NonNull
-        ReferenceHelper getReferenceHelper() {
-            return refHelper;
-        }
-
-        @NonNull
-        ClassPathSupport getClassPathSupport() {
-            return cs;
+        @CheckForNull
+        LibrariesSupport getLibrariesSupport() {
+            return libsSupport;
         }
 
         @Override
@@ -603,12 +602,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 res = fosCache;
                 smp = srcModPath;
                 if (smp == null) {
-                    smp = srcModPath = modules.getSourceModulePath();
+                    smp = srcModPath = modules == null ? ClassPath.EMPTY : modules.getSourceModulePath();
                     smp.addPropertyChangeListener(WeakListeners.propertyChange(this, smp));
                 }
                 tmp = testModPath;
                 if (tmp == null) {
-                    tmp = testModPath = testModules.getSourceModulePath();
+                    tmp = testModPath = testModules == null ? ClassPath.EMPTY : testModules.getSourceModulePath();
                     tmp.addPropertyChangeListener(WeakListeners.propertyChange(this, tmp));
                 }
             }
@@ -813,14 +812,11 @@ public final class MultiModuleNodeFactory implements NodeFactory {
     private static final class ModuleChildren extends Children.Keys<ModuleChildren.Key> implements PropertyChangeListener {
         private final String moduleName;
         private final Project project;
-        private final UpdateHelper helper;
-        private final PropertyEvaluator eval;
-        private final ReferenceHelper refHelper;
         private final Sources sources;
         private final MultiModuleGroupQuery groupQuery;
         private final MultiModule srcModule;
         private final MultiModule testModule;
-        private final ClassPathSupport cs;
+        private final LibrariesSupport libsSupport;
         private final RequestProcessor.Task refresh;
         private final AtomicReference<ClassPath> srcPath;
         private final AtomicReference<ClassPath> testPath;
@@ -829,14 +825,11 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             Parameters.notNull("key", key);
             this.moduleName = key.getModuleName();
             this.project = key.getProject();
-            this.helper = key.getUpdateHelper();
-            this.eval = key.getPropertyEvaluator();
-            this.refHelper = key.getReferenceHelper();
             this.sources = project.getLookup().lookup(Sources.class);
             this.groupQuery = project.getLookup().lookup(MultiModuleGroupQuery.class);
             this.srcModule = key.getSourceModules();
             this.testModule = key.getTestModules();
-            this.cs = key.getClassPathSupport();
+            this.libsSupport = key.getLibrariesSupport();
             this.srcPath = new AtomicReference<>();
             this.testPath = new AtomicReference<>();
             refresh = RP.create(()->setKeys(createKeys()));
@@ -845,17 +838,15 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         @Override
         protected void addNotify() {
             super.addNotify();
-            ClassPath cp = srcModule.getModuleSources(moduleName);
-            if (cp == null) {
-                cp = ClassPath.EMPTY;
-            }
+            ClassPath cp = Optional.ofNullable(srcModule)
+                    .map((m) -> m.getModuleSources(moduleName))
+                    .orElse(ClassPath.EMPTY);
             if (srcPath.compareAndSet(null, cp)) {
                 cp.addPropertyChangeListener(this);
             }
-            cp = testModule.getModuleSources(moduleName);
-            if (cp == null) {
-                cp = ClassPath.EMPTY;
-            }
+            cp = Optional.ofNullable(testModule)
+                    .map((m) -> m.getModuleSources(moduleName))
+                    .orElse(ClassPath.EMPTY);
             if (testPath.compareAndSet(null, cp)) {
                 cp.addPropertyChangeListener(this);
             }
@@ -894,29 +885,32 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                     }
                 }
                 return new Node[] {n};
-            } else {
+            } else if (libsSupport != null) {
                 final ClassPath srcPath = key.getSourcePath();
                 final FileObject[] roots = srcPath.getRoots();
                 if (roots.length > 0) {
                     if (key.isTests()) {
                         return new Node[] {
-                            new LibrariesNode.Builder(this.project, eval, helper, refHelper, cs)
+                            new LibrariesNode.Builder(this.project,
+                                    libsSupport.getPropertyEvaluator(),
+                                    libsSupport.getUpdateHelper(),
+                                    libsSupport.getReferenceHelper(),
+                                    libsSupport.getClassPathSupport())
                                 .setName(NbBundle.getMessage(MultiModuleNodeFactory.class,"CTL_TestLibrariesNode"))
                                 .addClassPathProperties(ProjectProperties.RUN_TEST_CLASSPATH)
                                 .addModulePathProperties(ProjectProperties.RUN_TEST_MODULEPATH)
                                 .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
                                 .setSourcePath(srcPath)
-                                .addLibrariesNodeActions(
-//                                    LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
-//                                    LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
-//                                    LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
-                                    null,
-                                    ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", "COMPILE_TESTS")) // NOI18N
+                                .addLibrariesNodeActions(libsSupport.getActions(true))
                                 .build()
                         };
                     } else {
                         return new Node[] {
-                            new LibrariesNode.Builder(this.project, eval, helper, refHelper, cs)
+                            new LibrariesNode.Builder(this.project,
+                                    libsSupport.getPropertyEvaluator(),
+                                    libsSupport.getUpdateHelper(),
+                                    libsSupport.getReferenceHelper(),
+                                    libsSupport.getClassPathSupport())
                                 .addClassPathProperties(ProjectProperties.RUN_CLASSPATH)
                                 .addModulePathProperties(ProjectProperties.RUN_MODULEPATH)
                                 .setBootPath(ClassPath.getClassPath(roots[0], ClassPath.BOOT))
@@ -924,18 +918,15 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                 .setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE)
                                 .setSourcePath(srcPath)
                                 .setModuleSourcePath(ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_SOURCE_PATH))
-                                .addLibrariesNodeActions(
-//                                    LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
-//                                    LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getSourceRoots(), null),
-//                                    LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
-                                    null,
-                                    ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", "COMPILE")) // NOI18N
+                                .addLibrariesNodeActions(libsSupport.getActions(false))
                                 .build()
                         };
                     }
                 } else {
                     return new Node[0];
                 }
+            } else {
+                return new Node[0];
             }
         }
 
@@ -1046,6 +1037,62 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                         (tests == other.tests) &&
                         (sg == null ? other.sg == null : sg.equals(other.sg));
             }
+        }
+    }
+
+    private static class LibrariesSupport {
+        private final UpdateHelper helper;
+        private final PropertyEvaluator evaluator;
+        private final ReferenceHelper refHelper;
+        private final ClassPathSupport cs;
+        private final List<Action> actions;
+        private final List<Action> testActions;
+
+        LibrariesSupport(
+                @NonNull final UpdateHelper helper,
+                @NonNull final PropertyEvaluator evaluator,
+                @NonNull final ReferenceHelper refHelper) {
+            Parameters.notNull("helper", helper);   //NOI18N
+            Parameters.notNull("evaluator", evaluator); //NOI18N
+            Parameters.notNull("refHelper", refHelper); //NOI18N
+            this.helper = helper;
+            this.evaluator = evaluator;
+            this.refHelper = refHelper;
+            this.cs = new ClassPathSupport(evaluator, refHelper, helper.getAntProjectHelper(), helper, null);
+            this.actions = new ArrayList<>();
+            this.testActions = new ArrayList<>();
+        }
+
+        @NonNull
+        UpdateHelper getUpdateHelper() {
+            return helper;
+        }
+
+        @NonNull
+        PropertyEvaluator getPropertyEvaluator() {
+            return evaluator;
+        }
+
+        @NonNull
+        ReferenceHelper getReferenceHelper() {
+            return refHelper;
+        }
+
+        @NonNull
+        ClassPathSupport getClassPathSupport() {
+            return cs;
+        }
+
+        @NonNull
+        Action[] getActions(final boolean tests) {
+            final List<Action> l = tests ? testActions : actions;
+            return l.toArray(new Action[l.size()]);
+        }
+
+        void addActions(
+                final boolean tests,
+                @NonNull final Action... actions) {
+            Collections.addAll(tests ? this.testActions : this.actions, actions);
         }
     }
 
