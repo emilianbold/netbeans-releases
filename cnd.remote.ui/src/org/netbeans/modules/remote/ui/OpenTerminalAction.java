@@ -70,7 +70,7 @@ import org.openide.util.actions.SystemAction;
  * @author Vladimir Voskresensky
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.OpenTerminalAction", category = "NativeRemote")
-@ActionRegistration(displayName = "OpenTerminalMenuItem", lazy = true)
+@ActionRegistration(displayName = "#OpenTerminalMenuItem", lazy = true)
 @ActionReference(path = "Remote/Host/Actions", name = "OpenTerminalAction", position = 700)
 public class OpenTerminalAction extends SingleHostAction {
     private JMenu remotePopupMenu;

@@ -81,7 +81,7 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.OpenRemoteProjectAction", category = "NativeRemote")
-@ActionRegistration(displayName = "OpenRemoteProjectActionMenuItem", lazy = true)
+@ActionRegistration(displayName = "#OpenRemoteProjectActionMenuItem", lazy = true)
 @ActionReference(path = "Remote/Host/Actions", name = "OpenRemoteProjectAction", position = 250)
 public class OpenRemoteProjectAction extends SingleHostAction {
 

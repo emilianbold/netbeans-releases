@@ -58,7 +58,7 @@ import org.openide.util.lookup.Lookups;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.NewRemoteProjectAction", category = "NativeRemote")
-@ActionRegistration(displayName = "NewProjectConnectMenuItem", lazy = true)
+@ActionRegistration(displayName = "#NewProjectConnectMenuItem", lazy = true)
 @ActionReference(path = "Remote/Host/Actions", name = "NewRemoteProjectAction", position = 260)
 public class NewRemoteProjectAction extends SingleHostAction {
     

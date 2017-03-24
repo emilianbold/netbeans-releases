@@ -75,8 +75,8 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase {
     
     public OpenRemoteFileAction() {
         super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title")); //NOI18N
-        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openFile.png", false); //NOI18N
-        putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openFile.png"); //NOI18N
+        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/ui/resources/openFile.png", false); //NOI18N
+        putValue("iconBase","org/netbeans/modules/cnd/remote/ui/resources/openFile.png"); //NOI18N
     }
 
     @Override
