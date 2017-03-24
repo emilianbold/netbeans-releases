@@ -99,7 +99,8 @@ true
 
     @TriggerPatterns ({
         @TriggerPattern (value="$v & $c"),
-        @TriggerPattern (value="$v | $c")
+        @TriggerPattern (value="$v | $c"),
+        @TriggerPattern (value="$v ^ $c")
     })
     public static ErrorDescription checkPointlessBitwiseExpression (HintContext ctx) {
         TreePath treePath = ctx.getPath ();
@@ -107,59 +108,61 @@ true
         Map<String,TreePath> variables = ctx.getVariables ();
         TreePath tree = variables.get ("$c");
         Long value = IncompatibleMask.getConstant (tree, ctx);
+        boolean left = treePath.getLeaf().getKind() != Tree.Kind.AND;
         if (value != null &&
             value == 0
-        )
+        ) {
             return ErrorDescriptionFactory.forName (
                 ctx,
                 treePath,
                 NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-        new FixImpl (
-compilationInfo,
-treePath,
-NbBundle.getMessage (
-LoggerNotStaticFinal.class,
-"MSG_PointlessBitwiseExpression_fix"
-),
-true
-).toEditorFix()
+                    new FixImpl(
+                            compilationInfo,
+                            treePath,
+                            NbBundle.getMessage(
+                                    LoggerNotStaticFinal.class,
+                                    left ? "MSG_PointlessBitwiseExpression_fix" : "MSG_PointlessBitwiseExpression_fix2"
+                            ),
+                            left
+                    ).toEditorFix()
             );
-        tree = variables.get ("$v");
-        value = IncompatibleMask.getConstant (tree, ctx);
-        if (value != null &&
-            value == 0
-        )
-            return ErrorDescriptionFactory.forName (
-                ctx,
-                treePath,
-                NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-        new FixImpl (
-compilationInfo,
-treePath,
-NbBundle.getMessage (
-LoggerNotStaticFinal.class,
-"MSG_PointlessBitwiseExpression_fix"
-),
-false
-).toEditorFix()
+        }
+        tree = variables.get("$v");
+        value = IncompatibleMask.getConstant(tree, ctx);
+        if (value != null
+                && value == 0) {
+            return ErrorDescriptionFactory.forName(
+                    ctx,
+                    treePath,
+                    NbBundle.getMessage(PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
+                    new FixImpl(
+                            compilationInfo,
+                            treePath,
+                            NbBundle.getMessage(
+                                    LoggerNotStaticFinal.class,
+                                    left ? "MSG_PointlessBitwiseExpression_fix" : "MSG_PointlessBitwiseExpression_fix2"
+                            ),
+                            !left
+                    ).toEditorFix()
             );
+        }
         return null;
     }
 
     private static final class FixImpl extends JavaFix {
 
         private final String    text;
-        private boolean         right;
+        private boolean         left;
 
         public FixImpl (
             CompilationInfo     info,
             TreePath            tp,
             String              text,
-            boolean             right
+            boolean             left
         ) {
             super(info, tp);
             this.text = text;
-            this.right = right;
+            this.left = left;
         }
 
         @Override
@@ -173,7 +176,7 @@ false
             TreePath tp = ctx.getPath();
             Tree vt = tp.getLeaf();
             BinaryTree e = (BinaryTree) vt;
-            wc.rewrite (vt, right ? e.getLeftOperand () : e.getRightOperand ());
+            wc.rewrite (vt, left ? e.getLeftOperand () : e.getRightOperand ());
         }
     } // End of FixImpl class
 }
