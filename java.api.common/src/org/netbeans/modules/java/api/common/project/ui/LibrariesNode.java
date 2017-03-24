@@ -116,6 +116,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
@@ -765,7 +766,7 @@ public final class LibrariesNode extends AbstractNode {
                     break;
                 case Key.TYPE_PROJECT:
                     result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
-                        key.getEntryId(), webModuleElementName, cs, refHelper, key.getPreRemoveAction(), key.getPostRemoveAction())};
+                        key.getEntryId(), webModuleElementName, cs, refHelper, key.getPreRemoveAction(), key.getPostRemoveAction(), !key.shared)};
                     break;
                 case Key.TYPE_LIBRARY:
                 {
@@ -778,7 +779,8 @@ public final class LibrariesNode extends AbstractNode {
                         cs,
                         refHelper,
                         key.getPreRemoveAction(),
-                        key.getPostRemoveAction());
+                        key.getPostRemoveAction(),
+                        !key.shared);
                     result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
                 }
@@ -794,7 +796,8 @@ public final class LibrariesNode extends AbstractNode {
                         cs,
                         refHelper,
                         key.getPreRemoveAction(),
-                        key.getPostRemoveAction());
+                        key.getPostRemoveAction(),
+                        !key.shared);
                     result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
                 }
@@ -809,7 +812,8 @@ public final class LibrariesNode extends AbstractNode {
                         cs,
                         refHelper,
                         key.getPreRemoveAction(),
-                        key.getPostRemoveAction());
+                        key.getPostRemoveAction(),
+                        !key.shared);
                     result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
                 }
@@ -934,7 +938,7 @@ public final class LibrariesNode extends AbstractNode {
                                                             new ArrayList<>()));
                                                     return sgs.isEmpty() ?
                                                             null :
-                                                            Key.file(sgs.iterator().next(), "", "", null, null);    //NOI18N
+                                                            Key.file(sgs.iterator().next(), "", "", null, null, true);    //NOI18N
                                                 }
                                                 return null;
                                             })
@@ -990,6 +994,36 @@ public final class LibrariesNode extends AbstractNode {
             }
             return result;
         }
+        
+        private Set<URL> computeOtherRootLibraries() {
+            Sources s = ProjectUtils.getSources(project);
+            if (s == null || sourcePath == null) {
+                return Collections.emptySet();
+            }
+            Set<URL> refs = new HashSet<>();
+            for (SourceGroup sg : s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                // ignore our own SG:
+                ClassPath sPath = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE);
+                if (Arrays.equals(this.sourcePath.getRoots(), sPath.getRoots())) {
+                    continue;
+                }
+                ClassPath cp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.COMPILE);
+                for (ClassPath.Entry e : cp.entries()) {
+                    URL u = e.getURL();
+                    refs.add(u);
+                    if ("jar".equals(u.getProtocol()) && u.getPath().contains("!")) { // NOI18N
+                        String str = u.toExternalForm().substring(4);
+                        int index = str.indexOf("!");
+                        try {
+                            refs.add(new URL(str.substring(0, index)));
+                        } catch (MalformedURLException ex) {
+                            // ignore, should not happen
+                        }
+                    }
+                }
+            }
+            return refs;
+        }
 
         private List<Key> getKeys (
                 @NonNull final EditableProperties projectSharedProps,
@@ -1013,6 +1047,8 @@ public final class LibrariesNode extends AbstractNode {
                 return result;
             }
             List<String> pe = new ArrayList<String>(Arrays.asList(PropertyUtils.tokenizePath( raw )));
+            Set<URL> otherSourceRoots = null;
+            
             while (pe.size()>0){
                 String prop = pe.remove(0);
                 String propName = CommonProjectUtils.getAntPropertyName (prop);
@@ -1023,11 +1059,16 @@ public final class LibrariesNode extends AbstractNode {
                     String eval = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
                     Library lib = refHelper.findLibrary(eval);
                     if (lib != null) {
+                        if (otherSourceRoots == null) {
+                            otherSourceRoots = computeOtherRootLibraries();
+                        }
                         Icon libIcon = ImageUtilities.loadImageIcon(LIBRARIES_ICON, false);
+                        boolean shared = false;
                         for (URL rootUrl : lib.getContent("classpath")) {
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null && root.isFolder()) {
+                                shared |= otherSourceRoots.contains(URLMapper.findURL(root, URLMapper.INTERNAL));
                                 String displayName;
                                 if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                                     FileObject file = FileUtil.getArchiveFile (root);
@@ -1044,7 +1085,7 @@ public final class LibrariesNode extends AbstractNode {
                                     NbBundle.getMessage (LibrariesNode.class,"TXT_LibraryPartFormat"),
                                     new Object[] {lib.getDisplayName(), displayName});
                                 SourceGroup sg = new LibrariesSourceGroup (root, displayName, libIcon, libIcon);
-                                result.add (Key.library(sg,currentClassPath, propName, preRemoveAction, postRemoveAction));
+                                result.add (Key.library(sg,currentClassPath, propName, preRemoveAction, postRemoveAction, shared));
                             }
                         }
                     }
@@ -1052,19 +1093,36 @@ public final class LibrariesNode extends AbstractNode {
                 } else if (prop.startsWith(ANT_ARTIFACT_PREFIX)) {
                     //Project reference
                     Object[] ref = refHelper.findArtifactAndLocation(prop);
+                    if (otherSourceRoots == null) {
+                        otherSourceRoots = computeOtherRootLibraries();
+                    }
                     if (ref[0] != null && ref[1] != null) {
                         AntArtifact artifact = (AntArtifact)ref[0];
                         URI uri = (URI)ref[1];
-                        result.add(Key.project(artifact, uri, currentClassPath, propName, preRemoveAction, postRemoveAction));
+                        URL root = null;
+                        try {
+                            final URI absoluteURI = uri.isAbsolute() ?
+                                    uri :
+                                    artifact.getProject().getProjectDirectory().toURI().resolve(uri);
+                            root = absoluteURI.toURL();
+                        } catch (MalformedURLException ex) {
+                            // ignore
+                        }
+                        result.add(Key.project(artifact, uri, currentClassPath, propName, preRemoveAction, postRemoveAction,
+                                otherSourceRoots.contains(root)));
                     }
                 } else if (prop.startsWith(FILE_REF_PREFIX)) {
                     //File reference
+                    if (otherSourceRoots == null) {
+                        otherSourceRoots = computeOtherRootLibraries();
+                    }
                     String evaluatedRef = eval.getProperty(propName);
                     if (evaluatedRef != null) {
                         File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
                         final Collection<SourceGroup> sgs = fileRefMapper.apply(Pair.of(file,rootsList));
                         for (SourceGroup sg : sgs) {
-                            result.add (Key.fileReference(sg,currentClassPath, propName, preRemoveAction, postRemoveAction));
+                            result.add (Key.fileReference(sg,currentClassPath, propName, preRemoveAction, postRemoveAction, 
+                                    otherSourceRoots.contains(sg.getRootFolder().toURL())));
                         }
                     }
                 } else if (prop.startsWith(REF_PREFIX)) {
@@ -1081,10 +1139,14 @@ public final class LibrariesNode extends AbstractNode {
                             rootsList));
                 } else {
                     //file
+                    if (otherSourceRoots == null) {
+                        otherSourceRoots = computeOtherRootLibraries();
+                    }
                     File file = helper.getAntProjectHelper().resolveFile(prop);
                     final Collection<SourceGroup> sgs = fileRefMapper.apply(Pair.of(file,rootsList));
                     for (SourceGroup sg : sgs) {
-                        result.add (Key.file(sg,currentClassPath, propName, preRemoveAction, postRemoveAction));
+                        result.add (Key.file(sg,currentClassPath, propName, preRemoveAction, postRemoveAction, 
+                                otherSourceRoots.contains(sg.getRootFolder())));
                     }
                 }
             }
@@ -1315,7 +1377,7 @@ public final class LibrariesNode extends AbstractNode {
         private String anID;
         private final Consumer<Pair<String,String>> preRemoveAction;
         private final Consumer<Pair<String,String>> postRemoveAction;
-                
+        private final boolean shared;
 
         private static Key platform() {
             return new Key();
@@ -1327,8 +1389,9 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final String classPathId,
                 @NonNull final String entryId,
                 @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
-            return new Key(a, uri, classPathId, entryId, preRemoveAction, postRemoveAction);
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+                boolean shared) {
+            return new Key(a, uri, classPathId, entryId, preRemoveAction, postRemoveAction, shared);
         }
         
         private static Key library(
@@ -1336,8 +1399,8 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final String classPathId,
                 @NonNull final String entryId,
                 @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
-            return new Key(TYPE_LIBRARY, sg, classPathId, entryId, preRemoveAction, postRemoveAction);
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction, boolean shared) {
+            return new Key(TYPE_LIBRARY, sg, classPathId, entryId, preRemoveAction, postRemoveAction, shared);
         }
         
         private static Key fileReference(
@@ -1345,8 +1408,8 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final String classPathId,
                 @NonNull final String entryId,
                 @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
-            return new Key(TYPE_FILE_REFERENCE, sg, classPathId, entryId, preRemoveAction, postRemoveAction);
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction, boolean shared) {
+            return new Key(TYPE_FILE_REFERENCE, sg, classPathId, entryId, preRemoveAction, postRemoveAction, shared);
         }
 
         private static Key file(
@@ -1354,8 +1417,9 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final String classPathId,
                 @NonNull final String entryId,
                 @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
-            return new Key(TYPE_FILE, sg, classPathId, entryId, preRemoveAction, postRemoveAction);
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+                boolean shared) {
+            return new Key(TYPE_FILE, sg, classPathId, entryId, preRemoveAction, postRemoveAction, shared);
         }
 
         @NonNull
@@ -1369,11 +1433,13 @@ public final class LibrariesNode extends AbstractNode {
             this.type = TYPE_OTHER;
             this.anID = anID;
             preRemoveAction = postRemoveAction = null;
+            shared = false;
         }
 
         private Key () {
             type = TYPE_PLATFORM;
             preRemoveAction = postRemoveAction = null;
+            shared = false;
         }
 
         private Key(
@@ -1385,6 +1451,7 @@ public final class LibrariesNode extends AbstractNode {
             this.entryId = moduleName;
             this.uri = uri;
             preRemoveAction = postRemoveAction = null;
+            shared = false;
         }
 
         private Key (
@@ -1393,7 +1460,8 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final String classPathId,
                 @NonNull final String entryId,
                 @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+                boolean shared) {
             assert type == TYPE_LIBRARY || type == TYPE_FILE_REFERENCE || type == TYPE_FILE;
             this.type = type;
             this.sg = sg;
@@ -1401,6 +1469,7 @@ public final class LibrariesNode extends AbstractNode {
             this.entryId = entryId;
             this.preRemoveAction = preRemoveAction;
             this.postRemoveAction = postRemoveAction;
+            this.shared = shared;
         }
 
         private Key (
@@ -1409,7 +1478,8 @@ public final class LibrariesNode extends AbstractNode {
                 @NonNull final String classPathId,
                 @NonNull final String entryId,
                 @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction, 
+                boolean shared) {
             this.type = TYPE_PROJECT;
             this.antArtifact = a;
             this.uri = uri;
@@ -1417,6 +1487,7 @@ public final class LibrariesNode extends AbstractNode {
             this.entryId = entryId;
             this.preRemoveAction = preRemoveAction;
             this.postRemoveAction = postRemoveAction;
+            this.shared = shared;
         }
 
         public int getType () {
