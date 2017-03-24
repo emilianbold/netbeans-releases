@@ -371,8 +371,9 @@ is divided into following sections:
                             </filterchain>
                         </loadresource>
                 
-                        <call unless:blank="@{{paths}}"/>
-                
+                        <sequential if:set="entry" >
+                            <call/>
+                        </sequential>                
                         <condition property="moreElements" value="true" else="false">
                             <contains string="@{{paths}}" substring="@{{separator}}"/>
                         </condition>

@@ -191,7 +191,8 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
             final @NonNull ClassPathSupport cs,
             final @NonNull ReferenceHelper rh,
             @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+            boolean removeFromProject) {
         Parameters.notNull("original", original);   //NOI18N
         Parameters.notNull("helper", helper);       //NOI18N
         Parameters.notNull("classPathId", classPathId); //NOI18N
@@ -203,7 +204,7 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
         return root == null ?
             null :
             new ActionFilterNode (original, Mode.ROOT, root, createLookup(original,
-                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction),
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction, removeFromProject),
                 new JavadocProvider(root,root)));
     }
 
@@ -217,7 +218,8 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
             final @NonNull ClassPathSupport cs,
             final @NonNull ReferenceHelper rh,
             @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+            final boolean removeShared) {
         Parameters.notNull("original", original);   //NOI18N
         Parameters.notNull("helper", helper);       //NOI18N
         Parameters.notNull("classPathId", classPathId); //NOI18N
@@ -229,7 +231,7 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
         return root == null ?
             null :
             new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
-                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction),
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction, removeShared),
                 new LibraryEditable(entryId, rh),
                 new JavadocProvider(root,root)));
     }
@@ -245,7 +247,8 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
             final @NonNull ClassPathSupport cs,
             final @NonNull ReferenceHelper rh,
             @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+            boolean removeFromProject) {
         Parameters.notNull("original", original);   //NOI18N
         Parameters.notNull("helper", helper);       //NOI18N
         Parameters.notNull("eval", eval);           //NOI18N
@@ -258,7 +261,7 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
         return root == null ?
             null :
             new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
-                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction),
+                new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh, preRemoveAction, postRemoveAction, removeFromProject),
                 new ArchiveEditable(entryId, helper, eval, rh),
                 new JavadocProvider(root,root)));
     }
@@ -514,7 +517,8 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
        private final Consumer<Pair<String,String>> preRemoveAction;
        private final Consumer<Pair<String,String>> postRemoveAction;
        private final ThreadLocal<String> lastRef = new ThreadLocal<>();
-
+       private final boolean removeFromProject;
+       
        Removable (
                @NonNull final UpdateHelper helper,
                @NonNull final String classPathId,
@@ -523,7 +527,8 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
                @NonNull final ClassPathSupport cs,
                @NonNull final ReferenceHelper rh,
                @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-               @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+               @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+               boolean removeFromProject) {
            this.helper = helper;
            this.classPathId = classPathId;
            this.entryId = entryId;
@@ -532,8 +537,8 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
            this.rh = rh;
            this.preRemoveAction = preRemoveAction;
            this.postRemoveAction = postRemoveAction;
+           this.removeFromProject = removeFromProject;
        }
-
 
         @Override
        public boolean canRemove () {
@@ -544,6 +549,9 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
 
         @Override
        public Project remove() {
+           if (!removeFromProject) {
+               return null;
+           }
            // The caller has write access to ProjectManager
            // and ensures the project will be saved.
             boolean found = false;

@@ -112,10 +112,10 @@ public final class ProjectUISupport{
                     cs,
                     rh,
                     null,
-                    null);
+                    null, true);
         }
     }
-
+    
     /**
      * Creates {@link SourceGroup} implementation which can be passed to
      * {@link org.netbeans.spi.java.project.support.ui.PackageView#createPackageView(SourceGroup)}.
