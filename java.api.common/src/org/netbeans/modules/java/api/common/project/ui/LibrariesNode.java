@@ -816,7 +816,11 @@ public final class LibrariesNode extends AbstractNode {
                 case Key.TYPE_MODULE:
                 {
                     result = new Node[] {
-                        new ModuleNode(key.getEntryId(), key.getArtifactLocation())
+                        new ModuleNode(
+                                key.getEntryId(),
+                                key.getArtifactLocation(),
+                                key.getPreRemoveAction(),
+                                key.getPostRemoveAction())
                     };
                     break;
                 }
@@ -865,24 +869,45 @@ public final class LibrariesNode extends AbstractNode {
                         }
                     }
                 }
-                modRoots.stream()
-                        .map((p) -> {
-                            try {
-                                final URL srcRoot = new URL(p.second().toExternalForm() + relPaths.iterator().next());
-                                final URL bin = Arrays.stream(BinaryForSourceQuery.findBinaryRoots(srcRoot).getRoots())
-                                        .filter(FileUtil::isArchiveArtifact)
-                                        .findFirst()
-                                        .orElse(null);
-                                if (bin != null) {
-                                    return Key.module(p.first(), bin.toURI());
+                if (!relPaths.isEmpty()) {
+                    modRoots.stream()
+                            .collect(Collectors.groupingBy((p) -> p.first()))
+                            .entrySet().stream()
+                            .map((e) -> Pair.of(
+                                    e.getKey(),
+                                    e.getValue().stream()
+                                        .map(Pair::second)
+                                        .collect(Collectors.toList())))
+                            .map((p) -> {
+                                try {
+                                    final URL srcRoot = new URL(p.second().get(0).toExternalForm() + relPaths.iterator().next());
+                                    final URL bin = Arrays.stream(BinaryForSourceQuery.findBinaryRoots(srcRoot).getRoots())
+                                            .filter(FileUtil::isArchiveArtifact)
+                                            .findFirst()
+                                            .orElse(null);
+                                    if (bin != null) {
+                                        final String modName = p.first();
+                                        return Key.module(
+                                                modName,
+                                                bin.toURI(),
+                                                null,
+                                                (atfc) -> {
+                                                    final FileObject modInfo = findModuleInfo(sourcePath.getRoots());
+                                                    if (modInfo != null) {
+                                                        DefaultProjectModulesModifier.removeRequiredModules(
+                                                                modInfo,
+                                                                Collections.singleton(modName));
+                                                    }
+                                                });
+                                    }
+                                } catch (MalformedURLException | URISyntaxException ex) {
+                                    Exceptions.printStackTrace(ex);
                                 }
-                            } catch (MalformedURLException | URISyntaxException e) {
-                                Exceptions.printStackTrace(e);
-                            }
-                            return null;
-                        })
-                        .filter((k) -> k != null)
-                        .forEach(result::add);
+                                return null;
+                            })
+                            .filter((k) -> k != null)
+                            .forEach(result::add);
+                }
             }
             for (String classPathProperty : classPathProperties) {
                 result.addAll(getKeys(
@@ -1315,7 +1340,6 @@ public final class LibrariesNode extends AbstractNode {
         private String anID;
         private final Consumer<Pair<String,String>> preRemoveAction;
         private final Consumer<Pair<String,String>> postRemoveAction;
-                
 
         private static Key platform() {
             return new Key();
@@ -1361,8 +1385,10 @@ public final class LibrariesNode extends AbstractNode {
         @NonNull
         private static Key module(
                 @NonNull final String moduleName,
-                @NonNull final URI uri) {
-            return new Key(moduleName, uri);
+                @NonNull final URI uri,
+                @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+            return new Key(moduleName, uri, preRemoveAction, postRemoveAction);
         }
 
         public Key (String anID) {
@@ -1378,13 +1404,16 @@ public final class LibrariesNode extends AbstractNode {
 
         private Key(
                 @NonNull final String moduleName,
-                @NonNull final URI uri) {
+                @NonNull final URI uri,
+                @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
             assert moduleName != null;
             assert uri != null;
             this.type = TYPE_MODULE;
             this.entryId = moduleName;
             this.uri = uri;
-            preRemoveAction = postRemoveAction = null;
+            this.preRemoveAction = preRemoveAction;
+            this.postRemoveAction = postRemoveAction;
         }
 
         private Key (

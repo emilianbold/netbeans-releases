@@ -906,6 +906,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                 .addModulePathProperties(ProjectProperties.RUN_TEST_MODULEPATH)
                                 .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
                                 .setSourcePath(srcPath)
+                                .addLibrariesNodeActions(
+//                                    LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
+//                                    LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
+//                                    LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
+                                    null,
+                                    ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", "COMPILE_TESTS")) // NOI18N
                                 .build()
                         };
                     } else {
@@ -918,6 +924,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                 .setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE)
                                 .setSourcePath(srcPath)
                                 .setModuleSourcePath(ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_SOURCE_PATH))
+                                .addLibrariesNodeActions(
+//                                    LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
+//                                    LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getSourceRoots(), null),
+//                                    LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
+                                    null,
+                                    ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", "COMPILE")) // NOI18N
                                 .build()
                         };
                     }

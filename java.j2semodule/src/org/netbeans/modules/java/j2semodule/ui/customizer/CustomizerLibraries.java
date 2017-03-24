@@ -373,16 +373,16 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 jTabbedPane.setSelectedIndex(1);
                 break;
             case COMPILE_TESTS_MODULE:
-                jTabbedPane.setSelectedIndex(2);
+                jTabbedPane.setSelectedIndex(3);
                 break;
             case COMPILE_TESTS:
-                jTabbedPane.setSelectedIndex(2);
+                jTabbedPane.setSelectedIndex(3);
                 break;
             case RUN_MODULE:
-                jTabbedPane.setSelectedIndex(3);
+                jTabbedPane.setSelectedIndex(2);
                 break;
             case RUN:
-                jTabbedPane.setSelectedIndex(3);
+                jTabbedPane.setSelectedIndex(2);
                 break;
             case RUN_TESTS_MODULE:
                 jTabbedPane.setSelectedIndex(4);
