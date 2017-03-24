@@ -107,6 +107,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -123,7 +124,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
- *
+ * Multi Module logical view content.
  * @author Tomas Zezula
  * @since 1.115
  */
@@ -152,6 +153,9 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 libsSupport);
     }
 
+    /**
+     * A builder of the {@link MultiModuleNodeFactory}.
+     */
     public static final class Builder {
         private LibrariesSupport libSupport;
         private MultiModule mods;
@@ -160,6 +164,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         private Builder() {
         }
 
+        /**
+         * Adds project's source modules into the logical view.
+         * @param sourceModules the module roots
+         * @param srcRoots the source roots
+         * @return the {@link Builder}
+         */
         @NonNull
         public Builder setSources(
                 @NonNull final SourceRoots sourceModules,
@@ -168,6 +178,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
            return this;
         }
 
+        /**
+         * Adds project's test modules into the logical view.
+         * @param sourceModules the module roots
+         * @param srcRoots the source roots
+         * @return the {@link Builder}
+         */
         @NonNull
         public Builder setTests(
                 @NonNull final SourceRoots testModules,
@@ -176,6 +192,13 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return this;
         }
 
+        /**
+         * Adds libraries nodes into the logical view.
+         * @param helper the {@link UpdateHelper} to resolve paths
+         * @param evaluator the {@link PropertyEvaluator} to access project properties
+         * @param refHelper the {@link ReferenceHelper} to resolve project references
+         * @return the {@link Builder}
+         */
         @NonNull
         public Builder addLibrariesNodes(
                 @NonNull final UpdateHelper helper,
@@ -185,6 +208,14 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return this;
         }
 
+        /**
+         * Adds actions into the modules libraries nodes.
+         * If the {@link Action} is an instance of {@link ContextAwareAction}
+         * the {@link Lookup} with source path is injected into the {@link Action}.
+         * The source path can be used to identify actual module of an multi module project.
+         * @param actions the {@link Action}s to add
+         * @return the {@link Builder}
+         */
         @NonNull
         public Builder addLibrariesNodeActions(@NonNull final Action... actions) {
             if (libSupport == null) {
@@ -194,6 +225,14 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return this;
         }
 
+        /**
+         * Adds actions into the modules test libraries nodes.
+         * If the {@link Action} is an instance of {@link ContextAwareAction}
+         * the {@link Lookup} with source path is injected into the {@link Action}.
+         * The source path can be used to identify actual module of an multi module project.
+         * @param actions the {@link Action}s to add
+         * @return the {@link Builder}
+         */
         @NonNull
         public Builder addTestLibrariesNodeActions(@NonNull final Action... actions) {
             if (libSupport == null) {
@@ -203,6 +242,10 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             return this;
         }
 
+        /**
+         * Builds the {@link MultiModuleNodeFactory}.
+         * @return the new {@link MultiModuleNodeFactory} instance
+         */
         @NonNull
         public MultiModuleNodeFactory build() {
             return new MultiModuleNodeFactory(
@@ -211,6 +254,10 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                     libSupport);
         }
 
+        /**
+         * Creates a new {@link Builder}.
+         * @return the {@link Builder}
+         */
         @NonNull
         public static Builder create() {
             return new Builder();
@@ -889,6 +936,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 final ClassPath srcPath = key.getSourcePath();
                 final FileObject[] roots = srcPath.getRoots();
                 if (roots.length > 0) {
+                    final Lookup lkp = Lookups.fixed(project, srcPath);
                     if (key.isTests()) {
                         return new Node[] {
                             new LibrariesNode.Builder(this.project,
@@ -901,7 +949,13 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                 .addModulePathProperties(ProjectProperties.RUN_TEST_MODULEPATH)
                                 .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
                                 .setSourcePath(srcPath)
-                                .addLibrariesNodeActions(libsSupport.getActions(true))
+                                .addLibrariesNodeActions(libsSupport.getActions(true).stream()
+                                    .map((a) -> {
+                                        return a instanceof ContextAwareAction ?
+                                                ((ContextAwareAction)a).createContextAwareInstance(lkp) :
+                                                a;
+                                    })
+                                    .toArray((len) -> new Action[len]))
                                 .build()
                         };
                     } else {
@@ -918,7 +972,13 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                 .setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE)
                                 .setSourcePath(srcPath)
                                 .setModuleSourcePath(ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_SOURCE_PATH))
-                                .addLibrariesNodeActions(libsSupport.getActions(false))
+                                .addLibrariesNodeActions(libsSupport.getActions(false).stream()
+                                    .map((a) -> {
+                                        return a instanceof ContextAwareAction ?
+                                                ((ContextAwareAction)a).createContextAwareInstance(lkp) :
+                                                a;
+                                    })
+                                    .toArray((len) -> new Action[len]))
                                 .build()
                         };
                     }
@@ -1084,9 +1144,8 @@ public final class MultiModuleNodeFactory implements NodeFactory {
         }
 
         @NonNull
-        Action[] getActions(final boolean tests) {
-            final List<Action> l = tests ? testActions : actions;
-            return l.toArray(new Action[l.size()]);
+        Collection<? extends Action>getActions(final boolean tests) {
+            return tests ? testActions : actions;
         }
 
         void addActions(

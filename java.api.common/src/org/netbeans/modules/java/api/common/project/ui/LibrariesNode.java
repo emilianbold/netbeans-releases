@@ -73,6 +73,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
@@ -142,7 +143,9 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.BaseUtilities;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
@@ -557,18 +560,20 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     //Static Action Factory Methods
-    public static Action createAddProjectAction (Project p, SourceRoots sources) {        
-        return new AddProjectAction(p, sources);
+    public static Action createAddProjectAction (Project p, SourceRoots sources) {
+        return new AddProjectAction(p, sources::getRoots);
     }
 
-    public static Action createAddLibraryAction (ReferenceHelper helper, 
-            SourceRoots sources, LibraryChooser.Filter filter) {        
-        return new AddLibraryAction(helper, sources, 
+    public static Action createAddLibraryAction (ReferenceHelper helper,
+            SourceRoots sources, LibraryChooser.Filter filter) {
+        return new AddLibraryAction(
+                helper,
+                sources::getRoots,
                 filter != null ? filter : EditMediator.createLibraryFilter());
     }
 
-    public static Action createAddFolderAction (AntProjectHelper p, SourceRoots sources) {        
-        return new AddFolderAction(p, sources);
+    public static Action createAddFolderAction (AntProjectHelper p, SourceRoots sources) {
+        return new AddFolderAction(p, sources::getRoots);
     }
     
     /**
@@ -598,21 +603,15 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     private static void handlePCPMUnsupported (
-            @NonNull final SourceRoots sourceRoots,
+            @NonNull final Supplier<FileObject[]> sourceRoots,
             @NonNull final UnsupportedOperationException e) {
-        final FileObject[] roots = sourceRoots.getRoots();
+        final FileObject[] roots = sourceRoots.get();
         if (roots.length == 0) {
             return;
         }
         final StringBuilder sb = new StringBuilder().
                 append("roots: ").
                 append(Arrays.toString(roots)).
-                append("\n").
-                append("urls: ").
-                append(Arrays.toString(sourceRoots.getRootURLs())).
-                append("\n").
-                append("props: ").
-                append(Arrays.toString(sourceRoots.getRootProperties())).
                 append("\n");
         Exceptions.printStackTrace(
             Exceptions.attachMessage(e, sb.toString()));
@@ -1635,12 +1634,12 @@ public final class LibrariesNode extends AbstractNode {
         }
     }
     
-    private static class AddProjectAction extends AbstractAction {
+    private static class AddProjectAction extends AbstractAction implements ContextAwareAction {
 
         private final Project project;
-        private final SourceRoots sources;
+        private final Supplier<FileObject[]> sources;
 
-        public AddProjectAction (Project project, SourceRoots sources) {
+        public AddProjectAction (Project project, Supplier<FileObject[]> sources) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddProject_Action" ) );
             this.project = project;
             this.sources = sources;
@@ -1658,11 +1657,11 @@ public final class LibrariesNode extends AbstractNode {
 
         @Override
         public boolean isEnabled() {
-            return this.sources.getRoots().length > 0;
+            return this.sources.get().length > 0;
         }
 
         private void addArtifacts (AntArtifactItem[] artifactItems) {
-            final FileObject[] roots = this.sources.getRoots();
+            final FileObject[] roots = this.sources.get();
             if (roots.length == 0) {
                 return;
             }
@@ -1687,18 +1686,28 @@ public final class LibrariesNode extends AbstractNode {
                 handlePCPMUnsupported(sources, e);
             }
         }
+
+        @NonNull
+        @Override
+        public Action createContextAwareInstance(@NonNull final Lookup actionContext) {
+            final ClassPath scp = actionContext.lookup(ClassPath.class);
+            final Supplier<FileObject[]> ctx = scp != null ?
+                    scp::getRoots :
+                    sources;
+            return new AddProjectAction(project, ctx);
+        }
     }
 
-    private static class AddLibraryAction extends AbstractAction {
+    private static class AddLibraryAction extends AbstractAction implements ContextAwareAction {
 
         private final LibraryChooser.Filter filter;
-        private final SourceRoots sourceRoots;
+        private final Supplier<FileObject[]> sources;
         private ReferenceHelper refHelper;
 
-        public AddLibraryAction(ReferenceHelper refHelper, SourceRoots sourceRoots, LibraryChooser.Filter filter) {
+        public AddLibraryAction(ReferenceHelper refHelper, Supplier<FileObject[]> sources, LibraryChooser.Filter filter) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.refHelper = refHelper;
-            this.sourceRoots = sourceRoots;
+            this.sources = sources;
             this.filter = filter;
         }
 
@@ -1715,11 +1724,11 @@ public final class LibrariesNode extends AbstractNode {
 
         @Override
         public boolean isEnabled() {
-            return this.sourceRoots.getRoots().length > 0;
+            return this.sources.get().length > 0;
         }
 
         private void addLibraries (Library[] libraries) {
-            final FileObject[] roots = this.sourceRoots.getRoots();
+            final FileObject[] roots = this.sources.get();
             if (roots.length == 0) {
                 return;
             }
@@ -1735,17 +1744,27 @@ public final class LibrariesNode extends AbstractNode {
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             } catch (UnsupportedOperationException e) {
-                handlePCPMUnsupported(sourceRoots, e);
+                handlePCPMUnsupported(sources, e);
             }
+        }
+
+        @NonNull
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            final ClassPath scp = actionContext.lookup(ClassPath.class);
+            final Supplier<FileObject[]> ctx = scp != null ?
+                    scp::getRoots :
+                    sources;
+            return new AddLibraryAction(refHelper, ctx, filter);
         }
     }
 
-    private static class AddFolderAction extends AbstractAction {
+    private static class AddFolderAction extends AbstractAction implements ContextAwareAction {
 
         private final AntProjectHelper helper;
-        private final SourceRoots sources;
+        private final Supplier<FileObject[]> sources;
 
-        public AddFolderAction (AntProjectHelper helper, SourceRoots sources) {
+        public AddFolderAction (AntProjectHelper helper, Supplier<FileObject[]> sources) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddFolder_Action" ) );
             this.helper = helper;
             this.sources = sources;
@@ -1789,11 +1808,11 @@ public final class LibrariesNode extends AbstractNode {
 
         @Override
         public boolean isEnabled() {
-            return this.sources.getRoots().length > 0;
+            return this.sources.get().length > 0;
         }
 
         private void addJarOrFolder (String[] filePaths, final String[] pathBasedVariables, FileFilter fileFilter, File base) {
-            final FileObject[] roots = this.sources.getRoots();
+            final FileObject[] roots = this.sources.get();
             if (roots.length == 0) {
                 return;
             }
@@ -1885,8 +1904,16 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            final ClassPath scp = actionContext.lookup(ClassPath.class);
+            final Supplier<FileObject[]> ctx = scp != null ?
+                    scp::getRoots :
+                    sources;
+            return new AddFolderAction(helper, ctx);
+        }
     }
-    
+
     @CheckForNull
     private static FileObject findModuleInfo(@NonNull final FileObject... roots) {
         for (FileObject root : roots) {
