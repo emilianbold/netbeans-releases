@@ -101,8 +101,6 @@ public final class CodeUtils {
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
     public static final String NULLABLE_TYPE_PREFIX = "?"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
-    // XXX remove (instead, use constant)
-    private static final boolean PHP71 = Boolean.getBoolean("nb.php71"); // NOI18N
 
     private CodeUtils() {
     }
@@ -211,11 +209,6 @@ public final class CodeUtils {
         assert file != null;
         assert version != null;
         return getPhpVersion(file).compareTo(version) > 0;
-    }
-
-    // XXX remove (instead, use constant)
-    public static boolean isLessThanPhp71(FileObject file) {
-        return !PHP71;
     }
 
     /**

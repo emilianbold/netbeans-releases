@@ -39,9 +39,9 @@
  */
 package org.netbeans.modules.php.editor.csl;
 
-public class PHP71GotoDeclarationTest extends GotoDeclarationTestBase {
+public class GotoDeclarationPHP71Test extends GotoDeclarationTestBase {
 
-    public PHP71GotoDeclarationTest(String testName) {
+    public GotoDeclarationPHP71Test(String testName) {
         super(testName);
     }
 
