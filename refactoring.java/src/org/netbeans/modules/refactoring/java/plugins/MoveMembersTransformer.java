@@ -577,7 +577,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         @Override
                         public Void visitIdentifier(IdentifierTree node, Void p) {
                             TreePath treePath = trees.getPath(bodyPath.getCompilationUnit(), node);
-                            if(!workingCopy.getTreeUtilities().isSynthetic(treePath)) {
+                            if(!JavaPluginUtils.isSyntheticPath(workingCopy, treePath)) {
                                 // FIXME: path may skip some intermediate types which bring the identifier.
                                 Element el = trees.getElement(treePath);
                                 if (el != null) {

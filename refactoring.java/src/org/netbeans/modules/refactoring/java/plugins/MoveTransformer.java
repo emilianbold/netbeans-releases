@@ -108,7 +108,7 @@ public class MoveTransformer extends RefactoringVisitor {
     
     @Override
     public Tree visitMemberSelect(MemberSelectTree node, Element p) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (!JavaPluginUtils.isSyntheticPath(workingCopy, getCurrentPath())) {
             final Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el != null) {
                 if (isElementMoving(el)) {
@@ -212,7 +212,7 @@ public class MoveTransformer extends RefactoringVisitor {
     
     @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (!JavaPluginUtils.isSyntheticPath(workingCopy, getCurrentPath())) {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el != null) {
                 if (!isThisFileMoving) {
