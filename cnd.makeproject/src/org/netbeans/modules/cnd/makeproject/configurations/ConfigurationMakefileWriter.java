@@ -57,9 +57,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -725,7 +724,7 @@ public class ConfigurationMakefileWriter {
             bw.write(".build-tests-conf: .build-tests-subprojects .build-conf ${TESTFILES}\n"); // NOI18N
             bw.write(".build-tests-subprojects:\n"); // NOI18N
 
-            Set<MakeArtifact> subProjects = new HashSet<>();
+            Set<MakeArtifact> subProjects = new LinkedHashSet<>();
 
             for (Folder folder : getTests(projectDescriptor)) {
                 List<LinkerConfiguration> linkerConfigurations = getLinkerConfigurations(folder, conf);
