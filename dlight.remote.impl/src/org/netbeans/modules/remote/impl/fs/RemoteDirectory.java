@@ -1568,12 +1568,15 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                         }
                     }
                 }
-                uploadAndUnzip(zipFile);
+                uploadAndUnzip(zipFile, false);
             } finally {
                 zipFile.delete();
                 this.refresh(true);
             }
         } finally {
+            for (RemoteFileObjectBase fo : suspendInfo.getAllSuspended()) {
+                fo.setFlag(MASK_SUSPENDED_DUMMY, false);
+            }
             suspendInfo.dispose();
         }
     }
@@ -1594,7 +1597,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             } finally {
                 zipStream.close();
             }
-            uploadAndUnzip(localZipFile);            
+            uploadAndUnzip(localZipFile, true);            
         } finally {
             if (localZipFile != null) {
                 localZipFile.delete();
@@ -1603,7 +1606,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
     }
 
     @SuppressWarnings("ReplaceStringBufferByString")
-    private void uploadAndUnzip(File localZipFile) throws InterruptedException, IOException  {
+    private void uploadAndUnzip(File localZipFile, boolean alsoUnzipToCache) throws InterruptedException, IOException  {
         final ExecutionEnvironment env = getExecutionEnvironment();
         // Copy local zip file to remote
         String remoteZipPath = getPath() + '/' + ".rfs_tmp_" + System.currentTimeMillis() + ".zip"; // NOI18N
@@ -1633,19 +1636,35 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         if (!rc.isOK()) {
             throw new IOException(rc.getErrorString() + " when unzipping and removing " + remoteZipPath + " in " + this); //NOI18N
         }
-        getCache().mkdirs();
-        try (InputStream is = new FileInputStream(localZipFile)) {
-            RemoteFileSystemUtils.unpackZipFile(is, getCache());
+        if (alsoUnzipToCache) {
+            getCache().mkdirs();
+            try (InputStream is = new FileInputStream(localZipFile)) {
+                RemoteFileSystemUtils.unpackZipFile(is, getCache());
+            }
         }
+        class CacheFiller {
+            void fillRecursively(File cacheDir) throws IOException {
+                File cacheList = new File(cacheDir, RemoteFileSystem.CACHE_FILE_NAME);
+                if (!cacheList.exists()) {
+                    // We need to create a .rfs_cache files for each directory, otherwise it won't be refreshed -
+                    // and changing this logic in refreshImpl is too dangerous.                    
+                    //final Collection<DirEntryImpl> entries = DirEntryImpl.createFromCacheDir(cacheDir);
+                    // We create an empty cache file: in suspend mode no events were raised, 
+                    // so let all "file created" events be raised now.
+                    DirectoryStorage.store(cacheList, Collections.<DirEntryImpl>emptyList() /*entries*/);
+                }
+            }
+        }
+        new CacheFiller().fillRecursively(getCache());
         try {
-            refreshImpl(trace, null, true, RefreshMode.DEFAULT, 0);
+            refreshImpl(true, null, true, RefreshMode.DEFAULT, 0);
         } catch (TimeoutException ex) {
             RemoteFileSystemUtils.reportUnexpectedTimeout(ex, this);
         } catch (ExecutionException ex) {
             throw new IOException(ex);
         }
     }
-
+    
     private boolean ensureChildSyncFromZip(RemotePlainFile child) {
         File file = new File(getCache(), RemoteFileSystem.CACHE_ZIP_FILE_NAME);
         if (file.exists()) {

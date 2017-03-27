@@ -41,12 +41,17 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.openide.util.Exceptions;
 
 /**
@@ -93,6 +98,19 @@ public class DirEntryImpl extends DirEntry {
                 device, inode, linkTarget);
     }
     
+    public static Collection<DirEntryImpl> createFromCacheDir(File cacheDir) {
+        File[] files = cacheDir.listFiles();
+        List<DirEntryImpl> entries = new ArrayList(files.length);
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            entries.add(new DirEntryImpl(file.getName(), file.getName(), file.length(),
+                file.lastModified(), makeFlags(file.canRead(), file.canWrite(), file.canExecute()), 
+                file.isDirectory() ? FileType.Directory.toChar() : FileType.Regular.toChar(),
+                -1, -1, null));
+        }
+        return entries;
+    }
+
     private static byte makeFlags(boolean canRead, boolean canWrite, boolean canExec) {
         byte flags = 0;
         if (canRead) {
