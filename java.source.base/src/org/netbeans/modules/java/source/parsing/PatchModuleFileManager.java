@@ -60,12 +60,12 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Pair;
 
 /**
@@ -78,7 +78,7 @@ final class PatchModuleFileManager implements JavaFileManager {
     private final JavaFileManager srcDelegate;
     private final Map<String,List<URL>> patches;
     private final Map<URL, String> roots;
-    private Set<ModuleLocation> moduleLocations;
+    private Set<PatchLocation> moduleLocations;
 
     PatchModuleFileManager(
             @NonNull final JavaFileManager binDelegate,
@@ -91,10 +91,41 @@ final class PatchModuleFileManager implements JavaFileManager {
 
     @Override
     public Location getLocationForModule(Location location, String moduleName) throws IOException {
-        return moduleLocations(location).stream()
-                .filter((ml) -> moduleName != null && moduleName.equals(ml.getModuleName()))
-                .findFirst()
-                .orElse(null);
+        if (location == StandardLocation.PATCH_MODULE_PATH) {
+            return moduleLocations(location).stream()
+                    .filter((ml) -> moduleName != null && moduleName.equals(ml.getModuleName()))
+                    .findFirst()
+                    .orElse(null);
+        } else if (location == StandardLocation.CLASS_OUTPUT) {
+            return moduleLocations(StandardLocation.PATCH_MODULE_PATH).stream()
+                    .filter((pl) -> moduleName != null && moduleName.equals(pl.getModuleName()))
+                    .findFirst()
+                    .map((pl) -> {
+                        final List<URL> cacheRoots = pl.getSrc() == null ?
+                                Collections.emptyList() :
+                                pl.getSrc().getModuleRoots().stream()
+                                        .map((url) -> {
+                                            try {
+                                                return BaseUtilities.toURI(JavaIndex.getClassFolder(url, false, false)).toURL();
+                                            } catch (IOException ioe) {
+                                                LOG.log(Level.WARNING, "Cannot determine the cache URL for: {0}", url); //NOI18N
+                                                return null;
+                                            }
+                                        })
+                                        .filter((url) -> url != null)
+                                        .collect(Collectors.toList());
+                        return cacheRoots.isEmpty() ?
+                                null :
+                                new PatchLocation(
+                                    StandardLocation.PATCH_MODULE_PATH,
+                                    cacheRoots,
+                                    Collections.emptyList(),
+                                    pl.getModuleName());
+                    })
+                    .orElse(null);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -116,9 +147,13 @@ final class PatchModuleFileManager implements JavaFileManager {
 
     @Override
     public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
-        return moduleLocations(location).stream()
-                .map((ml) -> Collections.<Location>singleton(ml))
-                .collect(Collectors.toList());
+        if (location == StandardLocation.PATCH_MODULE_PATH) {
+            return moduleLocations(location).stream()
+                    .map((ml) -> Collections.<Location>singleton(ml))
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -158,7 +193,8 @@ final class PatchModuleFileManager implements JavaFileManager {
 
     @Override
     public boolean hasLocation(Location location) {
-        return StandardLocation.PATCH_MODULE_PATH == location && !patches.isEmpty();
+        return (StandardLocation.PATCH_MODULE_PATH == location || StandardLocation.CLASS_OUTPUT == location)
+                && !patches.isEmpty();
     }
 
     @Override
@@ -185,22 +221,26 @@ final class PatchModuleFileManager implements JavaFileManager {
 
     @Override
     public Iterable<JavaFileObject> list(Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
-        final PatchLocation pl = PatchLocation.cast(location);
-        final ModuleLocation bin = pl.getBin();
-        final ModuleLocation src = pl.getSrc();
-        if (bin == null) {
-            return src == null ?
-                    Collections.emptyList() :
-                    srcDelegate.list(src, packageName, kinds, recurse);
-        } else {
-            if (src == null) {
-                return binDelegate.list(bin, packageName, kinds, recurse);
+        if (PatchLocation.isInstance(location)) {
+            final PatchLocation pl = PatchLocation.cast(location);
+            final ModuleLocation bin = pl.getBin();
+            final ModuleLocation src = pl.getSrc();
+            if (bin == null) {
+                return src == null ?
+                        Collections.emptyList() :
+                        srcDelegate.list(src, packageName, kinds, recurse);
             } else {
-                final List<Iterable<JavaFileObject>> res = new ArrayList<>(2);
-                res.add(binDelegate.list(bin, packageName, kinds, recurse));
-                res.add(srcDelegate.list(src, packageName, kinds, recurse));
-                return Iterators.chained(res);
+                if (src == null) {
+                    return binDelegate.list(bin, packageName, kinds, recurse);
+                } else {
+                    final List<Iterable<JavaFileObject>> res = new ArrayList<>(2);
+                    res.add(binDelegate.list(bin, packageName, kinds, recurse));
+                    res.add(srcDelegate.list(src, packageName, kinds, recurse));
+                    return Iterators.chained(res);
+                }
             }
+        } else {
+            return Collections.emptyList();
         }
     }
 
@@ -214,19 +254,21 @@ final class PatchModuleFileManager implements JavaFileManager {
 
     @Override
     public JavaFileObject getJavaFileForInput(Location location, String className, JavaFileObject.Kind kind) throws IOException {
-        final PatchLocation pl = PatchLocation.cast(location);
-        final ModuleLocation bin = pl.getBin();
-        final ModuleLocation src = pl.getSrc();
-        if (bin != null) {
-            final JavaFileObject jfo = binDelegate.getJavaFileForInput(bin, className, kind);
-            if (jfo != null) {
-                return jfo;
+        if (PatchLocation.isInstance(location)) {
+            final PatchLocation pl = PatchLocation.cast(location);
+            final ModuleLocation bin = pl.getBin();
+            final ModuleLocation src = pl.getSrc();
+            if (bin != null) {
+                final JavaFileObject jfo = binDelegate.getJavaFileForInput(bin, className, kind);
+                if (jfo != null) {
+                    return jfo;
+                }
             }
-        }
-        if (src != null) {
-            final JavaFileObject jfo = srcDelegate.getJavaFileForInput(src, className, kind);
-            if (jfo != null) {
-                return jfo;
+            if (src != null) {
+                final JavaFileObject jfo = srcDelegate.getJavaFileForInput(src, className, kind);
+                if (jfo != null) {
+                    return jfo;
+                }
             }
         }
         return null;
@@ -234,26 +276,26 @@ final class PatchModuleFileManager implements JavaFileManager {
 
     @Override
     public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
-        throw new UnsupportedOperationException("Not supported by disaptch JavaFileManager.");
+        throw new UnsupportedOperationException("Not supported by patch JavaFileManager.");
     }
 
     @Override
     public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
-        throw new UnsupportedOperationException("Not supported by disaptch JavaFileManager.");
+        throw new UnsupportedOperationException("Not supported by patch JavaFileManager.");
     }
 
     @Override
     public FileObject getFileForOutput(Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
-        throw new UnsupportedOperationException("Not supported by disaptch JavaFileManager.");
+        throw new UnsupportedOperationException("Not supported by patch JavaFileManager.");
     }
     //</editor-fold>
 
-    private Set<ModuleLocation> moduleLocations(final Location baseLocation) {
+    private Set<PatchLocation> moduleLocations(final Location baseLocation) {
         if (baseLocation != StandardLocation.PATCH_MODULE_PATH) {
             throw new IllegalStateException(baseLocation.toString());
         }
         if (moduleLocations == null) {
-            Set<ModuleLocation> res = new HashSet<>();
+            Set<PatchLocation> res = new HashSet<>();
             for (Map.Entry<String,List<URL>> patch : patches.entrySet()) {
                 res.add(createPatchLocation(patch.getKey(), patch.getValue()));
             }
@@ -351,9 +393,13 @@ final class PatchModuleFileManager implements JavaFileManager {
             return ModuleLocation.WithExcludes.createExcludes(StandardLocation.MODULE_SOURCE_PATH, moduleEntries, name);
         }
 
+        static boolean isInstance(Location l) {
+            return l.getClass() == PatchLocation.class;
+        }
+
         @NonNull
         static PatchLocation cast(Location l) {
-            if (l.getClass() == PatchLocation.class) {
+            if (isInstance(l)) {
                 return (PatchLocation) l;
             } else {
                 throw new IllegalArgumentException (String.valueOf(l));

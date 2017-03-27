@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -196,7 +197,6 @@ public final class ProxyFileManager implements JavaFileManager {
                     l == StandardLocation.SOURCE_PATH ?
                         SOURCE_PATH_WRITE : l,
                     null);
-            assert fms.length <= 1;
             if (fms.length == 0) {
                 throw new UnsupportedOperationException("No JavaFileManager for location: " + l);  //NOI18N
             } else {
@@ -435,7 +435,6 @@ public final class ProxyFileManager implements JavaFileManager {
         checkSingleOwnerThread();
         try {
             final JavaFileManager[] fms = cfg.getFileManagers (l, null);
-            assert fms.length <= 1;
             if (fms.length == 0) {
                 throw new UnsupportedOperationException("No JavaFileManager for location: " + l);  //NOI18N
             } else {
@@ -831,21 +830,29 @@ public final class ProxyFileManager implements JavaFileManager {
                     () -> {
                         final JavaFileManager output = createOutputFileManager();
                         final JavaFileManager treeLoader = createTreeLoaderFileManager();
+                        final JavaFileManager patches = createPatchFileManager();
                         return output == null ?
-                            new JavaFileManager[] {treeLoader} :
-                            new JavaFileManager[] {treeLoader, output};
+                            new JavaFileManager[] {treeLoader, patches} :
+                            new JavaFileManager[] {treeLoader, output, patches};
                     },
                     (fms) -> {
-                        JavaFileManager active = null;
-                        for (JavaFileManager fm : fms) {
-                            if (fm.hasLocation(StandardLocation.CLASS_OUTPUT)) {
-                                active = fm;
-                                break;
+                        final BitSet active = new BitSet(fms.length);
+                        int bc = 0;
+                        for (int i = 0; i < fms.length; i++) {
+                            if (fms[i].hasLocation(StandardLocation.CLASS_OUTPUT)) {
+                                active.set(i);
+                                bc++;
                             }
                         }
-                        return active == null ?
-                                EMPTY :
-                                new JavaFileManager[] {active};
+                        if (bc == 0) {
+                            return EMPTY;
+                        } else {
+                            final JavaFileManager[] res = new JavaFileManager[bc];
+                            for(int i = active.nextSetBit(0), j = 0; i >= 0; i = active.nextSetBit(i+1)) {
+                                res[j++] = fms[i];
+                            }
+                            return res;
+                        }
                     }));
             m.put(StandardLocation.SOURCE_OUTPUT, new Entry(() -> {
                     final JavaFileManager aptSrcOut = createAptSrcOutputFileManager();
