@@ -68,6 +68,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -699,6 +700,19 @@ public final class FileUtil extends Object {
         }
 
         StringTokenizer st = new StringTokenizer(name, separators);
+
+        if(name.startsWith("//") || name.startsWith("\\\\")) {      // NOI18N
+            // if it is UNC absolute path, start with \\ComputerName\sharedFolder
+            try {
+                File root = new File("\\\\"+st.nextToken()+"\\"+st.nextToken());    // NOI18N
+                folder = FileUtil.toFileObject(root);
+                if (folder == null) {
+                    throw new IOException("Windows share "+root.getPath()+" does not exist");   // NOI18N
+                }
+            } catch (NoSuchElementException ex) {
+                throw new IOException("Invalid Windows share "+name);   // NOI18N
+            }
+        }
 
         while (st.hasMoreElements()) {
             name = st.nextToken();
