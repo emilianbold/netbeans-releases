@@ -125,6 +125,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
                 }
             }
         });
+        projectChanged();
     }
 
     private void projectChanged() {
