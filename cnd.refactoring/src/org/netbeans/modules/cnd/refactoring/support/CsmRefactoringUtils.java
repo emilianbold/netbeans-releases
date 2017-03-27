@@ -448,7 +448,7 @@ public final class CsmRefactoringUtils {
                 if (CsmKindUtilities.isNamespaceDefinition((CsmObject)obj) ||
                         CsmKindUtilities.isEnum((CsmObject)obj)) {
                     endOffset = stOffset;
-                    endLineOffset = 0;
+                    //endLineOffset = 0;
                 } else if (CsmKindUtilities.isFunctionDefinition((CsmObject)obj)) {
                     endOffset = ((CsmFunctionDefinition)obj).getBody().getStartOffset()-1;
                 } else if (CsmKindUtilities.isClass((CsmObject)obj)) {
