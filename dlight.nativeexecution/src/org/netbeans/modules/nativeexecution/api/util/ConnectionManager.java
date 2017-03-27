@@ -141,7 +141,12 @@ public final class ConnectionManager {
             level = Level.FINE;
         }
         if (timeout > 0 && log.isLoggable(level)) {
-            slowConnectionListenerDetector = new SlowListenerDetector(timeout, log, level);
+            if (MiscUtils.isDebugged()) {
+                log.info("Switching connection manager slowness detector OFF in debug mode"); //NOI18N
+                slowConnectionListenerDetector = null;
+            } else {
+                slowConnectionListenerDetector = new SlowListenerDetector(timeout, log, level);
+            }
         } else {
             slowConnectionListenerDetector = null;
         }

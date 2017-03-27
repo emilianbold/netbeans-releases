@@ -44,6 +44,8 @@ package org.netbeans.modules.nativeexecution.support;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -107,4 +109,33 @@ public class MiscUtils {
             return Arrays.asList(msg.split("\n")); //NOI18N
         }
     }
+    
+    public static boolean isDebugged() {
+        return DebugChecker.DEBUGGED;
+    }
+    
+    private static class DebugChecker {
+
+        public static final boolean DEBUGGED = checkIfDebugged();
+
+        private static boolean checkIfDebugged() {
+            try {
+                RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+                List<String> args = runtime.getInputArguments();
+                for (String arg : args) {
+                    if ("-Xdebug".equals(arg)) { // NOI18N
+                        return true;                        
+                    } else if ("-agentlib:jdwp".equals(arg)) { // NOI18N
+                        // The idea of checking -agentlib:jdwp 
+                        // is taken from org.netbeans.modules.sampler.InternalSampler
+                        return true;
+                    } else if (arg.startsWith("-agentlib:jdwp=")) { // NOI18N
+                        return true;
+                    }
+                }
+            } catch (SecurityException ex) {                
+            }
+            return false;
+        }
+    }    
 }

@@ -90,6 +90,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -787,31 +788,6 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     protected static boolean isDebugged() {
-        return DebugChecker.DEBUGGED;
-    }
-    
-    private static class DebugChecker {
-
-        public static final boolean DEBUGGED = checkIfDebugged();
-
-        private static boolean checkIfDebugged() {
-            try {
-                RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-                List<String> args = runtime.getInputArguments();
-                for (String arg : args) {
-                    if ("-Xdebug".equals(arg)) { // NOI18N
-                        return true;                        
-                    } else if ("-agentlib:jdwp".equals(arg)) { // NOI18N
-                        // The idea of checking -agentlib:jdwp 
-                        // is taken from org.netbeans.modules.sampler.InternalSampler
-                        return true;
-                    } else if (arg.startsWith("-agentlib:jdwp=")) { // NOI18N
-                        return true;
-                    }
-                }
-            } catch (SecurityException ex) {                
-            }
-            return false;
-        }
-    }
+        return MiscUtils.isDebugged();
+    }    
 }
