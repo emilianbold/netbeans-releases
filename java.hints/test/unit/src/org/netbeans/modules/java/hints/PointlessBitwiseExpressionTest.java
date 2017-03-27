@@ -69,14 +69,14 @@ public class PointlessBitwiseExpressionTest extends NbTestCase {
                        "}")
                 .run(PointlessBitwiseExpression.class)
                 .findWarning("4:16-4:21:verifier:Pointless bitwise expression")
-                .applyFix("MSG_PointlessBitwiseExpression_fix")
+                .applyFix("MSG_PointlessBitwiseExpression_fix2")
                 .assertCompilable()
                 .assertOutput(
                 "package test;\n" +
                 "class Test {\n" +
                 "    void test () {\n" +
                 "        int i = 10;\n" +
-                "        int b = i;\n" +
+                "        int b = 0;\n" +
                 "    }\n" +
                 "}");
     }
@@ -94,14 +94,14 @@ public class PointlessBitwiseExpressionTest extends NbTestCase {
                        "}")
                 .run(PointlessBitwiseExpression.class)
                 .findWarning("4:16-4:21:verifier:Pointless bitwise expression")
-                .applyFix("MSG_PointlessBitwiseExpression_fix")
+                .applyFix("MSG_PointlessBitwiseExpression_fix2")
                 .assertCompilable()
                 .assertOutput(
                 "package test;\n" +
                 "class Test {\n" +
                 "    void test () {\n" +
                 "        int i = 10;\n" +
-                "        int b = i;\n" +
+                "        int b = 0;\n" +
                 "    }\n" +
                 "}");
     }
@@ -170,7 +170,7 @@ public class PointlessBitwiseExpressionTest extends NbTestCase {
                        "}")
                 .run(PointlessBitwiseExpression.class)
                 .findWarning("5:16-5:21:verifier:Pointless bitwise expression")
-                .applyFix("MSG_PointlessBitwiseExpression_fix")
+                .applyFix("MSG_PointlessBitwiseExpression_fix2")
                 .assertCompilable()
                 .assertOutput(
                 "package test;\n" +
@@ -178,7 +178,7 @@ public class PointlessBitwiseExpressionTest extends NbTestCase {
                 "    static final int T = 0;\n" +
                 "    void test () {\n" +
                 "        int i = 10;\n" +
-                "        int b = i;\n" +
+                "        int b = T;\n" +
                 "    }\n" +
                 "}");
     }
@@ -197,7 +197,7 @@ public class PointlessBitwiseExpressionTest extends NbTestCase {
                        "}")
                 .run(PointlessBitwiseExpression.class)
                 .findWarning("5:16-5:21:verifier:Pointless bitwise expression")
-                .applyFix("MSG_PointlessBitwiseExpression_fix")
+                .applyFix("MSG_PointlessBitwiseExpression_fix2")
                 .assertCompilable()
                 .assertOutput(
                 "package test;\n" +
@@ -205,7 +205,7 @@ public class PointlessBitwiseExpressionTest extends NbTestCase {
                 "    static final int T = 0;\n" +
                 "    void test () {\n" +
                 "        int i = 10;\n" +
-                "        int b = i;\n" +
+                "        int b = T;\n" +
                 "    }\n" +
                 "}");
     }
