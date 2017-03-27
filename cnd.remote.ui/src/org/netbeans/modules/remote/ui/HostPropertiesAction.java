@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.HostPropertiesAction", category = "NativeRemote")
-@ActionRegistration(displayName = "#PropertiesMenuItem", lazy = true)
+@ActionRegistration(displayName = "#PropertiesMenuItem", lazy = false)
 @ActionReference(path = "Remote/Host/Actions", name = "HostPropertiesAction", position = 500)
 public class HostPropertiesAction extends SingleHostAction {
 

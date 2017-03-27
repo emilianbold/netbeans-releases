@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 @ActionRegistration(iconInMenu = true, 
         displayName = "#OpenRemoteProjectAction.submenu.title", //NOI18N
         iconBase="org/netbeans/modules/cnd/remote/ui/resources/openProject.png", //NOI18N
-        lazy = true)
+        lazy = false)
 @ActionReferences({
     //@ActionReference(path = "Menu/File", position = 520),
     @ActionReference(path = "Toolbars/Remote", position = 2000)

@@ -60,7 +60,7 @@ public class StatisticsActions {
     private static final RequestProcessor RP = new RequestProcessor("StatisticsAction", 1); // NOI18N
 
     @ActionID(id = "org.netbeans.modules.remote.ui.ClearFileStatisticsAction", category = "NativeRemote")
-    @ActionRegistration(displayName = "#ClearFileStatisticsAction", lazy = true)
+    @ActionRegistration(displayName = "#ClearFileStatisticsAction", lazy = false)
     @ActionReference(path = "Remote/Host/Actions", name = "ClearFileStatisticsAction", position = 99996)
     public static class ClearFileStatisticsAction extends SingleHostAction {
 

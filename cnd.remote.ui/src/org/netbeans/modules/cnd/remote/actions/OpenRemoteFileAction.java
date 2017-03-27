@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 @ActionRegistration(
     displayName="#OpenRemoteFileAction.submenu.title",  //NOI18N
     iconBase="org/netbeans/modules/cnd/remote/ui/resources/openFile.png", //NOI18N
-    iconInMenu=true, lazy = true
+    iconInMenu=true, lazy = false
 )
 @ActionID(category="System", id="org.netbeans.modules.openfile.OpenRemoteFileAction")
 @ActionReferences({
