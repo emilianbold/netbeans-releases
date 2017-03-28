@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -76,6 +77,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
@@ -736,7 +738,19 @@ final class ModuleClassPaths {
                         } else {
                             rootModulesPredicate = ModuleNames.create(additionalModules);
                         }
-                        xmodule = getXModule();
+                        xmodule = Optional.ofNullable(getXModule())
+                                .orElseGet(() -> {
+                                    final Map<URL,String> mpr = new HashMap<>();
+                                    modulesPatches.entrySet().stream()
+                                            .forEach((e) -> e.getValue().stream().forEach((url) -> mpr.put(url, e.getKey())));
+                                    for (ClassPath.Entry e : sources.entries()) {
+                                        final String mn = mpr.get(e.getURL());
+                                        if (mn != null) {
+                                            return mn;
+                                        }
+                                    }
+                                    return null;
+                                });
                     }
                     boolean dependsOnUnnamed = false;
                     if (src != null) {
