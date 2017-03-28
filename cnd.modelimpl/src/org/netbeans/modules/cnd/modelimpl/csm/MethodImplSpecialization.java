@@ -67,7 +67,7 @@ import org.openide.util.CharSequences;
  */
 public class MethodImplSpecialization<T> extends MethodImpl<T> {
 
-    protected MethodImplSpecialization(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected MethodImplSpecialization(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, FunctionImpl.CV_RL _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
     }
 
@@ -83,7 +83,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         CharSequence rawName = initRawName(ast);
 
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _override = false;
         boolean _final = false;
@@ -154,7 +154,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
 
         @Override
         public MethodImplSpecialization create(CsmParserProvider.ParserErrorDelegate delegate) {
-            MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), false, false, isExplicit(),  isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), false, false, isExplicit(),  isStatic(), FunctionImpl.CV_RL.isConst(isConst()), false, getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;
         }

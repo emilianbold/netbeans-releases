@@ -107,7 +107,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     private CharSequence[] classOrNspNames;   
     
-    protected FunctionImplEx(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected FunctionImplEx(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
 
@@ -123,7 +123,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         CharSequence rawName = initRawName(ast);
         
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
@@ -470,7 +470,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
         @Override
         public FunctionImplEx create() {
-            FunctionImplEx fun = new FunctionImplEx(getName(), getRawName(), getScope(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            FunctionImplEx fun = new FunctionImplEx(getName(), getRawName(), getScope(), isStatic(), FunctionImpl.CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;
         }
