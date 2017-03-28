@@ -85,7 +85,7 @@ public enum ComponentType {
 
     public static String getVersion() {
         ComponentType current = getComponent();
-        if (current.version == null) {
+        if (current.version == null || current.version.isEmpty()) {
             for (ComponentVersionProvider provider : Lookup.getDefault().lookupAll(ComponentVersionProvider.class)) {
                 String version = provider.getVersion(current.getTag());
                 if (version != null) {
