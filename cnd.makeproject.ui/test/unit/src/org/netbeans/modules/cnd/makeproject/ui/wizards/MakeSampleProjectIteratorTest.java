@@ -72,10 +72,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
+import org.netbeans.modules.cnd.test.CndTestIOProvider.Listener;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -304,33 +304,37 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final String successLine = "BUILD SUCCESSFUL";
         final String failureLine = "BUILD FAILED";
 
-        IOProvider iop = IOProvider.getDefault();
+        final IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
         final StringBuilder buf = new StringBuilder();
-        ((CndTestIOProvider) iop).addListener((String line) -> {
-            if(line != null) {
-                buf.append(line).append('\n');
-                if (line.trim().startsWith(successLine)) {
-                    build_rc.set(0);
-                    done.countDown();
-                }
-                else if (line.trim().startsWith(failureLine)) {
-                    // message is:
-                    // BUILD FAILED (exit value 1, total time: 326ms)
-                    int rc = -1;
-                    String[] tokens = line.split("[ ,]");
-                    if (tokens.length > 4) {
-                        try {
-                            rc = Integer.parseInt(tokens[4]);
-                        } catch(NumberFormatException nfe) {
-                            nfe.printStackTrace(System.err);
-                        }
+        final Listener listener = new CndTestIOProvider.Listener() {
+            @Override
+            public void linePrinted(String line) {
+                if(line != null) {
+                    buf.append(line).append('\n');
+                    if (line.trim().startsWith(successLine)) {
+                        build_rc.set(0);
+                        done.countDown();
                     }
-                    build_rc.set(rc);
-                    done.countDown();
+                    else if (line.trim().startsWith(failureLine)) {
+                        // message is:
+                        // BUILD FAILED (exit value 1, total time: 326ms)
+                        int rc = -1;
+                        String[] tokens = line.split("[ ,]");
+                        if (tokens.length > 4) {
+                            try {
+                                rc = Integer.parseInt(tokens[4]);
+                            } catch(NumberFormatException nfe) {
+                                nfe.printStackTrace(System.err);
+                            }
+                        }
+                        build_rc.set(rc);
+                        done.countDown();
+                    }
                 }
             }
-        });
+        };
+        ((CndTestIOProvider) iop).addListener(listener);
         
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
         assertNotNull(makeProject);
@@ -358,6 +362,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             done.await(timeout, TimeUnit.SECONDS);
         } catch (InterruptedException ir) {
         }
+        ((CndTestIOProvider) iop).removeListener(listener);
         String shell = null;
         try {
             shell = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getShell();
