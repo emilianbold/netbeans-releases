@@ -162,6 +162,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private final GdbHandlerExpert handlerExpert;
     private volatile MILocation homeLoc;
     private boolean dynamicType;
+    //current stack frame number
+    //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+    private String currentStackFrameNo = "0";//NOI18N
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
@@ -2226,12 +2229,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         final String state = thrList.getConstValue("state"); //NOI18N
 
                         final GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, null, state);
+                        String frNo = "0"; // TODO As --thread activates a thread there will be the only value // NOI18N
                         if (id.equals(currentThreadId)) {
                             curThread = gdbThread;
+                            //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+                            frNo = currentStackFrameNo;
                         }
+                        final String frameNo = frNo;
                         res.add(gdbThread);
 
-                        final String frameNo = "0"; // TODO As --thread activates a thread there will be the only value // NOI18N
 
                         if (peculiarity.isLldb()) {
                             // lldb-mi output for -thread-info contains frames
@@ -2423,6 +2429,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void makeFrameCurrent(final Frame f) {
         final String fno = f.getNumber();
+        //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+        currentStackFrameNo = fno;
         boolean changed = false;
         if (guiStackFrames != null) {
             for (Frame frame : guiStackFrames) {
@@ -2576,10 +2584,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
             newGuiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs, null);
-
-            if (vx == 0) {
-                newGuiStackFrames[vx].setCurrent(true); // make top frame current
-            }
+            //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+            //if (vx == 0) {
+                newGuiStackFrames[vx].setCurrent((currentStackFrameNo + "").equals(newGuiStackFrames[vx].getNumber())); // make top frame current
+            //}
         }
         //
         guiStackFrames = newGuiStackFrames;
@@ -4235,7 +4243,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (session.coreSession() != DebuggerManager.getDebuggerManager().getCurrentSession()) {
             DebuggerManager.getDebuggerManager().setCurrentSession(session.coreSession());
         }
-
+        //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+        //need to update current stack frame number, new generic stop
+        currentStackFrameNo = "0";//NOI18N
         final MITList results = stopRecord.results();
 
         state().isRunning = false;
