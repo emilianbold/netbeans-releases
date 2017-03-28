@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -143,6 +145,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -152,6 +155,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -171,6 +175,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -180,6 +185,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -193,6 +199,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -208,6 +215,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.foo=%s", FileUtil.toFile(mod1cTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1c, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED",     //NOI18N
                 "--add-reads lib.foo=ALL-UNNAMED"),   //NOI18N
@@ -219,6 +227,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.foo=%s", FileUtil.toFile(mod1cTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1c, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED",     //NOI18N
                 "--add-reads lib.foo=ALL-UNNAMED"),   //NOI18N
@@ -230,6 +239,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -243,6 +253,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -252,6 +263,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
         assertEquals(
             newSet(
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
@@ -262,6 +274,7 @@ public class MultiModuleUnitTestsCompilerOptionsQueryImplTest extends NbTestCase
             newSet(
                 String.format("--patch-module lib.common=%s", FileUtil.toFile(mod1aTests).getAbsolutePath()),   //NOI18N
                 String.format("--patch-module lib.util=%s", FileUtil.toFile(mod1bTests).getAbsolutePath()),   //NOI18N
+                Stream.of(mod1a, mod1b).map(FileObject::getParent).map(FileObject::getNameExt).collect(Collectors.joining(",", "--add-modules ", "")),  //NOI18N
                 "--add-reads lib.common=ALL-UNNAMED",   //NOI18N
                 "--add-reads lib.util=ALL-UNNAMED"),   //NOI18N
             newPairs(res.getArguments()));
