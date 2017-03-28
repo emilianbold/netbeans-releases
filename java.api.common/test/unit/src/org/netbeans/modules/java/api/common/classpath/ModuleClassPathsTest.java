@@ -537,6 +537,41 @@ public class ModuleClassPathsTest extends NbTestCase {
         assertEquals(expectedURLs, resURLs);
     }
 
+    public void testPatchModuleWithSourcePatch_UserModules() throws Exception {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(tp);
+        assertNotNull(src);
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
+        final FileObject tests = tp.getProjectDirectory().createFolder("tests");
+        final ClassPath testSourcePath = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(tests);
+        final URL dist = BinaryForSourceQuery.findBinaryRoots(src.entries().get(0).getURL()).getRoots()[1];
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(dist);
+        MockCompilerOptions.getInstance().forRoot(tests)
+                .apply("--patch-module")    //NOI18N
+                .apply(String.format("Modle=%s", FileUtil.toFile(tests).getAbsolutePath())) //NOI18N
+                .apply("--add-modules") //NOI18N
+                .apply("Modle") //NOI18N
+                .apply("--add-reads")   //NOI18N
+                .apply("Modle=ALL-UNNAMED"); //NOI18N
+        for (ClassPath.Entry e : src.entries()) {
+            MockClassPathProvider.getInstance().forRoot(e.getRoot())
+                    .apply(JavaClassPathConstants.MODULE_BOOT_PATH, systemModules)
+                    .apply(ClassPath.BOOT, systemModules);
+            IndexingManager.getDefault().refreshIndexAndWait(e.getURL(), null, true);
+        }
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                testSourcePath,
+                systemModules,
+                userModules,
+                ClassPath.EMPTY,
+                null));
+        assertTrue(cp.entries().stream().map(ClassPath.Entry::getURL).anyMatch((url) -> url.equals(dist)));
+    }
+
     private static void setSourceLevel(
             @NonNull final Project prj,
             @NonNull final String sourceLevel) throws IOException {
