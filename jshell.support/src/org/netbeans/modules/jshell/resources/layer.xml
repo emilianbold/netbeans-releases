@@ -199,6 +199,14 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-java-j2semodule">
+            <folder name="Actions">
+                <file name="org-netbeans-modules-jshell-project-REPLAction2.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-jshell-project-REPLAction2.instance"/>
+                    <attr name="position" intvalue="1150"/>
+                </file>
+            </folder>
+        </folder>
         <folder name="org-netbeans-modules-maven">
             <folder name="Actions">
                 <file name="org-netbeans-modules-jshell-project-REPLAction2.shadow">
