@@ -389,7 +389,13 @@ public final class SnippetRegistry {
     }
     
     private String snippetFileName(SnippetHandle snippet) {
-        return snippet.getClassName() + ".java"; 
+        String cn = snippet.getClassName();
+        int dot = cn.lastIndexOf('.');
+        if (dot != -1) {
+            return cn.substring(dot + 1) + ".java";
+        } else {
+            return cn + ".java"; 
+        }
     }
     
     class SWR extends WeakReference<SnippetHandle> implements Runnable {

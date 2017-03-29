@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -79,6 +80,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -281,7 +283,18 @@ public final class ShellProjectUtils {
             return false;
         }
         String s = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
-        return (s != null && new SpecificationVersion("9").compareTo(new SpecificationVersion(s)) <= 0);
+        if (!(s != null && new SpecificationVersion("9").compareTo(new SpecificationVersion(s)) <= 0)) {
+            return false;
+        }
+        // find module-info.java
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (isNormalRoot(sg)) {
+                if (sg.getRootFolder().getFileObject("module-info.java") != null) { // NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     public static boolean isModularJDK(JavaPlatform pl) {
@@ -319,6 +332,9 @@ public final class ShellProjectUtils {
         boolean modular = isModularProject(project);
         List<ClassPath> delegates = new ArrayList<>();
         for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (!isNormalRoot(sg)) {
+                continue;
+            }
             ClassPath del = null; 
             if (modular) {
                 del = ClassPath.getClassPath(sg.getRootFolder(), JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH);
@@ -330,6 +346,34 @@ public final class ShellProjectUtils {
             }
         }
         return ClassPathSupport.createProxyClassPath(delegates.toArray(new ClassPath[delegates.size()]));
+    }
+    
+    public static List<String[]> compilerPathOptions(Project project) {
+        List<String[]> result = new ArrayList<>();
+        List<String> exportMods = new ArrayList<>(
+                ShellProjectUtils.findProjectImportedModules(project, 
+                    ShellProjectUtils.findProjectModules(project, null))
+        );
+        ShellProjectUtils.findProjectModules(project, null);
+        boolean modular = isModularJDK(findPlatform(project));
+        if (exportMods.isEmpty() || !modular) {
+            return null;
+        }
+        List<String> addReads = new ArrayList<>();
+        Collections.sort(exportMods);
+        result.add(new String[] { "--add-modules", String.join(",", exportMods) });
+        
+        // now export everything from the project:
+        Map<String, Collection<String>> packages = ShellProjectUtils.findProjectModulesAndPackages(project);
+        for (Map.Entry<String, Collection<String>> en : packages.entrySet()) {
+            String p = en.getKey();
+            Collection<String> vals = en.getValue();
+
+            for (String v : vals) {
+                result.add(new String[] { "--add-exports", String.format("%s/%s=ALL-UNNAMED", p, v)});
+            }
+        }
+        return result;
     }
     
     public static List<String> launchVMOptions(Project project) {
