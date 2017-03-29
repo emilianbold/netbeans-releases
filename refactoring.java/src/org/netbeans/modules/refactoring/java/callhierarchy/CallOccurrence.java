@@ -49,6 +49,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
+import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
 import org.openide.text.PositionBounds;
 
 /**
@@ -93,9 +94,9 @@ final class CallOccurrence implements CallDescriptor {
             CompilationInfo javac, TreePath selection, Call parent) {
         WhereUsedElement wue = WhereUsedElement.create(javac, selection, false);
         CallOccurrence c = new CallOccurrence();
-        if(javac.getTreeUtilities().isSynthetic(selection)) {
+        if(JavaPluginUtils.isSyntheticPath(javac, selection)) {
             selection = getEnclosingTree(selection);
-            if (javac.getTreeUtilities().isSynthetic(selection)) {
+            if (JavaPluginUtils.isSyntheticPath(javac, selection)) {
                 selection = getEnclosingTree(selection.getParentPath());
             }
         }

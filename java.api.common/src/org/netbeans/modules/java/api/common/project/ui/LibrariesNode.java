@@ -665,7 +665,7 @@ public final class LibrariesNode extends AbstractNode {
         // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
         private RootsListener fsListener;
         private final AtomicReference<CompilerOptionsQuery.Result> coResult;
-        private final AtomicReference<PropertyChangeListener> sourceRootsListener;
+        private final AtomicReference<PropertyChangeListener[]> sourceRootsListener;
 
 
         LibrariesChildren (
@@ -736,6 +736,9 @@ public final class LibrariesNode extends AbstractNode {
                 modulePath.second().addPropertyChangeListener(WeakListeners.propertyChange(this, modulePath.second()));
             }
             listenOnCompilerOptions();
+            if (sourcePath != null) {
+                sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(this, sourcePath));
+            }
             this.setKeys(getKeys ());
         }
 
@@ -1181,23 +1184,28 @@ public final class LibrariesNode extends AbstractNode {
             if (coResult.get() == null && sourcePath != null) {
                 final FileObject[] rootFos = sourcePath.getRoots();
                 if (rootFos.length > 0) {
-                    sourceRootsListener.set(null);
+                    final PropertyChangeListener[] ls = sourceRootsListener.getAndSet(null);
+                    if (ls != null) {
+                        sourcePath.removePropertyChangeListener(ls[1]);
+                    }
                     final CompilerOptionsQuery.Result cor = CompilerOptionsQuery.getOptions(rootFos[0]);
                     if (coResult.compareAndSet(null, cor)) {
                         cor.addChangeListener(WeakListeners.change(this, cor));
                     }
                 } else {
                     //Defer to point when source roots exist
-                    PropertyChangeListener l = sourceRootsListener.get();
-                    if (l == null) {
-                        l = (e) -> {
+                    PropertyChangeListener[] ls = sourceRootsListener.get();
+                    if (ls == null) {
+                        ls = new PropertyChangeListener[2];
+                        ls[0] = (e) -> {
                             if (ClassPath.PROP_ROOTS.equals(e.getPropertyName())) {
                                 listenOnCompilerOptions();
                                 reset(false);
                             }
                         };
-                        if (sourceRootsListener.compareAndSet(null,l)) {
-                            sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(l, sourcePath));
+                        ls[1] = WeakListeners.propertyChange(ls[0],sourcePath);
+                        if (sourceRootsListener.compareAndSet(null,ls)) {
+                            sourcePath.addPropertyChangeListener(ls[1]);
                         }
                     }
                 }

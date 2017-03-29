@@ -171,7 +171,11 @@ public class SnippetNodes extends Children.Keys implements ShellListener, Consum
         this.factory = new NF();
         this.env.addShellListener(WeakListeners.create(ShellListener.class, this, env));
         update();
-        attachTo(env.getShell());
+        try {
+            attachTo(env.getShell());
+        } catch (IllegalStateException ex) {
+            // jshell may have been closed in the meantime
+        }
         
         typeColor = UIManager.getColor(TYPE_COLOR_KEY);
         hiddenColor = UIManager.getColor(HIDDEN_COLOR_KEY);

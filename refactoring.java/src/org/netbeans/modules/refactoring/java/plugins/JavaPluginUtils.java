@@ -44,7 +44,10 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -351,6 +354,69 @@ public final class JavaPluginUtils {
         }
         return false;
     }
+    
+    /**
+     * Works as TreeUtilities.isSynthetic, but treats implicit annotation parameter (value) as
+     * non-synthetic. See defect #270036
+     */
+    public static boolean isSyntheticPath(CompilationInfo ci, TreePath path) {
+        TreeUtilities tu = ci.getTreeUtilities();
+        if (path == null)
+            throw new NullPointerException();
+        
+        while (path != null) {
+            SYNT: if (isSynthetic(ci, path.getCompilationUnit(), path.getLeaf())) {
+                if (path.getLeaf().getKind() == Tree.Kind.ASSIGNMENT &&
+                    path.getParentPath() != null && path.getParentPath().getLeaf().getKind() == Tree.Kind.ANNOTATION) {
+                    AssignmentTree aTree = (AssignmentTree)path.getLeaf();
+                    if (aTree.getVariable().getKind() == Tree.Kind.IDENTIFIER &&
+                        ((IdentifierTree)aTree.getVariable()).getName().contentEquals("value")) { // implicit value is not synthetic
+                        break SYNT;
+                    }
+                }
+                return true;
+            }
+            
+            path = path.getParentPath();
+        }
+        
+        return false;
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="TODO: Copied from java.source.base TreeUtilities">
+    static boolean isSynthetic(CompilationInfo info, CompilationUnitTree cut, Tree leaf) throws NullPointerException {
+        JCTree tree = (JCTree) leaf;
+        
+        if (tree.pos == (-1))
+            return true;
+        
+        if (leaf.getKind() == Kind.METHOD) {
+            //check for synthetic constructor:
+            return (((JCTree.JCMethodDecl)leaf).mods.flags & Flags.GENERATEDCONSTR) != 0L;
+        }
+        
+        //check for synthetic superconstructor call:
+        if (leaf.getKind() == Kind.EXPRESSION_STATEMENT) {
+            ExpressionStatementTree est = (ExpressionStatementTree) leaf;
+            
+            if (est.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                
+                if (mit.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+                    IdentifierTree it = (IdentifierTree) mit.getMethodSelect();
+                    
+                    if ("super".equals(it.getName().toString())) {
+                        SourcePositions sp = info.getTrees().getSourcePositions();
+                        
+                        return sp.getEndPosition(cut, leaf) == (-1);
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
+    //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="TODO: Copy from org.netbeans.modules.java.hints.errors.Utilities">
     public static final String DEFAULT_NAME = "par"; // NOI18N

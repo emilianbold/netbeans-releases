@@ -966,7 +966,9 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                     libsSupport.getReferenceHelper(),
                                     libsSupport.getClassPathSupport())
                                 .addClassPathProperties(ProjectProperties.RUN_CLASSPATH)
+                                .addClassPathIgnoreRefs(ProjectProperties.BUILD_MODULES_DIR)
                                 .addModulePathProperties(ProjectProperties.RUN_MODULEPATH)
+                                .addModulePathIgnoreRefs(ProjectProperties.BUILD_MODULES_DIR)
                                 .setBootPath(ClassPath.getClassPath(roots[0], ClassPath.BOOT))
                                 .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
                                 .setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE)

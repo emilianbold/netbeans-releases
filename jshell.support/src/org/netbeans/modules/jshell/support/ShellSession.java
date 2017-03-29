@@ -757,32 +757,11 @@ public class ShellSession  {
                 LOG.log(Level.FINEST, sb.toString());
             }
         }
+        customizeBuilderOnJDK9(b);
         b.fileManager((Function)this::createJShellFileManager);
         return getEnv().customizeJShell(b);
     }
-    
-    private Method handleOptionMethod;
-    
-    private void setOption(Object target, String option, String param) {
-        if (handleOptionMethod == null ||
-            !handleOptionMethod.getDeclaringClass().isInstance(target)) {
-            try {
-                Class clazz = Class.forName(JavaFileManager.class.getName(), true, target.getClass().getClassLoader());
-                handleOptionMethod = clazz.getMethod("handleOption", String.class, Iterator.class); // NOI18N
-            } catch (NoSuchMethodException | ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SecurityException ex) {
-                Exceptions.printStackTrace(ex);
-                throw new InternalError(ex);
-            }
-        }
-        try {
-            handleOptionMethod.invoke(target, option, Collections.singletonList(param).iterator());
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
+
     /**
      * In case the JFM comes from JDK9 runtime, use reflection to parametrize the
      * JFM
@@ -791,6 +770,18 @@ public class ShellSession  {
     private Object createJShellFileManager(Object original) {
         if (original instanceof StandardJavaFileManager) {
             return fileman = new SwitchingJavaFileManger(getClasspathInfo());
+        } else {
+            return original;
+        }
+    }
+    
+    private void customizeBuilderOnJDK9(JShell.Builder builder) {
+        try {
+            Class c = JShell.Builder.class.getClassLoader().loadClass("javax.tools.StandardJavaFileManager");
+            if (c.isAssignableFrom(StandardJavaFileManager.class)) {
+                return;
+            }
+        } catch (ClassNotFoundException ex) {
         }
         fileman = null;
         Project p = env.getProject();
@@ -798,35 +789,37 @@ public class ShellSession  {
         String systemHome = platform.getSystemProperties().get("java.home"); // NOI18N
         if (systemHome != null) {
             if (ShellProjectUtils.isModularJDK(platform)) {
-                setOption(original, "--system", systemHome); // NOI18N
+                builder.compilerOptions("--system", systemHome); // NOI18N
             } else {
-                setOption(original, "--boot-class-path", getClasspathAsString(PathKind.BOOT));
+                builder.compilerOptions("--boot-class-path", getClasspathAsString(PathKind.BOOT));
             }
         }
         JavaPlatform platform = ShellProjectUtils.findPlatform(p);
-        Collection<String> mods = ShellProjectUtils.findProjectImportedModules(p, 
-                ShellProjectUtils.findProjectModules(p, new HashSet<>()));
         
-        for (String m : mods) {
-            setOption(original, "--add-module", m); // NOI18N
-        }
-        Map<String, Collection<String>> packages = ShellProjectUtils.findProjectModulesAndPackages(p);
-        for (String mod : packages.keySet()) {
-            for (String pack : packages.get(mod)) {
-                setOption(original, "--add-exports", mod + "/" + pack + "=ALL-UNNAMED"); // NOI18N
+        String classpath;
+        String modulepath = "";
+        
+        if (p != null && ShellProjectUtils.isModularProject(p)) {
+            List<String[]> opts = ShellProjectUtils.compilerPathOptions(p);
+            for (String[] o : opts) {
+                if (o[1] != null) {
+                    builder.compilerOptions(o[0], o[1]);
+                } else {
+                    builder.compilerOptions(o[0]);
+                }
             }
+            modulepath = getClasspathAsString(PathKind.MODULE_COMPILE);
+            classpath = getClasspathAsString(PathKind.MODULE_CLASS);
+        } else {
+            classpath = getClasspathAsString(PathKind.COMPILE);
         }
-        String classpath = getClasspathAsString(PathKind.MODULE_CLASS);
-        String modulepath = getClasspathAsString(PathKind.MODULE_COMPILE);
         
         if (!classpath.isEmpty()) {
-            setOption(original, "-classpath", classpath); // NOI18N
+            builder.compilerOptions("-classpath", classpath); // NOI18N
         }
         if (!modulepath.isEmpty()) {
-            setOption(original, "--module-path", modulepath); // NOI18N
+            builder.compilerOptions("--module-path", modulepath); // NOI18N
         }
-        
-        return original;
     }
     
     private synchronized Launcher initShellLauncher() throws IOException {

@@ -163,12 +163,12 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         }
         return super.visitCompilationUnit(node, p);
     }
-
+    
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
         if(isCancelled.get()) {
             return;
         }
-        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
+        if (JavaPluginUtils.isSyntheticPath(workingCopy, path)) {
             if (ElementKind.CONSTRUCTOR != elementToFind.getKind()
                     || tree.getKind() != Tree.Kind.IDENTIFIER
                     || !"super".contentEquals(((IdentifierTree) tree).getName())) { // NOI18N

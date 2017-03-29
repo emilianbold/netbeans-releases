@@ -183,6 +183,14 @@ final class MultiModuleUnitTestsCompilerOptionsQueryImpl implements CompilerOpti
                                     options.add(String.format("%s=%s", m, testSourcePath)); //NOI18N
                                 }
                             });
+                    //--add-modules - enable all source modules
+                    final String modList = allModules.stream()
+                            .sorted()
+                            .collect(Collectors.joining(","));
+                    if (!modList.isEmpty()) {
+                        options.add("--add-modules");     //NOI18N
+                        options.add(modList);
+                    }
                     //--add-reads ALL-UNNAMED - test libraries readable
                     allModules.stream()
                             .filter((m) -> !invalidModules.containsKey(m))
