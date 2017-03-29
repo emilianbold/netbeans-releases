@@ -1909,7 +1909,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
             srcRoot = folder.addFolder(srcRoot, true);
         }
-        assert srcRoot.getKind() == folderKind;
+        if (srcRoot.getKind() != folderKind) {
+            LOGGER.log(Level.INFO, "Folder {0} has unexpected kind {1}. Expected kind is {2}.", new Object[]{srcRoot.getDisplayName(), srcRoot.getKind(), folderKind}); //NOI18N
+        }
         addFilesImpl(srcRoot, dir, handle, interrupter, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
