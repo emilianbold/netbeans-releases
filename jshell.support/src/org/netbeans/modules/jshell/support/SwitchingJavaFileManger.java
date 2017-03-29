@@ -198,6 +198,9 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
 
     @Override
     public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
+        if ("string".equals(fo.toUri().getScheme())) {
+            return null;
+        }
         return delegate().getLocationForModule(location, fo);
     }
 
