@@ -350,9 +350,14 @@ public final class NativeExecutionService {
         return ExecutionService.newService(processBuilder, descr, displayName).run();
     }
 
-    private void out(final boolean toError, final CharSequence... cs) {
-        Mutex.EVENT.writeAccess(new Action<Void>() {
+    // copy-paste from CndUtils
+    private static boolean isUnitTestMode() {
+        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+    }
 
+    private void out(final boolean toError, final CharSequence... cs) {
+        final Action<Void> action = new Action<Void>() {
+            
             @Override
             public Void run() {
                 if (descriptor.inputOutput != null) {
@@ -367,7 +372,12 @@ public final class NativeExecutionService {
                 }
                 return null;
             }
-        });
+        };
+        if (isUnitTestMode()) {
+            action.run();
+        } else {
+            Mutex.EVENT.writeAccess(action);
+        }
     }
 
     private void closeIO() {
@@ -422,7 +432,9 @@ public final class NativeExecutionService {
                     if (descriptor.postMessageDisplayer != null) {
                         String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
                         out(rc != 0, "\n\r", postMsg, "\n\r"); // NOI18N
-                        NativeExecutionUserNotification.getDefault().notifyStatus(descriptor.postMessageDisplayer.getPostStatusString(process));
+                        if (!isUnitTestMode()) {
+                            NativeExecutionUserNotification.getDefault().notifyStatus(descriptor.postMessageDisplayer.getPostStatusString(process));
+                        }
                         //StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
                     }
                 }
