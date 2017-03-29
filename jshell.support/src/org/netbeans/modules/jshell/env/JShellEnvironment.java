@@ -352,6 +352,8 @@ public class JShellEnvironment {
         snippetClassPath = ClassPathSupport.createClassPath(workRoot);
 
         if (root != null) {
+            // assume project
+            boolean modular = ShellProjectUtils.isModularProject(project);
             ClasspathInfo projectInfo = ClasspathInfo.create(root);
             ClasspathInfo.Builder bld = new ClasspathInfo.Builder(
                     projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT)
@@ -359,7 +361,7 @@ public class JShellEnvironment {
             ClassPath classesFromProject = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
             ClassPath modBoot = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_BOOT);
             ClassPath modClassRaw = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_CLASS);
-            ClassPath modCompile = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_COMPILE);
+            ClassPath modCompileRaw = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_COMPILE);
             
             // TODO: Possible duplicate entries on CP + ModuleCP in case of modular project. May impact
             // refactoring or usages.
@@ -368,11 +370,22 @@ public class JShellEnvironment {
                 userLibraryPath,
                 projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
             );
-            ClassPath modClass = ClassPathSupport.createProxyClassPath(
-                classesFromProject,
-                userLibraryPath,
-                modClassRaw
-            );
+            ClassPath modClass;
+            ClassPath modCompile;
+            
+            if (modular) {
+                modClass = ClassPathSupport.createProxyClassPath(
+                            classesFromProject,
+                            userLibraryPath,
+                            modClassRaw);
+                modCompile = ClassPathSupport.createProxyClassPath(
+                            classesFromProject,
+                            modCompileRaw
+                        );
+            } else {
+                modClass = modClassRaw;
+                modCompile = modCompileRaw;
+            }
             
             bld.setClassPath(compile)
                 //.setSourcePath(source)
@@ -383,17 +396,7 @@ public class JShellEnvironment {
                 setModuleClassPath(modClass).
                 setModuleCompilePath(modCompile);
             cpi = bld.build();
-            /*
-            cpi = ClasspathInfo.create(
-                    projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
-                    ClassPathSupport.createProxyClassPath(
-                        ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
-                        userLibraryPath,
-                        projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
-                    ),
-                    projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE)
-            );
-            */
+
             if (ShellProjectUtils.isModularProject(project)) {
                 List<String> sortedModules = new ArrayList<>(ShellProjectUtils.findProjectImportedModules(project, null));
                 if (!sortedModules.isEmpty()) {
