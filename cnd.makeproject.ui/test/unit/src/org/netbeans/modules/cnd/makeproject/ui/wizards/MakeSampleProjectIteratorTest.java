@@ -87,8 +87,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -345,14 +343,6 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             }
         };
         ((CndTestIOProvider) iop).addListener(listener);
-        Mutex.EVENT.writeAccess(new Action<Void>() {
-
-            @Override
-            public Void run() {
-                executionLogger.fine("Ping EDT thread "+Thread.currentThread().getName());
-                return null;
-            }
-        });        
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
         assertNotNull(makeProject);
         MakeActionProviderImpl makeActionProvider = new MakeActionProviderImpl(makeProject);
