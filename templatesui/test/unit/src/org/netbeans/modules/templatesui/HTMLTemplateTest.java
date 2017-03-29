@@ -44,6 +44,7 @@ package org.netbeans.modules.templatesui;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
@@ -116,7 +117,8 @@ public class HTMLTemplateTest {
             awaitFX();
         }
         assertTrue("error code set to 0", p1.isValid());
-        
+
+        awaitSwing();
         assertSelectedIndex("Zero th panel is selected", cmp1, 0);
         
         assertSteps("There steps", cmp1, "One", "Two", "Three");
@@ -170,6 +172,20 @@ public class HTMLTemplateTest {
             }
         });
         cdl.await();
+    }
+
+    private void awaitSwing() {
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                }
+            });
+        } catch (InterruptedException ex) {
+            throw new AssertionError(null, ex);
+        } catch (InvocationTargetException ex) {
+            throw new AssertionError(null, ex);
+        }
     }
     
 }

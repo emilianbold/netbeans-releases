@@ -42,6 +42,7 @@
 package org.netbeans.modules.templatesui;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.lang.ref.Reference;
@@ -436,7 +437,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                 steps = arr;
                 fireChange();
             }
-            List<String> names = new ArrayList<>();
+            final List<String> names = new ArrayList<>();
             for (Object s : obj) {
                 String id = stringOrId(s, "text", "id"); // NOI18N
                 if (id != null && id.equals("targetChooser") || id.startsWith("targetChooser:")) { // NOI18N
@@ -446,10 +447,20 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             }
             stepNames = new ArrayList<>(names);
             names.add(0, Bundle.LBL_TemplatesPanel_Name());
-            p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names.toArray(new String[names.size()]));
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names.toArray(new String[names.size()]));
+                }
+            });
             fireChange();
         }
-        p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
+            }
+        });
         if (steps != null && steps.size() > index) {
             current = steps.get(index);
             FXBrowsers.runInBrowser(v, new Runnable() {
