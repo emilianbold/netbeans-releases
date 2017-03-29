@@ -186,6 +186,10 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
     public JButton getReplaceAllButton() {
         return replaceAllButton;
     }
+    
+    public JTextComponent getReplaceTextField() {
+        return replaceTextField;
+    }
 
     @Override
     public Dimension getPreferredSize() {
