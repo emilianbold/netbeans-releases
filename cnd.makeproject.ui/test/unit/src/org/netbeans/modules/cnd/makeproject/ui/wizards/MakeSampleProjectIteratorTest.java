@@ -54,6 +54,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,6 +81,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -98,6 +101,8 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     List<CompilerSet> SunStudioCompilerSet = null;
     List<CompilerSet> GNUCompilerSet = null;
     String[] defaultConfs = new String[] {"Debug", "Release"};
+    private Logger executionLogger;
+    private Logger baseExecutionLogger;
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
@@ -136,6 +141,10 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
         GNUCompilerSet = new ArrayList<>();
         GNUCompilerSet.add(GNUSet);
+        executionLogger = Logger.getLogger("nativeexecution.support.logger");
+        executionLogger.setLevel(Level.FINEST);
+        baseExecutionLogger = Logger.getLogger("org.netbeans.api.extexecution.base.BaseExecutionService");
+        baseExecutionLogger.setLevel(Level.FINEST);
     }
 
     @Test
