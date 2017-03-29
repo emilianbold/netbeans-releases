@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -95,6 +96,13 @@ public class Util {
         p.add ("java.home");              //NOI18N
         p.add ("java.endorsed.dirs");     //NOI18N
         propertiesToFix = Collections.unmodifiableSet(p);
+    }
+    private static final List<Function<FileObject,FileObject>> TOOLS_VARIANTS;
+    static {
+        final List<Function<FileObject,FileObject>> l = new ArrayList<>();
+        jdk: l.add((installFolder) -> installFolder.getFileObject("bin"));       //NOI18N
+        graalvm: l.add((installFolder) -> installFolder.getFileObject("jdk/bin"));   //NOI18N
+        TOOLS_VARIANTS = Collections.unmodifiableList(l);
     }
 
     private Util () {
@@ -212,23 +220,15 @@ public class Util {
 
     public static FileObject findTool (String toolName, Collection<FileObject> installFolders, String archFolderName) {
         assert toolName != null;
-        for (FileObject root : installFolders) {
-            FileObject bin = root.getFileObject("bin");             //NOI18N
-            if (bin == null) {
-                continue;
-            }
-            if (archFolderName != null) {
-                bin = bin.getFileObject(archFolderName);
-                if (bin == null) {
-                    continue;
-                }
-            }
-            FileObject tool = bin.getFileObject(toolName, Utilities.isWindows() ? "exe" : null);    //NOI18N
-            if (tool!= null) {
-                return tool;
-            }
-        }
-        return null;
+        return installFolders.stream()
+                .flatMap((f) -> TOOLS_VARIANTS.stream().map((p) -> p.apply(f)))
+                .filter((f) -> f != null)
+                .map((f) -> archFolderName != null ? f.getFileObject(archFolderName) : f)
+                .filter((f) -> f != null)
+                .map((f) -> f.getFileObject(toolName, Utilities.isWindows() ? "exe" : null))    //NOI18N
+                .filter((f) -> f != null)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
