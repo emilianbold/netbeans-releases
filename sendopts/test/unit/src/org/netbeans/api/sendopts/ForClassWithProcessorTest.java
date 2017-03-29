@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-#define COMPANY "Oracle Corporation"
-#define COMPONENT "NetBeans IDE"
-#define VER "9.0.0.0"
-#define FVER 9,0,0,0
-#define BUILD_ID "04012017"
-#define INTERNAL_NAME "netbeans"
-#define COPYRIGHT "\xA9 2007, 2017 Oracle and/or its affiliates. All rights reserved."
-#define NAME "NetBeans IDE 9.0"
+package org.netbeans.api.sendopts;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.sendopts.CommandException;
+import org.netbeans.api.sendopts.CommandLine;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.sendopts.Env;
+import org.netbeans.spi.sendopts.Option;
+import org.netbeans.spi.sendopts.OptionProcessor;
+
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class ForClassWithProcessorTest extends NbTestCase {
+    private CommandLine cmd;
+
+    private static SampleOptionProcessor created;
+    
+    public ForClassWithProcessorTest(String n) {
+        super(n);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        created = null;
+        cmd = CommandLine.create(SampleOptionProcessor.class);
+    }
+
+    public void testParseEnabled() throws Exception {
+        cmd.process("--on");
+        assertNotNull("option processor processed", created);
+        assertTrue("on processed", created.onSeen);
+    }
+
+    public static final class SampleOptionProcessor extends OptionProcessor {
+        private static final Option on = Option.withoutArgument(Option.NO_SHORT_NAME, "on");
+        private boolean onSeen;
+
+        public SampleOptionProcessor() {
+            created = this;
+        }
+
+        @Override
+        protected Set<Option> getOptions() {
+            Set<Option> options = new HashSet<Option>();
+            options.add(on);
+            return options;
+        }
+
+        @Override
+        protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
+            if (optionValues.containsKey(on)) {
+                onSeen = true;
+            }
+        }
+    }
+}
+
 

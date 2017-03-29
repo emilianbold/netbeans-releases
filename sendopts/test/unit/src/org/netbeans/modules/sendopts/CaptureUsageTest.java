@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,16 +36,47 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.sendopts;
 
-#define COMPANY "Oracle Corporation"
-#define COMPONENT "NetBeans IDE"
-#define VER "9.0.0.0"
-#define FVER 9,0,0,0
-#define BUILD_ID "04012017"
-#define INTERNAL_NAME "netbeans"
-#define COPYRIGHT "\xA9 2007, 2017 Oracle and/or its affiliates. All rights reserved."
-#define NAME "NetBeans IDE 9.0"
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertNotEquals;
+import org.junit.Test;
+import org.netbeans.api.sendopts.CommandException;
+import org.netbeans.api.sendopts.CommandLine;
+import org.netbeans.spi.sendopts.Arg;
+import org.netbeans.spi.sendopts.ArgsProcessor;
+import org.netbeans.spi.sendopts.Description;
+import org.netbeans.spi.sendopts.Env;
 
+public class CaptureUsageTest implements ArgsProcessor {
+    private static String usage;
+
+    @Description(shortDescription = "Use me!")
+    @Arg(shortName = 'u', longName = "")
+    public boolean use;
+
+    @Test
+    public void captureUsage() throws CommandException {
+        CommandLine cmd = CommandLine.create(CaptureUsageTest.class);
+        usage = null;
+        cmd.process("-u");
+        assertNotNull("Usage set", usage);
+        assertNotEquals("Expecting 'Use me!'", -1, usage.indexOf("Use me!"));
+    }
+
+    @Override
+    public void process(Env env) throws CommandException {
+        assertTrue(use);
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        env.usage(os);
+        try {
+            usage = os.toString("UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            throw new CommandException(1, ex.getMessage());
+        }
+    }
+}

@@ -52,6 +52,49 @@ made subject to such option by the copyright holder.
     <apidef name="sendoptsspi">SendOpts SPI</apidef>
 </apidefs>
 <changes>
+    <change id="instances">
+      <api name="sendoptsapi"/>
+      <summary>Command line with instances</summary>
+      <version major="2" minor="37"/>
+      <date day="23" month="3" year="2017"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create-java.lang.Object...-">Create</a>
+          command line with instances of
+          <a href="@TOP@/org/netbeans/spi/sendopts/OptionProcessor.html">OptionProcessor</a>
+          and
+          <a href="@TOP@/org/netbeans/spi/sendopts/ArgsProcessor.html">ArgsProcessor</a>.
+     </description>
+     <class package="org.netbeans.api.sendopts" name="CommandLine"/>
+    </change>
+    <change id="usage-into">
+      <api name="sendoptsspi"/>
+      <summary>Print Usage into Caller's Stream</summary>
+      <version major="2" minor="37"/>
+      <date day="21" month="3" year="2017"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          <a href="@TOP@/org/netbeans/spi/sendopts/Env.html#usage-java.io.OutputStream-">Env.usage</a>
+          method now takes an optional <code>OutputStream</code> parameter.
+     </description>
+     <class package="org.netbeans.spi.sendopts" name="Env"/>
+    </change>
+    <change id="explicit-options-processor">
+      <api name="sendoptsspi"/>
+      <summary>Explictly specify option processors</summary>
+      <version major="2" minor="37"/>
+      <date day="21" month="3" year="2017"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create-java.lang.Class...-">CommandLine.html.create(Class...)</a>
+          can now be called with classes that extend
+          <a href="@TOP@/org/netbeans/spi/sendopts/OptionProcessor.html">OptionProcessor</a>.
+     </description>
+     <class package="org.netbeans.api.sendopts" name="CommandLine"/>
+    </change>
     <change id="own-hep">
       <api name="sendoptsspi"/>
       <summary>Easier way to process own <code>--help</code> request</summary>
