@@ -54,9 +54,11 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.Dependency;
 
 import org.openide.util.Lookup;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
 
 
 /**
@@ -116,6 +118,17 @@ public class EnableJ2EEEnablesJavaTest extends NbTestCase {
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (mi.isEnabled()) {
                 expectedNames.remove(mi.getCodeNameBase());
+            } else {
+                for (Dependency d : mi.getDependencies()) {
+                    if (d.getType() == Dependency.TYPE_JAVA) {
+                        SpecificationVersion v1 = new SpecificationVersion(d.getVersion());
+                        SpecificationVersion v2 = Dependency.JAVA_SPEC;
+                        if (v2.compareTo(v1) < 0) {
+                            // test is running insufficient runtime
+                            expectedNames.remove(mi.getCodeNameBase());
+                        }
+                    }
+                }
             }
         }
         if (!expectedNames.isEmpty()) {
