@@ -300,7 +300,7 @@ public final class CsmCacheManager {
                 return null;
             }
             if (activeReferences == 0) {
-                CndUtils.printStackTraceOnce(new Exception("no any active cache transaction:" + entryKey)); // NOI18N
+                CndUtils.printStackTraceOnce(new Exception("no any active cache transaction:" + entryKey + ": use CsmCacheManager.enter(); try { } finally { CsmCacheManager.leave(); }")); // NOI18N
                 return null;
             }
             CsmClientCache out = cacheEntries.get(entryKey);
