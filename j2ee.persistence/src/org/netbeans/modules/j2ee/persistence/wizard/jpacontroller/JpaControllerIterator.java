@@ -308,7 +308,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         //
         boolean noPuNeeded = true;
         try {
-            noPuNeeded = ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project);
+            noPuNeeded = ProviderUtil.persistenceExists(project, Templates.getTargetFolder(wizard)) || !ProviderUtil.isValidServerInstanceOrNone(project);
         } catch (InvalidPersistenceXmlException ex) {
             Logger.getLogger(JpaControllerIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: {0}", ex.getPath()); //NOI18N
         }

@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
 import org.netbeans.modules.j2ee.persistenceapi.PersistenceScopesAccessor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -86,6 +87,24 @@ public final class PersistenceScopes {
         PersistenceScopesProvider provider = (PersistenceScopesProvider)project.getLookup().lookup(PersistenceScopesProvider.class);
         if (provider != null) {
             return provider.getPersistenceScopes();
+        }
+        return null;
+    }
+
+    /**
+     * Returns an instance of <code>PersistenceScopes</code> for the given
+     * project's root.
+     *
+     * @return an instance of <code>PersistenceScopes</code> or null if the
+     *         project doesn't provide a list of persistence scopes.
+     * @throws NullPointerException if <code>project</code> was null.
+     * @since 1.37
+     */
+    public static PersistenceScopes getPersistenceScopes(Project project, FileObject fo) {
+        Parameters.notNull("project", project); // NOI18N
+        PersistenceScopesProvider provider = (PersistenceScopesProvider)project.getLookup().lookup(PersistenceScopesProvider.class);
+        if (provider != null) {
+            return provider.getPersistenceScopes(fo);
         }
         return null;
     }

@@ -220,6 +220,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.j2ee.jpa.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.java.j2semodule</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>

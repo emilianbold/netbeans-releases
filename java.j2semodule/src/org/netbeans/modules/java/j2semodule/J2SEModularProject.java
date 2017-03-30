@@ -408,9 +408,9 @@ public final class J2SEModularProject implements Project {
             new ProjectPlatformProviderImpl(this),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
-            cpMod
+            cpMod,
+            new J2SEModularPersistenceProvider(this, cpProvider)
             //UNKNOWN FOR MODULAR PROJECT
-//            new J2SEPersistenceProvider(this, cpProvider),
 //            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup

@@ -66,6 +66,18 @@ public interface PersistenceLocationProvider {
     FileObject getLocation();
 
     /**
+     * Returns the location for persistence.xml and related files for the given
+     * FileObject.
+     *
+     * @param fo the FileObject
+     * @return the location or null if it does not exist.
+     * @since 1.37
+     */
+    default FileObject getLocation(FileObject fo) {
+        return getLocation();
+    }
+
+    /**
      * Creates (if it does not exist) and returns the default location for
      * persistence.xml and related files.
      *
@@ -77,4 +89,21 @@ public interface PersistenceLocationProvider {
      *         of persistence.xml
      */
     FileObject createLocation() throws IOException;
+
+    /**
+     * Creates (if it does not exist) and returns the location for
+     * persistence.xml and related files for the given FileObject.
+     *
+     * @param fo the FileObject
+     * @return the location or null if the location could not have been
+     *         created (for example, because the implementor could not determine
+     *         a proper location).
+     *
+     * @throws IOException if an error occured while creating the location
+     *         of persistence.xml
+     * @since 1.37
+     */
+    default FileObject createLocation(FileObject fo) throws IOException {
+        return createLocation();
+    }
 }

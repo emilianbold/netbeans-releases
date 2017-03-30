@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -73,6 +74,7 @@ import org.openide.util.NbBundle;
 public class EntityWizardPanel extends javax.swing.JPanel {
     
     private Project project;
+    private FileObject targetFolder;
     private ChangeListener listener;
     //private PersistenceUnit persistenceUnit;
     
@@ -116,7 +118,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
     private void updateWarning(){
         String warning=null;
         try {
-            if(createPUCheckbox.isVisible() && !createPU && !(ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project))){
+            if(createPUCheckbox.isVisible() && !createPU && !(ProviderUtil.persistenceExists(project, targetFolder) || !ProviderUtil.isValidServerInstanceOrNone(project))){
                 warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit");
             }
         } catch (InvalidPersistenceXmlException ex) {
@@ -137,6 +139,10 @@ public class EntityWizardPanel extends javax.swing.JPanel {
     
     void setProject(Project project) {
         this.project = project;
+    }
+
+    void setTargetFolder(FileObject folder) {
+        this.targetFolder = folder;
     }
 
 //    public PersistenceUnit getPersistenceUnit() {

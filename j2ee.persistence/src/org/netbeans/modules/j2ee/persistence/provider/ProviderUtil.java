@@ -748,13 +748,27 @@ public class ProviderUtil {
      *
      */
     public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project) throws InvalidPersistenceXmlException {
+        addPersistenceUnit(persistenceUnit, project, null);
+    }
+
+    /**
+     * Adds the given <code>persistenceUnit</code> to the <code>PUDataObject<code>
+     *  of the given <code>project</code>'s <code>root</code> and saves it.
+     * @param persistenceUnit the unit to be added
+     * @param project the project to which the unit is to be added.
+     * @param root the root to which the unit is to be added
+     * @throws InvalidPersistenceXmlException if the given project has an invalid persistence.xml file.
+     * @since 1.55
+     *
+     */
+    public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project, FileObject root) throws InvalidPersistenceXmlException {
         String version = Persistence.VERSION_1_0;
         if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit) {// we have persistence unit with specific version, should use it
             version =  Persistence.VERSION_2_1;
         } else if(persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) {// we have persistence unit with specific version, should use it
             version =  Persistence.VERSION_2_0;
         }
-        PUDataObject pud = getPUDataObject(project, version);
+        PUDataObject pud = getPUDataObject(project, root, version);
         pud.addPersistenceUnit(persistenceUnit);
         pud.save();
     }
@@ -802,12 +816,33 @@ public class ProviderUtil {
      * invalid persitence.xml file.
      */
     public static synchronized PUDataObject getPUDataObject(Project project, String version) throws InvalidPersistenceXmlException {
+        return getPUDataObject(project, null, version);
+    }
+
+    /**
+     * Gets the PUDataObject associated with the given <code>FileObject</code> within the given <code>project</code>.
+     * If there was no PUDataObject (i.e. no persistence.xml) in the project associated with the given FileObject, a new one
+     * will be created. Use
+     * {@link #getDDFile(org.netbeans.api.project.Project, org.openide.filesystems.FileObject)} for testing whether a project has a persistence.xml file associated with the given FileObject.
+     * 
+     *@param project the project whose PUDataObject is to be get. Must not be null.
+     *@param fo the FileObject whose PUDataObject is to be get.
+     *@param version if version is specified corresponding persistence.xml will be created, otherwise version will be determined from project classpath
+     * 
+     *@return <code>PUDataObject</code> associated with the given FileObject or null 
+     * if there is no such <code>PUDataObject</code>.
+     * 
+     * @throws InvalidPersistenceXmlException if the given <code>FileObject</code> had an existing
+     * invalid persitence.xml file.
+     * @since 1.55
+     */
+    public static synchronized PUDataObject getPUDataObject(Project project, FileObject fo, String version) throws InvalidPersistenceXmlException {
         Parameters.notNull("project", project); //NOI18N
 
-        FileObject puFileObject = getDDFile(project);
+        FileObject puFileObject = getDDFile(project, fo);
         if (puFileObject == null) {
             try {
-                puFileObject = createPersistenceDDFile(project, version);
+                puFileObject = createPersistenceDDFile(project, fo, version);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -843,8 +878,8 @@ public class ProviderUtil {
      * @vers persistence version, if null will be determined from project classpath, if fails default will be 1.0
      * @return FileObject representing <tt>persistence.xml</tt>.
      */
-    private static FileObject createPersistenceDDFile(Project project, String vers) throws IOException {
-        final FileObject persistenceLocation = PersistenceLocation.createLocation(project);
+    private static FileObject createPersistenceDDFile(Project project, FileObject fo, String vers) throws IOException {
+        final FileObject persistenceLocation = PersistenceLocation.createLocation(project, fo);
         if (persistenceLocation == null) {
             return null;
         }
@@ -868,7 +903,7 @@ public class ProviderUtil {
      * Checks whether the given project has a persistence.xml that contains at least one
      * persistence unit.
      * 
-     * @project the project; must not be null.
+     * @param project the project; must not be null.
      * 
      * @return true if the given project has a persistence.xml containing
      * at least one persitence unit, false otherwise.
@@ -877,12 +912,30 @@ public class ProviderUtil {
      *  invalid persistence.xml file.
      */
     public static boolean persistenceExists(Project project) throws InvalidPersistenceXmlException {
+        return persistenceExists(project, null);
+    }
+
+    /**
+     * Checks whether the given project has a persistence.xml associated with the given FileObject
+     * that contains at least one persistence unit.
+     * 
+     * @param project the project; must not be null.
+     * @param fo the FileObject
+     * 
+     * @return true if the given project has a persistence.xml associated with the given FileObject
+     * containing at least one persitence unit, false otherwise.
+     * 
+     * @throws InvalidPersistenceXmlException if the given <code>project</code> has an
+     *  invalid persistence.xml file.
+     * @since 1.55
+     */
+    public static boolean persistenceExists(Project project, FileObject fo) throws InvalidPersistenceXmlException {
         Parameters.notNull("project", project); //NOI18N
 
-        if (getDDFile(project) == null) {
+        if (getDDFile(project, fo) == null) {
             return false;
         }
-        PUDataObject pud = getPUDataObject(project);
+        PUDataObject pud = getPUDataObject(project, fo, null);
         try {
             return pud.getPersistence().getPersistenceUnit().length > 0;
         } catch (RuntimeException ex) {
@@ -894,7 +947,15 @@ public class ProviderUtil {
      * @return persistence.xml descriptor of first MetadataUnit found on project or null if none found
      */
     public static FileObject getDDFile(Project project) {
-        PersistenceScope[] persistenceScopes = PersistenceUtils.getPersistenceScopes(project);
+        return getDDFile(project, null);
+    }
+
+    /**
+     * @return persistence.xml descriptor of first MetadataUnit associated with the FileObject or null if none found
+     * @since 1.55
+     */
+    public static FileObject getDDFile(Project project, FileObject fo) {
+        PersistenceScope[] persistenceScopes = PersistenceUtils.getPersistenceScopes(project, fo);
         for (int i = 0; i < persistenceScopes.length; i++) {
             return persistenceScopes[i].getPersistenceXml();
         }
