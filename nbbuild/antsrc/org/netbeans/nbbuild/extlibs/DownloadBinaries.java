@@ -174,7 +174,13 @@ public class DownloadBinaries extends Task {
                             }
 
                             if (isMavenFile(hashAndFile)) {
-                                mavenFile(hashAndFile, manifest);
+                                try {
+                                    mavenFile(hashAndFile, manifest);
+                                } catch (IOException ex) {
+                                    String[] artifactGroupVersion = hashAndFile[1].split(":");
+                                    String shortName = artifactGroupVersion[1] + '-' + artifactGroupVersion[2] + ".jar";
+                                    hashedFile(hashAndFile[0], shortName, manifest);
+                                }
                             } else {
                                 hashedFile(hashAndFile[0], hashAndFile[1], manifest);
                             }
@@ -189,7 +195,7 @@ public class DownloadBinaries extends Task {
         }
     }
     
-    private void mavenFile(String[] hashAndId, File manifest) throws BuildException {
+    private void mavenFile(String[] hashAndId, File manifest) throws IOException {
         String id = hashAndId[1];
         String[] ids = id.split(":");
         if (ids.length != 3) {
@@ -212,12 +218,16 @@ public class DownloadBinaries extends Task {
             }
             try {
                 URL u = new URL(url);
-                downloadFromServer(u, cacheName, f, hashAndId[0]);
+                if (downloadFromServer(u, cacheName, f, hashAndId[0])) {
+                    return;
+                }
             } catch (IOException ex) {
                 String msg = "Could not download " + url + " to " + f + ": " + cacheName;
                 log(msg, Project.MSG_WARN);
-                throw new BuildException(ex);
+                throw new IOException(ex);
             }
+            String msg = "Could not download " + url + " to " + f + ": " + cacheName;
+            throw new IOException(msg);
         }
     }
 
@@ -395,7 +405,7 @@ public class DownloadBinaries extends Task {
         } catch (InterruptedException ex) {
         }
         if (conn[0] == null) {
-            throw new BuildException("Cannot connect to " + url);
+            throw new IOException("Cannot connect to " + url);
         }
         return conn[0];
     }
