@@ -53,6 +53,8 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -60,8 +62,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -229,7 +234,8 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
         generator = createPersistenceGenerator(type);
 
-        FileObject configFilesFolder = PersistenceLocation.getLocation(project);
+        FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
+        FileObject configFilesFolder = PersistenceLocation.getLocation(project, targetFolder);
 
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
 
@@ -247,7 +253,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
         // create the pu first if needed
         if (helper.isCreatePU()) {
-            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getDatabaseConnection() != null ? helper.getTableSource().getName() : null, null, null));
+            Util.addPersistenceUnitToProjectRoot(project, helper.getLocation().getRootFolder(), Util.buildPersistenceUnitUsingData(project, getDefaultPersistenceUnitName(helper.getLocation().getRootFolder()), helper.getDatabaseConnection() != null ? helper.getTableSource().getName() : null, null, null));
         } else {
             Util.addPersistenceUnitToProject(project);
         }
@@ -319,7 +325,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         if (helper.isCreatePU() && helper.getDBSchemaFile() != null) {//for now open persistence.xml in case of schema was used, as it's 99% will require persistence.xml update
             DataObject dObj = null;
             try {
-                dObj = ProviderUtil.getPUDataObject(project);
+                dObj = ProviderUtil.getPUDataObject(project, helper.getLocation().getRootFolder(), null);
             } catch (InvalidPersistenceXmlException ex) {
             }
             if (dObj != null) {
@@ -329,6 +335,53 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
         return Collections.<DataObject>singleton(DataFolder.findFolder(
                 SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName())));
+    }
+    
+    private String getDefaultPersistenceUnitName(FileObject root) {
+        ClassPath cp = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_SOURCE_PATH);
+        if (cp != null) {
+            FileObject owner = cp.findOwnerRoot(root);
+            if (owner != null) {
+                FileObject fo = root;
+                FileObject prev = null;
+                while (!fo.equals(owner)) {
+                    prev = fo;
+                    fo = fo.getParent();
+                }
+                if (prev != null && !prev.getName().isEmpty()) {
+                    String candidateNameBase = Character.toUpperCase(prev.getName().charAt(0)) + prev.getName().substring(1) + "PU"; //NOI18N
+                    try {
+                        if (!ProviderUtil.persistenceExists(project, root)) {
+                            return candidateNameBase;
+                        }
+                        PUDataObject pudo = ProviderUtil.getPUDataObject(project, root, null);
+                        Persistence persistence = pudo.getPersistence();
+
+                        int suffix = 2;
+                        PersistenceUnit[] punits = persistence.getPersistenceUnit();
+                        String candidateName = candidateNameBase;
+                        while (!isUnique(candidateName, punits)) {
+                            candidateName = candidateNameBase + suffix++;
+                        }
+                        return candidateName;
+                    } catch (InvalidPersistenceXmlException ipex) {
+                        // just log, the user is notified about invalid persistence.xml when
+                        // the panel is validated
+                        Logger.getLogger("global").log(Level.FINE, "Invalid persistence.xml found", ipex); //NOI18N
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isUnique(String candidate, PersistenceUnit[] punits) {
+        for (PersistenceUnit punit : punits) {
+            if (candidate.equals(punit.getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void createBeans(TemplateWizard wiz, ProgressContributor handle) throws IOException {
@@ -343,7 +396,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                 if (configFilesFolder == null) {
                     // if we got here, this must be an entity class library project or just a
                     // project without persistence.xml
-                    configFilesFolder = PersistenceLocation.createLocation(project);
+                    configFilesFolder = PersistenceLocation.createLocation(project, wiz.getTargetFolder().getPrimaryFile());
                 }
                 if (configFilesFolder == null) {
                     String message = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_NoConfigFiles");

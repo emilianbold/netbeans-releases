@@ -141,7 +141,8 @@ public class PersistenceUtils {
         }
         
         List<PersistenceUnit> result = new ArrayList<PersistenceUnit>();
-        for (PersistenceScope persistenceScope : getPersistenceScopes(project)) {
+        ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);
+        for (PersistenceScope persistenceScope : getPersistenceScopes(project, cp != null ? cp.findOwnerRoot(sourceFile) : null)) {
             Persistence persistence = null;
             try{
                 persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
@@ -199,11 +200,34 @@ public class PersistenceUtils {
      * @throws NullPointerException if <code>project</code> was null.
      */
     public static PersistenceScope[] getPersistenceScopes(Project project) {
+        return getPersistenceScopes(project, null);
+    }
+
+    /**
+     * Returns an array containing all persistence scopes provided by the
+     * given project associated with the given FileObject. This is just an utility method which does:
+     *
+     * <pre>
+     * PersistenceScopes.getPersistenceScopes(project, fo).getPersistenceScopes();
+     * </pre>
+     *
+     * <p>with all the necessary checks for null (returning an empty
+     * array in this case).</p>
+     *
+     * @param  project the project to retrieve the persistence scopes from.
+     * @param  fo the FileObject.
+     * @return the list of persistence scopes provided by <code>project</code>;
+     *         or an empty array if the project provides no persistence
+     *         scopes for the given FileObject; never null.
+     * @throws NullPointerException if <code>project</code> was null.
+     * @since 1.55
+     */
+    public static PersistenceScope[] getPersistenceScopes(Project project, FileObject fo) {
         if (project == null) {
             throw new NullPointerException("The project parameter cannot be null"); // NOI18N
         }
         
-        PersistenceScopes persistenceScopes = PersistenceScopes.getPersistenceScopes(project);
+        PersistenceScopes persistenceScopes = PersistenceScopes.getPersistenceScopes(project, fo);
         if (persistenceScopes != null) {
             return persistenceScopes.getPersistenceScopes();
         }

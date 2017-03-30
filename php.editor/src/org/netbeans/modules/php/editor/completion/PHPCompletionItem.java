@@ -244,6 +244,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         return isDeprecated;
     }
 
+    boolean isPlatform() {
+        return isPlatform;
+    }
+
     private static NamespaceDeclaration findEnclosingNamespace(PHPParseResult info, int offset) {
         final Program program = info.getProgram();
         List<ASTNode> nodes = NavUtils.underCaret(info, Math.min((program != null) ? program.getEndOffset() : offset, offset));
@@ -1435,6 +1439,21 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         ConstantItem(ConstantElement constant, CompletionRequest request, QualifiedNameKind generateAs) {
             super(constant, request, generateAs);
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            // #235450 TRUE, FALSE and NULL are defined with uppercase letters by default
+            if (isPlatform()) {
+                if ("TRUE".equals(name) || "FALSE".equals(name) || "NULL".equals(name)) { // NOI18N
+                    if (OptionsUtils.autoCompletionUseLowercaseTrueFalseNull()) {
+                        // default option is true
+                        return super.getName().toLowerCase();
+                    }
+                }
+            }
+            return super.getName();
         }
 
         @Override

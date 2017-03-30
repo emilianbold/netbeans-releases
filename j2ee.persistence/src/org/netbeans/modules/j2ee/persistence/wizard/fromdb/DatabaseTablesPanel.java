@@ -71,6 +71,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -330,7 +331,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         //nothing is selected based on previos selection, try to select based on persistence.xml
         boolean puExists = false;
         try {
-            puExists = ProviderUtil.persistenceExists(project);
+            puExists = ProviderUtil.persistenceExists(project, targetFolder);
         } catch (InvalidPersistenceXmlException ex) {
         } catch (RuntimeException ex) {
         }
@@ -338,7 +339,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         if(puExists){
             PUDataObject pud = null;
             try {
-                pud = ProviderUtil.getPUDataObject(project);
+                pud = ProviderUtil.getPUDataObject(project, targetFolder, null);
             } catch (InvalidPersistenceXmlException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -1041,6 +1041,44 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         });
     }
 
+    /**
+     * Returns the given type of the classpath for the project sources
+     * (i.e., excluding tests roots).
+     */
+    public ClassPath getProjectSourcesClassPath(String type) {
+        return ProjectManager.mutex().readAccess(() -> {
+            if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+                return getModuleBootPath();
+            }
+            if (JavaClassPathConstants.MODULE_SOURCE_PATH.equals(type)) {
+                return getModuleSourcePath(Owner.GLOBAL_SOURCE);
+            }
+            if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
+                return getModuleLegacyClassPath(Owner.GLOBAL_SOURCE);
+            }
+            if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                return getModuleCompilePath(Owner.GLOBAL_SOURCE);
+            }
+            if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                return getProcessorClasspath(Owner.GLOBAL_SOURCE);
+            }
+            if (JavaClassPathConstants.MODULE_EXECUTE_PATH.equals(type)) {
+                return getModuleExecutePath(Owner.GLOBAL_SOURCE);
+            }
+            if (JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH.equals(type)) {
+                return getModuleLegacyExecuteClassPath(Owner.GLOBAL_SOURCE);
+            }
+            final Function<Owner,ClassPath> f = modSensitivePrjPathFcts.get(type);
+            if (f != null) {
+                final List<ClassPath> cps = new ArrayList<>();
+                collectPath(cps, Owner.GLOBAL_SOURCE, f);
+                return cps.isEmpty() ? null : org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[cps.size()]));
+            }
+            assert false : "Unsupported ClassPath type: " + type;   //NOI18N
+            return null;
+        });
+    }
+
     public static final class Builder {
 
         private final AntProjectHelper helper;

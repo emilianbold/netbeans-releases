@@ -76,6 +76,24 @@ public final class PersistenceLocation {
     }
 
     /**
+     * Returns the FileObject's persistence location in the given project.
+     *
+     * @param  project the project.
+     * @param  fo the FileObject
+     * @return the persistence location or null if the project does not have
+     *         a persistence location or the location does not exist for
+     *         the given FileObject.
+     * @since 1.37
+     */
+    public static FileObject getLocation(Project project, FileObject fo) {
+        PersistenceLocationProvider provider = (PersistenceLocationProvider)project.getLookup().lookup(PersistenceLocationProvider.class);
+        if (provider != null) {
+            return provider.getLocation(fo);
+        }
+        return null;
+    }
+
+    /**
      * Creates the default persistence location in the given project.
      *
      * @param  project the project.
@@ -90,6 +108,27 @@ public final class PersistenceLocation {
         PersistenceLocationProvider provider = (PersistenceLocationProvider)project.getLookup().lookup(PersistenceLocationProvider.class);
         if (provider != null) {
             return provider.createLocation();
+        }
+        throw new IOException("The project " + project + " does not have an implementation of PersistenceLocationProvider in its lookup"); // NOI18N
+    }
+
+    /**
+     * Creates the FileObject's persistence location in the given project.
+     *
+     * @param  project the project.
+     * @param fo the FileObject
+     * @return the persistence location or null if the location could not have been
+     *         created (for example, because the implementor could not determine
+     *         a proper location).
+     * @throws IOException if the persistence location could not be created
+     *         or the project did not have an implementation of
+     *         PersistenceLocationProvider in its lookup.
+     * @since 1.37
+     */
+    public static FileObject createLocation(Project project, FileObject fo) throws IOException {
+        PersistenceLocationProvider provider = (PersistenceLocationProvider)project.getLookup().lookup(PersistenceLocationProvider.class);
+        if (provider != null) {
+            return provider.createLocation(fo);
         }
         throw new IOException("The project " + project + " does not have an implementation of PersistenceLocationProvider in its lookup"); // NOI18N
     }

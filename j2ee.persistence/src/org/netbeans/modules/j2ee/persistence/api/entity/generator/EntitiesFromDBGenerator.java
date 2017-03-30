@@ -183,7 +183,7 @@ public final class EntitiesFromDBGenerator {
      */
     public Set<FileObject> generate(ProgressContributor progressContributor) throws SQLException, IOException{
         
-        RelatedCMPHelper helper = new RelatedCMPHelper(project, PersistenceLocation.getLocation(project), generator);
+        RelatedCMPHelper helper = new RelatedCMPHelper(project, PersistenceLocation.getLocation(project, location.getRootFolder()), generator);
         helper.setLocation(location);
         helper.setPackageName(packageName);
         

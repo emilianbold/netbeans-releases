@@ -58,7 +58,6 @@ import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -104,7 +103,7 @@ public class CopyResourcesIndexer extends CustomIndexer {
                 if (owner != null) {
                     URL[] tests = UnitTestForSourceQuery.findSources(root);//prevent copy to tests root as it's not used in build and cause also 193828
                     if(tests == null || tests.length==0) {
-                        FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner);
+                        FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner, root);
                         if( persistenceXmlLocation!=null ) {
                             final FileObject persistenceXML = persistenceXmlLocation.getFileObject(PERSISTENCE_XML);//NOI18N
                             if (persistenceXML != null) {
