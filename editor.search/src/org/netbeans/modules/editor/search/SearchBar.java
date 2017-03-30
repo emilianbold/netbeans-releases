@@ -80,7 +80,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 /**
@@ -101,6 +100,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private WeakReference<JTextComponent> actualTextComponent;
     private final List<PropertyChangeListener> actualComponentListeners = new LinkedList<>();
     private FocusAdapter focusAdapterForComponent;
+    private int regainFocusState; // 0==do not regain; 1==regain; 2==check-on-next-focusGained
     private KeyListener keyListenerForComponent;
     private CaretListener caretListenerForComponent;
     private PropertyChangeListener propertyChangeListenerForComponent;
@@ -316,6 +316,54 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 wrapAround.doClick();
             }
         } );
+    }
+
+    void notifyFocusLost(PropertyChangeEvent focusLostRegistryEvt) {
+        Component origFocusedComponent = (Component) focusLostRegistryEvt.getOldValue();
+        Component focusGainingComponent = (Component) focusLostRegistryEvt.getNewValue();
+        // If the searchbar (or replacebar) had a focus and the focus is lost to a text component registered
+        // in EditorRegistry then attempt to regain the focus later.
+        if (origFocusedComponent == incSearchTextField ||
+                    origFocusedComponent == ReplaceBar.getInstance(SearchBar.this).getReplaceTextField() ||
+                    origFocusedComponent == getActualTextComponent()) // ER reports actual TC when focus in search field
+        {
+            if (focusGainingComponent == null) { // Must check on focusGained
+                regainFocusState = 2;
+            } else if (focusGainingComponent instanceof JTextComponent &&
+                EditorRegistry.componentList().contains(focusGainingComponent))
+            {
+                regainFocusState = 1;
+            } else {
+                regainFocusState = 0;
+            }
+        }
+    }
+    
+    void checkRegainFocus(PropertyChangeEvent focusGainedRegistryEvt) {
+        if (regainFocusState == 2) { // On focusLost the focus gaining component was null
+            Component origFocusedComponent = (Component) focusGainedRegistryEvt.getOldValue();
+            // Check if the focus came from the actual component of this searchbar
+            // (other components like OutlineView for search results or find-usages results mean no focus regain
+            if (origFocusedComponent == null || // Can be used when opening a new editor
+                    origFocusedComponent == getActualTextComponent() ||
+                    origFocusedComponent instanceof JFrame) // This parent is used when switching tabs so it must be allowed here
+            {
+                regainFocusState = 1;
+            } else {
+                regainFocusState = 0;
+            }
+            if (regainFocusState == 1) {
+                ReplaceBar replaceBar = ReplaceBar.getInstance(this);
+                JTextComponent c;
+                if (this.hadFocusOnTextField()) {
+                    if (replaceBar.isVisible() && (c = getActualTextComponent()) != null && c.isEditable()) {
+                        replaceBar.gainFocus();
+                    } else {
+                        this.gainFocus();
+                    }
+                }
+            }
+        }
     }
     
     private static class SearchHistoryUtility {
