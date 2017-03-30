@@ -71,10 +71,9 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 
 import com.sun.tools.swdev.glue.dbx.*;
-import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import javax.swing.JEditorPane;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
@@ -163,11 +162,7 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.debugger.ui.ToolTipUI;
 import org.netbeans.spi.debugger.ui.ViewFactory;
 import org.netbeans.spi.viewmodel.ModelListener;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
-import static org.openide.text.DataEditorSupport.toolTip;
 
 /**
  * A "service" for DebuggerEngine
@@ -1994,7 +1989,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         DbxWatch dbxWatch = new DbxWatch(this, watchUpdater(),
                 0,
                 nativeWatch.isRestricted(),
-                nativeWatch.getExpression(), "<unknown type>"); // NOI18N
+                nativeWatch.getExpression(), "<unknown type>", id); // NOI18N
 
         // set "value"
         final String msg = String.format("Duplicate of %d", id); // NOI18N
@@ -2100,39 +2095,50 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         watchUpdater().batchOn();
         for (int wx = 0; wx < items.length; wx++) {
             GPDbxDisplayItem i = items[wx];
-            WatchVariable wv = watches.byKey(i.id);
+            List<DbxWatch> watchesToUpdate = new ArrayList<DbxWatch>();
+//            WatchVariable wv = watches.byKey(i.id);
+            //find all dups that has pin and set values for them and for original one
+            //see bz#270230
+            for (Iterator<WatchVariable> iterator = watches.iterator();iterator.hasNext();) {
+                DbxWatch next = (DbxWatch)iterator.next();
+                if ((next.hasKey() && next.getId() == i.id) || 
+                        (!next.hasKey() && next.getOriginalId() == i.id && next.getNativeWatch().watch().getPin() != null)) {
+                    watchesToUpdate.add(next);
+                }
+            }
+            for (DbxWatch w : watchesToUpdate) {
+                // SHOULD do the following in something analogous to
+                // HandlerExpert.newHandler ...
 
-            // SHOULD do the following in something analogous to
-            // HandlerExpert.newHandler ...
+                //DbxWatch w = (DbxWatch) wv;
+                if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Variable.traffic) {
+                    System.out.printf("updateWatches() item %d -> %s\n", // NOI18N
+                            i.id, w == null ? "miss" : w.getVariableName()); // NOI18N
+                }
+                if (w == null) {
+                    continue;
+                }
 
-            DbxWatch w = (DbxWatch) wv;
-            if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Variable.traffic) {
-                System.out.printf("updateWatches() item %d -> %s\n", // NOI18N
-                        i.id, w == null ? "miss" : w.getVariableName()); // NOI18N
-            }
-            if (w == null) {
-                continue;
-            }
+                if (i.rhs_vdl != null && i.flags == 0) {
+                    w.setRHS(i.rhs, i.rhs_vdl, true); // should give accurate Leaf setting
+                } else {
+                    w.setChildren(null, null, true);
+                    w.setLeaf(true);
+                    w.setAsText(variableErrorCode(items[wx].flags));
+                }
 
-            if (i.rhs_vdl != null && i.flags == 0) {
-                w.setRHS(i.rhs, i.rhs_vdl, true); // should give accurate Leaf setting
-            } else {
-                w.setChildren(null, null, true);
-                w.setLeaf(true);
-                w.setAsText(variableErrorCode(items[wx].flags));
-            }
-            
-            if (i.plain_lhs != null) {
-                w.setVariableName(i.plain_lhs); // could be watch replace
-                // also update the one in debuggercore
-                NativeWatch nativeWatch = w.getNativeWatch();
-                nativeWatch.setExpression(i.plain_lhs);
-                nativeWatch.replacedWith(null);
-            }
-            
-            final NativeWatch nativeWatch = w.getNativeWatch();
-            if (nativeWatch != null) {
-                NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
+                if (i.plain_lhs != null) {
+                    w.setVariableName(i.plain_lhs); // could be watch replace
+                    // also update the one in debuggercore
+                    NativeWatch nativeWatch = w.getNativeWatch();
+                    nativeWatch.setExpression(i.plain_lhs);
+                    nativeWatch.replacedWith(null);
+                }
+
+                final NativeWatch nativeWatch = w.getNativeWatch();
+                if (nativeWatch != null && nativeWatch.watch().getPin() != null) {
+                    NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
+                }
             }
         }
 

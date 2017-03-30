@@ -65,15 +65,23 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
 
 class DbxWatch extends DbxVariable implements WatchVariable {
     private final int id;
+    private final int originalId;
     private final boolean restricted;
     private NativeWatch nativeWatch;
     
     public DbxWatch(DbxDebuggerImpl debugger, ModelChangeDelegator updater,
 		    int id, boolean restricted,
 		    String name, String type) {
+	this(debugger, updater, id, restricted, name, type, -1);
+    }
+   
+    public DbxWatch(DbxDebuggerImpl debugger, ModelChangeDelegator updater,
+		    int id, boolean restricted,
+		    String name, String type, int originalId) {
 	super(debugger, updater, null, name, name, type, type, null, true);
 	this.id = id;
 	this.restricted = restricted;
+        this.originalId = originalId;
     }
 
     // interface WatchVariable
@@ -86,6 +94,9 @@ class DbxWatch extends DbxVariable implements WatchVariable {
 	return nativeWatch;
     }
 
+    public int getOriginalId() {
+        return originalId;
+    }
 
     // interface ListMapItem
     public boolean hasKey() {
