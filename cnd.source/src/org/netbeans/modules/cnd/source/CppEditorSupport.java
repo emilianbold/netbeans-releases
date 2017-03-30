@@ -67,10 +67,13 @@ import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
@@ -266,6 +269,12 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                     CndUtils.assertUnconditional("no language filter for " + doc + " with language " + language);
                 }
             } else {
+                String mimeType = DocumentUtilities.getMimeType(doc);
+                if (mimeType == null || !MIMENames.isHeaderOrCppOrC(mimeType)) {
+                    // #255684 - Exception: no language for
+                    // it's not our mime-type (may be deserialization of unknown extension)                    
+                    return doc;
+                }
                 CndUtils.assertUnconditional("no language for " + doc);
             }
             // try to setup document's extra properties during non-EDT load if needed
