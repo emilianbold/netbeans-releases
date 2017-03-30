@@ -30,6 +30,8 @@
  */
 package org.netbeans.modules.editor.bracesmatching;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JEditorPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -78,7 +80,7 @@ public class MasterMatcherTest extends NbTestCase {
         
         TestMatcher.origin = new int [] { 7, 7 };
         MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS, EAS, EAS);
-        Thread.sleep(300);
+        TestMatcher.waitUntilCreated(1000);
         {
         TestMatcher tm = TestMatcher.lastMatcher;
         assertNotNull("No matcher created", tm);
@@ -95,7 +97,7 @@ public class MasterMatcherTest extends NbTestCase {
         c.putClientProperty(MasterMatcher.PROP_CARET_BIAS, MasterMatcher.B_BACKWARD);
         
         MasterMatcher.get(c).highlight(d, 11, bag, EAS, EAS, EAS, EAS);
-        Thread.sleep(300);
+        TestMatcher.waitUntilCreated(1000);
         {
         TestMatcher tm = TestMatcher.lastMatcher;
         assertNotNull("No matcher created", tm);
@@ -124,7 +126,7 @@ public class MasterMatcherTest extends NbTestCase {
         TestMatcher.matches = new int [] { 10, 11 };
         
         MasterMatcher.get(c).highlight(d, 7, bag, EAS, EAS, EAS, EAS);
-        Thread.sleep(300);
+        TestMatcher.waitUntilCreated(1000);
         {
         TestMatcher tm = TestMatcher.lastMatcher;
         assertNotNull("No matcher created", tm);
@@ -210,10 +212,10 @@ public class MasterMatcherTest extends NbTestCase {
     }
     
     private static final class TestMatcher implements BracesMatcher, BracesMatcherFactory {
-
         public static TestMatcher lastMatcher = null; 
         public static int [] origin = null;
         public static int [] matches = null;
+        static CountDownLatch latch;
         
         public final MatcherContext context;
         
@@ -236,6 +238,11 @@ public class MasterMatcherTest extends NbTestCase {
         public BracesMatcher createMatcher(MatcherContext context) {
             lastMatcher = new TestMatcher(context);
             return lastMatcher;
+        }
+        
+        public static void waitUntilCreated(long millis) throws InterruptedException {
+            latch = new CountDownLatch(1);
+            latch.await(millis, TimeUnit.MILLISECONDS);
         }
     }
 
