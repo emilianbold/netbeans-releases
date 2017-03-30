@@ -132,23 +132,13 @@ public final class SearchNbEditorKit extends NbEditorKit {
                             jp.add(searchBarInstance);
                             if (replaceBarInstance.isVisible()) {
                                 jp.add(replaceBarInstance);
-                                if (searchBarInstance.hadFocusOnTextField()) {
-                                    replaceBarInstance.gainFocus();
-                                }
-                                if (!target.isEditable()) {
-                                    replaceBarInstance.looseFocus();
-                                }
                             }
-
-
                             jp.revalidate();
-
-                            if (searchBarInstance.hadFocusOnTextField()) {
-                                searchBarInstance.gainFocus();
-                            }
+                            searchBarInstance.checkRegainFocus(evt);
                         }
+                    } else if (EditorRegistry.FOCUS_LOST_PROPERTY.equals(evt.getPropertyName())) {
+                        SearchBar.getInstance().notifyFocusLost(evt);
                     }
-
                 }
             };
             EditorRegistry.addPropertyChangeListener(searchAndReplaceBarPersistentListener);

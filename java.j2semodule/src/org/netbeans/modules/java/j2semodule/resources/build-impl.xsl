@@ -770,8 +770,8 @@ is divided into following sections:
                                 <batchtest todir="${{build.test.results.dir}}">
                                     <xsl:call-template name="createMappedResources">
                                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:test-roots"/>
-                                        <xsl:with-param name="includes">@{includes}</xsl:with-param>
-                                        <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
+                                        <xsl:with-param name="includes">**/@{includes}</xsl:with-param>
+                                        <xsl:with-param name="includes2">**/@{testincludes}</xsl:with-param>
                                         <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                         <xsl:with-param name="setprefix">have.tests</xsl:with-param>
                                     </xsl:call-template>
