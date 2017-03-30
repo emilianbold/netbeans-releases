@@ -626,6 +626,14 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new ModifiersCheckHintError(), "testConstantModifiersCheckFix.php", "protected const P^ROTECTED_INTERFACE_CONST = 3;", "Remove modifier");
     }
 
+    public void testVoidReturnTypeHint_01() throws Exception {
+        checkHints(new ReturnTypeHintErrorStub(PhpVersion.PHP_70), "testVoidReturnTypeHint.php");
+    }
+
+    public void testVoidReturnTypeHint_02() throws Exception {
+        checkHints(new ReturnTypeHintErrorStub(PhpVersion.PHP_71), "testVoidReturnTypeHint.php");
+    }
+
     //~ Inner classes
 
     private static final class ImplementAbstractMethodsHintErrorStub extends ImplementAbstractMethodsHintError {
@@ -658,6 +666,21 @@ public class HintsTest extends PHPHintsTestBase {
         @Override
         protected boolean isAtLeastPhp54(FileObject fileObject) {
             return phpVersion.compareTo(PhpVersion.PHP_54) >= 0;
+        }
+
+    }
+
+    private static final class ReturnTypeHintErrorStub extends ReturnTypeHintError {
+
+        private final PhpVersion phpVersion;
+
+        public ReturnTypeHintErrorStub(PhpVersion phpVersion) {
+            this.phpVersion = phpVersion;
+        }
+
+        @Override
+        protected PhpVersion getPhpVersion(FileObject file) {
+            return phpVersion;
         }
 
     }
