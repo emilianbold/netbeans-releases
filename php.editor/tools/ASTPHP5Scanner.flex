@@ -1284,6 +1284,7 @@ yybegin(ST_DOCBLOCK);
 <ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC>"{$" {
     pushState(ST_IN_SCRIPTING);
     yypushback(yylength()-1);
+    bracket++;
     return createSymbol(ASTPHP5Symbols.T_CURLY_OPEN_WITH_DOLAR);
 }
 

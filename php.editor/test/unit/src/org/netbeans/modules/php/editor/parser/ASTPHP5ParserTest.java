@@ -818,6 +818,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/symmetricArrayDestructuring_01");
     }
 
+    public void testIssue269707() throws Exception {
+        performTest("parser/issue269707");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
