@@ -232,4 +232,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 254133 - C++11 enums with visibility makes netbeans think the syntax is incorrect
         performTest("bug254133.cpp");
     }
+    
+    public void testBug270231() throws Exception {
+        // Bug 270231 - typeof keyword not recognized by C++ parser
+        performTest("bug270231.cpp");
+    }
 }

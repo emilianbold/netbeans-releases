@@ -2098,7 +2098,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             unknown_posttype_declaration_specifiers
 
     //  |   LITERAL_typename        {td=true;}        direct_declarator 
-        |   literal_typeof LPAREN typeof_param RPAREN
+        |   type_typeof
         )
     )
     ({allowTypedef}? LITERAL_typedef {td=true;})?
@@ -2172,15 +2172,6 @@ decl_specifiers_before_type
             LITERAL_typedef
         )+
     ;
-
-protected
-typeof_param :
-            // fast check of simple typeof (type) but skip typeof (type1() + type2()) which would be considered as expression
-            (type_name {LA(1) != PLUS}?) => type_name
-        |
-            expression
-        ;
-
 
 storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     :
@@ -4923,6 +4914,18 @@ type_decltype
     :
         literal_decltype decltype_expression
         {#type_decltype=#(#[CSM_TYPE_DECLTYPE,"CSM_TYPE_DECLTYPE"], #type_decltype);}
+    ;
+
+type_typeof
+    :
+        literal_typeof 
+        // Let's pretend it is a decltype.
+        // Note: decltypes do not support function types, so in case of need the rule with type_name
+        // must be used and ASTRenderer fixed to support function types inside typeof
+        // (LPAREN type_name RPAREN) => LPAREN type_name RPAREN
+        decltype_expression
+        {#type_typeof=#(#[CSM_TYPE_DECLTYPE,"CSM_TYPE_DECLTYPE"], #type_typeof);}
+        {#type_typeof=#(#[CSM_TYPE_COMPOUND,"CSM_TYPE_COMPOUND"], #type_typeof);}
     ;
 
 constant

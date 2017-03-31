@@ -55,4 +55,6 @@ public interface TypesProvider {
     CsmType createType(CharSequence seq, CsmScope scope, CsmTypes.SequenceDescriptor descriptor);
     CsmType createType(CsmClassifier cls, CsmTypes.TypeDescriptor td, CsmTypes.OffsetDescriptor offs);
     CsmType createType(CsmType orig, CsmTypes.TypeDescriptor newDescriptor);
+    boolean isDecltype(CharSequence classifierText);
+    CharSequence[] getDecltypeAliases();
 }
