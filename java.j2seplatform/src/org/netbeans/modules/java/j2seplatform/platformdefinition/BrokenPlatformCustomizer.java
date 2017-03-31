@@ -79,8 +79,6 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        platformName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         platformHome = new javax.swing.JTextField();
         jTextPane1 = new javax.swing.JTextPane();
@@ -88,26 +86,9 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(J2SEPlatformCustomizer.PREF_WIDTH, J2SEPlatformCustomizer.PREF_HEIGHT));
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/platformdefinition/Bundle").getString("MNE_PlatformName").charAt(0));
-        jLabel1.setLabelFor(platformName);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/platformdefinition/Bundle"); // NOI18N
-        jLabel1.setText(bundle.getString("CTL_PlatformName")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        add(jLabel1, gridBagConstraints);
-
-        platformName.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(platformName, gridBagConstraints);
-
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/platformdefinition/Bundle").getString("MNE_PlatformHome").charAt(0));
         jLabel2.setLabelFor(platformHome);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/platformdefinition/Bundle"); // NOI18N
         jLabel2.setText(bundle.getString("CTL_PlatformHome")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -138,9 +119,12 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
    
     
     private void postInitComponents () {
-        this.platformName.setText (platform.getDisplayName());
-        Collection installFolders = platform.getInstallFolderURLs();
-        if (installFolders.size() > 0) {
+        this.jLabel2.setVisible(false);
+        this.platformHome.setVisible(false);
+        final Collection installFolders = platform.getInstallFolderURLs();
+        if (platform.getInstallFolders().isEmpty() && installFolders.size() > 0) {
+            this.jLabel2.setVisible(true);
+            this.platformHome.setVisible(true);
             this.platformHome.setForeground(new Color (164,0,0));
             this.platformHome.setText (Utilities.toFile(URI.create(((URL)installFolders.iterator().next()).toExternalForm())).getAbsolutePath());
         }
@@ -148,7 +132,7 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
         StyleSheet css = htmlkit.getStyleSheet();
         if (css.getStyleSheets() == null) {
             StyleSheet css2 = new StyleSheet();
-            Font f = jLabel1.getFont();
+            Font f = jLabel2.getFont();
             css2.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
                 .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
             css2.addStyleSheet(css);
@@ -159,11 +143,9 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JTextField platformHome;
-    private javax.swing.JTextField platformName;
     // End of variables declaration//GEN-END:variables
     
 }
