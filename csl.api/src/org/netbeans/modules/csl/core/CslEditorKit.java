@@ -164,7 +164,7 @@ public final class CslEditorKit extends NbEditorKit {
                     }
                 }
 
-                return null;
+                return new int[0];
             }
         };
     }
