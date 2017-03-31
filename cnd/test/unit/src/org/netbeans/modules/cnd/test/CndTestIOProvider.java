@@ -65,7 +65,7 @@ import org.openide.windows.OutputWriter;
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=org.openide.windows.IOProvider.class, position=0)
+@ServiceProvider(service=org.openide.windows.IOProvider.class, position=10)
 public class CndTestIOProvider extends IOProvider {
 
     public interface Listener {
