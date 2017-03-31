@@ -47,9 +47,13 @@ import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.netbeans.api.actions.Savable;
@@ -57,12 +61,17 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.classpath.ProjectModulesModifier;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
@@ -309,6 +318,74 @@ public class DefaultProjectModulesModifier implements ProjectModulesModifier {
             Exceptions.printStackTrace(ioe);
         }
         return modified[0];
+    }
+    
+    @Override
+    public Map<URL, Collection<ClassPath>> findModuleUsages(FileObject projectArtifact, Collection<URL> locations) {
+        return doFindModuleUsages(projectArtifact, locations);
+    }
+    
+    public static Map<URL, Collection<ClassPath>> doFindModuleUsages(FileObject projectArtifact, Collection<URL> locations) {
+        Project p = FileOwnerQuery.getOwner(projectArtifact);
+        if (p == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, URL> modLocations = new HashMap<>();
+        for (URL u : locations) {
+            String n = SourceUtils.getModuleName(u, true);
+            if (n != null) {
+                modLocations.put(n, u);
+            }
+        }
+        Map<URL, Collection<ClassPath>> resultMap = new HashMap<>();
+        Set seenCP = new HashSet<>();
+        for (SourceGroup g : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            FileObject r = g.getRootFolder();
+            ClassPath src = ClassPath.getClassPath(r, ClassPath.SOURCE);
+            if (!seenCP.add(Arrays.asList(src.getRoots()))) {
+                continue;
+            }
+            if (src.findResource("module-info.java") == null) {
+                continue;
+            }
+            JavaSource js = JavaSource.forFileObject(r);
+            if (js != null) {
+                try {
+                    js.runUserActionTask(new S(src, modLocations, resultMap), true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return resultMap;
+    }
+    
+    private static class S extends TreeScanner implements Task<CompilationController> {
+        final Map<URL, Collection<ClassPath>> resultMap;
+        final ClassPath g;
+        final Map<String, URL> modLocations;
+
+        public S(ClassPath g, Map<String, URL> modLocations, Map<URL, Collection<ClassPath>> resultMap) {
+            this.g = g;
+            this.modLocations = modLocations;
+            this.resultMap = resultMap;
+        }
+         
+        @Override
+        public Object visitRequires(RequiresTree node, Object p) {
+            String s = node.getModuleName().toString();
+            URL u = modLocations.get(s);
+            if (u != null) {
+                resultMap.computeIfAbsent(u, (x) -> new ArrayList<>()).add(g);
+            }
+            return null;
+        }
+        
+        @Override
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(JavaSource.Phase.PARSED);
+            scan(parameter.getCompilationUnit(), null);
+        }
     }
     
     private static void save(@NonNull final FileObject file) throws IOException {
