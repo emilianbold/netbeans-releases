@@ -749,4 +749,71 @@ public class PhpTypedBreakInterceptorTest extends PhpTypinghooksTestBase {
         );
     }
 
+    public void testIssue270233_01() throws Exception {
+        insertBreak(
+                "class Foo {\n"
+                + "    public function test1(): ?string {^\n"
+                + "}",
+                "class Foo {\n"
+                + "    public function test1(): ?string {\n"
+                + "        ^\n"
+                + "    }\n"
+                + "}"
+        );
+    }
+
+    public void testIssue270233_02() throws Exception {
+        insertBreak(
+                "class Foo {\n"
+                + "    public function test2(?string $string) {^\n"
+                + "}",
+                "class Foo {\n"
+                + "    public function test2(?string $string) {\n"
+                + "        ^\n"
+                + "    }\n"
+                + "}"
+        );
+    }
+
+    public void testIssue270233_03() throws Exception {
+        insertBreak(
+                "class Foo {\n"
+                + "    public function test3(?string $string): ?string {^\n"
+                + "}",
+                "class Foo {\n"
+                + "    public function test3(?string $string): ?string {\n"
+                + "        ^\n"
+                + "    }\n"
+                + "}"
+        );
+    }
+
+    public void testIssue270233_04() throws Exception {
+        insertBreak(
+                "$anon = function(?string $string) {^",
+                "$anon = function(?string $string) {\n"
+                + "    ^\n"
+                + "}"
+        );
+    }
+
+    public void testIssue270233_05() throws Exception {
+        insertBreak(
+                "$anon = function(): ?string {^",
+                "$anon = function(): ?string {\n"
+                + "    ^\n"
+                + "}"
+        );
+    }
+
+    public void testIssue270233_06() throws Exception {
+        insertBreak(
+                "$anon = function(?string $string): ?string {^",
+                "$anon = function(?string $string): ?string {\n"
+                + "    ^\n"
+                + "}"
+        );
+    }
+
+
 }
