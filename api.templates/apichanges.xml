@@ -54,6 +54,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="decorators">
+          <api name="templates"/>
+          <summary>Support for decorating the creation process</summary>
+          <version major="1" minor="9"/>
+          <date year="2017" month="3" day="22"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"/>
+          <description>
+              <p>
+                  In addition to provide <code>CreateFromTemplateHandler</code> which overtakes the
+                  template processing, <code>CreateFromTemplateDecorator</code> can participate in
+                  file creation doing pre- and post-creation tasks and edits either in the created file
+                  or other files.
+              </p>
+          </description>
+          <class package="org.netbeans.api.templates" name="CreateFromTemplateDecorator"/>
+      </change>
       <change id="mavenarchetypes">
           <api name="templates"/>
           <summary>Maven Archetypes</summary>

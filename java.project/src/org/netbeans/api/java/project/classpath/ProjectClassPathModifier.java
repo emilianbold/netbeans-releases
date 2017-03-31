@@ -52,6 +52,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -136,7 +138,8 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.removeLibraries (libraries, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.removeLibraries (
+                    extensible.uniqueLibraries(libraries), extensible.pcmi, extensible.sg, extensible.classPathType);
             boolean r2 = !extensible.classPathType.equals(classPathType) && 
                     removeRootsFromModinfo(classPathType, projectArtifact, toURLs(libraries));
             return r1 || r2;
@@ -249,7 +252,7 @@ public class ProjectClassPathModifier {
         if (extensible.pcmi != null) {
             assert extensible.sg != null;
             assert extensible.classPathType != null;
-            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.removeRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            boolean r1 = ProjectClassPathModifierAccessor.INSTANCE.removeRoots (extensible.uniqueLocations(classPathRoots), extensible.pcmi, extensible.sg, extensible.classPathType);
             boolean r2 = !extensible.classPathType.equals(classPathType) && 
                     removeRootsFromModinfo(classPathType, projectArtifact, Arrays.asList(classPathRoots));
             return r1 || r2;
@@ -418,14 +421,14 @@ public class ProjectClassPathModifier {
                     for (String type : types) {
                         if (_classPathType.equals(type)) {
                             String label = "ProjectClassPathModifierImplementation for " + _classPathType + " on " + FileUtil.getFileDisplayName(sg.getRootFolder()); // NOI18N
-                            return new Extensible(pm, sg, type,label);
+                            return new Extensible(project, pm, sg, type,label);
                         } else if (classPathType.equals(type)) {
                             originalFound = true;
                         }
                     }
                     if (originalFound) {
                         String label = "ProjectClassPathModifierImplementation for " + classPathType + " on " + FileUtil.getFileDisplayName(sg.getRootFolder()); // NOI18N
-                        return new Extensible(pm, sg, classPathType,label);
+                        return new Extensible(project, pm, sg, classPathType,label);
                     }
                 }
             }
@@ -437,7 +440,7 @@ public class ProjectClassPathModifier {
                     project.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
             if (pe != null) {
                 if (_classPathType.equals(ClassPath.COMPILE)) {
-                    return new Extensible(pe, "ProjectClassPathExtender for " + FileUtil.getFileDisplayName(project.getProjectDirectory())); // NOI18N
+                    return new Extensible(project, pe, "ProjectClassPathExtender for " + FileUtil.getFileDisplayName(project.getProjectDirectory())); // NOI18N
                 } else {
                     throw new UnsupportedOperationException("Project in " + FileUtil.getFileDisplayName(project.getProjectDirectory()) + " of " + project.getClass() +
                             " has a ProjectClassPathExtender in its lookup but no ProjectClassPathModifierImplementation to handle " + _classPathType); // NOI18N
@@ -466,7 +469,7 @@ public class ProjectClassPathModifier {
      * unit and class path type, @see ClassPath.
      */
     private static final class Extensible {
-        
+        private final Project project;
         private final String classPathType;       
         private final SourceGroup sg;
         private final ProjectClassPathModifierImplementation pcmi;
@@ -475,10 +478,11 @@ public class ProjectClassPathModifier {
         /** for error messages only */
         private final String label;
         
-        private Extensible(final ProjectClassPathModifierImplementation pcmi, final SourceGroup sg, final String classPathType, String label) {
+        private Extensible(final Project project, final ProjectClassPathModifierImplementation pcmi, final SourceGroup sg, final String classPathType, String label) {
             assert pcmi != null;
             assert sg != null;
             assert classPathType != null;
+            this.project = project;
             this.pcmi = pcmi;
             this.sg = sg;
             this.classPathType = classPathType;
@@ -487,8 +491,9 @@ public class ProjectClassPathModifier {
         }
         
         @SuppressWarnings("deprecation")        //NOI18N
-        private Extensible(final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pcpe, String label) {
+        private Extensible(final Project project, final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pcpe, String label) {
             assert pcpe != null;
+            this.project = project;
             this.pcpe = pcpe;
             this.pcmi = null;
             this.sg = null;
@@ -500,7 +505,36 @@ public class ProjectClassPathModifier {
         public String toString() {
             return label;
         }
-
+        
+        URL[] uniqueLocations(URL[] locations) {
+            ProjectModulesModifier pmm = Lookup.getDefault().lookup(ProjectModulesModifier.class);
+            if (pmm == null) {
+                return locations;
+            }
+            Map<URL, Collection<ClassPath>> usages = pmm.findModuleUsages(sg.getRootFolder(), Arrays.asList(locations));
+            if (usages.isEmpty()) {
+                return locations;
+            }
+            ClassPath myPath = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE);
+            return usages.keySet().stream()
+                    .filter((u) -> usages.get(u).size() == 1 &&
+                            Arrays.equals(usages.get(u).iterator().next().getRoots(), myPath.getRoots()))
+                    .toArray((l) -> new URL[l]);
+        }
+        
+        Library[] uniqueLibraries(Library[] libraries) {
+            Map<URL, Library> libraryMap = new HashMap<>();
+            URL[] locations = Arrays.stream(libraries)
+                    .flatMap((l) -> l.getContent("classpath").stream().map((x) -> { // NOI18N
+                        libraryMap.put(x, l);
+                        return x;
+                     })
+                )
+                .toArray((s) -> new URL[s]);
+            return Arrays.stream(uniqueLocations(locations)).map((u) -> libraryMap.get(u))
+                    .distinct()
+                    .toArray((s) -> new Library[s]);
+        }
     }
 
     /**

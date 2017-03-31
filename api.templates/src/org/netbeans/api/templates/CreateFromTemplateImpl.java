@@ -53,9 +53,11 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.Format;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.script.ScriptContext;
@@ -82,6 +84,8 @@ final class CreateFromTemplateImpl {
     private final CreateDescriptor desc;
     private Map<String, ?> originalParams;
     
+    private List<CreateFromTemplateDecorator> decorators;
+    
     private CreateFromTemplateImpl(FileBuilder builder) {
         this.builder = builder;
         this.desc = builder.getDescriptor();
@@ -95,6 +99,16 @@ final class CreateFromTemplateImpl {
     static void collectAttributes(FileBuilder flb) {
         CreateFromTemplateImpl impl = new CreateFromTemplateImpl(flb);
         flb.withParameters(impl.findTemplateParameters());
+    }
+    
+    private void setupDecorators() {
+        decorators = new ArrayList<>(Lookup.getDefault().lookupAll(CreateFromTemplateDecorator.class));
+        for (Iterator<CreateFromTemplateDecorator> it = decorators.iterator(); it.hasNext(); ) {
+            CreateFromTemplateDecorator dec = it.next();
+            if (!dec.accept(desc)) {
+                it.remove();
+            }
+        }
     }
     
     List<FileObject> build() throws IOException {
@@ -113,8 +127,10 @@ final class CreateFromTemplateImpl {
             }
             // also modifies desc.getParameters, result not needed.
             findTemplateParameters();
+            setupDecorators();
             computeEffectiveName(desc);
 
+            List<FileObject> initialFiles = callDecorators(true, new ArrayList<>());
             List<FileObject> pf = null;
             for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
                 if (h.accept(desc)) {
@@ -124,14 +140,33 @@ final class CreateFromTemplateImpl {
                 }
             }
             // side effects from findTemplateParameters still in effect...
-            if (pf != null || defaultMode == FileBuilder.Mode.FAIL) {
+            if (pf == null && defaultMode != FileBuilder.Mode.FAIL) {
+                pf = Collections.singletonList(defaultCreate());
+            }
+            if (pf == null) {
                 return pf;
             }
-            return Collections.singletonList(defaultCreate());
+            List<FileObject> result = new ArrayList<>(pf);
+            result.addAll(initialFiles);
+            callDecorators(false, result);
+            return result;
         } finally {
             // bring back the parameters
             builder.getDescriptor().parameters = (Map<String, Object>)originalParams;
         }
+    }
+    
+    private List<FileObject>    callDecorators(boolean preCreate, List<FileObject> result) throws IOException {
+        for (CreateFromTemplateDecorator deco : decorators) {
+            if ((preCreate ? deco.isBeforeCreation() : deco.isAfterCreation())) {
+                List<FileObject>  preFiles = deco.decorate(desc, result);
+                if (preFiles != null) {
+                    preFiles.removeAll(result);
+                    result.addAll(preFiles);
+                }
+            }
+        }
+        return result;
     }
     
     /* package private */ static void computeEffectiveName(CreateDescriptor desc) {
@@ -139,7 +174,7 @@ final class CreateFromTemplateImpl {
         if (name == null) {
             // name is not set - try to check parameters, if some template attribute handler
             // did not supply a suggestion:
-            Object o = desc.getParameters().get("name");
+            Object o = desc.getParameters().get("name"); // NOi18N
             if (o instanceof String) {
                 name = (String)o;
             } else {
