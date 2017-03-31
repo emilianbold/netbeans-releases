@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.java.preprocessorbridge.api;
 
+import com.sun.source.tree.ModuleTree;
 import java.io.IOException;
 import java.util.Collection;
 import javax.lang.model.element.ModuleElement;
@@ -96,8 +97,20 @@ public final class ModuleUtilities {
      * @throws IOException if the module-info.java does not exist or cannot be parsed. 
      */
     @CheckForNull
-    public ModuleElement parseModule() throws IOException {
+    public ModuleTree parseModule() throws IOException {
         return init() ? handle.parseModule() : null;
+    }
+
+    /**
+     * Resolves a {@link ModuleTree} into the {@link ModuleElement}.
+     * @param moduleTree the {@link ModuleTree} to resolve.
+     * @return the resolved {@link ModuleElement} or null
+     * @throws IOException in case of IO error.
+     * @since 1.49
+     */
+    @CheckForNull
+    public ModuleElement resolveModule(@NonNull final ModuleTree moduleTree) throws IOException {
+        return init() ? handle.resolveModule(moduleTree) : null;
     }
 
     /**
