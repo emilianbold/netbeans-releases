@@ -1924,12 +1924,9 @@ public class AstRenderer {
                 ) {
             typeof = true;
             AST next = tokType.getNextSibling();
-            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+            if (next.getType() == CPPTokenTypes.LPAREN) {
                 next = next.getNextSibling();
                 typeAST = next;
-            }
-            if (typeAST != null && typeAST.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                typeAST = typeAST.getFirstChild();
             }
             tokType = next.getNextSibling();
         }
