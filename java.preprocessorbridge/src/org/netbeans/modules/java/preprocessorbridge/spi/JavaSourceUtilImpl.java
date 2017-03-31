@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.preprocessorbridge.spi;
 
+import com.sun.source.tree.ModuleTree;
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import java.util.Map;
@@ -53,6 +54,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
  * SPI interface provided by java.source to java.preprocessorbridge, used by JavaSourceUtil
@@ -99,7 +101,10 @@ public abstract class JavaSourceUtilImpl {
         public abstract String parseModuleName() throws IOException;
 
         @CheckForNull
-        public abstract ModuleElement parseModule() throws IOException;
+        public abstract ModuleTree parseModule() throws IOException;
+
+        @CheckForNull
+        public abstract ModuleElement resolveModule(@NonNull ModuleTree moduleTree) throws IOException;
 
         @CheckForNull
         public abstract ModuleElement resolveModule(@NonNull String moduleName) throws IOException;
