@@ -351,7 +351,106 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
         );
     }
 
-    @Override
+    public void testIssue269104_01() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**^\n"
+                + "    function callableType(callable $callable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n",
+
+                // expected
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param callable $callable^\n"
+                + "     */\n"
+                + "    function callableType(callable $callable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"
+        );
+    }
+
+     public void testIssue269104_02() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**^\n"
+                + "    function intType(int $int) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n",
+
+                // expected
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param int $int^\n"
+                + "     */\n"
+                + "    function intType(int $int) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"
+        );
+    }
+
+     public void testIssue269104_03() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**^\n"
+                + "    function iterableType(iterable $iterable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n",
+
+                // expected
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param iterable $iterable^\n"
+                + "     */\n"
+                + "    function iterableType(iterable $iterable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"
+        );
+    }
+
+   @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);

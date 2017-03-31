@@ -75,7 +75,7 @@ public final class Type {
     private static final List<String> TYPES_FOR_EDITOR = Arrays.asList(ARRAY, CALLABLE, ITERABLE, BOOL, FLOAT, INT, STRING);
     private static final List<String> TYPES_FOR_RETURN_TYPE = Arrays.asList(ARRAY, CALLABLE, ITERABLE, BOOL, FLOAT, INT, STRING, VOID);
     private static final List<String> TYPES_FOR_PHP_DOC = Arrays.asList(STRING, INTEGER, INT, BOOLEAN, BOOL, FLOAT, DOUBLE, OBJECT, MIXED, ARRAY,
-            RESOURCE, VOID, NULL, CALLBACK, "false", "true", "self"); // NOI18N
+            RESOURCE, VOID, NULL, CALLBACK, CALLABLE, ITERABLE, "false", "true", "self"); // NOI18N
 
 
     public static boolean isPrimitive(String typeName) {
@@ -85,7 +85,7 @@ public final class Type {
                 || ARRAY.equals(typeName) || OBJECT.equals(typeName) || MIXED.equals(typeName)
                 || NUMBER.equals(typeName) || CALLBACK.equals(typeName) || RESOURCE.equals(typeName)
                 || DOUBLE.equals(typeName) || STRING.equals(typeName) || NULL.equals(typeName)
-                || VOID.equals(typeName)) {
+                || VOID.equals(typeName) || CALLABLE.equals(typeName) || ITERABLE.equals(typeName)) {
             retval = true;
         }
         return retval;
