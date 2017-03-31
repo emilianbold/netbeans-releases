@@ -182,6 +182,12 @@ public class DefaultProjectModulesModifier implements ProjectModulesModifier {
                 .map((url) -> SourceUtils.getModuleName(url, true))
                 .filter((name) -> name != null)
                 .collect(Collectors.toList());
+        return addRequiredModules(info, moduleNames);
+    }
+    
+    public static boolean addRequiredModules(
+            @NonNull final FileObject info,
+            @NonNull final  Collection<String> moduleNames) throws IOException {
         if (moduleNames.isEmpty()) {
             return false;
         }
