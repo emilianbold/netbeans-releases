@@ -96,10 +96,10 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     private CompilerSet MinGWSet = null;
     private CompilerSet CygwinSet = null;
 
-    List<CompilerSet> allAvailableCompilerSets = null;
-    List<CompilerSet> SunStudioCompilerSet = null;
-    List<CompilerSet> GNUCompilerSet = null;
-    String[] defaultConfs = new String[] {"Debug", "Release"};
+    private List<CompilerSet> allAvailableCompilerSets = null;
+    private List<CompilerSet> SunStudioCompilerSet = null;
+    private List<CompilerSet> GNUCompilerSet = null;
+    private String[] defaultConfs = new String[] {"Debug", "Release"};
     private Logger executionLogger;
     private Logger baseExecutionLogger;
 
@@ -272,6 +272,8 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     }
 
     public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions, int timeout) throws IOException, InterruptedException, InvocationTargetException {
+        // keep IOProvider in local variable to prevent weak lookup storage garbage collected.
+        final IOProvider iop = IOProvider.getDefault();
         for (CompilerSet set : sets) {
             if (set != null) {
                 for (String conf : confs) {
