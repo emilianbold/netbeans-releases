@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.lexer;
 
 import java.util.Collections;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.PartType;
@@ -299,6 +300,18 @@ public class CppLexerBatchTestCase extends TestCase {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "R\"delimeter(The String Data \\ Stuff \" )delimeterff )delimeter\"");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    @Ignore
+    public void _test_RawStringsWithoutDelimeter() {
+        String text = "R\"\"";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "R\"\"");
+        TokenSequence<?> es = ts.embedded();
+        CndLexerUnitTest.dumpTokens(es, "es");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "R\"\"");
         assertFalse("No more tokens", ts.moveNext());
     }
 
