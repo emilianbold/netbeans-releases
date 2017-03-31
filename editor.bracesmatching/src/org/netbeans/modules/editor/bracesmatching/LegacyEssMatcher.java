@@ -76,7 +76,13 @@ public final class LegacyEssMatcher implements BracesMatcher, BracesMatcherFacto
             }
 
             block = ess.findMatchingBlock(offset, false);
-            return block == null ? null : new int [] { offset, offset };
+            if (block == null) {
+                return null;
+            } else if (block.length == 0) {
+                return block;
+            } else {
+                return new int [] { offset, offset };
+            }
         } finally {
             ((AbstractDocument) context.getDocument()).readUnlock();
         }
