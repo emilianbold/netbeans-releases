@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.java.api.common.classpath;
 
+import com.sun.source.tree.ModuleTree;
+import com.sun.source.tree.RequiresTree;
+import com.sun.source.util.TreeScanner;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -77,7 +80,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
@@ -760,10 +762,15 @@ final class ModuleClassPaths {
                                 final Set<URL> requires = new HashSet<>();
                                 if (found != null || xmodule != null) {
                                     final ModuleElement myModule;
+                                    final ModuleTree myModuleTree;
                                     if (found != null) {
-                                        myModule = mu.parseModule();
+                                        myModuleTree = mu.parseModule();
+                                        myModule = myModuleTree != null ?
+                                                mu.resolveModule(myModuleTree) :
+                                                null;
                                     } else {
                                         final List<URL> xmoduleLocs = modulesByName.get(xmodule);
+                                        myModuleTree = null;
                                         myModule = mu.resolveModule(xmodule);
                                         if (myModule != null && xmoduleLocs != null) {
                                             requires.addAll(xmoduleLocs);
@@ -772,7 +779,7 @@ final class ModuleClassPaths {
                                     }
                                     if (myModule != null) {
                                         dependsOnUnnamed = dependsOnUnnamed(myModule, true);
-                                        requires.addAll(collectRequiredModules(myModule, true, false, modulesByName));
+                                        requires.addAll(collectRequiredModules(myModule, myModuleTree, true, false, modulesByName));
                                     }
                                 } else {
                                     //Unnamed module
@@ -780,7 +787,7 @@ final class ModuleClassPaths {
                                     for (String moduleName : modulesByName.keySet()) {
                                         Optional.ofNullable(mu.resolveModule(moduleName))
                                                 .filter(rootModulesPredicate)
-                                                .map((m) -> collectRequiredModules(m, true, true, modulesByName))
+                                                .map((m) -> collectRequiredModules(m, null, true, true, modulesByName))
                                                 .ifPresent(requires::addAll);
                                     }
                                 }
@@ -1098,6 +1105,7 @@ final class ModuleClassPaths {
         @NonNull
         private static Set<URL> collectRequiredModules(
                 @NonNull final ModuleElement module,
+                @NullAllowed final ModuleTree moduleTree,
                 final boolean transitive,
                 final boolean includeTopLevel,
                 @NonNull final Map<String,List<URL>> modulesByName) {
@@ -1109,12 +1117,13 @@ final class ModuleClassPaths {
                     res.addAll(moduleLocs);
                 }
             }
-            collectRequiredModulesImpl(module, transitive, !includeTopLevel, modulesByName, seen, res);
+            collectRequiredModulesImpl(module, moduleTree, transitive, !includeTopLevel, modulesByName, seen, res);
             return res;
         }
 
         private static boolean collectRequiredModulesImpl(
                 @NullAllowed final ModuleElement module,
+                @NullAllowed final ModuleTree moduleTree,
                 final boolean transitive,
                 final boolean topLevel,
                 @NonNull final Map<String,List<URL>> modulesByName,
@@ -1128,7 +1137,7 @@ final class ModuleClassPaths {
                             final ModuleElement dependency = req.getDependency();
                             boolean add = true;
                             if (transitive) {
-                                add = collectRequiredModulesImpl(dependency, transitive, false, modulesByName, seen, c);
+                                add = collectRequiredModulesImpl(dependency, null, transitive, false, modulesByName, seen, c);
                             }
                             if (add) {
                                 final List<URL> dependencyURLs = modulesByName.get(dependency.getQualifiedName().toString());
@@ -1138,6 +1147,19 @@ final class ModuleClassPaths {
                             }
                         }
                     }
+                }
+                if (moduleTree != null) {
+                    //Add dependencies for non resolvable modules.
+                    moduleTree.accept(new TreeScanner<Void, Void>() {
+                                @Override
+                                public Void visitRequires(RequiresTree node, Void p) {
+                                    final String moduleName = node.getModuleName().toString();
+                                    Optional.ofNullable(modulesByName.get(moduleName))
+                                            .ifPresent(c::addAll);
+                                    return super.visitRequires(node, p);
+                                }
+                            },
+                            null);
                 }
                 return true;
             } else {

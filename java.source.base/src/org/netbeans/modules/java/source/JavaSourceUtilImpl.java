@@ -48,6 +48,7 @@ import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.ClassFinder;
 import com.sun.tools.javac.code.Symbol;
@@ -109,6 +110,7 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -301,21 +303,28 @@ public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preproce
                         }
                         return null;
                     }
-                    
+
                     @Override
                     @CheckForNull
-                    public ModuleElement parseModule() throws IOException {
-                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        final Trees trees = cc.getTrees();
-                        final TreePathScanner<ModuleElement, Void> scanner = new TreePathScanner<ModuleElement, Void>() {
+                    public ModuleTree parseModule() throws IOException {
+                        cc.toPhase(JavaSource.Phase.PARSED);
+                        final TreeScanner<ModuleTree, Void> scanner = new TreeScanner<ModuleTree, Void>() {
                             @Override
-                            public ModuleElement visitModule(ModuleTree node, Void p) {
-                                return (ModuleElement) trees.getElement(getCurrentPath());
+                            public ModuleTree visitModule(ModuleTree node, Void p) {
+                                return node;
                             }
                         };
-                        return scanner.scan(new TreePath(cc.getCompilationUnit()), null);
+                        return scanner.scan(cc.getCompilationUnit(), null);
                     }
-                    
+
+                    @Override
+                    @CheckForNull
+                    public ModuleElement resolveModule(@NonNull final ModuleTree moduleTree) throws IOException {
+                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        final Trees trees = cc.getTrees();
+                        return (ModuleElement) trees.getElement(TreePath.getPath(cc.getCompilationUnit(), moduleTree));
+                    }
+
                     @Override
                     @CheckForNull
                     public ModuleElement resolveModule(String moduleName) throws IOException {
