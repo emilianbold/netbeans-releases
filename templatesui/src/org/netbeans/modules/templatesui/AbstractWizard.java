@@ -76,6 +76,7 @@ import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.json.Model;
 import net.java.html.json.Models;
+import netscape.javascript.JSObject;
 import org.netbeans.api.templates.FileBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -375,11 +376,12 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         FXBrowsers.runInBrowser(v, t);
         return t.get();
     }
-    final Object evaluateCall(final Object fn, final Object... args) throws InterruptedException, ExecutionException {
+    final Object evaluateCall(final Object fn, final Object p) throws InterruptedException, ExecutionException {
         FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-                return callFn(fn, args);
+                JSObject jsRegFn = (JSObject) fn;
+                return jsRegFn.call("call", null, p);
             }
         });
         FXBrowsers.runInBrowser(v, t);
