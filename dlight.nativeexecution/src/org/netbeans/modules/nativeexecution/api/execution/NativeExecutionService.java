@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
-import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -53,8 +51,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -421,12 +417,14 @@ public final class NativeExecutionService {
             } catch (InterruptedException ex) {
 //                Exceptions.printStackTrace(ex);
             } finally {
+                 org.netbeans.modules.nativeexecution.support.Logger.getInstance().fine("NativeExecutionService FINISHING");
                 final long time = System.currentTimeMillis() - startTimeMillis;
                 if (IOColorLines.isSupported(descriptor.inputOutput)
                         && descriptor.postMessageDisplayer instanceof PostMessageDisplayer2) {
                     PostMessageDisplayer2 pmd = (PostMessageDisplayer2) descriptor.postMessageDisplayer;
                     pmd.outPostMessage(descriptor.inputOutput, process, time);
                     NativeExecutionUserNotification.getDefault().notifyStatus(pmd.getPostStatusString(process));
+                    org.netbeans.modules.nativeexecution.support.Logger.getInstance().fine("NativeExecutionService FINISHING have sent colored notification");
                     //StatusDisplayer.getDefault().setStatusText(pmd.getPostStatusString(process));
                 } else {
                     if (descriptor.postMessageDisplayer != null) {
@@ -435,6 +433,7 @@ public final class NativeExecutionService {
                         if (!isUnitTestMode()) {
                             NativeExecutionUserNotification.getDefault().notifyStatus(descriptor.postMessageDisplayer.getPostStatusString(process));
                         }
+                        org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.FINE, "NativeExecutionService FINISHING have sent notification {0}", postMsg);
                         //StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
                     }
                 }
@@ -442,12 +441,15 @@ public final class NativeExecutionService {
                 try {
                     // Finally, if there was some post executable set before - call it
                     if (postExecutable != null) {
+                        org.netbeans.modules.nativeexecution.support.Logger.getInstance().fine("NativeExecutionService FINISHING start post executable");
                         postExecutable.run();
+                        org.netbeans.modules.nativeexecution.support.Logger.getInstance().fine("NativeExecutionService FINISHING have been executed post executable");
                     }
                 } finally {
                     if (descriptor.closeInputOutputOnFinish) {
                         closeIO();
                     }
+                    org.netbeans.modules.nativeexecution.support.Logger.getInstance().fine("NativeExecutionService FINISHED");
                 }
             }
         }
