@@ -521,6 +521,8 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     if (read == '(') {
                         delimeter = delim.toString();
                         state = RawStringLexingState.BODY;
+                    } else if (read == EOF) {
+                        return PartType.START;
                     } else {
                         state = RawStringLexingState.ERROR;
                     }
