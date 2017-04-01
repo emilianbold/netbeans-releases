@@ -60,6 +60,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -80,7 +81,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -133,6 +133,7 @@ public class ProjectProblemsProviders {
     static final String PLAT_PROP_ANT_NAME = "platform.ant.name";             //NOI18N
     private static final Logger LOG = Logger.getLogger(ProjectProblemsProviders.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ProjectProblemsProviders.class);
+    private static final Map<JavaPlatform,Boolean> platformValidCache = new WeakHashMap<>();
 
     private ProjectProblemsProviders() {
         throw new IllegalStateException(String.format("The %s cannot be instantiated.",this.getClass().getName())); //NOI18N
@@ -503,14 +504,35 @@ public class ProjectProblemsProviders {
         }
         for (JavaPlatform plat : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
             // XXX: this should be defined as PROPERTY somewhere
-            if (platform.equals(plat.getProperties().get(PLAT_PROP_ANT_NAME)) &&
-                    plat.getInstallFolders().size() > 0) {
-                return true;
+            if (platform.equals(plat.getProperties().get(PLAT_PROP_ANT_NAME))) {
+                return isValidPlatform(plat);
             }
         }
         return prj == null ?
                 false :
                 ProjectPlatform.forProject(prj, eval, "j2se") != null;   //NOI18N    //Todo: custom platform type?
+    }
+
+    private static boolean isValidPlatform(@NonNull final JavaPlatform plat) {
+        Boolean res = platformValidCache.get(plat);
+        if (res == null) {
+            boolean vote = true;
+            if (plat.getInstallFolders().isEmpty()) {
+                vote = false;
+            }
+            if (vote) {
+                for (String tool : new String[]{ "javac", "java", "javadoc" }) {    //NOI18N
+                    if (plat.findTool(tool) == null) {
+                        vote = false;
+                        break;
+                    }
+                }
+            }
+            vote &= plat.getBootstrapLibraries().findResource("java/lang/Object.class") != null;
+            res = vote;
+            platformValidCache.put(plat, res);
+        }
+        return res;
     }
 
     @NonNull

@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -853,99 +854,113 @@ public final class MasterMatcher {
             if (lookahead > 0) {
                 factories = findFactories(document, adjustedCaretOffset, backward);
             }
-            
+            final MatcherContext context;
             if (!factories.isEmpty()) {
-                MatcherContext context = SpiAccessor.get().createCaretContext(
+                context = SpiAccessor.get().createCaretContext(
                     document, 
                     adjustedCaretOffset, 
                     backward, 
                     lookahead
                 );
+            } else {
+                context = null;
+            }
 
+            Iterator<? extends BracesMatcherFactory> matcherIt = factories.iterator();
+            boolean tryAgain;
+            do {
                 // Find the first provider that accepts the context
-                for(BracesMatcherFactory factory : factories) {
-                    matcher[0] = factory.createMatcher(context);
+                while (matcherIt.hasNext()) {
+                    matcher[0] = matcherIt.next().createMatcher(context);
                     if (matcher[0] != null) {
                         break;
                     }
                 }
-            }
-            
-            if (matcher[0] != null) {
-                // Find the original area
-                int [] origin = null;
-                try {
-                    origin = matcher[0].findOrigin();
-                } catch (BadLocationException ble) {
-                    // since we are not running under document lock (see #131284) there can be exceptions
-                    LOG.log(Level.FINE, null, ble);
-                }
                 
-                // Check the original area for consistency
-                if (origin != null) {
-                    if (origin.length == 0) {
-                        origin = null;
-                    } else if (origin.length % 2 != 0) {
-                        if (LOG.isLoggable(Level.WARNING)) {
-                            LOG.warning("Invalid BracesMatcher implementation, " + //NOI18N
-                                "findOrigin() should return nothing or offset pairs. " + //NOI18N
-                                "Offending BracesMatcher: " + matcher[0]); //NOI18N
-                        }
-                        origin = null;
-                    } else {
-                        for(int i = 0; i < origin.length / 2; i++) {
-                            if (origin[2 * i] < 0 || origin[2 * i + 1] > document.getLength() || origin[2 * i] > origin[2 * i + 1]) {
-                                if (LOG.isLoggable(Level.WARNING)) {
-                                    LOG.warning("Invalid origin offsets [" + origin[2 * i] + ", " + origin[2 * i + 1] + "]. " + //NOI18N
-                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
-                                }
-                                origin = null;
-                                break;
-                            }
-                        }
+                if (matcher[0] != null) {
+                    tryAgain = false;
+                    // Find the original area
+                    int [] origin = null;
+                    try {
+                        origin = matcher[0].findOrigin();
+                    } catch (BadLocationException ble) {
+                        // since we are not running under document lock (see #131284) there can be exceptions
+                        LOG.log(Level.FINE, null, ble);
                     }
 
+                    // Check the original area for consistency
                     if (origin != null) {
-                        if (backward) {
-                            if (origin[1] < caretOffset - lookahead || origin[0] > caretOffset) {
-                                if (LOG.isLoggable(Level.WARNING)) {
-                                    LOG.warning("Origin offsets out of range, " + //NOI18N
-                                        "origin = [" + origin[0] + ", " + origin[1] + "], " + //NOI18N
-                                        "caretOffset = " + caretOffset + //NOI18N
-                                        ", lookahead = " + lookahead + //NOI18N
-                                        ", searching backwards. " + //NOI18N
-                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
-                                }
-                                origin = null;
+                        if (origin.length == 0) {
+                            origin = null;
+                            // special hack for CSL. CSL subverts the backward-compatible LegacyEssMatcher bridge
+                            // in CslEditorKit - it implements bracematcher bridge through ExtSyntaxSupport.
+                            // In case the language does not even contain bracket match handlers, CSL will return empty array
+                            // to indicate the Legacy bridge should be ignored
+                            tryAgain = matcher[0] instanceof LegacyEssMatcher;
+                            continue;
+                        } else if (origin.length % 2 != 0) {
+                            if (LOG.isLoggable(Level.WARNING)) {
+                                LOG.warning("Invalid BracesMatcher implementation, " + //NOI18N
+                                    "findOrigin() should return nothing or offset pairs. " + //NOI18N
+                                    "Offending BracesMatcher: " + matcher[0]); //NOI18N
                             }
+                            origin = null;
                         } else {
-                            if ((origin[1] < caretOffset || origin[0] > caretOffset + lookahead)) {
-                                if (LOG.isLoggable(Level.WARNING)) {
-                                    LOG.warning("Origin offsets out of range, " + //NOI18N
-                                        "origin = [" + origin[0] + ", " + origin[1] + "], " + //NOI18N
-                                        "caretOffset = " + caretOffset + //NOI18N
-                                        ", lookahead = " + lookahead + //NOI18N
-                                        ", searching forward. " + //NOI18N
-                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
+                            for(int i = 0; i < origin.length / 2; i++) {
+                                if (origin[2 * i] < 0 || origin[2 * i + 1] > document.getLength() || origin[2 * i] > origin[2 * i + 1]) {
+                                    if (LOG.isLoggable(Level.WARNING)) {
+                                        LOG.warning("Invalid origin offsets [" + origin[2 * i] + ", " + origin[2 * i + 1] + "]. " + //NOI18N
+                                            "Offending BracesMatcher: " + matcher[0]); //NOI18N
+                                    }
+                                    origin = null;
+                                    break;
                                 }
-                                origin = null;
+                            }
+                        }
+
+                        if (origin != null) {
+                            if (backward) {
+                                if (origin[1] < caretOffset - lookahead || origin[0] > caretOffset) {
+                                    if (LOG.isLoggable(Level.WARNING)) {
+                                        LOG.warning("Origin offsets out of range, " + //NOI18N
+                                            "origin = [" + origin[0] + ", " + origin[1] + "], " + //NOI18N
+                                            "caretOffset = " + caretOffset + //NOI18N
+                                            ", lookahead = " + lookahead + //NOI18N
+                                            ", searching backwards. " + //NOI18N
+                                            "Offending BracesMatcher: " + matcher[0]); //NOI18N
+                                    }
+                                    origin = null;
+                                }
+                            } else {
+                                if ((origin[1] < caretOffset || origin[0] > caretOffset + lookahead)) {
+                                    if (LOG.isLoggable(Level.WARNING)) {
+                                        LOG.warning("Origin offsets out of range, " + //NOI18N
+                                            "origin = [" + origin[0] + ", " + origin[1] + "], " + //NOI18N
+                                            "caretOffset = " + caretOffset + //NOI18N
+                                            ", lookahead = " + lookahead + //NOI18N
+                                            ", searching forward. " + //NOI18N
+                                            "Offending BracesMatcher: " + matcher[0]); //NOI18N
+                                    }
+                                    origin = null;
+                                }
                             }
                         }
                     }
-                }
 
-                if (LOG.isLoggable(Level.FINE)) {
-                    if (origin != null) {
-                        LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
-                    } else {
-                        LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        if (origin != null) {
+                            LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                        } else {
+                            LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                        }
                     }
+
+                    return origin;
+                } else {
+                    return null;
                 }
-                
-                return origin;
-            } else {
-                return null;
-            }
+            } while (tryAgain && matcherIt.hasNext());
+            return null;
         }
         
         private void showSearchParameters(OffsetsBag bag) {

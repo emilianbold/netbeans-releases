@@ -42,6 +42,8 @@ package org.netbeans.spi.java.project.classpath;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.openide.filesystems.FileObject;
@@ -106,4 +108,17 @@ public interface ProjectModulesModifier {
      * @throws IOException on error
      */
     public boolean  removeRequiredModules(String pathType, FileObject projectArtifact, Collection<URL> locations) throws IOException;
+    
+    /**
+     * Finds source groups which use the specified modules. The implementation should find all SourceGroups
+     * whose configuation (not content! like individual java sources) references the specified library/module.
+     * The call is used, for example, to determine whether removal of a library would break some modules, and 
+     * what those modules are.
+     * 
+     * @param projectArtifact project artifact a file owned by a project.
+     * @param locations locations whose usage should be found
+     * @return usage map
+     */
+    @NonNull
+    public Map<URL, Collection<ClassPath>> findModuleUsages(FileObject projectArtifact, Collection<URL> locations);
 }

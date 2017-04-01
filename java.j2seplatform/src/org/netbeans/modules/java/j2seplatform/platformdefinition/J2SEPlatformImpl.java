@@ -563,7 +563,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 return true;
             }
         }
-        return false;
+        return getBootstrapLibraries().findResource("java/lang/Object.class") == null;
     }
 
     @NonNull
