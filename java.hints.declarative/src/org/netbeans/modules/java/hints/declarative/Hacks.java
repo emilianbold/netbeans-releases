@@ -96,7 +96,7 @@ public class Hacks {
         return Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap(), imports);
     }
 
-    private static final String SOURCE_LEVEL = "1.5"; //TODO: could be possibly inferred from the current Java platform
+    private static final String SOURCE_LEVEL = "1.8"; //TODO: could be possibly inferred from the current Java platform
 
     public static Map<String, byte[]> compile(ClassPath boot, ClassPath compile, final String code) throws IOException {
         DiagnosticListener<JavaFileObject> devNull = new DiagnosticListener<JavaFileObject>() {

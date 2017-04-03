@@ -678,7 +678,7 @@ public class HintsInvokerTest extends TestBase {
                        "         E e = null;\n" +
                        "         switch (e) {\n" +
                        "             case A: System.err.println(1); break;\n" +
-                       "             case B:case C:\n" +
+                       "             case B: case C:\n" +
 //                       "             case C:\n" +
                        "             case D: System.err.println(2); break;\n" +
                        "             case E: System.err.println(3); break;\n" +

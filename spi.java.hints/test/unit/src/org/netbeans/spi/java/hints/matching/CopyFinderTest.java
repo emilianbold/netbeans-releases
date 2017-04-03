@@ -355,6 +355,7 @@ public class CopyFinderTest extends NbTestCase {
                              "for(int $i = 0; $i < $array.length; $i++) { $T $var = $array[$i]; $stmts$; }",
                              new Pair[] {
                                   new Pair<String, int[]>("$array", new int[] {117 - 31, 118 - 31}),
+                                  new Pair<String, int[]>("$array$1", new int[] {145 - 31, 146 - 31}),
                                   new Pair<String, int[]>("$T", new int[] {134 - 31, 140 - 31}),
                                   new Pair<String, int[]>("$var", new int[] {103, 119}),
                                   new Pair<String, int[]>("$i", new int[] {71, 80}),
@@ -389,8 +390,11 @@ public class CopyFinderTest extends NbTestCase {
                              "while ($i < $array.length) { $T $var = $array[$i]; $stmts$; $i++; }",
                              new Pair[] {
                                   new Pair<String, int[]>("$array", new int[] {120 - 31, 121 - 31}),
+                                  new Pair<String, int[]>("$array$1", new int[] {143 - 31, 144 - 31}),
                                   new Pair<String, int[]>("$T", new int[] {132 - 31, 138 - 31}),
                                   new Pair<String, int[]>("$i", new int[] {116 - 31, 117 - 31}),
+                                  new Pair<String, int[]>("$i$2", new int[] {145 - 31, 146 - 31}),
+                                  new Pair<String, int[]>("$i$3", new int[] {172 - 31, 173 - 31}),
                                   new Pair<String, int[]>("$var", new int[] {101, 117}),
                              },
                              new Pair[] {
@@ -406,8 +410,11 @@ public class CopyFinderTest extends NbTestCase {
                              "do { $T $var = $array[$i]; $stmts$; $i++; } while ($i < $array.length);",
                              new Pair[] {
                                   new Pair<String, int[]>("$array", new int[] {124 - 31, 125 - 31}),
+                                  new Pair<String, int[]>("$array$3", new int[] {172 - 31, 173 - 31}),
                                   new Pair<String, int[]>("$T", new int[] {113 - 31, 119 - 31}),
                                   new Pair<String, int[]>("$i", new int[] {126 - 31, 127 - 31}),
+                                  new Pair<String, int[]>("$i$1", new int[] {153 - 31, 154 - 31}),
+                                  new Pair<String, int[]>("$i$2", new int[] {168 - 31, 169 - 31}),
                                   new Pair<String, int[]>("$var", new int[] {82, 98}),
                              },
                              new Pair[] {
@@ -859,7 +866,8 @@ public class CopyFinderTest extends NbTestCase {
     public void testDisableVariablesWhenVerifyingDuplicates1() throws Exception {
         performVariablesTest("package test; public class Test { public void test() { int $i = 1, $j = 2; int k = $i + $i; } }",
                              "$i + $i",
-                             new Pair[] {new Pair<String, int[]>("$i", new int[] {83, 85})},
+                             new Pair[] {new Pair<String, int[]>("$i", new int[] {83, 85}),
+                                         new Pair<String, int[]>("$i$1", new int[] {88, 90})},
                              new Pair[0],
                              new Pair[0],
                              false,
@@ -869,7 +877,8 @@ public class CopyFinderTest extends NbTestCase {
     public void testDisableVariablesWhenVerifyingDuplicates2() throws Exception {
         performVariablesTest("package test; public class Test { public void test() { int $i = 1, $j = 2; int k = $i + $i; } }",
                              "$i + $i",
-                             new Pair[] {new Pair<String, int[]>("$i", new int[] {83, 85})},
+                             new Pair[] {new Pair<String, int[]>("$i", new int[] {83, 85}),
+                                         new Pair<String, int[]>("$i$1", new int[] {88, 90})},
                              new Pair[0],
                              new Pair[0],
                              false,
