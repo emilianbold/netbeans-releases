@@ -158,6 +158,10 @@ plain_file=${tmpdir}/plain_file
 echo "123" > ${plain_file}
 echo "m ${req_idx} 0 ${plain_file} 0 ${move_dst}" >> ${req_file}
 
+delete_on_exut_file=/tmp/delete_on_exut_file #it should not be in/
+echo "123" > ${delete_on_exut_file}
+echo "D 0 0 ${delete_on_exut_file}" >> ${req_file}
+
 req_sleep # always sleep before removal to allow others finish their job
 increment_idx
 echo "d ${req_idx} 0 ${copy_dst}" >> ${req_file}
@@ -212,6 +216,12 @@ echo "----- launching fs_server and feeding it with commands from ${req_file}"
 echo "fs_server cache dir is ${cache_dir}"
 
 cat ${req_file} | ../../../release/bin/${os}-${arc}/fs_server -t ${thead_count} -p -l -s -d ${cache_dir} # > ${rsp_file}
+
+if [ -f ${delete_on_exut_file} ]; then
+    echo "Warning: file ${delete_on_exut_file} was not deleted on exit!"
+else 
+    echo "Bravo! file ${delete_on_exut_file} has been deleted on exit!"
+fi
 
 #just in case remove temp directory
 if [ -d ${tmpdir} ]; then
