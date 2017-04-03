@@ -323,7 +323,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
         setVisible(false);
     }
 
-    public void gainFocus() {
+    public void gainFocus(boolean persistanceStatus) {
         if (!isVisible()) {
             String lastReplace = replaceTextField.getText();
             changeSearchBarToBePartOfReplaceBar();
@@ -339,7 +339,7 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
             replaceTextField.setText(lastReplace);
             setVisible(true);
         }
-        searchBar.gainFocus();
+        searchBar.gainFocus(persistanceStatus);
         searchBar.getIncSearchTextField().requestFocusInWindow();
     }
 

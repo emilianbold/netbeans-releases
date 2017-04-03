@@ -94,7 +94,7 @@ public class ReplaceAction extends AbstractEditorAction {
                 SearchBar searchBar = SearchBar.getInstance(target);
                 jp.add(searchBar);
                 jp.add(ReplaceBar.getInstance(searchBar));
-                ReplaceBar.getInstance(searchBar).gainFocus();
+                ReplaceBar.getInstance(searchBar).gainFocus(false);
                 SearchNbEditorKit.makeSearchAndReplaceBarPersistent();
             }
 

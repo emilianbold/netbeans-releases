@@ -357,9 +357,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 JTextComponent c;
                 if (this.hadFocusOnTextField()) {
                     if (replaceBar.isVisible() && (c = getActualTextComponent()) != null && c.isEditable()) {
-                        replaceBar.gainFocus();
+                        replaceBar.gainFocus(true);
                     } else {
-                        this.gainFocus();
+                        this.gainFocus(true);
                     }
                 }
             }
@@ -836,7 +836,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         return prefs.get(SimpleValueNames.EDITOR_SEARCH_TYPE, "default").equals("closing"); // NOI18N
     }
 
-    public void gainFocus() {
+    public void gainFocus(boolean persistanceStatus) {
         String lastSearch = "";
         if (!isClosingSearchType()) {
             lastSearch = incSearchTextField.getText();
@@ -868,7 +868,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         }
         hadFocusOnIncSearchTextField = true;
         setVisible(true);
-        initBlockSearch();
+        initBlockSearch(persistanceStatus);
         EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
 
         incSearchTextField.requestFocusInWindow();
@@ -1097,7 +1097,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     }
 
     @SuppressWarnings("unchecked")
-    void initBlockSearch() {
+    void initBlockSearch(boolean persistanceStatus) {
         JTextComponent c = getActualTextComponent();
         String selText;
         int startSelection;
@@ -1123,7 +1123,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
             // caretPosition = bwdSearch.isSelected() ? c.getSelectionEnd() : c.getSelectionStart();
 
-            if (!blockSearchVisible) {
+            if (!blockSearchVisible && !persistanceStatus) {
                 selText = c.getSelectedText();
                 if (selText != null && selText.length() > 0) {
                     int n = selText.indexOf('\n');
