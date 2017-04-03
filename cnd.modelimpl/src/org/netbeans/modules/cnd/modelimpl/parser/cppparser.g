@@ -2903,7 +2903,14 @@ direct_declarator[int kind, int level]
                  is_address = false; is_pointer = false;
             }
             (options {warnWhenFollowAmbig = false;}:
-             LSQUARE ({isC()}? (options {greedy=true;} : tq=type_qualifier)*)? (constant_expression)? RSQUARE)+
+                LSQUARE 
+                ({isC()}? (options {greedy=true;} : 
+                    ({kind == declFunctionParam}? (LITERAL_static)=>LITERAL_static
+                    | tq=type_qualifier)
+                )*)? 
+                (constant_expression)? 
+                RSQUARE
+            )+
             {declaratorArray();}
             {
                 if (_td==true) {
