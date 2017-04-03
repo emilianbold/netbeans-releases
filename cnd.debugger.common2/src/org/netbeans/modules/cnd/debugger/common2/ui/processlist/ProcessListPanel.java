@@ -117,6 +117,7 @@ public final class ProcessListPanel extends javax.swing.JPanel
         filterCombo.read(lastFilterPrefs.get(LAST_FILTER_VALUE, ""));//NOI18N
         
         final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
+        filter.set(cbEditor.getText());
         cbEditor.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
