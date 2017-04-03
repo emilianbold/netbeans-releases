@@ -247,7 +247,7 @@ public final class ProcessListPanel extends javax.swing.JPanel
                 if (selectedNodes.length == 0) {
                     content.set(Collections.emptyList(), null);
                     changeSupport.fireChange();
-                } else {
+                } else if (selectedNodes[0] instanceof ProcessNode) {
                     ProcessInfo info = ((ProcessNode) selectedNodes[0]).getInfo();
                     content.set(Arrays.asList(info), null);
                     changeSupport.fireChange();
