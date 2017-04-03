@@ -209,6 +209,10 @@ public class PreferredProjectPlatformTest extends NbTestCase {
         public String toString() {
             return displayName;
         }
-        
+
+        @Override
+        public boolean isValid() {
+            return true;
+        }
     }
 }
