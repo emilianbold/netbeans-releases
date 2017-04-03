@@ -143,14 +143,27 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return NbBundle.getMessage(PlatformNode.class, "TXT_UnknownPlatform");
         }
         String name;
-        if (platHolder.second() != null) {
-            name = platHolder.second().getDisplayName();
+        final JavaPlatform jp = platHolder.second();
+        if (jp != null) {
+            if (jp.isValid()) {
+                name = jp.getDisplayName();
+            } else {
+                name = MessageFormat.format(
+                        NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"),
+                        new Object[] {
+                            jp.getDisplayName()
+                        });
+            }
         } else {
             String platformId = platHolder.first();
             if (platformId == null) {
                 name = NbBundle.getMessage(PlatformNode.class,"TXT_BrokenPlatform");
             } else {
-                name = MessageFormat.format(NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"), new Object[] {platformId});
+                name = MessageFormat.format(
+                        NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"),
+                        new Object[] {
+                            platformId
+                        });
             }
         }
         return name;
@@ -162,7 +175,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         if (platHolder == null) {
             return null;
         }
-        if (platHolder.second() == null) {
+        final JavaPlatform jp = platHolder.second();
+        if (jp == null || !jp.isValid()) {
             String displayName = this.getDisplayName();
             try {
                 displayName = XMLUtil.toElementContent(displayName);
@@ -173,7 +187,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return "<font color=\"#A40000\">" + displayName + "</font>"; //NOI18N
         } else {
             return null;
-        }                                
+        }
     }
 
     @Override

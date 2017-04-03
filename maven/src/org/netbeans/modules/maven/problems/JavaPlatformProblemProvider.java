@@ -116,9 +116,13 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
     @Override
     @NbBundle.Messages({
         "# {0} - jdk platform id",
-        "MGS_No_such_JDK=No such Java Platform: {0}", 
+        "MGS_No_such_JDK=No such Java Platform: {0}",
         "# {0} - jdk platform id",
-        "DESC_No_such_JDK=There is no Java Platform with value \"{0}\" defined in the current IDE. The default platform is used instead. To fix, introduce a Java Platform with the given name or change the project's used Java Platform."})
+        "MGS_Broken_JDK=Invalid Java Platform: {0}",
+        "# {0} - jdk platform id",
+        "DESC_No_such_JDK=There is no Java Platform with value \"{0}\" defined in the current IDE. The default platform is used instead. To fix, introduce a Java Platform with the given name or change the project's used Java Platform.",
+        "# {0} - jdk platform id",
+        "DESC_Broken_JDK=There is no Java Platform with value \"{0}\" defined in the current IDE. The default platform is used instead. To fix, introduce a Java Platform with the given name or change the project's used Java Platform."})
     public Collection<? extends ProjectProblem> getProblems() {
         if (platformManager == null) {
                 platformManager = JavaPlatformManager.getDefault();
@@ -133,9 +137,23 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
                 String val = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_JDK_PLATFORM, true);
                 if (val != null) {
                     JavaPlatform plat = BootClassPathImpl.getActivePlatform(val);
+                    final String[] desc;
                     if (plat == null) {
+                        desc = new String[] {
+                            MGS_No_such_JDK(val),
+                            DESC_No_such_JDK(val)
+                        };
+                    } else if (!plat.isValid()) {
+                        desc = new String[] {
+                            MGS_Broken_JDK(val),
+                            DESC_Broken_JDK(val)
+                        };
+                    } else {
+                        desc = null;
+                    }
+                    if (desc != null) {
                         //we have a problem.
-                        toRet.add(ProjectProblemsProvider.ProjectProblem.createWarning(MGS_No_such_JDK(val), DESC_No_such_JDK(val),
+                        toRet.add(ProjectProblemsProvider.ProjectProblem.createWarning(desc[0], desc[1],
                                 new ProjectProblemResolver() {
                                     @Override
                                     public Future<Result> resolve() {

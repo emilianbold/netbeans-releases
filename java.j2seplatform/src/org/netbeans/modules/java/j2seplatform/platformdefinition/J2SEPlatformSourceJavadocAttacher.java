@@ -158,7 +158,7 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
                 continue;
             }
             final J2SEPlatformImpl j2sep = (J2SEPlatformImpl) p;
-            if (j2sep.isBroken()) {
+            if (!j2sep.isValid()) {
                 continue;
             }
             for (ClassPath.Entry entry : j2sep.getBootstrapLibraries().entries()) {

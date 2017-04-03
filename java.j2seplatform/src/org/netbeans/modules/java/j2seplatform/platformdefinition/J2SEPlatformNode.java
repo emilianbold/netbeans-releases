@@ -67,7 +67,7 @@ class J2SEPlatformNode extends AbstractNode {
     }
 
     public String getHtmlDisplayName() {
-        if (platform.isBroken()) {
+        if (!platform.isValid()) {
             return "<font color=\"#A40000\">"+this.platform.getDisplayName()+"</font>";
         }
         else {
@@ -103,7 +103,7 @@ class J2SEPlatformNode extends AbstractNode {
     }
 
     public java.awt.Component getCustomizer () {
-        if (platform.isBroken()) {
+        if (!platform.isValid()) {
             return new BrokenPlatformCustomizer (this.platform);
         }
         else {
