@@ -304,8 +304,10 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
         }
     }
     
-    protected FileObject mkTempFO(String prefix, String suffux) throws Exception {
-        File tempFile = File.createTempFile(prefix, suffux);
+    protected FileObject mkTempFO(String prefix, String suffix) throws Exception {
+        prefix = prefix.replace('[', '-').replace(']', '-').replace(' ', '_');
+        suffix = suffix.replace('[', '-').replace(']', '-').replace(' ', '_');
+        File tempFile = File.createTempFile(prefix, suffix);
         tempFile.delete();
         tempFile.mkdirs();
         FileObject parentFO = FileUtil.toFileObject(tempFile.getParentFile());
