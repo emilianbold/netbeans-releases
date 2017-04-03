@@ -49,7 +49,6 @@ public class BracketCompletionTestCase extends EditorBase  {
 
     // ------- Tests for raw strings -------------
     
-    @Ignore
     public void testModifyRawStringInPPDirective() {
         // #241929 - AssertionError at org.netbeans.modules.cnd.lexer.CppStringLexer.nextToken
         setDefaultsOptions();

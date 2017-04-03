@@ -1348,4 +1348,10 @@ public class IndentTestCase extends EditorBase {
             "    valueC\n" +
             "};\n");
     }
+    
+    public void _testLineCommentWithSplitLineInPPDirective() {
+        // #269731 - AssertionError: there must be \
+        setDefaultsOptions();
+        typeCharactersInText("# /|\\", "/", "# //\\");
+    }     
 }

@@ -78,6 +78,17 @@ public class EscapeLineTestCase extends TestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     } 
+
+    public void testLineCommentInPreprocessor() {
+        String text =  "#define A //\\";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_DIRECTIVE, "#define A //\\");
+        TokenSequence<?> es = ts.embedded();
+        CndLexerUnitTest.dumpTokens(es, "es");
+        assertFalse("No more tokens", es.moveNext());
+        assertFalse("No more tokens", ts.moveNext());
+    } 
     
     public void testBlockComment() {
         String text =  "/*comm\\\n" + 
