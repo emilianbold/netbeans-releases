@@ -440,7 +440,7 @@ public final class LibraryManager {
                     public void run() {
                         ListenersImpl.getImpl().fireProjectOpened((ProjectBase) passEntry.getLibrary().getObject());
                     }
-                }, "postponed library opened " + libraryKey.folder); // NOI18N
+                }, "postponed library opened " + libraryKey.fileSystem + ":" + libraryKey.folder); // NOI18N
             }
         }
         return entry;
