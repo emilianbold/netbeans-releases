@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
@@ -110,12 +111,19 @@ public class BaseFunctionElementSupport  {
                     if (returns1.size() == 1) {
                         String returnType = asString(PrintAs.ReturnTypes, element, typeNameResolver, phpVersion);
                         if (StringUtils.hasText(returnType)) {
+                            boolean isNullableType = CodeUtils.isNullableType(returnType);
+                            if (isNullableType) {
+                                returnType = returnType.substring(1);
+                            }
                             if ("\\self".equals(returnType) // NOI18N
                                     && element instanceof TypeMemberElement) {
                                 // #267563
                                 returnType = ((TypeMemberElement) element).getType().getFullyQualifiedName().toString();
                             }
                             template.append(": "); // NOI18N
+                            if (isNullableType) {
+                                template.append(CodeUtils.NULLABLE_TYPE_PREFIX);
+                            }
                             template.append(returnType);
                         }
                     }
@@ -167,6 +175,9 @@ public class BaseFunctionElementSupport  {
                             if (template.length() > 0) {
                                 template.append("|"); //NOI18N
                             }
+                            if (typeResolver.isNullableType()) {
+                                template.append(CodeUtils.NULLABLE_TYPE_PREFIX);
+                            }
                             template.append(typeNameResolver.resolve(typeName).toString());
                         }
                     }
@@ -188,10 +199,17 @@ public class BaseFunctionElementSupport  {
                 }
                 final ParameterElement param = parameterList.get(i);
                 String paramInfo = param.asString(stringOutputType, typeNameResolver);
+                boolean isNullableType = CodeUtils.isNullableType(paramInfo);
+                if (isNullableType) {
+                    paramInfo = paramInfo.substring(1);
+                }
                 if (paramInfo.startsWith("self ") // NOI18N
                         && element instanceof TypeMemberElement) {
                     // #267563
                     paramInfo = ((TypeMemberElement) element).getType().getFullyQualifiedName().toString() + paramInfo.substring(4);
+                }
+                if (isNullableType) {
+                    paramSb.append(CodeUtils.NULLABLE_TYPE_PREFIX);
                 }
                 paramSb.append(paramInfo);
                 template.append(paramSb);
@@ -247,7 +265,7 @@ public class BaseFunctionElementSupport  {
 
         @Override
         public Set<TypeResolver> getReturnTypes() {
-            return returnTypes;
+            return Collections.unmodifiableSet(returnTypes);
         }
 
     }

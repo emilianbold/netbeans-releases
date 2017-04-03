@@ -193,6 +193,21 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
                 selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
     }
 
+    // #270237
+    public void testInstanceImplementMethodWithNullableType_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar implements Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_71);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testInstanceImplementMethodWithNullableType_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar implements Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_55);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
     public void testInstanceOverrideMethod_01() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
         cgsInfo.setPhpVersion(PhpVersion.PHP_70);
@@ -201,6 +216,21 @@ public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
     }
 
     public void testInstanceOverrideMethod_02() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_56);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    // #270237
+    public void testInstanceOverrideMethodWithNullableType_01() throws Exception {
+        CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
+        cgsInfo.setPhpVersion(PhpVersion.PHP_71);
+        checkResult(new SelectedPropertyMethodsCreator().create(
+                selectProperties(cgsInfo.getPossibleMethods(), "myFoo"), new SinglePropertyMethodCreator.InheritedMethodCreator(cgsInfo)));
+    }
+
+    public void testInstanceOverrideMethodWithNullableType_02() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("class Bar extends Foo {^");
         cgsInfo.setPhpVersion(PhpVersion.PHP_56);
         checkResult(new SelectedPropertyMethodsCreator().create(

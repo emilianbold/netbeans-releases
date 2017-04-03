@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.Token;
@@ -154,6 +155,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             = new Cache<>(new WeakHashMap<FileObject, PhpLanguageProperties>());
     private final boolean isPlatform;
     private final boolean isDeprecated;
+    private PhpVersion phpVersion;
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
@@ -246,6 +248,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     boolean isPlatform() {
         return isPlatform;
+    }
+
+    // for unit tests for custom template
+    void setPhpVersion(PhpVersion phpVersion) {
+        this.phpVersion = phpVersion;
+    }
+
+    protected PhpVersion getPhpVersion(@NullAllowed FileObject file) {
+        if (phpVersion != null) {
+            return phpVersion;
+        }
+        return file != null ? CodeUtils.getPhpVersion(file) : PhpVersion.getDefault();
     }
 
     private static NamespaceDeclaration findEnclosingNamespace(PHPParseResult info, int offset) {
@@ -1010,6 +1024,35 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     ? TypeNameResolverImpl.forNull()
                     : CodegenUtils.createSmarterTypeNameResolver(getBaseFunctionElement(), request.result.getModel(), request.anchor);
             template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration, typeNameResolver));
+            // #270237
+            FileObject fileObject = null;
+            if (request != null) {
+                // resquest is null if completion items are used in the IntroduceSuggestion hint
+                fileObject = request.result.getSnapshot().getSource().getFileObject();
+                PhpVersion phpVersion = getPhpVersion(fileObject);
+                if (phpVersion != null
+                        && phpVersion.compareTo(PhpVersion.PHP_70) >= 0) {
+                    Collection<TypeResolver> returnTypes = getBaseFunctionElement().getReturnTypes();
+                    if (returnTypes.size() == 1) {
+                        String returnType = getBaseFunctionElement().asString(PrintAs.ReturnTypes);
+                        if (StringUtils.hasText(returnType)) {
+                            boolean nullableType = CodeUtils.isNullableType(returnType);
+                            if (nullableType) {
+                                returnType = returnType.substring(1);
+                            }
+                            if ("\\self".equals(returnType) // NOI18N
+                                    && getBaseFunctionElement() instanceof TypeMemberElement) {
+                                returnType = ((TypeMemberElement) getBaseFunctionElement()).getType().getFullyQualifiedName().toString();
+                            }
+                            template.append(": "); // NOI18N
+                            if (nullableType) {
+                                template.append(CodeUtils.NULLABLE_TYPE_PREFIX);
+                            }
+                            template.append(returnType);
+                        }
+                    }
+                }
+            }
             template.append(getBodyPart());
             return template.toString();
         }
