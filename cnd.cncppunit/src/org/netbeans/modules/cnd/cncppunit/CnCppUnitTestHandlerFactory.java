@@ -120,7 +120,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(getMatcher().group("test"), C_UNIT, session);
+            Testcase testcase = new Testcase(getMatcher().group("test"), C_UNIT, session); //NOI18N
             if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
                     session.getCurrentTestCase().getTrouble() != null)) {
                 testcase.setTimeMillis(0);
@@ -138,7 +138,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(getMatcher().group("test"), C_UNIT, session);
+            Testcase testcase = new Testcase(getMatcher().group("test"), C_UNIT, session); //NOI18N
             testcase.setTimeMillis(0);
             testcase.setClassName(session.getCurrentSuite().getName());
 
