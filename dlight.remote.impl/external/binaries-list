@@ -1,6 +1,7 @@
-#changeset:   313510:eba55545e5e4
+#changeset:   315106:751f649010a9
 #branch:      release82
+#tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Dec 01 02:00:13 2016 +0300
-#summary:     Fixing tests (#268926 - Remote File System should support DeleteOnExit) - don't truncate error log - fs_server source changes
-FDB0530AE633084C1CAD9A2CADFFB8AE1965BD8B fs_server-1.0.zip
+#date:        Mon Apr 03 12:49:06 2017 +0300
+#summary:     Fixed #270278 - Fix ABR and UMR errors discovered in fs_server by dynamic test
+29311B263E8CE783CA7CAADCF3761FED4AD1B3AC fs_server-1.0.zip
