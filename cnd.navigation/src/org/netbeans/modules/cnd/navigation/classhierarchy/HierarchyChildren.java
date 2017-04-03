@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
@@ -69,29 +70,29 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class HierarchyChildren extends Children.Keys<CsmClass> {
-    private static final Comparator<CsmClass> COMARATOR = new MyComparator();
+public class HierarchyChildren extends Children.Keys<HierarchyModel.Node> {
+    private static final Comparator<HierarchyModel.Node> COMARATOR = new MyComparator();
     private static final RequestProcessor RP = new RequestProcessor(HierarchyChildren.class.getName(), 1);
     
-    private final CsmClass object;
+    private final HierarchyModel.Node object;
     private final HierarchyModel model;
     private final HierarchyChildren parent;
     private boolean isInited = false;
     
-    public HierarchyChildren(CsmClass object, HierarchyModel model, HierarchyChildren parent) {
+    public HierarchyChildren(HierarchyModel.Node object, HierarchyModel model, HierarchyChildren parent) {
         this.object = object;
         this.model = model;
         this.parent = parent;
     }
-    
+
     public void dispose(){
         if (isInited) {
             isInited = false;
-            resetKeys(Collections.<CsmClass>emptyList());
+            resetKeys(Collections.<HierarchyModel.Node>emptyList());
         }
     }
     
-    private synchronized void resetKeys(List<CsmClass> list) {
+    private synchronized void resetKeys(List<HierarchyModel.Node> list) {
         if (list.size() > 1) {
             Collections.sort(list, COMARATOR);
         }
@@ -99,12 +100,12 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     }
     
     @Override
-    protected Node[] createNodes(CsmClass cls) {
+    protected Node[] createNodes(HierarchyModel.Node cls) {
         Node node;
-        if (cls instanceof DummyClass) {
+        if (cls.getDeclaration() instanceof DummyClass) {
             node = new LoadingNode();
         } else {
-            if (checkRecursion(cls)) {
+            if (checkRecursion(cls.getDeclaration())) {
                 node = new HierarchyNode(cls, Children.LEAF, model, true);
             } else {
                 node = new HierarchyNode(cls, model, this);
@@ -113,13 +114,13 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
         return new Node[]{node};
     }
     
-    private boolean checkRecursion(CsmClass cls){
-        if (cls.equals(object)) {
+    private boolean checkRecursion(CsmOffsetableDeclaration cls){
+        if (cls.equals(object.getDeclaration())) {
             return true;
         }
         HierarchyChildren arr = parent;
         while (arr != null){
-            if (cls.equals(arr.object)){
+            if (cls.equals(arr.object.getDeclaration())){
                 return true;
             }
             arr = arr.parent;
@@ -130,19 +131,20 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     @Override
     protected void addNotify() {
         isInited = true;
-        if (!object.isValid()) {
-            resetKeys(Collections.<CsmClass>emptyList());
+        if (!object.getDeclaration().isValid()) {
+            resetKeys(Collections.<HierarchyModel.Node>emptyList());
         } else {
-            resetKeys(Collections.<CsmClass>singletonList(new DummyClass()));
+            resetKeys(Collections.<HierarchyModel.Node>singletonList(new HierarchyModel.Node(new DummyClass(), false)));
             RP.post(new Runnable(){
                 @Override
                 public void run() {
-                    Collection<CsmClass> set = model.getHierarchy(object);
+                    CsmOffsetableDeclaration decl = object.getDeclaration();
+                    Collection<HierarchyModel.Node> set = (decl instanceof CsmClass) ? model.getHierarchy((CsmClass)decl) : null;
                     if (set != null && set.size() > 0) {
-                        List<CsmClass> list = new ArrayList<CsmClass>(set);
+                        List<HierarchyModel.Node> list = new ArrayList<HierarchyModel.Node>(set);
                         resetKeys(list);
                     } else {
-                        resetKeys(Collections.<CsmClass>emptyList());
+                        resetKeys(Collections.<HierarchyModel.Node>emptyList());
                     }
                 }
             });
@@ -156,11 +158,11 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
         dispose();
     }
     
-    private static class MyComparator implements Comparator<CsmClass> {
+    private static class MyComparator implements Comparator<HierarchyModel.Node> {
         @Override
-        public int compare(CsmClass o1, CsmClass o2) {
-            String n1 = o1.getName().toString();
-            String n2 = o2.getName().toString();
+        public int compare(HierarchyModel.Node o1, HierarchyModel.Node o2) {
+            String n1 = o1.getDisplayName().toString();
+            String n2 = o2.getDisplayName().toString();
             return n1.compareTo(n2);
         }
     }
