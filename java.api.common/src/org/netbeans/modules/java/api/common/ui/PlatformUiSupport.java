@@ -819,7 +819,7 @@ public final class PlatformUiSupport {
                             }
                         }
                     }
-                    if (accepted && platform.getInstallFolders().size() > 0) {
+                    if (accepted && platform.isValid()) {
                         final PlatformKey pk = platform == projectPlatform ?
                                 new PlatformKey(platform, NbBundle.getMessage(PlatformUiSupport.class, "TXT_ProjectPlatformName", platform.getDisplayName())) :
                                 new PlatformKey(platform);
