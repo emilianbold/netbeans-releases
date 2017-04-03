@@ -239,7 +239,10 @@ public class AsmObjectUtilities {
             }
 
             JEditorPane pane = ed.getOpenedPanes()[0];
-            pane.setCaretPosition(offset);
+            Document doc = pane.getDocument();
+            if (doc != null && offset >= 0 && offset < doc.getLength()) {
+                pane.setCaretPosition(offset);
+            }
 
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,
                     pane);
