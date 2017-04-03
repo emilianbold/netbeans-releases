@@ -71,10 +71,10 @@ public class InvalidFileUrlMapper extends URLMapper {
                 String root = fs.getRoot().toURL().toExternalForm();
                 String path = fo.getPath();
                 String res;
-                if (root.endsWith("/")) {                    
-                    res = root + (path.startsWith("/") ? path.substring(1) : path);
+                if (root.endsWith("/")) { // NOI18N
+                    res = root + (path.startsWith("/") ? path.substring(1) : path); // NOI18N
                 } else {
-                    res = root + (path.startsWith("/") ? "" : "/") + path;
+                    res = root + (path.startsWith("/") ? "" : "/") + path; // NOI18N
                 }                
                 return new URL(res);
             } catch (MalformedURLException | FileStateInvalidException ex) {
