@@ -158,6 +158,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     private Language<?> lastQueryLanguage;
     
     private WrapTokenIdCache<?> lastQueryCache;
+    
+    private int recreateAttempts;
 
     /**
      * Constructor for reader as input.
@@ -386,15 +388,18 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      *
      * @param e runtime exception that was thrown.
      */
-    public void recreateAfterError(RuntimeException e) {
-        if (TokenList.LOG.isLoggable(Level.FINE)) { // Running tests or strict mode
-            throw e;
-        } else {
+    public RuntimeException recreateAfterError(RuntimeException e) {
+        if (!TokenList.LOG.isLoggable(Level.FINE)) { // Running tests or strict mode
             LOG.log(Level.INFO, "Runtime exception occurred during token hierarchy updating. Token hierarchy will be rebuilt from scratch.", e);
             if (isActiveNoInit()) {
-                rebuild();
+                recreateAttempts++;
+                if (recreateAttempts < 2) { // Prevent an infinite loop
+                    rebuild(); // Might fail too
+                    recreateAttempts = 0; // If recreate succeeded allow future recreates again
+                }
             }
         }
+        return e;
     }
 
     public void ensureReadLocked() {
