@@ -532,7 +532,7 @@ int visit_dir_entries(const char* path,
             base_len = 0;
         } else {
             base_len = strlen(path);
-            strcpy(abspath, path);
+            strncpy_w_zero(abspath, path, buf_size);
         }
         abspath[base_len] = '/';
         struct dirent *entry;
@@ -547,7 +547,7 @@ int visit_dir_entries(const char* path,
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
                 continue;
             }
-            strcpy(abspath + base_len + 1, entry->d_name);
+            strncpy_w_zero(abspath + base_len + 1, entry->d_name, buf_size);
             struct stat stat_buf;
             if (lstat_wrapper(abspath, &stat_buf, settings) == 0) {
                 bool is_link = S_ISLNK(stat_buf.st_mode);
@@ -555,7 +555,7 @@ int visit_dir_entries(const char* path,
                     ssize_t sz = readlink(abspath, link, buf_size);
                     if (sz == -1) {
                         error_handler(false, abspath, errno, "error performing readlink", data);
-                        strcpy(link, "?");
+                        strcpy(link, "?"); // strcpy is safe, data is more than 1 byte anyhow
                     } else {
                         link[sz] = 0;
                     }
