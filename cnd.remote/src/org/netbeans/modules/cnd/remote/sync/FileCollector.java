@@ -550,17 +550,17 @@ import org.openide.util.Utilities;
         }
         extOptions.append(" \\) "); // NOI18N
 
-        StringBuilder script = new StringBuilder("os=`uname`\n");
-        script.append("if [ ${os} = Darwin -o ${os} = FreeBSD ]; then\n");
-        script.append("    lst=`mktemp -t nblist`\n");
-        script.append("else\n");
-        script.append("    lst=`mktemp`\n");
-        script.append("fi\n");
-        script.append("find ").append(remoteDirs).append(extOptions).append(" -newer ").append(timeStampFile).append(" > ${lst}\n");
-        script.append("while read F; do\n");
-        script.append("  test -f \"$F\" &&  echo \"$F\"\n");
-        script.append("done < ${lst}\n");
-        script.append("rm ${lst}\n");
+        StringBuilder script = new StringBuilder("os=`uname`\n"); // NOI18N
+        script.append("if [ ${os} = Darwin -o ${os} = FreeBSD ]; then\n"); // NOI18N
+        script.append("    lst=`mktemp -t nblist`\n"); // NOI18N
+        script.append("else\n"); // NOI18N
+        script.append("    lst=`mktemp`\n"); // NOI18N
+        script.append("fi\n"); // NOI18N
+        script.append("find ").append(remoteDirs).append(extOptions).append(" -newer ").append(timeStampFile).append(" > ${lst}\n"); // NOI18N
+        script.append("while read F; do\n"); // NOI18N
+        script.append("  test -f \"$F\" &&  echo \"$F\"\n"); // NOI18N
+        script.append("done < ${lst}\n"); // NOI18N
+        script.append("rm ${lst}\n"); // NOI18N
 
         final AtomicInteger lineCnt = new AtomicInteger();
 
