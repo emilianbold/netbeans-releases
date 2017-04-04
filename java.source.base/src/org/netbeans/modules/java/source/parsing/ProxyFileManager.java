@@ -321,6 +321,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     public boolean hasLocation(@NonNull final Location location) {
+        
         checkSingleOwnerThread();
         try {
             return cfg.hasLocations(location);
@@ -759,8 +760,8 @@ public final class ProxyFileManager implements JavaFileManager {
 
         @NonNull
         JavaFileManager[] getFileManagers(@NonNull Location location, @NullAllowed String hint) {
-            if (location instanceof ModuleLocation) {
-                location = ((ModuleLocation)location).getBaseLocation();
+            if (ModuleLocation.isInstance(location)) {
+                location = ModuleLocation.cast(location).getBaseLocation();
             }
             if (location == ALL) {
                 //Todo: create factories with options when there are more than one option.
@@ -785,7 +786,10 @@ public final class ProxyFileManager implements JavaFileManager {
             }
         }
 
-        boolean hasLocations(@NonNull final Location l) {
+        boolean hasLocations(@NonNull Location l) {
+            if (ModuleLocation.isInstance(l)) {
+                l = ModuleLocation.cast(l).getBaseLocation();
+            }
             final Entry e = fileManagers.get(l);
             return e != null ?
                     e.hasLocation() :
