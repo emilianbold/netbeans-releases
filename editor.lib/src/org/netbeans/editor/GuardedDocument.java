@@ -314,26 +314,29 @@ public class GuardedDocument extends BaseDocument
             }
         }
 
-        boolean completed = false;
         atomicLockImpl ();
         boolean origBreakGuarded = breakGuarded;
-        boolean errorOccurred = false;
         try {
             breakGuarded = true;
             r.run();
-            completed = true;
-        } catch (Error e) {
-            errorOccurred = true; // Serious problem => do not attempt breakAtomicLock();
-            Exceptions.printStackTrace(e);
+        // Only attempt to recover (undo the document modifications) from runtime exceptions.
+        // Do not attempt to recover from java.lang.Error or other Throwable subclasses.
+        } catch (RuntimeException ex) {
+            boolean completed = false;
+            try {
+                breakAtomicLock();
+                completed = true;
+            } finally {
+                if (completed) {
+                    throw ex;
+                } else {
+                    // Log thrown exception in case breakAtomicLock() throws an exception by itself.
+                    LOG.log(Level.INFO, "Runtime exception thrown in GuardedDocument.runAtomic() leading to breakAtomicLock():", ex);
+                }
+            }
         } finally {
             breakGuarded = origBreakGuarded;
-            try {
-                if (!completed && !errorOccurred) {
-                    breakAtomicLock();
-                }
-            } finally {
-                atomicUnlockImpl ();
-            }
+            atomicUnlockImpl ();
             if (debugAtomic) {
                 System.out.println("GuardedDocument.runAtomic() finished"); // NOI18N
             }
@@ -348,32 +351,29 @@ public class GuardedDocument extends BaseDocument
             }
         }
 
-        boolean completed = false;
         atomicLockImpl ();
-        RuntimeException rEx = null;
         boolean origAtomicAsUser = atomicAsUser;
         try {
             atomicAsUser = true;
             r.run();
-            completed = true;
+        // Only attempt to recover (undo the document modifications) from runtime exceptions.
+        // Do not attempt to recover from java.lang.Error or other Throwable subclasses.
         } catch (RuntimeException ex) {
-            rEx = ex;
-            // Debug runtime exceptions which might otherwise be lost in case
-            // the breakAtomicLock() throws an exception.
-            LOG.log(Level.INFO, "Runtime exception thrown in GuardedDocument.runAtomicAsUser() leading to breakAtomicLock()", ex);
-
+            boolean completed = false;
+            try {
+                breakAtomicLock();
+                completed = true;
+            } finally {
+                if (completed) {
+                    throw ex;
+                } else {
+                    // Log thrown exception in case breakAtomicLock() throws an exception by itself.
+                    LOG.log(Level.INFO, "Runtime exception thrown in GuardedDocument.runAtomicAsUser() leading to breakAtomicLock():", ex);
+                }
+            }
         } finally {
             atomicAsUser = origAtomicAsUser;
-            try {
-                if (!completed) {
-                    breakAtomicLock();
-                }
-                if (rEx != null) {
-                    throw rEx;
-                }
-            } finally {
-                atomicUnlockImpl ();
-            }
+            atomicUnlockImpl ();
             if (debugAtomic) {
                 System.out.println("GuardedDocument.runAtomicAsUser() finished"); // NOI18N
             }

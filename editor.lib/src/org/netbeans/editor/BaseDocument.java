@@ -1446,29 +1446,26 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     * all the document modifications are rolled back automatically.
     */
     public void runAtomicAsUser(Runnable r) {
-        boolean completed = false;
-        RuntimeException rEx = null;
         atomicLockImpl ();
         try {
             r.run();
-            completed = true;
+        // Only attempt to recover (undo the document modifications) from runtime exceptions.
+        // Do not attempt to recover from java.lang.Error or other Throwable subclasses.
         } catch (RuntimeException ex) {
-            rEx = ex;
-            // Debug runtime exceptions which might otherwise be lost in case
-            // the breakAtomicLock() throws an exception.
-            LOG.log(Level.INFO, "Runtime exception thrown in BaseDocument.runAtomicAsUser() leading to breakAtomicLock()", ex);
-
-        } finally {
+            boolean completed = false;
             try {
-                if (!completed) {
-                    breakAtomicLock();
-                }
-                if (rEx != null) {
-                    throw rEx;
-                }
+                breakAtomicLock();
+                completed = true;
             } finally {
-                atomicUnlockImpl ();
+                if (completed) {
+                    throw ex;
+                } else {
+                    // Log thrown exception in case breakAtomicLock() throws an exception by itself.
+                    LOG.log(Level.INFO, "Runtime exception thrown in BaseDocument.runAtomicAsUser() leading to breakAtomicLock():", ex);
+                }
             }
+        } finally {
+            atomicUnlockImpl ();
         }
     }
 
