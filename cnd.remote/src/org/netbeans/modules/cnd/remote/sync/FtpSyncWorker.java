@@ -515,7 +515,7 @@ import org.openide.util.RequestProcessor;
             private boolean mapErrorReported = false;
             @Override
             public void processLine(String line) {
-                String localPath = mapper.getLocalPath(line, false);
+                String localPath = mapper.getLocalPath(line);
                 if (localPath != null) {
                     fileData.setState(new File(localPath), FileState.INITIAL);
                 } else {
