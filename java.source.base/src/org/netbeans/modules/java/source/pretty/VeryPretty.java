@@ -729,8 +729,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public void visitTopLevel(JCCompilationUnit tree) {
-        print(tree.getPackage());
         List<JCTree> l = tree.defs;
+        if (l.head.hasTag(Tag.PACKAGEDEF)) {
+            print(l.head);
+            l = l.tail;
+        }
         ArrayList<JCImport> imports = new ArrayList<JCImport>();
         while (l.nonEmpty() && l.head.getTag() == JCTree.Tag.IMPORT){
             imports.add((JCImport) l.head);

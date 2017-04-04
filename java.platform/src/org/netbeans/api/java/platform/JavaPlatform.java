@@ -196,6 +196,17 @@ public abstract class JavaPlatform {
 
 
     /**
+     * Checks if the {@link JavaPlatform} is valid.
+     * @return true if the {@link JavaPlatform} is valid,
+     * false when broken.
+     * @since 1.43
+     */
+    public boolean isValid() {
+        return !getInstallFolders().isEmpty();
+    }
+
+
+    /**
      * Get the "default platform", meaning the JDK on which NetBeans itself is running.
      * @return the default platform, if it can be found, or null
      * @see JavaPlatformManager#getDefaultPlatform

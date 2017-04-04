@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.ant;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -126,21 +127,6 @@ public class TranslateClassPath extends Task {
     }
     
     private File[] translateEntry(final String path, boolean disableSources) throws BuildException {
-        class HackedFile extends File {
-            private HackedFile(String path) {
-                super(path);
-            }
-            @Override
-            public boolean isDirectory() {
-                return exists() ?
-                        super.isDirectory() :
-                        path.endsWith(File.separator);
-            }
-            @Override
-            public File getAbsoluteFile() {
-                return this;
-            }
-        }
         final File entryFile = new HackedFile(path);
         try {
             final URL entry = FileUtil.urlForArchiveOrDir(entryFile);
@@ -189,4 +175,40 @@ public class TranslateClassPath extends Task {
         }
     }
 
+    private static final class HackedFile extends File {
+        private static final java.nio.file.InvalidPathException IP =
+            new java.nio.file.InvalidPathException("", "") {    //NOI18N
+                @Override
+                public Throwable fillInStackTrace() {
+                    return this;
+                }
+        };
+
+        private final String path;
+
+        private HackedFile(String path) {
+            super(path);
+            this.path = path;
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return exists() ?
+                    super.isDirectory() :
+                    path.endsWith(File.separator);
+        }
+        @Override
+        public File getAbsoluteFile() {
+            return this;
+        }
+
+        @Override
+        public Path toPath() {
+            if (exists()) {
+                return super.toPath();
+            } else {
+                throw IP;
+            }
+        }
+    }
 }

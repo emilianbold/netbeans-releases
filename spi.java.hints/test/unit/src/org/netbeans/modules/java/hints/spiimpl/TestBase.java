@@ -98,7 +98,8 @@ public class TestBase extends NbTestCase {
         FileObject cache = workFO.createFolder("cache");
 
         FileObject data = FileUtil.createData(sourceRoot, fileName);
-        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
+        if (sourceLevel != null)
+            SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
         
         File dataFile = FileUtil.toFile(data);
 

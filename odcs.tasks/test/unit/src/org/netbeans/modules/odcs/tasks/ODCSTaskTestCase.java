@@ -43,7 +43,6 @@
 package org.netbeans.modules.odcs.tasks;
 
 import com.tasktop.c2c.server.tasks.domain.Component;
-import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
@@ -115,7 +114,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
         addTest(new ChangeCCTestCase());
         addTest(new ChangePriorityTestCase());
         addTest(new ChangeSeverityTestCase());
-        addTest(new ChangeIterationTestCase());
+//        addTest(new ChangeIterationTestCase());
         addTest(new ChangeKeywordTestCase());
         addTest(new ChangeProductComponentMilestoneTestCase());
         addTest(new ChangeCustomFieldTestCase());
@@ -345,23 +344,23 @@ public class ODCSTaskTestCase extends NbTestSuite {
         }
     }
     
-    private class ChangeIterationTestCase extends ChangeTestCase {
-        public ChangeIterationTestCase() {
-            super("Iteration", IssueField.ITERATION);
-        }
-
-        @Override
-        protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(true, nullProgressMonitor);
-            for (Iteration i : clientData.getIterations()) {
-                if(!i.getValue().equals(value)) {
-                    return i.getValue();
-                }
-            }
-            fail();
-            return null;
-        }
-    }
+//    private class ChangeIterationTestCase extends ChangeTestCase {
+//        public ChangeIterationTestCase() {
+//            super("Iteration", IssueField.ITERATION);
+//        }
+//
+//        @Override
+//        protected String getDifferentValue(String value) throws CoreException {
+//            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(true, nullProgressMonitor);
+//            for (Iteration i : clientData.getIterations()) {
+//                if(!i.getValue().equals(value)) {
+//                    return i.getValue();
+//                }
+//            }
+//            fail();
+//            return null;
+//        }
+//    }
     
     private class ChangeKeywordTestCase extends ChangeTestCase {
         public ChangeKeywordTestCase() {

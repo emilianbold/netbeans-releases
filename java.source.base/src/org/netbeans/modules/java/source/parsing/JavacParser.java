@@ -858,8 +858,8 @@ public class JavacParser extends Parser {
             options.add("-profile");    //NOI18N, Limit JRE to required compact profile
             options.add(sourceProfile.getName());
         }
-        options.add("-XDdiags=-source");  // NOI18N
-        options.add("-XDdiagsFormat=%L%m|%L%m|%L%m");  // NOI18N
+        options.add("-XDdiags.formatterOptions=-source");  // NOI18N
+        options.add("-XDdiags.layout=%L%m|%L%m|%L%m");  // NOI18N
         options.add("-XDbreakDocCommentParsingOnError=false");  // NOI18N
         boolean aptEnabled = aptUtils != null &&
                 aptUtils.aptEnabledOnScan() &&

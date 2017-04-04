@@ -60,7 +60,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -133,7 +132,6 @@ public class ProjectProblemsProviders {
     static final String PLAT_PROP_ANT_NAME = "platform.ant.name";             //NOI18N
     private static final Logger LOG = Logger.getLogger(ProjectProblemsProviders.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ProjectProblemsProviders.class);
-    private static final Map<JavaPlatform,Boolean> platformValidCache = new WeakHashMap<>();
 
     private ProjectProblemsProviders() {
         throw new IllegalStateException(String.format("The %s cannot be instantiated.",this.getClass().getName())); //NOI18N
@@ -505,34 +503,12 @@ public class ProjectProblemsProviders {
         for (JavaPlatform plat : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
             // XXX: this should be defined as PROPERTY somewhere
             if (platform.equals(plat.getProperties().get(PLAT_PROP_ANT_NAME))) {
-                return isValidPlatform(plat);
+                return plat.isValid();
             }
         }
         return prj == null ?
                 false :
                 ProjectPlatform.forProject(prj, eval, "j2se") != null;   //NOI18N    //Todo: custom platform type?
-    }
-
-    private static boolean isValidPlatform(@NonNull final JavaPlatform plat) {
-        Boolean res = platformValidCache.get(plat);
-        if (res == null) {
-            boolean vote = true;
-            if (plat.getInstallFolders().isEmpty()) {
-                vote = false;
-            }
-            if (vote) {
-                for (String tool : new String[]{ "javac", "java", "javadoc" }) {    //NOI18N
-                    if (plat.findTool(tool) == null) {
-                        vote = false;
-                        break;
-                    }
-                }
-            }
-            vote &= plat.getBootstrapLibraries().findResource("java/lang/Object.class") != null;
-            res = vote;
-            platformValidCache.put(plat, res);
-        }
-        return res;
     }
 
     @NonNull
@@ -1253,18 +1229,14 @@ public class ProjectProblemsProviders {
             return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
                 @Override
                 public Collection<? extends ProjectProblemsProvider.ProjectProblem> collectProblems() {
-                    Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess(
-                            new Mutex.Action<Collection<? extends ProjectProblem>>() {
-                                @Override
-                                public Collection<? extends ProjectProblem> run() {
-                                    final Set<ProjectProblem> newProblems = new LinkedHashSet<ProjectProblem>();
-                                    final Set<File> allFiles = new HashSet<>();
-                                    newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,allFiles,false));
-                                    newProblems.addAll(getPlatformProblems(eval, helper, callback, platformProps,false));
-                                    updateFileListeners(allFiles);
-                                    return Collections.unmodifiableSet(newProblems);
-                                }
-                            });
+                    Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess((Mutex.Action<Collection<? extends ProjectProblem>>) () -> {
+                        final Set<ProjectProblem> newProblems = new LinkedHashSet<ProjectProblem>();
+                        final Set<File> allFiles = new HashSet<>();
+                        newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,allFiles,false));
+                        newProblems.addAll(getPlatformProblems(eval, helper, callback, platformProps,false));
+                        updateFileListeners(allFiles);
+                        return Collections.unmodifiableSet(newProblems);
+                    });
                     return currentProblems;
                 }
             });
