@@ -785,8 +785,11 @@ public final class ProxyFileManager implements JavaFileManager {
             }
         }
 
-        boolean hasLocations(@NonNull final Location l) {
-            final Entry e = fileManagers.get(l);
+        boolean hasLocations(@NonNull Location location) {
+            if (location instanceof ModuleLocation) {
+                location = ((ModuleLocation)location).getBaseLocation();
+            }
+            final Entry e = fileManagers.get(location);
             return e != null ?
                     e.hasLocation() :
                     false;
