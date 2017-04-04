@@ -1,7 +1,7 @@
-#changeset:   315106:751f649010a9
+#changeset:   315140:fcf2074e320c
 #branch:      release82
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Apr 03 12:49:06 2017 +0300
-#summary:     Fixed #270278 - Fix ABR and UMR errors discovered in fs_server by dynamic test
-29311B263E8CE783CA7CAADCF3761FED4AD1B3AC fs_server-1.0.zip
+#date:        Tue Apr 04 16:44:46 2017 +0300
+#summary:     Additional fix for #270278 (Fix ABR and UMR errors discovered in fs_server by dynamic test): Fixed also static checkers errors and warnings; marked false positives with comments
+16F0C1AD6E6933A3461509AA34BA0284CD4FB99E fs_server-1.0.zip
