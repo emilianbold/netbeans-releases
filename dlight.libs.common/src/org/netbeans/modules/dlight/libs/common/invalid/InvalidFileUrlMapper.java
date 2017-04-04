@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.libs.common.invalid;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -69,7 +70,7 @@ public class InvalidFileUrlMapper extends URLMapper {
                 // So we'll try creating a "real" URL
                 FileSystem fs = fo.getFileSystem();
                 String root = fs.getRoot().toURL().toExternalForm();
-                String path = fo.getPath();
+                String path = PathUtilities.escapePathForUseInURL(fo.getPath());
                 String res;
                 if (root.endsWith("/")) { // NOI18N
                     res = root + (path.startsWith("/") ? path.substring(1) : path); // NOI18N
