@@ -122,8 +122,7 @@ public abstract class RemotePathMap extends PathMap {
 
     protected final HashMap<String, String> map = new HashMap<>();
     protected final ExecutionEnvironment execEnv;
-    protected volatile String localBase;
-
+    
     protected RemotePathMap(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
     }
@@ -227,10 +226,6 @@ public abstract class RemotePathMap extends PathMap {
                 }
                 return mpoint + rest;
             }
-        }
-        if (useDefault) {
-            initLocalBase();
-            return localBase  + '/' + rpath;
         }
         return null;
     }
@@ -474,17 +469,6 @@ public abstract class RemotePathMap extends PathMap {
         return false;
     }
 
-    protected void initLocalBase() {
-        if (localBase == null) {
-            String tmpLocalBase = getLocalSyncRoot(execEnv);
-            if (tmpLocalBase.endsWith("/")) { //NOI18N
-                tmpLocalBase = tmpLocalBase.substring(0, tmpLocalBase.length() - 1);
-            }
-            localBase = tmpLocalBase;
-        }
-    }
-
-
     private final static class CustomizableRemotePathMap extends RemotePathMap {
 
         private static final int TIMEOUT = Integer.getInteger("remote.path.map.analyzer.timeout", 10000); // NOI18N
@@ -592,8 +576,7 @@ public abstract class RemotePathMap extends PathMap {
                     res = WindowsSupport.getInstance().convertFromMSysPath(res);
                 }
             } else {
-                initLocalBase();
-                res = localBase  + '/' + rpath;
+                res = null;
             }
             return res;
         }
