@@ -132,7 +132,7 @@ static void expand_table_if_needed() {
 
 static dirtab_element *new_dirtab_element(const char* path, int index) {
     char cache[32];
-    sprintf(cache, "%s/%d", cache_subdir_name, index);
+    sprintf(cache, "%s/%d", cache_subdir_name, index); // sprintf is safe here
     int path_len = strlen(path);
     int cache_len = strlen(cache);
     int size = sizeof(dirtab_element) + path_len + cache_len + 2;
@@ -141,9 +141,9 @@ static dirtab_element *new_dirtab_element(const char* path, int index) {
     el->state = DE_STATE_INITIAL;
     el->refresh_state = DRS_NONE;
     el->watch_state = DE_WSTATE_NONE;
-    strcpy(el->abspath, path);
+    strcpy(el->abspath, path); // strcpy is safe, length is calculated above
     el->cache_path = el->abspath + path_len + 1;
-    strcpy(el->cache_path, cache);
+    strcpy(el->cache_path, cache); // strcpy is safe, length is calculated above
     pthread_mutex_init(&el->mutex, NULL);
     return el;
 }
@@ -311,22 +311,26 @@ static void mkdir_or_die_recursive(const char *path, int exit_code_fail_create, 
 }
 
 static void fill_default_root() {
-    char home[PATH_MAX + 1];
+    char subdir[] = "/.netbeans/remotefs";
+    char home[PATH_MAX + 1 + sizeof(subdir)];
     if (!get_home_dir(home, sizeof home)) {
         report_error("can't determine home directory\n");
         exit(FAILURE_GETTING_HOME_DIR);
     }
-    strncpy(root, home, PATH_MAX);
-    strcat(root, "/.netbeans");
-    strcat(root, "/remotefs");
+    strncpy_w_zero(root, home, PATH_MAX + 1);
+    strcat(root, subdir); // strcat is safe, enough space is reserved above
 }
 
 void dirtab_init(bool clear_persistence, dirtab_watch_state default_watch_state) {
 
-    root = malloc_wrapper(PATH_MAX + 1);
-    temp_path = malloc_wrapper(PATH_MAX + 1);
-    cache_path = malloc_wrapper(PATH_MAX + 1);
-    dirtab_file_path = malloc_wrapper(PATH_MAX + 1);
+    // Previously I added 1 to PATH_MAX (for trailing zero).
+    // But what if the path to cache root is PATH_MAX length? 
+    // Then appending my subdirectories will cause write beyond the allocation.
+    // So I'm now adding 80 to reserve space for subdirectories
+    root = malloc_wrapper(PATH_MAX + 80);
+    temp_path = malloc_wrapper(PATH_MAX + 80);
+    cache_path = malloc_wrapper(PATH_MAX + 80);
+    dirtab_file_path = malloc_wrapper(PATH_MAX + 80);
 
     char* pdir = persistence_dir ? persistence_dir : "0";
     
@@ -339,6 +343,7 @@ void dirtab_init(bool clear_persistence, dirtab_watch_state default_watch_state)
         report_error("too long persistence path\n");
         exit(WRONG_ARGUMENT);
     }
+    // strcpy/strcat below are safe, see comment above
     if (*pdir == '/') {
         strcpy(root, pdir);
     } else {
@@ -358,6 +363,7 @@ void dirtab_init(bool clear_persistence, dirtab_watch_state default_watch_state)
         clean_dir(root);
     }
     
+    // strcpy/strcat below are safe, see comment above
     strcpy(cache_path, root);
     strcat(cache_path, "/");
     strcat(cache_path, cache_subdir_name);

@@ -217,7 +217,7 @@ static void err_redirect_init() {
             if (cache_root) {
                 const char* name = "/stderr.txt";
                 size_t sz = strlen(cache_root) + strlen(name) + 1;
-                char* path = malloc(sz);
+                char* path = malloc_wrapper(sz);
                 strncpy(path, cache_root, sz);
                 strncat(path, name, sz);
                 error_log = path;
@@ -786,7 +786,7 @@ static bool response_entry_create(buffer response_buf,
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
                 err_set(errno, "error performing readlink for %s: %s", abspath, err_to_string(errno));
-                strcpy(work_buf.data, "?");
+                strcpy(work_buf.data, "?"); // strcpy is safe, data is more than 1 byte anyhow
             } else {
                 link[sz] = 0;
                 escaped_link_size = escape_strlen(link);
