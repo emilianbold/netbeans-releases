@@ -54,6 +54,8 @@ made subject to such option by the copyright holder.
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
                 xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
+                xmlns:if="ant:if"
+                xmlns:unless="ant:unless"
                 exclude-result-prefixes="xalan p projdeps projdeps2 j2seproject2 libs">
     <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -532,6 +534,10 @@ is divided into following sections:
                         <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">processormodulepath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processormodulepath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
                         <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
                     </attribute>
@@ -563,6 +569,12 @@ is divided into following sections:
                         <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
                         <mkdir dir="${{empty.dir}}"/>
                         <mkdir dir="@{{apgeneratedsrcdir}}"/>
+                        <condition property="processormodulepath.set">
+                            <and>
+                                <isset property="processormodulepath"/>
+                                <length string="@{{toString:processormodulepath}}" when="greater" length="0"/>
+                            </and>
+                        </condition>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
@@ -605,8 +617,10 @@ is divided into following sections:
                             <compilerarg line="${{javac.systemmodulepath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
-                            <compilerarg value="-processorpath" />
-                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
+                            <compilerarg value="--processor-module-path" if:set="processormodulepath.set"/>
+                            <compilerarg path="@{{processormodulepath}}" if:set="processormodulepath.set"/>
+                            <compilerarg value="-processorpath" unless:set="processormodulepath.set"/>
+                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" unless:set="processormodulepath.set"/>
                             <compilerarg line="${{ap.processors.internal}}" />
                             <compilerarg line="${{annotation.processing.processor.options}}" />
                             <compilerarg value="-s" />
