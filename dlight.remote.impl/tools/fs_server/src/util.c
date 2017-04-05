@@ -532,7 +532,7 @@ int visit_dir_entries(const char* path,
             base_len = 0;
         } else {
             base_len = strlen(path);
-            strncpy_w_zero(abspath, path, buf_size);
+            strcpy(abspath, path);
         }
         abspath[base_len] = '/';
         struct dirent *entry;
@@ -547,7 +547,7 @@ int visit_dir_entries(const char* path,
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
                 continue;
             }
-            strncpy_w_zero(abspath + base_len + 1, entry->d_name, buf_size);
+            strcpy(abspath + base_len + 1, entry->d_name);
             struct stat stat_buf;
             if (lstat_wrapper(abspath, &stat_buf, settings) == 0) {
                 bool is_link = S_ISLNK(stat_buf.st_mode);
