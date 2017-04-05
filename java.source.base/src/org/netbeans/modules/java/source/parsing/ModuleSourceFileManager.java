@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -65,6 +67,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Pair;
 
 /**
  *
@@ -75,6 +78,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
     private final boolean ignoreExcludes;
     private final ClassPath srcPath;
     private final ClassPath moduleSrcPath;
+    private final Map<URL,String> patches;
     private Set<ModuleLocation.WithExcludes> sourceModuleLocations;
 
     public ModuleSourceFileManager(
@@ -86,6 +90,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
         this.srcPath = srcPath;
         this.moduleSrcPath = moduleSrcPath;
         this.ignoreExcludes = ignoreExcludes;
+        this.patches = new HashMap<>();
     }
 
     // FileManager implementation ----------------------------------------------
@@ -190,12 +195,23 @@ final class ModuleSourceFileManager implements JavaFileManager {
 
     @Override
     public boolean handleOption (final String head, final Iterator<String> tail) {
+        if (JavacParser.OPTION_PATCH_MODULE.equals(head)) {
+            final Pair<String,List<URL>> modulePatches = FileObjects.parseModulePatches(tail);
+            if (modulePatches != null) {
+                final String moduleName = modulePatches.first();
+                final List<URL> patchURLs = modulePatches.second();
+                for (URL patchURL : patchURLs) {
+                    patches.put(patchURL, moduleName);
+                }
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean hasLocation(Location location) {
-        return true;
+        return location == StandardLocation.MODULE_SOURCE_PATH;
     }
 
     @Override
@@ -224,7 +240,10 @@ final class ModuleSourceFileManager implements JavaFileManager {
     @Override
     @NonNull
     public Iterable<Set<Location>> listLocationsForModules(@NonNull final Location location) throws IOException {
-        return sourceModuleLocations(location).stream().map(
+        if (location != StandardLocation.MODULE_SOURCE_PATH) {
+            throw new IllegalStateException(String.format("Unsupported location: %s", location));
+        }
+        return sourceModuleLocationsRemovedPatches().stream().map(
                 loc -> Collections.singleton((Location)loc)
         ).collect(Collectors.toSet());
     }
@@ -239,9 +258,12 @@ final class ModuleSourceFileManager implements JavaFileManager {
     @Override
     @CheckForNull
     public Location getLocationForModule(Location location, JavaFileObject jfo) throws IOException {
+        if (location != StandardLocation.MODULE_SOURCE_PATH) {
+            throw new IllegalStateException(String.format("Unsupported location: %s", location));
+        }
         final FileObject fo = URLMapper.findFileObject(jfo.toUri().toURL());
         if (fo != null) {
-            for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocations(location)) {
+            for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocationsRemovedPatches()) {
                 for (ClassPath.Entry moduleEntry : moduleLocation.getModuleEntries()) {
                     final FileObject root = moduleEntry.getRoot();
                     if (root != null && FileUtil.isParentOf(root, fo)) {
@@ -256,10 +278,13 @@ final class ModuleSourceFileManager implements JavaFileManager {
     @Override
     @CheckForNull
     public Location getLocationForModule(Location location, String moduleName) throws IOException {
-        for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocations(location)) {
+        if (location != StandardLocation.MODULE_SOURCE_PATH) {
+            throw new IllegalStateException(String.format("Unsupported location: %s", location));
+        }
+        for (ModuleLocation.WithExcludes moduleLocation : sourceModuleLocationsRemovedPatches()) {
             if (Objects.equals(moduleName, moduleLocation.getModuleName())) {
                 return moduleLocation;
-            }            
+            }
         }
         return null;
     }
@@ -280,7 +305,34 @@ final class ModuleSourceFileManager implements JavaFileManager {
     }
 
     @NonNull
-    private Set<ModuleLocation.WithExcludes> sourceModuleLocations(Location location) {
+    private Set<ModuleLocation.WithExcludes> sourceModuleLocationsRemovedPatches() {
+        final Set<ModuleLocation.WithExcludes> all = sourceModuleLocations();
+        if (patches.isEmpty()) {
+            return all;
+        } else {
+            return all.stream()
+                    .map((l) -> {
+                        final Collection<? extends ClassPath.Entry> origEntries = l.getModuleEntries();
+                        final List<? extends ClassPath.Entry> entries = origEntries.stream()
+                                .filter((e) -> !patches.containsKey(e.getURL()))
+                                .collect(Collectors.toList());
+                        if (entries.isEmpty()) {
+                            return null;
+                        } else if (origEntries.size() == entries.size()) {
+                            return l;
+                        } else {
+                            return ModuleLocation.WithExcludes.createExcludes(
+                                    l.getBaseLocation(),
+                                    entries,
+                                    l.getModuleName());
+                        }
+                    })
+                    .filter((l) -> l != null)
+                    .collect(Collectors.toSet());
+        }
+    }
+
+    Set<ModuleLocation.WithExcludes> sourceModuleLocations() {
         if (sourceModuleLocations == null) {
             final Map<String, List<ClassPath.Entry>> moduleRoots = new HashMap<>();
             final Set<URL> seen = new HashSet<>();
@@ -300,7 +352,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
                                 List<ClassPath.Entry> roots = moduleRoots.get(relative);
                                 if (roots == null) {
                                     roots = new ArrayList<>();
-                                    moduleRoots.put(relative, roots);                            
+                                    moduleRoots.put(relative, roots);
                                 }
                                 roots.add(srcEntry);
                                 seen.add(srcURL);
@@ -310,7 +362,7 @@ final class ModuleSourceFileManager implements JavaFileManager {
                 }
             });
             sourceModuleLocations = moduleRoots.entrySet().stream().map(
-                    moduleRoot -> ModuleLocation.WithExcludes.createExcludes(location, moduleRoot.getValue(), moduleRoot.getKey())
+                    moduleRoot -> ModuleLocation.WithExcludes.createExcludes(StandardLocation.MODULE_SOURCE_PATH, moduleRoot.getValue(), moduleRoot.getKey())
             ).collect(Collectors.toSet());
         }
         return sourceModuleLocations;
