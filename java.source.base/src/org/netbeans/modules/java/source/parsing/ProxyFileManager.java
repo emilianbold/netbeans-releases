@@ -770,6 +770,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 }
                 if (JavacParser.OPTION_PATCH_MODULE.equals(hint)) {
                     createPatchFileManager();
+                    createModuleSrcFileManager();
                 }
                 final List<JavaFileManager> res = new ArrayList<>(emitted.length);
                 for (JavaFileManager jfm : emitted) {
@@ -997,7 +998,7 @@ public final class ProxyFileManager implements JavaFileManager {
         }
 
         @CheckForNull
-        private JavaFileManager createModuleSrcFileManager() {
+        private ModuleSourceFileManager createModuleSrcFileManager() {
             if (emitted[SRC_MODULES] == null) {
                 final boolean hasModules = !this.srcCached.entries().isEmpty() && this.moduleSrcCached != ClassPath.EMPTY;
                 emitted[SRC_MODULES] = hasModules ?
@@ -1007,7 +1008,7 @@ public final class ProxyFileManager implements JavaFileManager {
                                 ignoreExcludes) :
                         null;
             }
-            return emitted[SRC_MODULES];
+            return (ModuleSourceFileManager) emitted[SRC_MODULES];
         }
 
         @CheckForNull

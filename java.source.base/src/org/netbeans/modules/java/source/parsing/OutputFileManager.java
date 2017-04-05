@@ -93,7 +93,7 @@ public class OutputFileManager extends CachingFileManager {
     private final ClassPath apt;
     private final SiblingProvider siblings;
     private final FileManagerTransaction tx;
-    private final JavaFileManager moduleSourceFileManager;
+    private final ModuleSourceFileManager moduleSourceFileManager;
     private Pair<URI,File> cachedClassFolder;
     private Iterable<Set<Location>> cachedModuleLocations;
 
@@ -105,7 +105,7 @@ public class OutputFileManager extends CachingFileManager {
             @NonNull final ClassPath aptPath,
             @NonNull final SiblingProvider siblings,
             @NonNull final FileManagerTransaction tx,
-            @NullAllowed final JavaFileManager moduleSFileManager) {
+            @NullAllowed final ModuleSourceFileManager moduleSFileManager) {
         super (provider, outputClassPath, null, false, true);
         assert outputClassPath != null;
         assert sourcePath != null;
@@ -256,11 +256,8 @@ public class OutputFileManager extends CachingFileManager {
             if (moduleSourceFileManager != null) {
                 final Map<URL,ClassPath.Entry> entriesByUrl = new HashMap<>();
                 getClassPath().entries().forEach((e) -> entriesByUrl.put(e.getURL(), e));
-                cachedModuleLocations = StreamSupport.stream(
-                        moduleSourceFileManager.listLocationsForModules(StandardLocation.MODULE_SOURCE_PATH).spliterator(),
-                        false)
-                        .map((e) -> {
-                            final ModuleLocation ml = ModuleLocation.cast(e.iterator().next());
+                cachedModuleLocations = moduleSourceFileManager.sourceModuleLocations().stream()
+                        .map((ml) -> {
                             Location oml = ModuleLocation.WithExcludes.createExcludes(
                                     StandardLocation.CLASS_OUTPUT,
                                     ml.getModuleRoots().stream()
