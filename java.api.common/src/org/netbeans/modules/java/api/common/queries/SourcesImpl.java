@@ -73,6 +73,7 @@ import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
+import org.netbeans.spi.project.SourceGroupRelativeModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -87,7 +88,7 @@ import org.openide.util.WeakListeners;
 /**
  * Implementation of {@link Sources} interface.
  */
-final class SourcesImpl implements Sources, SourceGroupModifierImplementation, PropertyChangeListener, ChangeListener  {
+final class SourcesImpl implements Sources, SourceGroupModifierImplementation, SourceGroupRelativeModifierImplementation, PropertyChangeListener, ChangeListener  {
 
     @StaticResource
     private static final String MODULE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png"; //NOI18N
@@ -183,6 +184,15 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
     }
 
     @Override
+    public SourceGroupModifierImplementation relativeTo(SourceGroup existingGroup, String... projectPart) {
+        if (sgmi instanceof SourceGroupRelativeModifierImplementation) {
+            return ((SourceGroupRelativeModifierImplementation)sgmi).relativeTo(existingGroup, projectPart);
+        } else {
+            return this;
+        }
+    }
+
+    @Override
     public SourceGroup createSourceGroup(String type, String hint) {
         return sgmi.createSourceGroup(type, hint);
     }
@@ -250,20 +260,23 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
         final String[] rootPathPropNames = RootsAccessor.getInstance().getRootPathProperties(roots);
         final String[] propNames = roots.getRootProperties();
         final String[] displayNames = roots.getRootDisplayNames();
-
+        
         for (int i = 0; i < propNames.length; i++) {
             final String prop = propNames[i];
             final String pathProp =  rootPathPropNames[i];
 
             final List<String> locations;
             final List<String> names;
+            final List<String[]> parts;
             
             if (pathProp == null || JavaProjectConstants.SOURCES_TYPE_MODULES.equals(type)) {
                 locations = Collections.singletonList("${" + prop + "}"); // NOI18N
                 names = Collections.singletonList(displayNames[i]);
+                parts = Collections.singletonList(null);
             } else {
                 locations = new ArrayList<>();
                 names = new ArrayList<>();
+                parts = new ArrayList<>();
                 final String pathToModules = evaluator.getProperty(prop);
                 if (pathToModules != null) {
                     final File file = helper.resolveFile(pathToModules);
@@ -280,7 +293,16 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                                             pathToModules,
                                             f.getName(),
                                             variant);
+                                    String[] v = variant.split("/");
+                                    String[] p = new String[v.length + 2];
+                                    // the most important is the module name
+                                    p[0] = f.getName();
+                                    // 2nd project part is the [resolved] path to modules; usually src.dir and test.dir point to the same location,
+                                    // but if they do not, the 'same location' gets a preference.
+                                    p[1] = pathToModules;
+                                    System.arraycopy(v, 0, p, 2, v.length);
                                     locations.add(resolvedSrcPath); //Todo: Should be unevaluated
+                                    parts.add(p);
                                     String dispName = displayNames[i];
                                     if (dispName == null || dispName.isEmpty()) {
                                         names.add(Bundle.FMT_ModularSourceRootNoName(f.getName(), pathToModules));
@@ -294,7 +316,8 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                 }
             }
             assert locations.size() == names.size();
-
+            assert locations.size() == parts.size();
+            Iterator<String[]> partIt = parts.iterator();
             for (Iterator<String> locationIt = locations.iterator(), nameIt = names.iterator(); locationIt.hasNext() && nameIt.hasNext();) {
                 final SourcesHelper.SourceRootConfig cfg = sourcesHelper.sourceRoot(locationIt.next());
                 cfg.displayName(nameIt.next());
@@ -307,6 +330,7 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
                 if (hint != null) {
                     cfg.hint(hint);
                 }
+                cfg.inParts(partIt.next());
                 cfg.add();  // principal root
                 if (type != null) {
                     cfg.type(type).add();    // typed root

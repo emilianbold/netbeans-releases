@@ -999,8 +999,12 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 grpsByRoot.put(g.getRootFolder(), g);
             }
             final Comparator<FileObject> foc = (a,b) -> a.getNameExt().compareTo(b.getNameExt());
+            ClassPath sourceP = srcPath.get();
+            if (sourceP == null) {
+                return Collections.emptyList();
+            }
             return Stream.concat(Stream.concat(
-                    Arrays.stream(srcPath.get().getRoots())
+                    Arrays.stream(sourceP.getRoots())
                         .sorted(foc)
                         .map((fo) -> Pair.of(fo,false)),
                     Arrays.stream(testPath.get().getRoots())
@@ -1014,7 +1018,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                      })
                     .filter((p) -> p != null),
                     Stream.of(
-                        new Key(srcPath.get(), false),
+                        new Key(sourceP, false),
                         new Key(testPath.get(), true)
                     ))
                     .collect(Collectors.toList());

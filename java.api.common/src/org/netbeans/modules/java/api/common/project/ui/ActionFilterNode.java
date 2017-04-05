@@ -542,6 +542,9 @@ final class ActionFilterNode extends FilterNode implements NodeListener {
 
         @Override
        public boolean canRemove () {
+            if (!removeFromProject) {
+                return false;
+            }
             //Allow to remove only entries from PROJECT_PROPERTIES, same behaviour as the project customizer
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             return props.getProperty (classPathId) != null;
