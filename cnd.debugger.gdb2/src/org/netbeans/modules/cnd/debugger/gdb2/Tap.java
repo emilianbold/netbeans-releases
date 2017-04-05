@@ -42,12 +42,17 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.util.LinkedList;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommandInjector;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIProxy;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -125,8 +130,11 @@ import org.openide.util.RequestProcessor;
         CndUtils.assertTrueInConsole(false, "should not be used; KeyProcessingStream should send only lines");
         toDCE.sendChar(c);
     }
-
-    private boolean showMessage = true;
+    
+    private static final Preferences prefs =
+        NbPreferences.forModule(GdbDebuggerImpl.class);
+    private static final String PREFIX = "Doption."; // NOI18N
+    private static final String PREF_DONOTSHOWAGAIN = PREFIX + "doNotShowAgain";//NOI18N    
     /**
      * Send character typed into console to gdb
      *
@@ -136,10 +144,18 @@ import org.openide.util.RequestProcessor;
      */
     @Override
     public void sendChars(char c[], int offset, int count) {
-        if (showMessage && !debugger.getGdbVersionPeculiarity().supports(GdbVersionPeculiarity.Feature.BREAKPOINT_NOTIFICATIONS)) {
+        if (!prefs.getBoolean(PREF_DONOTSHOWAGAIN + "MSG_OldGdbVersionConsole", false) && //NOI18N
+                !debugger.getGdbVersionPeculiarity().supports(GdbVersionPeculiarity.Feature.BREAKPOINT_NOTIFICATIONS)) {
             // IDE is unable to detect that something should be updated without a notification
-            NativeDebuggerManager.warning(Catalog.get("MSG_OldGdbVersionConsole")); // NOI18N
-            showMessage = false;
+            InfoPanel panel = new InfoPanel(Catalog.get("MSG_OldGdbVersionConsole"));//NOI18N
+            NotifyDescriptor dlg = new NotifyDescriptor.Confirmation(
+                    panel,
+                    Catalog.get("INFORMATION"), // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION);
+            DialogDisplayer.getDefault().notify(dlg);
+            prefs.putBoolean(PREF_DONOTSHOWAGAIN + "MSG_OldGdbVersionConsole", //NOI18N
+                    panel.dontShowAgain());
+
         }
         prompted = false;
 
