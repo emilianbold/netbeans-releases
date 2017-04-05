@@ -222,12 +222,10 @@ public class J2SEModularProjectGenerator {
         ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
         ep.setProperty("javac.test.classpath", new String[] { // NOI18N
-            ref(ProjectProperties.JAVAC_CLASSPATH, false),
-            ref(ProjectProperties.BUILD_CLASSES_DIR, true)
+            ref(ProjectProperties.JAVAC_CLASSPATH, true)
         });
         ep.setProperty("run.test.classpath", new String[] { // NOI18N
-            ref(ProjectProperties.JAVAC_TEST_CLASSPATH, false),
-            ref(ProjectProperties.BUILD_TEST_MODULES_DIR, true)
+            ref(ProjectProperties.JAVAC_TEST_CLASSPATH, true)
         });
         ep.setProperty("debug.test.classpath", new String[] { // NOI18N
             ref(ProjectProperties.RUN_TEST_CLASSPATH, true)
