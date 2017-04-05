@@ -311,14 +311,14 @@ static void mkdir_or_die_recursive(const char *path, int exit_code_fail_create, 
 }
 
 static void fill_default_root() {
-    char subdir[] = "/.netbeans/remotefs";
-    char home[PATH_MAX + 1 + sizeof(subdir)];
+    char home[PATH_MAX + 1];
     if (!get_home_dir(home, sizeof home)) {
         report_error("can't determine home directory\n");
         exit(FAILURE_GETTING_HOME_DIR);
     }
-    strncpy_w_zero(root, home, PATH_MAX + 1);
-    strcat(root, subdir); // strcat is safe, enough space is reserved above
+    strncpy(root, home, PATH_MAX);
+    strcat(root, "/.netbeans");
+    strcat(root, "/remotefs");
 }
 
 void dirtab_init(bool clear_persistence, dirtab_watch_state default_watch_state) {
