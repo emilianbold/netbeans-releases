@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.lexer;
 
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -79,17 +80,138 @@ public class EscapeLineTestCase extends TestCase {
         assertFalse("No more tokens", ts.moveNext());
     } 
 
+    public void testSlashFollowedByBackSlash() {
+        String text =  "/\\";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.SLASH, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.BACK_SLASH, "\\");
+        TokenSequence<?> es = ts.embedded();
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testSlashFollowedEscapedLine() {
+        String text =  "/\\\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.SLASH, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.ESCAPED_LINE, "\\\n");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testLineCommentFollowedByBackSlash() {
+        String text =  "//\\";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.LINE_COMMENT, "//\\");
+        TokenSequence<?> es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.DoxygenTokenId.OTHER_TEXT, "\\");
+        assertFalse("No more tokens", es.moveNext());
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testLineCommentFollowedByEscapedLine() {
+        String text =  "//a\\\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.LINE_COMMENT, "//a");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.ESCAPED_LINE, "\\\n");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    public void testPPLineCommentFollowedByEscapedLine() {
+        String text =  "#//a\\\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_DIRECTIVE, "#//a\\\n");
+        TokenSequence<?> es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.LINE_COMMENT, "//a");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.ESCAPED_LINE, "\\\n");
+        assertFalse("No more tokens", es.moveNext());
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
     public void testLineCommentInPreprocessor() {
         String text =  "#define A //\\";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_DIRECTIVE, "#define A //\\");
         TokenSequence<?> es = ts.embedded();
-        CndLexerUnitTest.dumpTokens(es, "es");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_DEFINE, "define");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_IDENTIFIER, "A");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.LINE_COMMENT, "//\\");
+        assertFalse("No more tokens", es.moveNext());
+        
+        assertFalse("No more tokens", ts.moveNext());
+    } 
+
+    public void testLineCommentInPreprocessorEndsWithNewLine() {
+        String text =  "# // a\n\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+//        CndLexerUnitTest.dumpTokens(ts, "ts");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_DIRECTIVE, "# // a\n");
+        TokenSequence<?> es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.LINE_COMMENT, "// a");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.NEW_LINE, "\n");
+        assertFalse("No more tokens", es.moveNext());
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.NEW_LINE, "\n");
+        assertFalse("No more tokens", ts.moveNext());
+    } 
+
+    public void testLineCommentInPreprocessorEndsWithEscapedLine() {
+        String text =  "# // a\\\n";
+//        String text =  "# // a\\\n\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_DIRECTIVE, "# // a\\\n");
+        TokenSequence<?> es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.LINE_COMMENT, "// a");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.ESCAPED_LINE, "\\\n");
         assertFalse("No more tokens", es.moveNext());
         assertFalse("No more tokens", ts.moveNext());
     } 
-    
+
+    public void testLineEndsWithBackSlash() {
+        String text =  "\\";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.BACK_SLASH, "\\");
+        assertFalse("No more tokens", ts.moveNext());
+    } 
+
+    public void testPPLineEndsWithBackSlash() {
+        String text =  "#\\";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_DIRECTIVE, "#\\");
+        TokenSequence<?> es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppTokenId.BACK_SLASH, "\\");
+        assertFalse("No more tokens", es.moveNext());        
+        assertFalse("No more tokens", ts.moveNext());
+    } 
+
+    public void testLineCommendEndsWithBackSlash() {
+        String text =  "//\\";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.LINE_COMMENT, "//\\");
+        TokenSequence<?> es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.DoxygenTokenId.OTHER_TEXT, "\\");
+        assertFalse("No more tokens", es.moveNext());        
+        assertFalse("No more tokens", ts.moveNext());
+    } 
+
     public void testBlockComment() {
         String text =  "/*comm\\\n" + 
                        "ent\n" +
