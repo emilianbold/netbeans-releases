@@ -112,6 +112,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
     private final String[] testExecuteClassPath;
     private final String[] processorClassPath;
     private final String[] testProcessorClassPath;
+    private final String[] processorModulePath;
+    private final String[] testProcessorModulePath;
     private final String platformType;
     private final String buildModulesDirProperty;
     private final Map</*@GuardedBy("this")*/String,URL> urlCache = new ConcurrentHashMap<>();
@@ -130,6 +132,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             @NonNull final String[] testExecuteModulePath,
             @NonNull final String[] executeClassPath,
             @NonNull final String[] testExecuteClassPath,
+            @NonNull final String[] processorModulePath,
+            @NonNull final String[] testProcessorModulePath,
             @NonNull final String[] processorClassPath,
             @NonNull final String[] testProcessorClassPath,
             @NonNull final String platformType,
@@ -146,6 +150,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         Parameters.notNull("testExecuteModulePath", testExecuteModulePath);   //NOI18N
         Parameters.notNull("executeClassPath", executeClassPath);   //NOI18N
         Parameters.notNull("testExecuteClassPath", testExecuteClassPath);   //NOI18N
+        Parameters.notNull("processorModulePath", processorModulePath);           //NOI18N
+        Parameters.notNull("testProcessorModulePath", testProcessorModulePath);   //NOI18N
         Parameters.notNull("processorClassPath", processorClassPath);           //NOI18N
         Parameters.notNull("testProcessorClassPath", testProcessorClassPath);   //NOI18N
         Parameters.notNull("platformType", platformType);   //NOI18N
@@ -168,6 +174,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         this.testExecuteModulePath = testExecuteModulePath;
         this.executeClassPath = executeClassPath;
         this.testExecuteClassPath = testExecuteClassPath;
+        this.processorModulePath = processorModulePath;
+        this.testProcessorModulePath = testProcessorModulePath;
         this.processorClassPath = processorClassPath;
         this.testProcessorClassPath = testProcessorClassPath;
         this.platformType = platformType;
@@ -392,6 +400,30 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                             projectDirectory,
                            eval,
                            owner.isTest() ? testProcessorClassPath : processorClassPath));
+                    });
+        } else {
+            return null;
+        }
+    }
+
+    @CheckForNull
+    private ClassPath getProcessorModulepath(
+            @NonNull final FileObject file) {
+        return getProcessorModulepath(getOwner(file));
+    }
+
+    @CheckForNull
+    private ClassPath getProcessorModulepath(
+            @NullAllowed final Owner owner) {
+        if (owner != null && owner.isSource()) {
+            return cacheFor(owner).computeIfAbsent(
+                    null,
+                    JavaClassPathConstants.MODULE_PROCESSOR_PATH,
+                    (mods) -> {
+                        return ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                            projectDirectory,
+                           eval,
+                           owner.isTest() ? testProcessorModulePath : processorModulePath));
                     });
         } else {
             return null;
@@ -923,6 +955,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             res = getModuleCompilePath(file);
         } else if (type.equals(JavaClassPathConstants.MODULE_CLASS_PATH)) {
             res = getModuleLegacyClassPath(file);
+        } else if (type.equals(JavaClassPathConstants.MODULE_PROCESSOR_PATH)) {
+            res = getProcessorModulepath(file);
         } else if (type.equals(JavaClassPathConstants.MODULE_EXECUTE_PATH)) {
             res = getModuleExecutePath(file);
         } else if (type.equals(JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH)) {
@@ -964,6 +998,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     return testProcessorClassPath;
                 case JavaClassPathConstants.MODULE_COMPILE_PATH:
                     return testModulePath;
+                case JavaClassPathConstants.MODULE_PROCESSOR_PATH:
+                    return testProcessorModulePath;
                 case JavaClassPathConstants.MODULE_EXECUTE_PATH:
                     return testExecuteModulePath;
                 default:
@@ -979,6 +1015,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     return processorClassPath;
                 case JavaClassPathConstants.MODULE_COMPILE_PATH:
                     return modulePath;
+                case JavaClassPathConstants.MODULE_PROCESSOR_PATH:
+                    return processorModulePath;
                 case JavaClassPathConstants.MODULE_EXECUTE_PATH:
                     return executeModulePath;
                 default:
@@ -1009,6 +1047,12 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                 return new ClassPath[] {
                     getModuleCompilePath(Owner.GLOBAL_SOURCE),
                     getModuleCompilePath(Owner.GLOBAL_TESTS)
+                };
+            }
+            if (JavaClassPathConstants.MODULE_PROCESSOR_PATH.equals(type)) {
+                return new ClassPath[] {
+                    getProcessorModulepath(Owner.GLOBAL_SOURCE),
+                    getProcessorModulepath(Owner.GLOBAL_TESTS)
                 };
             }
             if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
@@ -1059,6 +1103,9 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
             if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
                 return getModuleCompilePath(Owner.GLOBAL_SOURCE);
             }
+            if (JavaClassPathConstants.MODULE_PROCESSOR_PATH.equals(type)) {
+                return getProcessorModulepath(Owner.GLOBAL_SOURCE);
+            }
             if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                 return getProcessorClasspath(Owner.GLOBAL_SOURCE);
             }
@@ -1093,6 +1140,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         private String[] testExecuteModulePath = new String[] {ProjectProperties.RUN_TEST_MODULEPATH};
         private String[] executeClassPath = new String[] {ProjectProperties.RUN_CLASSPATH};
         private String[] testExecuteClassPath = new String[] {ProjectProperties.RUN_TEST_CLASSPATH};
+        private String[] processorModulePath = new String[] {ProjectProperties.JAVAC_PROCESSORMODULEPATH};
+        private String[] testProcessorModulePath = new String[] {"javac.test.processormodulepath"};    //NOI18N
         private String[] processorClassPath = new String[] {ProjectProperties.JAVAC_PROCESSORPATH};
         private String[] testProcessorClassPath = new String[] {"javac.test.processorpath"};    //NOI18N
         private String platformType = CommonProjectUtils.J2SE_PLATFORM_TYPE;
@@ -1235,6 +1284,30 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         }
 
         /**
+         * Sets javac processor module path properties.
+         * @param processorModulepathProperties the names of properties containing the compiler processor module path for sources, by default {@link ProjectProperties#JAVAC_PROCESSORMODULEPATH}
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setProcessorModulepathProperties(@NonNull final String[] processorModulepathProperties) {
+            Parameters.notNull("processorModulepathProperties", processorModulepathProperties);
+            this.processorModulePath = Arrays.copyOf(processorModulepathProperties, processorModulepathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets javac processor module path properties for test roots.
+         * @param processorModulepathProperties the names of properties containing the compiler processor module path for sources, by default {@link ProjectProperties#JAVAC_PROCESSORMODULEPATH}
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setTestProcessorModulepathProperties(@NonNull final String[] processorModulepathProperties) {
+            Parameters.notNull("processorModulepathProperties", processorModulepathProperties);
+            this.testProcessorModulePath = Arrays.copyOf(processorModulepathProperties, processorModulepathProperties.length);
+            return this;
+        }
+
+        /**
          * Sets javac processor {@link ClassPath} properties.
          * @param processorClassPathProperties the names of properties containing the compiler processor path for sources, by default {@link ProjectProperties#JAVAC_PROCESSORPATH}
          * @return {@link Builder}
@@ -1302,6 +1375,8 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     testExecuteModulePath,
                     executeClassPath,
                     testExecuteClassPath,
+                    processorModulePath,
+                    testProcessorModulePath,
                     processorClassPath,
                     testProcessorClassPath,
                     platformType,

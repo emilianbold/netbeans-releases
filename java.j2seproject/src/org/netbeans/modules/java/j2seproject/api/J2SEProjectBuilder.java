@@ -398,6 +398,9 @@ public class J2SEProjectBuilder {
         if (ep.getProperty(ProjectProperties.JAVAC_MODULEPATH) == null) {
             ep.setProperty(ProjectProperties.JAVAC_MODULEPATH, new String[0]);
         }
+        if (ep.getProperty(ProjectProperties.JAVAC_PROCESSORMODULEPATH) == null) {
+            ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[0]);
+        }
         if (ep.getProperty(ProjectProperties.RUN_MODULEPATH) == null) {
             ep.setProperty(ProjectProperties.RUN_MODULEPATH, new String[] {
                 ref(ProjectProperties.JAVAC_MODULEPATH, true)

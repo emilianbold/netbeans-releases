@@ -100,4 +100,10 @@ public class JavaClassPathConstants {
      * @since 1.65
      */
     public static final String MODULE_SOURCE_PATH ="modules/source";    //NOI18N
+
+    /**
+     * Module processor path.
+     * @since 1.66
+     */
+    public static final String MODULE_PROCESSOR_PATH ="modules/processor";    //NOI18N
 }

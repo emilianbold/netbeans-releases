@@ -140,6 +140,7 @@ public final class ProjectProperties {
         "${" + ENDORSED_CLASSPATH + "}", // NOI18N
         "${" + BUILD_TEST_CLASSES_DIR + "}", // NOI18N
         "${" + JAVAC_MODULEPATH + "}", // NOI18N
+        "${" + JAVAC_PROCESSORMODULEPATH + "}", // NOI18N
         "${" + JAVAC_TEST_MODULEPATH + "}", // NOI18N
         "${" + RUN_MODULEPATH + "}", // NOI18N
         "${" + RUN_TEST_MODULEPATH + "}", // NOI18N

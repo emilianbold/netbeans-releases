@@ -237,6 +237,7 @@ public class J2SEModularProjectGenerator {
 
         //Modules
         ep.setProperty(ProjectProperties.JAVAC_MODULEPATH, ""); //NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_PROCESSORMODULEPATH, ""); //NOI18N
         ep.setProperty(ProjectProperties.RUN_MODULEPATH, new String[] {
             ref(ProjectProperties.JAVAC_MODULEPATH, false),
             ref(ProjectProperties.BUILD_MODULES_DIR, true)
