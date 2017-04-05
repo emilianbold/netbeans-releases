@@ -379,6 +379,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                     case 'D':
                                     case 'E':
                                     case 'F':
+                                    case '\'': // C++11 digits separator
                                         break;
                                     case '.': // hex float literal
                                         if (!inFraction) {
@@ -672,7 +673,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
         do {
             c = read(true);
-        } while ('0' <= c && c <= '9'); // reading exponent
+        } while (('0' <= c && c <= '9') || (c == '\'')); // reading exponent digits
         switch (c) {
 //            case 'd':
 //            case 'D':

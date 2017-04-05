@@ -522,6 +522,36 @@ public class CppLexerBatchTestCase extends TestCase {
         assertFalse("No more tokens", ts.moveNext());
     }
     
+    public void testCpp11NumberLiterals() {
+        String text = "123 1'2'3  12'3 "
+                    + "0b0101'0100 0B0101'0100"
+                    + "0'004'000'000 "
+                    + "0xf'4240 0X10'0000 "
+                    + "1e1'0 ";
+        InputAttributes attrs = new InputAttributes();
+        Language<CppTokenId> language = CppTokenId.languageCpp(); 
+        attrs.setValue(language, CndLexerUtilities.LEXER_FILTER, CndLexerUtilities.getFilter(language, CndLanguageStandard.CPP11), true);  // NOI18N
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, language, 
+                Collections.<CppTokenId>emptySet(), attrs);
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.INT_LITERAL, "123");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.INT_LITERAL, "1'2'3");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, "  ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.INT_LITERAL, "12'3");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.INT_LITERAL, "0b0101'0100");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.INT_LITERAL, "0B0101'01000'004'000'000");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.INT_LITERAL, "0xf'4240");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.INT_LITERAL, "0X10'0000");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.DOUBLE_LITERAL, "1e1'0");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+    }
+    
     public void testNumberLiterals() {
         String text = "0 00 09 1 12 0L 1l 12L 0LL 1ll 0x1 0xf 0XdE 0Xbcy" +
                 " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul 0xffffffffull" +
