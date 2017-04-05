@@ -1,8 +1,8 @@
-#changeset:   315140:fcf2074e320c
+#changeset:   315175:1197667808c9
 #branch:      release82
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Tue Apr 04 16:44:46 2017 +0300
-#summary:     Additional fix for #270278 (Fix ABR and UMR errors discovered in fs_server by dynamic test): Fixed also static checkers errors and warnings; marked false positives with comments
-# the binary below is made on the same change set above, just rebuilt linux64
-F2B294FAA7CF6246C77CF43623B61F6C6E026650 fs_server-1.0.zip
+#date:        Wed Apr 05 23:49:00 2017 +0300
+#summary:     fixing #270307 - Regression after recent fixes in fs_server --   sources
+00784557F614BE02268C50C1BA692A6B19F0EE27 fs_server-1.0.zip
+
