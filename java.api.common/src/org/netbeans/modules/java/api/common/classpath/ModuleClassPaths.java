@@ -772,7 +772,7 @@ final class ModuleClassPaths {
                                         final List<URL> xmoduleLocs = modulesByName.get(xmodule);
                                         myModuleTree = null;
                                         myModule = mu.resolveModule(xmodule);
-                                        if (myModule != null && xmoduleLocs != null) {
+                                        if (xmoduleLocs != null) {
                                             requires.addAll(xmoduleLocs);
                                         }
                                         incompleteVote = myModule == null;
