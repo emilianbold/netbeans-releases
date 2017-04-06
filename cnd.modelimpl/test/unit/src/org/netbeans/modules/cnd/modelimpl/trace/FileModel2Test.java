@@ -608,4 +608,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 269245 - Static array indices in parameter declarations not recognized
         performTest("bug269245.c");
     }
+    
+    public void testBug268930() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performTest("bug268930.c");
+    }
 }
