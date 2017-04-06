@@ -2,11 +2,10 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2017 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
-
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
@@ -26,12 +25,6 @@ License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
-Contributor(s):
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
-Microsystems, Inc. All Rights Reserved.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -42,26 +35,28 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
+
+Contributor(s):
 -->
-<project name="cnd.debugger.dbx" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the project org.netbeans.modules.cnd.debugger.dbx.</description>
-    <import file="nbproject/build-impl.xml"/>
+<project basedir="." default="netbeans" name="cnd.debugger.dbx">
+    <description>Builds, tests, and runs the project org.netbeans.modules.cnd.debugger.dbx</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-    <property name="glic.output.dir" value="com/sun/tools/swdev"/>
+<!--    <property name="glic.output.dir" value="com/sun/tools/swdev"/>
 
-    <import file="${suite.dir}/ssplatform.xml"/>
+    import file="${suite.dir}/ssplatform.xml"/
 
-    <!-- interpose on 'compile' target -->
+     interpose on 'compile' target 
     <target name="-pre-compile"
             depends="our-init, compile-gp_xstart,compile-gp_dbx">
-        <!--
+        
         <fail message="Precompilation pass done" />
-        -->
+        
         <copy todir="src/">
             <fileset dir="build/java"/>
         </copy>
     </target>
-    <!--<target name="compile" depends="-pre-compile,projectized-common.compile"/>-->
+    <target name="compile" depends="-pre-compile,projectized-common.compile"/>
     <target name="clean" depends="projectized-common.clean">
         <delete dir="src/${glic.output.dir}"/>
     </target>
@@ -81,7 +76,7 @@ made subject to such option by the copyright holder.
 
     <target name="compile-gp_dbx" depends="init">
 
-        <!-- need to pre-create the directory; GLIC isn't good at it -->
+         need to pre-create the directory; GLIC isn't good at it 
         <property name="gp_dbx_package_path"
                   value="${glic.output.dir}/glue/dbx"/>
         <mkdir dir="build/java/${gp_dbx_package_path}"/>
@@ -95,9 +90,9 @@ made subject to such option by the copyright holder.
 
             <classpath location="${glue}/bin/glic.jar"/>
             <arg value="-java"/>
-            <!--
+            
             <arg value="-force"/>
-            -->
+            
             <arg value="-dir"/>
             <arg value="."/>
             <arg value="${dbx.gp}"/>
@@ -106,7 +101,7 @@ made subject to such option by the copyright holder.
 
     <target name="compile-gp_xstart" depends="init">
 
-        <!-- need to pre-create the directory; GLIC isn't good at it -->
+         need to pre-create the directory; GLIC isn't good at it 
         <property name="gp_xstart_package_path"
                   value="${glic.output.dir}/glue/xstart"/>
         <mkdir dir="build/java/${gp_xstart_package_path}"/>
@@ -121,12 +116,12 @@ made subject to such option by the copyright holder.
 
             <classpath location="${glue}/bin/glic.jar"/>
             <arg value="-java"/>
-            <!--
+            
             <arg value="-force"/>
-            -->
+            
             <arg value="-dir"/>
             <arg value="."/>
             <arg value="${xstart.gp}"/>
         </java>
-    </target>
+    </target>-->
 </project>
