@@ -648,9 +648,10 @@ public final class VariousUtils {
                 }
             }
         } else if (semiTypeName != null) {
-            QualifiedName qn = QualifiedName.create(semiTypeName);
+            String typeName = CodeUtils.removeNullableTypePrefix(semiTypeName);
+            QualifiedName qn = QualifiedName.create(typeName);
             qn = qn.toNamespaceName().append(translateSpecialClassName(varScope, qn.getName()));
-            if (semiTypeName.startsWith("\\")) { // NOI18N
+            if (typeName.startsWith("\\")) { // NOI18N
                 qn = qn.toFullyQualified();
             } else {
                 NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(varScope);

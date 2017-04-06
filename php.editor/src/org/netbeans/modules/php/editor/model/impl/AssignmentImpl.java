@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
@@ -88,12 +89,19 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind(), isDeprecated);
         this.container = container;
         String modifiedTypeName = typeName;
-        if (typeName != null && !VariousUtils.isSemiType(typeName)) {
-            QualifiedName qualifiedName = QualifiedName.create(typeName);
+        boolean isNullableType = CodeUtils.isNullableType(modifiedTypeName);
+        if (isNullableType) {
+            modifiedTypeName = modifiedTypeName.substring(1);
+        }
+        if (modifiedTypeName != null && !VariousUtils.isSemiType(modifiedTypeName)) {
+            QualifiedName qualifiedName = QualifiedName.create(modifiedTypeName);
             QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, nameRange.getStart(), scope);
             if (qualifiedName.getSegments().size() != fullyQualifiedName.getSegments().size()) {
                 modifiedTypeName = fullyQualifiedName.toString();
             }
+        }
+        if (isNullableType) {
+            modifiedTypeName = CodeUtils.NULLABLE_TYPE_PREFIX + modifiedTypeName;
         }
         this.typeNameScopes = Union2.<String, Collection<? extends TypeScope>>createFirst(modifiedTypeName);
         this.scopeRange = scopeRange;
@@ -127,6 +135,13 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         return null;
     }
 
+    /**
+     * Get the type name from Union.
+     * <b>Note:</b> If a type is a nullable type, it has "?" as a prefix. e.g.
+     * ?\Foo, ?string
+     *
+     * @return the type name
+     */
     String typeNameFromUnion() {
         if (typeNameScopes != null) {
             if (typeNameScopes.hasFirst() && typeNameScopes.first() != null) {
@@ -137,6 +152,20 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the type name from Union.
+     *
+     * @param withoutNullableTypePrefix {@code true} if remove "?" from type
+     * name, otherwise {@code false}
+     * @return the type name
+     */
+    String typeNameFromUnion(boolean withoutNullableTypePrefix) {
+        if (withoutNullableTypePrefix) {
+            return CodeUtils.removeNullableTypePrefix(typeNameFromUnion());
+        }
+        return typeNameFromUnion();
     }
 
     @Override
@@ -161,7 +190,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         if (types != null) {
             return types;
         }
-        String tName = typeNameFromUnion();
+        String tName = typeNameFromUnion(true);
         if (tName != null) {
             //StackOverflow prevention
             if (canBeProcessed(tName)) {
@@ -195,7 +224,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     public boolean isArrayAccess() {
-        final String tpName = typeNameFromUnion();
+        final String tpName = typeNameFromUnion(true);
         return arrayAccess || (tpName != null && tpName.equals(Type.ARRAY));
     }
 

@@ -719,4 +719,18 @@ public final class CodeUtils {
         return typeName.startsWith(NULLABLE_TYPE_PREFIX);
     }
 
+    /**
+     * Remove the nullable type prefix("?") from the type name.
+     *
+     * @param typeName the type name
+     * @return the type name from which the prefix is removed if it is a
+     * nullable type, otherwise itself
+     */
+    public static String removeNullableTypePrefix(String typeName) {
+        if (isNullableType(typeName)) {
+            return typeName.substring(1);
+        }
+        return typeName;
+    }
+
 }
