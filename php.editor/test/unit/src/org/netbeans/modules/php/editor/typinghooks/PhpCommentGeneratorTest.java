@@ -450,7 +450,78 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
         );
     }
 
-   @Override
+    // Nullable Types
+    public void testIssue270235_01() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "class Foo {}\n"
+                + "/**^\n"
+                + "function test(?string $string): ?Foo {\n"
+                + "    \n"
+                + "}",
+
+                // expected
+                "<?php\n"
+                + "class Foo {}\n"
+                + "/**\n"
+                + " * \n"
+                + " * @param string|null $string\n"
+                + " * @return Foo|null^\n"
+                + " */\n"
+                + "function test(?string $string): ?Foo {\n"
+                + "    \n"
+                + "}"
+        );
+    }
+
+    public void testIssue270235_02() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "class Foo {}\n"
+                + "interface TestInterface {\n"
+                + "    /**^\n"
+                + "    public function test(?int $int) : ?Foo;\n"
+                + "}",
+
+                // expected
+                "<?php\n"
+                + "class Foo {}\n"
+                + "interface TestInterface {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param int|null $int\n"
+                + "     * @return \\Foo|null^\n"
+                + "     */\n"
+                + "    public function test(?int $int) : ?Foo;\n"
+                + "}"
+        );
+    }
+
+    public void testVoidReturnType() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "/**^\n"
+                + "function test(?string $string): void {\n"
+                + "    \n"
+                + "}",
+
+                // expected
+                "<?php\n"
+                + "/**\n"
+                + " * \n"
+                + " * @param string|null $string\n"
+                + " * @return void^\n"
+                + " */\n"
+                + "function test(?string $string): void {\n"
+                + "    \n"
+                + "}"
+        );
+    }
+
+    @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);

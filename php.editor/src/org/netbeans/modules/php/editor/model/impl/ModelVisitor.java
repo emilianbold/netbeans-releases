@@ -1020,7 +1020,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (typeResolver.isResolved()) {
                             QualifiedName typeQualifiedName = typeResolver.getTypeName(false);
                             if (typeQualifiedName != null) {
-                                typeName = typeQualifiedName.toString();
+                                typeName = typeResolver.isNullableType()
+                                        ? CodeUtils.NULLABLE_TYPE_PREFIX + typeQualifiedName.toString()
+                                        : typeQualifiedName.toString();
                             }
                         }
                     }
