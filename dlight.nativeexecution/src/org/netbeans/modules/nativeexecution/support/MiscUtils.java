@@ -50,12 +50,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public class MiscUtils {
-    // if a remote host echoing some text, this exception will occur many times for sure
-    // will show only once, but change a priority to high
     private static boolean wasShown = false;
 
     public static boolean isJSCHTooLongException(Exception ex) {
@@ -79,14 +76,7 @@ public class MiscUtils {
         }
         wasShown = true;
         NativeExecutionUserNotification.getDefault().showErrorNotification(title, shortText, longText);
-//        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
-//        longText = "<html>" + longText + "</html>"; // NOI18N
-//        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
     }
-    
-//    public static JComponent getNotificationLabel(String text) {
-//        return new JLabel(text);
-//    }
     
     /**
      * If an sftp exception occurs, a question arises, whether we should call ChannelSftp.quit().
