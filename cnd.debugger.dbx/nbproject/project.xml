@@ -49,9 +49,9 @@ Contributor(s):
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.1.44</specification-version>
+                        <specification-version>0.1.43</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>              
                 <dependency>
                     <code-name-base>org.netbeans.api.debugger</code-name-base>
                     <build-prerequisite/>
@@ -70,6 +70,15 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.dbx.support</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -78,14 +87,6 @@ Contributor(s):
                         <specification-version>1.10.0.1</specification-version>
                     </run-dependency>
                 </dependency>
-<!--                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.dbx.support</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.cnd.debugger.common2</code-name-base>
                     <build-prerequisite/>
