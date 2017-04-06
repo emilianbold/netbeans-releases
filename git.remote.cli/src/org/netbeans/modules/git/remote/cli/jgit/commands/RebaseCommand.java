@@ -55,6 +55,7 @@ import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
@@ -233,14 +234,7 @@ public class RebaseCommand extends GitCommand {
     }
     
     private String read(VCSFileProxy file) throws IOException {
-        FileObject fo = file.toFileObject();
-        Charset encoding = null;
-        if (fo != null) {
-            encoding = FileEncodingQuery.getEncoding(fo);
-        }
-        if (encoding == null) {
-            encoding = Charset.forName("UTF-8"); //NOI18N
-        }
+        Charset encoding = RemoteVcsSupport.getEncoding(file);
         StringBuilder sb = new StringBuilder();
         BufferedReader r = null;
         try {

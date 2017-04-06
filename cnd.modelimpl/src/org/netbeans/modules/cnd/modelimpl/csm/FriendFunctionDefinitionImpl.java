@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
     
-    protected FriendFunctionDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, CsmClass cls, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected FriendFunctionDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, CsmClass cls, boolean _static, FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
         friendClassUID = UIDs.get(cls);
     }
@@ -90,7 +90,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         CharSequence rawName = initRawName(ast);
         
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
@@ -172,7 +172,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         
         @Override
         public FriendFunctionDefinitionImpl create() {
-            FriendFunctionDefinitionImpl fun = new FriendFunctionDefinitionImpl(getName(), getRawName(), getScope(), getCls(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            FriendFunctionDefinitionImpl fun = new FriendFunctionDefinitionImpl(getName(), getRawName(), getScope(), getCls(), isStatic(), CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;
         }

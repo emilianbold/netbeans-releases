@@ -142,7 +142,10 @@ public final class IOTabsController {
                         return tab;
                     }
                 }
-                InputOutputTab newTab = new InputOutputTab(name, factory.createNewTab(name));
+                final InputOutput inputOutput = factory.createNewTab(name);
+                // Latent bug! inputOutput is stored in weak reference.
+                // So caller should keep get and inputOutput in local variable just after getting tab.
+                InputOutputTab newTab = new InputOutputTab(name, inputOutput);
                 tabs.add(newTab);
                 return newTab;
             }

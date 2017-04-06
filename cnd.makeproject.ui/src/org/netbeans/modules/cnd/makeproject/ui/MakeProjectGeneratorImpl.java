@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.ui.wizard.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.api.wizards.MakeSampleProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -222,8 +223,8 @@ public class MakeProjectGeneratorImpl extends ProjectGenerator {
         }
 
         projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders,
-                logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, /*mainFileParams.templateDO,*/ false); // FIXUP: need a better check whether logical folder should be ccreated or not.
-
+                logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, prjParams.getMainFileTool(), false); // FIXUP: need a better check whether logical folder should be ccreated or not.
+         
         projectDescriptor.save();
         // finish postponed activity when project metadata is ready
         MakeTemplateListener instance = MakeTemplateListener.getInstance();
@@ -361,7 +362,7 @@ public class MakeProjectGeneratorImpl extends ProjectGenerator {
                 Exceptions.printStackTrace(ex);
             }
         };
-
+        String fromMap = WizardConstants.PROPERTY_LANGUAGE_STANDARD.fromMap(params);
         return new CreateMainParams(mainName, mt, runnable);
     }
 

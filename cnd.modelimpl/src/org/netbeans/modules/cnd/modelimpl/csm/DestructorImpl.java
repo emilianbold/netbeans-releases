@@ -67,7 +67,7 @@ import org.openide.util.CharSequences;
  */
 public final class DestructorImpl extends MethodImpl<CsmMethod> {
 
-    protected DestructorImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected DestructorImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, cls, visibility, _virtual, false, false, _explicit, _static, _const, false, file, startOffset, endOffset, global);
     }
 
@@ -83,7 +83,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
         CharSequence rawName = initRawName(ast);
 
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -139,7 +139,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
             boolean _explicit = false;
 
 
-            DestructorImpl method = new DestructorImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            DestructorImpl method = new DestructorImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), FunctionImpl.CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             //StringBuilder clsTemplateSuffix = new StringBuilder();

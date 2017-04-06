@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -69,6 +70,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
+@SuppressWarnings("rawtypes") // UI editor produces code with tons of rawtypes warnings
 /*package*/ final class CreateHostVisualPanel2 extends CreateHostVisualPanelBase {
 
     private final ChangeListener wizardListener;
@@ -340,7 +342,7 @@ import org.openide.util.RequestProcessor;
 
                 tpOutput.setText("");
 
-                phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
+                phandle = ProgressHandleFactory.createHandle("", (Action)null); ////NOI18N
                 pbarStatusPanel.removeAll();
                 pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
                 pbarStatusPanel.validate();

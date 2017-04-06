@@ -57,9 +57,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -323,14 +322,14 @@ public class ConfigurationMakefileWriter {
                     break;
                 }
                 if (line.contains("<PN>")) { // NOI18N
-                    line = line.replaceFirst("<PN>", projectName); // NOI18N
+                    line = line.replace("<PN>", projectName); // NOI18N
                 } else if (line.contains("<CNS>")) { // NOI18N
-                    line = line.replaceFirst("<CNS>", configurations.toString()); // NOI18N
+                    line = line.replace("<CNS>", configurations.toString()); // NOI18N
                 } else if (line.contains("<CN>")) { // NOI18N
                     if (projectDescriptor.getConfs().getConf(0) != null) {
-                        line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
+                        line = line.replace("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
                     } else {
-                        line = line.replaceFirst("<CN>", ""); // NOI18N
+                        line = line.replace("<CN>", ""); // NOI18N
                     }
                 }
                 bw.write(line + "\n"); // NOI18N
@@ -725,7 +724,7 @@ public class ConfigurationMakefileWriter {
             bw.write(".build-tests-conf: .build-tests-subprojects .build-conf ${TESTFILES}\n"); // NOI18N
             bw.write(".build-tests-subprojects:\n"); // NOI18N
 
-            Set<MakeArtifact> subProjects = new HashSet<>();
+            Set<MakeArtifact> subProjects = new LinkedHashSet<>();
 
             for (Folder folder : getTests(projectDescriptor)) {
                 List<LinkerConfiguration> linkerConfigurations = getLinkerConfigurations(folder, conf);

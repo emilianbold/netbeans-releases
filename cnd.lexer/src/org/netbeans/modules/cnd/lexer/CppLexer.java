@@ -86,7 +86,8 @@ public class CppLexer extends CndLexer {
         // also eat string and char literals to prevent incorrect recognition
         // of started block comment like #define A "/*"
         while (true) {
-            switch (read(true)) {
+            final int c = read(true);
+            switch (c) {
                 case '\"':
                     if (!skipLiteral(true)) {
                         return tokenPart(CppTokenId.PREPROCESSOR_DIRECTIVE, PartType.START);
@@ -98,12 +99,14 @@ public class CppLexer extends CndLexer {
                     }
                     break;
                 case '/':
-                    switch (read(true)) {
+                    final int next = read(true);
+                    switch (next) {
                         case '/':
-                            skipLineComment();
-                            break;
-                        case '*': // block or doxygen comment
-                            skipBlockComment();
+                            skipLineCommentInPP();
+                            // line comment always the last token on the line, so it closes pp-directive
+                            return token(CppTokenId.PREPROCESSOR_DIRECTIVE);
+                        case '*': // block or doxygen comment in pp-directive
+                            skipBlockCommentInPP();
                             break;
                         case '\r':
                             consumeNewline();
@@ -123,12 +126,12 @@ public class CppLexer extends CndLexer {
         }
     }
 
-    private void skipBlockComment() {
+    private void skipBlockCommentInPP() {
         super.finishBlockComment(false);
     }
     
-    private void skipLineComment() {
-        super.finishLineComment(false);
+    private void skipLineCommentInPP() {
+        super.finishLineComment(false, true);
     }
 
     @SuppressWarnings("fallthrough")

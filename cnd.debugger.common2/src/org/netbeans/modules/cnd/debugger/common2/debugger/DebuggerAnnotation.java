@@ -164,7 +164,7 @@ public class DebuggerAnnotation
         }
         this.line = newLine;
     }
-
+    
     /*
      * [re]attach to the line associated with us.
      */
@@ -193,11 +193,13 @@ public class DebuggerAnnotation
 
         if (line != null) {
             attach(line);
+            //remove first to avoid miltiple notfication
+            line.removePropertyChangeListener(this);
             line.addPropertyChangeListener(this);
         }
     }
 
-    private void ourDetach() {
+    public void ourDetach() {
         if (this.line != null) {
             this.line.removePropertyChangeListener(this);
             super.detach();

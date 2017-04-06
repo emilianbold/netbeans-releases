@@ -55,7 +55,7 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.DisconnectAction", category = "NativeRemote")
-@ActionRegistration(displayName = "DisconnectMenuItem")
+@ActionRegistration(displayName = "#DisconnectMenuItem", lazy = false)
 @ActionReference(path = "Remote/Host/Actions", name = "DisconnectAction", position = 200)
 public class DisconnectAction extends SingleHostAction {
     

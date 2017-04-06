@@ -46,7 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,8 +57,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -70,10 +71,10 @@ public class ProcessUtils  {
     
     private ProcessUtils() {
     }
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
 
     public static ExitStatus executeInDir(final String workingDir, final Map<String,String> env, boolean binaryOutput, Canceler canceler,
-            final ProcessBuilder builder, final String executable, final String... args) {
+            final VCSFileProxy fileToBuilder, final String executable, final String... args) {
+        ProcessBuilder builder = VersioningSupport.createProcessBuilder(fileToBuilder);
         if (workingDir != null) {
             builder.setWorkingDirectory(workingDir);
         }
@@ -82,7 +83,8 @@ public class ProcessUtils  {
         }
         builder.setExecutable(executable);
         builder.setArguments(Arrays.asList(args));
-        return execute(builder, binaryOutput, canceler);
+        Charset encoding = RemoteVcsSupport.getEncoding(fileToBuilder);
+        return execute(builder, binaryOutput, canceler, encoding);
     }
 
     public static final class Canceler implements Cancellable {
@@ -106,7 +108,7 @@ public class ProcessUtils  {
         }
     }
     
-    private static ExitStatus execute(final ProcessBuilder processBuilder, boolean binaryOutput, Canceler canceler) {
+    private static ExitStatus execute(final ProcessBuilder processBuilder, boolean binaryOutput, Canceler canceler, final Charset encoding) {
         ExitStatus result;
         if (processBuilder == null) {
             throw new NullPointerException("NULL process builder!"); // NOI18N
@@ -119,7 +121,7 @@ public class ProcessUtils  {
 
                     @Override
                     public String call() throws Exception {
-                        return readProcessErrorLine(process);
+                        return readProcessErrorLine(process, encoding);
                     }
                 }, "e"); // NOI18N
                 Future<byte[]> output = NativeTaskExecutorService.submit(new Callable<byte[]>() {
@@ -135,14 +137,14 @@ public class ProcessUtils  {
 
                     @Override
                     public String call() throws Exception {
-                        return readProcessErrorLine(process);
+                        return readProcessErrorLine(process, encoding);
                     }
                 }, "e"); // NOI18N
                 Future<String> output = NativeTaskExecutorService.submit(new Callable<String>() {
 
                     @Override
                     public String call() throws Exception {
-                        return readProcessOutputLine(process);
+                        return readProcessOutputLine(process, encoding);
                     }
                 }, "o"); // NOI18N
                 result = new ExitStatus(process.waitFor(), output.get(), error.get());
@@ -158,35 +160,25 @@ public class ProcessUtils  {
         return result;
     }
 
-    private static String getRemoteCharSet() {
-        return remoteCharSet;
-    }
-
-    private static BufferedReader getReader(final InputStream is, String charSet) {
+    private static BufferedReader getReader(final InputStream is, Charset charSet) {
         // set charset
-        try {
-            return new BufferedReader(new InputStreamReader(is, charSet));
-        } catch (UnsupportedEncodingException ex) {
-            String msg = getRemoteCharSet() + " encoding is not supported, try to override it with cnd.remote.charset"; //NOI18N
-            Exceptions.printStackTrace(new IllegalStateException(msg, ex));
-        }
-        return new BufferedReader(new InputStreamReader(is));
+        return new BufferedReader(new InputStreamReader(is, charSet));
     }
 
-    private static String readProcessErrorLine(final Process p) throws IOException {
+    private static String readProcessErrorLine(final Process p, Charset charSet) throws IOException {
         if (p == null) {
             return ""; // NOI18N
         }
 
-        return readProcessStreamLine(p.getErrorStream(), getCharSet(p));
+        return readProcessStreamLine(p.getErrorStream(), charSet);
     }
 
-    private static String readProcessOutputLine(final Process p) throws IOException {
+    private static String readProcessOutputLine(final Process p, Charset charSet) throws IOException {
         if (p == null) {
             return ""; // NOI18N
         }
 
-        return readProcessStreamLine(p.getInputStream(), getCharSet(p));
+        return readProcessStreamLine(p.getInputStream(), charSet);
     }
 
     private static byte[] readProcessOutputBytes(final Process p) throws IOException {
@@ -197,11 +189,7 @@ public class ProcessUtils  {
         return readProcessStreamBytes(p.getInputStream());
     }
 
-    private static String getCharSet(Process process) {
-        return remoteCharSet;
-    }
-
-    private static String readProcessStreamLine(final InputStream stream, String charSet) throws IOException {
+    private static String readProcessStreamLine(final InputStream stream, Charset charSet) throws IOException {
         if (stream == null) {
             return ""; // NOI18N
         }

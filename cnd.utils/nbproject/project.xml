@@ -159,9 +159,11 @@ Contributor(s):
                 <friend>com.microchip.mplab.nbide.embedded.utils</friend>
                 <friend>com.oracle.tools.ide.binary.dependencies</friend>
                 <friend>com.oracle.tools.ide.binary.dependencies.cm</friend>
+                <friend>com.oracle.tools.ide.projectless.branding</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.oracle.tools.usagecounting</friend>
+                <friend>com.sun.tools.analytics.branding</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
@@ -184,6 +186,7 @@ Contributor(s):
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>com.sun.tools.ide.branding</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>

@@ -47,11 +47,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
@@ -176,6 +179,22 @@ public final class RemoteVcsSupport {
         return getImpl().getOutputStream(proxy);
     }
 
+    public static Charset getEncoding(VCSFileProxy proxy) {
+        FileObject fo = proxy.toFileObject();
+        Charset encoding = null;
+        if (fo != null) {
+            encoding = FileEncodingQuery.getEncoding(fo);
+        }
+        if(encoding == null) {
+            if (proxy.toFile() == null) {
+                encoding = Charset.forName(System.getProperty("cnd.remote.charset","UTF-8"));
+            } else {
+                encoding = Charset.defaultCharset();
+            }
+        }
+        return encoding;
+    }
+    
     public static void delete(VCSFileProxy file) {
         getImpl().delete(file);
     }

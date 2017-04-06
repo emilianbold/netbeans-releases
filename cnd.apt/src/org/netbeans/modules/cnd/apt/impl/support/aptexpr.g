@@ -282,19 +282,34 @@ constant returns [long r] {r=0;}
             (
                 LITERAL_true { r=toLong(true);}
             |	LITERAL_false { r=toLong(false);}
-            |   n:NUMBER {r=toLong(n.getText());}
             |   id:IDENT {r=evalID(id);}
-            | o:OCTALINT {r=toLong(o.getText());}
-            | d:DECIMALINT {r=toLong(d.getText());}
-            | x:HEXADECIMALINT {r=toLong(x.
-                getText());}
-            | b:BINARYINT {r=binaryToLong(b.getText());}
-            | c: CHAR_LITERAL {r=charToLong(c.getText());; }
+            |   r = ud_constant
 //          | f1: FLOATONE {r=Integer.parseInt(f1.getText());}
 //          | f2: FLOATTWO {r=Integer.parseInt(f2.getText());}
             )
             {checkBigValues(r);}
 	;
+
+ud_constant returns [long r] {r=0;}
+    :
+    (
+        // Use syntactic predicate to avoid match error on EOF token after ud_constant_value
+        (ud_constant_value IDENT)=> r = ud_constant_value IDENT
+        | r = ud_constant_value
+    )
+    ;
+
+ud_constant_value returns [long r] {r=0;}
+    :
+    (
+        n:NUMBER {r=toLong(n.getText());}
+        | o:OCTALINT {r=toLong(o.getText());}
+        | d:DECIMALINT {r=toLong(d.getText());}
+        | x:HEXADECIMALINT {r=toLong(x.getText());}
+        | b:BINARYINT {r=binaryToLong(b.getText());}
+        | c:CHAR_LITERAL {r=charToLong(c.getText()); }
+    )
+    ;
 
 /* APTExpressionWalker is not used any more, because all evaluations are done in APTExprParser
 class APTExpressionWalker extends TreeParser;

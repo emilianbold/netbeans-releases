@@ -65,7 +65,7 @@ public class FsTestActions {
     private FsTestActions() {}
     
     @ActionID(id = "org.netbeans.modules.remote.ui.TestPerformanceAction", category = "Window")
-    @ActionRegistration(displayName = "#ActionTestPerf")
+    @ActionRegistration(displayName = "#ActionTestPerf", lazy = true)
     @ActionReference(position = 900, path = "UI/ToolActions/Files")
     public static ContextAwareAction add() { 
         return TEST_PERF_ACTION; 

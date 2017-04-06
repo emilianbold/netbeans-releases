@@ -94,7 +94,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private CsmCompoundStatement body;
     private int parseCount;
 
-    protected FunctionDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected FunctionDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
      
@@ -110,7 +110,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         CharSequence rawName = initRawName(ast);
         
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
@@ -372,7 +372,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             }
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
 
-            FunctionDefinitionImpl<?> impl = new FunctionDefinitionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);        
+            FunctionDefinitionImpl<?> impl = new FunctionDefinitionImpl(getName(), getRawName(), scope, isStatic(), FunctionImpl.CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), true);        
             temporaryRepositoryRegistration(true, impl);
 
 //            StringBuilder clsTemplateSuffix = new StringBuilder();

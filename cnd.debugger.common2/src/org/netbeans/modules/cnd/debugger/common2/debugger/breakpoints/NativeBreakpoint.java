@@ -1952,7 +1952,7 @@ public abstract class NativeBreakpoint
 	if (show)
 	    a.attach(true);
 	else
-	    a.detach();
+	    a.ourDetach();
     }
 
 

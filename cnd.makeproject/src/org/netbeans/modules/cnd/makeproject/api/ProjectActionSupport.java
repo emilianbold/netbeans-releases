@@ -108,6 +108,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  * Most of the code here came from DefaultProjectActionHandler as result of
@@ -509,6 +510,9 @@ public class ProjectActionSupport {
                     }
 
                     final InputOutputTab ioTab = tabs.getTab(tabBaseName, tabFactory);
+                    // hold input output because ioTab has weak reference on 
+                    final InputOutput inputOutput = IOTabsController.getInputOutput(ioTab);
+                    
 //                    if (isRunAction) {
 //                        ioTab.resetIO();
 //                    }
@@ -586,7 +590,7 @@ public class ProjectActionSupport {
                         handlerToUse.addExecutionListener(eventExecutionListener);
                         progressHandle = CancellableProgressHandleFactory.getProgressHandleFactory().createProgressHandle(ioTab, handlerToUse, epa);
                         progressHandle.start();
-                        handlerToUse.execute(IOTabsController.getInputOutput(ioTab));
+                        handlerToUse.execute(inputOutput);
                         try {
                             eventProcessed.await();
                         } catch (InterruptedException ex) {

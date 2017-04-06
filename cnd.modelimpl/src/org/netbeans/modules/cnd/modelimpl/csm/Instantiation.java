@@ -1480,6 +1480,21 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
 
         @Override
+        public boolean isVolatile() {
+            return declaration.isVolatile();
+        }
+
+        @Override
+        public boolean isLValue() {
+            return declaration.isLValue();
+        }
+
+        @Override
+        public boolean isRValue() {
+            return declaration.isRValue();
+        }
+
+        @Override
         public boolean isAbstract() {
             return declaration.isAbstract();
         }

@@ -286,15 +286,30 @@ constant returns [BigInteger r] {r=BigInteger.ZERO;}
             (
                 LITERAL_true { r=toBigInteger(true);}
             |	LITERAL_false { r=toBigInteger(false);}
-            |   n:NUMBER {r=toBigInteger(n.getText());}
             |   id:IDENT {r=evalID(id);}
-            | o:OCTALINT {r=toBigInteger(o.getText());}
-            | d:DECIMALINT {r=toBigInteger(d.getText());}
-            | x:HEXADECIMALINT {r=toBigInteger(x.
-                getText());}
-            | b:BINARYINT {r=binaryToBigInteger(b.getText());}
-            | c: CHAR_LITERAL {r=charToBigInteger(c.getText());; }
+            |   r = ud_constant
 //          | f1: FLOATONE {r=toBigInteger(f1.getText());}
 //          | f2: FLOATTWO {r=toBigInteger(f2.getText());}
             )
 	;
+
+ud_constant returns [BigInteger r] {r=BigInteger.ZERO;}
+    :
+    (
+        // Use syntactic predicate to avoid match error on EOF token after ud_constant_value
+        (ud_constant_value IDENT)=> r = ud_constant_value IDENT
+        | r = ud_constant_value
+    )
+    ;
+
+ud_constant_value returns [BigInteger r] {r=BigInteger.ZERO;}
+    :
+    (
+        n:NUMBER {r=toBigInteger(n.getText());}
+        | o:OCTALINT {r=toBigInteger(o.getText());}
+        | d:DECIMALINT {r=toBigInteger(d.getText());}
+        | x:HEXADECIMALINT {r=toBigInteger(x.getText());}
+        | b:BINARYINT {r=binaryToBigInteger(b.getText());}
+        | c:CHAR_LITERAL {r=charToBigInteger(c.getText()); }
+    )
+    ;

@@ -597,7 +597,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
 
         @Override
         public CharSequence getSignature() {
-            return FunctionImpl.createSignature(getName(), getParameters(), null, type.isConst());
+            return FunctionImpl.createSignature(getName(), getParameters(), null, type.isConst(), false, false, false);
         }
 
         @Override

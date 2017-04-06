@@ -367,9 +367,7 @@ public final class HighlightProvider  {
                     try {
                         provider.getErrors(aRequest, aResponse);
                         if (TRACE_TASKS) {System.err.println("finish "+provider);} //NOI18N
-                    } catch (AssertionError ex) {
-                        ex.printStackTrace(System.err);
-                    } catch (Exception ex) {
+                    } catch (Throwable ex) {
                         ex.printStackTrace(System.err);
                     }
                 }

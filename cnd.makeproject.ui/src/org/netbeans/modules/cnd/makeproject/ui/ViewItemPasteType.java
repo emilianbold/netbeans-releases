@@ -210,39 +210,35 @@ final class ViewItemPasteType extends PasteType {
         } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
             // Copy&Paste
             if (toFolder.getProject() == fromFolder.getProject()) {
-                if (CndPathUtilities.isPathAbsolute(fromItem.getPath())) { 
-                    Toolkit.getDefaultToolkit().beep();
-                } else {
-                    String ext = itemFO.getExt();
-                    if (toFolder.isDiskFolder()) {
-                        if (itemFO.isValid()) {
-                            String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
-                            FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
-                            String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getName(), ext);
-                            FileObject copiedFileObject = itemFO.copy(toFolderFO, newName, ext);
+                String ext = itemFO.getExt();
+                if (toFolder.isDiskFolder()) {
+                    if (itemFO.isValid()) {
+                        String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
+                        FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
+                        String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getName(), ext);
+                        FileObject copiedFileObject = itemFO.copy(toFolderFO, newName, ext);
 
-                            String itemPath = copiedFileObject.getPath();
-                            itemPath = CndPathUtilities.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
-                            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
-                            Item copiedItemItem = toFolder.findItemByPath(itemPath);
-                            if (copiedItemItem != null) {
-                                copyItemConfigurations(copiedItemItem.getItemConfigurations(), oldConfigurations);
-                            }
+                        String itemPath = copiedFileObject.getPath();
+                        itemPath = CndPathUtilities.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
+                        itemPath = CndPathUtilities.normalizeSlashes(itemPath);
+                        Item copiedItemItem = toFolder.getConfigurationDescriptor().findProjectItemByPath(itemPath);
+                        if (copiedItemItem != null) {
+                            copyItemConfigurations(copiedItemItem.getItemConfigurations(), oldConfigurations);
                         }
-                    } else {
-                        if (itemFO.isValid()) {
-                            String parent = itemFO.getParent().getPath();
-                            String newName = CndPathUtilities.createUniqueFileName(itemFO.getParent(), itemFO.getName(), ext);
-                            itemFO.copy(itemFO.getParent(), newName, ext);
-                            String newPath = parent + "/" + newName; // NOI18N
-                            if (ext.length() > 0) {
-                                newPath = newPath + "." + ext; // NOI18N
-                            }
-                            newPath = CndPathUtilities.toRelativePath(fromFolder.getProject().getProjectDirectory().getPath(), newPath);
-                            Item newItem = ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath));
-                            toFolder.addItemAction(newItem);
-                            copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
+                    }
+                } else {
+                    if (itemFO.isValid()) {
+                        String parent = itemFO.getParent().getPath();
+                        String newName = CndPathUtilities.createUniqueFileName(itemFO.getParent(), itemFO.getName(), ext);
+                        itemFO.copy(itemFO.getParent(), newName, ext);
+                        String newPath = parent + "/" + newName; // NOI18N
+                        if (ext.length() > 0) {
+                            newPath = newPath + "." + ext; // NOI18N
                         }
+                        newPath = CndPathUtilities.toRelativePath(fromFolder.getProject().getProjectDirectory().getPath(), newPath);
+                        Item newItem = ItemFactory.getDefault().createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), CndPathUtilities.normalizeSlashes(newPath));
+                        toFolder.addItemAction(newItem);
+                        copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
                     }
                 }
             } else {

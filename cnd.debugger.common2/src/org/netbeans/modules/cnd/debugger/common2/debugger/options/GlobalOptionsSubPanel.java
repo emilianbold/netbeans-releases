@@ -65,13 +65,15 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
 		    DebuggerOption.FINISH_SESSION.createUI(),
 		    DebuggerOption.SESSION_REUSE.createUI(),
 		    DebuggerOption.BALLOON_EVAL.createUI(),
-		};
+                    DebuggerOption.ARGS_VALUES_IN_STACK.createUI(),
+		};  
 	    OptionUI[]	panels = {
 		    //DebuggerOption.SUPPRESS_STARTUP_MESSAGE.createUI(),
 		    DebuggerOption.TRACE_SPEED.createUI(),
                     DebuggerOption.FINISH_SESSION.createUI(),
 		    DebuggerOption.RUN_AUTOSTART.createUI(),
 		    DebuggerOption.BALLOON_EVAL.createUI(),
+                    DebuggerOption.ARGS_VALUES_IN_STACK.createUI(),
 		};
 
 	    if (NativeDebuggerManager.isStandalone() || NativeDebuggerManager.isPL()) {
@@ -136,7 +138,7 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
 	setBorder(new javax.swing.border.EtchedBorder());
     }
 
-    protected void setup(OptionUI[] panels) {
+   protected void setup(OptionUI[] panels) {
 	UISet.add(panels);
 	OptionUI.fillPanel(this, panels);
     }
