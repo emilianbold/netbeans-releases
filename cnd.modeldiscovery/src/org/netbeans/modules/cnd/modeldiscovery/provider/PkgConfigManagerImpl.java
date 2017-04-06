@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -52,7 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class PkgConfigManagerImpl extends PkgConfigManager {
 
     @Override
-    public PkgConfig getPkgConfig(ExecutionEnvironment env) {
-        return new PkgConfigImpl(env);
+    public PkgConfig getPkgConfig(ExecutionEnvironment env, MakeConfiguration conf) {
+        return new PkgConfigImpl(env, conf);
     }
 }

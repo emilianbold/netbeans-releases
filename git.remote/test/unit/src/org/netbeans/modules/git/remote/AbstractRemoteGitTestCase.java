@@ -402,9 +402,8 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         String[] args = command.toArray(new String[command.size()]);
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(workdir);
         VCSFileProxySupport.mkdirs(workdir);
-        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, processBuilder, "git", args);
+        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, workdir, "git", args);
         if (!executeInDir.error.isEmpty()) {
             throw new Exception(executeInDir.error);
         }

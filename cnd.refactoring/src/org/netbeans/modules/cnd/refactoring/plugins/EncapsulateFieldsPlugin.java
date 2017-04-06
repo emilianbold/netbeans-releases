@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
@@ -231,25 +232,30 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
 
     private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<CsmVisibility> methodModifier, Set<CsmVisibility> fieldModifier, 
             boolean alwaysUseAccessors, boolean methodInline) {
-        refactorings = new ArrayList<>(refactorFields.size());
-        CsmFile[] declDefFiles = null;
-        for (EncapsulateFieldInfo info : refactorFields) {
-            if (declDefFiles == null) {
-                declDefFiles = GeneratorUtils.getDeclarationDefinitionFiles(info.getField().getContainingClass());
+        CsmCacheManager.enter();
+        try {
+            refactorings = new ArrayList<>(refactorFields.size());
+            CsmFile[] declDefFiles = null;
+            for (EncapsulateFieldInfo info : refactorFields) {
+                if (declDefFiles == null) {
+                    declDefFiles = GeneratorUtils.getDeclarationDefinitionFiles(info.getField().getContainingClass());
+                }
+                EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField(), declDefFiles[0], declDefFiles[1]);
+                ref.setGetterName(info.getGetterName());
+                ref.setSetterName(info.getSetterName());
+                ref.setMethodModifiers(methodModifier);
+                ref.setFieldModifiers(fieldModifier);
+                ref.setAlwaysUseAccessors(alwaysUseAccessors);
+                ref.setMethodInline(methodInline);
+                ref.setDefaultGetter(info.getDefaultGetter());
+                ref.setDefaultSetter(info.getDefaultSetter());
+                ref.getContext().add(refactoring.getContext().lookup(InsertPoint.class));
+                ref.getContext().add(refactoring.getContext().lookup(Documentation.class));
+                ref.getContext().add(refactoring.getContext().lookup(SortBy.class));
+                refactorings.add(new EncapsulateFieldRefactoringPlugin(ref));
             }
-            EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField(), declDefFiles[0], declDefFiles[1]);
-            ref.setGetterName(info.getGetterName());
-            ref.setSetterName(info.getSetterName());
-            ref.setMethodModifiers(methodModifier);
-            ref.setFieldModifiers(fieldModifier);
-            ref.setAlwaysUseAccessors(alwaysUseAccessors);
-            ref.setMethodInline(methodInline);
-            ref.setDefaultGetter(info.getDefaultGetter());
-            ref.setDefaultSetter(info.getDefaultSetter());
-            ref.getContext().add(refactoring.getContext().lookup(InsertPoint.class));
-            ref.getContext().add(refactoring.getContext().lookup(Documentation.class));
-            ref.getContext().add(refactoring.getContext().lookup(SortBy.class));
-            refactorings.add(new EncapsulateFieldRefactoringPlugin(ref));
+        } finally {
+            CsmCacheManager.leave();
         }
     }
 

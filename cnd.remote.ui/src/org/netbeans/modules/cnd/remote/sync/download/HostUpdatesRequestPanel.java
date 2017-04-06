@@ -221,9 +221,8 @@ public class HostUpdatesRequestPanel extends JPanel {
     }
 
     private void apply() {
-        persistence.setRememberChoice(cbRememberChoice.isSelected());
         for (RowData data : model) {
-            persistence.setFileSelected(data.fileInfo.getLocalFile(), data.selected);
+            persistence.setFileSelected(data.fileInfo.getLocalFile(), data.selected, cbRememberChoice.isSelected());
         }
         persistence.store();
     }

@@ -65,6 +65,7 @@ import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
@@ -84,7 +85,7 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor("PkgConfigLibrary init",1); //NOI18N
 
     /** Creates new form PkgConfigLibrary */
-    public PkgConfigLibrary(final ExecutionEnvironment env, final JButton okButton) {
+    public PkgConfigLibrary(final ExecutionEnvironment env, final MakeConfiguration conf, final JButton okButton) {
         initComponents();
 	list.setCellRenderer(myListCellRenderer);
         avaliablePkgConfigs = new ArrayList<>();
@@ -141,7 +142,7 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
 
                 } else {
                     if (HostInfoUtils.isHostInfoAvailable(env)) {
-                        PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(env);
+                        PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(env, conf);
                         TreeMap<String, PackageConfiguration> map = new TreeMap<>();
                         pkgConfig.getAvaliablePkgConfigs().forEach((conf) -> {
                             map.put(conf.getName(), conf);

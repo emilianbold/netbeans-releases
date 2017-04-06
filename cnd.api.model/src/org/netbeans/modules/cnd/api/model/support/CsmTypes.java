@@ -58,6 +58,14 @@ public final class CsmTypes {
     // private service constructor
     private CsmTypes() {
     }
+    
+    public static boolean isDecltype(CharSequence classifierText) {
+        return getProvider().isDecltype(classifierText);
+    }
+    
+    public static CharSequence[] getDecltypeAliases() {
+        return getProvider().getDecltypeAliases();
+    }
 
     public static CsmType createType(CharSequence seq, CsmScope scope, SequenceDescriptor descriptor) {
         return getProvider().createType(seq, scope, descriptor);

@@ -40,77 +40,56 @@
 # To build in debug mode export DEBUG=Y variable
 
 # To get this script work, set variables:
-#  DLIGHT   - if in DEBUG mode           - path to temporary dlight directory (where pty is stored)
-#  DISCOVER - if building on Solaris     - path to discover binary tool
+#  dlight   - if in DEBUG mode           - path to temporary dlight directory (where pty is stored)
 #  CC       - if building with DevStudio - path to CC binary
 
-if [ "$1" = "--solaris" ]; then
-	SOLARIS=1
+CFLAGS_EXTRA=""
+LDFLAGS_EXTRA=""
+
+
+case "$1" in
+  -d | --debug )
+      DEBUG=TRUE;
+      dlight=${dlight:-"/tmp/dlight_ilia/eb486d37"}
+      CFLAGS_EXTRA="${CFLAGS_EXTRA} -g -O0"
+      shift
+      ;;
+esac
+
+if [ -z "$DEBUG" ]; then
+    CFLAGS_EXTRA="${CFLAGS_EXTRA} -s -O2"
+    LDFLAGS_EXTRA="${LDFLAGS_EXTRA} -s"
 fi
 
-if [ -n "$DEBUG" ]; then
-    DLIGHT="/path/to/dlight/tmp"
-    export NOSTRIP=Y
-fi
+sources=". pty killall unbuffer"
 
-MAKE=`which gmake || which make`
+script_dir=`pwd`
 
-if [ "x$SOLARIS" != "x" ]; then
-	DISCOVER=/path/to/discover
-	args='CC=/path/to/cc NOSTRIP=1 CFLAGS_EXTRA=-O3 64BITS=64 CF_COMMON=""'
-else
-	CC=gcc
-	args='64BITS=64'
-fi
+for dir in $sources; do
+    (
+        cd $dir
+        sh "${script_dir}/build.sh" clean
+        sh "${script_dir}/build.sh" clean-all 2> /dev/null
+        sh "${script_dir}/build.sh" $@ CFLAGS_EXTRA=\"$CFLAGS_EXTRA\" LDFLAGS_EXTRA=\"$LDFLAGS_EXTRA\"
+        cd -
+    )
+done
 
-sh build.sh clean
+build_all_dir="buildall"
 
-cd pty
-rm -rf dist
-cd ..
+rm -rf "$build_all_dir"
+mkdir -p "$build_all_dir"
 
-cd killall
-rm -rf dist
-cd ..
+find "../release/bin/nativeexecution/" "unbuffer/dist/" "pty/dist" "killall/dist" -not -name "*.sh" -type f -exec cp {} $build_all_dir \;
 
-cd unbuffer
-rm -rf dist
-cd ..
-
-
-sh build.sh $args
-
-cd pty
-${MAKE} $args
-cd ..
-
-cd killall
-${MAKE} $args
-cd ..
-
-cd unbuffer
-${MAKE} $args
-cd ..
-
-BUILD_ALL=buildall
-
-mkdir -p $BUILD_ALL
-cd $BUILD_ALL
-rm -f *
-cd ..
-
-find "../release/bin/nativeexecution/" "unbuffer/dist/" "pty/dist" "killall/dist" -not -name "*.sh" -type f -exec cp {} $BUILD_ALL \;
-
-if [ "x$SOLARIS" != "x" ]; then
-	find "$BUILD_ALL" -type f -exec sh -c "$DISCOVER"' -v -w $0.%p.txt $0' {} \;
-fi
-
-if [ -n "$DEBUG" ]; then
-#    sed -i '/copyFile(localFile, safeLocalFile);/c\ /* copyFile(localFile, safeLocalFile); */' ../src/org/netbeans/modules/nativeexecution/api/util/HelperUtility.java    
+if [ "x$DEBUG" != "x" ]; then
+    sed -i '/copyFile(localFile, safeLocalFile);/c\ /* copyFile(localFile, safeLocalFile); */' ../src/org/netbeans/modules/nativeexecution/api/util/HelperUtility.java    
     PTY=`find "pty/dist" -name pty`
-    find "${DLIGHT}" -name pty -exec cp $PTY {} \;
-    find "${DLIGHT}" -name pty -exec file {} \;
+    find "${dlight}" -name pty -exec sh -c 'lsof -t $1 | xargs kill 2> /dev/null' - {} \; 
+    find "${dlight}" -name pty -exec cp $PTY {} \;
+    find "${dlight}" -name pty -exec file {} +
 fi
 
-find $BUILD_ALL -type f | xargs file
+echo "================================================"
+find "$build_all_dir" -exec file {} + 
 

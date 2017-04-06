@@ -67,6 +67,7 @@ public final class NetworkNeighbourhoodList extends JPanel implements ExplorerMa
     private final NeighbourhoodRootNode rootNode;
     private final ChangeListener changeListener;
 
+    @SuppressWarnings("deprecation")
     public NetworkNeighbourhoodList() {
         setLayout(new BorderLayout());
         mgr = new ExplorerManager();

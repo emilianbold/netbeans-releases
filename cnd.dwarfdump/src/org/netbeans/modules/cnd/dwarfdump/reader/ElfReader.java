@@ -252,8 +252,12 @@ public class ElfReader extends ByteStreamReader {
             sharedLibraries = new SharedLibraries();
             for(String string : stringTableSection.getStrings()){
                 //_libhello4lib_dll_iname
-                if (string.endsWith("_dll_iname") && string.startsWith("_")) { //NOI18N
-                    String lib = string.substring(1,string.length()-10)+".dll"; //NOI18N
+                //libhello3lib_dll_iname (mingw and cygwin start to use without _)
+                if (string.endsWith("_dll_iname")) { //NOI18N
+                    String lib = string.substring(0,string.length()-10)+".dll"; //NOI18N
+                    if (string.startsWith("_")) { //NOI18N
+                        lib = lib.substring(1);
+                    }
                     sharedLibraries.addDll(lib);
                 }
             }

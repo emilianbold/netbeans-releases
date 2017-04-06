@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
@@ -57,8 +58,10 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
@@ -103,15 +106,54 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
     }
     
     @Override
-    public Collection<CsmClass> getHierarchy(CsmClass cls) {
+    public Collection<HierarchyModel.Node> getHierarchy(CsmClass cls) {
         CsmCacheManager.enter();
         try {
-            return getHierarchyImpl(cls);
+            Collection<CsmClass> inheritances = getHierarchyImpl(cls);
+            List<CsmClass> specs = getSpecializationsHierarchyImpl(cls);
+            Collection<HierarchyModel.Node> res = new ArrayList<>();
+            if (inheritances != null) {
+                for (CsmClass c : inheritances) {
+                    res.add(new HierarchyModel.Node(c, false));
+                }
+            }
+            if (specs != null) {
+                for (CsmClass c : specs) {
+                    res.add(new HierarchyModel.Node(c, true));
+                }
+            }
+            return res;
         } finally {
             CsmCacheManager.leave();
         }
     }
-    
+
+    private List<CsmClass> getSpecializationsHierarchyImpl(CsmClass cls) {
+        List<CsmClass> specClasses = Collections.emptyList();
+        if (subDirection) {            
+            Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(cls);
+            if (templateSpecializations != null && ! templateSpecializations.isEmpty()) {
+                specClasses = new ArrayList<CsmClass>();
+                for (CsmOffsetableDeclaration ts : templateSpecializations) {
+                    if (ts instanceof CsmClass) {
+                        specClasses.add((CsmClass) ts);
+                    }
+                }
+            }
+        } else {
+            Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+            if (baseTemplates != null && !baseTemplates.isEmpty()) {
+                specClasses = new ArrayList<CsmClass>();
+                for (CsmOffsetableDeclaration bt : baseTemplates) {
+                    if (bt instanceof CsmClass) {
+                        specClasses.add((CsmClass) bt);
+                    }
+                }
+            }            
+        }
+        return specClasses;
+    }
+
     private Collection<CsmClass> getHierarchyImpl(CsmClass cls) {
         if (subDirection) {
             Collection<CsmReference> subRefs = Collections.<CsmReference>emptyList();
@@ -165,6 +207,14 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
         try {
             HashMap<CsmClass,Set<CsmClass>> aMap = new HashMap<CsmClass,Set<CsmClass>>();
             buildSuperHierarchy(cls, aMap);
+            Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+            if (baseTemplates != null && !baseTemplates.isEmpty()) {
+                for (CsmOffsetableDeclaration bt : baseTemplates) {
+                    if (bt instanceof CsmClass) {
+                        buildSuperHierarchy((CsmClass)bt, aMap);
+                    }
+                }
+            }            
             return aMap;
         } finally {
             CsmCacheManager.leave();

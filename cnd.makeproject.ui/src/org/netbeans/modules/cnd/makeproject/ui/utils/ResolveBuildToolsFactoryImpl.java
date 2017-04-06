@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.ui.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ResolveBuildToolsFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -91,6 +92,7 @@ public class ResolveBuildToolsFactoryImpl implements ResolveBuildToolsFactory {
             CndUtils.assertNotNull(cs, "Null compiler set for " + name); //NOI18N
             pd.setModified();
             pd.save();
+            BrokenReferencesSupport.updateProblems(pd.getProject());
             return true;
         } else {
             return false;

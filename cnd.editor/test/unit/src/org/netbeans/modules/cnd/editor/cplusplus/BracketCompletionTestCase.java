@@ -31,6 +31,7 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import org.junit.Ignore;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
@@ -47,6 +48,13 @@ public class BracketCompletionTestCase extends EditorBase  {
     }
 
     // ------- Tests for raw strings -------------
+    
+    public void testModifyRawStringInPPDirective() {
+        // #241929 - AssertionError at org.netbeans.modules.cnd.lexer.CppStringLexer.nextToken
+        setDefaultsOptions();
+        typeCharactersInText("#define R|\"\"", "'", "#define R'\"\"");
+    } 
+    
     public void testSimpleQuoteInRawString() throws Exception {
         setDefaultsOptions();
         typeCharactersInText("R|", "\"", "R\"|()\"");

@@ -62,7 +62,7 @@ public class RemoteFileEncodingQueryImpl extends FileEncodingQueryImplementation
     public Charset getEncoding(FileObject file) {
         if (file instanceof RemoteFileObject) {
             try {
-                return Charset.forName("UTF-8"); //NOI18N
+                return Charset.forName(System.getProperty("cnd.remote.charset","UTF-8")); //NOI18N
             } catch (UnsupportedCharsetException ex) {
                 RemoteLogger.fine(ex);
             } catch (IllegalCharsetNameException ex) {

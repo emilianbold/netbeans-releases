@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,48 +36,51 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.run;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.docker.api.ExposedPort;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Petr Hejl
+ * @author vkvashin
  */
-public class PortMapping {
+public class RemoteInvalidFileObjectSupportTest extends RemoteTestBase {
 
-    private final ExposedPort.Type type;
-
-    private final Integer port;
-
-    private final Integer hostPort;
-
-    private final String hostAddress;
-
-    public PortMapping(ExposedPort.Type type, Integer port, Integer hostPort, String hostAddress) {
-        this.type = type;
-        this.port = port;
-        this.hostPort = hostPort;
-        this.hostAddress = hostAddress;
+    public RemoteInvalidFileObjectSupportTest(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
-    public ExposedPort.Type getType() {
-        return type;
+    @ForAllEnvironments
+    public void testRemoteInvalidFileObject() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        final FileSystem fs = FileSystemProvider.getFileSystem(env);
+        String path = "/tmp";
+        final FileObject invalidFo1 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
+        URI uri = invalidFo1.toURI(); // just to check that there is no assertions
+        URL url = uri.toURL();
+        FileObject fo = URLMapper.findFileObject(url);
+        // Thw below means as following: if a file that was once created as invalid, appears, 
+        // and somebody saved its URL and then tries to get this file by url, 
+        // then a valid file should be returned.
+        assertNotNull("If the file is valid then fo > url > fo should retirn not null", fo);
+        assertTrue("File should be valid", fo.isValid());
     }
-
-    public Integer getPort() {
-        return port;
+    
+    public static Test suite() {
+        return new RemoteDevelopmentTest(RemoteInvalidFileObjectSupportTest.class);
     }
-
-    public Integer getHostPort() {
-        return hostPort;
-    }
-
-    public String getHostAddress() {
-        return hostAddress;
-    }
-
 }

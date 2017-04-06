@@ -134,7 +134,10 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
         component.setInteractive(interactive != null ? interactive : false);
         Boolean tty = (Boolean) wiz.getProperty(RunTagWizard.TTY_PROPERTY);
         component.setTty(tty != null ? tty : false);
-
+        Boolean privileged = (Boolean) wiz.getProperty(RunTagWizard.PRIVILEGED_PROPERTY);
+        component.setPrivileged(privileged != null ? privileged : false);
+        Boolean mountVolumes = (Boolean) wiz.getProperty(RunTagWizard.VOLUMES_PROPERTY);
+        component.setMountVolumesSelected(mountVolumes != null ? mountVolumes : false);
         // XXX revalidate; is this bug?
         changeSupport.fireChange();
     }
@@ -146,6 +149,9 @@ public class RunContainerPropertiesPanel implements WizardDescriptor.Panel<Wizar
         wiz.putProperty(RunTagWizard.USER_PROPERTY, component.getUser());
         wiz.putProperty(RunTagWizard.INTERACTIVE_PROPERTY, component.isInteractive());
         wiz.putProperty(RunTagWizard.TTY_PROPERTY, component.hasTty());
+        wiz.putProperty(RunTagWizard.PRIVILEGED_PROPERTY, component.isPrivileged());
+        wiz.putProperty(RunTagWizard.VOLUMES_PROPERTY, component.areMountVolumesSelected());
+        wiz.putProperty(RunTagWizard.VOLUMES_TABLE_PROPERTY, component.getVolumesTable());
     }
 
     @Override

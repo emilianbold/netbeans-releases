@@ -40,35 +40,6 @@ MAKEFILE = $(shell echo gmake)
 MAKEFILE:sh = echo make
 ROOT_DIR = $(shell pwd)
 ROOT_DIR:sh = pwd
-_OS = $(shell uname -s)
-_OS:sh = uname -s
-ifeq (CYGWIN, $(shell expr substr `uname -s` 1 6))
-    OS=Windows
-else
-    OS=$(_OS)
-endif
-ARCH = $(shell arch)
-ARCH:sh = arch
-
-ifeq (armv, $(shell expr substr `arch` 1 4))
-    OS_ARCH = $(OS)-arm
-else 
-  ifeq (sun4, $(ARCH))
-    OS_ARCH = $(OS)-sparc
-  else 
-    ifeq (sparc64, $(ARCH))
-      OS_ARCH = $(OS)-sparc
-    else
-      OS_ARCH = $(OS)-x86
-    endif
-  endif
-endif
-
-ifdef 64BITS
-    CONF=$(OS_ARCH)_64
-else
-    CONF=$(OS_ARCH)
-endif
 
 PNAME=pty
 
@@ -95,7 +66,7 @@ LINE=sh $(ROOT_DIR)/make/line
 EXEC=$(DIST_DIR)/$(PNAME)
 
 
-CF_COMMON         = --std=c99 -O2
+CF_COMMON         = --std=c99
 
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32 
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
@@ -108,19 +79,13 @@ CF_SunOS-sparc_64 = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m64
 CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m32
 CF_SunOS-x86_64   = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m64
 CF_Windows-x86    = $(CF_COMMON) -DWINDOWS -m32
-CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m32
-
-LF_Windows-x86    = --static-libgcc
-LF_Windows-x86_64 = --static-libgcc
+CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m64 # -m32
+ 
+LF_Windows-x86    = # --static-libgcc
+LF_Windows-x86_64 = # --static-libgcc
 
 CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
 LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)
-
-ifndef NOSTRIP
-    CFLAGS += -s 
-else 
-    CFLAGS += -g
-endif
 
 all: $(EXEC)
 	@$(LINE) =

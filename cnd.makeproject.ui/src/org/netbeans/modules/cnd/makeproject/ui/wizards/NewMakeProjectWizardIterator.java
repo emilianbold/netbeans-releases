@@ -63,6 +63,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ui.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -443,7 +444,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
-            setupLanguageStandard(debug, langStandard);
+            PredefinedToolKind compileToolKind = setupLanguageStandard(debug, langStandard);
             if (wizardtype == TYPE_DB_APPLICATION) {
                 DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
                 if(provider != null) {
@@ -468,6 +469,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setMakefileName(makefileName);
             prjParams.setConfigurations(confs);
             prjParams.setMainFile(mainFile);
+            prjParams.setMainFileTool(compileToolKind);
             prjParams.setHostUID(hostUID);
 
             if (wizardtype == TYPE_DB_APPLICATION) {
@@ -490,17 +492,20 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
 
-    private void setupLanguageStandard(MakeConfiguration conf, String langStandard) {
+    private PredefinedToolKind setupLanguageStandard(MakeConfiguration conf, String langStandard) {
         Pair<String, Integer> languageStandard = PanelProjectLocationVisual.getLanguageStandard(langStandard);
         if (languageStandard != null) {
             if (PanelProjectLocationVisual.C[0].equals(languageStandard.first())) {
                 conf.getCCompilerConfiguration().getCStandard().setValue(languageStandard.second());
+                return PredefinedToolKind.CCompiler;
             } else if (PanelProjectLocationVisual.CPP[0].equals(languageStandard.first())) {
                 conf.getCCCompilerConfiguration().getCppStandard().setValue(languageStandard.second());
+                return PredefinedToolKind.CCCompiler;
             } else if (PanelProjectLocationVisual.FORTRAN[0].equals(languageStandard.first())) {
                 //conf.getFortranCompilerConfiguration().getFortranStandard().setValue(languageStandard.second());
             } 
         }
+        return null;
     }
     
     @Override

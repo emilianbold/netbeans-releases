@@ -954,6 +954,11 @@ import org.openide.util.lookup.Lookups;
         System.err.println("--------Dump storage internals--------:\n");//NOI18N
         for (Layer l : layers) {
             System.err.println("Layer.fileSystemsList is: \n" + l.getFileSystemsTable());//NOI18N
+            Map<Integer, Integer> map = fileSystemsTranslationMap.get(l.getLayerDescriptor());
+            System.err.println("Layer.fileSystemsTranslationMap: \n" + l.getFileSystemsTable());//NOI18N
+            for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+                System.err.println(entry.getKey() + " => " + entry.getValue());//NOI18N
+            }
             System.err.println("Layer.unitsTable is: \n" + l.getUnitsTable());//NOI18N
             final LayerDescriptor ld = l.getLayerDescriptor();
             // For LayerDescriptor -> map of translation clientShortUnitID => unitIDInLayer

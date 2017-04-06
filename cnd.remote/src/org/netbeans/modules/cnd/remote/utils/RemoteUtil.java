@@ -56,6 +56,9 @@ import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -144,6 +147,17 @@ public class RemoteUtil {
     
     public static boolean isWindows(ExecutionEnvironment env) {
         return env.isLocal() && Utilities.isWindows();
+    }
+    
+    public static HostInfo.OSFamily getOSFamilyIfAvailable(ExecutionEnvironment env) {
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                return HostInfoUtils.getHostInfo(env).getOSFamily();
+            } catch (IOException | ConnectionManager.CancellationException ex) {
+                return null;
+            }
+        }
+        return null;
     }
 
     public static String getMessage(IOException e) {

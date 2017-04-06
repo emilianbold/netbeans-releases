@@ -57,7 +57,10 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction", category = "Project")
-@ActionRegistration(iconInMenu = true, displayName = "#OpenRemoteProjectAction.submenu.title")
+@ActionRegistration(iconInMenu = true, 
+        displayName = "#OpenRemoteProjectAction.submenu.title", //NOI18N
+        iconBase="org/netbeans/modules/cnd/remote/ui/resources/openProject.png", //NOI18N
+        lazy = false)
 @ActionReferences({
     //@ActionReference(path = "Menu/File", position = 520),
     @ActionReference(path = "Toolbars/Remote", position = 2000)
@@ -68,8 +71,8 @@ public class OpenRemoteProjectAction extends RemoteOpenActionBase {
     
     public OpenRemoteProjectAction() {
         super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title")); //NOI18N
-        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openProject.png", false); //NOI18N
-        putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openProject.png"); //NOI18N
+        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/ui/resources/openProject.png", false); //NOI18N
+        putValue("iconBase","org/netbeans/modules/cnd/remote/ui/resources/openProject.png"); //NOI18N
     }
 
     @Override

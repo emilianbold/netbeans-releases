@@ -81,7 +81,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     private static final short OVERRIDE = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+4);
     private static final short FINAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+5);
 
-    protected MethodImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected MethodImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, FunctionImpl.CV_RL _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, cls, _static, _const, file, startOffset, endOffset, global);
         this.visibility = visibility;
         setVirtual(_virtual);
@@ -103,7 +103,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         CharSequence rawName = initRawName(ast);
 
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _override = false;
         boolean _final = false;
@@ -218,6 +218,21 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     }
 
     @Override
+    public boolean isVolatile() {
+        return super.isVolatile();
+    }
+
+    @Override
+    public boolean isLValue() {
+        return super.isLValue();
+
+    }
+    @Override
+    public boolean isRValue() {
+        return super.isRValue();
+    }
+
+    @Override
     protected CharSequence createUIDExtraSuffix(AST ast) {
         CharSequence funSuffix = super.createUIDExtraSuffix(ast);
         if (CsmKindUtilities.isMethodDeclaration(this)) {
@@ -289,7 +304,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             }
             CsmClass cls = (CsmClass) getScope();
 
-            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), false, false, isExplicit(), isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), true);
+            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), false, false, isExplicit(), isStatic(), FunctionImpl.CV_RL.isConst(isConst()), false, getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             //StringBuilder clsTemplateSuffix = new StringBuilder();

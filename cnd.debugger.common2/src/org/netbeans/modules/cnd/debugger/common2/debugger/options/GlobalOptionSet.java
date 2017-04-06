@@ -95,6 +95,7 @@ public class GlobalOptionSet extends OptionSetSupport {
 	DebuggerOption.TRACE_SPEED,
 	DebuggerOption.RUN_AUTOSTART,
 	DebuggerOption.BALLOON_EVAL,
+        DebuggerOption.ARGS_VALUES_IN_STACK,
     };
 
 

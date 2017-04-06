@@ -27,8 +27,8 @@ NAMESPACE DEFINITOIN bug243518 [1:1/0-7:2/434] SCOPE: bug243518.cpp
         RETURNS void(void) TEXT=void(*)(void)  [5:3/273-5:81/351]
     FUNCTION i3_243518 [6:3/355-6:78/430] FunctionImpl SCOPE: bug243518 
         DEFINITION: null
-        SIGNATURE i3_243518(int) const
-        UNIQUE NAME F:bug243518::i3_243518(int) const
+        SIGNATURE i3_243518(int) const &&
+        UNIQUE NAME F:bug243518::i3_243518(int) const &&
         PARAMETERS:
             xx [6:20/372-6:26/378]  TYPE: int TEXT=int  [6:20/372-6:23/375]  INIT: null  SCOPE: i3_243518 
         RETURNS void(int) TEXT=void(*)(int)  [6:3/355-6:77/429]
@@ -52,8 +52,8 @@ NAMESPACE bug243518 (bug243518)
         RETURNS void(void) TEXT=void(*)(void)  [5:3/273-5:81/351]
     FUNCTION i3_243518 [6:3/355-6:78/430] FunctionImpl SCOPE: bug243518 
         DEFINITION: null
-        SIGNATURE i3_243518(int) const
-        UNIQUE NAME F:bug243518::i3_243518(int) const
+        SIGNATURE i3_243518(int) const &&
+        UNIQUE NAME F:bug243518::i3_243518(int) const &&
         PARAMETERS:
             xx [6:20/372-6:26/378]  TYPE: int TEXT=int  [6:20/372-6:23/375]  INIT: null  SCOPE: i3_243518 
         RETURNS void(int) TEXT=void(*)(int)  [6:3/355-6:77/429]
