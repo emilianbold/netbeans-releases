@@ -4936,14 +4936,14 @@ type_typeof
     ;
 
 constant
-:       OCTALINT
-    |   DECIMALINT
-    |   HEXADECIMALINT
-    |   BINARYINT
-    |   CHAR_LITERAL
-    |   (options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+
-    |   FLOATONE
-    |   FLOATTWO
+:       OCTALINT (options {greedy=true;} : IDENT!)?
+    |   DECIMALINT (options {greedy=true;} : IDENT!)?
+    |   HEXADECIMALINT (options {greedy=true;} : IDENT!)?
+    |   BINARYINT (options {greedy=true;} : IDENT!)?
+    |   CHAR_LITERAL (options {greedy=true;} : IDENT!)?
+    |   (options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+ (options {greedy=true;} : IDENT!)?
+    |   FLOATONE (options {greedy=true;} : IDENT!)?
+    |   FLOATTWO (options {greedy=true;} : IDENT!)?
     |   LITERAL_true
     |   LITERAL_false
     |   LITERAL_nullptr

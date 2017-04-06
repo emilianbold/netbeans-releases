@@ -4,7 +4,7 @@ Own Map:
 MACROS (sorted 3):
 <U>#define '["FALSE",<ID>,line=5,col=9],offset=76,file=null'='["false",<ID>,line=5,col=15],offset=82,file=null'
 <U>#define '["TRUE",<ID>,line=4,col=9],offset=58,file=null'='["true",<ID>,line=4,col=14],offset=63,file=null'
-<U>#define '["__cplusplus",<ID>,line=2,col=9],offset=29,file=null'='["199711L",<DECIMALINT>,line=2,col=21],offset=41,file=null'
+<U>#define '["__cplusplus",<ID>,line=2,col=9],offset=29,file=null'='["199711",<DECIMALINT>,line=2,col=21],offset=41,file=null ["L",<ID>,line=2,col=27],offset=47,file=null'
 System Map:
 MACROS (sorted 0):
 
