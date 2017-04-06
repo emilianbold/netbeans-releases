@@ -106,4 +106,16 @@ public class JsCodeCompletionDocumentationTest extends JsCodeCompletionBase {
     public void testIssue255966_8() throws Exception {
         checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "getTmp^Object();", false, "getTmp");
     }
+    public void testIssue255966_9() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "tryMe^ssage();", false, "tryMe");
+    }
+    public void testIssue255966_10() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "getSe^lect();", false, "getSe");
+    }
+    public void testIssue255966_11() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "returnOb^j();", false, "returnOb");
+    }
+    public void testIssue255966_12() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue255966.js", "testT^ype();", false, "testT");
+    }
 }    
