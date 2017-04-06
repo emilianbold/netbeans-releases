@@ -933,10 +933,10 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 }
                 return new Node[] {n};
             } else if (libsSupport != null) {
-                final ClassPath srcPath = key.getSourcePath();
-                final FileObject[] roots = srcPath.getRoots();
+                final FileObject[] roots = key.getSourceRoots();
                 if (roots.length > 0) {
-                    final Lookup lkp = Lookups.fixed(project, srcPath);
+                    final ClassPath scp = key.getSourcePath();
+                    final Lookup lkp = Lookups.fixed(project, scp);
                     if (key.isTests()) {
                         return new Node[] {
                             new LibrariesNode.Builder(this.project,
@@ -948,7 +948,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                 .addClassPathProperties(ProjectProperties.RUN_TEST_CLASSPATH)
                                 .addModulePathProperties(ProjectProperties.RUN_TEST_MODULEPATH)
                                 .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
-                                .setSourcePath(srcPath)
+                                .setSourcePath(scp)
                                 .addLibrariesNodeActions(libsSupport.getActions(true).stream()
                                     .map((a) -> {
                                         return a instanceof ContextAwareAction ?
@@ -972,7 +972,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                                 .setBootPath(ClassPath.getClassPath(roots[0], ClassPath.BOOT))
                                 .setModuleInfoBasedPath(ClassPath.getClassPath(roots[0], ClassPath.COMPILE))
                                 .setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE)
-                                .setSourcePath(srcPath)
+                                .setSourcePath(scp)
                                 .setModuleSourcePath(ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_SOURCE_PATH))
                                 .addLibrariesNodeActions(libsSupport.getActions(false).stream()
                                     .map((a) -> {
@@ -999,7 +999,8 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 grpsByRoot.put(g.getRootFolder(), g);
             }
             final Comparator<FileObject> foc = (a,b) -> a.getNameExt().compareTo(b.getNameExt());
-            ClassPath sourceP = srcPath.get();
+            final ClassPath testP = testPath.get();
+            final ClassPath sourceP = srcPath.get();
             if (sourceP == null) {
                 return Collections.emptyList();
             }
@@ -1019,7 +1020,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                     .filter((p) -> p != null),
                     Stream.of(
                         new Key(sourceP, false),
-                        new Key(testPath.get(), true)
+                        new Key(testP, true)
                     ))
                     .collect(Collectors.toList());
         }
@@ -1036,6 +1037,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
             private final boolean tests;
             private final SourceGroup sg;
             private final ClassPath sourcePath;
+            private final FileObject[] sourceRoots;
 
             Key(
                     @NonNull final SourceGroup sg,
@@ -1044,6 +1046,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 this.sources = true;
                 this.sg = sg;
                 this.sourcePath = null;
+                this.sourceRoots = new FileObject[0];
                 this.tests = tests;
             }
 
@@ -1054,6 +1057,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 this.sources = false;
                 this.sg = null;
                 this.sourcePath = sourcePath;
+                this.sourceRoots = this.sourcePath.getRoots();
                 this.tests = tests;
             }
 
@@ -1081,12 +1085,21 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 return sourcePath;
             }
 
+            @NonNull
+            private FileObject[] getSourceRoots() {
+                if (sources) {
+                    throw new IllegalStateException("Not a dependency key.");   //NOI18N
+                }
+                return sourceRoots;
+            }
+
             @Override
             public int hashCode() {
                 int res = 17;
                 res = res * 31 + (sources ? 0 : 1);
                 res = res * 31 + (tests ? 0 : 1);
-                res = res * 31 + (sg == null ? 0 :sg.hashCode());
+                res = res * 31 + (sg == null ? 0 : sg.hashCode());
+                res = res * 31 + (sourceRoots.length == 0 ? 0 : 1);
                 return res;
             }
 
@@ -1101,7 +1114,8 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 final Key other = (Key) obj;
                 return  (sources == other.sources) &&
                         (tests == other.tests) &&
-                        (sg == null ? other.sg == null : sg.equals(other.sg));
+                        (sg == null ? other.sg == null : sg.equals(other.sg)) &&
+                        (sourceRoots.length == 0 ? other.sourceRoots.length == 0 : other.sourceRoots.length != 0);
             }
         }
     }
