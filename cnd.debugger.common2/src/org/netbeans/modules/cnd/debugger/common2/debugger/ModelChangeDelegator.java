@@ -82,6 +82,9 @@ public class ModelChangeDelegator implements ModelListener {
             return;
         }
         synchronized( listenersLock ) {
+            if (listeners.contains(listener)) {
+                return;
+            }
             listeners.add(listener);
         }
 	// Listener may have been registered after treeChanged() was called.
