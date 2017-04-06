@@ -207,14 +207,13 @@ public class HelperUtility {
                             }
                             result = remoteFile;
                         } catch (SftpException ex) {
-                            log.log(Level.WARNING, "Failed to upload {0}", fileName); // NOI18N
+                            log.log(Level.WARNING, "Failed to upload a file to a remote host: {0}", ex.toString()); // NOI18N
                             if (remoteSize >= 0) {
                                 log.log(Level.WARNING, "File {0} exists, but cannot be updated. Used by other process?", remoteFile); // NOI18N
                             } else {
-                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough privileges?", remoteFile); // NOI18N
+                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough privileges? Do you have enough space?", remoteFile); // NOI18N
                             }
                             log.log(Level.WARNING, "You could try to use -J-Dcnd.tmpbase=<other base location> to re-define default one."); // NOI18N
-                            Exceptions.printStackTrace(ex);
                         } finally {
                             RemoteStatistics.stopChannelActivity(activityID);
                             cmAccess.closeAndReleaseChannel(env, channel);
