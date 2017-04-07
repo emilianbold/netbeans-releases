@@ -205,8 +205,10 @@ public class CsmCompletionExpression {
     public static final int IMPLICIT_UNIFORM_INITIALIZATION_OPEN = 56;
     /** Finished implicit uniform initialization ({...} without type name before) */
     public static final int IMPLICIT_UNIFORM_INITIALIZATION = 57;
+    /** User defined literal (123_km) */
+    public static final int USER_DEFINED_LITERAL = 58;
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = IMPLICIT_UNIFORM_INITIALIZATION;
+    private static final int LAST_ID = USER_DEFINED_LITERAL;
     private static final int cppTokenIDsLength = EnumSet.allOf(CppTokenId.class).size();
     /** Array that holds the precedence of the operator
      * and whether it's right associative or not.
@@ -650,6 +652,8 @@ public class CsmCompletionExpression {
                 return "IMPLICIT_UNIFORM_INITIALIZATION_OPEN"; // NOI18N
             case IMPLICIT_UNIFORM_INITIALIZATION:
                 return "IMPLICIT_UNIFORM_INITIALIZATION"; // NOI18N
+            case USER_DEFINED_LITERAL:
+                return "USER_DEFINED_LITERAL"; // NOI18N
             default:
                 return "Unknown expID " + expID; // NOI18N
         }

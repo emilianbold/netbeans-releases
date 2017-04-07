@@ -488,4 +488,26 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug269199.cpp", 10, 18, "bug269199.cpp", 3, 9);
         performTest("bug269199.cpp", 11, 21, "bug269199.cpp", 3, 9);
     }
+    
+    public void testBug268930() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performTest("bug268930_hyperlink.cpp", 46, 13, "bug268930_hyperlink.cpp", 34, 5);
+        performTest("bug268930_hyperlink.cpp", 47, 15, "bug268930_hyperlink.cpp", 38, 5);
+        performTest("bug268930_hyperlink.cpp", 49, 20, "bug268930_hyperlink.cpp", 13, 5);
+        performTest("bug268930_hyperlink.cpp", 50, 20, "bug268930_hyperlink.cpp", 17, 5);
+        performTest("bug268930_hyperlink.cpp", 51, 20, "bug268930_hyperlink.cpp", 22, 5);
+        performTest("bug268930_hyperlink.cpp", 53, 28, "bug268930_hyperlink.cpp", 26, 5);
+        performTest("bug268930_hyperlink.cpp", 54, 28, "bug268930_hyperlink.cpp", 30, 5);
+        performTest("bug268930_hyperlink.cpp", 55, 13, "bug268930_hyperlink.cpp", 42, 5);
+        performTest("bug268930_hyperlink.cpp", 56, 13, "bug268930_hyperlink.cpp", 43, 5);
+        performTest("bug268930_hyperlink.cpp", 57, 13, "bug268930_hyperlink.cpp", 42, 5);
+        performTest("bug268930_hyperlink.cpp", 56, 27, "bug268930_hyperlink.cpp", 9, 5);
+        performTest("bug268930_hyperlink.cpp", 57, 27, "bug268930_hyperlink.cpp", 9, 5);
+        performTest("bug268930_hyperlink.cpp", 57, 35, "bug268930_hyperlink.cpp", 6, 9);
+        
+        performTest("bug268930_hyperlink.cpp", 49, 11, "bug268930_hyperlink.cpp", 48, 9);
+        performTest("bug268930_hyperlink.cpp", 50, 11, "bug268930_hyperlink.cpp", 48, 9);
+        performTest("bug268930_hyperlink.cpp", 51, 11, "bug268930_hyperlink.cpp", 48, 9);
+        performTest("bug268930_hyperlink.cpp", 54, 13, "bug268930_hyperlink.cpp", 52, 9);
+    }
 }

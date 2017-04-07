@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -741,6 +742,7 @@ abstract public class CsmCompletionQuery {
         }
         boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
         tp.enableLambdaSupport(isCpp11OrLater);
+        tp.enableUserDefinedLiteralsSupport(isCpp11OrLater);
         tp.enableUniformInitializationSupport(isCpp11OrLater);
         tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
         doc.render(new Runnable() {
@@ -808,6 +810,7 @@ abstract public class CsmCompletionQuery {
                 CsmFile csmFile = expression.getContainingFile();
                 boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
                 tp.enableLambdaSupport(isCpp11OrLater);
+                tp.enableUserDefinedLiteralsSupport(isCpp11OrLater);
                 tp.enableUniformInitializationSupport(isCpp11OrLater);
                 tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
                 CndTokenUtilities.processTokens(tp, cppTokenSequence, exprStartOffset, exprEndOffset, exprStartOffset);
@@ -1999,6 +2002,48 @@ abstract public class CsmCompletionQuery {
             boolean methodOpen = false; // helper flag for unclosed methods
             boolean skipConstructors = (kind != ExprKind.NONE && kind != ExprKind.SCOPE);
             switch (item.getExpID()) {
+                case CsmCompletionExpression.USER_DEFINED_LITERAL: // Constant item with ud-suffix
+                    if (first) {
+                        Collection<CsmFunction> mtdList = new LinkedHashSet<CsmFunction>();
+                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
+                        //String operatorPrefix = "operator " + item.getTokenText(0);  // NOI18N
+                        if (resolve(item.getTokenOffset(0), item.getTokenText(0), openingSource)) {
+                            CompletionResolver.Result res = compResolver.getResult();
+                            res.addResulItemsToCol(mtdList);
+                        }
+                        if (!mtdList.isEmpty()) {
+                            List<CsmType> typeList = getTypeList(item, 0);
+                            if (typeList.size() == 1) {
+                                List<CsmFunction> filtered = CompletionSupport.filterUserDefinedLiterals(typeList.get(0), mtdList, openingSource);
+                                if (filtered.size() > 0) { // do we need this check?
+                                    mtdList = filtered;
+                                }
+                                if (last && !findType) {
+                                    String parmStr = formatTypeList(typeList, methodOpen);
+                                    result = new CsmCompletionResult(component, getBaseDocument(), mtdList,
+                                                formatType(lastType, true, true, false) + item.getTokenText(0) + '(' + parmStr + ')',
+                                                item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                } else {
+                                    lastType = CompletionSupport.extractFunctionType(this, mtdList, null, typeList);
+                                    staticOnly = false;
+                                }
+                            }
+                        } else {
+                            // Fallback
+                            if (last && !findType) {
+                                cont = false;
+                                lastType = null;
+                            } else { 
+                                // pretend that this is usual constant
+                                lastType = getPredefinedType(item); // Get the constant type
+                                staticOnly = false;
+                            }
+                        }
+                    } else { // Not the first item in a dot exp
+                        cont = false; // impossible to have constant inside the expression
+                    }
+                    break;
+                
                 case CsmCompletionExpression.CONSTANT: // Constant item
                     if (first) {
                         lastType = getPredefinedType(item); // Get the constant type
