@@ -1098,7 +1098,7 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 int res = 17;
                 res = res * 31 + (sources ? 0 : 1);
                 res = res * 31 + (tests ? 0 : 1);
-                res = res * 31 + (sg == null ? 0 : sg.hashCode());
+                res = res * 31 + Optional.ofNullable(sg).map(SourceGroup::getRootFolder).map(Object::hashCode).orElse(0);
                 res = res * 31 + (sourceRoots.length == 0 ? 0 : 1);
                 return res;
             }
@@ -1114,8 +1114,23 @@ public final class MultiModuleNodeFactory implements NodeFactory {
                 final Key other = (Key) obj;
                 return  (sources == other.sources) &&
                         (tests == other.tests) &&
-                        (sg == null ? other.sg == null : sg.equals(other.sg)) &&
+                        sgEq(sg, other.sg) &&
                         (sourceRoots.length == 0 ? other.sourceRoots.length == 0 : other.sourceRoots.length != 0);
+            }
+
+            private static boolean sgEq(
+                    @NullAllowed final SourceGroup a,
+                    @NullAllowed final SourceGroup b) {
+                if (a == null) {
+                    return b == null;
+                } else if (b == null) {
+                    return false;
+                }
+                final FileObject afo = a.getRootFolder();
+                final FileObject bfo = b.getRootFolder();
+                return afo == null ?
+                        bfo == null :
+                        afo.equals(bfo);
             }
         }
     }
