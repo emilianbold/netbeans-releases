@@ -569,7 +569,9 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 ClassPath.EMPTY,
                 null));
-        assertTrue(cp.entries().stream().map(ClassPath.Entry::getURL).anyMatch((url) -> url.equals(dist)));
+        assertEquals(
+                Collections.singletonList(dist),
+                collectEntries(cp));
     }
 
     public void testPatchModuleWithSourcePatch_UnscannedBaseModule() throws Exception {
@@ -599,7 +601,9 @@ public class ModuleClassPathsTest extends NbTestCase {
                 ClassPath.EMPTY,
                 null));
         cp.entries();
-        assertTrue(cp.entries().stream().map(ClassPath.Entry::getURL).anyMatch((url) -> url.equals(dist)));
+        assertEquals(
+                Collections.singletonList(dist),
+                collectEntries(cp));
     }
 
     private static void setSourceLevel(
