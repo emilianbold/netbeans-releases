@@ -1183,7 +1183,15 @@ public class CsmUtilities {
             if (CsmKindUtilities.isMethodDeclaration(fun)) {
                 if (((CsmMethod) fun).isConst()) {
                     sb.append(" const"); // NOI18N
-
+                }
+                if (((CsmMethod) fun).isVolatile()) {
+                    sb.append(" volatile"); // NOI18N
+                }
+                if (((CsmMethod) fun).isLValue()) {
+                    sb.append(" &"); // NOI18N
+                }
+                if (((CsmMethod) fun).isRValue()) {
+                    sb.append(" &&"); // NOI18N
                 }
             }
         }

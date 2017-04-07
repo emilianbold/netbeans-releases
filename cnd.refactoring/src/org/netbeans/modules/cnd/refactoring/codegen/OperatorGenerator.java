@@ -927,6 +927,21 @@ public class OperatorGenerator implements CodeGenerator {
         }
 
         @Override
+        public boolean isVolatile() {
+            return false;
+        }
+
+        @Override
+        public boolean isLValue() {
+            return false;
+        }
+
+        @Override
+        public boolean isRValue() {
+            return false;
+        }
+
+        @Override
         public CsmClass getContainingClass() {
             return parent;
         }

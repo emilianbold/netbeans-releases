@@ -53,7 +53,6 @@ import org.netbeans.modules.docker.HttpUtils;
 import org.netbeans.modules.docker.DirectStreamResult;
 import org.netbeans.modules.docker.Demuxer;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -351,7 +350,28 @@ public class DockerAction {
             tty = (boolean) getOrDefault(config, "Tty", false);
             stdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
-        return new DockerContainerDetail(name, status, stdin, tty);
+        JSONObject ports = (JSONObject)((JSONObject) value.get("NetworkSettings")).get("Ports");
+        if (ports == null || ports.isEmpty()) {
+            return new DockerContainerDetail(name, status, stdin, tty);
+        } else {
+            List<PortMapping> portMapping = new ArrayList<>();
+            for (String containerPortData : (Set<String>)ports.keySet()) {
+                JSONArray hostPortsArray = (JSONArray) ports.get(containerPortData);
+                if (!hostPortsArray.isEmpty()) {
+                    Matcher m = PORT_PATTERN.matcher(containerPortData);
+                    if (m.matches()) {
+                        int containerPort = Integer.parseInt(m.group(1));
+                        String type = m.group(2).toUpperCase(Locale.ENGLISH);
+                        int hostPort = Integer.parseInt((String) ((JSONObject)hostPortsArray.get(0)).get("HostPort"));
+                        String hostIp = (String) ((JSONObject)hostPortsArray.get(0)).get("HostIp");
+                        portMapping.add(new PortMapping(ExposedPort.Type.valueOf(type), containerPort, hostPort, hostIp));
+                    } else {
+                        LOGGER.log(Level.FINE, "Unparsable port: {0}", containerPortData);
+                    }                    
+                }
+            }
+            return new DockerContainerDetail(name, status, stdin, tty, portMapping);
+        }
     }
 
     public DockerImageDetail getDetail(DockerImage image) throws DockerException {
@@ -397,7 +417,7 @@ public class DockerAction {
                             container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
         }
     }
-
+    
     public void pause(DockerContainer container) throws DockerException {
         doPostRequest("/containers/" + container.getId() + "/pause", false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
@@ -650,6 +670,7 @@ public class DockerAction {
     }
 
     public FutureTask<DockerImage> createBuildTask(@NonNull FileObject buildContext, @NullAllowed FileObject dockerfile,
+            @NullAllowed Map<String, String> buildargs,
             String repository, String tag, boolean pull, boolean noCache,
             final BuildEvent.Listener buildListener, final StatusEvent.Listener statusListener) {
 
@@ -697,6 +718,9 @@ public class DockerAction {
                         if (tag != null) {
                             request.append(":").append(tag);
                         }
+                    }
+                    if (buildargs != null && !buildargs.isEmpty()) {
+                        request.append("&buildargs=").append((new JSONObject(buildargs)).toString());
                     }
                     request.append(" HTTP/1.1\r\n");
 

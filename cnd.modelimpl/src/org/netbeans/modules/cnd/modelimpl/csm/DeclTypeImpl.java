@@ -41,7 +41,9 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -50,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
+import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ParserThreadManager;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
@@ -69,14 +72,14 @@ import org.openide.util.CharSequences;
  * @author petrk
  */
 public class DeclTypeImpl extends TypeImpl {
-    
-    public static final String DECLTYPE = "decltype"; // NOI18N
         
     public static boolean isDeclType(AST node) {
-        return node != null 
-               && node.getFirstChild() != null
-               && CharSequences.comparator().compare(AstUtil.getText(node.getFirstChild()), DECLTYPE) == 0
-               && AstUtil.findChildOfType(node, CPPTokenTypes.CSM_EXPRESSION) != null;
+        // Note that "typeof" and variations are also considered to be decltype
+        if (node != null && node.getFirstChild() != null && AstUtil.findChildOfType(node, CPPTokenTypes.CSM_EXPRESSION) != null) {
+            CharSequence childText = AstUtil.getText(node.getFirstChild());
+            return CsmTypes.isDecltype(childText);
+        }
+        return false;
     }    
     
     
@@ -108,7 +111,9 @@ public class DeclTypeImpl extends TypeImpl {
             ResolverFactory.releaseResolver(resolver);
         }
         if (classifier == null) {
-            classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
+            classifier = BuiltinTypes.getBuiltIn(
+                    isInitedClassifierText() ? getClassifierText() : CppTokenId.DECLTYPE.fixedText() // Unresolved?
+            ); 
         }
         return classifier;
     }    

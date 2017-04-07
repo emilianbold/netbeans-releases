@@ -113,7 +113,7 @@ import org.openide.util.RequestProcessor;
         this.fileData = FileData.get(privProjectStorageDir, executionEnvironment);
         this.logger = new RemoteUtil.PrefixedLogger("LC[" + executionEnvironment + "]"); //NOI18N
         this.filter = new SharabilityFilter();
-        this.fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, execEnv, err);
+        this.fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, execEnv, err, false);
     }
 
     private void respond_ok() {
@@ -156,7 +156,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private final AtomicReference<CountDownLatch> shutDownLatch = new AtomicReference();
+    private final AtomicReference<CountDownLatch> shutDownLatch = new AtomicReference<>();
 
     /*package*/ void waitShutDownFinished() {
         CountDownLatch latch = shutDownLatch.get();
@@ -271,7 +271,7 @@ import org.openide.util.RequestProcessor;
     private void shutdown() {
         logger.log(Level.FINEST, "shutdown");
         try {
-            fileCollector.runNewFilesDiscovery(true);
+            fileCollector.runNewFilesDiscovery();
             fileCollector.shutDownNewFilesDiscovery();
             fileData.store();
         } catch (Throwable thr) {

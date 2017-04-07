@@ -1157,11 +1157,18 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     }
                 }
                 if (leadingCnt > 0) {
-                    info.addSegment(curEnd + leadingCnt, OutputKind.OUT, null, null, null, false);
+                    if (info.segments.size() > 0) {
+                        // do not underline leading spaces only in the first segment
+                        info.addSegment(curEnd + leadingCnt, outKind, l, c, b, important);
+                    } else {
+                        info.addSegment(curEnd + leadingCnt, OutputKind.OUT, null, null, null, false);
+                    }
                 }
                 info.addSegment(endPos - trailingCnt, outKind, l, c, b, important);
                 if (trailingCnt > 0) {
-                    info.addSegment(endPos, OutputKind.OUT, null, null, null, false);
+                    // have to underline all trailing spaces (we cannot know if there are more segments)
+                    // TODO: do not underline trailing spaces of the last segment
+                    info.addSegment(endPos, outKind, l, c, b, important);
                 }
                 registerLineWithListener(lineIdx, info, important);
             } else {

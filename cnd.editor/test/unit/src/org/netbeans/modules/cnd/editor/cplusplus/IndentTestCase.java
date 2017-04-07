@@ -1330,4 +1330,28 @@ public class IndentTestCase extends EditorBase {
             "}\n");
     }
     
+    public void testIZ_269428() {
+        setDefaultsOptions();
+        typeCharactersInText(
+            "enum class test : char\n" +
+            "{\n" +
+            "    valueA = 'a',|\n" +
+            "    valueB = 'b',\n" +
+            "    valueC\n" +
+            "};\n",
+            "\n",
+            "enum class test : char\n" +
+            "{\n" +
+            "    valueA = 'a',\n" +
+            "    |\n" +
+            "    valueB = 'b',\n" +
+            "    valueC\n" +
+            "};\n");
+    }
+    
+    public void testLineCommentWithSplitLineInPPDirective() {
+        // #269731 - AssertionError: there must be \
+        setDefaultsOptions();
+        typeCharactersInText("# /|\\", "/", "# //\\");
+    }     
 }

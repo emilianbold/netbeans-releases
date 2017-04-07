@@ -802,6 +802,14 @@ public class IndentSupport {
                         findToken(startItem, itm, CppTokenId.EQ, false) != null) {
                         return true;
                     }
+                    startItem = findStatementStart(startItem);
+                    if (startItem != null) {
+                        if (startItem.getTokenID() == CppTokenId.ENUM ||
+                            findToken(startItem, itm, CppTokenId.ENUM, false) != null ||
+                            findToken(startItem, itm, CppTokenId.EQ, false) != null) {
+                            return true;
+                        }
+                    }
                 }
             }
         }

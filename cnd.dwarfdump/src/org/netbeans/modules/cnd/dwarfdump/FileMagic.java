@@ -116,7 +116,10 @@ public class FileMagic {
     }
 
     public static boolean isCoffMagic(byte[] bytes){
-        return bytes[0] == 0x4c && bytes[1] == 0x01;
+        // it depend from provider
+        return bytes[0] == 0x4c && bytes[1] == 0x01 ||
+        // mingw and cygwin start to use new magic:
+               bytes[0] == 0x64 && bytes[1] == (byte)0x86;
     }
     
     public static boolean isElfMagic(byte[] bytes){

@@ -64,5 +64,5 @@ public interface UserOptionsProvider {
     List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
     String getItemImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
     LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    NativeFileSearch getPackageFileSearch(ExecutionEnvironment env);
+    NativeFileSearch getPackageFileSearch(ExecutionEnvironment env, MakeConfiguration conf);
 }

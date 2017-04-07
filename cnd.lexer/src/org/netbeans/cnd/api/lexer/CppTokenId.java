@@ -381,6 +381,7 @@ public enum CppTokenId implements TokenId {
     PRAGMA_OMP_START("omp", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_PARALLEL("parallel", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_SECTIONS("sections", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_WORKSHARE("workshare", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_NOWAIT("nowait", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_ORDERED("ordered", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_SCHEDULE("schedule", "pragma-omp-keyword-directive"), // NOI18N
@@ -393,28 +394,89 @@ public enum CppTokenId implements TokenId {
     PRAGMA_OMP_CRITICAL("critical", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_BARRIER("barrier", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_ATOMIC("atomic", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SEQ_CST("seq_cst", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_CAPTURE("capture", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_READ("read", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_WRITE("write", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_FLUSH("flush", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_THREADPRIVATE("threadprivate", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_PRIVATE("private", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_FIRSTPRIVATE("firstprivate", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_LASTPRIVATE("lastprivate", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_LINEAR("linear", "pragma-omp-keyword-directive"), // NOI18N   
+    PRAGMA_OMP_VAL("val", "pragma-omp-keyword-directive"), // NOI18N   
+    PRAGMA_OMP_UVAL("uval", "pragma-omp-keyword-directive"), // NOI18N   
+    PRAGMA_OMP_REF("ref", "pragma-omp-keyword-directive"), // NOI18N   
     PRAGMA_OMP_SHARED("shared", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_NONE("none", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_REDUCTION("reduction", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_COPYIN("copyin", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_TASK("task", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_FINAL("final", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_UNTIED("untied", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_MERGEABLE("mergeable", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_IN_REDUCTION("in_reduction", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DEPEND("depend", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SOURCE("source", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SINK("sink", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_IN("in", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_OUT("out", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_INOUT("inout", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_PRIORITY("priority", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_TASKWAIT("taskwait", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_TASKGROUP("taskgroup", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_TASKLOOP("taskloop", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_GRAINSIZE("grainsize", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_NUM_TASKS("num_tasks", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_NOGROUP("nogroup", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TASKYIELD("taskyield", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TARGET("target", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DATA("data", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DEVICE("device", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_MAP("map", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_USE_DEVICE_PTR("use_device_ptr", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_ENTER("enter", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_EXIT("exit", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_IS_DEVICE_PTR("is_device_ptr", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_UPDATE("update", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TO("to", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_FROM("from", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TOFROM("tofrom", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SCALAR("scalar", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_ALLOC("alloc", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_RELEASE("release", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DELETE("delete", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_ALWAYS("always", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DEFAULTMAP("defaultmap", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TEAMS("teams", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_NUM_TEAMS("num_teams", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_THREAD_LIMIT("thread_limit", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DISTRIBUTE("distribute", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DIST_SCHEDULE("dist_schedule", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_COLLAPSE("collapse", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_COPYPRIVATE("copyprivate", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_DEFAULT("default", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_STATIC("static", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_IF("if", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_FOR("for", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DO("do", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_AUTO("auto", "pragma-omp-keyword-directive"), // NOI18N
     PRAGMA_OMP_NUM_THREADS("num_threads", "pragma-omp-keyword-directive"), // NOI18N
-
+    PRAGMA_OMP_SIMD("simd", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SAFELEN("safelen", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_SIMDLEN("simdlen", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_ALIGNED("aligned", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_DECLARE("declare", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_UNIFORM("uniform", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_INBRANCH("inbranch", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_NOTINBRANCH("notinbranch", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_CANCEL("cancel", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_CANCELLATION("cancellation", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_POINT("point", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_CONDITIONAL("conditional", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_TASK_REDUCTION("task_reduction", "pragma-omp-keyword-directive"), // NOI18N
+    PRAGMA_OMP_INITIALIZER("initializer", "pragma-omp-keyword-directive"), // NOI18N
+    
     // Pro*C
     PROC_DIRECTIVE(null, "proc"), // NOI18N
     PROC_SQL("sql", "proc-keyword-directive"), // NOI18N

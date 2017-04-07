@@ -82,12 +82,15 @@ else
    fi
 fi
 
-OSFAMILY=\${OSFAMILY:-\`echo \${OS} | grep _NT- >/dev/null && echo Windows\`}
+OSFAMILY=\${OSFAMILY:-\`echo \${OS} | grep _NT- >/dev/null && echo Windows\`} # CYGWIN_NT-10.0
 OSFAMILY=\${OSFAMILY:-\`test "\$OS" = "Darwin" && echo MacOSX\`}
 OSFAMILY=\${OSFAMILY:-\`test "\$OS" = "Linux" && echo Linux\`}
 OSFAMILY=\${OSFAMILY:-\${OS}}
 
-CPUFAMILY=\`(echo \${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo \${CPUTYPE}\`
+CPUFAMILY=\`echo \${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86\`
+CPUFAMILY=\${CPUFAMILY:-\`echo \${CPUTYPE} | egrep "armv" > /dev/null && echo arm\`}
+CPUFAMILY=\${CPUFAMILY:-\`echo \${CPUTYPE} | egrep "sparc" > /dev/null && echo sparc\`} # sparc or sparc64
+CPUFAMILY=\${CPUFAMILY:-\${CPUTYPE}}
 
 if [ "$BITNESS_PARAM" != "no" ]; then
    BITNESS="$BITNESS_PARAM"
@@ -103,8 +106,8 @@ echo Platform: \${PLATFORM}
 uname -a
 
 MAKE=\`which gmake || which make\`
-cd /net/$LHOST/$PWD
-\$MAKE PLATFORM_DIR=\${PLATFORM} OSFAMILY=\${OSFAMILY} $@
+cd /net/$LHOST/$PWD 2> /dev/null
+\$MAKE CONF=\${PLATFORM} OSFAMILY=\${OSFAMILY} $@
 
 EOF
 

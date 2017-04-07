@@ -52,7 +52,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -249,7 +248,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW", PlatformTypes.PLATFORM_WINDOWS);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin");
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin\\g++");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -319,7 +318,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of TDM MinGW on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW_TDM", PlatformTypes.PLATFORM_WINDOWS);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin");
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin\\g++.exe");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -338,6 +337,50 @@ public class GNUCCCCompilerTest {
         golden.add("d:\\tec\\mingw\\bin\\../lib/gcc/mingw32/4.3.2/include/c++");
         golden.add("d:\\tec\\mingw\\bin\\../lib/gcc/mingw32/4.3.2/include/c++/backward");
         golden.add("d:\\tec\\mingw\\bin\\../lib/gcc/mingw32/4.3.2/include/c++/mingw32");
+
+        StringBuilder result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
+    }
+
+    @Test
+    public void testParseCompilerOutputMinGWCygwin() {
+        //System.setProperty("os.name", "Windows Vista");
+        String s =
+                "c:\\msys64\\usr\\bin\\g++ -E -v -x c++ tmp.cpp\n" +
+                "gcc version 6.3.0 (GCC)\n" +
+                "#include <...> search starts here:\n" +
+                " /usr/lib/gcc/x86_64-pc-msys/6.3.0/include/c++\n" +
+                " /usr/lib/gcc/x86_64-pc-msys/6.3.0/include/c++/x86_64-pc-msys\n" +
+                " /usr/lib/gcc/x86_64-pc-msys/6.3.0/include/c++/backward\n" +
+                " /usr/lib/gcc/x86_64-pc-msys/6.3.0/include\n" +
+                " /usr/lib/gcc/x86_64-pc-msys/6.3.0/include-fixed\n" +
+                " /usr/include\n" +
+                " /usr/lib/../lib/../include/w32api\n" +
+                "End of search list.\n";
+        BufferedReader buf = new BufferedReader(new StringReader(s));
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of TDM MinGW on Windows");
+        }
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW", PlatformTypes.PLATFORM_WINDOWS);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "MinGW", "MinGW", "c:\\msys64\\usr\\bin\\g++.exe");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
+        Collections.<String>sort(out);
+        List<String> golden = new ArrayList<>();
+        golden.add("c:/msys64/usr/include");
+        golden.add("c:/msys64/usr/lib/../lib/../include/w32api");
+        golden.add("c:/msys64/usr/lib/gcc/x86_64-pc-msys/6.3.0/include");
+        golden.add("c:/msys64/usr/lib/gcc/x86_64-pc-msys/6.3.0/include-fixed");
+        golden.add("c:/msys64/usr/lib/gcc/x86_64-pc-msys/6.3.0/include/c++");
+        golden.add("c:/msys64/usr/lib/gcc/x86_64-pc-msys/6.3.0/include/c++/backward");
+        golden.add("c:/msys64/usr/lib/gcc/x86_64-pc-msys/6.3.0/include/c++/x86_64-pc-msys");
 
         StringBuilder result = new StringBuilder();
         for (String i : out) {
@@ -381,7 +424,7 @@ public class GNUCCCCompilerTest {
             System.out.println("Parse Compiler Output of Cygwin on Windows");
         }
         CompilerFlavor flavor = CompilerFlavor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin");
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin\\g++.exe");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -392,11 +435,52 @@ public class GNUCCCCompilerTest {
         golden.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/backward");
         golden.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin");
         golden.add("C:/cygwin/usr/include");
-        golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/../../../../include/w32api");
-        golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include");
-        golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++");
-        golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/backward");
-        golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin");
+        //golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/../../../../include/w32api");
+        //golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include");
+        //golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++");
+        //golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/backward");
+        //golden.add("C:/cygwin/usr/lib/gcc/i686-pc-cygwin/3.4.4/include/c++/i686-pc-cygwin");
+        StringBuilder result = new StringBuilder();
+        for (String i : out) {
+            result.append(i);
+            result.append("\n");
+        }
+        if (TRACE) {
+            System.out.println(result);
+        }
+        assert (golden.equals(out));
+    }
+
+        @Test
+    public void testParseCompilerOutputCygwinMingw() {
+        //System.setProperty("os.name", "Windows Vista");
+        String s =
+                "C:\\cygwin64\\bin\\i686-w64-mingw32-g++.exe -E -v -x c++ tmp.cpp\n" +
+                "gcc version 5.4.0 (GCC)\n" +
+                "#include <...> search starts here:\n" +
+                 "/usr/lib/gcc/i686-w64-mingw32/5.4.0/include/c++\n" +
+                 "/usr/lib/gcc/i686-w64-mingw32/5.4.0/include/c++/i686-w64-mingw32\n" +
+                 "/usr/lib/gcc/i686-w64-mingw32/5.4.0/include/c++/backward\n" +
+                 "/usr/lib/gcc/i686-w64-mingw32/5.4.0/include\n" +
+                 "/usr/lib/gcc/i686-w64-mingw32/5.4.0/include-fixed\n" +
+                 "/usr/i686-w64-mingw32/sys-root/mingw/include\n" +
+                "End of search list.\n";
+        BufferedReader buf = new BufferedReader(new StringReader(s));
+        if (TRACE) {
+            System.out.println("Parse Compiler Output of Cygwin on Windows");
+        }
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin64\\bin\\i686-w64-mingw32-g++.exe");
+        instance.parseCompilerOutput(buf, instance.pair);
+        List<String> out = instance.pair.systemIncludeDirectoriesList;
+        Collections.<String>sort(out);
+        List<String> golden = new ArrayList<>();
+        golden.add("C:/cygwin64/lib/gcc/i686-w64-mingw32/5.4.0/include");
+        golden.add("C:/cygwin64/lib/gcc/i686-w64-mingw32/5.4.0/include-fixed");
+        golden.add("C:/cygwin64/lib/gcc/i686-w64-mingw32/5.4.0/include/c++");
+        golden.add("C:/cygwin64/lib/gcc/i686-w64-mingw32/5.4.0/include/c++/backward");
+        golden.add("C:/cygwin64/lib/gcc/i686-w64-mingw32/5.4.0/include/c++/i686-w64-mingw32");
+        golden.add("C:/cygwin64/usr/i686-w64-mingw32/sys-root/mingw/include");
         StringBuilder result = new StringBuilder();
         for (String i : out) {
             result.append(i);

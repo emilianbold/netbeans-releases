@@ -166,38 +166,42 @@ public class DirectoryStorage {
             RemoteLogger.assertTrueInConsole(false, "Storage has been unexpectedly deleted: " + cacheFile.getAbsolutePath()); //NOI18N
         }
     }
-    
-    public void store() throws IOException {
+
+    static void store(File cacheFile, Collection<? extends DirEntry> entries) throws IOException {
         BufferedWriter wr = null;
-        synchronized (this) {
-            try {
-                wr = Files.newBufferedWriter(cacheFile.toPath(), Charset.forName("UTF-8")); //NOI18N 
-                wr.write("VERSION=" + VERSION + "\n"); //NOI18N
-                Collection<DirEntry> invalid = new ArrayList<>();
-                Collection<DirEntry> valid = new ArrayList<>();
-                for (DirEntry entry : entries.values()) {                   
-                    if (entry.isValid()) {
-                        valid.add(entry);
-                    } else {
-                        invalid.add(entry);
-                    }
-                }                
-                wr.write("dummies=" + invalid.size() + '\n'); //NOI18N
-                for (DirEntry entry: invalid) {
-                    wr.write(entry.toExternalForm());
-                    wr.write('\n');
+        try {
+            wr = Files.newBufferedWriter(cacheFile.toPath(), Charset.forName("UTF-8")); //NOI18N 
+            wr.write("VERSION=" + VERSION + "\n"); //NOI18N
+            Collection<DirEntry> invalid = new ArrayList<>();
+            Collection<DirEntry> valid = new ArrayList<>();
+            for (DirEntry entry : entries) {
+                if (entry.isValid()) {
+                    valid.add(entry);
+                } else {
+                    invalid.add(entry);
                 }
-                for (DirEntry entry : valid) {
-                    wr.write(entry.toExternalForm());
-                    wr.write('\n');
-                }
-                wr.close();
-                wr = null;
-            } finally {
-                if (wr != null) {
-                    wr.close();
-                }
+            }                
+            wr.write("dummies=" + invalid.size() + '\n'); //NOI18N
+            for (DirEntry entry: invalid) {
+                wr.write(entry.toExternalForm());
+                wr.write('\n');
             }
+            for (DirEntry entry : valid) {
+                wr.write(entry.toExternalForm());
+                wr.write('\n');
+            }
+            wr.close();
+            wr = null;
+        } finally {
+            if (wr != null) {
+                wr.close();
+            }
+        }
+    }
+        
+    public void store() throws IOException {
+        synchronized (this) {
+            store(cacheFile, entries.values());
         }
     }
 

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.spi.model.TypesProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -67,6 +69,15 @@ import org.netbeans.modules.cnd.spi.model.TypesProvider;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.TypesProvider.class)
 public class TypesProviderImpl implements TypesProvider {
+    
+    // Now both decltypes and typeofs are handled as decltypes
+    private static final CharSequence DECLTYPE_ALIASES[] = {
+        CppTokenId.DECLTYPE.fixedText(),
+        CppTokenId.__DECLTYPE.fixedText(),
+        CppTokenId.TYPEOF.fixedText(),
+        CppTokenId.__TYPEOF.fixedText(),
+        CppTokenId.__TYPEOF__.fixedText()
+    };
     
     @Override
     public CsmType createType(CharSequence sequence, CsmScope scope, CsmTypes.SequenceDescriptor descriptor) {
@@ -102,6 +113,21 @@ public class TypesProviderImpl implements TypesProvider {
                 newDescriptor.isConst(),
                 newDescriptor.isVolatile()
         );
+    }
+
+    @Override
+    public boolean isDecltype(CharSequence classifierText) {
+        for (CharSequence alias : getDecltypeAliases()) {
+            if (CharSequenceUtils.contentEquals(alias, classifierText)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public CharSequence[] getDecltypeAliases() {
+        return DECLTYPE_ALIASES;
     }
     
     private static AST tryParseType(CharSequence sequence, String lang, String langFlavour, CsmTypes.OffsetDescriptor offs) {

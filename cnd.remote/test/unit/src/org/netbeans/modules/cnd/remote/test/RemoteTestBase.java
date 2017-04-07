@@ -317,7 +317,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                     }
                 }
             //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
-            RemoteSyncTestSupport.waitWorkerFinished(20);
+            RemoteSyncTestSupport.waitWorkerFinished(isDebugged() ? 1800 : 30);
             if (build_rc.get() != 0) {
                 StringBuilder sb = new StringBuilder("-------- Console output of failed test ").append(getName()).append(" --------\n\n");
                 for (String l : lines) {

@@ -102,7 +102,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             int next;
             while (c == '\\') {
                 escapedEatenChars++;
-                switch (input.read()) {
+                final int cur = input.read();
+                switch (cur) {
                     case '\r':
                         if (consumeNewline()) {
                             escapedEatenChars++;
@@ -176,7 +177,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         switch (read(true)) {
                             case '/': // in single-line or doxygen comment
                             {
-                                Token<CppTokenId> out = finishLineComment(true);
+                                Token<CppTokenId> out = finishLineComment(true, false);
                                 assert out != null : "not handled //";
                                 return out;
                             }
@@ -378,6 +379,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                     case 'D':
                                     case 'E':
                                     case 'F':
+                                    case '\'': // C++11 digits separator
                                         break;
                                     case '.': // hex float literal
                                         if (!inFraction) {
@@ -476,7 +478,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                     Token<CppTokenId> out = raw_string ? finishRawString() : finishDblQuote();
                                     assert out != null : "not handled dobule quote";
                                     return out;
-                                } else if (next == '\'') {
+                                } else if (next == '\'' && !raw_string) {
                                     // char with L or U/u prefix
                                     Token<CppTokenId> out = finishSingleQuote();
                                     assert out != null : "not handled single quote";
@@ -507,7 +509,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
     protected abstract CppTokenId getKeywordOrIdentifierID(CharSequence text);
 
-    protected final Token<CppTokenId> finishLineComment(boolean createToken) {
+    protected final Token<CppTokenId> finishLineComment(boolean createToken, boolean leaveLineBreaksForTokenRange) {
         int c = read(true);
         boolean startOfDoxygen = (c == '/');// in doxygen comment
         while (true) {
@@ -515,7 +517,11 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 case '\r':
                 case '\n':
                 case EOF:
-                    backup(1);
+                    // when called in the context of i.e. pp-directive token wants 
+                    // to contain trailing symbols like LF
+                    if (!leaveLineBreaksForTokenRange) {
+                        backup(1);
+                    }
                     if (createToken) {
                         return startOfDoxygen ? token(CppTokenId.DOXYGEN_LINE_COMMENT) : token(CppTokenId.LINE_COMMENT);
                     } else {
@@ -667,7 +673,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
         do {
             c = read(true);
-        } while ('0' <= c && c <= '9'); // reading exponent
+        } while (('0' <= c && c <= '9') || (c == '\'')); // reading exponent digits
         switch (c) {
 //            case 'd':
 //            case 'D':

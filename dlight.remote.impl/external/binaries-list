@@ -1,6 +1,8 @@
-#changeset:   313510:eba55545e5e4
+#changeset:   315175:1197667808c9
 #branch:      release82
+#tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Dec 01 02:00:13 2016 +0300
-#summary:     Fixing tests (#268926 - Remote File System should support DeleteOnExit) - don't truncate error log - fs_server source changes
-FDB0530AE633084C1CAD9A2CADFFB8AE1965BD8B fs_server-1.0.zip
+#date:        Wed Apr 05 23:49:00 2017 +0300
+#summary:     fixing #270307 - Regression after recent fixes in fs_server --   sources
+00784557F614BE02268C50C1BA692A6B19F0EE27 fs_server-1.0.zip
+

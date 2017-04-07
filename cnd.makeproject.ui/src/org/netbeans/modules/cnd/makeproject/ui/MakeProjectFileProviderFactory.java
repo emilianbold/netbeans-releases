@@ -164,33 +164,6 @@ public class MakeProjectFileProviderFactory extends MakeProjectFileProvider impl
         }
 
 
-        private Collection<FSPath> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env) {
-            Collection<FSPath> res = null;
-            if (env == null) {
-                env = ExecutionEnvironmentFactory.getLocal();
-            }
-            boolean isDoSearch = false;
-            if (env.isLocal()) {
-                isDoSearch = true;
-            } else {
-                if (Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "true"))) {
-                    isDoSearch = ConnectionManager.getInstance().isConnectedTo(env);
-                }
-            }
-            if (!packageSearch.isEmpty() && isDoSearch) {
-                for (UserOptionsProvider userOptionsProvider : packageSearch) {
-                    NativeFileSearch search = userOptionsProvider.getPackageFileSearch(env);
-                    if (search != null) {
-                        res = search.searchFile(project, fileName);
-                        if(res != null) {
-                            break;
-                        }
-                    }
-                }
-            }
-            return res;
-        }
-        
         @Override
         public void cancel() {
             cancel.set(true);

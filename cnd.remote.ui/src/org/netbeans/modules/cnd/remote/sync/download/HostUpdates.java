@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -147,7 +148,7 @@ public class HostUpdates {
 
     @SuppressWarnings("CallToThreadDumpStack")
     private void showNotification() {
-        if (persistence.getRememberChoice()) {
+        if (!needsRequest()) {
             download();
             return;
         }
@@ -233,6 +234,18 @@ public class HostUpdates {
         }
     }
     
+    private boolean needsRequest() {
+        synchronized (FileDownloadInfo.LOCK) {
+            Collection<FileDownloadInfo> unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
+            for (FileDownloadInfo info : unconfirmed) {
+                if (!persistence.isAnswerPersistent(info.getLocalFile())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /** */
     private void download() {
         final Collection<FileDownloadInfo> confirmed = new ArrayList<>();

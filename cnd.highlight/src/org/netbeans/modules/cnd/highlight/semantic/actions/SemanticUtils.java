@@ -118,13 +118,15 @@ public class SemanticUtils {
         if (MIMENames.isHeaderOrCppOrC(mime)) {
             EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
             JEditorPane pane = NbDocument.findRecentEditorPane(ec);
-            Document doc = ec.getDocument();
-            int position = pane.getCaretPosition();
-            int goTo = findOccurrencePosition(next, doc, position);
-            if (goTo > 0) {
-                pane.setCaretPosition(goTo);
-            } else {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SemanticUtils.class, "cpp-no-marked-occurrence"));
+            if (pane != null) {
+                Document doc = ec.getDocument();
+                int position = pane.getCaretPosition();
+                int goTo = findOccurrencePosition(next, doc, position);
+                if (goTo > 0) {
+                    pane.setCaretPosition(goTo);
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SemanticUtils.class, "cpp-no-marked-occurrence"));
+                }
             }
         }
 

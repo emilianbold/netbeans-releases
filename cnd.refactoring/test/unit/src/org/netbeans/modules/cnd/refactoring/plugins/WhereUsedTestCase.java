@@ -123,4 +123,19 @@ public class WhereUsedTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
         // IZ#228094 - Refactoring: only usages are changed, #define in header from the refactoring was called, remains unchanged
         performWhereUsed("iz228094.cpp", 1, 10, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(), CsmWhereUsedFilters.MACROS.getKey(),CsmWhereUsedFilters.READ.getKey(),CsmWhereUsedFilters.WRITE.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
+    
+    public void test268930_1() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performWhereUsed("bug268930.cpp", 2, 32);
+    }
+    
+    public void test268930_2() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performWhereUsed("bug268930.cpp", 6, 25);
+    }
+    
+    public void test268930_3() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performWhereUsed("bug268930.cpp", 10, 30);
+    }
 }

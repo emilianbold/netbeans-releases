@@ -49,9 +49,9 @@ package org.netbeans.modules.cnd.modelutil;
  * @author jec
  */
 public interface CsmImageName {
-    static final String DEFAULT = "org/openide/resources/defaultNode.gif"; // NOI18N
     static final String RESOURCE_BASE = "org/netbeans/modules/cnd/modelutil/resources/types16x16/"; // NOI18N
 
+    static final String DEFAULT = RESOURCE_BASE+"defaultNode.png"; // NOI18N
     static final String DECLARATION_FILTER = RESOURCE_BASE+"declaration_filter.png"; // NOI18N
     static final String SCOPE_FILTER = RESOURCE_BASE+"scope_filter.png"; // NOI18N
 

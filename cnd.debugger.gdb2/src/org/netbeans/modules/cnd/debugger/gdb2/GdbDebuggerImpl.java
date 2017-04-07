@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -160,6 +162,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private final GdbHandlerExpert handlerExpert;
     private volatile MILocation homeLoc;
     private boolean dynamicType;
+    //current stack frame number
+    //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+    private String currentStackFrameNo = "0";//NOI18N
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
@@ -284,6 +289,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         handlerExpert = new GdbHandlerExpert(this);
         disassembly = new GdbDisassembly(this, breakpointModel());
         disStateModel().addListener(disassembly);
+        //need to attach to EditorContext Bridge as we need to 
     }
 
     @Override
@@ -1979,7 +1985,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             System.out.println("tid_no " + currentThreadId); // NOI18N
             System.out.println("frame " + frame.toString()); // NOI18N
         }
-        GdbFrame f = new GdbFrame(this, frame, null, null);
+        GdbFrame f = new GdbFrame(this, frame, null);
 
         //if (index != -1)
         //threads[index] = new GdbThread(this, threadUpdater, tid_no, f);
@@ -2066,7 +2072,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         String id = thrList.getConstValue("id"); //NOI18N
                         String name = thrList.getConstValue("target-id"); //NOI18N
                         MIValue frame = thrList.valueOf(MI_FRAME);// frame entry
-                        GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                        GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                         f.setCurrent(true);     // in order to let Thread make some updates | GDB response contains only current frame
                         String state = thrList.getConstValue("state"); // NOI18N
                         GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, new Frame[]{f}, state);
@@ -2115,13 +2121,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                         result = (MIResult) results.get(i++);
                                         if (result.matches(MI_FRAME)) {
                                             MIValue frame = result.value();
-                                            f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                                            f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                                         }
                                     } else if (result.matches(MI_FRAME)) {
                                         name = "Thread ".concat(id); //NOI18N
 
                                         MIValue frame = result.value();
-                                        f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                                        f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                                         f.setCurrent(true);     // in order to let Thread make some updates | GDB response contains only current frame
                                     }
 
@@ -2223,12 +2229,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         final String state = thrList.getConstValue("state"); //NOI18N
 
                         final GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, null, state);
+                        String frNo = "0"; // TODO As --thread activates a thread there will be the only value // NOI18N
                         if (id.equals(currentThreadId)) {
                             curThread = gdbThread;
+                            //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+                            frNo = currentStackFrameNo;
                         }
+                        final String frameNo = frNo;
                         res.add(gdbThread);
 
-                        final String frameNo = "0"; // TODO As --thread activates a thread there will be the only value // NOI18N
 
                         if (peculiarity.isLldb()) {
                             // lldb-mi output for -thread-info contains frames
@@ -2239,7 +2248,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 if (item.matches(MI_FRAME)) {
                                     MIValue frame = item.value();
 
-                                    GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame, null, gdbThread);
+                                    GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame, gdbThread);
                                     if (gdbFrame.getNumber().equals(frameNo)) {
                                         gdbFrame.setCurrent(true);
                                     }
@@ -2260,10 +2269,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
                             MICommand cmd = new MiCommandImpl(peculiarity.stackListFramesCommand(id)) {
                                 @Override
-                                protected void onDone(final MIRecord frames) {
-
+                                protected void onDone(final MIRecord framesRecord) {
+                                    //do not ask for arguments here
+                                    //it is too time expensive and too earlier
                                     // "1" means get both arg's name and value
-                                    String args_command = "-stack-list-arguments 1 --thread " + id; // NOI18N
+                                    String stack_list_args_param = 
+                                            DebuggerOption.ARGS_VALUES_IN_STACK.isEnabled(NativeDebuggerManager.get().globalOptions()) ? "1" :"0";//NOI18N
+                                    String args_command = "-stack-list-arguments " + stack_list_args_param + " --thread " + id; // NOI18N
 
                                     MICommand cmd3 = new MiCommandImpl(args_command) {
 
@@ -2282,7 +2294,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                                 }
                                             }
 
-                                            MITList results = frames.results();
+                                            MITList results = framesRecord.results();
                                             MITList stack_list = (MITList) results.valueOf("stack"); // NOI18N
                                             int size = stack_list.size();
 
@@ -2293,12 +2305,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                                 MIResult frame = (MIResult) stack_list.get(vx);
 
                                                 // try to find frame arguments
+                                                //no args here
+                                                //do not ask it ever
                                                 MIResult frameArgs = null;
                                                 if (args_list != null && vx < args_list.size()) {
                                                     frameArgs = (MIResult) args_list.get(vx);
                                                 }
 
-                                                GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame.value(), frameArgs, gdbThread);    // TODO arguments request
+                                                GdbFrame gdbFrame = 
+                                                        new GdbFrame(GdbDebuggerImpl.this, frame.value(), frameArgs, gdbThread);    // TODO arguments request
                                                 if (gdbFrame.getNumber().equals(frameNo)) {
                                                     gdbFrame.setCurrent(true);
                                                 }
@@ -2363,14 +2378,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             System.out.println("registerStackModel " + model); // NOI18N
         }
         stackUpdater.addListener(model);
-        if (model != null) {
-            get_frames = true;
-//            if (state().isProcess && !state().isRunning) {
-//                showStackFrames();
-//            }
-        } else {
-            get_frames = false;
-        }
+        get_frames = model != null;
+        if (get_frames && state().isProcess && !state().isRunning ) {
+            requestStack();
+        }          
+        
     }
 
     @Override
@@ -2417,6 +2429,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void makeFrameCurrent(final Frame f) {
         final String fno = f.getNumber();
+        //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+        currentStackFrameNo = fno;
         boolean changed = false;
         if (guiStackFrames != null) {
             for (Frame frame : guiStackFrames) {
@@ -2468,7 +2482,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void visitCurrentSrc(GdbFrame f, MIRecord srcRecord) {
         MITList  srcTuple = srcRecord.results();
         if (f == null)
-            f = new GdbFrame(this, null, null, null);
+            f = new GdbFrame(this, null, null);
 
         // create a non-visited location because it may be assigned to
         // homeLoc
@@ -2533,7 +2547,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * framerecords: what we got from -stack-list-frames = stack
      * args: what we got from -stack-list-arguments 1 = stack-args
      */
-    private void setStackWithArgs(MIRecord framerecords, MIRecord args) {
+    //mromashova_bz#269898: we will not do this call ever with the 1 (names and values)
+    //it is too expensive to get all arguments for all frames even for one particular thread
+    //and the only need is Debuggin View, but we will show arg names only without values
+    private void setStackWithArgs(MIRecord framerecords
+            , MIRecord args
+    ) {
         MITList argsresults;
         MITList args_list = null;
         String stringframes;
@@ -2565,10 +2584,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
             newGuiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs, null);
-
-            if (vx == 0) {
-                newGuiStackFrames[vx].setCurrent(true); // make top frame current
-            }
+            //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+            //if (vx == 0) {
+                newGuiStackFrames[vx].setCurrent((currentStackFrameNo + "").equals(newGuiStackFrames[vx].getNumber())); // make top frame current
+            //}
         }
         //
         guiStackFrames = newGuiStackFrames;
@@ -2585,9 +2604,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * for whole stack
      * framerecords: what we got from -stack-list-frames
      */
-    private void setStack(final MIRecord framerecords) {
+    private void setStack(final MIRecord framerecords) {     
+        //mromashova_bz#269898:
         // "1" means get both arg's name and value
-        String args_command = "-stack-list-arguments 1"; // NOI18N
+        String stack_list_args_param = 
+                get_frames && DebuggerOption.ARGS_VALUES_IN_STACK.isEnabled(NativeDebuggerManager.get().globalOptions()) 
+                ? "1" :"0";//NOI18N
+        
+        String args_command = "-stack-list-arguments " + stack_list_args_param; // NOI18N
 
         MICommand cmd =
             new MiCommandImpl(args_command) {
@@ -2717,22 +2741,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             send("-break-disable"); //NOI18N
         }
         send("-gdb-set unwindonsignal on"); //NOI18N
-
-        dataMIEval(lp, expr, dis);
-
-        // enable breakpoints and signals
-        if (handlers.length > 0) {
-            StringBuilder command = new StringBuilder();
-            command.append("-break-enable"); // NOI18N
-            for (Handler h : handlers) {
-                if (h.breakpoint().isEnabled()) {
-                    command.append(' ');
-                    command.append(h.getId());
+        Runnable postRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // enable breakpoints and signals
+                if (handlers.length > 0) {
+                    StringBuilder command = new StringBuilder();
+                    command.append("-break-enable"); // NOI18N
+                    for (Handler h : handlers) {
+                        if (h.breakpoint().isEnabled()) {
+                            command.append(' ');
+                            command.append(h.getId());
+                        }
+                    }
+                    send(command.toString());
                 }
+                send("-gdb-set unwindonsignal off"); //NOI18N
             }
-            send(command.toString());
-        }
-        send("-gdb-set unwindonsignal off"); //NOI18N
+        };
+        dataMIEval(lp, expr, dis, postRunnable);
+
+       
     }
 
     @Override
@@ -2783,7 +2812,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
 
-    private static final class ModelChangeListenerTooltipImpl implements ModelListener {
+    private final class ModelChangeListenerTooltipImpl implements ModelListener {
         private AtomicBoolean isInitilaized = new AtomicBoolean(false);
         private JEditorPane editorPane;
         private  Line.Part lp;
@@ -2806,8 +2835,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
                 if (nodeChanged.getChange() != ModelEvent.NodeChanged.DISPLAY_NAME_MASK) {
                     return;//need to update display name only
+                }                
+                if (!(nodeChanged.getNode() instanceof GdbVariable) ){
+                    return;
                 }
-                final Variable variable = ((Variable) nodeChanged.getNode());
+                final GdbVariable variable = ((GdbVariable) nodeChanged.getNode());
                 if (!tts.isEnabled() || !tts.isToolTipVisible()) {
                     return;
                 }
@@ -2829,6 +2861,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                            final String toolTip = variable.getVariableName() + "=" + variable.getAsText();//NOI18N
                            ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
                            ToolTipSupport tts = toolTipUI.show(editorPane);
+                           tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(variable));
                            variable.getUpdater().removeListener(ModelChangeListenerTooltipImpl.this);
                            //variable.getUpdater().setListener(null);
                        }
@@ -2836,7 +2869,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                }
             }
         }
-    }    
+    } 
+    
+    private final class ToolTipSupportPropertyChangeListener implements PropertyChangeListener {
+        private final GdbVariable v;
+
+        ToolTipSupportPropertyChangeListener(GdbVariable v) {
+            this.v = v;
+        }
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (!ToolTipSupport.PROP_STATUS.equals(evt.getPropertyName())) {                
+               return;//we are interested in status only 
+            }
+            if ((((Integer)evt.getNewValue()) == ToolTipSupport.STATUS_HIDDEN)){
+                DeleteMIVarCommand cmd = new DeleteMIVarCommand(v);
+                cmd.dontReportError();
+                sendCommandInt(cmd);
+                ((ToolTipSupport)evt.getSource()).removePropertyChangeListener(this);
+            }
+        }
+        
+    }
+    
     private static final class ModelChangeListenerImpl implements ModelListener {
         @Override
         public void modelChanged(ModelEvent event) {
@@ -2867,7 +2922,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
     }
 
-    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis) {
+    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable) {
         String expandedExpr = MacroSupport.expandMacro(this, expr);
         String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         MICommand cmd =
@@ -2889,10 +2944,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         }
                     }
                 } else if (value_string.startsWith("@0x")) { //NOI18N
-                    // See bug 206736 - tooltip for reference-based variable shows address instead of value
-                    balloonEvaluate(lp, "*&" + expr, false); //NOI18N
-                    finish();
-                    return;
+                    try{
+                        // See bug 206736 - tooltip for reference-based variable shows address instead of value
+                        balloonEvaluate(lp, "*&" + expr, false); //NOI18N
+                        finish();                        
+                        return;
+                    } finally {
+                        postRunnable.run();
+                    }
                 } else {
                     value_string = ValuePresenter.getValue(value_string);
                 }
@@ -2900,10 +2959,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 Line line = lp.getLine();
                 DataObject dob = DataEditorSupport.findDataObject(line);
                 if (dob == null) {
+                    postRunnable.run();
                     return;
                 }
                 final EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
                 if (ec == null) {
+                    postRunnable.run();
                     return;
                     // Only for editable dataobjects
                 }
@@ -2911,10 +2972,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 try {
                     doc = ec.openDocument();
                 } catch (IOException ex) {
+                    postRunnable.run();
                     return;
                 }
                 final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
                 if (ep == null || ep.getDocument() != doc) {
+                    postRunnable.run();
                     return ;
                 }      
                 //Object var = null; 
@@ -2926,6 +2989,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 final Runnable onDoneRunnable = new Runnable() {
                     @Override
                     public void run() {
+                        postRunnable.run();
                         //need to execute following code only after the value is update in onDone in createMIVar
                         final Object objectVariable = watch;
                         final String toolTip = expr + "=" + watch.getAsText();//NOI18N
@@ -2952,17 +3016,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
                                 final ToolTipSupport tts = toolTipUI.show(ep);
                                 if (tts != null) {
+                                    tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
                                     mcLImpl.registerToolTip(tts, ep, lp);
                                 }
 
                             }
                         });
+                        
                     }
                 };
                 //this runnable for the case when it is not WATCH
                 final Runnable onErrorRunnable = new Runnable() {
                     @Override
                     public void run() {
+                        postRunnable.run();
                         //need to execute following code only after the value is update in onDone in createMIVar
                         final String toolTip = expr + "=" + data_value_string;//NOI18N
                         final String expression = expr;
@@ -2984,6 +3051,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
                                 final ToolTipSupport tts = toolTipUI.show(ep);
                                 if (tts != null) {
+                                    tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
                                     mcLImpl.registerToolTip(tts, ep, lp);
                                 }
 
@@ -3045,13 +3113,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // see IZ 194721
         // No need to check for duplicates - gdb will create different vars
         GdbWatch gdbWatch = new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-        createMIVar(gdbWatch, true);
-
-        updateMIVar();
+        if (get_watches || WatchBag.isPinOpened(nativeWatch)) {
+            createMIVar(gdbWatch, true);
+            //do not call update if there is no editor opened or watches are opened
+//            if (get_watches || WatchBag.isPinOpened(nativeWatch)) {
+            updateMIVar();
+            //}
+        }
         nativeWatch.setSubWatchFor(gdbWatch, this);
         watches.add(gdbWatch);
         manager().bringDownDialog();
-        watchUpdater().treeChanged();     // causes a pull
+        if (get_watches) {
+            watchUpdater().treeChanged();     // causes a pull
+    }       
     }
 
     @Override
@@ -3115,7 +3189,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (model != null) {
             get_watches = true;
             if (state().isProcess && !state().isRunning) {
-                updateWatches();
+                updateWatches(true);
             }
         } else {
             get_watches = false;
@@ -3126,23 +3200,26 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * Try and re-create vars for watches which don't have var's (mi_name's)
      * yet.
      */
-    private void retryWatches() {
+    private void retryWatches(boolean forceVarCreate) {
 
         for (WatchVariable wv : watches) {
             GdbWatch w = (GdbWatch) wv;
+            if (forceVarCreate || w.getNativeWatch().watch().getPin() != null) {
+                // due to the fix of #197053 it looks safe not to create new vars
+                if (w.getMIName() != null) {
+                    continue;		// we already have a var for this one
+                }
 
-            // due to the fix of #197053 it looks safe not to create new vars
-            if (w.getMIName() != null) {
-                continue;		// we already have a var for this one
+                createMIVar(w, true);
             }
-
-            createMIVar(w, true);
         }
     }
 
-    private void updateWatches() {
-        retryWatches();
-        updateMIVar();
+    private void updateWatches(boolean forceVarCreate) {
+        retryWatches(forceVarCreate);
+        if (forceVarCreate) {
+            updateMIVar();
+        }
     }
 
     private void updateVarAttr(GdbVariable v, MIRecord attr, boolean evalValue) {
@@ -3676,7 +3753,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (expandMacros) {
             expr = MacroSupport.expandMacro(this, v.getVariableName());
         }       
-        String cmdString = peculiarity.createVarCommand(expr, currentThreadId, "0"); // NOI18N // TODO: correct frame number
+        String cmdString = peculiarity.createVarCommand(expr, currentThreadId, currentStackFrameNo); // NOI18N //use current frame number
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -3789,21 +3866,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
     private void setLocals(boolean update_var, MIRecord locals) {
         MITList localsresults = locals.results();
-        MITList locals_list = (MITList) localsresults.valueOf("locals"); // NOI18N
+        MITList locals_list = (MITList) localsresults.valueOf("variables"); // NOI18N
         int size = locals_list.size();
         int local_count = size;
 
         List<GdbLocal> param_list = null;
         int params_count = 0;
 
-        // paramaters
-        GdbFrame cf = getCurrentFrame();
-        if (cf != null) {
-            param_list = cf.getArgsList();
-            if (param_list != null) {
-                params_count = param_list.size();
-            }
-        }
+        //mromashova_bz#269898: we will use "-stack-list-variables --no-values" not "-stack-list-locals --no-values"
+        //and frame will never keep args
+//        // paramaters
+//        GdbFrame cf = getCurrentFrame();
+//        if (cf != null) {
+//            //ask for the args as we will not ask now
+//            param_list = cf.getArgsList();
+//            if (param_list != null) {
+//                params_count = param_list.size();
+//            }
+//        }
 
         local_count += params_count;
         if (Log.Variable.mi_vars) {
@@ -3818,6 +3898,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         for (int vx = 0; vx < size; vx++) {
             MITListItem localItem = locals_list.get(vx);
             if (peculiarity.isLocalsOutputUnusual()) {
+                localItem = ((MITList) localItem).get(0);
+            }
+            if (localItem instanceof MITList) {
                 localItem = ((MITList) localItem).get(0);
             }
             MIResult localvar = (MIResult) localItem;
@@ -3978,12 +4061,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             // For the scenario that stack view is closed and local view
             // is open, we need frame params info from here.
-            if (get_locals && frameValue != null) {
-                // needs to get args info
-                // frameValue include args  info
-                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null, null)};
-            }
-
+            //mromashova_bz#269898: the above is incorrect anymore
+            //when locals are requested we will get arguments (names and values, no need for this)
+//            if (get_locals && frameValue != null) {
+//                // needs to get args info
+//                // frameValue include args  info
+//                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null)};
+//            }
+        
             if (srcResults != null) {
                 boolean visited = false;
                 stack = srcResults.valueOf("stack").asList(); // NOI18N
@@ -4017,9 +4102,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (get_threads) {
                 showThreads();
             }
-
-            if (get_watches || watchBag().hasPinnedWatches()) {
-                updateWatches();
+            FileObject fileObj = homeLoc == null || !homeLoc.hasSource() ? null : 
+                    EditorBridge.findFileObject(fmap().engineToWorld(homeLoc.src()), this);                    
+            final boolean updateWatches = get_watches || watchBag().hasPinnedWatchesOpened(fileObj);
+            if (updateWatches) {
+                //do not update non pinned watches if watches window is closed 
+                updateWatches(updateWatches);
             }
 
             if (get_debugging) {
@@ -4155,7 +4243,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (session.coreSession() != DebuggerManager.getDebuggerManager().getCurrentSession()) {
             DebuggerManager.getDebuggerManager().setCurrentSession(session.coreSession());
         }
-
+        //bz#270229 - IDE doesn't update "Call Stack" tab if this tab is not a current
+        //need to update current stack frame number, new generic stop
+        currentStackFrameNo = "0";//NOI18N
         final MITList results = stopRecord.results();
 
         state().isRunning = false;
@@ -4243,6 +4333,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             gdb.sendCommand(cmd);
         }
     }
+    
+    //call this when Call Stack window is opened
+    private void requestStack() {
+        MICommand cmd =
+            new MiCommandImpl(peculiarity.stackListFramesCommand(currentThreadId)) {
+            @Override
+            protected void onDone(MIRecord record) {
+                setStack(record);
+                finish();
+            }
+            @Override
+            protected void onError(MIRecord record) {
+//                if (get_frames) {
+//                    setStack(record);
+//                }
+//should show some message here I think
+                finish();
+            }
+
+           
+        };
+        gdb.sendCommand(cmd);        
+    }    
 
     protected void requestStack(final MIRecord stopRecord) {
         MICommand cmd =
@@ -5750,10 +5863,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             @Override
             protected void onDone(MIRecord record) {
-                GdbFrame currentFrame = getCurrentFrame();
-                if (currentFrame != null) {
-                    currentFrame.varUpdated(var.getFullName(), value);
-                }
+//                GdbFrame currentFrame = getCurrentFrame();
+//                if (currentFrame != null) {
+//                    currentFrame.varUpdated(var.getFullName(), value);
+//                }
                 updateMIVar();
                 finish();
             }

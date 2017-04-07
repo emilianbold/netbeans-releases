@@ -66,7 +66,7 @@ public abstract class PathMap {
         return getLocalPath(rpath, false);
     }
 
-    //TODO: deprecate and remote
+    @Deprecated
     public abstract String getLocalPath(String rpath, boolean useDefault);
 
     public String getRemotePath(String lpath) {
