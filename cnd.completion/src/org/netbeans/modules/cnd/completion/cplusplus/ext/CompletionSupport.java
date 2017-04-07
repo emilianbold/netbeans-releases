@@ -51,6 +51,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -1431,6 +1432,181 @@ public final class CompletionSupport implements DocumentListener {
             return templateParameters != null && !templateParameters.isEmpty();
         }
         return false;
+    }
+    
+    public static List<CsmFunction> filterUserDefinedLiterals(CsmType literalType, Collection<CsmFunction> candidates, boolean onlyBest) {
+        List<CsmFunction> best = new ArrayList<>();
+        if (CsmCompletion.INT_TYPE.equals(literalType)) {
+            best.addAll(findUserDefinedLiteral(candidates, onlyBest,
+                    CsmCompletion.UNSIGNED_LONG_LONG_TYPE,
+                    CsmCompletion.UNSIGNED_LONG_LONG_INT_TYPE,
+                    CsmCompletion.STRING_TYPE, 
+                    CsmCompletion.CONST_STRING_TYPE
+            ));
+            if (!onlyBest || best.isEmpty()) {
+                best.addAll(findTemplateUserDefinedLiteral(candidates, onlyBest));
+            }
+        } else if (CsmCompletion.DOUBLE_TYPE.equals(literalType)) {
+            best.addAll(findUserDefinedLiteral(candidates, onlyBest,
+                    CsmCompletion.LONG_DOUBLE_TYPE, 
+                    CsmCompletion.STRING_TYPE, 
+                    CsmCompletion.CONST_STRING_TYPE
+            ));
+            if (!onlyBest || best.isEmpty()) {
+                best.addAll(findTemplateUserDefinedLiteral(candidates, onlyBest));
+            }
+        } else if (CsmCompletion.CHAR_TYPE.equals(literalType)
+                || CsmCompletion.WCHAR_TYPE.equals(literalType)) {
+            best.addAll(findUserDefinedLiteral(candidates, onlyBest, literalType));
+        } else if (CsmCompletion.STRING_TYPE.equals(literalType)
+                || CsmCompletion.CONST_STRING_TYPE.equals(literalType)) {
+            best.addAll(findUserDefinedLiteral(candidates, onlyBest, 
+                    Arrays.asList(CsmCompletion.CONST_STRING_TYPE, CsmCompletion.UNSIGNED_LONG_TYPE),
+                    Arrays.asList(CsmCompletion.CONST_STRING_TYPE, CsmCompletion.LONG_UNSIGNED_TYPE),
+                    Arrays.asList(CsmCompletion.CONST_STRING_TYPE, CsmCompletion.UNSIGNED_LONG_INT_TYPE),
+                    Arrays.asList(CsmCompletion.CONST_STRING_TYPE, CsmCompletion.LONG_UNSIGNED_INT_TYPE)
+            ));
+        } else if (CsmCompletion.WSTRING_TYPE.equals(literalType)
+                || CsmCompletion.CONST_WSTRING_TYPE.equals(literalType)) {
+            best.addAll(findUserDefinedLiteral(candidates, onlyBest, 
+                    Arrays.asList(CsmCompletion.CONST_WSTRING_TYPE, CsmCompletion.UNSIGNED_LONG_TYPE),
+                    Arrays.asList(CsmCompletion.CONST_WSTRING_TYPE, CsmCompletion.LONG_UNSIGNED_TYPE),
+                    Arrays.asList(CsmCompletion.CONST_WSTRING_TYPE, CsmCompletion.UNSIGNED_LONG_INT_TYPE),
+                    Arrays.asList(CsmCompletion.CONST_WSTRING_TYPE, CsmCompletion.LONG_UNSIGNED_INT_TYPE)
+            ));
+        }
+        return best;
+    }
+    
+    private static Collection<CsmFunction> findUserDefinedLiteral(Collection<CsmFunction> candidates, boolean onlyBest, CsmType...orderedParamTypes) {
+        List<CsmType> orderedParamsAsLists[] = new List[orderedParamTypes.length];
+        for (int i = 0; i < orderedParamTypes.length; ++i) {
+            orderedParamsAsLists[i] = Arrays.asList(orderedParamTypes[i]);
+        }
+        return findUserDefinedLiteral(candidates, onlyBest, orderedParamsAsLists);
+    }
+    
+    private static Collection<CsmFunction> findUserDefinedLiteral(Collection<CsmFunction> candidates, boolean onlyBest, List<CsmType>...orderedParamTypes) {
+        LinkedHashSet<CsmFunction> result = new LinkedHashSet<>(2);
+        for (List<CsmType> paramTypes : orderedParamTypes) {
+            result.addAll(findExactUserDefinedLiteral(paramTypes, candidates, onlyBest));
+            if (!result.isEmpty() && onlyBest) {
+                break;
+            }
+        }
+        return result;
+    }
+    
+    private static List<CsmFunction> findExactUserDefinedLiteral(List<CsmType> paramTypes, Collection<CsmFunction> candidates, boolean onlyBest) {
+        List<CsmFunction> res = new ArrayList<>(1);
+        outer:
+        for (CsmFunction candidate : candidates) {
+            if (candidate.getParameters().size() != paramTypes.size()) {
+                continue;
+            }
+            if (CsmKindUtilities.isTemplate(candidate)) {
+                continue;
+            }
+            CsmParameter[] methodParms = candidate.getParameters().toArray(new CsmParameter[candidate.getParameters().size()]);
+            for (int i = 0; i < methodParms.length; ++i) {
+                CsmType mpt = methodParms[i].getType();
+                CsmType goldenType = paramTypes.get(i);
+                if (goldenType == null) {
+                    continue outer;
+                }
+                if (!CsmUtilities.checkTypesEqual(
+                        goldenType, goldenType.getContainingFile(), 
+                        mpt, mpt.getContainingFile(), 
+                        IgnoreConstVolatileQualsEqualizer.INSTANCE
+                )) {
+                    continue outer;
+                }
+            }
+            res.add(candidate);
+            if (onlyBest) {
+                break;
+            }
+        }
+        return res;
+    }
+    
+    private static List<CsmFunction> findTemplateUserDefinedLiteral(Collection<CsmFunction> candidates, boolean onlyBest) {
+        // If the literal operator is a template, it must have an empty parameter list 
+        // and can have only one template parameter, which must be a non-type template parameter pack 
+        // with element type char
+        List<CsmFunction> result = new ArrayList<>(2);
+        for (CsmFunction fun : candidates) {
+            if (!fun.getParameters().isEmpty()) {
+                continue;
+            }
+            if (!CsmKindUtilities.isTemplate(fun)) {
+                continue;
+            }
+            CsmTemplate asTemplate = (CsmTemplate) fun;
+            List<CsmTemplateParameter> templateParameters = asTemplate.getTemplateParameters();
+            if (templateParameters.size() != 1) {
+                continue;
+            }
+            CsmTemplateParameter templateParam = templateParameters.get(0);
+            if (templateParam.isTypeBased() 
+                    || !CsmKindUtilities.isClassifierBasedTemplateParameter(templateParam)
+                    /*|| !templateParam.isVarArgs()*/ ) { // FIXME: isVarArgs works only for type based parameters!
+                continue;
+            }
+            // FIXME: classifier based template parameters are not working now:
+            // for parameter "char...Param" the class of it is "Param". This must be fixed!
+            if (false) {
+                CsmClassifier templateCls = (CsmClassifier) templateParam;
+                if (!isSpecifiedClass(templateCls.getName(), CsmCompletion.CHAR_CLASS)) {
+                    continue;
+                }
+            } else {
+                // workaround
+                if (!CharSequenceUtilities.startsWith(templateParam.getText(), CsmCompletion.CHAR_CLASS.getName())) {
+                    continue;
+                }
+            }
+            result.add(fun);
+            if (onlyBest) {
+                break;
+            }
+        }
+        return result;
+    }
+    
+    private static final class IgnoreConstVolatileQualsEqualizer implements QualifiersEqualizer {
+        
+        public static final IgnoreConstVolatileQualsEqualizer INSTANCE = new IgnoreConstVolatileQualsEqualizer();
+        
+        private IgnoreConstVolatileQualsEqualizer() {}
+
+        @Override
+        public boolean areQualsEqual(CsmType from, CsmType to) {
+            TypeInfoCollector typeInfo1 = new TypeInfoCollector();
+            iterateTypeChain(from, typeInfo1);
+
+            TypeInfoCollector typeInfo2 = new TypeInfoCollector();
+            iterateTypeChain(to, typeInfo2);
+
+            Iterator<Qualificator> qualIter1 = typeInfo1.qualificators.iterator();
+            Iterator<Qualificator> qualIter2 = typeInfo2.qualificators.iterator();
+            while (qualIter1.hasNext() && qualIter2.hasNext()) {
+                if (fetchNextQual(qualIter1) != fetchNextQual(qualIter2)) {
+                    return false;
+                }
+            }
+            return fetchNextQual(qualIter1) == fetchNextQual(qualIter2);
+        }
+        
+        private Qualificator fetchNextQual(Iterator<Qualificator> qualIter) {
+            while (qualIter.hasNext()) {
+                Qualificator qual = qualIter.next();
+                if (qual != Qualificator.CONST && qual != Qualificator.VOLATILE) {
+                    return qual;
+                }
+            }
+            return null;
+        }
     }
 
     ////////////////////////////////////////////////
