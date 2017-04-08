@@ -128,6 +128,7 @@ public class TokenFormatter {
         public boolean spaceBeforeCatch;
         public boolean spaceBeforeFinally;
         public boolean spaceAroundObjectOp;
+        public boolean spaceAroundDeclareEqual;
         public boolean spaceAroundStringConcatOp;
         public boolean spaceAroundUnaryOps;
         public boolean spaceAroundBinaryOps;
@@ -266,6 +267,7 @@ public class TokenFormatter {
             spaceBeforeFinally = codeStyle.spaceBeforeFinally();
 
             spaceAroundObjectOp = codeStyle.spaceAroundObjectOps();
+            spaceAroundDeclareEqual = codeStyle.spaceAroundDeclareEqual();
             spaceAroundStringConcatOp = codeStyle.spaceAroundStringConcatOps();
             spaceAroundUnaryOps = codeStyle.spaceAroundUnaryOps();
             spaceAroundBinaryOps = codeStyle.spaceAroundBinaryOps();
@@ -1018,6 +1020,9 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_AROUND_OBJECT_OP:
                                         countSpaces = docOptions.spaceAroundObjectOp ? 1 : 0;
+                                        break;
+                                    case WHITESPACE_AROUND_DECLARE_EQUAL:
+                                        countSpaces = docOptions.spaceAroundDeclareEqual ? 1 : 0;
                                         break;
                                     case WHITESPACE_AROUND_CONCAT_OP:
                                         countSpaces = docOptions.spaceAroundStringConcatOp ? 1 : 0;
