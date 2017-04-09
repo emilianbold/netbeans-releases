@@ -495,51 +495,51 @@ public class HintsTest extends PHPHintsTestBase {
     }
 
     public void testArraySyntaxSuggestion_01() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
     }
 
     public void testArraySyntaxSuggestion_02() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "11, ^22,");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "11, ^22,");
     }
 
     public void testArraySyntaxSuggestion_03() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "2, ^3);");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "2, ^3);");
     }
 
     public void testArraySyntaxSuggestion_04() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
     }
 
     public void testArraySyntaxSuggestion_05() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
     }
 
     public void testArraySyntaxSuggestion_06() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", ")^; //huhu");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", ")^; //huhu");
     }
 
     public void testIssue248013_01() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
     }
 
     public void testIssue248013_02() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "11, ^22,");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "11, ^22,");
     }
 
     public void testIssue248013_03() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "2, ^3);");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "2, ^3);");
     }
 
     public void testIssue248013_04() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
     }
 
     public void testIssue248013_05() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
     }
 
     public void testIssue248013_06() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", ")^; //huhu");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", ")^; //huhu");
     }
 
     public void testIssue248213() throws Exception {
@@ -733,12 +733,12 @@ public class HintsTest extends PHPHintsTestBase {
 
     }
 
-    private static final class ArraySyntaxSuggesionStub extends ArraySyntaxSuggestion {
+    private static final class ArraySyntaxSuggestionStub extends ArraySyntaxSuggestion {
 
         private final PhpVersion phpVersion;
 
 
-        ArraySyntaxSuggesionStub(PhpVersion phpVersion) {
+        ArraySyntaxSuggestionStub(PhpVersion phpVersion) {
             assert phpVersion != null;
             this.phpVersion = phpVersion;
         }
