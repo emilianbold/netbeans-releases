@@ -47,19 +47,21 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.M2AuxilaryConfigImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
@@ -69,7 +71,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.ChildFactory;
@@ -199,22 +200,13 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
         
         public @Override void actionPerformed(ActionEvent e) {
             try {
-                File fil = MavenCli.DEFAULT_USER_SETTINGS_FILE.getParentFile();
-                
-                DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(fil));
-                // path to template...
-                FileObject temp = FileUtil.getConfigFile("Maven2Templates/settings.xml"); //NOI18N
-                DataObject dobj = DataObject.find(temp);
-                DataObject newOne = dobj.createFromTemplate(folder);
-                EditCookie cook = newOne.getLookup().lookup(EditCookie.class);
+                File sf = FileUtilities.getUserSettingsFile(true);
+                EditCookie cook = DataObject.find(FileUtil.toFileObject(sf)).getLookup().lookup(EditCookie.class);
                 if (cook != null) {
                     cook.edit();
                 }
-                
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(ProjectFilesNode.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
