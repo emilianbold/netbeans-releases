@@ -1377,7 +1377,7 @@ public class SourceUtils {
         final JavacTaskImpl jt = JavacParser.createJavacTask(
                 new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
                 null,
-                null,
+                "1.3",  //min sl to prevent validateSourceLevel warning
                 null,
                 null,
                 null,

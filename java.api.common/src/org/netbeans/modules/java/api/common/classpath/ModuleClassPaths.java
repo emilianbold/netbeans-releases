@@ -620,10 +620,6 @@ final class ModuleClassPaths {
                 return (List<? extends PathResourceImplementation>) bestSoFar[0];
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
-            final Map<String, List<URL>> modulesPatches = getPatches();
-            final Map<String,List<URL>> modulesByName = getModulesByName(
-                    base,
-                    modulesPatches);
             final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
             collectProjectSourceRoots(systemModules, newActiveProjectSourceRoots);
             collectProjectSourceRoots(userModules, newActiveProjectSourceRoots);
@@ -655,6 +651,37 @@ final class ModuleClassPaths {
             });
             boolean incompleteVote = false;
             if(supportsModules(systemModules, userModules, sources)) {
+                final Map<String, List<URL>> modulesPatches = getPatches();
+                String xmodule = getXModule();
+                final Set<URL> sourcePatches = new HashSet<>();
+                String patchedModule = null;
+                {
+                    final Map<URL,String> mpBmn = new HashMap<>();
+                    modulesPatches.entrySet()
+                        .forEach((e) -> e.getValue().forEach((url) -> mpBmn.put(url, e.getKey())));
+                    for (ClassPath.Entry e : sources.entries()) {
+                        final URL url = e.getURL();
+                        final String mn = mpBmn.get(url);
+                        if (mn != null) {
+                            if (patchedModule == null) {
+                                patchedModule = mn;
+                            }
+                            sourcePatches.add(url);
+                        }
+                    }
+                    for (URL pRoot : mpBmn.keySet()) {
+                        if (!sourcePatches.contains(pRoot) && BinaryForSourceQuery.findBinaryRoots(pRoot).getRoots().length > 0) {
+                            sourcePatches.add(pRoot);
+                        }
+                    }
+                }
+                if (xmodule == null) {
+                    xmodule = patchedModule;
+                }
+                final Map<String,List<URL>> modulesByName = getModulesByName(
+                        base,
+                        modulesPatches,
+                        sourcePatches);
                 res = modulesByName.values().stream()
                         .flatMap((urls) -> urls.stream())
                         .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
@@ -707,11 +734,10 @@ final class ModuleClassPaths {
                     }
                     final List<PathResourceImplementation> bcprs = base == systemModules ?
                             selfResResources :   //java.base
-                            findJavaBase(getModulesByName(systemModules, modulesPatches));
+                            findJavaBase(getModulesByName(systemModules, modulesPatches, sourcePatches));
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
                     final Predicate<ModuleElement> rootModulesPredicate;
-                    final String xmodule;
                     if (found != null) {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -723,7 +749,16 @@ final class ModuleClassPaths {
                         final Set<String> additionalModules = getAddMods();
                         additionalModules.remove(MOD_ALL_UNNAMED);
                         rootModulesPredicate = ModuleNames.create(additionalModules);
-                        xmodule = null;
+                        if (xmodule != null) {
+                            LOG.log(
+                                    Level.WARNING,
+                                    "Xmodule: {0} combined with module-info: {1}, ignoring xmodule.",   //NOI18N
+                                    new Object[]{
+                                        xmodule,
+                                        FileUtil.getFileDisplayName(found)
+                                    });
+                            xmodule = null;
+                        }
                     } else {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -740,19 +775,6 @@ final class ModuleClassPaths {
                         } else {
                             rootModulesPredicate = ModuleNames.create(additionalModules);
                         }
-                        xmodule = Optional.ofNullable(getXModule())
-                                .orElseGet(() -> {
-                                    final Map<URL,String> mpr = new HashMap<>();
-                                    modulesPatches.entrySet().stream()
-                                            .forEach((e) -> e.getValue().stream().forEach((url) -> mpr.put(url, e.getKey())));
-                                    for (ClassPath.Entry e : sources.entries()) {
-                                        final String mn = mpr.get(e.getURL());
-                                        if (mn != null) {
-                                            return mn;
-                                        }
-                                    }
-                                    return null;
-                                });
                     }
                     boolean dependsOnUnnamed = false;
                     if (src != null) {
@@ -772,7 +794,7 @@ final class ModuleClassPaths {
                                         final List<URL> xmoduleLocs = modulesByName.get(xmodule);
                                         myModuleTree = null;
                                         myModule = mu.resolveModule(xmodule);
-                                        if (myModule != null && xmoduleLocs != null) {
+                                        if (xmoduleLocs != null) {
                                             requires.addAll(xmoduleLocs);
                                         }
                                         incompleteVote = myModule == null;
@@ -1030,7 +1052,8 @@ final class ModuleClassPaths {
         @NonNull
         private static Map<String,List<URL>> getModulesByName(
                 @NonNull final ClassPath cp,
-                @NonNull final Map<String,List<URL>> patches) {
+                @NonNull final Map<String,List<URL>> patches,
+                @NonNull final Set<URL> sourcePatches) {
             final Map<String,List<URL>> res = new LinkedHashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
@@ -1038,8 +1061,12 @@ final class ModuleClassPaths {
                         final String moduleName = SourceUtils.getModuleName(url, true);
                         if (moduleName != null) {
                             final List<URL> roots = new ArrayList<>();
-                            Optional.ofNullable(patches.get(moduleName))
-                                    .ifPresent(roots::addAll);
+                            final List<URL> patchRoots = patches.get(moduleName);
+                            if (patchRoots != null) {
+                                patchRoots.stream()
+                                        .filter((u) -> !sourcePatches.contains(u))
+                                        .forEach(roots::add);
+                            }
                             roots.add(url);
                             res.put(moduleName, roots);
                         }
