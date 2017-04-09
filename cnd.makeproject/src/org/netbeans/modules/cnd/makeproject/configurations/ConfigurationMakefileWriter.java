@@ -710,7 +710,7 @@ public class ConfigurationMakefileWriter {
                     if (isMac) {
                         String baseName = CndPathUtilities.getBaseName(libPath);
                         outputDir = CndPathUtilities.trimSlashes(outputDir);
-                        bw.write("\t-install_name_tool -change " + baseName + " @rpath/" + outputDir + "/" + baseName + " " + output + "\n"); //NOI18N
+                        bw.write("\t-install_name_tool -change " + baseName + " @executable_path/" + baseName + " " + output + "\n"); //NOI18N
                     }
                 }
             }

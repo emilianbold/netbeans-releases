@@ -174,8 +174,8 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
             if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
                 String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
-                String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, "localhost");
-                String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, "localhost");
+                String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", tmpDirBase, "localhost");
+                String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", tmpDirBase, "localhost");
                 MiscUtils.showNotification(title, shortMsg, msg);
             }
         }
@@ -234,9 +234,10 @@ public class UnixHostInfoProvider implements HostInfoProvider {
                         while ((errLine = errReader.readLine()) != null) {
                             log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
                             if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
+                                errLine = errLine.replace(ERROR_MESSAGE_PREFIX, "");
                                 String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
-                                String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, execEnv);
-                                String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, execEnv);
+                                String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", errLine, execEnv);
+                                String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", errLine, execEnv);
                                 MiscUtils.showNotification(title, shortMsg, msg);
                             }
                         }

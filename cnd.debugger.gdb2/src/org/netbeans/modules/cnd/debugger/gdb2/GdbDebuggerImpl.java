@@ -3753,7 +3753,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (expandMacros) {
             expr = MacroSupport.expandMacro(this, v.getVariableName());
         }       
-        String cmdString = peculiarity.createVarCommand(expr, currentThreadId, "0"); // NOI18N // TODO: correct frame number
+        String cmdString = peculiarity.createVarCommand(expr, currentThreadId, currentStackFrameNo); // NOI18N //use current frame number
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 

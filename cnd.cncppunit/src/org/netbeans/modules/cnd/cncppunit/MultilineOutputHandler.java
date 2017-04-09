@@ -50,7 +50,7 @@ import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
  *
  * @author Ilia Gromov
  */
-public abstract class StartEndHandler extends TestRecognizerHandler {
+public abstract class MultilineOutputHandler extends TestRecognizerHandler {
 
     public abstract void updateUI(Manager manager, TestSession session);
 
@@ -72,7 +72,7 @@ public abstract class StartEndHandler extends TestRecognizerHandler {
 
     private final TestRecognizerHandler endHandler;
 
-    StartEndHandler(String start, String end) {
+    MultilineOutputHandler(String start, String end) {
 //        super(wrap(start) + "|" + wrap(end));
         super(start + end, false, false);
 

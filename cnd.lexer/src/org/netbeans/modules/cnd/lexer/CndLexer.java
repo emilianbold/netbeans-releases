@@ -476,7 +476,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                     Token<CppTokenId> out = raw_string ? finishRawString() : finishDblQuote();
                                     assert out != null : "not handled dobule quote";
                                     return out;
-                                } else if (next == '\'') {
+                                } else if (next == '\'' && !raw_string) {
                                     // char with L or U/u prefix
                                     Token<CppTokenId> out = finishSingleQuote();
                                     assert out != null : "not handled single quote";

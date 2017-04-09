@@ -45,8 +45,10 @@ import org.netbeans.modules.cnd.testrunner.spi.TestRecognizerHandler;
 import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactory;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
@@ -60,6 +62,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 public final class TestRunnerLineConvertor implements LineConvertor {
 
     private static final Logger LOGGER = Logger.getLogger(TestRunnerLineConvertor.class.getName());
+
     private final Manager manager;
     private TestSession session;
     private final List<TestRecognizerHandler> handlers;
@@ -67,10 +70,10 @@ public final class TestRunnerLineConvertor implements LineConvertor {
     public TestRunnerLineConvertor(Manager manager, TestSession session, List<TestHandlerFactory> handlerFactories) {
         this.manager = manager;
         this.session = session;
-        this.handlers = new ArrayList<TestRecognizerHandler>();
-        for (TestHandlerFactory testHandlerFactory : handlerFactories) {
-            this.handlers.addAll(testHandlerFactory.createHandlers());
-        }
+        this.handlers = new ArrayList<>();
+        handlerFactories.forEach((factory) -> {
+            this.handlers.addAll(factory.createHandlers());
+        });
     }
 
     public synchronized void refreshSession() {
@@ -82,55 +85,32 @@ public final class TestRunnerLineConvertor implements LineConvertor {
     @Override
     public synchronized List<ConvertedLine> convert(String line) {
 
-        for (TestRecognizerHandler handler : handlers) {
-            if (handler.matches(line)) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Handler [" + handler + "] matched line: " + line);
-                }
-                try {
-                    handler.updateUI(manager, session);
-                    if (handler.isPerformOutput()) {
-                        session.addOutput(line);
-                        manager.displayOutput(session, line, false);
-                    }
-                    return asConvertedLines(handler.getRecognizedOutput());
-                } catch (IllegalStateException ise) {
-                    // ISE is thrown when mathing a group fails, should be enough to log a warning
-                    LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ise);
-                } catch (IndexOutOfBoundsException ioobe) {
-                    // IOOBE is thrown when there is no group with the expected index.
-                    LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ioobe);
-                }
+        Optional<TestRecognizerHandler> handlerOpt = handlers.stream()
+                .filter(handler -> handler.matches(line))
+                .findFirst();
 
-                break;
+        if (handlerOpt.isPresent()) {
+            TestRecognizerHandler handler = handlerOpt.get();
+            LOGGER.log(Level.FINE, "Handler [{0}] matched line: {1}", new Object[]{handler, line});
+            try {
+                handler.updateUI(manager, session);
+                if (handler.isPerformOutput()) {
+                    session.addOutput(line);
+                    manager.displayOutput(session, line, false);
+                }
+                // Convert ConvertedLine to Strings
+                return handler.getRecognizedOutput().stream()
+                        .map((cLine) -> ConvertedLine.forText(cLine, null))
+                        .collect(Collectors.toList());
+            } catch (Exception x) {
+                // ISE is thrown when mathing a group fails, should be enough to log a warning
+                // IOOBE is thrown when there is no group with the expected index.
+                LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, x);
             }
         }
-
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "No handler for line: " + line);
-        }
+        LOGGER.log(Level.FINE, "No handler for line: {0}", line);
         session.addOutput(line);
         manager.displayOutput(session, line, false);
         return null;
-    }
-
-    private List<ConvertedLine> asConvertedLines(List<String> lines) {
-        List<ConvertedLine> result = new ArrayList<ConvertedLine>(lines.size());
-
-        boolean handled = false;
-        for (String line : lines) {
-//            for (LineConvertor convertor : PythonLineConvertorFactory.getStandardConvertors(session.getFileLocator())) {
-//                List<ConvertedLine> converted = convertor.convert(line);
-//                if (converted != null) {
-//                    result.addAll(converted);
-//                    handled = true;
-//                    break;
-//                }
-//            }
-            if (!handled) {
-                result.add(ConvertedLine.forText(line, null));
-            }
-        }
-        return result;
     }
 }
