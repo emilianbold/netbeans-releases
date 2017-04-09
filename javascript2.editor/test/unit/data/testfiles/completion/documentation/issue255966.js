@@ -88,3 +88,70 @@ function getTmpObject() {
 }
 getTmpObject();
 
+
+/**
+ * 
+ * @param   name {String} Someone's name
+ * @returns   messageStr {String} Received message
+ */
+function tryMessage(somebody) {
+    return "Hello" + somebody;
+}
+
+tryMessage();
+
+   /**
+     * Helper function: Returns both select boxes and data, either as source
+     *   or as target parameter
+     * @param  targetName {String} Which select box will be the target
+     * @return  object {{"targetSelect": [jquerified select object],
+     *                 "sourceSelect": [jquerified select object],
+     *                 "targetData"  : object,
+     *                 "sourceData"  : object}} a custom object
+     **/
+    function getSelect(targetName) {
+      var $target, $source, targetData, sourceData;
+
+      if (targetName === "left") {
+        $target = $leftSelect;
+        $source = $rightSelect;
+        targetData = leftSelectOptionsData;
+        sourceData = rightSelectOptionsData;
+      } else {
+        $target = $rightSelect;
+        $source = $leftSelect;
+        targetData = rightSelectOptionsData;
+        sourceData = leftSelectOptionsData;
+      }
+
+      return {
+        "targetSelect": $target,
+        "sourceSelect": $source,
+        "targetData": targetData,
+        "sourceData": sourceData
+      };
+    }
+
+getSelect();
+
+/**
+ * 
+ * @param name {String test
+ * @returns returnObj {{"name" : string}}
+ */
+function returnObj(test) {
+    return {"name" : test};
+}
+
+returnObj();
+
+/**
+ * 
+ * @param {String testString
+ * @returns {String}
+ */
+function testType(testString) {
+    return "";
+}
+
+testType();

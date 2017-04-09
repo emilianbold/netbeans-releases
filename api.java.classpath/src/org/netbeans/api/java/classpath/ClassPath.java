@@ -935,24 +935,39 @@ public final class ClassPath {
                                 final File file = BaseUtilities.toFile(this.url.toURI());
                                 final boolean exists = file.exists();
                                 final boolean isDirectory = file.isDirectory();
-                                if (exists && !isDirectory) {
-                                    LOG.log(
-                                        Level.WARNING,
-                                        "Ignoring non folder root : {0} on classpath ", //NOI18N
-                                        file);
-                                    return null;
-                                }
-                                fileState = "(exists: " +  exists +           //NOI18N
+                                if (exists) {
+                                    if (isDirectory) {
+                                        fileState = "(exists: " +  exists +           //NOI18N
                                             " file: " + file.isFile() +             //NOI18N
                                             " directory: "+ isDirectory +    //NOI18N
                                             " read: "+ file.canRead() +             //NOI18N
                                             " write: "+ file.canWrite()+        //NOI18N
                                             " root: "+ _root +        //NOI18N
                                             " newRoot: "+ newRoot +")";        //NOI18N
-                            } catch (IllegalArgumentException e) {
+                                    } else {
+                                        LOG.log(
+                                            Level.WARNING,
+                                            "Ignoring non folder root : {0} on classpath ", //NOI18N
+                                            file);
+                                        return null;
+                                    }
+                                } else {
+                                    if (newRoot.isValid()) {
+                                        LOG.log(
+                                            Level.WARNING,
+                                            "URL mapper returned a valid FileObject for non existent File : {0}, ignoring.", //NOI18N
+                                            file);
+                                        return null;
+                                    } else {
+                                        LOG.log(
+                                            Level.WARNING,
+                                            "URL mapper returned an invalid FileObject : {0}, ignoring.", //NOI18N
+                                            file);
+                                        return null;
+                                    }
+                                }
+                            } catch (IllegalArgumentException | URISyntaxException e) {
                                 //Non local file - keep file null (not log file state)
-                            } catch (URISyntaxException e) {
-                                //keep file null (not log file state)
                             }
                             throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder." + //NOI18N
                                     (fileState != null ? fileState : ""));

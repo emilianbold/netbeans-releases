@@ -569,7 +569,41 @@ public class ModuleClassPathsTest extends NbTestCase {
                 userModules,
                 ClassPath.EMPTY,
                 null));
-        assertTrue(cp.entries().stream().map(ClassPath.Entry::getURL).anyMatch((url) -> url.equals(dist)));
+        assertEquals(
+                Collections.singletonList(dist),
+                collectEntries(cp));
+    }
+
+    public void testPatchModuleWithSourcePatch_UnscannedBaseModule() throws Exception {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        assertNotNull(tp);
+        assertNotNull(src);
+        createModuleInfo(src, "Modle", "java.logging"); //NOI18N
+        final FileObject tests = tp.getProjectDirectory().createFolder("tests");
+        final ClassPath testSourcePath = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(tests);
+        final URL dist = BinaryForSourceQuery.findBinaryRoots(src.entries().get(0).getURL()).getRoots()[1];
+        final ClassPath userModules = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(dist);
+        MockCompilerOptions.getInstance().forRoot(tests)
+                .apply("--patch-module")    //NOI18N
+                .apply(String.format("Modle=%s", FileUtil.toFile(tests).getAbsolutePath())) //NOI18N
+                .apply("--add-modules") //NOI18N
+                .apply("Modle") //NOI18N
+                .apply("--add-reads")   //NOI18N
+                .apply("Modle=ALL-UNNAMED"); //NOI18N
+        final ClassPath cp = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
+                userModules,
+                testSourcePath,
+                systemModules,
+                userModules,
+                ClassPath.EMPTY,
+                null));
+        cp.entries();
+        assertEquals(
+                Collections.singletonList(dist),
+                collectEntries(cp));
     }
 
     private static void setSourceLevel(
