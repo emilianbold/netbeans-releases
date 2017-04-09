@@ -388,25 +388,30 @@ public class ModifiersCheckHintError extends HintErrorRule {
 
     private static int getStartOffset(final BaseDocument doc, final int elementOffset) {
         int retval = 0;
-        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, elementOffset);
-        if (ts != null) {
-            ts.move(elementOffset);
-            TokenId lastTokenId = null;
-            while (ts.movePrevious()) {
-                Token t = ts.token();
-                if (t.id() != PHPTokenId.PHP_PUBLIC && t.id() != PHPTokenId.PHP_PROTECTED && t.id() != PHPTokenId.PHP_PRIVATE
-                        && t.id() != PHPTokenId.PHP_STATIC && t.id() != PHPTokenId.PHP_FINAL && t.id() != PHPTokenId.PHP_ABSTRACT
-                        && t.id() != PHPTokenId.PHP_FUNCTION && t.id() != PHPTokenId.WHITESPACE && t.id() != PHPTokenId.PHP_CLASS
-                        && t.id() != PHPTokenId.PHP_CONST) {
-                    ts.moveNext();
-                    if (lastTokenId == PHPTokenId.WHITESPACE) {
+        doc.readLock();
+        try {
+            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, elementOffset);
+            if (ts != null) {
+                ts.move(elementOffset);
+                TokenId lastTokenId = null;
+                while (ts.movePrevious()) {
+                    Token t = ts.token();
+                    if (t.id() != PHPTokenId.PHP_PUBLIC && t.id() != PHPTokenId.PHP_PROTECTED && t.id() != PHPTokenId.PHP_PRIVATE
+                            && t.id() != PHPTokenId.PHP_STATIC && t.id() != PHPTokenId.PHP_FINAL && t.id() != PHPTokenId.PHP_ABSTRACT
+                            && t.id() != PHPTokenId.PHP_FUNCTION && t.id() != PHPTokenId.WHITESPACE && t.id() != PHPTokenId.PHP_CLASS
+                            && t.id() != PHPTokenId.PHP_CONST) {
                         ts.moveNext();
+                        if (lastTokenId == PHPTokenId.WHITESPACE) {
+                            ts.moveNext();
+                        }
+                        retval = ts.offset();
+                        break;
                     }
-                    retval = ts.offset();
-                    break;
+                    lastTokenId = t.id();
                 }
-                lastTokenId = t.id();
             }
+        } finally {
+            doc.readUnlock();
         }
         return retval;
     }
