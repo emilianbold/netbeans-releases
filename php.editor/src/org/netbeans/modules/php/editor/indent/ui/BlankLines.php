@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace MyProject;
 use YourProject;
 use My\Full\Classname as Another;

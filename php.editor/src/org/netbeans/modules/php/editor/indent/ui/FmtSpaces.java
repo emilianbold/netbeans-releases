@@ -285,7 +285,8 @@ public final class FmtSpaces extends JPanel implements TreeCellRenderer, MouseLi
                 new Item(SPACE_AROUND_STRING_CONCAT_OPS),
                 new Item(SPACE_AROUND_KEY_VALUE_OPS),
                 new Item(SPACE_AROUND_ASSIGN_OPS),
-                new Item(SPACE_AROUND_OBJECT_OPS)),
+                new Item(SPACE_AROUND_OBJECT_OPS),
+                new Item(SPACE_AROUND_DECLARE_EQUAL)),
 
             new Item("BeforeLeftBraces",                        // NOI18N
                 new Item(SPACE_BEFORE_CLASS_DECL_LEFT_BRACE),

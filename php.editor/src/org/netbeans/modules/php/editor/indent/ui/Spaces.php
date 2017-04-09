@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace ExampleNamespace;
 
 use Some\Classes\{ClassA, ClassB, ClassC as C};

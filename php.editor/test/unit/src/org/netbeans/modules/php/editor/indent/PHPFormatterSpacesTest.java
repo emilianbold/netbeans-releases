@@ -1344,4 +1344,52 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch10.php", options);
     }
 
+    public void testSpacesAroundDeclareEqual01a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual01a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual02a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual02a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual03a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual03a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual04a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual04a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual01b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual01b.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual02b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual02b.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual03b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual03b.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual04b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual04b.php", options);
+    }
+
 }

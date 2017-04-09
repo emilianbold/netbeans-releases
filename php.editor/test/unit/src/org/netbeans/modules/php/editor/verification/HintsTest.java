@@ -666,6 +666,54 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_56), "testIssue270237Fix04.php", "class Fo^o implements FooInterface", "Implement");
     }
 
+    public void testDeclareStrictTypes_01a() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_01.php", "^<?php");
+    }
+
+    public void testDeclareStrictTypes_01b() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_01.php", "^<?php");
+    }
+
+    public void testDeclareStrictTypes_02a() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_02.php", "<?p^hp // first line");
+    }
+
+    public void testDeclareStrictTypes_02b() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_02.php", "<?ph^p // first line");
+    }
+
+    public void testDeclareStrictTypes_02c() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_02.php", "<?php ec^ho \"multiple open tags\" ?>");
+    }
+
+    public void testDeclareStrictTypes_02d() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_02.php", "<?php echo \"multiple open tags\"^ ?>");
+    }
+
+    public void testDeclareStrictTypes_03a() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_03.php", "<?p^hp");
+    }
+
+    public void testDeclareStrictTypes_03b() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_03.php", "<?p^hp");
+    }
+
+    public void testDeclareStrictTypesFix_01() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_01.php", "<?p^hp", "Add declare(strict_types=1)");
+    }
+
+    public void testDeclareStrictTypesFix_02a() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_02.php", "<?p^hp // first line", "Add declare(strict_types=1)");
+    }
+
+    public void testDeclareStrictTypesFix_02b() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_02.php", "<?php ec^ho \"multiple open tags\" ?>", "Add declare(strict_types=1)");
+    }
+
+    public void testDeclareStrictTypesFix_03() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_03.php", "<?p^hp", "Add declare(strict_types=1)");
+    }
+
    //~ Inner classes
 
     private static final class ImplementAbstractMethodsHintErrorStub extends ImplementAbstractMethodsHintError {
@@ -712,6 +760,21 @@ public class HintsTest extends PHPHintsTestBase {
 
         @Override
         protected PhpVersion getPhpVersion(FileObject file) {
+            return phpVersion;
+        }
+
+    }
+
+    private static final class DeclareStrictTypesSuggestionStub extends DeclareStrictTypesSuggestion {
+
+        private final PhpVersion phpVersion;
+
+        public DeclareStrictTypesSuggestionStub(PhpVersion phpVersion) {
+            this.phpVersion = phpVersion;
+        }
+
+        @Override
+        protected PhpVersion getPhpVersion(FileObject fileObject) {
             return phpVersion;
         }
 

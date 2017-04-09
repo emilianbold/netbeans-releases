@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -86,6 +87,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -1731,6 +1733,20 @@ public class FormatVisitor extends DefaultVisitor {
         }
     }
 
+    @Override
+    public void visit(DeclareStatement node) {
+        List<Identifier> names = node.getDirectiveNames();
+        List<Expression> values = node.getDirectiveValues();
+        assert names.size() == values.size();
+        for (int i = 0; i < names.size(); i++) {
+            scan(names.get(i));
+            // add "="
+            addAllUntilOffset(values.get(i).getStartOffset());
+            scan(values.get(i));
+        }
+        scan(node.getBody());
+    }
+
     private int lastIndex = -1;
 
     private String showAssertionFor188809() {
@@ -1971,6 +1987,13 @@ public class FormatVisitor extends DefaultVisitor {
             case PHP_OPERATOR:
                 CharSequence txt2 = ts.token().text();
                 // assignment?
+                if (TokenUtilities.equals(txt2, "=") // NOI18N
+                        && path.get(0) instanceof DeclareStatement) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_DECLARE_EQUAL, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), txt2.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_DECLARE_EQUAL, ts.offset() + ts.token().length()));
+                    break;
+                }
                 if (TokenUtilities.endsWith(txt2, "=")) { // NOI18N
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ASSIGN_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
