@@ -653,9 +653,10 @@ final class ModuleClassPaths {
             if(supportsModules(systemModules, userModules, sources)) {
                 final Map<String, List<URL>> modulesPatches = getPatches();
                 String xmodule = getXModule();
-                final Set<URL> sourcePatches = new HashSet<>();
                 String patchedModule = null;
+                final Function<URL,Stream<URL>> patchRootTransformer;
                 {
+                    final Map<URL,List<URL>> sourcePatches = new HashMap<>();
                     final Map<URL,String> mpBmn = new HashMap<>();
                     modulesPatches.entrySet()
                         .forEach((e) -> e.getValue().forEach((url) -> mpBmn.put(url, e.getKey())));
@@ -666,14 +667,21 @@ final class ModuleClassPaths {
                             if (patchedModule == null) {
                                 patchedModule = mn;
                             }
-                            sourcePatches.add(url);
+                            sourcePatches.put(url, Collections.emptyList());
                         }
                     }
                     for (URL pRoot : mpBmn.keySet()) {
-                        if (!sourcePatches.contains(pRoot) && BinaryForSourceQuery.findBinaryRoots(pRoot).getRoots().length > 0) {
-                            sourcePatches.add(pRoot);
+                        final URL[] bin;
+                        if (!sourcePatches.containsKey(pRoot) && (bin = BinaryForSourceQuery.findBinaryRoots(pRoot).getRoots()).length > 0) {
+                            sourcePatches.put(pRoot, Arrays.asList(bin));
                         }
                     }
+                    patchRootTransformer = (u) -> {
+                        final List<URL> transformation = sourcePatches.get(u);
+                        return transformation == null ?
+                                Stream.of(u) :
+                                transformation.stream();
+                    };
                 }
                 if (xmodule == null) {
                     xmodule = patchedModule;
@@ -681,7 +689,7 @@ final class ModuleClassPaths {
                 final Map<String,List<URL>> modulesByName = getModulesByName(
                         base,
                         modulesPatches,
-                        sourcePatches);
+                        patchRootTransformer);
                 res = modulesByName.values().stream()
                         .flatMap((urls) -> urls.stream())
                         .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
@@ -734,7 +742,7 @@ final class ModuleClassPaths {
                     }
                     final List<PathResourceImplementation> bcprs = base == systemModules ?
                             selfResResources :   //java.base
-                            findJavaBase(getModulesByName(systemModules, modulesPatches, sourcePatches));
+                            findJavaBase(getModulesByName(systemModules, modulesPatches, patchRootTransformer));
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
                     final Predicate<ModuleElement> rootModulesPredicate;
@@ -749,16 +757,6 @@ final class ModuleClassPaths {
                         final Set<String> additionalModules = getAddMods();
                         additionalModules.remove(MOD_ALL_UNNAMED);
                         rootModulesPredicate = ModuleNames.create(additionalModules);
-                        if (xmodule != null) {
-                            LOG.log(
-                                    Level.WARNING,
-                                    "Xmodule: {0} combined with module-info: {1}, ignoring xmodule.",   //NOI18N
-                                    new Object[]{
-                                        xmodule,
-                                        FileUtil.getFileDisplayName(found)
-                                    });
-                            xmodule = null;
-                        }
                     } else {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -790,6 +788,19 @@ final class ModuleClassPaths {
                                         myModule = myModuleTree != null ?
                                                 mu.resolveModule(myModuleTree) :
                                                 null;
+                                        if (xmodule != null &&
+                                                LOG.isLoggable(Level.WARNING) &&
+                                                !xmodule.equals(Optional.ofNullable(myModuleTree)
+                                                    .map((mt) -> mt.getName().toString())
+                                                    .orElse(xmodule))) {
+                                            LOG.log(
+                                                    Level.WARNING,
+                                                    "Xmodule: {0} combined with module-info: {1}, ignoring xmodule.",   //NOI18N
+                                                    new Object[]{
+                                                        xmodule,
+                                                        FileUtil.getFileDisplayName(found)
+                                                    });
+                                        }
                                     } else {
                                         final List<URL> xmoduleLocs = modulesByName.get(xmodule);
                                         myModuleTree = null;
@@ -1053,7 +1064,7 @@ final class ModuleClassPaths {
         private static Map<String,List<URL>> getModulesByName(
                 @NonNull final ClassPath cp,
                 @NonNull final Map<String,List<URL>> patches,
-                @NonNull final Set<URL> sourcePatches) {
+                @NonNull final Function<URL,Stream<URL>> patchRootTrannsformer) {
             final Map<String,List<URL>> res = new LinkedHashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
@@ -1064,7 +1075,7 @@ final class ModuleClassPaths {
                             final List<URL> patchRoots = patches.get(moduleName);
                             if (patchRoots != null) {
                                 patchRoots.stream()
-                                        .filter((u) -> !sourcePatches.contains(u))
+                                        .flatMap(patchRootTrannsformer)
                                         .forEach(roots::add);
                             }
                             roots.add(url);
