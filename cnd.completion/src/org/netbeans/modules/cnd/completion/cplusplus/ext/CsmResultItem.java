@@ -70,6 +70,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -394,8 +395,19 @@ public abstract class CsmResultItem implements CompletionItem {
     // Checks that include directive have not been already included
     // It needs in case if some files have not been parsed yet
     private boolean isAlreadyIncluded(JTextComponent component, String include) {
+        Document doc = component.getDocument();
+        if (doc == null) {
+            return false;
+        }
+        boolean out[] = new boolean[] {false};
+        doc.render(()->{
+            out[0] = isAlreadyIncluded(doc, include);
+        });      
+        return out[0];
+    }
+    private boolean isAlreadyIncluded(Document doc, String include) {
         TokenSequence<TokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
+        ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
         ts.moveStart();
         while (ts.moveNext()) {
             if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
@@ -426,8 +438,20 @@ public abstract class CsmResultItem implements CompletionItem {
 
     // Says is it forward declarartion or not
     private boolean isForwardDeclaration(JTextComponent component) {
+        Document doc = component.getDocument();
+        if (doc == null) {
+            return false;
+        }
+        boolean out[] = new boolean[] {false};
+        doc.render(()->{
+            out[0] = isForwardDeclaration(doc);
+        });
+        return out[0];        
+    }
+    
+    private boolean isForwardDeclaration(Document doc) {
         TokenSequence<TokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
+        ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
         ts.moveStart();
         if (!ts.moveNext()) {
             return false;
@@ -879,7 +903,20 @@ public abstract class CsmResultItem implements CompletionItem {
         }
 
         private boolean isAfterShiftOperator(JTextComponent c) {
-            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
+            Document doc = c.getDocument();
+            if (doc == null) {
+                return false;
+            }
+            boolean out[] = new boolean[] {false};
+            doc.render(()->{
+                out[0] = isAfterShiftOperator(doc);
+            });
+            return out[0];
+        }
+        
+        private boolean isAfterShiftOperator(Document doc) {
+            
+            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, 0, true, false);
             ts.moveStart();
             if (!ts.moveNext()) {
                 return false;

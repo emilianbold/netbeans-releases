@@ -853,12 +853,20 @@ abstract public class CsmCompletion {
 
         @Override
         public int getStartOffset() {
-            return 0;
+            if (CsmKindUtilities.isOffsetable(clazz)) {
+                return ((CsmOffsetable)clazz).getStartOffset();
+            } else {
+                return 0;
+            }
         }
 
         @Override
         public int getEndOffset() {
-            return 0;
+            if (CsmKindUtilities.isOffsetable(clazz)) {
+                return ((CsmOffsetable)clazz).getEndOffset();
+            } else {
+                return 0;
+            }
         }
 
         @Override

@@ -45,8 +45,11 @@ package org.netbeans.modules.cnd.editor.fortran.reformat;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
@@ -55,6 +58,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -108,7 +112,9 @@ public class FortranReformatter implements ReformatTask {
         if (context != null) {
             if (MIMENames.FORTRAN_MIME_TYPE.equals(context.mimePath())) {
                 for (Context.Region region : context.indentRegions()) {
-                    TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, 0);
+                    TokenHierarchy<?> hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), FortranTokenId.languageFortran());
+                    TokenSequence<FortranTokenId> ts = (TokenSequence<FortranTokenId>)hierarchy.tokenSequence();
+                    ts.move(0);
                     reformatImpl(ts, region.getStartOffset(), region.getEndOffset());
                     break;
                 }

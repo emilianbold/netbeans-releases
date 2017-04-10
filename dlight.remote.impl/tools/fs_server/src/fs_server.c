@@ -99,7 +99,7 @@ bool redirect_err_flag = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 12
-#define FS_SERVER_MINOR_VERSION 5
+#define FS_SERVER_MINOR_VERSION 8
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -217,7 +217,7 @@ static void err_redirect_init() {
             if (cache_root) {
                 const char* name = "/stderr.txt";
                 size_t sz = strlen(cache_root) + strlen(name) + 1;
-                char* path = malloc(sz);
+                char* path = malloc_wrapper(sz);
                 strncpy(path, cache_root, sz);
                 strncat(path, name, sz);
                 error_log = path;
@@ -786,7 +786,7 @@ static bool response_entry_create(buffer response_buf,
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
                 err_set(errno, "error performing readlink for %s: %s", abspath, err_to_string(errno));
-                strcpy(work_buf.data, "?");
+                strcpy(work_buf.data, "?"); // strcpy is safe, data is more than 1 byte anyhow
             } else {
                 link[sz] = 0;
                 escaped_link_size = escape_strlen(link);
@@ -1814,7 +1814,7 @@ static void usage(char* argv[]) {
         prog_name++;
     }
     my_fprintf(STDERR,
-            "%s %i.%i.%i\n"
+            "%s %i.%i.%i  [built %s %s]\n"
             "Usage: %s [-t nthreads] [-v] [-p] [-r]\n"
             "   -t <nthreads> response processing threads count (default is %d)\n"
             "   -p log responses into persisnence\n"
@@ -1830,7 +1830,7 @@ static void usage(char* argv[]) {
             "      wait maximum <msec> microseconds until it releases the lock\n"
             "      <msec> should be less than 1000000\n"
             "      if <PID> is specified then only the process with this PID can be killed\n"
-            , prog_name ? prog_name : argv[0], FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION
+            , prog_name ? prog_name : argv[0], FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__
             , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
@@ -2087,7 +2087,7 @@ static void shutdown() {
 static void log_header(int argc, char* argv[]) {
     if (log_flag) {
         log_open("log") ;
-        log_and_err_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
+        log_and_err_print("\n--------------------------------------\nfs_server version %d.%d.%d [built %s %s] started on ",
                 FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
         time_t t = time(NULL);
         struct tm *tt = localtime(&t);

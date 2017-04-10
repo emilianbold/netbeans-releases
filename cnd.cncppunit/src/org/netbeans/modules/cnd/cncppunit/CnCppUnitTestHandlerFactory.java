@@ -112,15 +112,15 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class CUnitTestFinishedHandler extends TestRecognizerHandler {
+    static class CUnitTestFinishedHandler extends MultilineOutputHandler {
 
         public CUnitTestFinishedHandler() {
-            super("Test: (.*) \\.\\.\\.( )?passed"); //NOI18N
+            super(" *Test: (?<test>.*)\\.\\.\\.(.*)", "(.*)passed"); //NOI18N
         }
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(getMatcher().group(1), C_UNIT, session);
+            Testcase testcase = new Testcase(getMatcher().group("test"), C_UNIT, session); //NOI18N
             if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
                     session.getCurrentTestCase().getTrouble() != null)) {
                 testcase.setTimeMillis(0);
@@ -130,15 +130,15 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class CUnitTestFailedHandler extends TestRecognizerHandler {
+    static class CUnitTestFailedHandler extends MultilineOutputHandler {
 
         public CUnitTestFailedHandler() {
-            super("Test: (.*) \\.\\.\\.( )?FAILED"); //NOI18N
+            super(" *Test: (?<test>.*)\\.\\.\\.(.*)", "(.*)FAILED"); //NOI18N
         }
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(getMatcher().group(1), C_UNIT, session);
+            Testcase testcase = new Testcase(getMatcher().group("test"), C_UNIT, session); //NOI18N
             testcase.setTimeMillis(0);
             testcase.setClassName(session.getCurrentSuite().getName());
 
@@ -151,7 +151,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
         public CUnitSuiteFinishedHandler() {
-            super("(--)?Run Summary: ", false, true); //NOI18N
+            super("(--)?Run Summary: "); //NOI18N
         }
 
         @Override
@@ -174,7 +174,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
         public CppUnitHandler() {
         }
             
-        class CppUnitTestFinishedHandler extends StartEndHandler {
+        class CppUnitTestFinishedHandler extends MultilineOutputHandler {
 
             public CppUnitTestFinishedHandler() {
                 super("(?<suite>.*)::(?<test>.+)", ".* : OK"); //NOI18N
@@ -213,7 +213,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
             }
         }
 
-        class CppUnitTestFailedHandler extends StartEndHandler {
+        class CppUnitTestFailedHandler extends MultilineOutputHandler {
 
             public CppUnitTestFailedHandler() {
                 super("(?<suite>.*)::(?<test>.+).*", ".* : (?<reason>.*)"); //NOI18N

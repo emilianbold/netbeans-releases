@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Enumeration;
 import java.util.SortedSet;
@@ -50,6 +51,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.cli.MavenCli;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -61,6 +63,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Utilities;
 
 /**
@@ -302,6 +307,35 @@ public final class FileUtilities {
         return result;
     }
 
+    /**
+     * Get the user settings.xml file.
+     * 
+     * @param forceCreate determines whether file should be created in case it does not exist
+     * @return either the settings.xml file or <code>null</code> if not available
+     */
+    public static File getUserSettingsFile(boolean forceCreate) {
+        if(!MavenCli.DEFAULT_USER_SETTINGS_FILE.exists()) {
+            if(!forceCreate) {
+                return null;
+            }
+            
+            try {
+                File fil = MavenCli.DEFAULT_USER_SETTINGS_FILE.getParentFile();
+
+                DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(fil));
+                // path to template...
+                FileObject temp = FileUtil.getConfigFile("Maven2Templates/settings.xml"); //NOI18N
+                DataObject dobj = DataObject.find(temp);
+                dobj.createFromTemplate(folder);
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return MavenCli.DEFAULT_USER_SETTINGS_FILE;
+    }
+    
     private static void getSourcePackageNames (Project prj, SortedSet<String> result, boolean onlyRoots) {
         SourceGroup[] scs = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < scs.length; i++) {

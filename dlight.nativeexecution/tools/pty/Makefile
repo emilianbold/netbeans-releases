@@ -79,10 +79,10 @@ CF_SunOS-sparc_64 = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m64
 CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m32
 CF_SunOS-x86_64   = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m64
 CF_Windows-x86    = $(CF_COMMON) -DWINDOWS -m32
-CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m32 # TODO -- is intended?
-
-LF_Windows-x86    = --static-libgcc
-LF_Windows-x86_64 = --static-libgcc
+CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m64 # -m32
+ 
+LF_Windows-x86    = # --static-libgcc
+LF_Windows-x86_64 = # --static-libgcc
 
 CFLAGS=$(CF_$(CONF)) $(CFLAGS_EXTRA)
 LDFLAGS=$(LF_$(CONF)) $(LDFLAGS_EXTRA)

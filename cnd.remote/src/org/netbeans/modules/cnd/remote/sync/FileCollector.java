@@ -550,9 +550,17 @@ import org.openide.util.Utilities;
         }
         extOptions.append(" \\) "); // NOI18N
 
-        String script = String.format(
-            "for F in `find %s %s -newer %s`; do test -f $F &&  echo $F;  done;", // NOI18N
-            remoteDirs, extOptions.toString(), timeStampFile);
+        StringBuilder script = new StringBuilder("os=`uname`\n"); // NOI18N
+        script.append("if [ ${os} = Darwin -o ${os} = FreeBSD ]; then\n"); // NOI18N
+        script.append("    lst=`mktemp -t nblist`\n"); // NOI18N
+        script.append("else\n"); // NOI18N
+        script.append("    lst=`mktemp`\n"); // NOI18N
+        script.append("fi\n"); // NOI18N
+        script.append("find ").append(remoteDirs).append(extOptions).append(" -newer ").append(timeStampFile).append(" > ${lst}\n"); // NOI18N
+        script.append("while read F; do\n"); // NOI18N
+        script.append("  test -f \"$F\" &&  echo \"$F\"\n"); // NOI18N
+        script.append("done < ${lst}\n"); // NOI18N
+        script.append("rm ${lst}\n"); // NOI18N
 
         final AtomicInteger lineCnt = new AtomicInteger();
 
@@ -596,7 +604,7 @@ import org.openide.util.Utilities;
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "Started new files discovery at %s: %s", execEnv, script);
         }
-        ShellScriptRunner ssr = new ShellScriptRunner(execEnv, script, lp);
+        ShellScriptRunner ssr = new ShellScriptRunner(execEnv, script.toString(), lp);
         ssr.setErrorProcessor(new ShellScriptRunner.LoggerLineProcessor(getClass().getSimpleName())); //NOI18N
         int rc = ssr.execute();
         if (rc != 0 ) {

@@ -1198,7 +1198,7 @@ protected CHAR_LITERAL_BODY
 		|	
                          ~('\'' | '\r' | '\n' | '\\')
 		)*
-            ('\'' (Suffix)? // correct ending of char literal
+            ('\'' //(Suffix)? // correct ending of char literal
                 |  {LA(1)=='\r'||LA(1)=='\n'}? // error char literal doesn't have closing quote
             )
         ;
@@ -1225,7 +1225,7 @@ protected STRING_LITERAL_BODY :
 		|	
                          ~('"' | '\r' | '\n' | '\\')
 		)*
-            ('"' (Suffix)? // correct ending of string
+            ('"' //(Suffix)? // correct ending of string
                 |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
             )
         ;
@@ -1268,7 +1268,7 @@ protected RAW_STRING_LITERAL_BODY
                 { !end }? '"' 
             
         )*
-    ('"' (Suffix)? // correct ending of string
+    ('"' //(Suffix)? // correct ending of string
         |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
     )
     ;
@@ -1308,12 +1308,12 @@ protected Digit:	'0'..'9' ;
 
 //protected Decimal:	('0'..'9')+ ;
 
-protected Suffix:
-    (
-        (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') // '$' added for gcc support
-        (options {combineChars=true;greedy=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')* // '$' added for gcc support
-    )
-    ;
+//protected Suffix:
+//    (
+//        (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') // '$' added for gcc support
+//        (options {combineChars=true;greedy=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')* // '$' added for gcc support
+//    )
+//    ;
 
 protected Exponent:	('e' | 'E') ('+' | '-')? (Digit)* ;
 
@@ -1326,18 +1326,18 @@ NUMBER
 		(options {greedy=true;} : '.' (Digit)* (options {greedy=true;} : Exponent)? {$setType(FLOATONE);} //Zuo 3/12/01
 		| Exponent                 {$setType(FLOATTWO);} //Zuo 3/12/01
 		)
-                (Suffix)?
+                //(Suffix)?
 	|	'.'  (                  {$setType(DOT);}	//TODO: solve "dot & ellipsis"! 
 		| 	(Digit)+ (options {greedy=true;} : Exponent)?   
                                         {$setType(FLOATONE);} //Zuo 3/12/01
-                        (Suffix)?
+                        //(Suffix)?
 		| '*' {$setType(DOTMBR);}
                 | {(LA(2)=='.')}? ".."  {$setType(ELLIPSIS);}
                 )
 
 	|	'1'..'9' (Digit)*
                                         {$setType(DECIMALINT);}  
-                (Suffix)?
+                //(Suffix)?
         |
                 (       '0'
                     (   ('x' | 'X') => ('x' | 'X') (options {greedy=true;} : 'a'..'f' | 'A'..'F' | Digit)*
@@ -1348,7 +1348,7 @@ NUMBER
                                         {$setType(OCTALINT);}
                     )
                 )
-                (Suffix)?
+                //(Suffix)?
     )    
     ;
 
