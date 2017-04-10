@@ -359,6 +359,20 @@ public class ModelTest extends ModelTestBase {
         }
     }
 
+    public void testIssue268825() throws Exception {
+        Model model = getModel(getTestSource("testfiles/model/issue268825.php"), false);
+        FileScope topScope = model.getFileScope();
+        ClassScope classScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredClasses(topScope), "Anon"));
+        assertNotNull(classScope);
+        MethodScope methodScope = ModelUtils.getFirst(ModelUtils.filter(classScope.getDeclaredMethods(), "test"));
+        assertNotNull(methodScope);
+        int offset = "{\n        AutoPopup::test('test', function(AutoPopup $test) {".length();
+        VariableScope variableScope = model.getVariableScope(methodScope.getBlockRange().getStart() + offset);
+        assertNotNull(variableScope);
+        String name = variableScope.getName();
+        assertTrue(name.startsWith("LambdaFunctionDeclaration"));
+    }
+
     private void varContainerTestForGlobal2(VariableScope topScope) {
         VariableName my = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredVariables(),"$my"));
         assertNotNull(my);
