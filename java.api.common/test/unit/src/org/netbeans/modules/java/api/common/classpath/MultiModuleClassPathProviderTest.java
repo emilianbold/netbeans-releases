@@ -179,6 +179,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         assertNotNull(mod1dTests);
         mod2dTests = src2.getFileObject("lib.event").createFolder("tests");         //NOI18N
         assertNotNull(mod2dTests);
+        createModuleInfo(mod2dTests, "lib.event.tests");
         mp = wd.createFolder("modules");    //NOI18N
         assertNotNull(mp);
         modliba = createJar(mp, "modliba.jar");   //NOI18N
@@ -371,10 +372,8 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
                 mtu.distFor("lib.event")),      //NOI18N
             urls(cps[0]));
         assertEquals(urls(
-                mtu.testBuildFor("lib.common"),      //NOI18N
-                mtu.testBuildFor("lib.util"),        //NOI18N
-                mtu.testBuildFor("lib.discovery"),   //NOI18N
-                mtu.testBuildFor("lib.event")),
+                //Only tests with module-info appear on module-path
+                mtu.testBuildFor("lib.event")), //NOI18N
             urls(cps[1]));
         cps = mmcpp.getProjectClassPaths(ClassPath.SOURCE);
         assertNotNull(cps);
@@ -408,7 +407,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
                 add(Collections.emptyList());    //NOI18N
                 add(Collections.emptyList());    //NOI18N
                 add(Collections.emptyList());    //NOI18N
-                add(Collections.emptyList());    //NOI18N
+                add(filter(urls(systemModules),"java.base"));   //NOI18N
             }
         };
         for (ClassPath cp : cps) {
@@ -551,9 +550,7 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         assertEquals(urls(
                     modliba.toURL(),
                     modlibb.toURL(),
-                    mtu.testBuildFor("lib.common"),      //NOI18N
-                    mtu.testBuildFor("lib.util"),        //NOI18N
-                    mtu.testBuildFor("lib.discovery"),   //NOI18N
+                    //Only tests with module-info appear on module-path
                     mtu.testBuildFor("lib.event")),      //NOI18N
                 urls(cps[1]));
         //Put "build/modules" on tests module path => all modules should appear on module compile path.
@@ -569,9 +566,6 @@ public class MultiModuleClassPathProviderTest extends NbTestCase {
         assertEquals(urls(
                     modliba.toURL(),
                     modlibb.toURL(),
-                    mtu.testBuildFor("lib.common"),      //NOI18N
-                    mtu.testBuildFor("lib.util"),        //NOI18N
-                    mtu.testBuildFor("lib.discovery"),   //NOI18N
                     mtu.testBuildFor("lib.event"),      //NOI18N
                     mtu.distFor("lib.common"),      //NOI18N
                     mtu.distFor("lib.util"),        //NOI18N

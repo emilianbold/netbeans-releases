@@ -130,7 +130,7 @@ public final class QuerySupport {
                 srcModel,
                 testModel,
                 new String[] {ProjectProperties.DIST_DIR, ProjectProperties.BUILD_MODULES_DIR},
-                new String[] {});
+                new String[] {ProjectProperties.BUILD_TEST_MODULES_DIR});
     }
 
     /**

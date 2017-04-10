@@ -347,7 +347,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     upgradeType(JavaClassPathConstants.MODULE_EXECUTE_PATH, owner),
                     (mods) -> {
                         return ClassPathFactory.createClassPath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation(
-                            ModuleClassPaths.createMultiModuleBinariesPath(mods, owner.getLocation() == Location.DIST),
+                            ModuleClassPaths.createMultiModuleBinariesPath(mods, owner.getLocation() == Location.DIST, owner.isTest()),
                             ModuleClassPaths.createPropertyBasedModulePath(
                                     projectDirectory,
                                     eval,
@@ -555,7 +555,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         return cacheFor(owner).computeIfAbsent(
                 null,
                 INTERNAL_MOUDLE_BINARIES_PATH,
-                (mods) -> ClassPathFactory.createClassPath(ModuleClassPaths.createMultiModuleBinariesPath(mods, !owner.isTest())));
+                (mods) -> ClassPathFactory.createClassPath(ModuleClassPaths.createMultiModuleBinariesPath(mods, !owner.isTest(), owner.isTest())));
     }
 
     @NonNull

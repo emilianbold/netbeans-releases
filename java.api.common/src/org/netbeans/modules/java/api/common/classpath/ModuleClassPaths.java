@@ -131,6 +131,7 @@ final class ModuleClassPaths {
      * to make changes done by invalidate visible due to ParserManager.parse nesting.
      */
     private static final RequestProcessor CLASS_INDEX_FIRER = new RequestProcessor(ModuleClassPaths.class);
+    private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
 
     private ModuleClassPaths() {
         throw new IllegalArgumentException("No instance allowed."); //NOI18N
@@ -181,22 +182,30 @@ final class ModuleClassPaths {
     @NonNull
     static ClassPathImplementation createMultiModuleBinariesPath(
             @NonNull final MultiModule model,
-            final boolean archives) {
-        return new MultiModuleBinaries(model, archives);
+            final boolean archives,
+            final boolean requiresModuleInfo) {
+        return new MultiModuleBinaries(model, archives, requiresModuleInfo);
     }
 
-    private static final class MultiModuleBinaries extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener {
+    private static final class MultiModuleBinaries extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener, FileChangeListener {
         private final MultiModule model;
         private final boolean archives;
+        private final boolean requiresModuleInfo;
         //@GuardedBy("this")
         private Collection<BinaryForSourceQuery.Result> currentResults;
+        //@GuardedBy("this")
+        private Collection<ClassPath> currentSourcePaths;
+        private final Set</*@GuardedBy("this")*/File> currentModuleInfos;
 
         MultiModuleBinaries(
                 @NonNull final MultiModule model,
-                final boolean archives) {
+                final boolean archives,
+                final boolean requiresModuleInfo) {
             Parameters.notNull("model", model); //NOI18N
             this.model = model;
             this.archives = archives;
+            this.requiresModuleInfo = requiresModuleInfo;
+            this.currentModuleInfos = new HashSet<>();
             this.model.addPropertyChangeListener(WeakListeners.propertyChange(this, this.model));
         }
 
@@ -207,7 +216,9 @@ final class ModuleClassPaths {
                 return res;
             }
             final List<BinaryForSourceQuery.Result> results = new ArrayList<>();
-            res = createResources(results);
+            final List<ClassPath> sourcePaths = new ArrayList<>();
+            final Set<File> moduleInfos = new HashSet<>();
+            res = createResources(results, sourcePaths, moduleInfos);
             synchronized (this) {
                 assert res != null;
                 if (getCache() == null) {
@@ -217,6 +228,22 @@ final class ModuleClassPaths {
                     }
                     results.forEach((r)->r.addChangeListener(this));
                     currentResults = results;
+                    if (currentSourcePaths != null) {
+                        currentSourcePaths.forEach((scp)->scp.removePropertyChangeListener(this));
+                    }
+                    sourcePaths.forEach((scp)->scp.addPropertyChangeListener(this));
+                    currentSourcePaths = sourcePaths;
+                    final Set<File> toRemove = new HashSet<>(currentModuleInfos);
+                    toRemove.removeAll(moduleInfos);
+                    moduleInfos.removeAll(currentModuleInfos);
+                    for (File f : toRemove) {
+                        FileUtil.removeFileChangeListener(this, f);
+                        currentModuleInfos.remove(f);
+                    }
+                    for (File f : moduleInfos) {
+                        FileUtil.addFileChangeListener(this, f);
+                        currentModuleInfos.add(f);
+                    }
                 } else {
                     res = getCache();
                 }
@@ -227,7 +254,7 @@ final class ModuleClassPaths {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
-            if (MultiModule.PROP_MODULES.equals(propName)) {
+            if (MultiModule.PROP_MODULES.equals(propName) || ClassPath.PROP_ENTRIES.equals(propName)) {
                 resetCache(PROP_RESOURCES);
             }
         }
@@ -237,15 +264,61 @@ final class ModuleClassPaths {
             resetCache(PROP_RESOURCES);
         }
 
-        private List<PathResourceImplementation> createResources(Collection<? super BinaryForSourceQuery.Result> results) {
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            //Not important
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            //Not important
+        }
+
+        private List<PathResourceImplementation> createResources(
+                @NonNull final Collection<? super BinaryForSourceQuery.Result> results,
+                @NonNull final Collection<? super ClassPath> sourcePaths,
+                @NonNull final Collection<? super File> moduleInfos) {
             final Set<URL> binaries = new LinkedHashSet<>();
             for (String moduleName : model.getModuleNames()) {
                 final ClassPath scp = model.getModuleSources(moduleName);
                 if (scp != null) {
-                    for (ClassPath.Entry e : scp.entries()) {
-                        final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(e.getURL());
-                        results.add(r);
-                        binaries.addAll(filterArtefact(archives, r.getRoots()));
+                    sourcePaths.add(scp);
+                    if (!requiresModuleInfo || scp.findResource(MODULE_INFO_JAVA) != null) {
+                        for (ClassPath.Entry e : scp.entries()) {
+                            try {
+                                Optional.ofNullable(requiresModuleInfo ? BaseUtilities.toFile(e.getURL().toURI()) : null)
+                                        .map ((root) -> new File(root, MODULE_INFO_JAVA))
+                                        .ifPresent(moduleInfos::add);
+                            } catch (URISyntaxException use) {
+                                LOG.log(
+                                        Level.WARNING,
+                                        "Cannot convert to URI: {0}",   //NOI18N
+                                        e.getURL());
+                            }
+                            final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(e.getURL());
+                            results.add(r);
+                            binaries.addAll(filterArtefact(archives, r.getRoots()));
+                        }
                     }
                 }
             }
@@ -253,6 +326,8 @@ final class ModuleClassPaths {
                     .map((url) -> org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
                     .collect(Collectors.toList());
         }
+
+        
 
         private static Collection<? extends URL> filterArtefact(
                 final boolean archive,
@@ -536,7 +611,6 @@ final class ModuleClassPaths {
 
     private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements FlaggedClassPathImplementation, PropertyChangeListener, ChangeListener, FileChangeListener, ClassIndexListener {
 
-        private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
         private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
         private static final String MOD_JAVA_SE = "java.se";        //NOI18N
         private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
