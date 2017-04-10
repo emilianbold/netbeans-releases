@@ -813,6 +813,10 @@ final class ModuleClassPaths {
                                     if (myModule != null) {
                                         dependsOnUnnamed = dependsOnUnnamed(myModule, true);
                                         requires.addAll(collectRequiredModules(myModule, myModuleTree, true, false, modulesByName));
+                                    } else if (base == systemModules) {
+                                        //When module unresolvable add at least java.base to systemModules
+                                        Optional.ofNullable(modulesByName.get(MOD_JAVA_BASE))
+                                                .ifPresent(requires::addAll);
                                     }
                                 } else {
                                     //Unnamed module
