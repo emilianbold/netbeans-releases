@@ -360,7 +360,7 @@ public final class RegistersWindow extends TopComponent
     private class DataPresentationMenu extends JMenu {
 
         private DataPresentationMenu() {
-            super(Catalog.get("Reg_ACT_Data_Presentation"));
+            super(Catalog.get("Reg_ACT_Data_Presentation"));//NOI18N
             String currentFormat = Disassembly.PREFS.get(Disassembly.REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY,
                     Disassembly.DATA_REPRESENTATION.HEXADECIMAL.toString());
             ActionListener jmiActionListener = new MenuItemActionListener();
