@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.impl.LazyBuild;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,6 +81,13 @@ public final class VariableScopeFinder {
                 VariableScope varScope = (VariableScope) modelElement;
                 VariableScopeWrapper varScopeWrapper = new VariableScopeWrapperImpl(varScope, scopeRangeAcceptor);
                 if (scopeRangeAcceptor.accept(varScopeWrapper, offset) && scopeRangeAcceptor.overlaps(retval, varScopeWrapper)) {
+                    // #268825
+                    if (modelElement instanceof LazyBuild) {
+                        LazyBuild scope = (LazyBuild) modelElement;
+                        if (!scope.isScanned()) {
+                            scope.scan();
+                        }
+                    }
                     retval = varScopeWrapper;
                     subElements.addAll(varScopeWrapper.getElements());
                 }
