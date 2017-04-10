@@ -2921,6 +2921,36 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
     }
+    
+    private static String formatRegisterIfNeeded(String value_string){
+        String result = value_string;
+        if (Disassembly.isInDisasm()) {
+            // see #199557 we need to convert dis annotations to hex
+            if (!value_string.startsWith("0x")) { //NOI18N
+                try {
+                    switch (Disassembly.getCurrentDataRepresentationFormat()) {
+                        case  DECIMAL:
+                            break;
+                        case OCTAL:
+                            result = Address.toOctalString0x(Address.parseAddr(value_string), true);
+                            break;
+                        case BINARY:
+                            result = Address.toBinaryString0x(Address.parseAddr(value_string), true);
+                            break;
+                        case HEXADECIMAL:
+                        default:
+                            result = Address.toHexString0x(Address.parseAddr(value_string), true);
+                            break;
+
+                    }
+                    //value_string = Address.toHexString0x(Address.parseAddr(value_string), true);
+                } catch (Exception e) {
+                    // do nothing
+                }
+            }      
+        }
+        return result;
+    }
 
     private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable) {
         String expandedExpr = MacroSupport.expandMacro(this, expr);
@@ -2934,15 +2964,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     System.out.println("value " + value.toString()); // NOI18N
                 }
                 String value_string = value.getConstValue("value"); // NOI18N
+                
                 if (dis) {
-                    // see #199557 we need to convert dis annotations to hex
-                    if (!value_string.startsWith("0x")) { //NOI18N
-                        try {
-                            value_string = Address.toHexString0x(Address.parseAddr(value_string), true);
-                        } catch (Exception e) {
-                            // do nothing
-                        }
-                    }
+                    value_string = formatRegisterIfNeeded(value_string);
                 } else if (value_string.startsWith("@0x")) { //NOI18N
                     try{
                         // See bug 206736 - tooltip for reference-based variable shows address instead of value
@@ -3264,14 +3288,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!pretty) {
             value = ValuePresenter.getValue(value);
         }
+        //value = formatRegisterIfNeeded(value);
         valueChanged = !value.equals(v.getAsText());
         v.setAsText(value);
 
         // pretty printer for string type
         if (pretty) {
             updateStringValue(v);
-        }
-
+        }        
         if (v.isWatch()) {
             watchUpdater().treeNodeChanged(v); // just update this node
             if (WatchVariable.class.isAssignableFrom(v.getClass())) {

@@ -53,6 +53,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -66,6 +67,8 @@ import javax.swing.JTextArea;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.accessibility.AccessibleContext;
+import javax.swing.JMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
@@ -77,6 +80,7 @@ import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
+import org.openide.util.NbPreferences;
 
 
 public final class RegistersWindow extends TopComponent
@@ -108,7 +112,7 @@ public final class RegistersWindow extends TopComponent
     private int selected_area_start = 0;
     private int selected_area_end = 0;
     private int view_model = 1; // 0 - JTextArea, 1 - JTable
-
+    
     public static synchronized RegistersWindow getDefault() {
         if (DEFAULT == null) {
             DEFAULT = (RegistersWindow) WindowManager.getDefault().findTopComponent(preferredID);
@@ -249,6 +253,8 @@ public final class RegistersWindow extends TopComponent
             popup.add(new ShowAllRegistersAction());
             menuItemHide = new JMenuItem(new HideSelectedRegistersAction());
             popup.add(menuItemHide);
+            //TODO: finish bz#129094 - Allow user to select register values presentation
+            //popup.add(new DataPresentationMenu());
             //popup.addSeparator();
             //popup.add(new ShowDynamicHelpPageAction());
             // popup.addSeparator();
@@ -349,6 +355,40 @@ public final class RegistersWindow extends TopComponent
         invalidate();
         // Update view
         dataModel.fireTableDataChanged();
+    }
+    
+    private class DataPresentationMenu extends JMenu {
+
+        private DataPresentationMenu() {
+            super(Catalog.get("Reg_ACT_Data_Presentation"));
+            String currentFormat = Disassembly.PREFS.get(Disassembly.REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY,
+                    Disassembly.DATA_REPRESENTATION.HEXADECIMAL.toString());
+            ActionListener jmiActionListener = new MenuItemActionListener();
+            for (Disassembly.DATA_REPRESENTATION f : Disassembly.DATA_REPRESENTATION.values()) {
+                JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(f.name());
+                menuItem.putClientProperty(Disassembly.REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY,
+                        f.toString());
+                menuItem.addActionListener(jmiActionListener);
+                menuItem.setSelected(currentFormat.equals(f.toString()));
+                add(menuItem);
+            }
+        }       
+        
+    }    
+    
+        // Innerclasses ------------------------------------------------------------
+    private  class MenuItemActionListener implements ActionListener {
+        @Override
+        public void actionPerformed( ActionEvent e ) {
+            if ( e.getSource() instanceof JMenuItem ) {
+                JMenuItem jmi = (JMenuItem)e.getSource();
+		String regWindowDataRepersentation = (String)jmi.getClientProperty(Disassembly.REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY );
+                Disassembly.PREFS.put(Disassembly.REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY, regWindowDataRepersentation);
+                updateWindow();
+            }
+            
+        }
+        
     }
 
     private class ShowAllRegistersAction extends AbstractAction {

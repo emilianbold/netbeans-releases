@@ -81,4 +81,36 @@ public final class Address {
 	else
 	    return "0x" + Integer.toHexString((int) addr);	// NOI18N
     }
+    
+    public static String toOctalString(long addr, boolean LP64) {
+	// toOctxString is already in unsigned representation
+	if (LP64)
+	    return Long.toOctalString(addr);
+	else
+	    return Integer.toOctalString((int) addr);        
+    }
+    
+    public static String toOctalString0x(long addr, boolean LP64) {
+	// toOctxString is already in unsigned representation
+	if (LP64)
+	    return  "0x" +Long.toOctalString(addr);//NOI18N
+	else
+	    return  "0x" +Integer.toOctalString((int) addr);  //NOI18N      
+    }  
+    
+    public static String toBinaryString(long addr, boolean LP64) {
+	// toOctxString is already in unsigned representation
+	if (LP64)
+	    return Long.toBinaryString(addr);
+	else
+	    return Integer.toBinaryString((int) addr);        
+    }
+    
+    public static String toBinaryString0x(long addr, boolean LP64) {
+	// toOctxString is already in unsigned representation
+	if (LP64)
+	    return  "0x" +Long.toBinaryString(addr);//NOI18N
+	else
+	    return  "0x" +Integer.toBinaryString((int) addr);  //NOI18N      
+    }     
 }

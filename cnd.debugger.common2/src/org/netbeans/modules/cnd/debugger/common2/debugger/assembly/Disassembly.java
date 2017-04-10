@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
@@ -76,6 +78,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -91,9 +94,12 @@ public abstract class Disassembly implements StateModel.Listener {
     private final BreakpointModel breakpointModel;
     private int disLength = 0;
     private DisText disText;
-    
+    public static final String REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY = "org.netbeans.modules.cnd.debugger.common.RegistersWindow.format"; // NOI18N    
+    public static enum DATA_REPRESENTATION {OCTAL, DECIMAL, HEXADECIMAL, BINARY};
     protected static enum RequestMode {FILE_SRC, FILE_NO_SRC, ADDRESS_SRC, ADDRESS_NO_SRC, NONE};
     protected RequestMode requestMode = RequestMode.FILE_SRC;
+    public static final Preferences PREFS = NbPreferences.forModule(NativeDebuggerManager.class);
+    
     
     private final BreakpointModel.Listener breakpointListener =
 	new BreakpointModel.Listener() {
@@ -301,6 +307,10 @@ public abstract class Disassembly implements StateModel.Listener {
             // do nothing
         }
         return null;
+    }
+    
+    public static final DATA_REPRESENTATION getCurrentDataRepresentationFormat() {
+        return DATA_REPRESENTATION.valueOf(PREFS.get(REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY, DATA_REPRESENTATION.HEXADECIMAL.toString()));
     }
     
     protected int getAddressLine(String address) {
