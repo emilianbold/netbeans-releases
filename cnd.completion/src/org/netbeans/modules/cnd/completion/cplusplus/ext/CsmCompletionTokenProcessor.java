@@ -1202,6 +1202,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
         }
+        
+        CppTokenId prevLastValidTokenID = lastValidTokenID;
+        
         // assign helper variables
         if (tokenID != null) {
             if (lastValidTokenID == CppTokenId.COLON) {
@@ -1500,7 +1503,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             top.addParameter(createTokenExp(VARIABLE));
                             break;
                         case CONSTANT:
-                            if (supportUserDefinedLiterals) { 
+                            if (supportUserDefinedLiterals && isCurrentTokenAdjacent(prevLastValidTokenID)) { 
                                 popExp(); // top
                                 constExp = createTokenExp(USER_DEFINED_LITERAL);
                                 constExp.addParameter(top);
@@ -3523,6 +3526,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     @Override
     public boolean isStopped() {
         return false;
+    }
+    
+    private boolean isCurrentTokenAdjacent(CppTokenId prevLastValidTokenID) {
+        if (prevLastValidTokenID == null) {
+            return false;
+        }
+        switch (prevLastValidTokenID) {
+            case WHITESPACE:
+            case BLOCK_COMMENT:
+            case DOXYGEN_COMMENT:
+            case DOXYGEN_LINE_COMMENT:
+            case LINE_COMMENT:
+            case ESCAPED_LINE:
+            case ESCAPED_WHITESPACE:
+            case NEW_LINE:
+            case EOF:
+                return false;
+        }
+        return true;
     }
 
     private int findNextExpr(int from, int targetId, int ... restrictedIds) {
