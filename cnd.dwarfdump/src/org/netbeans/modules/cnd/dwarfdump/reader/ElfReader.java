@@ -94,12 +94,12 @@ public class ElfReader extends ByteStreamReader {
         sections = new ElfSection[sectionHeadersTable.length];
         
         if (!isCoffFormat) {
-            // Before reading all sections need to read ElfStringTable section.
-            int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
-            if (sections.length > elfStringTableIdx) {
-                stringTableSection = new StringTableSection(this, elfStringTableIdx);
-                sections[elfStringTableIdx] = stringTableSection;
-            }
+              // Before reading all sections need to read ElfStringTable section.
+              int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
+              if (sections.length > elfStringTableIdx) {
+                  stringTableSection = new StringTableSection(this, elfStringTableIdx);
+                  sections[elfStringTableIdx] = stringTableSection;
+              }
         }
         
         // Initialize Name-To-Idx map
@@ -399,8 +399,11 @@ public class ElfReader extends ByteStreamReader {
         sectionHeadersTable = new SectionHeader[headers.size()];
         for(int i = 0; i < headers.size(); i++){
             sectionHeadersTable[i] = headers.get(i);
+            if (SECTIONS.DEBUG_STR.equals(sectionHeadersTable[i].name)) {
+                elfHeader.e_shstrndx = (short)i;
+            }
         }
-        elfHeader.e_shstrndx = (short)(headers.size()-1);
+        //elfHeader.e_shstrndx = (short)(headers.size()-1);
         return true;
     }
     
