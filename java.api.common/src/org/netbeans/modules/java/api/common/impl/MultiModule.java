@@ -170,7 +170,7 @@ public final class MultiModule implements PropertyChangeListener {
         for (Map.Entry<String,Pair<ClassPath,CPImpl>> e : data.entrySet()) {
             final ClassPath cp = e.getValue().first();
             for (ClassPath.Entry cpe : cp.entries()) {
-                if (isParentOf(cpe.getURL(), artifactURL)) {
+                if (Utilities.isParentOf(cpe.getURL(), artifactURL)) {
                     return Optional.of(Pair.of(e.getKey(), cp));
                 }
             }
@@ -231,7 +231,7 @@ public final class MultiModule implements PropertyChangeListener {
                     final URL moduleUrl = module.toURL();
                     final String moduleName = module.getNameExt();
                     for (URL src : srcRoots) {
-                        if (isParentOf(moduleUrl, src)) {
+                        if (Utilities.isParentOf(moduleUrl, src)) {
                             Collection<URL> roots = collector.get(moduleName);
                             if (roots == null) {
                                 roots = new ArrayList<>();
@@ -241,17 +241,6 @@ public final class MultiModule implements PropertyChangeListener {
                         }
                     }
                 });
-    }
-
-    private static boolean isParentOf(
-            @NonNull final URL folder,
-            @NonNull final URL file) {
-        String sfld = folder.toExternalForm();
-        if (sfld.charAt(sfld.length()-1) != '/') {  //NOI18N
-            sfld = sfld + '/';                      //NOI18N
-        }
-        final String sfil = file.toExternalForm();
-        return sfil.startsWith(sfld);
     }
 
     @NonNull

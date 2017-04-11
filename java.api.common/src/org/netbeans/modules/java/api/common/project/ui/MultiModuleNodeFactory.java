@@ -994,16 +994,16 @@ public final class MultiModuleNodeFactory implements NodeFactory {
 
         @NonNull
         private Collection<? extends Key> createKeys() {
+            final ClassPath sourceP = srcPath.get();
+            final ClassPath testP = testPath.get();
+            if (sourceP == null || testP == null) {
+                return Collections.emptyList();
+            }
             final java.util.Map<FileObject,SourceGroup> grpsByRoot = new HashMap<>();
             for (SourceGroup g : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 grpsByRoot.put(g.getRootFolder(), g);
             }
             final Comparator<FileObject> foc = (a,b) -> a.getNameExt().compareTo(b.getNameExt());
-            final ClassPath testP = testPath.get();
-            final ClassPath sourceP = srcPath.get();
-            if (sourceP == null) {
-                return Collections.emptyList();
-            }
             return Stream.concat(Stream.concat(
                     Arrays.stream(sourceP.getRoots())
                         .sorted(foc)

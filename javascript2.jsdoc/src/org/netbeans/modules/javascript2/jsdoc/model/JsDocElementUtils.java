@@ -166,7 +166,7 @@ public class JsDocElementUtils {
             int curlyStart = elementText.indexOf("{");
             int curlyEnd = -1;
             if (curlyStart != -1) {
-                typeOffset = descStartOffset + 1;
+                typeOffset = descStartOffset + curlyStart + 1;
                 int openCurlyBracesForType = 0;
                 char[] cArray = elementText.toCharArray();
                 for (int i = 0; i < cArray.length; i++) {
@@ -184,19 +184,37 @@ public class JsDocElementUtils {
                     String typeInfo = elementText.substring(curlyStart + 1, curlyEnd);//within curly braces
                     types = typeInfo.trim();
                 } else {
-                    types = parts[0].trim();
-                    process++;
+                    //if type at index=0 extract first part as type
+                    if (curlyStart == 0) {
+                        types = parts[0].trim();
+                        process++;
+                    } else {
+                        //else return the part containing type  
+                        for (String part : parts) {
+                            if (part.startsWith("{")) {
+                                curlyEnd = curlyStart + part.length();
+                                types = part;
+                                break;
+                            }
+                        }
+                    }
                 }
                 if (types.trim().equals("*")) {
                     types = "";
                 }
             }
 
-            //extract name and desc from the remaining text after matching '}'
-            if (curlyEnd != -1) {
+            //if type at index=0, extract name and desc from the remaining text
+            if ((curlyStart == 0) && (curlyEnd != -1)) {
                 parts = elementText.substring(curlyEnd + 1).trim().split("[\\s]+");
+            } else if (curlyStart > 0) {
+                //use entire text minus the types part to get name and desc 
+                String typesStr = elementText.substring(curlyStart, curlyEnd + 1);
+                StringBuilder buf = new StringBuilder(elementText);
+                elementText = buf.replace(curlyStart, curlyStart + typesStr.length(), "").toString();
+                parts = elementText.split("[\\s]+");
             }
-        
+
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());

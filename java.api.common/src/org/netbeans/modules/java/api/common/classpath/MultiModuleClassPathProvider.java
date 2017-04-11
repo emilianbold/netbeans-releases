@@ -71,6 +71,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.impl.MultiModule;
+import org.netbeans.modules.java.api.common.impl.Utilities;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -293,7 +294,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                                         eval,
                                         (root) -> {
                                             final URL buildModules = getURL(buildModulesDirProperty);
-                                            return buildModules == null || !isParentOf(buildModules, root);
+                                            return buildModules == null || !Utilities.isParentOf(buildModules, root);
                                         },
                                         testModulePath));
                                 impl = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
@@ -346,7 +347,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
                     upgradeType(JavaClassPathConstants.MODULE_EXECUTE_PATH, owner),
                     (mods) -> {
                         return ClassPathFactory.createClassPath(org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation(
-                            ModuleClassPaths.createMultiModuleBinariesPath(mods, owner.getLocation() == Location.DIST),
+                            ModuleClassPaths.createMultiModuleBinariesPath(mods, owner.getLocation() == Location.DIST, owner.isTest()),
                             ModuleClassPaths.createPropertyBasedModulePath(
                                     projectDirectory,
                                     eval,
@@ -554,7 +555,7 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         return cacheFor(owner).computeIfAbsent(
                 null,
                 INTERNAL_MOUDLE_BINARIES_PATH,
-                (mods) -> ClassPathFactory.createClassPath(ModuleClassPaths.createMultiModuleBinariesPath(mods, !owner.isTest())));
+                (mods) -> ClassPathFactory.createClassPath(ModuleClassPaths.createMultiModuleBinariesPath(mods, !owner.isTest(), owner.isTest())));
     }
 
     @NonNull
@@ -584,17 +585,6 @@ public final class MultiModuleClassPathProvider extends AbstractClassPathProvide
         } else {
             return type;
         }
-    }
-
-    private static boolean isParentOf(
-            @NonNull final URL folder,
-            @NonNull final URL file) {
-        String sfld = folder.toExternalForm();
-        if (sfld.charAt(sfld.length()-1) != '/') {  //NOI18N
-            sfld = sfld + '/';                      //NOI18N
-        }
-        final String sfil = file.toExternalForm();
-        return sfil.startsWith(sfld);
     }
 
     @NonNull
