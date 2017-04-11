@@ -505,9 +505,17 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug268930_hyperlink.cpp", 57, 27, "bug268930_hyperlink.cpp", 9, 5);
         performTest("bug268930_hyperlink.cpp", 57, 35, "bug268930_hyperlink.cpp", 6, 9);
         
+        performTest("bug268930_hyperlink.cpp", 65, 13, "bug268930_hyperlink.cpp", 43, 5);
+        performTest("bug268930_hyperlink.cpp", 66, 13, "bug268930_hyperlink.cpp", 42, 5);
+        
         performTest("bug268930_hyperlink.cpp", 49, 11, "bug268930_hyperlink.cpp", 48, 9);
         performTest("bug268930_hyperlink.cpp", 50, 11, "bug268930_hyperlink.cpp", 48, 9);
         performTest("bug268930_hyperlink.cpp", 51, 11, "bug268930_hyperlink.cpp", 48, 9);
         performTest("bug268930_hyperlink.cpp", 54, 13, "bug268930_hyperlink.cpp", 52, 9);
+    }
+    
+    public void testBug268930_adjacent() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performTest("bug268930_adjacent.cpp", 3, 20, "bug268930_adjacent.cpp", 1, 1);
     }
 }

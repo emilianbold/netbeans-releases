@@ -57,4 +57,12 @@ namespace bug268930 {
         foo268930("bla"_my_str.c_str());
         return 0;
     }
+    
+    #define MACRO_WITH_UD_LITERAL2CLS "bla"_my_str
+    #define MACRO_WITH_UD_LITERAL2STRING "bla"_my_str.c_str()
+
+    int checkMacro268930() {
+        foo268930(MACRO_WITH_UD_LITERAL2CLS);
+        foo268930(MACRO_WITH_UD_LITERAL2STRING);
+    }
 }
