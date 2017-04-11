@@ -357,7 +357,7 @@ public class DockerAction {
             List<PortMapping> portMapping = new ArrayList<>();
             for (String containerPortData : (Set<String>)ports.keySet()) {
                 JSONArray hostPortsArray = (JSONArray) ports.get(containerPortData);
-                if (!hostPortsArray.isEmpty()) {
+                if (hostPortsArray != null && !hostPortsArray.isEmpty()) {
                     Matcher m = PORT_PATTERN.matcher(containerPortData);
                     if (m.matches()) {
                         int containerPort = Integer.parseInt(m.group(1));
