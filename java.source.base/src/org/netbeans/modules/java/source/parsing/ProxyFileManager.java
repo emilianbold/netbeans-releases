@@ -508,7 +508,10 @@ public final class ProxyFileManager implements JavaFileManager {
     @NonNull
     private <T extends javax.tools.FileObject> T mark(
             @NonNull final T result,
-            @NonNull final JavaFileManager.Location l) throws MalformedURLException {
+            @NonNull JavaFileManager.Location l) throws MalformedURLException {
+        if (ModuleLocation.isInstance(l)) {
+            l = ModuleLocation.cast(l).getBaseLocation();
+        }
         boolean valid = true;
         ProcessorGenerated.Type type = null;
         if (l == StandardLocation.CLASS_OUTPUT) {
@@ -958,7 +961,8 @@ public final class ProxyFileManager implements JavaFileManager {
                             srcCached,
                             aptSrcCached,
                             siblings.getProvider(),
-                            fmTx) :
+                            fmTx,
+                            createModuleSrcFileManager()) :
                     null;
             }
             return emitted[APT_SRC];
