@@ -47,6 +47,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -80,6 +82,8 @@ public final class DockerImage implements DockerEntity {
             for (String tag : tags) {
                 this.tags.add(new DockerTag(this, tag));
             }
+        } else {
+             Logger.getLogger(DockerImage.class.getName()).log(Level.INFO, "Null tags for {0}", id);
         }
     }
 
