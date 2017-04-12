@@ -279,6 +279,7 @@ public class J2SEModularProjectGenerator {
         ep.setProperty(ProjectProperties.JAVADOC_USE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_HTML5, "false"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_VERSION, "false"); // NOI18N

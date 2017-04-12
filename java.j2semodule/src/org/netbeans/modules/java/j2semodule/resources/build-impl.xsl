@@ -2088,6 +2088,19 @@ is divided into following sections:
                         </condition>
                     </xsl:otherwise>
                 </xsl:choose>
+                <condition property="javadoc.html5.cmd.line.arg" value="-html5" else="">
+                    <and>
+                        <isset property="javadoc.html5"/>
+                        <xsl:choose>
+                            <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                <available file="${{platform.home}}${{file.separator}}lib${{file.separator}}jrt-fs.jar"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <available file="${{jdk.home}}${{file.separator}}lib${{file.separator}}jrt-fs.jar"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </and>
+                </condition>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>
                     <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
@@ -2137,6 +2150,7 @@ is divided into following sections:
                         <exclude name="*.java"/>
                     </fileset>
                     <arg line="${{javadoc.endorsed.classpath.cmd.line.arg}}"/>
+                    <arg line="${{javadoc.html5.cmd.line.arg}}"/>
                 </javadoc>
                 <copy todir="${{dist.javadoc.dir}}">
                     <xsl:call-template name="createFilesets">
