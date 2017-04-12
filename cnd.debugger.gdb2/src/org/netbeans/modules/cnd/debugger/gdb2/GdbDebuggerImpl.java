@@ -2500,7 +2500,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else {
             visited = true;
         }
-        setVisitedLocation(MILocation.make(l, visited));
+        setVisitedLocation(MILocation.make(l, visited), true);
 
         state().isUpAllowed = !l.bottomframe();
         state().isDownAllowed = !l.topframe();

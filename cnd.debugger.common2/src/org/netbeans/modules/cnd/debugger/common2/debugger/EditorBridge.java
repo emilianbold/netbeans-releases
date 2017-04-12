@@ -67,6 +67,7 @@ import org.openide.loaders.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Coloring;
+import org.netbeans.editor.JumpList;
 
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.ErrorManager;
 
 /**
  * A bridge to the NB editor.
@@ -85,6 +87,9 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
  */
 
 public final class EditorBridge {
+    
+    private static String fronting =
+        System.getProperty ("netbeans.debugger.fronting", "true");    
 
     /**
      * From org.netbeans.modules.tasklist.suggestions.SuggestionsBroker
@@ -372,13 +377,36 @@ public final class EditorBridge {
 
 	    // OLD line.show(line.SHOW_SHOW);
 	    // line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FRONT);
-	    line.show(Line.ShowOpenType.OPEN, focus ? Line.ShowVisibilityType.FOCUS : Line.ShowVisibilityType.FRONT);
+            if (focus) {
+                line.show (Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            }            
+            if ("true".equalsIgnoreCase(fronting)) {
+                line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FRONT); //FIX 47825
+            }
+            addPositionToJumpList(line, 0);       
+	    //line.show(Line.ShowOpenType.OPEN, focus ? Line.ShowVisibilityType.FOCUS : Line.ShowVisibilityType.FRONT);
 	    if (DebuggerOption.FRONT_IDE.isEnabled(NativeDebuggerManager.get().globalOptions()))
 		WindowManager.getDefault().getMainWindow().toFront();
 
 	} catch (Exception e) {
 	}
     }
+    
+    /** Add the line offset into the jump history */
+    private static void addPositionToJumpList(Line l, int column) {
+        EditorCookie ec = l.getLookup().lookup(EditorCookie.class);
+        if (ec != null) {
+            try {
+                StyledDocument doc = ec.openDocument();
+                JEditorPane[] eps = ec.getOpenedPanes();
+                if (eps != null && eps.length > 0) {
+                    JumpList.addEntry(eps[0], NbDocument.findLineOffset(doc, l.getLineNumber()) + column);
+                }
+            } catch (java.io.IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+            }
+        }
+    }    
     
     /**
      * Force the editor to save the given filename.

@@ -1062,11 +1062,20 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     @Override
-    public final void setVisitedLocation(Location loc) {
+    public final void setVisitedLocation(Location loc, boolean changeFocus) {
 	this.visitedLocation = loc;
 	requestAutos();
         getDisassembly().stateUpdated();
-	updateLocation(true, ShowMode.AUTO, false);
+        //focus is the problem
+        //if we are in Debugger Console changing focus to editor
+        //it will really annoy our user
+	updateLocation(true, ShowMode.AUTO, changeFocus);
+    }
+    
+    @Override
+    public final void setVisitedLocation(Location loc) {
+        setVisitedLocation(loc, false);
+
     }
 
     @Override
