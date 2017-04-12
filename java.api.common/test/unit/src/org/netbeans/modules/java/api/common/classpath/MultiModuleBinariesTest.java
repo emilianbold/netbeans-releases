@@ -117,6 +117,10 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         setProperty(
                 ProjectProperties.BUILD_MODULES_DIR,
                 "${"+ProjectProperties.BUILD_CLASSES_DIR+"}");  //NOI18N
+        //Set BUILD_TEST_MODULES_DIR used by testBuildFor
+        setProperty(
+                ProjectProperties.BUILD_TEST_MODULES_DIR,
+                "${"+ProjectProperties.BUILD_TEST_CLASSES_DIR+"}"); //NOI18N
         mtu = ModuleTestUtilities.newInstance(tp);
         assertNotNull(mtu);
     }
@@ -520,6 +524,179 @@ public final class MultiModuleBinariesTest extends NbTestCase {
         cp.addPropertyChangeListener(l);
         setProperty(ProjectProperties.DIST_DIR, "release"); //NOI18N
         l.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+    }
+
+    public void testUnitTestModules() throws IOException {
+        final FileObject mod1aTests = src1.getFileObject("lib.common").createFolder("tests");        //NOI18N
+        assertNotNull(mod1aTests);
+        final FileObject mod1bTests = src1.getFileObject("lib.util").createFolder("tests");          //NOI18N
+        assertNotNull(mod1bTests);
+        FileUtil.createData(mod1bTests, "module-info.java");                                         //NOI18N
+        final FileObject mod2cTests = src2.getFileObject("lib.discovery").createFolder("tests");     //NOI18N
+        assertNotNull(mod2cTests);
+        final FileObject mod2dTests = src2.getFileObject("lib.event").createFolder("tests");         //NOI18N
+        assertNotNull(mod2dTests);
+        FileUtil.createData(mod2dTests, "module-info.java");                                         //NOI18N
+        final FileObject mod1dTests = src1.getFileObject("lib.event").createFolder("tests");         //NOI18N
+        assertNotNull(mod1dTests);
+        assertTrue(mtu.updateModuleRoots(false,src1,src2));
+        assertTrue(mtu.updateModuleRoots(true,src1,src2));
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{mod1a, mod1b, mod2c, mod1d, mod2d})
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()),
+                Arrays.stream(sources.getRoots())
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()));
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{src1, src2}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        assertEquals(
+                Arrays.stream(new FileObject[]{mod1aTests, mod1bTests, mod2cTests, mod1dTests, mod2dTests})
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()),
+                Arrays.stream(testSources.getRoots())
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()));
+        final BinaryForSourceQueryImplementation impl = QuerySupport.createMultiModuleBinaryForSourceQuery(
+                tp.getUpdateHelper().getAntProjectHelper(),
+                tp.getEvaluator(),
+                modules,
+                sources,
+                testModules,
+                testSources);
+        assertNotNull(impl);
+        Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(testModel, true, true);
+        assertNotNull(cpImpl);
+        final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
+        assertEquals(
+                //Only test modules with module info
+                Arrays.stream(new FileObject[]{mod1bTests, mod1dTests, mod2dTests})
+                    .flatMap((fo) -> Arrays.stream(new URL[]{
+                        mtu.testBuildFor(fo.getParent().getNameExt())}))
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .distinct()
+                    .collect(Collectors.toList()),
+                cp.entries().stream()
+                    .map((e) -> e.getURL())
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .collect(Collectors.toList()));
+    }
+
+    public void testUnitTestModulesModuleInfoCreateDelete() throws IOException {
+        final FileObject mod1aTests = src1.getFileObject("lib.common").createFolder("tests");        //NOI18N
+        assertNotNull(mod1aTests);
+        final FileObject mod1bTests = src1.getFileObject("lib.util").createFolder("tests");          //NOI18N
+        assertNotNull(mod1bTests);
+        final FileObject mod2cTests = src2.getFileObject("lib.discovery").createFolder("tests");     //NOI18N
+        assertNotNull(mod2cTests);
+        final FileObject mod2dTests = src2.getFileObject("lib.event").createFolder("tests");         //NOI18N
+        assertNotNull(mod2dTests);
+        final FileObject mod1dTests = src1.getFileObject("lib.event").createFolder("tests");         //NOI18N
+        assertNotNull(mod1dTests);
+        assertTrue(mtu.updateModuleRoots(false,src1,src2));
+        assertTrue(mtu.updateModuleRoots(true,src1,src2));
+        final SourceRoots modules = mtu.newModuleRoots(false);
+        assertTrue(Arrays.equals(new FileObject[]{src1, src2}, modules.getRoots()));
+        final SourceRoots sources = mtu.newSourceRoots(false);
+        assertEquals(
+                Arrays.stream(new FileObject[]{mod1a, mod1b, mod2c, mod1d, mod2d})
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()),
+                Arrays.stream(sources.getRoots())
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()));
+        final SourceRoots testModules = mtu.newModuleRoots(true);
+        assertTrue(Arrays.equals(new FileObject[]{src1, src2}, testModules.getRoots()));
+        final SourceRoots testSources = mtu.newSourceRoots(true);
+        assertEquals(
+                Arrays.stream(new FileObject[]{mod1aTests, mod1bTests, mod2cTests, mod1dTests, mod2dTests})
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()),
+                Arrays.stream(testSources.getRoots())
+                    .map((fo) -> fo.getPath())
+                    .sorted()
+                    .collect(Collectors.toList()));
+        final BinaryForSourceQueryImplementation impl = QuerySupport.createMultiModuleBinaryForSourceQuery(
+                tp.getUpdateHelper().getAntProjectHelper(),
+                tp.getEvaluator(),
+                modules,
+                sources,
+                testModules,
+                testSources);
+        assertNotNull(impl);
+        Lookup.getDefault().lookup(DelegatingB4SQImpl.class).setDelegate(impl);
+        final MultiModule testModel = MultiModule.getOrCreate(testModules, testSources);
+        final ClassPathImplementation cpImpl = ModuleClassPaths.createMultiModuleBinariesPath(testModel, true, true);
+        assertNotNull(cpImpl);
+        final ClassPath cp = ClassPathFactory.createClassPath(cpImpl);
+        assertTrue(cp.entries().isEmpty());
+        FileObject mib = FileUtil.createData(mod1bTests, "module-info.java"); //NOI18N
+        assertEquals(
+                //Only test modules with module info
+                Arrays.stream(new FileObject[]{mod1bTests})
+                    .flatMap((fo) -> Arrays.stream(new URL[]{
+                        mtu.testBuildFor(fo.getParent().getNameExt())}))
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .distinct()
+                    .collect(Collectors.toList()),
+                cp.entries().stream()
+                    .map((e) -> e.getURL())
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .collect(Collectors.toList()));
+        FileObject mia = FileUtil.createData(mod1aTests, "module-info.java");                                         //NOI18N
+        assertEquals(
+                //Only test modules with module info
+                Arrays.stream(new FileObject[]{mod1aTests, mod1bTests})
+                    .flatMap((fo) -> Arrays.stream(new URL[]{
+                        mtu.testBuildFor(fo.getParent().getNameExt())}))
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .distinct()
+                    .collect(Collectors.toList()),
+                cp.entries().stream()
+                    .map((e) -> e.getURL())
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .collect(Collectors.toList()));
+        mib.delete();
+        assertEquals(
+                //Only test modules with module info
+                Arrays.stream(new FileObject[]{mod1aTests})
+                    .flatMap((fo) -> Arrays.stream(new URL[]{
+                        mtu.testBuildFor(fo.getParent().getNameExt())}))
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .distinct()
+                    .collect(Collectors.toList()),
+                cp.entries().stream()
+                    .map((e) -> e.getURL())
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .collect(Collectors.toList()));
+        mia.delete();
+        assertTrue(cp.entries().isEmpty());
+        FileObject mic = FileUtil.createData(mod2cTests, "module-info.java");                                         //NOI18N
+        assertEquals(
+                //Only test modules with module info
+                Arrays.stream(new FileObject[]{mod2cTests})
+                    .flatMap((fo) -> Arrays.stream(new URL[]{
+                        mtu.testBuildFor(fo.getParent().getNameExt())}))
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .distinct()
+                    .collect(Collectors.toList()),
+                cp.entries().stream()
+                    .map((e) -> e.getURL())
+                    .sorted((u1,u2) -> u1.toString().compareTo(u2.toString()))
+                    .collect(Collectors.toList()));
     }
 
     private String setProperty(final String name, final String value) {

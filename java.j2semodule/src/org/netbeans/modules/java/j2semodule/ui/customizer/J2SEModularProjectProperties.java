@@ -324,9 +324,7 @@ public class J2SEModularProjectProperties {
         String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
         processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
         JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
-        String processorModulePath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORMODULEPATH);
-        processorModulePath = processorModulePath == null ? "${javac.modulepath}" : processorModulePath;
-        JAVAC_PROCESSORMODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorModulePath));
+        JAVAC_PROCESSORMODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_PROCESSORMODULEPATH)));
         JAVAC_TEST_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_MODULEPATH)));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH)));
         RUN_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(createExtendedPathItems(projectProperties, ProjectProperties.RUN_MODULEPATH, null, isNamedModule() ? ProjectProperties.BUILD_CLASSES_DIR : null, runModulePathExtension));
