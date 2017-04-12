@@ -1883,7 +1883,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    return;
         StringBuilder frameStr = new StringBuilder(guiStackFrames.length);
         for (int fx = 0; fx < guiStackFrames.length; fx++) {
-	    frameStr.append(guiStackFrames[fx].getLocationName());
+	    frameStr.append(guiStackFrames[fx].getLocationName()).append(" at ").append(//NOI18N
+                    guiStackFrames[fx].getFullPath()).append(":").append(guiStackFrames[fx].getLineNo());//NOI18N
 	    frameStr.append('\n');
 	}
 	Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
