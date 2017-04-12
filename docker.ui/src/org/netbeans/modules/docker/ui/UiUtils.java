@@ -223,10 +223,6 @@ public final class UiUtils {
         });
     }
     
-//    public static String naturalizePath(String path) {
-//        return new File(path).getAbsolutePath();
-//    }
-//    
     public static String normalizePath(String path) {
         return path.replace('\\', '/');
     }
