@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
@@ -142,11 +143,29 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             String prop = evaluator.getProperty(p);
             if (prop != null) {
                 for (String piece : PropertyUtils.tokenizePath(prop)) {
-                    final File f = PropertyUtils.resolveFile(this.projectFolder, piece);
+                    File f = PropertyUtils.resolveFile(this.projectFolder, piece);
                     URL entry = FileUtil.urlForArchiveOrDir(f);
                     if (entry != null) {
                         try {
-                            result.add(ClassPathSupport.createResource(entry));
+                            PathResourceImplementation res = null;
+                            try {
+                                res = ClassPathSupport.createResource(entry);
+                            } catch (IllegalArgumentException e) {
+                                //Try to recover from non normalized file having unbalanced path, do UNIX like normalization /../../Foo -> /Foo
+                                f = BaseUtilities.toFile(BaseUtilities.toURI(f).normalize());
+                                if (f != null) {
+                                    String parentPattern = File.separatorChar + ".." + File.separatorChar;
+                                    while (f.getAbsolutePath().startsWith(parentPattern)) {
+                                        f = new File(f.getAbsolutePath().substring(parentPattern.length()-1));
+                                    }
+                                    res = Optional.ofNullable(FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(f)))
+                                            .map(ClassPathSupport::createResource)
+                                            .orElse(null);
+                                }
+                            }
+                            if (res != null) {
+                                result.add(res);
+                            }
                         } catch (IllegalArgumentException iae) {
                             //Logging for issue #181155, #186213
                             String foStatus;

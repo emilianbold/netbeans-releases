@@ -78,6 +78,7 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
     
     public ProjectClassPathImplementationTest(String testName) {
         super(testName);
+        FileUtil.class.getClassLoader().setClassAssertionStatus(FileUtil.class.getName(), false);
     }
     
     private FileObject scratch;
@@ -192,14 +193,41 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
         
         cpImpl.removePropertyChangeListener(listener);
     }
-    
+
+    public void testBrokenRelativePath_Issue270362() throws Exception {
+        setClassPath(new String[] {PROP_NAME_1}, new String[] {
+            "/opencv/build/java/x86/../../../../../MyLibrary/opencv-248.jar"
+        });
+        ClassPathImplementation cpImpl = ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                FileUtil.toFile(helper.getProjectDirectory()),
+                evaluator,
+                new String[] {PROP_NAME_1});
+        ClassPathFactory.createClassPath(cpImpl);
+        setClassPath(new String[] {PROP_NAME_1}, new String[] {
+            "/Users/tom/NetBeansProjects/bixby~simulink2j/TestSimulink/../../../../../net/10.0.0.111/tank/jag/NetBeansProjects/bixby~map-matching/dist/ClothoidMap.jar"
+        });
+        cpImpl = ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                FileUtil.toFile(helper.getProjectDirectory()),
+                evaluator,
+                new String[] {PROP_NAME_1});
+        ClassPathFactory.createClassPath(cpImpl);
+    }
+
     // XXX should test that changes are actually fired when appropriate
-    
+
     private void setClassPath (String[] propNames, FileObject[][] cpRoots) {
+        final String[] paths = new String[cpRoots.length];
+        for (int i=0; i<cpRoots.length; i++) {
+            paths[i] = toPath(cpRoots[i]);
+        }
+        setClassPath(propNames, paths);
+    }
+
+    private void setClassPath (String[] propNames, String[] paths) {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         for (int i=0; i< propNames.length; i++) {
-            props.setProperty (propNames[i],toPath(cpRoots[i]));
-        }                
+            props.setProperty (propNames[i],paths[i]);
+        }
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
     }
     
