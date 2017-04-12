@@ -112,7 +112,8 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
         String buildContext = component.getBuildContext();
         FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
-        if (buildContext == null || !fs.getRoot().getFileObject(buildContext).isFolder()) {
+        FileObject buildContextFo = fs.getRoot().getFileObject(buildContext);
+        if (buildContext == null || buildContextFo == null || !buildContextFo.isFolder()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingBuildContext());
             return false;
         }
