@@ -42,13 +42,9 @@ package org.netbeans.modules.maven.htmlui;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javafx.application.Platform;
 import javax.swing.JFileChooser;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle.Messages;
@@ -106,25 +102,8 @@ public class DukeScriptWizard {
                     else if (name.equals("GTK look and feel"))name="gtk";
                     else if (name.equals("Nimbus"))name="nimbus";
                     else if (name.startsWith("Windows"))name="win";
-                    UIDefaults defaults = lookAndFeel.getDefaults();
-                    Set<Map.Entry<Object, Object>> entrySet = defaults.entrySet();
-                    for (Map.Entry<Object, Object> entry : entrySet) {
-                        System.out.println(""+entry.getKey()+"->"+entry.getValue());
-                    }
-//                    JDialog jDialog = new JDialog();
-//                    Color background = jDialog.getBackground();
-//                    System.out.println("background "+toHex(background));
-//                    JLabel jLabel = new JLabel("Hallo");
-//                    Font font = jLabel.getFont();
-//                    System.out.println("Font "+font.getFontName());
-//                    Color foreground = jLabel.getForeground();
                     final String laf = name;
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            data.setLaf("wizard-"+laf+".css");
-                        }
-                    });
+                    data.setLaf("wizard-"+laf+".css");
                 }
             });
        
