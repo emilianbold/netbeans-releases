@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.io.File;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -66,6 +67,7 @@ import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -219,5 +221,13 @@ public final class UiUtils {
                 });
             }
         });
+    }
+    
+//    public static String naturalizePath(String path) {
+//        return new File(path).getAbsolutePath();
+//    }
+//    
+    public static String normalizePath(String path) {
+        return path.replace('\\', '/');
     }
 }
