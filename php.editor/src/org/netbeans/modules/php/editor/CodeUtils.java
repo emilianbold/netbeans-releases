@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
@@ -260,14 +261,23 @@ public final class CodeUtils {
         return null;
     }
 
+    /**
+     * Extract qualified name for Identifier, NamespaceName, and NullableType.
+     *
+     * @param typeName The type name
+     * @return The type name. If it is a nullable type, the name is returned with "?"
+     */
     public static String extractQualifiedName(Expression typeName) {
-        Parameters.notNull("clsName", typeName);
+        Parameters.notNull("typeName", typeName); // NOI18N
         if (typeName instanceof Identifier) {
             return ((Identifier) typeName).getName();
         } else if (typeName instanceof NamespaceName) {
             return extractQualifiedName((NamespaceName) typeName);
+        } else if (typeName instanceof NullableType) {
+            NullableType nullableType = (NullableType) typeName;
+            return NULLABLE_TYPE_PREFIX + extractQualifiedName(nullableType.getType());
         }
-        assert false : typeName.getClass(); //NOI18N
+        assert false : typeName.getClass();
         return null;
     }
 
