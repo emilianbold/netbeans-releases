@@ -67,6 +67,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -303,10 +304,18 @@ final class ModuleClassPaths {
                 final ClassPath scp = model.getModuleSources(moduleName);
                 if (scp != null) {
                     sourcePaths.add(scp);
-                    if (!requiresModuleInfo || scp.findResource(MODULE_INFO_JAVA) != null) {
+                    final Consumer<URL> consummer = !requiresModuleInfo || scp.findResource(MODULE_INFO_JAVA) != null ?
+                            (u) -> {
+                                final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(u);
+                                results.add(r);
+                                binaries.addAll(filterArtefact(archives, r.getRoots()));
+                            }:
+                            (u) -> {};
                         for (ClassPath.Entry e : scp.entries()) {
                             try {
-                                Optional.ofNullable(requiresModuleInfo ? BaseUtilities.toFile(e.getURL().toURI()) : null)
+                                final URL url = e.getURL();
+                                consummer.accept(url);
+                                Optional.ofNullable(requiresModuleInfo ? BaseUtilities.toFile(url.toURI()) : null)
                                         .map ((root) -> new File(root, MODULE_INFO_JAVA))
                                         .ifPresent(moduleInfos::add);
                             } catch (URISyntaxException use) {
@@ -315,11 +324,8 @@ final class ModuleClassPaths {
                                         "Cannot convert to URI: {0}",   //NOI18N
                                         e.getURL());
                             }
-                            final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(e.getURL());
-                            results.add(r);
-                            binaries.addAll(filterArtefact(archives, r.getRoots()));
                         }
-                    }
+
                 }
             }
             return binaries.stream()

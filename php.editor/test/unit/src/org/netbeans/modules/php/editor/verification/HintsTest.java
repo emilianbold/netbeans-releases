@@ -714,6 +714,31 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_03.php", "<?p^hp", "Add declare(strict_types=1)");
     }
 
+    public void testIssue270368_01() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue270368_01.php", "function __construct(?string $tes^t) {");
+    }
+
+    public void testIssue270368_02() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue270368_02.php", "function __construct(?\\Foo\\Bar $^test) {");
+    }
+
+    public void testIssue270368Fix_01() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_01.php", "function __construct(?string $tes^t) {", "Initialize Field");
+    }
+
+    public void testIssue270368Fix_02() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_02.php", "function __construct(?\\Foo\\Bar $^test) {", "Initialize Field");
+    }
+
+    public void testIssue270368Fix_03() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_03.php", "function __construct($^test) {", "Initialize Field");
+    }
+
+    public void testIssue270368Fix_04() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_04.php", "function __construct(\\Foo\\Bar $^test) {", "Initialize Field");
+    }
+
+
    //~ Inner classes
 
     private static final class ImplementAbstractMethodsHintErrorStub extends ImplementAbstractMethodsHintError {
