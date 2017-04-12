@@ -1708,15 +1708,15 @@ public final class FileUtil extends Object {
     private static File normalizeFileOnMac(final File file) {
         File retVal = file;
 
+        File absoluteFile = BaseUtilities.toFile(BaseUtilities.toURI(file).normalize());
+        String absolutePath = absoluteFile.getAbsolutePath();
+        if (absolutePath.equals("/..")) { // NOI18N
+            // Special treatment.
+            absoluteFile = new File(absolutePath = "/"); // NOI18N
+        }
         try {
-            // URI.normalize removes ../ and ./ sequences nicely.            
-            File absoluteFile = BaseUtilities.toFile(BaseUtilities.toURI(file).normalize());
+            // URI.normalize removes ../ and ./ sequences nicely.
             File canonicalFile = file.getCanonicalFile();
-            String absolutePath = absoluteFile.getAbsolutePath();
-            if (absolutePath.equals("/..")) { // NOI18N
-                // Special treatment.
-                absoluteFile = new File(absolutePath = "/"); // NOI18N
-            }
             boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absolutePath);
 
             if (isSymLink) {
@@ -1728,7 +1728,7 @@ public final class FileUtil extends Object {
             LOG.log(Level.FINE, "Normalization failed on file " + file, ioe);
 
             // OK, so at least try to absolutize the path
-            retVal = file.getAbsoluteFile();
+            retVal = absoluteFile.getAbsoluteFile();
         }
 
         return retVal;
