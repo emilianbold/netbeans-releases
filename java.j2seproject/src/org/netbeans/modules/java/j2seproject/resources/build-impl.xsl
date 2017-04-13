@@ -233,6 +233,8 @@ is divided into following sections:
                         <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
                     </and>
                 </condition>
+                <property name="dist.jlink.dir" value="${{dist.dir}}/jlink"/>
+                <property name="dist.jlink.output" value="${{dist.jlink.dir}}/${{application.title}}"/>
                 <property name="module.name" value=""/>
             </target>
             <target name="-do-init">
@@ -2307,9 +2309,7 @@ is divided into following sections:
                     </and>
                 </condition>
             </target>
-            <target name="-do-deploy" depends="-do-jar,-post-jar,-pre-deploy,-check-jlink" if="do.jlink.internal">
-                <property name="dist.jlink.dir" value="${{dist.dir}}/jlink"/>
-                <property name="dist.jlink.output" value="${{dist.jlink.dir}}/${{application.title}}"/>
+            <target name="-do-deploy" depends="init,-do-jar,-post-jar,-pre-deploy,-check-jlink" if="do.jlink.internal">
                 <delete dir="${{dist.jlink.dir}}" quiet="true" failonerror="false"/>
                 <condition property="jlink.add.modules" value="${{module.name}},${{jlink.additionalmodules}}" else="${{module.name}}">
                     <and>
@@ -3053,6 +3053,7 @@ is divided into following sections:
             <target name="-do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
+                <delete dir="${{dist.jlink.output}}"/> <!-- Jlink artefact has symlinks inside -->
                 <delete dir="${{dist.dir}}" followsymlinks="false" includeemptydirs="true"/> <!-- see issue 176851 -->
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
             </target>
