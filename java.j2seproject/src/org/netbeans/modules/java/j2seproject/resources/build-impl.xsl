@@ -3145,6 +3145,7 @@ is divided into following sections:
                             <param name="call.target" value="{$subtarget}"/>
                             <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
                             <param name="transfer.not.archive.disabled" value="true"/>
+                            <param name="transfer.do.jlink" value="false"/>
                             <xsl:for-each select="projdeps2:properties/projdeps2:property">
                                 <param name="transfer.{@name}" value="{.}"/>
                             </xsl:for-each>
@@ -3158,6 +3159,7 @@ is divided into following sections:
                             <param name="call.target" value="{$subtarget}"/>
                             <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
                             <param name="transfer.not.archive.disabled" value="true"/>
+                            <param name="transfer.do.jlink" value="false"/>
                         </antcall>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -3184,6 +3186,7 @@ is divided into following sections:
                     <param name="call.target" value="{$subtarget}"/>
                     <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
                     <param name="transfer.not.archive.disabled" value="true"/>
+                    <param name="transfer.do.jlink" value="false"/>
                 </antcall>
             </xsl:for-each>
             
