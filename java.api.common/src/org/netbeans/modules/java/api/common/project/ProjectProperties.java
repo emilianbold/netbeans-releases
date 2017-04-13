@@ -351,6 +351,11 @@ public final class ProjectProperties {
      */
     public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex"; // NOI18N
     /**
+     * Name of property enabling generation of HTML 5 javadoc.
+     * @since 1.119
+     */
+    public static final String JAVADOC_HTML5="javadoc.html5"; // NOI18N
+    /**
      * Name of property holding the javadoc author.
      * @since 1.60
      */

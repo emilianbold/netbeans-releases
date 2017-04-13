@@ -226,6 +226,7 @@ public class J2SEProjectProperties {
     ButtonModel JAVADOC_NO_NAVBAR_MODEL; 
     ButtonModel JAVADOC_NO_INDEX_MODEL; 
     ButtonModel JAVADOC_SPLIT_INDEX_MODEL; 
+    ButtonModel JAVADOC_HTML5_MODEL; 
     ButtonModel JAVADOC_AUTHOR_MODEL; 
     ButtonModel JAVADOC_VERSION_MODEL;
     Document JAVADOC_WINDOW_TITLE_MODEL;
@@ -406,6 +407,7 @@ public class J2SEProjectProperties {
         JAVADOC_NO_NAVBAR_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_NAVBAR );
         JAVADOC_NO_INDEX_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_INDEX ); 
         JAVADOC_SPLIT_INDEX_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_SPLIT_INDEX );
+        JAVADOC_HTML5_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_HTML5 );
         JAVADOC_AUTHOR_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_AUTHOR );
         JAVADOC_VERSION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_VERSION );
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
