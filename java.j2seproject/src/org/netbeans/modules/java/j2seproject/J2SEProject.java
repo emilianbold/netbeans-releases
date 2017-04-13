@@ -362,9 +362,10 @@ public final class J2SEProject implements Project {
             ProjectOperations.createBuilder(this, eval, updateHelper, refHelper, sourceRoots, testRoots).
                     addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
                     addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
-                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
+                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE, ProjectProperties.DO_JLINK, ProjectProperties.JLINK_STRIP).
                     addUpdatedNameProperty(ProjectProperties.DIST_JAR, "$'{'dist.dir'}'/{0}.jar", true).    //NOI18N
                     addUpdatedNameProperty(J2SEProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
+                    addUpdatedNameProperty(ProjectProperties.DIST_JLINK_OUTPUT, "$'{'"+ProjectProperties.DIST_JLINK_DIR+"'}'/{0}", true).    //NOI18N
                     setCallback(opsCallback).
                     build(),
             ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).

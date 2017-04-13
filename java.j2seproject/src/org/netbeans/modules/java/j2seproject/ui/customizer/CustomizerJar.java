@@ -45,14 +45,33 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.ChangeSupport;
 
 /** Customizer for general project attributes.
  */
@@ -60,6 +79,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
     private J2SEProject project;
     private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
+    private final ComboBoxModel<?> sourceLevel;
     
     public CustomizerJar( J2SEProjectProperties uiProperties ) {
         initComponents();
@@ -87,6 +107,32 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
         uiProperties.COPY_LIBS_MODEL.setMnemonic(copyLibs.getMnemonic());
         copyLibs.setModel(uiProperties.COPY_LIBS_MODEL);
+        this.sourceLevel = uiProperties.JAVAC_SOURCE_MODEL;
+        this.sourceLevel.addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+            }
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+            }
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                enableJLink();
+            }
+        });
+        jlink.setModel(new ButtonModelDecorator(uiProperties.JLINK_MODEL));
+        jlinkStrip.setModel(new ButtonModelDecorator(uiProperties.JLINK_STRIP_MODEL));
+        enableJLink();
+        doJarCheckBox.addActionListener((e)->{
+            if (!doJarCheckBox.isSelected()) {
+                jlink.setSelected(false);
+            }
+        });
+        jlink.addActionListener((e)->{
+            if(jlink.isSelected()) {
+                doJarCheckBox.setSelected(true);
+            }
+        });
     }
 
     @Override
@@ -98,6 +144,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jCheckBox1 = new javax.swing.JCheckBox();
         mainPanel = new javax.swing.JPanel();
         distDirLabel = new javax.swing.JLabel();
         distDirField = new javax.swing.JTextField();
@@ -107,9 +154,15 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         compressCheckBox = new javax.swing.JCheckBox();
         doJarCheckBox = new javax.swing.JCheckBox();
         copyLibs = new javax.swing.JCheckBox();
+        jlink = new javax.swing.JCheckBox();
+        jlinkStrip = new javax.swing.JCheckBox();
         extPanel = new javax.swing.JPanel();
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, "jCheckBox1");
+
         setLayout(new java.awt.GridBagLayout());
+
+        mainPanel.setPreferredSize(new java.awt.Dimension(435, 230));
 
         distDirLabel.setLabelFor(distDirField);
         org.openide.awt.Mnemonics.setLocalizedText(distDirLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_DistDir_JTextField")); // NOI18N
@@ -129,20 +182,26 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(copyLibs, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_CopyLibraries")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jlink, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLink")); // NOI18N
+        jlink.setActionCommand("Create J&LINK Distribution");
+
+        org.openide.awt.Mnemonics.setLocalizedText(jlinkStrip, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLinkStrip")); // NOI18N
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 404, Short.MAX_VALUE)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jlink, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(jlinkStrip)))
+                .addGap(0, 129, Short.MAX_VALUE))
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(mainPanelLayout.createSequentialGroup()
                     .addGap(0, 0, 0)
                     .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(compressCheckBox)
-                        .addGroup(mainPanelLayout.createSequentialGroup()
-                            .addComponent(doJarCheckBox)
-                            .addGap(245, 245, 245))
-                        .addComponent(copyLibs)
                         .addGroup(mainPanelLayout.createSequentialGroup()
                             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(excludeLabel)
@@ -150,13 +209,23 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(excludeMessage)
-                                .addComponent(excludeField, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-                                .addComponent(distDirField, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))))
+                                .addComponent(excludeField)
+                                .addComponent(distDirField)))
+                        .addGroup(mainPanelLayout.createSequentialGroup()
+                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(compressCheckBox)
+                                .addComponent(doJarCheckBox)
+                                .addComponent(copyLibs))
+                            .addGap(241, 241, 241)))
                     .addGap(0, 0, 0)))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 161, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                .addContainerGap(182, Short.MAX_VALUE)
+                .addComponent(jlink)
+                .addGap(2, 2, 2)
+                .addComponent(jlinkStrip))
             .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(mainPanelLayout.createSequentialGroup()
                     .addContainerGap()
@@ -175,7 +244,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                     .addComponent(doJarCheckBox)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(copyLibs)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addContainerGap(55, Short.MAX_VALUE)))
         );
 
         distDirField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldDistDir")); // NOI18N
@@ -213,6 +282,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel excludeLabel;
     private javax.swing.JLabel excludeMessage;
     private javax.swing.JPanel extPanel;
+    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jlink;
+    private javax.swing.JCheckBox jlinkStrip;
     private javax.swing.JPanel mainPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -244,6 +316,176 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                 new Dimension(),
                 new Dimension(10000,10000) ),
                 constraints);
+    }
+
+    private void enableJLink() {
+        final SpecificationVersion sl = PlatformUiSupport.getSourceLevel(this.sourceLevel.getSelectedItem());
+        boolean enabled = J2SEProjectProperties.JDK9.compareTo(sl) <= 0;
+        for (JCheckBox b : new JCheckBox[] {jlink, jlinkStrip}) {
+            b.setEnabled(enabled);
+            ButtonModelDecorator.cast(b.getModel())
+                    .ifPresent((m) -> m.setOverride(enabled ? null : false));
+        }
+    }
+
+    private static final class ButtonModelDecorator implements ButtonModel {
+        private final ButtonModel delegate;
+        private final List<ActionListener> actionListeners;
+        private final List<ItemListener> itemListeners;
+        private final ChangeSupport changeListeners;
+        private Boolean override;
+
+        ButtonModelDecorator(@NonNull final ButtonModel delegate) {
+            this.delegate = delegate;
+            this.actionListeners = new CopyOnWriteArrayList<>();
+            this.itemListeners = new CopyOnWriteArrayList<>();
+            this.changeListeners = new ChangeSupport(this);
+            this.delegate.addActionListener((e) -> {
+                final ActionEvent ne = new ActionEvent(
+                        this,
+                        e.getID(),
+                        e.getActionCommand(),
+                        e.getWhen(),
+                        e.getModifiers());
+                for (ActionListener l : actionListeners) {
+                    l.actionPerformed(ne);
+                }
+            });
+            this.delegate.addItemListener((e) -> {
+                final ItemEvent ne = new ItemEvent(
+                        this,
+                        e.getID(),
+                        e.getItem(),
+                        e.getStateChange());
+                for (ItemListener l : itemListeners) {
+                    l.itemStateChanged(ne);
+                }
+            });
+            this.delegate.addChangeListener((e) -> changeListeners.fireChange());
+        }
+
+        void setOverride(Boolean value) {
+            this.override = value;
+        }
+
+        @NonNull
+        static Optional<ButtonModelDecorator> cast(Object obj) {
+            return obj instanceof ButtonModelDecorator ?
+                    Optional.of((ButtonModelDecorator) obj) :
+                    Optional.empty();
+        }
+
+        @Override
+        public boolean isArmed() {
+            return delegate.isArmed();
+        }
+
+        @Override
+        public boolean isSelected() {
+            return override != null ?
+                    override :
+                    delegate.isSelected();
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return delegate.isEnabled();
+        }
+
+        @Override
+        public boolean isPressed() {
+            return delegate.isPressed();
+        }
+
+        @Override
+        public boolean isRollover() {
+            return delegate.isRollover();
+        }
+
+        @Override
+        public void setArmed(boolean b) {
+            this.delegate.setArmed(b);
+        }
+
+        @Override
+        public void setSelected(boolean b) {
+            this.delegate.setSelected(b);
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+            this.delegate.setEnabled(b);
+        }
+
+        @Override
+        public void setPressed(boolean b) {
+            this.delegate.setPressed(b);
+        }
+
+        @Override
+        public void setRollover(boolean b) {
+            this.delegate.setRollover(b);
+        }
+
+        @Override
+        public void setMnemonic(int key) {
+            this.delegate.setMnemonic(key);
+        }
+
+        @Override
+        public int getMnemonic() {
+            return this.delegate.getMnemonic();
+        }
+
+        @Override
+        public void setActionCommand(String s) {
+            this.delegate.setActionCommand(s);
+        }
+
+        @Override
+        public String getActionCommand() {
+            return this.delegate.getActionCommand();
+        }
+
+        @Override
+        public void setGroup(ButtonGroup group) {
+            this.delegate.setGroup(group);
+        }
+
+        @Override
+        public void addActionListener(ActionListener l) {
+            this.actionListeners.add(l);
+        }
+
+        @Override
+        public void removeActionListener(ActionListener l) {
+            this.actionListeners.remove(l);
+        }
+
+        @Override
+        public void addItemListener(ItemListener l) {
+            this.itemListeners.add(l);
+        }
+
+        @Override
+        public void removeItemListener(ItemListener l) {
+            this.itemListeners.remove(l);
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            this.changeListeners.addChangeListener(l);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+            this.changeListeners.removeChangeListener(l);
+        }
+
+        @Override
+        public Object[] getSelectedObjects() {
+            return this.delegate.getSelectedObjects();
+        }
     }
 
 }
