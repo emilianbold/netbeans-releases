@@ -136,6 +136,8 @@ public class J2SEModularProjectProperties {
     private Integer javacDebugBooleanKind;
     private Integer doJarBooleanKind;
     private Integer javadocPreviewBooleanKind;
+    private Integer doJLinkKind;
+    private Integer jLinkStripKind;
     
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
@@ -223,6 +225,8 @@ public class J2SEModularProjectProperties {
     ButtonModel JAR_COMPRESS_MODEL;
     ButtonModel DO_JAR_MODEL;
     ButtonModel COPY_LIBS_MODEL;
+    ButtonModel JLINK_MODEL;
+    ButtonModel JLINK_STRIP_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -356,7 +360,7 @@ public class J2SEModularProjectProperties {
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         Integer[] kind = new Integer[1];
-        JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, kind);
+        JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, true, kind);
         javacDebugBooleanKind = kind[0];
 
         DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, ProjectProperties.DO_DEPEND);
@@ -403,9 +407,13 @@ public class J2SEModularProjectProperties {
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
-        DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, kind);
+        DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, true, kind);
         doJarBooleanKind = kind[0];
         COPY_LIBS_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, MKDIST_DISABLED);
+        JLINK_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JLINK, false, kind);
+        doJLinkKind = kind[0];
+        JLINK_STRIP_MODEL = createToggleButtonModel(evaluator, ProjectProperties.JLINK_STRIP, false, kind);
+        jLinkStripKind = kind[0];
         
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -420,7 +428,7 @@ public class J2SEModularProjectProperties {
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel        
-        JAVADOC_PREVIEW_MODEL = createToggleButtonModel ( evaluator, JAVADOC_PREVIEW, kind);
+        JAVADOC_PREVIEW_MODEL = createToggleButtonModel ( evaluator, JAVADOC_PREVIEW, true, kind);
         javadocPreviewBooleanKind = kind[0];
         
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
@@ -619,7 +627,9 @@ public class J2SEModularProjectProperties {
         //Save javac.debug
         privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
         privateProperties.setProperty(ProjectProperties.DO_JAR, encodeBoolean(DO_JAR_MODEL.isSelected(), doJarBooleanKind));
-                
+        //JLink
+        privateProperties.setProperty(ProjectProperties.DO_JLINK, encodeBoolean(JLINK_MODEL.isSelected(), doJLinkKind));
+        privateProperties.setProperty(ProjectProperties.JLINK_STRIP, encodeBoolean(JLINK_STRIP_MODEL.isSelected(), jLinkStripKind));
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javadoc.preview
@@ -837,12 +847,18 @@ public class J2SEModularProjectProperties {
     
     //Hotfix of the issue #70058
     //Should be removed when the StoreGroup SPI will be extended to allow true default value in ToggleButtonModel
-    private static JToggleButton.ToggleButtonModel createToggleButtonModel (final PropertyEvaluator evaluator, final String propName, Integer[] kind) {
-        assert evaluator != null && propName != null && kind != null && kind.length == 1;
+    private static JToggleButton.ToggleButtonModel createToggleButtonModel (
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String propName,
+            final boolean defaultValue,
+            @NonNull final Integer[] kind) {
+        assert evaluator != null;
+        assert propName != null;
+        assert kind != null && kind.length == 1;
         String value = evaluator.getProperty( propName );
         boolean isSelected = false;
         if (value == null) {
-            isSelected = true;
+            isSelected = defaultValue;
         }
         else {
            String lowercaseValue = value.toLowerCase();

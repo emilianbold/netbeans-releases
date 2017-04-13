@@ -120,7 +120,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                 enableJLink();
             }
         });
+        uiProperties.JLINK_MODEL.setMnemonic(jlink.getMnemonic());
         jlink.setModel(new ButtonModelDecorator(uiProperties.JLINK_MODEL));
+        uiProperties.JLINK_STRIP_MODEL.setMnemonic(jlinkStrip.getMnemonic());
         jlinkStrip.setModel(new ButtonModelDecorator(uiProperties.JLINK_STRIP_MODEL));
         enableJLink();
         doJarCheckBox.addActionListener((e)->{

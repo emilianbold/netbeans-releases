@@ -60,12 +60,6 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     
     public CustomizerJar( J2SEModularProjectProperties uiProperties ) {
         initComponents();
-        
-        // NOT APPLICABLE FOR J2SEMODULARPROJECT
-        distDirLabel.setVisible(false);
-        distDirField.setVisible(false);
-        copyLibs.setVisible(false);
-
         int nextExtensionYPos = 0;
         this.project = uiProperties.getProject();
 //        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
@@ -77,8 +71,6 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 //            }
 //        }
         addPanelFiller(nextExtensionYPos);
-        
-        distDirField.setDocument(uiProperties.DIST_JAR_MODEL);
         excludeField.setDocument(uiProperties.BUILD_CLASSES_EXCLUDES_MODEL);
 
         uiProperties.JAR_COMPRESS_MODEL.setMnemonic(compressCheckBox.getMnemonic());
@@ -87,8 +79,20 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         uiProperties.DO_JAR_MODEL.setMnemonic(doJarCheckBox.getMnemonic());
         doJarCheckBox.setModel(uiProperties.DO_JAR_MODEL);
 
-        uiProperties.COPY_LIBS_MODEL.setMnemonic(copyLibs.getMnemonic());
-        copyLibs.setModel(uiProperties.COPY_LIBS_MODEL);
+        uiProperties.JLINK_MODEL.setMnemonic(jlink.getMnemonic());
+        jlink.setModel(uiProperties.JLINK_MODEL);
+        uiProperties.JLINK_STRIP_MODEL.setMnemonic(jlinkStrip.getMnemonic());
+        jlinkStrip.setModel(uiProperties.JLINK_STRIP_MODEL);
+        doJarCheckBox.addActionListener((e)->{
+            if (!doJarCheckBox.isSelected()) {
+                jlink.setSelected(false);
+            }
+        });
+        jlink.addActionListener((e)->{
+            if(jlink.isSelected()) {
+                doJarCheckBox.setSelected(true);
+            }
+        });
     }
 
     @Override
@@ -101,22 +105,18 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         java.awt.GridBagConstraints gridBagConstraints;
 
         mainPanel = new javax.swing.JPanel();
-        distDirLabel = new javax.swing.JLabel();
-        distDirField = new javax.swing.JTextField();
         excludeLabel = new javax.swing.JLabel();
         excludeField = new javax.swing.JTextField();
         excludeMessage = new javax.swing.JLabel();
         compressCheckBox = new javax.swing.JCheckBox();
         doJarCheckBox = new javax.swing.JCheckBox();
-        copyLibs = new javax.swing.JCheckBox();
+        jlink = new javax.swing.JCheckBox();
+        jlinkStrip = new javax.swing.JCheckBox();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        distDirLabel.setLabelFor(distDirField);
-        org.openide.awt.Mnemonics.setLocalizedText(distDirLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_DistDir_JTextField")); // NOI18N
-
-        distDirField.setEditable(false);
+        mainPanel.setPreferredSize(new java.awt.Dimension(427, 200));
 
         excludeLabel.setLabelFor(excludeField);
         org.openide.awt.Mnemonics.setLocalizedText(excludeLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Excludes_JTextField")); // NOI18N
@@ -129,58 +129,56 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(doJarCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "CustomizerJar.doJarCheckBox")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(copyLibs, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_CopyLibraries")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jlink, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLink")); // NOI18N
+        jlink.setActionCommand("Create J&LINK Distribution");
+
+        org.openide.awt.Mnemonics.setLocalizedText(jlinkStrip, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLinkStrip")); // NOI18N
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 404, Short.MAX_VALUE)
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(mainPanelLayout.createSequentialGroup()
-                    .addGap(0, 0, 0)
-                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(compressCheckBox)
-                        .addGroup(mainPanelLayout.createSequentialGroup()
-                            .addComponent(doJarCheckBox)
-                            .addGap(245, 245, 245))
-                        .addComponent(copyLibs)
-                        .addGroup(mainPanelLayout.createSequentialGroup()
-                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(excludeLabel)
-                                .addComponent(distDirLabel))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addComponent(excludeLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(mainPanelLayout.createSequentialGroup()
                                 .addComponent(excludeMessage)
-                                .addComponent(excludeField, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-                                .addComponent(distDirField, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))))
-                    .addGap(0, 0, 0)))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(excludeField, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)))
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jlink, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(mainPanelLayout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(jlinkStrip))
+                            .addComponent(compressCheckBox)
+                            .addComponent(doJarCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 161, Short.MAX_VALUE)
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(mainPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(distDirLabel)
-                        .addComponent(distDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(excludeLabel)
-                        .addComponent(excludeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(excludeMessage)
-                    .addGap(8, 8, 8)
-                    .addComponent(compressCheckBox)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(doJarCheckBox)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(copyLibs)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(excludeLabel)
+                    .addComponent(excludeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(excludeMessage)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(compressCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(doJarCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jlink)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jlinkStrip)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        distDirField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldDistDir")); // NOI18N
         excludeField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldExcludes")); // NOI18N
         compressCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jCheckBoxCompress")); // NOI18N
         doJarCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJar.class, "ACSD_BuildJarAfterCompile")); // NOI18N
@@ -207,14 +205,13 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox compressCheckBox;
-    private javax.swing.JCheckBox copyLibs;
-    private javax.swing.JTextField distDirField;
-    private javax.swing.JLabel distDirLabel;
     private javax.swing.JCheckBox doJarCheckBox;
     private javax.swing.JTextField excludeField;
     private javax.swing.JLabel excludeLabel;
     private javax.swing.JLabel excludeMessage;
     private javax.swing.JPanel extPanel;
+    private javax.swing.JCheckBox jlink;
+    private javax.swing.JCheckBox jlinkStrip;
     private javax.swing.JPanel mainPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -247,5 +244,4 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                 new Dimension(10000,10000) ),
                 constraints);
     }
-
 }
