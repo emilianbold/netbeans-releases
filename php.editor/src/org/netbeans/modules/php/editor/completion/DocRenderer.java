@@ -330,6 +330,9 @@ final class DocRenderer {
                     Identifier paramId = CodeUtils.extractUnqualifiedIdentifier(param.getParameterType());
                     if (paramId != null) {
                         header.type(true);
+                        if (param.isNullableType()) {
+                            header.appendText(CodeUtils.NULLABLE_TYPE_PREFIX);
+                        }
                         header.appendText(paramId.getName() + " "); //NOI18N
                         header.type(false);
                     }

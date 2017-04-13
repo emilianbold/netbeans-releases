@@ -271,6 +271,7 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
 
         private void checkScalarTypes(List<FormalParameter> formalParameters) {
             for (FormalParameter formalParameter : formalParameters) {
+                // nullable types are checked in PHP71UnhandledError, so just ignore "?"
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
                 if (typeName != null
                         && TYPES_FOR_SOURCES.contains(typeName)) {

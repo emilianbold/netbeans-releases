@@ -37,43 +37,45 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+package org.netbeans.modules.php.editor.codegen;
 
-/**
- * Holds a Nullable Type(PHP7.1+)<br>
- * uses for return type and parameter type.
- * <pre>e.g.
- * ?int,
- * ?MyClass,
- * ?\My\Foo
- * </pre>
- */
-public class NullableType extends Expression {
+import java.util.List;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.php.editor.NavUtils;
+import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 
-    private final Expression type;
+public class SemiAttributeTest extends PHPNavTestBase {
 
-    public NullableType(int start, int end, Expression expression) {
-        super(start, end);
-        this.type = expression; // Identifier, NamespaceName
+    public SemiAttributeTest(String testName) {
+        super(testName);
     }
 
-    /**
-     * Get the type.
-     *
-     * @return Identifer or NamespaceName
-     */
-    public Expression getType() {
-        return type;
+    public void testGetElementsNullableTypes01() throws Exception {
+        String code
+                = "<?php\n"
+                + "class NullableTypes {\n"
+                + "    public function test(?Nullabl|eTypes $nullableType) {\n"
+                + "        \n"
+                + "    }\n"
+                + "}\n";
+        final int offset = code.indexOf('|');
+        code = code.replace("|", "");
+        performTest(new String[]{code}, new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                ParserResult info = (ParserResult) resultIterator.getParserResult();
+                List<ASTNode> nodes = NavUtils.underCaret(info, offset);
+                SemiAttribute semiAttribute = SemiAttribute.semiAttribute(info);
+                ASTNode node = nodes.get(nodes.size() - 1);
+                assertTrue(node instanceof Identifier);
+                SemiAttribute.AttributedElement element = semiAttribute.getElement(node);
+                assertNotNull(element);
+                assertEquals("NullableTypes", element.getName());
+            }
+        }, false);
     }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return "?" + getType(); // NOI18N
-    }
-
 }

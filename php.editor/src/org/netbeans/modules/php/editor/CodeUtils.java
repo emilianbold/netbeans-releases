@@ -232,7 +232,7 @@ public final class CodeUtils {
 
     @CheckForNull
     public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
-        Parameters.notNull("typeName", typeName);
+        Parameters.notNull("typeName", typeName); // NOI18N
         if (typeName instanceof Identifier) {
             return (Identifier) typeName;
         } else if (typeName instanceof NamespaceName) {
@@ -242,18 +242,29 @@ public final class CodeUtils {
             return extractUnqualifiedIdentifier(v.getName()); // #167863
         } else if (typeName instanceof FieldAccess) {
             return extractUnqualifiedIdentifier(((FieldAccess) typeName).getField()); // #167863
+        } else if (typeName instanceof NullableType) {
+            return extractUnqualifiedIdentifier(((NullableType) typeName).getType());
         }
         //TODO: php5.3 !!!
         //assert false : typeName.getClass(); //NOI18N
         return null;
     }
 
+    /**
+     * Extract unqualified name for Identifier, NamespaceName, and NullableType.
+     *
+     * @param typeName The type name
+     * @return The type name. If it is a nullable type, the name is returned with "?"
+     */
+    @CheckForNull
     public static String extractUnqualifiedName(Expression typeName) {
-        Parameters.notNull("typeName", typeName);
+        Parameters.notNull("typeName", typeName); // NOI18N
         if (typeName instanceof Identifier) {
             return ((Identifier) typeName).getName();
         } else if (typeName instanceof NamespaceName) {
             return extractUnqualifiedName((NamespaceName) typeName);
+        } else if (typeName instanceof NullableType) {
+            return NULLABLE_TYPE_PREFIX + extractUnqualifiedName(((NullableType) typeName).getType());
         }
 
         //TODO: php5.3 !!!
@@ -267,6 +278,7 @@ public final class CodeUtils {
      * @param typeName The type name
      * @return The type name. If it is a nullable type, the name is returned with "?"
      */
+    @CheckForNull
     public static String extractQualifiedName(Expression typeName) {
         Parameters.notNull("typeName", typeName); // NOI18N
         if (typeName instanceof Identifier) {

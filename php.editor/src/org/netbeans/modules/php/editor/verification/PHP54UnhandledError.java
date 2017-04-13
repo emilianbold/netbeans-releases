@@ -245,6 +245,7 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
 
         private boolean checkCallableType(List<FormalParameter> formalParameters) {
             for (FormalParameter formalParameter : formalParameters) {
+                // nullable types are checked in PHP71UnhandledError, so just ignore "?"
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
                 if (Type.CALLABLE.equals(typeName)) {
                     createError(formalParameter);
