@@ -391,6 +391,18 @@ public final class ProjectProperties {
     public static final String DO_DEPEND = "do.depend"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
     public static final String DO_JAR = "do.jar"; // NOI18N
+    /** @since 1.119 */
+    public static final String DO_JLINK ="do.jlink"; // NOI18N
+    /** @since 1.119 */
+    public static final String JLINK_STRIP ="jlink.strip"; // NOI18N
+    /** @since 1.119 */
+    public static final String DIST_JLINK_DIR="dist.jlink.dir";
+    /** @since 1.119 */
+    public static final String DIST_JLINK_OUTPUT="dist.jlink.output";   //NOI18N
+    /** @since 1.119 */
+    public static final String JLINK_ADDITIONALMODULES="jlink.additionalmodules"; //NOI18N
+    /** @since 1.119 */
+    public static final String JLINK_ADDITIONALPARAM="jlink.additionalparam"; //NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.21 */
     public static final String COMPILE_ON_SAVE = "compile.on.save"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.19 */

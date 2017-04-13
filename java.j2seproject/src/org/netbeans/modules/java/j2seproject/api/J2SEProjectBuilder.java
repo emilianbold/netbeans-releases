@@ -582,6 +582,21 @@ public class J2SEProjectBuilder {
         ep.setProperty(J2SEProjectProperties.JAVAC_EXTERNAL_VM, "true");    //NOI18N
         //Modules
         createDefaultModuleProperties(ep, !skipTests);
+        //JLink
+        ep.setProperty(ProjectProperties.DIST_JLINK_DIR, "${"+ProjectProperties.DIST_DIR+"}/jlink");
+        ep.setProperty(ProjectProperties.DIST_JLINK_OUTPUT, "${"+ProjectProperties.DIST_JLINK_DIR+"}/"+PropertyUtils.getUsablePropertyName(name));
+        ep.setProperty(ProjectProperties.JLINK_ADDITIONALMODULES, "");
+        ep.setComment(ProjectProperties.JLINK_ADDITIONALMODULES,
+                new String[] {
+                    "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_jlink.additionalmodules") //NOI18N
+                },
+                false);
+        ep.setProperty(ProjectProperties.JLINK_ADDITIONALPARAM, "");
+        ep.setComment(ProjectProperties.JLINK_ADDITIONALPARAM,
+                new String[] {
+                    "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_jlink.additionalparam") //NOI18N
+                },
+                false);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
