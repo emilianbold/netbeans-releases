@@ -2341,7 +2341,7 @@ is divided into following sections:
                 </xsl:choose>
                 <exec executable="${{platform.jlink}}">
                     <arg value="--module-path"/>
-                    <arg value="${{jlink.systemmodules.internal}}:${{run.modulepath}}:${{dist.jar}}"/>
+                    <arg path="${{jlink.systemmodules.internal}}:${{run.modulepath}}:${{dist.jar}}"/>
                     <arg value="--add-modules"/>
                     <arg value="${{jlink.add.modules}}"/>
                     <arg value="--strip-debug" if:set="jlink.do.strip.internal"/>
