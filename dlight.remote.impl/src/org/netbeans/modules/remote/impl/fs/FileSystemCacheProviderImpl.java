@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.openide.modules.Places;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -57,12 +60,21 @@ public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
 
     @Override
     protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
-        String hostId = EnvUtils.toHostID(executionEnvironment);
-        String userId = executionEnvironment.getUser();
+        String hostId = escape(EnvUtils.toHostID(executionEnvironment));
+        String userId = escape(executionEnvironment.getUser());
         String prefix = Places.getCacheSubdirectory("remote-files").getAbsolutePath().replace('\\', '/'); // NOI18N
         String postfix = "/" + hostId + '_' + userId + '/'; // NOI18N
         postfix = postfix.replace(':', '_'); // paranoia? see iz #256627
         String path = prefix + postfix;
         return path;
+    }
+
+    private static String escape(String text) {
+        try {
+            return URLEncoder.encode(text, "UTF-8"); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            return text.replace(" ", "\\ "); // NOI18N
+        }
     }
 }

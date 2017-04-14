@@ -65,16 +65,17 @@ public class RemoteFileUrlMapper extends URLMapper {
     public FileObject[] getFileObjects(URL url) {
         if (url.getProtocol().equals(RemoteFileURLStreamHandler.PROTOCOL)) {
             ExecutionEnvironment env;
-            String user = url.getUserInfo();
+            String user = PathUtilities.unescapePath(url.getUserInfo());
+            String host = PathUtilities.unescapePath(url.getHost());
             if (user != null) {
-                env = ExecutionEnvironmentFactory.createNew(user, url.getHost(), url.getPort());
+                env = ExecutionEnvironmentFactory.createNew(user, host, url.getPort());
             } else {
                 RemoteLogger.assertTrue(false, "Trying to access remote file system without user name");
-                env = RemoteFileSystemUtils.getExecutionEnvironment(url.getHost(), url.getPort());
+                env = RemoteFileSystemUtils.getExecutionEnvironment(host, url.getPort());
                 if (env == null) {
                     user = System.getProperty("user.name");
                     if (user != null) {
-                        env = ExecutionEnvironmentFactory.createNew(user, url.getHost(), url.getPort());
+                        env = ExecutionEnvironmentFactory.createNew(user, host, url.getPort());
                     }
                 }
             }
@@ -119,7 +120,7 @@ public class RemoteFileUrlMapper extends URLMapper {
          */
         StringBuilder sb = new StringBuilder(RemoteFileURLStreamHandler.PROTOCOL);
         sb.append("://"); // NOI18N
-        sb.append(env.getUser()).append('@').append(env.getHost());
+        sb.append(PathUtilities.escapePathForUseInURL(env.getUser())).append('@').append(PathUtilities.escapePathForUseInURL(env.getHost()));
         sb.append(':').append(env.getSSHPort()).append(PathUtilities.escapePathForUseInURL(path));
         if (folder && !(path.endsWith("/"))) { // NOI18N
             sb.append('/'); // NOI18N

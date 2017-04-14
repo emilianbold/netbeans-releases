@@ -79,6 +79,14 @@ public class RemoteUtil {
             this.prefix = prefix;
         }
 
+        public void log(Level level, Throwable exception, String format, Object... args) {
+            if (LOGGER.isLoggable(level)) {
+                String text = String.format(format, args);
+                text = prefix + ": " + text; // NOI18N
+                LOGGER.log(level, text, exception);
+            }
+        }
+
         public void log(Level level, String format, Object... args) {
             if (LOGGER.isLoggable(level)) {
                 String text = String.format(format, args);

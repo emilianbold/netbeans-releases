@@ -484,9 +484,9 @@ import org.openide.util.Utilities;
         } catch (InterruptedIOException | InterruptedException ex) {
             // nothing
         } catch (IOException ex) {
-            logger.log(Level.INFO, "Error discovering newer files at remote host", ex); //NOI18N
+            logger.log(Level.INFO, ex, "Error discovering newer files at remote host"); //NOI18N
         } catch (ExecutionException ex) {
-            logger.log(Level.INFO, "Error discovering newer files at remote host", ex); //NOI18N
+            logger.log(Level.INFO, ex, "Error discovering newer files at remote host"); //NOI18N
         } catch (Throwable thr) {
             thr.printStackTrace(System.err); // this try-catch is only for instable test failures investigation
         }

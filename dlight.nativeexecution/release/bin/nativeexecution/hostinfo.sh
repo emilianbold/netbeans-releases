@@ -137,15 +137,16 @@ wx_fail() {
 
 USER=${USER:-`logname 2>/dev/null`}
 USER=${USER:-${USERNAME}}
+USER_D=`echo ${USER} | sed "s/\\\/_/"`
 TMPBASE=${TMPBASE:-/var/tmp}
 
 SUFFIX=0
-TMPDIRBASE=${TMPBASE}/dlight_${USER}
+TMPDIRBASE=${TMPBASE}/dlight_${USER_D}
 
 if wx_fail ${TMPBASE}; then
     if wx_fail ${TMPDIRBASE}; then
         TMPBASE=/tmp
-        TMPDIRBASE=${TMPBASE}/dlight_${USER}
+        TMPDIRBASE=${TMPBASE}/dlight_${USER_D}
     fi
 fi
 
@@ -154,7 +155,7 @@ while [ ${SUFFIX} -lt 5 ]; do
     if wx_fail ${TMPDIRBASE}; then
         echo "Warning: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
         SUFFIX=`expr 1 + ${SUFFIX}`
-        TMPDIRBASE=${TMPBASE}/dlight_${USER}_${SUFFIX}
+        TMPDIRBASE=${TMPBASE}/dlight_${USER_D}_${SUFFIX}
         /bin/mkdir -p ${TMPDIRBASE} 2>/dev/null
     else
         break
