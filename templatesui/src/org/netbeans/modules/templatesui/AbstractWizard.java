@@ -205,7 +205,19 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
-        return getPanels().get(index);
+        WizardDescriptor.Panel<WizardDescriptor> ret = getPanels().get(index);
+        if (ret.getComponent() != p) {
+            if (ret.getComponent() instanceof JComponent) {
+                JComponent update = (JComponent) ret.getComponent();
+                update.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA,
+                    p.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA)
+                );
+                update.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                    p.getClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX)
+                );
+            }
+        }
+        return ret;
     }
 
     @NbBundle.Messages({
@@ -259,14 +271,19 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         }
     }
     
-    private void fireChange() {
-        ChangeListener l;
+    final void fireChange() {
+        final ChangeListener l;
         synchronized (this) {
             l = this.listener;
             notifyAll();
         }
         if (l != null) {
-            l.stateChanged(new ChangeEvent(this));
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    l.stateChanged(new ChangeEvent(this));
+                }
+            });
         }
     }
 
@@ -448,7 +465,6 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                 names.add(id);
             }
             stepNames = new ArrayList<>(names);
-            names.add(0, Bundle.LBL_TemplatesPanel_Name());
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
