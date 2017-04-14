@@ -453,7 +453,6 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                 names.add(id);
             }
             stepNames = new ArrayList<>(names);
-            names.add(0, Bundle.LBL_TemplatesPanel_Name());
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
