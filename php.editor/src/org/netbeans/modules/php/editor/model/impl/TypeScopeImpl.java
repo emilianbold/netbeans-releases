@@ -93,8 +93,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
             String ifaceName = CodeUtils.extractQualifiedName(identifier);
-            ifaces.put(ifaceName, null);
-            fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
+            if (ifaceName != null) {
+                ifaces.put(ifaceName, null);
+                fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
+            }
         }
     }
 
@@ -103,8 +105,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
             String ifaceName = CodeUtils.extractQualifiedName(identifier);
-            ifaces.put(ifaceName, null);
-            fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
+            if (ifaceName != null) {
+                ifaces.put(ifaceName, null);
+                fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
+            }
         }
     }
 
@@ -113,8 +117,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
             String ifaceName = CodeUtils.extractQualifiedName(identifier);
-            ifaces.put(ifaceName, null);
-            fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
+            if (ifaceName != null) {
+                ifaces.put(ifaceName, null);
+                fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
+            }
         }
     }
 
