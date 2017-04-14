@@ -259,14 +259,19 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         }
     }
     
-    private void fireChange() {
-        ChangeListener l;
+    final void fireChange() {
+        final ChangeListener l;
         synchronized (this) {
             l = this.listener;
             notifyAll();
         }
         if (l != null) {
-            l.stateChanged(new ChangeEvent(this));
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    l.stateChanged(new ChangeEvent(this));
+                }
+            });
         }
     }
 
