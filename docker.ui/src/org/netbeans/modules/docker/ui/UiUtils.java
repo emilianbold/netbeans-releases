@@ -224,6 +224,9 @@ public final class UiUtils {
     }
     
     public static String normalizePath(String path) {
+        if (path == null) {
+            return null;
+        }
         return path.replace('\\', '/');
     }
 }
