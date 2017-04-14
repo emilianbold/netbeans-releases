@@ -62,11 +62,21 @@ import org.openide.util.Lookup;
  */
 public class InvalidFileObjectSupportTest {
 
-    static {        
+    static {
         // otherwise we get java.net.MalformedURLException: unknown protocol
         // even if we register via @URLStreamHandlerRegistration annotation
         URL.setURLStreamHandlerFactory(Lookup.getDefault().lookup(URLStreamHandlerFactory.class));
     }    
+
+    @Test
+    public void testInvalidFileObjectURL() throws Exception {
+        // see #270390 - StackOverflowError at java.io.UnixFileSystem.getBooleanAttributes
+        FileSystem dummyFS = InvalidFileObjectSupport.getDummyFileSystem();
+        FileObject invalidFO = InvalidFileObjectSupport.getInvalidFileObject(dummyFS, "/inexistent");
+        final URL url = invalidFO.getURL();
+        FileObject foundFO = URLMapper.findFileObject(url);
+        //assertEquals("Invalid and found by URL ", invalidFO, foundFO);
+    }
 
     @Test
     public void testInvalidFileObject() throws Exception {
@@ -84,8 +94,10 @@ public class InvalidFileObjectSupportTest {
         }
         FileObject invalidFo1 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
         URI uri1 = invalidFo1.toURI(); // just to check that there is no assertions
+        URL url1 = invalidFo1.toURL(); // just to check that there is no assertions
         FileObject invalidFo2 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
         URI uri2 = invalidFo2.toURI(); // just to check that there is no assertions
+        URL url2 = invalidFo2.toURL(); // just to check that there is no assertions
         assertTrue(invalidFo1 == invalidFo2);
         assertFalse(invalidFo1.isValid());
         assertEquals(origFo.getName(), invalidFo1.getName());
