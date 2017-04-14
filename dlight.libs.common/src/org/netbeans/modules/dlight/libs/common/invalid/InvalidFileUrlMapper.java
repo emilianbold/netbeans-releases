@@ -40,7 +40,9 @@
 package org.netbeans.modules.dlight.libs.common.invalid;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -54,9 +56,17 @@ import org.openide.util.Exceptions;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.openide.filesystems.URLMapper.class)
 public class InvalidFileUrlMapper extends URLMapper {
-    
+
     @Override
     public FileObject[] getFileObjects(URL url) {
+// Let's better return null - it's more likely that clients process it properly than an invalid
+//        if (url.getProtocol().equals(InvalidFileURLStreamHandler.PROTOCOL)) {
+//            String path = unescapePath(url);
+//            FileObject fo = InvalidFileObjectSupport.getInvalidFileObject(InvalidFileObjectSupport.getDummyFileSystem(), path);
+//            if (fo != null) {
+//                return new FileObject[] { fo };
+//            }
+//        }
         return null;
     }
 
@@ -69,7 +79,12 @@ public class InvalidFileUrlMapper extends URLMapper {
                 // even if the file is already created.
                 // So we'll try creating a "real" URL
                 FileSystem fs = fo.getFileSystem();
-                String root = fs.getRoot().toURL().toExternalForm();
+                String root;
+                if (fs == InvalidFileObjectSupport.getDummyFileSystem()) {
+                    root = InvalidFileURLStreamHandler.PROTOCOL_PREFIX;
+                } else {                    
+                    root = fs.getRoot().toURL().toExternalForm();
+                }
                 String path = PathUtilities.escapePathForUseInURL(fo.getPath());
                 String res;
                 if (root.endsWith("/")) { // NOI18N
@@ -84,4 +99,17 @@ public class InvalidFileUrlMapper extends URLMapper {
         }
         return null;
     }    
+    
+//    private static String unescapePath(URL url) {
+//        String path = url.getFile();
+//        if (path.contains("%")) { //NOI18N
+//            try {
+//                return url.toURI().getPath();
+//            } catch (URISyntaxException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//        return path;
+//    }
+    
 }
