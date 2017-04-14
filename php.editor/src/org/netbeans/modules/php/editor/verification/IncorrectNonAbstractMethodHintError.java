@@ -172,8 +172,11 @@ public class IncorrectNonAbstractMethodHintError extends HintErrorRule {
         @Override
         public void implement() throws Exception {
             EditList edhitList = new EditList(doc);
-            int removeLength = ";".length(); // NOI18N
-            edhitList.replace(methodDeclaration.getEndOffset() - removeLength, removeLength, "{}", true, 0); // NOI18N
+            int startOffset = methodDeclaration.getStartOffset();
+            int textLength = methodDeclaration.getEndOffset() - methodDeclaration.getStartOffset();
+            String text = doc.getText(startOffset, textLength);
+            String insertText = text.substring(0, textLength - 1) + "{}"; // NOI18N
+            edhitList.replace(startOffset, textLength, insertText, true, 0);
             edhitList.apply();
         }
 

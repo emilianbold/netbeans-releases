@@ -82,6 +82,22 @@ public class IncorrectNonAbstractMethodHintErrorTest extends PHPHintsTestBase {
         applyHint(new IncorrectNonAbstractMethodHintError(), "IncorrectNonAbstractMethod/testIncorrectNonAbstractMethodHint.php", "public function ^testTrait();", "Add body of the method");
     }
 
+    public void testIssue270385Fix01() throws Exception {
+        applyHint(new IncorrectNonAbstractMethodHintError(), "IncorrectNonAbstractMethod/testIssue270385.php", "private function tes^tMethod1();", "Add body of the method");
+    }
+
+    public void testIssue270385Fix02() throws Exception {
+        applyHint(new IncorrectNonAbstractMethodHintError(), "IncorrectNonAbstractMethod/testIssue270385.php", "private function te^stMethod2(): ?array;", "Add body of the method");
+    }
+
+    public void testIssue270385Fix03() throws Exception {
+        applyHint(new IncorrectNonAbstractMethodHintError(), "IncorrectNonAbstractMethod/testIssue270385.php", "private function tes^tMethod3();", "Add body of the method");
+    }
+
+    public void testIssue270385Fix04() throws Exception {
+        applyHint(new IncorrectNonAbstractMethodHintError(), "IncorrectNonAbstractMethod/testIssue270385.php", "private function tes^tMethod4(): string", "Add body of the method");
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
