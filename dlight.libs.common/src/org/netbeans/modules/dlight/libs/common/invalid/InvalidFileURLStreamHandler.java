@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,45 +36,28 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.libs.common.invalid;
 
-package org.netbeans.modules.remote.impl.fs;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
-import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
-import org.openide.modules.Places;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import org.openide.util.URLStreamHandlerRegistration;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author vkvashin
  */
-@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemCacheProvider.class, position=100)
-public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
+@URLStreamHandlerRegistration(protocol="invalid")
+public class InvalidFileURLStreamHandler extends URLStreamHandler {
+
+    public static final String PROTOCOL = "invalid"; //NOI18N
+    public static final String PROTOCOL_PREFIX = "invalid:/"; //NOI18N
 
     @Override
-    protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
-        String hostId = escape(EnvUtils.toHostID(executionEnvironment));
-        String userId = escape(executionEnvironment.getUser());
-        String prefix = Places.getCacheSubdirectory("remote-files").getAbsolutePath().replace('\\', '/'); // NOI18N
-        String postfix = "/" + hostId + '_' + userId + '/'; // NOI18N
-        postfix = postfix.replace(':', '_'); // paranoia? see iz #256627
-        String path = prefix + postfix;
-        return path;
-    }
-
-    private static String escape(String text) {
-        try {
-            return URLEncoder.encode(text, "UTF-8"); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
-            return text.replace(" ", "\\ "); // NOI18N
-        }
-    }
+    protected URLConnection openConnection(URL u) throws IOException {
+        throw new FileNotFoundException(u.toString());
+    }    
 }
