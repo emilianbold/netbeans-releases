@@ -336,6 +336,22 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion(getTestPath("typingParameterType12"), "public function mytest(?string $test, ?^);", false);
     }
 
+    public void testSanitizedNullableTypes_TypingParameterType01() throws Exception {
+        checkCompletion(getTestPath("typingParameterType01"), "public function mytest(?ASaniti^);", false);
+    }
+
+    public void testSanitizedNullableTypes_TypingParameterType02() throws Exception {
+        checkCompletion(getTestPath("typingParameterType02"), "public function mytest(?BSanitizing $sanitizing, ?BSanit^);", false);
+    }
+
+    public void testSanitizedNullableTypes_TypingParameterType03() throws Exception {
+        checkCompletion(getTestPath("typingParameterType03"), "public function mytest(?CSaniti^ , ?CSanitizing $sanitizing);", false);
+    }
+
+    public void testSanitizedNullableTypes_TypingParameterType04() throws Exception {
+        checkCompletion(getTestPath("typingParameterType04"), "public function mytest(?DSanitizing $sanitizing1,?DSan^ , ?DSanitizing $sanitizing3);", false);
+    }
+
     // Multi Catch
     public void testMultiCatch_UnqualifiedName01() throws Exception {
         checkCompletion(getTestPath("unqualifiedName"), "} catch (^ExceptionType1 | ExceptionType2 $e) {", false);

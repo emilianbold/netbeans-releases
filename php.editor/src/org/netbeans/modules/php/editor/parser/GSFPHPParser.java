@@ -340,10 +340,36 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     return false;
                 }
 
+                // check "," and "?"
+                // e.g. function method(Class1 , Class2 $class2) {
+                // function method(Class1 $class1,?Class2 Class3 $class3) {
+                int currentEnd = error.getCurrentToken().right;
+                int currentStart = error.getCurrentToken().left;
+                String currentReplace = source.substring(currentStart, currentEnd);
+                boolean removeComma = true;
+                if (currentReplace.equals(",")) { // NOI18N
+                    end = currentEnd;
+                    removeComma = false;
+                } else if (CodeUtils.NULLABLE_TYPE_PREFIX.equals(currentReplace)) {
+                    removeComma = false;
+                }
+
                 // check nullable type prefix(?)
                 if (CodeUtils.NULLABLE_TYPE_PREFIX.equals(replace)) {
-                    start = sanitizingStartPositionForNullableTypes(start, source);
+                    start = sanitizingStartPositionForNullableTypes(start, source, removeComma);
+                } else {
+                    for (int i = start - 1; i >= 0; i--) {
+                        char c = source.charAt(i);
+                        if (c != '?' && c != ' ') {
+                            break;
+                        }
+                        if (c == '?') {
+                            start = sanitizingStartPositionForNullableTypes(i, source, removeComma);
+                            break;
+                        }
+                    }
                 }
+
                 context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
                 return true;
             }
@@ -416,7 +442,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         return false;
     }
 
-    private int sanitizingStartPositionForNullableTypes(int start, String source) {
+    private int sanitizingStartPositionForNullableTypes(int start, String source, boolean removeComma) {
         // e.g.
         // function name() : ? {
         // function name(string $id, ?)
@@ -431,7 +457,10 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 case '\t':
                     targetPosition--;
                     break;
-                case ',': // no break
+                case ',':
+                    if (!removeComma) {
+                        break;
+                    }
                 case ':':
                     found = true;
                     targetPosition--;

@@ -234,6 +234,26 @@ public class SanitizeSourceTest extends ParserTestBase {
         performTest("sanitize/nullableTypes11");
     }
 
+    public void testNullableTypePrefix12() throws Exception {
+        performTest("sanitize/nullableTypes12");
+    }
+
+    public void testNullableTypePrefix13() throws Exception {
+        performTest("sanitize/nullableTypes13");
+    }
+
+    public void testNullableTypePrefix14() throws Exception {
+        performTest("sanitize/nullableTypes14");
+    }
+
+    public void testNullableTypePrefix15() throws Exception {
+        performTest("sanitize/nullableTypes15");
+    }
+
+    public void testNullableTypePrefix16() throws Exception {
+        performTest("sanitize/nullableTypes16");
+    }
+
     protected String getTestResult(String filename) throws Exception {
         return getTestResult(filename, null);
     }
