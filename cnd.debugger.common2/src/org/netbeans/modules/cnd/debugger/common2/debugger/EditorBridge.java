@@ -380,7 +380,7 @@ public final class EditorBridge {
             if (focus) {
                 line.show (Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
             }            
-            if ("true".equalsIgnoreCase(fronting)) {
+            if ("true".equalsIgnoreCase(fronting)) {//NOI18N
                 line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FRONT); //FIX 47825
             }
             addPositionToJumpList(line, 0);       

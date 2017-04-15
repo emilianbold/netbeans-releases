@@ -747,6 +747,8 @@ public class DockerAction {
                     os.write(request.toString().getBytes("ISO-8859-1"));
                     os.flush();
 
+                    buildListener.onEvent(new BuildEvent(instance, request.toString(), false, null, false));
+
                     // FIXME should we allow \ as separator as that would be formally
                     // separator on windows without possibility to escape anything
                     // If we would allow that we have to use File comparison

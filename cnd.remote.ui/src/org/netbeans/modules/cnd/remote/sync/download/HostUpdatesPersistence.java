@@ -48,6 +48,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.modules.cnd.remote.utils.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -71,7 +72,10 @@ class HostUpdatesPersistence {
     public HostUpdatesPersistence(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
         super();
         data = new Properties();
-        String dataFileName = "downloads-" + executionEnvironment.getHost() + '-' + executionEnvironment.getUser() + '-' + executionEnvironment.getSSHPort(); // NOI18N
+        String dataFileName = "downloads-" + // NOI18N
+                RemoteUtil.hostNameToLocalFileName(executionEnvironment.getHost()) + 
+                '-' + RemoteUtil.hostNameToLocalFileName(executionEnvironment.getUser()) + 
+                '-' + executionEnvironment.getSSHPort(); // NOI18N
         //NOI18N
         dataFile = FileUtil.createData(privProjectStorageDir, dataFileName);
         try {
