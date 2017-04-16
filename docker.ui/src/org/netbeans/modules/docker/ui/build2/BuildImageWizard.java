@@ -172,8 +172,8 @@ public class BuildImageWizard {
         if (dockerfile != null && dockerfile.isData()) {
             wiz.putProperty(BUILD_CONTEXT_PROPERTY, dockerfile.getParent().getPath());
             wiz.putProperty(DOCKERFILE_PROPERTY, dockerfile.getName());
-            wiz.putProperty(FILESYSTEM_PROPERTY, fileSystem);
         }
+        wiz.putProperty(FILESYSTEM_PROPERTY, fileSystem);
 
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             Boolean pull = (Boolean) wiz.getProperty(PULL_PROPERTY);
