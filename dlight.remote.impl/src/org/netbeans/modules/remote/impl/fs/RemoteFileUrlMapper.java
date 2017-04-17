@@ -141,11 +141,11 @@ public class RemoteFileUrlMapper extends URLMapper {
     }
     
     public static String escapeUserIfNeed(String user) {
-        return PathUtilities.escapePathForUseInURL(user);
+        return PathUtilities.escapeHostOrUserForUseInURL(user);
     }
 
     public static String escapeHostIfNeed(String host) {
-        return PathUtilities.escapePathForUseInURL(host);
+        return PathUtilities.escapeHostOrUserForUseInURL(host);
     }
 
     public static String unescapeUser(String user) {
