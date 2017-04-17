@@ -181,6 +181,34 @@ public class OccurrencesFinderImplPHP71Test extends OccurrencesFinderImplTestBas
         checkOccurrences(getTestPath(), "public function testInterfaceParameterType(?\\Test\\Sub\\TestClass $testClass, ?\\Test\\Sub\\TestInter^face $testInterface);", true);
     }
 
+    public void testNullableTypesInPhpDoc_01() throws Exception {
+        checkOccurrences(getTestPath(), " * @method ?\\PHP^DocTags testMethod2(?PHPDocTags $tags) Description", true);
+    }
+
+    public void testNullableTypesInPhpDoc_02() throws Exception {
+        checkOccurrences(getTestPath(), " * @method ?\\PHPDocTags testMethod2(?PHPDo^cTags $tags) Description", true);
+    }
+
+    public void testNullableTypesInPhpDoc_03() throws Exception {
+        checkOccurrences(getTestPath(), " * @property ?P^HPDocTags $test Description", true);
+    }
+
+    public void testNullableTypesInPhpDoc_04() throws Exception {
+        checkOccurrences(getTestPath(), "class PHPDocT^ags {", true);
+    }
+
+    public void testNullableTypesInPhpDoc_05() throws Exception {
+        checkOccurrences(getTestPath(), "@param ?PHPDoc^Tags $tags", true);
+    }
+
+    public void testNullableTypesInPhpDoc_06() throws Exception {
+        checkOccurrences(getTestPath(), "@return ?PHPDocT^ags", true);
+    }
+
+    public void testNullableTypesInPhpDoc_07() throws Exception {
+        checkOccurrences(getTestPath(), "public function testMethod(?^PHPDocTags $tags) {", true);
+    }
+
     public void testMultiCatch_01() throws Exception {
         checkOccurrences(getTestPath(), "class ^ExceptionType1 extends \\Exception {", true);
     }

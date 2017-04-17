@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.csl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -192,7 +193,8 @@ public final class NavigatorScanner {
 
     private boolean isDeprecatedType(String type, ModelElement modelElement) {
         boolean result = false;
-        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(type), modelElement.getOffset(), modelElement.getInScope());
+        String typeName = CodeUtils.removeNullableTypePrefix(type);
+        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), modelElement.getOffset(), modelElement.getInScope());
         for (TypeElement typeElement : deprecatedTypes) {
             if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
                 result = true;
@@ -371,17 +373,10 @@ public final class NavigatorScanner {
                                     if (i > 1) {
                                         formatter.appendText("|"); //NOI18N
                                     }
-                                    boolean deprecatedType = isDeprecatedType(typeName.toString(), function);
-                                    if (deprecatedType) {
-                                        formatter.deprecated(true);
-                                    }
                                     if (typeResolver.isNullableType()) {
                                         formatter.appendText(CodeUtils.NULLABLE_TYPE_PREFIX);
                                     }
-                                    formatter.appendText(typeName.toString());
-                                    if (deprecatedType) {
-                                        formatter.deprecated(false);
-                                    }
+                                    processTypeName(typeName.toString(), function, formatter);
                                 }
                             }
                         }
@@ -396,22 +391,39 @@ public final class NavigatorScanner {
 
         private void processReturnTypes(FunctionScope function, HtmlFormatter formatter, Collection<? extends String> returnTypes) {
             formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+
+            // ignore duplicate types e.g. ?MyClass, MyClass
+            HashSet<String> ignoredTypes = new HashSet<>();
+            returnTypes.stream().filter(returnType -> CodeUtils.isNullableType(returnType)).forEach(returnType -> {
+                ignoredTypes.add(returnType.substring(1));
+            });
+
             int i = 0;
             for (String type : returnTypes) {
-                i++;
-                if (i > 1) {
-                    formatter.appendText(", "); //NOI18N
-                }
-                boolean deprecatedType = isDeprecatedType(type.toString(), function);
-                if (deprecatedType) {
-                    formatter.deprecated(true);
-                }
-                formatter.appendText(type);
-                if (deprecatedType) {
-                    formatter.deprecated(false);
+                if (!ignoredTypes.contains(type)) {
+                    i++;
+                    if (i > 1) {
+                        formatter.appendText(", "); //NOI18N
+                    }
+                    processTypeName(type, function, formatter);
                 }
             }
             formatter.appendHtml(CLOSE_FONT);
+        }
+    }
+
+    private void processTypeName(String type, ModelElement element, HtmlFormatter formatter) {
+        if (CodeUtils.isNullableType(type)) {
+            formatter.appendText(CodeUtils.NULLABLE_TYPE_PREFIX);
+        }
+        String typeName = CodeUtils.removeNullableTypePrefix(type);
+        boolean deprecatedType = isDeprecatedType(typeName, element);
+        if (deprecatedType) {
+            formatter.deprecated(true);
+        }
+        formatter.appendText(typeName);
+        if (deprecatedType) {
+            formatter.deprecated(false);
         }
     }
 
@@ -457,14 +469,7 @@ public final class NavigatorScanner {
                     if (i > 1) {
                         formatter.appendText(", "); //NOI18N
                     }
-                    boolean deprecatedType = isDeprecatedType(type, field);
-                    if (deprecatedType) {
-                        formatter.deprecated(true);
-                    }
-                    formatter.appendText(type);
-                    if (deprecatedType) {
-                        formatter.deprecated(false);
-                    }
+                    processTypeName(type, field, formatter);
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }

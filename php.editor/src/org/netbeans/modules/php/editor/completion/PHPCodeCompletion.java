@@ -478,7 +478,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                     autoCompleteTypeNames(completionResult, request);
                     autoCompleteNamespaces(completionResult, request);
-                    autoCompleteKeywords(completionResult, request, Type.getTypesForPhpDoc());
+                    autoCompleteKeywordsInPHPDoc(completionResult, request);
                 }
                 break;
             case CLASS_CONTEXT_KEYWORDS:
@@ -962,6 +962,30 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             }
         }
 
+    }
+
+    private void autoCompleteKeywordsInPHPDoc(final PHPCompletionResult completionResult,
+            PHPCompletionItem.CompletionRequest request) {
+        if (CancelSupport.getDefault().isCancelled()) {
+            return;
+        }
+        BaseDocument doc = (BaseDocument) request.info.getSnapshot().getSource().getDocument(false);
+        if (doc == null) {
+            return;
+        }
+        try {
+            int start = request.anchor - 1;
+            if (start >= 0) {
+                String prefix = doc.getText(start, 1);
+                if (CodeUtils.NULLABLE_TYPE_PREFIX.equals(prefix)) {
+                    autoCompleteKeywords(completionResult, request, Type.getTypesForEditor());
+                } else {
+                    autoCompleteKeywords(completionResult, request, Type.getTypesForPhpDoc());
+                }
+            }
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, "Incorrect offset for the nullable type prefix: {0}", ex.offsetRequested()); // NOI18N
+        }
     }
 
     private void autoCompleteNamespaces(final PHPCompletionResult completionResult,

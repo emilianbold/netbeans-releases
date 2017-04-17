@@ -185,6 +185,36 @@ public class GotoDeclarationPHP71Test extends GotoDeclarationTestBase {
                 "interface ^TestInterface {}");
     }
 
+    public void testNullableTypesInPhpDoc_01() throws Exception {
+        checkDeclaration(getTestPath(),
+                " * @method ?\\PHPD^ocTags testMethod2(?PHPDocTags $tags) Description",
+                "class ^PHPDocTags {");
+    }
+
+    public void testNullableTypesInPhpDoc_02() throws Exception {
+        checkDeclaration(getTestPath(),
+                " * @method ?\\PHPDocTags testMethod2(?^PHPDocTags $tags) Description",
+                "class ^PHPDocTags {");
+    }
+
+    public void testNullableTypesInPhpDoc_03() throws Exception {
+        checkDeclaration(getTestPath(),
+                " * @property ?PH^PDocTags $test Description",
+                "class ^PHPDocTags {");
+    }
+
+    public void testNullableTypesInPhpDoc_04() throws Exception {
+        checkDeclaration(getTestPath(),
+                "@param ?PHP^DocTags $tags",
+                "class ^PHPDocTags {");
+    }
+
+    public void testNullableTypesInPhpDoc_05() throws Exception {
+        checkDeclaration(getTestPath(),
+                "@return ?PHPDocTags^",
+                "class ^PHPDocTags {");
+    }
+
     public void testNullableTypesFQN_13() throws Exception {
         checkDeclaration(getTestPath(), "public function testInterfaceReturnType(): ?\\Test\\Sub\\TestC^lass;", "class ^TestClass {}");
     }

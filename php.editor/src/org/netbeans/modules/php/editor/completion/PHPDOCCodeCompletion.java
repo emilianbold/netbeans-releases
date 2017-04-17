@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
@@ -94,7 +95,13 @@ public final class PHPDOCCodeCompletion {
         private boolean isTypeContext = true;
 
         @Override
-        public void call(String fetchedText) {
+        public void call(String fetchedTxt) {
+            // remove nullable type prefixes
+            String fetchedText = CodeUtils.removeNullableTypePrefix(fetchedTxt);
+            if (fetchedText.endsWith(CodeUtils.NULLABLE_TYPE_PREFIX)) {
+                fetchedText = fetchedText.substring(0, fetchedText.length() - 1);
+            }
+
             String trimmedText = fetchedText.trim();
             if (!trimmedText.isEmpty() && fetchedText.charAt(fetchedText.length() - 1) == '|') { //NOI18N
                 // expect that user wants to complete mixed type

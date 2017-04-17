@@ -570,4 +570,28 @@ public class PHP71CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion(getTestPath("iterable"), "function iteratorParameterType(itera^ble $iterator) {", false);
     }
 
+    public void testNullableTypesInPHPDoc_NullableType01() throws Exception {
+        checkCompletion(getTestPath("nullableTypesInPHPDoc"), " * @method ?\\^", false);
+    }
+
+    public void testNullableTypesInPHPDoc_NullableType02() throws Exception {
+        checkCompletion(getTestPath("nullableTypesInPHPDoc"), " * @property ?PHP^", false);
+    }
+
+    public void testNullableTypesInPHPDoc_NullableType03() throws Exception {
+        checkCompletion(getTestPath("nullableTypesInPHPDoc"), "@param ?PHPDo^", false);
+    }
+
+    public void testNullableTypesInPHPDoc_NullableType04() throws Exception {
+        checkCompletion(getTestPath("nullableTypesInPHPDoc"), "@return ?^", false);
+    }
+
+    public void testNullableTypesInPHPDoc_NullableType05() throws Exception {
+        checkCompletion(getTestPath("nullableTypesInPHPDoc"), "@return ^?", false);
+    }
+
+    public void testNullableTypesInPHPDoc_NullableType06() throws Exception {
+        checkCompletion(getTestPath("nullableTypesInPHPDoc"), " * @method PHPDocTags|?^", false);
+    }
+
 }

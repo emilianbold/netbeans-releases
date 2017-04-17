@@ -120,4 +120,12 @@ public class NavigatorTest extends PhpNavigatorTestBase{
         performTest("structure/anonymousClassInTraitScope");
     }
 
+    public void testNullableTypes_01() throws Exception {
+        performTest("structure/nullableTypes_01");
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        performTest("structure/nullableTypes_02");
+    }
+
 }
