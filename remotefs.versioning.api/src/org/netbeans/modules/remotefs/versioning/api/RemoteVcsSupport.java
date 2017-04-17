@@ -47,6 +47,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -215,6 +217,14 @@ public final class RemoteVcsSupport {
         getImpl().setLastModified(file, referenceFile);
     }
     
+    public static URI toURI(VCSFileProxy file) {
+        return getImpl().toURI(file);
+    }
+    
+    public static URL toURL(VCSFileProxy file) {
+        return getImpl().toURL(file);
+    }
+
     /**
      * All proxies should belong to the SAME FILE SYSTEM.
      * In other words, either have geFile() returning not null

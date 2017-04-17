@@ -46,6 +46,9 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -68,11 +71,13 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.RemoteServerListProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -478,4 +483,34 @@ public class RemoteVcsSupportUtil {
         }
         return false;
     }
+    
+    public static URI toURI(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            ExecutionEnvironment env = rfs.getExecutionEnvironment();
+            try {
+                Boolean folder = isDirectoryFast(fs, path);
+                return RemoteFileUrlMapper.toURI(env, path, folder == null ? false : folder);
+            } catch (URISyntaxException | IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public static URL toURL(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            ExecutionEnvironment env = rfs.getExecutionEnvironment();
+            try {
+                Boolean folder = isDirectoryFast(fs, path);
+                return RemoteFileUrlMapper.toURL(env, path, folder == null ? false : folder);
+            } catch (IOException /*|MalformedURLException*/ ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        return null;        
+    }     
 }

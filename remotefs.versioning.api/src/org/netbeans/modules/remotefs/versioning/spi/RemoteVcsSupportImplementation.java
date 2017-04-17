@@ -46,6 +46,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -120,4 +122,10 @@ public interface RemoteVcsSupportImplementation {
     public void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException ;
 
     public void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException;
+
+    /** NB: never adds a trailing slash (for compatibility and performance reasons) */
+    public URI toURI(VCSFileProxy file);
+
+    /** NB: never adds a trailing slash (for compatibility and performance reasons) */
+    public URL toURL(VCSFileProxy file);
 }

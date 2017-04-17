@@ -65,12 +65,12 @@ public class RemoteFileUrlMapper extends URLMapper {
     public FileObject[] getFileObjects(URL url) {
         if (url.getProtocol().equals(RemoteFileURLStreamHandler.PROTOCOL)) {
             ExecutionEnvironment env;
-            String user = PathUtilities.unescapePath(url.getUserInfo());
-            String host = PathUtilities.unescapePath(url.getHost());
+            String user = unescapeUser(url.getUserInfo());
+            String host = unescapeHost(url.getHost());
             if (user != null) {
                 env = ExecutionEnvironmentFactory.createNew(user, host, url.getPort());
             } else {
-                RemoteLogger.assertTrue(false, "Trying to access remote file system without user name");
+                RemoteLogger.assertTrue(false, "Trying to access remote file system without user name: {0}", url);
                 env = RemoteFileSystemUtils.getExecutionEnvironment(host, url.getPort());
                 if (env == null) {
                     user = System.getProperty("user.name");
@@ -120,7 +120,7 @@ public class RemoteFileUrlMapper extends URLMapper {
          */
         StringBuilder sb = new StringBuilder(RemoteFileURLStreamHandler.PROTOCOL);
         sb.append("://"); // NOI18N
-        sb.append(PathUtilities.escapePathForUseInURL(env.getUser())).append('@').append(PathUtilities.escapePathForUseInURL(env.getHost()));
+        sb.append(escapeUserIfNeed(env.getUser())).append('@').append(escapeHostIfNeed(env.getHost()));
         sb.append(':').append(env.getSSHPort()).append(PathUtilities.escapePathForUseInURL(path));
         if (folder && !(path.endsWith("/"))) { // NOI18N
             sb.append('/'); // NOI18N
@@ -138,5 +138,21 @@ public class RemoteFileUrlMapper extends URLMapper {
             }
         }
         return path;
+    }
+    
+    public static String escapeUserIfNeed(String user) {
+        return PathUtilities.escapePathForUseInURL(user);
+    }
+
+    public static String escapeHostIfNeed(String host) {
+        return PathUtilities.escapePathForUseInURL(host);
+    }
+
+    public static String unescapeUser(String user) {
+        return PathUtilities.unescapePath(user);
+    }
+
+    public static String unescapeHost(String host) {
+        return PathUtilities.unescapePath(host);
     }
 }

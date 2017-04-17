@@ -241,10 +241,17 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             return javaFile.toURI();
         }
+        URI res = RemoteVcsSupport.toURI(file);
+        if (res != null) {
+            return res;
+        }
+        // Ideally, the code below should be thrown away - RemoteVcsSupport.toURI
+        // should do all the job. But I'm too afraid of doing this right before 8.2 patch.
+        // So the below is a "just in case" fallback. VK.
         try {
             List<String> segments = new ArrayList<>();
             FileObject fo = findExistingParent(file, segments);
-            URI res = fo.toURI();
+            res = fo.toURI();
             for (int i = segments.size() - 1; i >= 0; i--) {
                 String path;
                 if (res.getPath().endsWith("/")) { //NOI18N
