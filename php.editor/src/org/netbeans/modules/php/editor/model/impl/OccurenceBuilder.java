@@ -1720,7 +1720,7 @@ class OccurenceBuilder {
                 }
                 PhpDocTypeTagInfo nodeInfo = entry.getKey();
                 final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
-                final String name = nodeInfo.getName();
+                final String name = CodeUtils.removeNullableTypePrefix(nodeInfo.getName());
                 if (StringUtils.hasText(name) && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName())
                         && NameKind.exact(qualifiedName).matchesName(phpElement)) {
                     if (qualifiedName.getKind().isUnqualified()) {
