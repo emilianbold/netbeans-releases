@@ -319,6 +319,31 @@ public class DocRendererTest extends PHPTestBase {
         );
     }
 
+    // #270415
+    public void testReplaceInlineInheritdoc_09() {
+        checkReplaceInlineInheritdoc(
+                "Header.\n$test Child Description.",
+                "Header.\n{@inheritdoc} Child Description.",
+                "$test"
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_10() {
+        checkReplaceInlineInheritdoc(
+                "Header.\n\\ Child Description.",
+                "Header.\n{@inheritdoc} Child Description.",
+                "\\"
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_11() {
+        checkReplaceInlineInheritdoc(
+                "Header.\n\\Foo\\Bar Child Description.",
+                "Header.\n{@inheritdoc} Child Description.",
+                "\\Foo\\Bar"
+        );
+    }
+
     private void checkRemoveDescriptionHeader(String expected, String description) {
         assertEquals(expected, PHPDocExtractor.removeDescriptionHeader(description));
     }
