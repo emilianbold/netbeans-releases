@@ -52,6 +52,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import junit.framework.Test;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -76,17 +77,24 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testUrlToFileObjectParity() throws Exception {
-        String path = "/usr/include/stdio.h";
-        FileObject fo = getFileObject(path);
-        URL url = fo.toURL();
-        String str = url.toExternalForm();
-        FileObject fo2 = FileSystemProvider.urlToFileObject(str);
-        assertNotNull(fo2);
-        assertEquals("File Object ", fo, fo2);
-        str = FileSystemProvider.fileObjectToUrl(fo);
-        fo2 = FileSystemProvider.urlToFileObject(str);
-        assertNotNull(fo2);
-        assertEquals("File Object ", fo, fo2);        
+        for (int i = 0; i < 2; i++) {
+            String path = "/usr/include/stdio.h";
+            FileObject fo = getFileObject(path);
+            URL url = fo.toURL();
+            String str;
+            if (i == 0) {
+                str = PathUtilities.unescapePath(url.toExternalForm());
+            } else {
+                str = url.toExternalForm();
+            }
+            FileObject fo2 = FileSystemProvider.urlToFileObject(str);
+            assertNotNull(fo2);
+            assertEquals("File Object ", fo, fo2);
+            str = FileSystemProvider.fileObjectToUrl(fo);
+            fo2 = FileSystemProvider.urlToFileObject(str);
+            assertNotNull(fo2);
+            assertEquals("File Object ", fo, fo2);
+        }
     }
     
     @ForAllEnvironments
