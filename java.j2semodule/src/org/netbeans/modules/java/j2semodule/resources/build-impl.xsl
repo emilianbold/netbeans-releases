@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                 xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
                 xmlns:if="ant:if"
                 xmlns:unless="ant:unless"
-                exclude-result-prefixes="xalan p projdeps projdeps2 j2seproject2 libs">
+                exclude-result-prefixes="xalan p projdeps projdeps2 j2semodularproject1 libs">
     <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
@@ -2092,7 +2092,7 @@ is divided into following sections:
                     <and>
                         <isset property="javadoc.html5"/>
                         <xsl:choose>
-                            <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                            <xsl:when test="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:explicit-platform">
                                 <available file="${{platform.home}}${{file.separator}}lib${{file.separator}}jrt-fs.jar"/>
                             </xsl:when>
                             <xsl:otherwise>
