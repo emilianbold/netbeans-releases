@@ -85,6 +85,7 @@ import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2semodule.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2semodule.ui.customizer.J2SECompositePanelProvider;
+import org.netbeans.modules.java.j2semodule.ui.customizer.J2SEModularProjectProperties;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -358,6 +359,7 @@ public final class J2SEModularProject implements Project {
                     addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
                     addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
                     addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE, ProjectProperties.DO_JLINK, ProjectProperties.JLINK_STRIP).
+                    addUpdatedNameProperty(J2SEModularProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
                     addUpdatedNameProperty(ProjectProperties.DIST_JLINK_OUTPUT, "$'{'"+ProjectProperties.DIST_JLINK_DIR+"'}'/{0}", true).    //NOI18N
                     setCallback(opsCallback).
                     build(),

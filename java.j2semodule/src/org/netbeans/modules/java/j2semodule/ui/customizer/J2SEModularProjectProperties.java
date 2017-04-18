@@ -220,11 +220,9 @@ public class J2SEModularProjectProperties {
     // CustomizerCompileTest
                 
     // CustomizerJar
-    Document DIST_JAR_MODEL; 
     Document BUILD_CLASSES_EXCLUDES_MODEL; 
     ButtonModel JAR_COMPRESS_MODEL;
     ButtonModel DO_JAR_MODEL;
-    ButtonModel COPY_LIBS_MODEL;
     ButtonModel JLINK_MODEL;
     ButtonModel JLINK_STRIP_MODEL;
                 
@@ -404,12 +402,10 @@ public class J2SEModularProjectProperties {
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILERARGS );
         
         // CustomizerJar
-        DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
         DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, true, kind);
         doJarBooleanKind = kind[0];
-        COPY_LIBS_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, MKDIST_DISABLED);
         JLINK_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JLINK, false, kind);
         doJLinkKind = kind[0];
         JLINK_STRIP_MODEL = createToggleButtonModel(evaluator, ProjectProperties.JLINK_STRIP, false, kind);
@@ -435,7 +431,7 @@ public class J2SEModularProjectProperties {
         
         // CustomizerApplication
         APPLICATION_TITLE_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_TITLE);
-        String title = evaluator.getProperty("application.title");
+        String title = evaluator.getProperty(APPLICATION_TITLE);
         if (title == null) {
             try {
                 APPLICATION_TITLE_DOC.insertString(0, ProjectUtils.getInformation(project).getDisplayName(), null);
