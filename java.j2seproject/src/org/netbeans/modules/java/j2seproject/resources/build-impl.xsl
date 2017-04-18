@@ -2311,6 +2311,7 @@ is divided into following sections:
             </target>
             <target name="-do-deploy" depends="init,-do-jar,-post-jar,-pre-deploy,-check-jlink" if="do.jlink.internal">
                 <delete dir="${{dist.jlink.dir}}" quiet="true" failonerror="false"/>
+                <property name="jlink.launcher.name" value="${{application.title}}"/>
                 <condition property="jlink.add.modules" value="${{module.name}},${{jlink.additionalmodules}}" else="${{module.name}}">
                     <and>
                         <isset property="jlink.additionalmodules"/>
@@ -2329,6 +2330,12 @@ is divided into following sections:
                         <length string="${{jlink.additionalparam}}" when="greater" length="0"/>
                     </and>
                 </condition>
+                <condition property="jlink.do.launcher.internal">
+                    <and>
+                        <istrue value="${{jlink.launcher}}"/>
+                        <isset property="main.class.available"/>
+                    </and>
+                </condition>
                 <xsl:choose>
                     <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                         <property name="platform.jlink" value="${{platform.home}}/bin/jlink"/>
@@ -2345,6 +2352,8 @@ is divided into following sections:
                     <arg value="--add-modules"/>
                     <arg value="${{jlink.add.modules}}"/>
                     <arg value="--strip-debug" if:set="jlink.do.strip.internal"/>
+                    <arg value="--launcher" if:set="jlink.do.launcher.internal"/>
+                    <arg value="${{jlink.launcher.name}}=${{module.name}}/${{main.class}}" if:set="jlink.do.launcher.internal"/>
                     <arg line="${{jlink.additionalparam}}" if:set="jlink.do.additionalparam.internal"/>
                     <arg value="--output"/>
                     <arg value="${{dist.jlink.output}}"/>
