@@ -43,15 +43,16 @@
 package org.netbeans.modules.java.source.ant;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Jar;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
@@ -70,6 +71,7 @@ public class TranslateClassPath extends Task {
     private String classpath;
     private String targetProperty;
     private boolean clean;
+    private boolean moduleOriented;
     
     public void setClasspath(String cp) {
         this.classpath = cp;
@@ -81,6 +83,10 @@ public class TranslateClassPath extends Task {
 
     public void setClean(boolean clean) {
         this.clean = clean;
+    }
+
+    public void setModuleOriented(boolean moduleOriented) {
+        this.moduleOriented = moduleOriented;
     }
 
     @Override
@@ -157,10 +163,28 @@ public class TranslateClassPath extends Task {
                         final FileObject binaryFO = URLMapper.findFileObject(binary);
                         final File finaryFile = binaryFO != null ? FileUtil.toFile(binaryFO) : null;
                         if (finaryFile != null) {
+                            if (moduleOriented && finaryFile.isDirectory() && "jar".equals(entry.getProtocol())) {
+                                boolean hasModuleInfo = finaryFile.listFiles(new FilenameFilter() {
+                                    @Override
+                                    public boolean accept(File dir, String name) {
+                                        return "module-info.class".equals(name);
+                                    }
+                                }).length > 0;
+                                if (!hasModuleInfo) {
+                                    File jarFile = new File(finaryFile.getParentFile(), entryFile.getName());
+                                    Jar jarTask = new Jar();
+                                    jarTask.setProject(getProject());
+                                    jarTask.setDestFile(jarFile);
+                                    jarTask.setBasedir(finaryFile);
+                                    jarTask.setExcludes(".netbeans*");
+                                    jarTask.execute();
+                                    translated.add(jarFile);
+                                    continue;
+                                }
+                            }
                             translated.add(finaryFile);
                         }
-                    }
-                    
+                    }                    
                 }
                 
                 if (appendEntry) {

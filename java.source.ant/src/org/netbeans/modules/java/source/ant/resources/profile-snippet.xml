@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     </target>
     <target name="-init-paths">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
-        <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" />
+        <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" moduleOriented="true" />
         <property name="run.jvmargs" value="" />
         <property name="run.jvmargs.ide" value="" />
         <property name="work.dir" value="${basedir}"/>
