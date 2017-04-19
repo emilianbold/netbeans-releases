@@ -142,6 +142,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         doJarCheckBox.addActionListener((e)->{
             if (!doJarCheckBox.isSelected()) {
                 jlink.setSelected(false);
+                enableJLink();
             }
         });
         jlink.addActionListener((e)->{
