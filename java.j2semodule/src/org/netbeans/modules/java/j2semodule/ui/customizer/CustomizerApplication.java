@@ -77,7 +77,6 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         vendorTextField.setDocument(props.APPLICATION_VENDOR_DOC);
         descTextArea1.setDocument(props.APPLICATION_DESC_DOC);
         homepageTextField.setDocument(props.APPLICATION_HOMEPAGE_DOC);
-        splashTextField.setDocument(props.APPLICATION_SPLASH_DOC);
 
         this.project = props.getProject();
 //        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
@@ -106,12 +105,9 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         vendorLabel = new javax.swing.JLabel();
         descLabel = new javax.swing.JLabel();
         homepageLabel = new javax.swing.JLabel();
-        splashLabel = new javax.swing.JLabel();
         titleTextField = new javax.swing.JTextField();
         vendorTextField = new javax.swing.JTextField();
         homepageTextField = new javax.swing.JTextField();
-        splashTextField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
         jScrollPane = new javax.swing.JScrollPane();
         descTextArea1 = new javax.swing.JTextArea();
         extPanel = new javax.swing.JPanel();
@@ -165,15 +161,6 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         mainPanel.add(homepageLabel, gridBagConstraints);
 
-        splashLabel.setLabelFor(splashTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(splashLabel, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.splashLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        mainPanel.add(splashLabel, gridBagConstraints);
-
         titleTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.titleTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -203,30 +190,6 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         mainPanel.add(homepageTextField, gridBagConstraints);
-
-        splashTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.splashTextField.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
-        mainPanel.add(splashTextField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.browseButton.text")); // NOI18N
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(3, 6, 0, 0);
-        mainPanel.add(browseButton, gridBagConstraints);
 
         descTextArea1.setColumns(8);
         descTextArea1.setRows(4);
@@ -259,22 +222,6 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weighty = 0.1;
         add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setFileFilter(new SplashFileFilter());
-        if (lastImageFolder != null) {
-            chooser.setCurrentDirectory(lastImageFolder);
-        }
-        chooser.setDialogTitle(NbBundle.getMessage(CustomizerApplication.class, "LBL_Select_Splash_Image"));
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            splashTextField.setText(file.getAbsolutePath());
-            lastImageFolder = file.getParentFile();
-        }
-    }//GEN-LAST:event_browseButtonActionPerformed
     
     private static class SplashFileFilter extends FileFilter {
         
@@ -301,7 +248,6 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
     private javax.swing.JLabel descLabel;
     private javax.swing.JTextArea descTextArea1;
     private javax.swing.JPanel extPanel;
@@ -310,8 +256,6 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JLabel panelDescLabel;
-    private javax.swing.JLabel splashLabel;
-    private javax.swing.JTextField splashTextField;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JTextField titleTextField;
     private javax.swing.JLabel vendorLabel;

@@ -147,7 +147,6 @@ public class J2SEModularProjectProperties {
     public static final String APPLICATION_VENDOR ="application.vendor"; // NOI18N
     public static final String APPLICATION_DESC ="application.desc"; // NOI18N
     public static final String APPLICATION_HOMEPAGE ="application.homepage"; // NOI18N
-    public static final String APPLICATION_SPLASH ="application.splash"; // NOI18N
     //Disables copying of dependencies to dist folder
     public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
     //Runtime platform
@@ -252,7 +251,6 @@ public class J2SEModularProjectProperties {
     Document APPLICATION_VENDOR_DOC;
     Document APPLICATION_DESC_DOC;
     Document APPLICATION_HOMEPAGE_DOC;
-    Document APPLICATION_SPLASH_DOC;
     
     //customizer license headers
     String LICENSE_NAME_VALUE;
@@ -467,7 +465,6 @@ public class J2SEModularProjectProperties {
         }
         APPLICATION_DESC_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_DESC);
         APPLICATION_HOMEPAGE_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_HOMEPAGE);
-        APPLICATION_SPLASH_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_SPLASH);
         
         //oh well we want unresolved value, force it.
         LICENSE_PATH_VALUE = projectProperties.get(LICENSE_PATH);
