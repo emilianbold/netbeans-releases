@@ -49,16 +49,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
+import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
@@ -80,10 +85,17 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     private J2SEProject project;
     private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
     private final ComboBoxModel<?> sourceLevel;
+    private final Map<JComponent,Collection<Supplier<Boolean>>> jLinkComponents;
     
     public CustomizerJar( J2SEProjectProperties uiProperties ) {
         initComponents();
-
+        final Map<JComponent,Collection<Supplier<Boolean>>> m = new LinkedHashMap<>();
+        m.put(jlink, Collections.emptySet());
+        m.put(jlinkStrip, Collections.singleton(this::isJLinkOptionsEnabled));
+        m.put(jLinkCreateLaucher, Collections.singleton(this::isJLinkOptionsEnabled));
+        m.put(jLinkLaucherName, Arrays.asList(this::isJLinkOptionsEnabled, this::isJLinkLauncherEnabled));
+        m.put(jLinkLauncherNameLabel, Arrays.asList(this::isJLinkOptionsEnabled, this::isJLinkLauncherEnabled));
+        this.jLinkComponents = Collections.unmodifiableMap(m);
         int nextExtensionYPos = 0;
         this.project = uiProperties.getProject();
         for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
@@ -124,7 +136,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         jlink.setModel(new ButtonModelDecorator(uiProperties.JLINK_MODEL));
         uiProperties.JLINK_STRIP_MODEL.setMnemonic(jlinkStrip.getMnemonic());
         jlinkStrip.setModel(new ButtonModelDecorator(uiProperties.JLINK_STRIP_MODEL));
-        enableJLink();
+        uiProperties.JLINK_LAUNCHER_MODEL.setMnemonic(jLinkCreateLaucher.getMnemonic());
+        jLinkCreateLaucher.setModel(new ButtonModelDecorator(uiProperties.JLINK_LAUNCHER_MODEL));
+        jLinkLaucherName.setDocument(uiProperties.JLINK_LAUNCHER_NAME_MODEL);
         doJarCheckBox.addActionListener((e)->{
             if (!doJarCheckBox.isSelected()) {
                 jlink.setSelected(false);
@@ -134,7 +148,12 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
             if(jlink.isSelected()) {
                 doJarCheckBox.setSelected(true);
             }
+            enableJLink();
         });
+        jLinkCreateLaucher.addActionListener((e) -> {
+            enableJLink();
+        });
+        enableJLink();
     }
 
     @Override
@@ -157,6 +176,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         doJarCheckBox = new javax.swing.JCheckBox();
         copyLibs = new javax.swing.JCheckBox();
         jlink = new javax.swing.JCheckBox();
+        jLinkCreateLaucher = new javax.swing.JCheckBox();
+        jLinkLauncherNameLabel = new javax.swing.JLabel();
+        jLinkLaucherName = new javax.swing.JTextField();
         jlinkStrip = new javax.swing.JCheckBox();
         extPanel = new javax.swing.JPanel();
 
@@ -164,7 +186,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
         setLayout(new java.awt.GridBagLayout());
 
-        mainPanel.setPreferredSize(new java.awt.Dimension(435, 230));
+        mainPanel.setPreferredSize(new java.awt.Dimension(435, 290));
 
         distDirLabel.setLabelFor(distDirField);
         org.openide.awt.Mnemonics.setLocalizedText(distDirLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_DistDir_JTextField")); // NOI18N
@@ -187,6 +209,13 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         org.openide.awt.Mnemonics.setLocalizedText(jlink, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLink")); // NOI18N
         jlink.setActionCommand("Create J&LINK Distribution");
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLinkCreateLaucher, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLink_CreateLaucher")); // NOI18N
+
+        jLinkLauncherNameLabel.setLabelFor(jLinkLaucherName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLinkLauncherNameLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLink_LaucherName")); // NOI18N
+
+        jLinkLaucherName.setText("jTextField1");
+
         org.openide.awt.Mnemonics.setLocalizedText(jlinkStrip, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLinkStrip")); // NOI18N
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
@@ -195,58 +224,65 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(distDirLabel)
+                            .addComponent(excludeLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(mainPanelLayout.createSequentialGroup()
+                                .addComponent(excludeMessage)
+                                .addGap(0, 112, Short.MAX_VALUE))
+                            .addComponent(excludeField)
+                            .addComponent(distDirField)))
                     .addComponent(jlink, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(copyLibs)
+                    .addComponent(compressCheckBox)
+                    .addComponent(doJarCheckBox)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addGap(29, 29, 29)
-                        .addComponent(jlinkStrip)))
-                .addGap(0, 129, Short.MAX_VALUE))
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(mainPanelLayout.createSequentialGroup()
-                    .addGap(0, 0, 0)
-                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(mainPanelLayout.createSequentialGroup()
-                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(excludeLabel)
-                                .addComponent(distDirLabel))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(excludeMessage)
-                                .addComponent(excludeField)
-                                .addComponent(distDirField)))
-                        .addGroup(mainPanelLayout.createSequentialGroup()
-                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(compressCheckBox)
-                                .addComponent(doJarCheckBox)
-                                .addComponent(copyLibs))
-                            .addGap(241, 241, 241)))
-                    .addGap(0, 0, 0)))
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(mainPanelLayout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(jLinkLauncherNameLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLinkLaucherName))
+                            .addGroup(mainPanelLayout.createSequentialGroup()
+                                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jlinkStrip)
+                                    .addComponent(jLinkCreateLaucher))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                .addContainerGap(182, Short.MAX_VALUE)
+                .addContainerGap()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(distDirLabel)
+                    .addComponent(distDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(excludeLabel)
+                    .addComponent(excludeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(excludeMessage)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(compressCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(doJarCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(copyLibs)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jlink)
-                .addGap(2, 2, 2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLinkCreateLaucher)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLinkLauncherNameLabel)
+                    .addComponent(jLinkLaucherName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(3, 3, 3)
                 .addComponent(jlinkStrip))
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(mainPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(distDirLabel)
-                        .addComponent(distDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(excludeLabel)
-                        .addComponent(excludeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(excludeMessage)
-                    .addGap(8, 8, 8)
-                    .addComponent(compressCheckBox)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(doJarCheckBox)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(copyLibs)
-                    .addContainerGap(55, Short.MAX_VALUE)))
         );
 
         distDirField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldDistDir")); // NOI18N
@@ -285,6 +321,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel excludeMessage;
     private javax.swing.JPanel extPanel;
     private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jLinkCreateLaucher;
+    private javax.swing.JTextField jLinkLaucherName;
+    private javax.swing.JLabel jLinkLauncherNameLabel;
     private javax.swing.JCheckBox jlink;
     private javax.swing.JCheckBox jlinkStrip;
     private javax.swing.JPanel mainPanel;
@@ -320,13 +359,28 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                 constraints);
     }
 
-    private void enableJLink() {
+    private boolean isJLinkEnabled() {
         final SpecificationVersion sl = PlatformUiSupport.getSourceLevel(this.sourceLevel.getSelectedItem());
-        boolean enabled = J2SEProjectProperties.JDK9.compareTo(sl) <= 0;
-        for (JCheckBox b : new JCheckBox[] {jlink, jlinkStrip}) {
-            b.setEnabled(enabled);
-            ButtonModelDecorator.cast(b.getModel())
-                    .ifPresent((m) -> m.setOverride(enabled ? null : false));
+        return J2SEProjectProperties.JDK9.compareTo(sl) <= 0;
+    }
+
+    private boolean isJLinkOptionsEnabled() {
+        return jlink.isSelected();
+    }
+
+    private boolean isJLinkLauncherEnabled() {
+        return jLinkCreateLaucher.isSelected();
+    }
+
+    private void enableJLink() {
+        final boolean correctSourceLevel = isJLinkEnabled();
+        for (Map.Entry<JComponent,Collection<Supplier<Boolean>>> e : jLinkComponents.entrySet()) {
+            final JComponent c = e.getKey();
+            c.setEnabled(e.getValue().stream().map(Supplier::get).reduce(correctSourceLevel, (a,b) -> a&&b));
+            if (c instanceof AbstractButton) {
+                ButtonModelDecorator.cast(((AbstractButton)c).getModel())
+                        .ifPresent((model) -> model.setOverride(correctSourceLevel ? null : false));
+            }
         }
     }
 

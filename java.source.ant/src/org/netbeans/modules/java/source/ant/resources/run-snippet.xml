@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <project name="{0} (run)" default="run" basedir=".">
     <target name="-init-paths">        
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
-        <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" />
+        <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" moduleOriented="true" />
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
         <property name="application.args" value="" />

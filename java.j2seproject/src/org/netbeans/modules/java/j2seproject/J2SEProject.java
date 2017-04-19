@@ -366,6 +366,7 @@ public final class J2SEProject implements Project {
                     addUpdatedNameProperty(ProjectProperties.DIST_JAR, "$'{'dist.dir'}'/{0}.jar", true).    //NOI18N
                     addUpdatedNameProperty(J2SEProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
                     addUpdatedNameProperty(ProjectProperties.DIST_JLINK_OUTPUT, "$'{'"+ProjectProperties.DIST_JLINK_DIR+"'}'/{0}", true).    //NOI18N
+                    addUpdatedNameProperty(ProjectProperties.JLINK_LAUNCHER_NAME, "{0}", true).    //NOI18N
                     setCallback(opsCallback).
                     build(),
             ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).
