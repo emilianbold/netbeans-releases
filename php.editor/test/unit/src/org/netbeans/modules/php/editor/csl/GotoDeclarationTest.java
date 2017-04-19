@@ -1398,6 +1398,11 @@ public class GotoDeclarationTest extends GotoDeclarationTestBase {
         checkDeclaration(getTestPath(), "            echo self::myTe^stStatic() . PHP_EOL;", "    public static function ^myTestStatic() {");
     }
 
+    // related to #171249
+    public void testIssue270422() throws Exception {
+        checkDeclaration(getTestPath(), " * @method Paren^tClass testMethod()", "class ^ParentClass {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
