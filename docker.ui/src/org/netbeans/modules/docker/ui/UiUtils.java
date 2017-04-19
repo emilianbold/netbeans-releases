@@ -62,6 +62,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
@@ -130,6 +131,14 @@ public final class UiUtils {
             }
         }
         return value;
+    }
+
+    public static boolean isEmpty(JTable table) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        if (model == null) {
+            return true;
+        }
+        return model.getRowCount() == 0;
     }
 
     public static void configureRowHeight(JTable table) {
@@ -222,7 +231,7 @@ public final class UiUtils {
             }
         });
     }
-    
+
     public static String normalizePath(String path) {
         if (path == null) {
             return null;

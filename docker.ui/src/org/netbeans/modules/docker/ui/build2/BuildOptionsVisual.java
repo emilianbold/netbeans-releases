@@ -102,8 +102,8 @@ public final class BuildOptionsVisual extends JPanel {
     public void setDockerfile(String dockerfile) {
         dockerfileTextField.setText(dockerfile);
     }
-    
-    public Map<String, String> getBuildargs() {
+
+    public Map<String, String> getBuildArgs() {
         Map<String, String> result = new TreeMap<>();
         DefaultTableModel model = (DefaultTableModel) buildargsTable.getModel();
         if (buildargsTable.isEditing()) {
@@ -118,6 +118,15 @@ public final class BuildOptionsVisual extends JPanel {
             }
         }
         return result;
+    }
+
+    public void setBuildArgs(Map<String, String> buildArgs) {
+        DefaultTableModel model = (DefaultTableModel) buildargsTable.getModel();
+        // Clear JTable first
+        model.setRowCount(0);
+        buildArgs.forEach((key, value) -> {
+            model.addRow(new Object[]{key, value});
+        });
     }
 
     public boolean isPull() {

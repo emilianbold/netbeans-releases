@@ -71,6 +71,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,6 +86,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.net.ssl.SSLContext;
 import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
@@ -396,6 +398,26 @@ public class DockerAction {
             }
         }
         return new DockerImageDetail(ports);
+    }
+
+    public DockerfileDetail getDetail(FileObject dockerfile) throws IOException {
+        // Each ARG line looks like:
+        // "(\w)*ARG(\w)*key=val(\w)*"
+
+        // Filter this lines and remove ARG from the beginning
+        List<String> argLines = dockerfile.asLines().stream()
+                .filter((line) -> line.trim().matches("^(?i)arg(.*)$")) // NOI18N
+                .map((argLine) -> argLine.trim().replaceFirst("^(?i)arg", "").trim()) // NOI18N
+                .collect(Collectors.toList());
+
+        // Now each line looks like: "key=val"
+        Map<String, String> pairs = new HashMap<>();
+        for (String line : argLines) {
+            String[] split = line.split("=", 2); // NOI18N
+            pairs.put(split[0], split.length == 2 ? split[1] : ""); //NOI18N
+        }
+
+        return new DockerfileDetail(pairs);
     }
 
     public void start(DockerContainer container) throws DockerException {
