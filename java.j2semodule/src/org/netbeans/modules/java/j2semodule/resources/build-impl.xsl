@@ -513,10 +513,7 @@ is divided into following sections:
                         <mkdir dir="${{empty.dir}}"/>
                         <mkdir dir="@{{apgeneratedsrcdir}}"/>
                         <condition property="processormodulepath.set">
-                            <and>
-                                <isset property="processormodulepath"/>
-                                <length string="@{{toString:processormodulepath}}" when="greater" length="0"/>
-                            </and>
+                            <length string="@{{toString:processormodulepath}}" when="greater" length="0"/>
                         </condition>
                         <javac>
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
