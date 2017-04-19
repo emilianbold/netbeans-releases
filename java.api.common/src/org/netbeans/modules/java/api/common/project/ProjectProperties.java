@@ -403,6 +403,10 @@ public final class ProjectProperties {
     public static final String JLINK_ADDITIONALMODULES="jlink.additionalmodules"; //NOI18N
     /** @since 1.119 */
     public static final String JLINK_ADDITIONALPARAM="jlink.additionalparam"; //NOI18N
+    /** @since 1.120 */
+    public static final String JLINK_LAUNCHER="jlink.launcher";      //NOI18N
+    /** @since 1.120 */
+    public static final String JLINK_LAUNCHER_NAME="jlink.launcher.name";   //NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.21 */
     public static final String COMPILE_ON_SAVE = "compile.on.save"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.19 */

@@ -447,7 +447,7 @@ public class J2SEProjectBuilder {
             String[] runtimeClassPath,
             @NonNull final String platformId
             ) throws IOException {
-
+        final String antName = PropertyUtils.getUsablePropertyName(name);
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProject.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -487,7 +487,7 @@ public class J2SEProjectBuilder {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
         ep.setProperty("dist.dir", distFolder != null ? distFolder : "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
+        ep.setProperty("dist.jar", "${dist.dir}/" + antName + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", compileClassPath); // NOI18N
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {ref(ProjectProperties.JAVAC_CLASSPATH, true)}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[] {ref(ProjectProperties.JAVAC_TEST_CLASSPATH,true)}); // NOI18N
@@ -584,7 +584,7 @@ public class J2SEProjectBuilder {
         createDefaultModuleProperties(ep, !skipTests);
         //JLink
         ep.setProperty(ProjectProperties.DIST_JLINK_DIR, "${"+ProjectProperties.DIST_DIR+"}/jlink");
-        ep.setProperty(ProjectProperties.DIST_JLINK_OUTPUT, "${"+ProjectProperties.DIST_JLINK_DIR+"}/"+PropertyUtils.getUsablePropertyName(name));
+        ep.setProperty(ProjectProperties.DIST_JLINK_OUTPUT, "${"+ProjectProperties.DIST_JLINK_DIR+"}/"+antName);
         ep.setProperty(ProjectProperties.JLINK_ADDITIONALMODULES, "");
         ep.setComment(ProjectProperties.JLINK_ADDITIONALMODULES,
                 new String[] {
@@ -597,6 +597,8 @@ public class J2SEProjectBuilder {
                     "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_jlink.additionalparam") //NOI18N
                 },
                 false);
+        ep.setProperty(ProjectProperties.JLINK_LAUNCHER, "true");
+        ep.setProperty(ProjectProperties.JLINK_LAUNCHER_NAME, antName);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N

@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
             <element name="test-spec" implicit="yes"/>
             <sequential>
                 <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
-                <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" />
+                <translate-classpath classpath="${modulepath}" targetProperty="modulepath-translated" moduleOriented="true" />
                 <translate-classpath classpath="${module.root}" targetProperty="module.root-translated"/>
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>
