@@ -1806,8 +1806,9 @@ is divided into following sections:
                     </and>
                 </condition>
             </target>
-            <target name="-do-deploy" depends="init,-do-jar,-post-jar,-pre-deploy,-check-jlink" if="do.jlink.internal">
+            <target name="-do-deploy" depends="init,-do-jar,-post-jar,-pre-deploy,-check-jlink,-main-module-set" if="do.jlink.internal">
                 <delete dir="${{dist.jlink.dir}}" quiet="true" failonerror="false"/>
+                <property name="jlink.launcher.name" value="${{application.title}}"/>
                 <pathconvert property="jlink.modulelist.internal" pathsep=",">
                     <fileset dir="${{dist.dir}}" includes="*.jar"/>
                     <mapper>
@@ -1835,6 +1836,14 @@ is divided into following sections:
                         <length string="${{jlink.additionalparam}}" when="greater" length="0"/>
                     </and>
                 </condition>
+                <condition property="jlink.do.launcher.internal">
+                    <and>
+                        <istrue value="${{jlink.launcher}}"/>
+                        <isset property="module.name"/>
+                        <length string="${{module.name}}" when="greater" length="0"/>
+                        <isset property="main.class.available"/>
+                    </and>
+                </condition>
                 <xsl:choose>
                     <xsl:when test="/p:project/p:configuration/j2semodularproject1:data/j2semodularproject1:explicit-platform">
                         <property name="platform.jlink" value="${{platform.home}}/bin/jlink"/>
@@ -1851,6 +1860,8 @@ is divided into following sections:
                     <arg value="--add-modules"/>
                     <arg value="${{jlink.add.modules}}"/>
                     <arg value="--strip-debug" if:set="jlink.do.strip.internal"/>
+                    <arg value="--launcher" if:set="jlink.do.launcher.internal"/>
+                    <arg value="${{jlink.launcher.name}}=${{module.name}}/${{main.class}}" if:set="jlink.do.launcher.internal"/>
                     <arg line="${{jlink.additionalparam}}" if:set="jlink.do.additionalparam.internal"/>
                     <arg value="--output"/>
                     <arg value="${{dist.jlink.output}}"/>
@@ -1881,7 +1892,7 @@ is divided into following sections:
                     </customize>
                 </j2semodularproject1:java>
             </target>
-            <target name="-main-module-check" unless="module.name">
+            <target name="-main-module-set" unless="module.name">
                 <condition property="check.class.name" value="${{run.class}}" else="${{main.class}}">
                     <isset property="run.class"/>
                 </condition>
@@ -1901,6 +1912,8 @@ is divided into following sections:
                     <fileset dir="${{run.modules.dir}}" includes="**/${{toString:main.class.relativepath}}"/>
                     <regexpmapper from="\Q${{run.modules.dir.location}}${{file.separator}}\E([^${{file.separator.string}}]+)\Q${{file.separator}}\E.*\.class" to="\1"/>
                 </pathconvert>
+            </target>
+            <target name="-main-module-check" depends="-main-module-set">
                 <fail message="Could not determine module of the main class and module.name is not set">
                     <condition>
                         <or>
@@ -1912,7 +1925,6 @@ is divided into following sections:
                     </condition>
                 </fail>
             </target>
-            
             <target name="-do-not-recompile">
                 <property name="javac.includes.binary" value=""/> <!-- #116230 hack -->
             </target>

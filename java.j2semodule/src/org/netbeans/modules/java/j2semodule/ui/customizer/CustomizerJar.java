@@ -45,7 +45,14 @@
 package org.netbeans.modules.java.j2semodule.ui.customizer;
 
 import java.awt.Dimension;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.java.j2semodule.J2SEModularProject;
 import org.openide.util.HelpCtx;
@@ -56,20 +63,19 @@ import org.openide.util.HelpCtx;
 public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
     private J2SEModularProject project;
-//    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
-    
+    private final Map<JComponent,Collection<Supplier<Boolean>>> jLinkComponents;
+
     public CustomizerJar( J2SEModularProjectProperties uiProperties ) {
         initComponents();
+        final Map<JComponent,Collection<Supplier<Boolean>>> m = new LinkedHashMap<>();
+        m.put(jlink, Collections.emptySet());
+        m.put(jlinkStrip, Collections.singleton(this::isJLinkOptionsEnabled));
+        m.put(jLinkCreateLaucher, Collections.singleton(this::isJLinkOptionsEnabled));
+        m.put(jLinkLaucherName, Arrays.asList(this::isJLinkOptionsEnabled, this::isJLinkLauncherEnabled));
+        m.put(jLinkLauncherNameLabel, Arrays.asList(this::isJLinkOptionsEnabled, this::isJLinkLauncherEnabled));
+        this.jLinkComponents = Collections.unmodifiableMap(m);
         int nextExtensionYPos = 0;
         this.project = uiProperties.getProject();
-//        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
-//            if( compProvider.getCategory() == J2SECategoryExtensionProvider.ExtensibleCategory.PACKAGING ) {
-//                if( addExtPanel(project,compProvider,nextExtensionYPos) ) {
-//                    compProviders.add(compProvider);
-//                    nextExtensionYPos++;
-//                }
-//            }
-//        }
         addPanelFiller(nextExtensionYPos);
         excludeField.setDocument(uiProperties.BUILD_CLASSES_EXCLUDES_MODEL);
 
@@ -83,16 +89,25 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         jlink.setModel(uiProperties.JLINK_MODEL);
         uiProperties.JLINK_STRIP_MODEL.setMnemonic(jlinkStrip.getMnemonic());
         jlinkStrip.setModel(uiProperties.JLINK_STRIP_MODEL);
+        uiProperties.JLINK_LAUNCHER_MODEL.setMnemonic(jLinkCreateLaucher.getMnemonic());
+        jLinkCreateLaucher.setModel(uiProperties.JLINK_LAUNCHER_MODEL);
+        jLinkLaucherName.setDocument(uiProperties.JLINK_LAUNCHER_NAME_MODEL);
         doJarCheckBox.addActionListener((e)->{
             if (!doJarCheckBox.isSelected()) {
                 jlink.setSelected(false);
+                enableJLink();
             }
         });
         jlink.addActionListener((e)->{
             if(jlink.isSelected()) {
                 doJarCheckBox.setSelected(true);
             }
+            enableJLink();
         });
+        jLinkCreateLaucher.addActionListener((e) -> {
+            enableJLink();
+        });
+        enableJLink();
     }
 
     @Override
@@ -112,11 +127,14 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         doJarCheckBox = new javax.swing.JCheckBox();
         jlink = new javax.swing.JCheckBox();
         jlinkStrip = new javax.swing.JCheckBox();
+        jLinkCreateLaucher = new javax.swing.JCheckBox();
+        jLinkLauncherNameLabel = new javax.swing.JLabel();
+        jLinkLaucherName = new javax.swing.JTextField();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        mainPanel.setPreferredSize(new java.awt.Dimension(427, 200));
+        mainPanel.setPreferredSize(new java.awt.Dimension(427, 290));
 
         excludeLabel.setLabelFor(excludeField);
         org.openide.awt.Mnemonics.setLocalizedText(excludeLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Excludes_JTextField")); // NOI18N
@@ -134,6 +152,12 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(jlinkStrip, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLinkStrip")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLinkCreateLaucher, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLink_CreateLaucher")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLinkLauncherNameLabel, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "TXT_Jar_JLink_LaucherName")); // NOI18N
+
+        jLinkLaucherName.setText("jTextField1");
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -148,15 +172,22 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                                 .addComponent(excludeMessage)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(excludeField, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)))
+                    .addComponent(jlink, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(compressCheckBox)
+                    .addComponent(doJarCheckBox)
                     .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(29, 29, 29)
                         .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jlink, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(mainPanelLayout.createSequentialGroup()
                                 .addGap(29, 29, 29)
-                                .addComponent(jlinkStrip))
-                            .addComponent(compressCheckBox)
-                            .addComponent(doJarCheckBox))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(jLinkLauncherNameLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLinkLaucherName))
+                            .addGroup(mainPanelLayout.createSequentialGroup()
+                                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jlinkStrip)
+                                    .addComponent(jLinkCreateLaucher))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
@@ -175,8 +206,14 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jlink)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLinkCreateLaucher)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLinkLauncherNameLabel)
+                    .addComponent(jLinkLaucherName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jlinkStrip)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(53, Short.MAX_VALUE))
         );
 
         excludeField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jTextFieldExcludes")); // NOI18N
@@ -210,6 +247,9 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel excludeLabel;
     private javax.swing.JLabel excludeMessage;
     private javax.swing.JPanel extPanel;
+    private javax.swing.JCheckBox jLinkCreateLaucher;
+    private javax.swing.JTextField jLinkLaucherName;
+    private javax.swing.JLabel jLinkLauncherNameLabel;
     private javax.swing.JCheckBox jlink;
     private javax.swing.JCheckBox jlinkStrip;
     private javax.swing.JPanel mainPanel;
@@ -243,5 +283,20 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
                 new Dimension(),
                 new Dimension(10000,10000) ),
                 constraints);
+    }
+    
+    private boolean isJLinkOptionsEnabled() {
+        return jlink.isSelected();
+    }
+
+    private boolean isJLinkLauncherEnabled() {
+        return jLinkCreateLaucher.isSelected();
+    }
+
+    private void enableJLink() {
+        for (Map.Entry<JComponent,Collection<Supplier<Boolean>>> e : jLinkComponents.entrySet()) {
+            final JComponent c = e.getKey();
+            c.setEnabled(e.getValue().stream().map(Supplier::get).reduce(true, (a,b) -> a&&b));
+        }
     }
 }

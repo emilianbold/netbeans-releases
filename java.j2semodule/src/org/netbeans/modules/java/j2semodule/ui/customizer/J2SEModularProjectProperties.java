@@ -138,6 +138,7 @@ public class J2SEModularProjectProperties {
     private Integer javadocPreviewBooleanKind;
     private Integer doJLinkKind;
     private Integer jLinkStripKind;
+    private Integer jLinkLauncherKind;
     
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
@@ -225,6 +226,8 @@ public class J2SEModularProjectProperties {
     ButtonModel DO_JAR_MODEL;
     ButtonModel JLINK_MODEL;
     ButtonModel JLINK_STRIP_MODEL;
+    ButtonModel JLINK_LAUNCHER_MODEL;
+    Document    JLINK_LAUNCHER_NAME_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -410,6 +413,20 @@ public class J2SEModularProjectProperties {
         doJLinkKind = kind[0];
         JLINK_STRIP_MODEL = createToggleButtonModel(evaluator, ProjectProperties.JLINK_STRIP, false, kind);
         jLinkStripKind = kind[0];
+        JLINK_LAUNCHER_MODEL = createToggleButtonModel(evaluator, ProjectProperties.JLINK_LAUNCHER, false, kind);
+        jLinkLauncherKind = kind[0];
+        JLINK_LAUNCHER_NAME_MODEL = projectGroup.createStringDocument( evaluator, JLINK_LAUNCHER_NAME);
+        final String launcherName = evaluator.getProperty(JLINK_LAUNCHER_NAME);
+        if (launcherName == null) {
+            try {
+                JLINK_LAUNCHER_NAME_MODEL.insertString(
+                        0,
+                        PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation(project).getDisplayName()),
+                        null);
+            } catch (BadLocationException ex) {
+                // just do not set anything
+            }
+        }
         
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -626,6 +643,7 @@ public class J2SEModularProjectProperties {
         //JLink
         privateProperties.setProperty(ProjectProperties.DO_JLINK, encodeBoolean(JLINK_MODEL.isSelected(), doJLinkKind));
         privateProperties.setProperty(ProjectProperties.JLINK_STRIP, encodeBoolean(JLINK_STRIP_MODEL.isSelected(), jLinkStripKind));
+        projectProperties.setProperty(ProjectProperties.JLINK_LAUNCHER, encodeBoolean(JLINK_LAUNCHER_MODEL.isSelected(), jLinkLauncherKind));
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javadoc.preview

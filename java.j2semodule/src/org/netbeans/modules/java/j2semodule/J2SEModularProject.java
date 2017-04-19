@@ -361,6 +361,7 @@ public final class J2SEModularProject implements Project {
                     addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE, ProjectProperties.DO_JLINK, ProjectProperties.JLINK_STRIP).
                     addUpdatedNameProperty(J2SEModularProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
                     addUpdatedNameProperty(ProjectProperties.DIST_JLINK_OUTPUT, "$'{'"+ProjectProperties.DIST_JLINK_DIR+"'}'/{0}", true).    //NOI18N
+                    addUpdatedNameProperty(ProjectProperties.JLINK_LAUNCHER_NAME, "{0}", true).    //NOI18N
                     setCallback(opsCallback).
                     build(),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createMultiModuleFileBuiltQuery(
