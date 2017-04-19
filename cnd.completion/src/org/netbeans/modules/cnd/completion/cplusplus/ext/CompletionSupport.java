@@ -1511,7 +1511,7 @@ public final class CompletionSupport implements DocumentListener {
             for (int i = 0; i < methodParms.length; ++i) {
                 CsmType mpt = methodParms[i].getType();
                 CsmType goldenType = paramTypes.get(i);
-                if (goldenType == null) {
+                if (mpt == null || goldenType == null) {
                     continue outer;
                 }
                 if (!CsmUtilities.checkTypesEqual(
