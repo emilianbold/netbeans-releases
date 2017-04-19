@@ -61,13 +61,13 @@ public final class BuildContextVisual extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final FileSystem fileSystem;
-    
+
     /**
      * Creates new form BuildVisualPanel1
      */
     public BuildContextVisual(FileSystem fileSystem) {
         initComponents();
-        
+
         this.fileSystem = fileSystem;
         DefaultDocumentListener listener = new DefaultDocumentListener();
         buildContextTextField.getDocument().addDocumentListener(listener);
@@ -80,7 +80,7 @@ public final class BuildContextVisual extends JPanel {
                 changeSupport.fireChange();
             }
         });
-        
+
         //UiUtils.loadRepositories(instance, repositoryComboBox);
     }
 
@@ -219,11 +219,11 @@ public final class BuildContextVisual extends JPanel {
         fileChooser.setDialogTitle(NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.fileChooser.dialogTitle")); // NOI18M
         fileChooser.setFileSelectionMode(0);
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        
+
         String buildText = UiUtils.getValue(buildContextTextField);
         if (buildText != null) {
             fileChooser.setSelectedFile(new File(buildText));
-            
+
         }
         if (fileChooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
             buildContextTextField.setText(fileChooser.getSelectedFile().getAbsolutePath());

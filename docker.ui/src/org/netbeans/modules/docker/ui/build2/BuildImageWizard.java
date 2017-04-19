@@ -99,7 +99,7 @@ public class BuildImageWizard {
     public static final String PULL_PROPERTY = "pull";
 
     public static final String NO_CACHE_PROPERTY = "noCache";
-    
+
     public static final String BUILD_ARGUMENTS_PROPERTY = "buildArguments";
 
     public static final boolean PULL_DEFAULT = false;
@@ -195,9 +195,9 @@ public class BuildImageWizard {
         }
         String realDockerfile;
         if (dockerfile == null) {
-            realDockerfile = buildContext+"/"+DockerAction.DOCKER_FILE;
+            realDockerfile = buildContext + "/" + DockerAction.DOCKER_FILE;
         } else {
-            realDockerfile = buildContext+"/"+dockerfile;
+            realDockerfile = buildContext + "/" + dockerfile;
         }
         FileObject build = fs.getRoot().getFileObject(buildContext);
         FileObject fo = fs.getRoot().getFileObject(realDockerfile);
@@ -238,9 +238,9 @@ public class BuildImageWizard {
             public void run() {
                 String file;
                 if (dockerfile != null) {
-                    file = buildContext+"/"+dockerfile;
+                    file = buildContext + "/" + dockerfile;
                 } else {
-                    file = buildContext+"/"+DockerAction.DOCKER_FILE;
+                    file = buildContext + "/" + DockerAction.DOCKER_FILE;
                 }
 
                 BuildTask.Hook hook = new BuildTask.Hook() {

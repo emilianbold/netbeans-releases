@@ -115,9 +115,9 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         String buildContext = (String) wizard.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY);
         String dockerfile = component.getDockerfile();
         if (dockerfile == null) {
-            dockerfile = buildContext+"/"+DockerAction.DOCKER_FILE;
+            dockerfile = buildContext + "/" + DockerAction.DOCKER_FILE;
         } else {
-            dockerfile = buildContext+"/"+dockerfile;
+            dockerfile = buildContext + "/" + dockerfile;
         }
         FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
         FileObject fo = fs.getRoot().getFileObject(dockerfile);

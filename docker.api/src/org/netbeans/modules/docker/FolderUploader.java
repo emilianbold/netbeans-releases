@@ -135,7 +135,9 @@ public class FolderUploader {
         void onUpload(String path);
 
     }
+
     private static final class FileObjectAdapter extends File {
+
         private final FileObject fo;
 
         public FileObjectAdapter(FileObject fo) {

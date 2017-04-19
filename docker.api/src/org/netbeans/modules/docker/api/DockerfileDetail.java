@@ -47,6 +47,7 @@ import java.util.Map;
  * @author Ilia Gromov
  */
 public class DockerfileDetail {
+
     private final Map<String, String> buildArgs;
 
     public DockerfileDetail(Map<String, String> buildArgs) {

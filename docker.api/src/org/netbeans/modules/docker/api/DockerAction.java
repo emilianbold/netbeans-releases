@@ -161,7 +161,7 @@ public class DockerAction {
                     Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
-                JSONObject json  = (JSONObject) o;
+                JSONObject json = (JSONObject) o;
                 JSONArray repoTags = (JSONArray) json.get("RepoTags");
                 String id = (String) json.get("Id");
                 long created = (long) json.get("Created");
@@ -352,24 +352,24 @@ public class DockerAction {
             tty = (boolean) getOrDefault(config, "Tty", false);
             stdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
-        JSONObject ports = (JSONObject)((JSONObject) value.get("NetworkSettings")).get("Ports");
+        JSONObject ports = (JSONObject) ((JSONObject) value.get("NetworkSettings")).get("Ports");
         if (ports == null || ports.isEmpty()) {
             return new DockerContainerDetail(name, status, stdin, tty);
         } else {
             List<PortMapping> portMapping = new ArrayList<>();
-            for (String containerPortData : (Set<String>)ports.keySet()) {
+            for (String containerPortData : (Set<String>) ports.keySet()) {
                 JSONArray hostPortsArray = (JSONArray) ports.get(containerPortData);
                 if (hostPortsArray != null && !hostPortsArray.isEmpty()) {
                     Matcher m = PORT_PATTERN.matcher(containerPortData);
                     if (m.matches()) {
                         int containerPort = Integer.parseInt(m.group(1));
                         String type = m.group(2).toUpperCase(Locale.ENGLISH);
-                        int hostPort = Integer.parseInt((String) ((JSONObject)hostPortsArray.get(0)).get("HostPort"));
-                        String hostIp = (String) ((JSONObject)hostPortsArray.get(0)).get("HostIp");
+                        int hostPort = Integer.parseInt((String) ((JSONObject) hostPortsArray.get(0)).get("HostPort"));
+                        String hostIp = (String) ((JSONObject) hostPortsArray.get(0)).get("HostIp");
                         portMapping.add(new PortMapping(ExposedPort.Type.valueOf(type), containerPort, hostPort, hostIp));
                     } else {
                         LOGGER.log(Level.FINE, "Unparsable port: {0}", containerPortData);
-                    }                    
+                    }
                 }
             }
             return new DockerContainerDetail(name, status, stdin, tty, portMapping);
@@ -439,7 +439,7 @@ public class DockerAction {
                             container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
         }
     }
-    
+
     public void pause(DockerContainer container) throws DockerException {
         doPostRequest("/containers/" + container.getId() + "/pause", false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
@@ -504,7 +504,7 @@ public class DockerAction {
             OutputStream os = s.getOutputStream();
             os.write(("POST /containers/" + container.getId()
                     + "/attach?logs=" + (logs ? 1 : 0)
-                    + "&stream=1&stdout=1&stdin="+ (stdin ? 1 : 0)
+                    + "&stream=1&stdout=1&stdin=" + (stdin ? 1 : 0)
                     + "&stderr=1 HTTP/1.1\r\n").getBytes("ISO-8859-1"));
             HttpUtils.configureHeaders(os, DockerConfig.getDefault().getHttpHeaders(),
                     getHostHeader(),
@@ -562,7 +562,7 @@ public class DockerAction {
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("POST /images/create?fromImage="
-                    + HttpUtils.encodeParameter(imageName) + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
+                        + HttpUtils.encodeParameter(imageName) + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
@@ -612,7 +612,7 @@ public class DockerAction {
             throw new DockerException(e);
         } catch (IOException e) {
             throw new DockerException(e);
-       }
+        }
     }
 
     // this call is BLOCKING
@@ -688,7 +688,7 @@ public class DockerAction {
             throw new DockerException(e);
         } catch (IOException e) {
             throw new DockerException(e);
-       }
+        }
     }
 
     public FutureTask<DockerImage> createBuildTask(@NonNull FileObject buildContext, @NullAllowed FileObject dockerfile,
@@ -1102,7 +1102,7 @@ public class DockerAction {
             throw new DockerException(e);
         } catch (IOException e) {
             throw new DockerException(e);
-       }
+        }
     }
 
     private Object doGetRequest(@NonNull String action, Set<Integer> okCodes) throws DockerException {
