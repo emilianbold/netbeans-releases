@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -493,5 +494,15 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     @Override
     public void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
         RemoteVcsSupportUtil.refreshFor(fs, paths);
+    }    
+
+    @Override
+    public URI toURI(VCSFileProxy file) {
+        return RemoteVcsSupportUtil.toURI(getFileSystem(file), file.getPath());
+    }
+
+    @Override
+    public URL toURL(VCSFileProxy file) {
+        return RemoteVcsSupportUtil.toURL(getFileSystem(file), file.getPath());
     }    
 }

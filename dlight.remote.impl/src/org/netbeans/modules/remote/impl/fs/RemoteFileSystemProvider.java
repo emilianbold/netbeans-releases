@@ -217,8 +217,9 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         if (!path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
             return null;
         }
-
+        
         String url = path.substring(RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length());
+        url = PathUtilities.unescapePath(url);
         if (url.startsWith("//")) { // NOI18N
             url = url.substring(2);
         }
@@ -271,6 +272,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
 
         String url = path.substring(RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length());
+        url = PathUtilities.unescapePath(url);
         if (url.startsWith("//")) { // NOI18N
             url = url.substring(2);
         }
