@@ -3288,7 +3288,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!pretty) {
             value = ValuePresenter.getValue(value);
         }
-        //value = formatRegisterIfNeeded(value);
+        value = formatRegisterIfNeeded(value);
         valueChanged = !value.equals(v.getAsText());
         v.setAsText(value);
 
