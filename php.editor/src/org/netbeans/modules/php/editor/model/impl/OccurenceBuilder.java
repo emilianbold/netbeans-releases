@@ -732,7 +732,6 @@ class OccurenceBuilder {
                             buildClassNames(elementInfo, fileScope, cachedOccurences);
                             buildClassIDs(elementInfo, fileScope, cachedOccurences);
                             buildClassDeclarations(elementInfo, fileScope, cachedOccurences);
-                            buildDocTagsForClasses(elementInfo, fileScope, cachedOccurences);
                         }
                         if (isInterface) {
                             buildInterfaceIDs(elementInfo, fileScope, cachedOccurences);
@@ -744,6 +743,7 @@ class OccurenceBuilder {
                         }
                         if (isClass
                                 || isInterface) {
+                            buildDocTagsForClasses(elementInfo, fileScope, cachedOccurences);
                             buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
                         }
                     }
