@@ -732,7 +732,6 @@ class OccurenceBuilder {
                             buildClassNames(elementInfo, fileScope, cachedOccurences);
                             buildClassIDs(elementInfo, fileScope, cachedOccurences);
                             buildClassDeclarations(elementInfo, fileScope, cachedOccurences);
-                            buildDocTagsForClasses(elementInfo, fileScope, cachedOccurences);
                         }
                         if (isInterface) {
                             buildInterfaceIDs(elementInfo, fileScope, cachedOccurences);
@@ -744,8 +743,8 @@ class OccurenceBuilder {
                         }
                         if (isClass
                                 || isInterface) {
+                            buildDocTagsForClasses(elementInfo, fileScope, cachedOccurences);
                             buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
-                            buildMagicMethodDeclarationReturnType(elementInfo, fileScope, cachedOccurences);
                         }
                     }
                     break;
@@ -1034,34 +1033,6 @@ class OccurenceBuilder {
             MagicMethodDeclarationInfo nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
                 occurences.add(new OccurenceImpl(entry.getValue(), nodeInfo.getRange()));
-            }
-        }
-    }
-
-    private void buildMagicMethodDeclarationReturnType(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        for (Entry<MagicMethodDeclarationInfo, MethodScope> entry : magicMethodDeclarations.entrySet()) {
-            if (CancelSupport.getDefault().isCancelled()) {
-                return;
-            }
-            MagicMethodDeclarationInfo nodeInfo = entry.getKey();
-            boolean isTheRightType = false;
-            String idName = nodeCtxInfo.getName();
-            if (idName.equalsIgnoreCase(nodeInfo.getReturnType())) {
-                QualifiedName queryQN = nodeCtxInfo.getQualifiedName();
-                QualifiedName nodeQN = QualifiedName.create(nodeInfo.getReturnType()).toName();
-                if (queryQN.equals(nodeQN)) {
-                    isTheRightType = true;
-                } else {
-                    final Collection<QualifiedName> queryComposedNames = VariousUtils.getComposedNames(queryQN, nodeCtxInfo.getNamespaceScope());
-                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(entry.getValue());
-                    assert namespaceScope != null;
-                    final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, namespaceScope);
-                    queryComposedNames.retainAll(nodeQomposedNames);
-                    isTheRightType = !queryComposedNames.isEmpty();
-                }
-            }
-            if (isTheRightType) {
-                occurences.add(new OccurenceImpl(entry.getValue(), nodeInfo.getTypeRange()));
             }
         }
     }
