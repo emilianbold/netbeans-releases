@@ -114,21 +114,20 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
         String buildContext = (String) wizard.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY);
         String dockerfile = component.getDockerfile();
-        if (dockerfile == null) {
-            dockerfile = buildContext + "/" + DockerAction.DOCKER_FILE;
-        } else {
-            dockerfile = buildContext + "/" + dockerfile;
-        }
-        FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
-        FileObject fo = fs.getRoot().getFileObject(dockerfile);
 
-        // the last check avoids entires like Dockerfile/ to be considered valid files
-        if (fo == null || !fo.isData() || !dockerfile.endsWith(fo.getNameExt())) {
+        FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
+        FileObject buildContextFo = fs.getRoot().getFileObject(buildContext);
+
+        if (buildContextFo == null || !buildContextFo.isFolder()) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonRelativeDockerfile());
+            return false;
+        }
+        FileObject dockerfileFo = (dockerfile == null) ? null : fs.getRoot().getFileObject(dockerfile);
+        if (!BuildImageWizard.isDockerfileValid(dockerfileFo)) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingDockerfile());
             return false;
         }
-        FileObject build = fs.getRoot().getFileObject(buildContext);
-        if (build == null || !FileUtil.isParentOf(build, fo)) {
+        if (!FileUtil.isParentOf(buildContextFo, dockerfileFo)) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonRelativeDockerfile());
             return false;
         }
@@ -137,7 +136,7 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         // That's why this code is located here, not in readSettings
         Map<String, String> buildArguments = (Map<String, String>) wizard.getProperty(BuildImageWizard.BUILD_ARGUMENTS_PROPERTY);
         if (buildArguments == null) {
-            RP.submit(new BuildArgsUpdaterTask(fo));
+            RP.submit(new BuildArgsUpdaterTask(dockerfileFo));
         }
 
         return true;
@@ -158,13 +157,12 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
         if (wizard == null) {
             wizard = wiz;
         }
+        String buildContext = (String) wiz.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY);
+        component.setBuildContext(buildContext);
 
-        component.setBuildContext((String) wiz.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY));
         String dockerfile = (String) wiz.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY);
-        if (dockerfile == null) {
-            dockerfile = DockerAction.DOCKER_FILE;
-        }
         component.setDockerfile(dockerfile);
+
         Boolean pull = (Boolean) wiz.getProperty(BuildImageWizard.PULL_PROPERTY);
         component.setPull(pull != null ? pull : BuildImageWizard.PULL_DEFAULT);
         Boolean noCache = (Boolean) wiz.getProperty(BuildImageWizard.NO_CACHE_PROPERTY);
@@ -206,8 +204,10 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
                 // Submit changes iff user haven't start filling arguments table yet.
                 if (userDefinedBuildArgs == null || userDefinedBuildArgs.isEmpty()) {
                     Map<String, String> filtered = filterMacros(dockerfileDetail.getBuildArgs());
-                    component.setBuildArgs(filtered);
-                    wizard.putProperty(BuildImageWizard.BUILD_ARGUMENTS_PROPERTY, filtered);
+                    if (!filtered.isEmpty()) {
+                        component.setBuildArgs(filtered);
+                        wizard.putProperty(BuildImageWizard.BUILD_ARGUMENTS_PROPERTY, filtered);
+                    }
                 }
             } else {
                 try {

@@ -58,7 +58,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerSupport;
 import org.netbeans.modules.docker.ui.build2.InputOutputCache.CachedInputOutput;
@@ -171,7 +170,7 @@ public class BuildImageWizard {
         }
         if (dockerfile != null && dockerfile.isData()) {
             wiz.putProperty(BUILD_CONTEXT_PROPERTY, dockerfile.getParent().getPath());
-            wiz.putProperty(DOCKERFILE_PROPERTY, dockerfile.getName());
+            wiz.putProperty(DOCKERFILE_PROPERTY, dockerfile.getPath());
         }
         wiz.putProperty(FILESYSTEM_PROPERTY, fileSystem);
 
@@ -190,25 +189,26 @@ public class BuildImageWizard {
     }
 
     static boolean isFinishable(FileSystem fs, String buildContext, String dockerfile) {
-        if (buildContext == null) {
+        if (buildContext == null || dockerfile == null) {
             return false;
         }
-        String realDockerfile;
-        if (dockerfile == null) {
-            realDockerfile = buildContext + "/" + DockerAction.DOCKER_FILE;
-        } else {
-            realDockerfile = buildContext + "/" + dockerfile;
+
+        FileObject buildContextFo = fs.getRoot().getFileObject(buildContext);
+        if (buildContextFo == null || !buildContextFo.isFolder()) {
+            return false;
         }
-        FileObject build = fs.getRoot().getFileObject(buildContext);
-        FileObject fo = fs.getRoot().getFileObject(realDockerfile);
+
+        FileObject dockerfileFo = fs.getRoot().getFileObject(dockerfile);
+        if (!isDockerfileValid(dockerfileFo)) {
+            return false;
+        }
+
+        return FileUtil.isParentOf(buildContextFo, dockerfileFo);
+    }
+
+    static boolean isDockerfileValid(FileObject dockerfileFo) {
         // the last check avoids entires like Dockerfile/ to be considered valid files
-        if (fo == null || !fo.isData() || !realDockerfile.endsWith(fo.getNameExt())) {
-            return false;
-        }
-        if (build == null) {
-            return false;
-        }
-        return FileUtil.isParentOf(build, fo);
+        return dockerfileFo != null && dockerfileFo.isData() && !dockerfileFo.getName().contains("/");
     }
 
     private void build(final DockerInstance instance, final String buildContext,
@@ -236,13 +236,6 @@ public class BuildImageWizard {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
-                String file;
-                if (dockerfile != null) {
-                    file = buildContext + "/" + dockerfile;
-                } else {
-                    file = buildContext + "/" + DockerAction.DOCKER_FILE;
-                }
-
                 BuildTask.Hook hook = new BuildTask.Hook() {
                     @Override
                     public void onStart(FutureTask<DockerImage> task) {
@@ -271,7 +264,7 @@ public class BuildImageWizard {
                 };
 
                 BuildTask task = new BuildTask(instance, io, hook, fileSystem.getRoot().getFileObject(buildContext),
-                        fileSystem.getRoot().getFileObject(file), buildargs, repository, tag, pull, noCache);
+                        fileSystem.getRoot().getFileObject(dockerfile), buildargs, repository, tag, pull, noCache);
                 rerun.configure(task);
                 task.run();
             }

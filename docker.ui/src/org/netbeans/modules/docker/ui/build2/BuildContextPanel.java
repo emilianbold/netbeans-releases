@@ -41,16 +41,16 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
-import java.io.File;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -112,11 +112,12 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
         String buildContext = component.getBuildContext();
         FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
-        FileObject buildContextFo = buildContext == null ? null : fs.getRoot().getFileObject(buildContext);
-        if (buildContext == null || buildContextFo == null || !buildContextFo.isFolder()) {
+        FileObject buildContextFo = (buildContext == null) ? null : fs.getRoot().getFileObject(buildContext);
+        if (buildContextFo == null || !buildContextFo.isFolder()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingBuildContext());
             return false;
         }
+
         if (component.getRepository() == null && component.getTag() != null) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyRepository());
             return false;
@@ -173,6 +174,16 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        FileSystem fs = (FileSystem) wizard.getProperty(BuildImageWizard.FILESYSTEM_PROPERTY);
+        String dockerfile = (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY);
+        String buildContext = component.getBuildContext();
+        if (buildContext != null && dockerfile == null) {
+            dockerfile = buildContext + '/' + DockerAction.DOCKER_FILE;
+            FileObject dockerfileFo = fs.getRoot().getFileObject(dockerfile);
+            if (BuildImageWizard.isDockerfileValid(dockerfileFo)) {
+                wizard.putProperty(BuildImageWizard.DOCKERFILE_PROPERTY, dockerfile);
+            }
+        }
         changeSupport.fireChange();
     }
 }
