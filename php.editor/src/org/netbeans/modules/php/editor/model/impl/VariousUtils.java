@@ -453,6 +453,15 @@ public final class VariousUtils {
             String semiTypeName,
             int offset,
             boolean justDispatcher) {
+        return getType(varScope, semiTypeName, offset, justDispatcher, Collections.emptyList());
+    }
+
+    public static Collection<? extends TypeScope> getType(
+            final VariableScope varScope,
+            String semiTypeName,
+            int offset,
+            boolean justDispatcher,
+            Collection<? extends TypeScope> callerTypes) {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
         Collection<? extends TypeScope> oldRecentTypes;
         Stack<VariableName> fldVarStack = new Stack<>();
@@ -569,7 +578,12 @@ public final class VariousUtils {
                         for (TypeScope type : types) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(type, methodName, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(meth.getReturnTypes(true, types));
+                                if (callerTypes.isEmpty()) {
+                                    newRecentTypes.addAll(meth.getReturnTypes(true, types));
+                                } else {
+                                    // #269108
+                                    newRecentTypes.addAll(meth.getReturnTypes(true, callerTypes));
+                                }
                             }
                         }
                         recentTypes = newRecentTypes;

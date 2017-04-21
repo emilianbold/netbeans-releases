@@ -198,7 +198,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     public Collection<? extends TypeScope> getReturnTypes(boolean resolveSemiTypes, Collection<? extends TypeScope> callerTypes) {
         assert callerTypes != null;
         String types = getReturnType();
-        Collection<? extends TypeScope> result = getReturnTypesDescriptor(types, resolveSemiTypes).getModifiedResult(callerTypes);
+        Collection<? extends TypeScope> result = getReturnTypesDescriptor(types, resolveSemiTypes, callerTypes).getModifiedResult(callerTypes);
         if (!declaredReturnType) {
             updateReturnTypes(types, result);
         }
@@ -208,6 +208,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     private static Set<String> recursionDetection = new HashSet<>(); //#168868
 
     private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolveSemiTypes) {
+        return getReturnTypesDescriptor(types, resolveSemiTypes, Collections.emptyList());
+    }
+
+    private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolveSemiTypes, Collection<? extends TypeScope> callerTypes) {
         ReturnTypesDescriptor result = ReturnTypesDescriptor.NONE;
         if (StringUtils.hasText(types)) {
             final String[] typeNames = types.split(TYPE_SEPARATOR_REGEXP);
@@ -226,7 +230,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                         added = recursionDetection.add(typeName);
                         if (added && recursionDetection.size() < 15) {
                             if (resolveSemiTypes && VariousUtils.isSemiType(typeName)) {
-                                retval.addAll(VariousUtils.getType(this, typeName, getLastValidMethodOffset(), false));
+                                retval.addAll(VariousUtils.getType(this, typeName, getLastValidMethodOffset(), false, callerTypes));
                             } else {
                                 String modifiedTypeName = typeName;
                                 if (typeName.indexOf("[") != -1) { //NOI18N
