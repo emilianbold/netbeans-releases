@@ -93,7 +93,8 @@ public final class BuildContextVisual extends JPanel {
     }
 
     public String getBuildContext() {
-        return UiUtils.normalizePath(UiUtils.getValue(buildContextTextField));
+        String value = UiUtils.getValue(buildContextTextField);
+        return (value == null) ? null : UiUtils.normalizePath(value);
     }
 
     public void setBuildContext(String buildContext) {

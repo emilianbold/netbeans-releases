@@ -69,6 +69,7 @@ import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -233,9 +234,7 @@ public final class UiUtils {
     }
 
     public static String normalizePath(String path) {
-        if (path == null) {
-            return null;
-        }
+        Parameters.notNull("path", path);
         return path.replace('\\', '/');
     }
 }

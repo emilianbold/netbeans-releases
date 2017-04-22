@@ -101,6 +101,7 @@ import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.Endpoint;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.io.NullInputStream;
@@ -713,9 +714,9 @@ public class DockerAction {
                     throw new IllegalArgumentException("Repository can't be empty when using tag");
                 }
 
-                String dockerfileName = null;
+                String dockerRelativePath = null;
                 if (dockerfile != null) {
-                    dockerfileName = dockerfile.getName();
+                    dockerRelativePath = FileUtil.getRelativePath(buildContext, dockerfile);
                 }
 
                 Endpoint s = null;
@@ -732,8 +733,8 @@ public class DockerAction {
                     request.append("POST /build?");
                     request.append("pull=").append(pull ? 1 : 0);
                     request.append("&nocache=").append(noCache ? 1 : 0);
-                    if (dockerfileName != null) {
-                        request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
+                    if (dockerRelativePath != null) {
+                        request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerRelativePath));
                     }
                     if (repository != null) {
                         request.append("&t=").append(HttpUtils.encodeParameter(repository));
