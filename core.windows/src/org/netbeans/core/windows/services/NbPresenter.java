@@ -53,7 +53,6 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.FocusTraversalPolicy;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GridBagConstraints;
@@ -1280,6 +1279,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
         if (!descriptor.isNoDefaultClose() ) {
             descriptor.setValue(NotifyDescriptor.CLOSED_OPTION);
+            buttonListener.actionPerformed(new ActionEvent(NotifyDescriptor.CLOSED_OPTION, -1, ""));
         }
     }
     public void windowActivated(final java.awt.event.WindowEvent p1) {
