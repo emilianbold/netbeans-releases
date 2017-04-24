@@ -92,6 +92,7 @@ public final class ToolchainScriptGenerator {
                 platformName = "PLATFORM_WINDOWS"; //NOI18N
                 break;
             case UNKNOWN:
+            case FREEBSD:
             default:
                 platform = PlatformTypes.PLATFORM_NONE;
                 platformName = "PLATFORM_NONE"; //NOI18N

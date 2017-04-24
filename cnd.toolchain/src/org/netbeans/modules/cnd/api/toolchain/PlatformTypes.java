@@ -91,6 +91,7 @@ public final class PlatformTypes {
             case MACOSX:
                 return PLATFORM_MACOSX;
             case UNKNOWN:
+            case FREEBSD:
                 return PLATFORM_GENERIC;
             default:
                 Exceptions.printStackTrace(new IllegalStateException(
