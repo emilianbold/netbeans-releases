@@ -51,8 +51,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.VetoableChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -71,7 +69,6 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import static org.netbeans.lib.terminalemulator.support.FindState.FIND_HIGHLIGHT_SEARCH;
@@ -104,10 +101,10 @@ public final class FindBar extends JPanel {
     private final Color originalColor;
     private final JToggleButton highlightButton;
 
-    private final Action closeAction = new FindBarAction("CTL_Close", "resources/find_close.png", this::close);
-    private final Action nextAction = new FindBarAction("CTL_Next", "resources/find_next.png", this::next);
-    private final Action prevAction = new FindBarAction("CTL_Previous", "resources/find_previous.png", this::prev);
-    private final Action highlightAction = new FindBarAction("CTL_Highlight", "resources/highlight.png", this::toggleHighlight);
+    private final Action closeAction = new FindBarAction("CTL_Close", "resources/find_close.png", this::close); //NOI18N
+    private final Action nextAction = new FindBarAction("CTL_Next", "resources/find_next.png", this::next); //NOI18N
+    private final Action prevAction = new FindBarAction("CTL_Previous", "resources/find_previous.png", this::prev); //NOI18N
+    private final Action highlightAction = new FindBarAction("CTL_Highlight", "resources/highlight.png", this::toggleHighlight); //NOI18N
 
     /**
      * Callback interface used to communicate to the owner of a {@link FindBar}
