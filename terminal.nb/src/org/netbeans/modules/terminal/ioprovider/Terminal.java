@@ -690,9 +690,6 @@ public final class Terminal extends JComponent {
     }
 
     public void activateSearch() {
-        if (findState.isVisible()) {
-            return;
-        }
         findState.setVisible(true);
         Container ancestor = SwingUtilities.getAncestorOfClass(TerminalContainer.class, this);
         if (ancestor != null && ancestor instanceof TerminalContainer) {
