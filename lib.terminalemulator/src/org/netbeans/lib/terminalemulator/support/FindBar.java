@@ -51,7 +51,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.VetoableChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -63,14 +66,19 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import static org.netbeans.lib.terminalemulator.support.FindState.FIND_HIGHLIGHT_SEARCH;
 
 /**
- * A panel to facilitate text searches with the following elements:
- * <ul
- * <li>A search pattern text entry field.
+ * A panel to facilitate text searches with the following elements: <ul <li>A
+ * search pattern text entry field.
  * <li>A Prev search button.
  * <li>A Next search button.
  * <li>An error area.
@@ -79,6 +87,7 @@ import javax.swing.event.DocumentListener;
  * <p>
  * A FindBar doesn't do any searching by itself but acts as a controller of a
  * {@link FindState} which it can multiplex via {@link FindBar#setState}.
+ *
  * @author ivan
  */
 public final class FindBar extends JPanel {
@@ -90,71 +99,48 @@ public final class FindBar extends JPanel {
 
     private boolean updating = false;   // true while view is being updated
 
-    private Action closeAction;
-    private Action nextAction;
-    private Action prevAction;
+    private final JTextField findText;
+    private final JLabel errorLabel;
+    private final Color originalColor;
+    private final JToggleButton highlightButton;
 
-    private JTextField findText;
-    private JLabel errorLabel;
-    private Color originalColor;
+    private final Action closeAction = new FindBarAction("CTL_Close", "resources/find_close.png", this::close);
+    private final Action nextAction = new FindBarAction("CTL_Next", "resources/find_next.png", this::next);
+    private final Action prevAction = new FindBarAction("CTL_Previous", "resources/find_previous.png", this::prev);
+    private final Action highlightAction = new FindBarAction("CTL_Highlight", "resources/highlight.png", this::toggleHighlight);
 
     /**
      * Callback interface used to communicate to the owner of a {@link FindBar}
      * that it's close button was pressed.
      */
     public interface Owner {
+
         public void close(FindBar who);
     }
 
-    private final class CloseAction extends AbstractAction {
+    private class FindBarAction extends AbstractAction {
 
-        public CloseAction() {
-            super(Catalog.get("CTL_Close"), new ImageIcon(FindBar.class.getResource("find_close.png")));
+        private final Runnable action;
+
+        public FindBarAction(String ctlName, String iconPath, Runnable action) {
+            super(Catalog.get(ctlName), new ImageIcon(FindBar.class.getResource(iconPath)));
+            this.action = action;
         }
 
-	@Override
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
             }
-            close();
-        }
-    }
-
-    private final class NextAction extends AbstractAction {
-
-        public NextAction() {
-            super(Catalog.get("CTL_Next"), new ImageIcon(FindBar.class.getResource("find_next.png")));	// NOI18N
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled()) {
-                return;
-            }
-            next();
-        }
-    }
-
-    private final class PrevAction extends AbstractAction {
-
-        public PrevAction() {
-            super(Catalog.get("CTL_Previous"), new ImageIcon(FindBar.class.getResource("find_previous.png"))); // NOI18N
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent e) {
-            if (!isEnabled()) {
-                return;
-            }
-            prev();
+            action.run();
         }
     }
 
     /**
      * Construct a FindBar.
-     * @param owner Is used to call {@link Owner#close()} when the close
-     *              button is pressed.
+     *
+     * @param owner Is used to call {@link Owner#close()} when the close button
+     * is pressed.
      */
     public FindBar(Owner owner) {
         super();
@@ -184,7 +170,7 @@ public final class FindBar extends JPanel {
 
         findText.getDocument().addDocumentListener(new DocumentListener() {
 
-	    @Override
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 if (!updating) {
                     state.setPattern(findText.getText());
@@ -192,33 +178,37 @@ public final class FindBar extends JPanel {
                 }
             }
 
-	    @Override
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 insertUpdate(e);
             }
 
-	    @Override
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 insertUpdate(e);
             }
         });
 
         findLabel.setLabelFor(findText);
-        prevAction = new PrevAction();
         JButton prevButton = new JButton(prevAction);
         adjustButton(prevButton);
-        nextAction = new NextAction();
         JButton nextButton = new JButton(nextAction);
         adjustButton(nextButton);
-        closeAction = new CloseAction();
         JButton closeButton = new JButton(closeAction);
         adjustButton(closeButton);
+
+        JToolBar.Separator leftSeparator = new JToolBar.Separator();
+        leftSeparator.setOrientation(SwingConstants.VERTICAL);
+
+        highlightButton = new JToggleButton(highlightAction);
+        highlightButton.setText(null);
+        highlightButton.setToolTipText(Catalog.get("TOOLTIP_Highlight")); // NOI18N
+        adjustButton(highlightButton);
 
         InputMap inputMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), getName(prevAction));
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), getName(nextAction));
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), getName(closeAction));
-
 
         ActionMap actionMap = getActionMap();
         actionMap.put(prevAction.getValue(Action.NAME), prevAction);
@@ -228,6 +218,9 @@ public final class FindBar extends JPanel {
         findText.getActionMap().put(nextAction.getValue(Action.NAME), nextAction);
         findText.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), getName(nextAction));
 
+        findText.getActionMap().put(prevAction.getValue(Action.NAME), prevAction);
+        findText.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK), getName(prevAction));
+
         errorLabel = new JLabel();
 
         add(Box.createRigidArea(new Dimension(5, 0)));
@@ -235,6 +228,8 @@ public final class FindBar extends JPanel {
         add(findText);
         add(prevButton);
         add(nextButton);
+        add(leftSeparator);
+        add(highlightButton);
         add(Box.createRigidArea(new Dimension(5, 0)));
         add(errorLabel);
         add(Box.createHorizontalGlue());
@@ -252,6 +247,7 @@ public final class FindBar extends JPanel {
 
     /**
      * Set the FindState for this panel.
+     *
      * @param state the FindState.
      */
     public void setState(FindState state) {
@@ -262,6 +258,12 @@ public final class FindBar extends JPanel {
         try {
             if (state != null) {
                 findText.setText(state.getPattern());
+
+                Object property = state.getProperty(FIND_HIGHLIGHT_SEARCH);
+                Boolean highlight = property instanceof Boolean && (Boolean) property;
+                state.putProperty(FIND_HIGHLIGHT_SEARCH, highlight);
+                highlightButton.setSelected(highlight);
+
                 error(state.getStatus(), false);
             } else {
                 findText.setText("");
@@ -278,6 +280,7 @@ public final class FindBar extends JPanel {
 
     /**
      * Get the FindState for this panel.
+     *
      * @return the FindState.
      */
     public FindState getState() {
@@ -299,10 +302,11 @@ public final class FindBar extends JPanel {
                 findText.setForeground(originalColor);
                 break;
             case EMPTYPATTERN:
-                if (prevNext)
+                if (prevNext) {
                     errorLabel.setText(Catalog.get("MSG_Empty"));// NOI18N
-                else
+                } else {
                     errorLabel.setText("");
+                }
                 findText.setForeground(originalColor);
                 break;
         }
@@ -326,32 +330,50 @@ public final class FindBar extends JPanel {
         }
     }
 
+    private void toggleHighlight() {
+        if (state != null) {
+            boolean isSelected = highlightButton.isSelected();
+            state.putProperty(FIND_HIGHLIGHT_SEARCH, isSelected);
+        }
+    }
+
     /*
      * We're a panel so do our own toolbar-style fly-over hiliting of buttons.
      * Why not be a toolbar?
      * Because of it's graded background which we don't want.
      */
-    private void adjustButton(final JButton button) {
+    private void adjustButton(final AbstractButton button) {
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
 
         button.setMargin(BUTTON_INSETS);
         button.setFocusable(false);
+        if (button instanceof JToggleButton) {
+            button.addChangeListener((ChangeEvent e) -> {
+                updateButtonLook(button, button.isSelected());
+            });
+        }
         button.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseEntered(MouseEvent e) {
                 if (button.isEnabled()) {
-                    button.setContentAreaFilled(true);
-                    button.setBorderPainted(true);
+                    updateButtonLook(button, true);
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                button.setContentAreaFilled(false);
-                button.setBorderPainted(false);
+                if (button instanceof JToggleButton && button.isSelected()) {
+                    return;
+                }
+                updateButtonLook(button, false);
             }
         });
+    }
+
+    private void updateButtonLook(AbstractButton button, boolean selected) {
+        button.setContentAreaFilled(selected);
+        button.setBorderPainted(selected);
     }
 }

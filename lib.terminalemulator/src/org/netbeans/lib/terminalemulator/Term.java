@@ -255,6 +255,8 @@ public class Term extends JComponent implements Accessible {
 
     private State st = new State();
     private Sel sel = new Sel(this, st);
+    private Highlight highlight = new Highlight(this, st);
+
     private transient Ops ops = new OpsImpl();
     private int top_margin = 0;		// 0 means default (see topMargin())
     private int bot_margin = 0;
@@ -3198,6 +3200,7 @@ public class Term extends JComponent implements Accessible {
             // draw over this. Lines that are attributed end up doing some
             // redundant work repainting.
 
+            highlight.paint(g);
             sel.paint(g);
         }
 
@@ -4974,7 +4977,7 @@ public class Term extends JComponent implements Accessible {
     private boolean reverse_video = false;
 
     /**
-     * Set the color of the hilite (selection) - for non XOR mode
+     * Set the color of the selection - for non XOR mode
      * @param color The property value.
      */
     public void setHighlightColor(Color color) {
@@ -5393,6 +5396,24 @@ public class Term extends JComponent implements Accessible {
      */
     public void clearSelection() {
         sel.cancel(true);
+        repaint(false);
+    }
+
+    public Extent[] getHighlightExtents() {
+        return highlight.getHighlightExtents();
+    }
+
+    public void setHighlightExtents(Extent[] extents) {
+        for (Extent extent : extents) {
+            extent.begin.clip(buf.nlines(), buf.totalCols(), firsta);
+            extent.end.clip(buf.nlines(), buf.totalCols(), firsta);
+        }
+        highlight.setHighlightExtents(extents);
+        repaint(false);
+    }
+
+    public void clearHighlight() {
+        highlight.clear();
         repaint(false);
     }
 
