@@ -362,7 +362,7 @@ public final class RegistersWindow extends TopComponent
         private DataPresentationMenu() {
             super(Catalog.get("Reg_ACT_Data_Presentation"));//NOI18N
             String currentFormat = Disassembly.PREFS.get(Disassembly.REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY,
-                    Disassembly.DATA_REPRESENTATION.HEXADECIMAL.toString());
+                    Disassembly.DATA_REPRESENTATION.hexadecimal.toString());
             ActionListener jmiActionListener = new MenuItemActionListener();
             for (Disassembly.DATA_REPRESENTATION f : Disassembly.DATA_REPRESENTATION.values()) {
                 JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(f.name());

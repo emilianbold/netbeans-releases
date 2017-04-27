@@ -2922,26 +2922,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
     }
     
-    private static String formatRegisterIfNeeded(String value_string){
+    private static String formatRegisterIfNeeded(GdbVariable v, String value_string){
+        //for watches we should get format from the Output Base
+        //for tooltips we should show for Disasm windows in hexadecimal format
+        //but if the tooltip is pinned -> use as Output Base in Variables
+        //see bz#270494 - Wrong variable values if user opens Disassembly tab 
+        String format = v != null && (!v.isWatch() || 
+                (v.isWatch() && ((GdbWatch)v).getNativeWatch() != null)) ?  v.getFormat() : 
+                Disassembly.getCurrentDataRepresentationFormat().toString();
         String result = value_string;
         if (Disassembly.isInDisasm()) {
             // see #199557 we need to convert dis annotations to hex
             if (!value_string.startsWith("0x")) { //NOI18N
                 try {
-                    switch (Disassembly.getCurrentDataRepresentationFormat()) {
-                        case  DECIMAL:
+                    switch  (Disassembly.DATA_REPRESENTATION.valueOf(format)) {
+                        case  decimal:
                             break;
-                        case OCTAL:
+                        case octal:
                             result = Address.toOctalString0x(Address.parseAddr(value_string), true);
                             break;
-                        case BINARY:
+                        case binary:
                             result = Address.toBinaryString0x(Address.parseAddr(value_string), true);
                             break;
-                        case HEXADECIMAL:
-                        default:
+                        case hexadecimal:
                             result = Address.toHexString0x(Address.parseAddr(value_string), true);
                             break;
-
+                        default:
+                            result = value_string;
                     }
                     //value_string = Address.toHexString0x(Address.parseAddr(value_string), true);
                 } catch (Exception e) {
@@ -2966,7 +2973,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 String value_string = value.getConstValue("value"); // NOI18N
                 
                 if (dis) {
-                    value_string = formatRegisterIfNeeded(value_string);
+                    value_string = formatRegisterIfNeeded(null, value_string);
                 } else if (value_string.startsWith("@0x")) { //NOI18N
                     try{
                         // See bug 206736 - tooltip for reference-based variable shows address instead of value
@@ -3225,17 +3232,23 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * yet.
      */
     private void retryWatches(boolean forceVarCreate) {
+        try{
+            //see bz#269968 - debugger continues from unexpected breakpoint place after tooltip evaluation
+            //should disable breakpoints
+            postDeactivateBreakpoints();
+            for (WatchVariable wv : watches) {
+                GdbWatch w = (GdbWatch) wv;
+                if (forceVarCreate || w.getNativeWatch().watch().getPin() != null) {
+                    // due to the fix of #197053 it looks safe not to create new vars
+                    if (w.getMIName() != null) {
+                        continue;		// we already have a var for this one
+                    }
 
-        for (WatchVariable wv : watches) {
-            GdbWatch w = (GdbWatch) wv;
-            if (forceVarCreate || w.getNativeWatch().watch().getPin() != null) {
-                // due to the fix of #197053 it looks safe not to create new vars
-                if (w.getMIName() != null) {
-                    continue;		// we already have a var for this one
+                    createMIVar(w, true);
                 }
-
-                createMIVar(w, true);
             }
+        } finally {
+           postActivateBreakpoints();
         }
     }
 
@@ -3288,7 +3301,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!pretty) {
             value = ValuePresenter.getValue(value);
         }
-        value = formatRegisterIfNeeded(value);
+        value = formatRegisterIfNeeded(v, value);
         valueChanged = !value.equals(v.getAsText());
         v.setAsText(value);
 
@@ -3300,7 +3313,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             watchUpdater().treeNodeChanged(v); // just update this node
             if (WatchVariable.class.isAssignableFrom(v.getClass())) {
                 final NativeWatch nativeWatch = ((WatchVariable) v).getNativeWatch();
-                if (nativeWatch != null) {
+                if (nativeWatch != null && nativeWatch.watch().getPin() != null) {
                     NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
                 }
             }
@@ -3462,7 +3475,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             } else {
 		updatevar = (MIValue)item;
             }
-
+            //see bz#248868 as we can get segmentation faults while watches evaluation
+            if (updatevar == null) {
+                //ignore
+                return;//
+            }
             String mi_name = updatevar.asTuple().getConstValue("name"); // NOI18N
             String in_scope = updatevar.asTuple().getConstValue("in_scope"); // NOI18N
             if (Log.Variable.mi_vars) {
@@ -3568,7 +3585,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             "binary", "octal", "decimal", "hexadecimal", "natural" // NOI18N
         };
     }
-
+    
     private void interpVarFormat(GdbVariable v, MIRecord record) {
         MITList format_results = record.results();
         String format = format_results.getConstValue("format"); // NOI18N
@@ -3637,63 +3654,70 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void updateMIVar() {
-        if (!peculiarity.isLldb()) {
-            String cmdString = "-var-update --all-values * "; // NOI18N
-            MICommand cmd =
-                    new MiCommandImpl(cmdString) {
+        try{
+            //see bz#269968 - debugger continues from unexpected breakpoint place after tooltip evaluation
+            //should disable breakpoints
+            postDeactivateBreakpoints();
+            if (!peculiarity.isLldb()) {
+                String cmdString = "-var-update --all-values * "; // NOI18N
+                MICommand cmd =
+                        new MiCommandImpl(cmdString) {
 
-                @Override
-                protected void onDone(MIRecord record) {
-                    interpUpdate(record);
-                    finish();
-                }
-
-                @Override
-                protected void onError(MIRecord record) {
-                    String errMsg = getErrMsg(record);
-
-                    // to work around gdb "corrupt stack" problem
-                    if (try_one_more && errMsg.equals(corrupt_stack)) {
-                        try_one_more = true;
-                        //updateMIVar();
-                    }
-                    // to work around gdb "out of scope" problem
-                    String out_of_scope = "mi_cmd_var_assign: Could not assign expression to varible object"; // NOI18N
-                    if (!errMsg.equals(out_of_scope)) {
-                        genericFailure(record);
+                    @Override
+                    protected void onDone(MIRecord record) {
+                        interpUpdate(record);
                         finish();
                     }
-                }
-            };
 
-            gdb.sendCommand(cmd);
-        }
+                    @Override
+                    protected void onError(MIRecord record) {
+                        String errMsg = getErrMsg(record);
 
-        // update string values
-        Variable[] list = isShowAutos() ? getAutos() : getLocals();
-        for (Variable var : list) {
-            if (var instanceof GdbVariable) {
-                // TODO: MI name should be always available by this moment
-                if (peculiarity.isLldb() && ((GdbVariable) var).getMIName() != null) {
-                    updateMIVar((GdbVariable) var);
-                }
-                updateStringValue((GdbVariable)var);
+                        // to work around gdb "corrupt stack" problem
+                        if (try_one_more && errMsg.equals(corrupt_stack)) {
+                            try_one_more = true;
+                            //updateMIVar();
+                        }
+                        // to work around gdb "out of scope" problem
+                        String out_of_scope = "mi_cmd_var_assign: Could not assign expression to varible object"; // NOI18N
+                        if (!errMsg.equals(out_of_scope)) {
+                            genericFailure(record);
+                            finish();
+                        }
+                    }
+                };
+               
+                gdb.sendCommand(cmd);
             }
-        }
 
-        for (WatchVariable var : getWatches()) {
-            if (var instanceof GdbVariable) {
-                // TODO: MI name should be always available by this moment
-                if (peculiarity.isLldb() && ((GdbVariable) var).getMIName() != null) {
-                    updateMIVar((GdbVariable) var);
+            // update string values
+            Variable[] list = isShowAutos() ? getAutos() : getLocals();
+            for (Variable var : list) {
+                if (var instanceof GdbVariable) {
+                    // TODO: MI name should be always available by this moment
+                    if (peculiarity.isLldb() && ((GdbVariable) var).getMIName() != null) {
+                        updateMIVar((GdbVariable) var);
+                    }
+                    updateStringValue((GdbVariable)var);
                 }
-                updateStringValue((GdbVariable)var);
             }
-        }
 
-        // TODO maybe better place
-        if (peculiarity.isLldb()) {
-            localUpdater.treeChanged();
+            for (WatchVariable var : getWatches()) {
+                if (var instanceof GdbVariable) {
+                    // TODO: MI name should be always available by this moment
+                    if (peculiarity.isLldb() && ((GdbVariable) var).getMIName() != null) {
+                        updateMIVar((GdbVariable) var);
+                    }
+                    updateStringValue((GdbVariable)var);
+                }
+            }
+
+            // TODO maybe better place
+            if (peculiarity.isLldb()) {
+                localUpdater.treeChanged();
+            }
+        } finally {
+             postActivateBreakpoints();
         }
     }
 
@@ -3773,42 +3797,49 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void createMIVar(final GdbVariable v, boolean expandMacros, final Runnable onDoneRunnable,
             final Runnable onErrorRunnable) {
-        String expr = v.getVariableName();
-        if (expandMacros) {
-            expr = MacroSupport.expandMacro(this, v.getVariableName());
-        }       
-        String cmdString = peculiarity.createVarCommand(expr, currentThreadId, currentStackFrameNo); // NOI18N //use current frame number
-        MICommand cmd =
-            new MiCommandImpl(cmdString) {
+        try{
+            //see bz#269968 - debugger continues from unexpected breakpoint place after tooltip evaluation
+            //should disable breakpoints            
+            postDeactivateBreakpoints();
+            String expr = v.getVariableName();
+            if (expandMacros) {
+                expr = MacroSupport.expandMacro(this, v.getVariableName());
+            }       
+            String cmdString = peculiarity.createVarCommand(expr, currentThreadId, currentStackFrameNo); // NOI18N //use current frame number
+            MICommand cmd =
+                new MiCommandImpl(cmdString) {
 
-            @Override
-            protected void onDone(MIRecord record) {
-                v.setAsText("{...}");// clear any error messages // NOI18N
-                v.setInScope(true);
-                interpVar(v, record);
-                updateValue(v, record, true);
-                finish();
-                if (onDoneRunnable != null) {
-                    onDoneRunnable.run();
+                @Override
+                protected void onDone(MIRecord record) {
+                    v.setAsText("{...}");// clear any error messages // NOI18N
+                    v.setInScope(true);
+                    interpVar(v, record);
+                    updateValue(v, record, true);
+                    finish();
+                    if (onDoneRunnable != null) {
+                        onDoneRunnable.run();
+                    }
                 }
-            }
 
-            @Override
-            protected void onError(MIRecord record) {
-                // If var's eing created for watches cannot be parsed
-                // we get an error.
-                String errMsg = getErrMsg(record);
-                v.setAsText(errMsg);
-                v.setInScope(false);
-                finish();
-                if (onErrorRunnable != null) {
-                    onErrorRunnable.run();
-                }                
-                watchUpdater().treeChanged();     // causes a pull
+                @Override
+                protected void onError(MIRecord record) {
+                    // If var's eing created for watches cannot be parsed
+                    // we get an error.
+                    String errMsg = getErrMsg(record);
+                    v.setAsText(errMsg);
+                    v.setInScope(false);
+                    finish();
+                    if (onErrorRunnable != null) {
+                        onErrorRunnable.run();
+                    }                
+                    watchUpdater().treeChanged();     // causes a pull
 
-            }
-        };
-        gdb.sendCommand(cmd);
+                }
+            };
+            gdb.sendCommand(cmd);
+        } finally {
+            postActivateBreakpoints();
+        }
     }
 
     /*
