@@ -62,6 +62,7 @@ import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.system.launchers.impl.CommandLauncher;
 import org.netbeans.installer.wizard.components.WizardAction;
+import static org.netbeans.installer.wizard.components.actions.CreateNativeLauncherAction.BUNDLED_JVM_FILE_PROPERTY;
 
 /**
  *
@@ -182,6 +183,15 @@ public class CreateMacOSAppLauncherAction extends WizardAction {
                     LauncherResource.Type.RELATIVE_LAUNCHER_PARENT.
                     getPathString("../Resources/" + iconName));
             
+            if (System.getProperty(BUNDLED_JVM_FILE_PROPERTY) != null) {
+                final LauncherResource jvm = new LauncherResource(
+                        new File(System.getProperty(BUNDLED_JVM_FILE_PROPERTY)));
+                properties.addJVM(jvm);
+                properties.getJvmArguments().add(
+                        "-D" + BUNDLED_JVM_FILE_PROPERTY + "="
+                        + jvm.getAbsolutePath());
+            }
+
             File file = SystemUtils.createLauncher(properties, platform, progress).
                     getOutputFile();
             
