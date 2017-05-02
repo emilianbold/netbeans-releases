@@ -1,7 +1,7 @@
-changeset:   30246:0e803e38e5c5
-branch:      jclank
-tag:         tip
-user:        Vladimir Voskresensky <vv159170@netbeans.org>
-date:        Tue May 02 15:30:10 2017 +0300
-summary:     JConvert: fixed #403 - Cannot add extra members in the statics class
+#changeset:   30246:0e803e38e5c5
+#branch:      jclank
+#tag:         tip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Tue May 02 15:30:10 2017 +0300
+#summary:     JConvert: fixed #403 - Cannot add extra members in the statics class
 34912CF2DAABFF7E126957B12B571F29F7E7A716 clank_0.3.9.zip
