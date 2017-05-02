@@ -1,7 +1,7 @@
-#changeset:   21704:717eaec19c30
-#branch:      jclank
-#tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Nov 30 19:00:21 2016 +0300
-#summary:     fixing #269068 - [newcodemodel] AssertionError: Invalid index!
-F3A74CD526DF05DFBFF96D0072BB71A334B52AD9 clank_0.3.9.zip
+changeset:   30246:0e803e38e5c5
+branch:      jclank
+tag:         tip
+user:        Vladimir Voskresensky <vv159170@netbeans.org>
+date:        Tue May 02 15:30:10 2017 +0300
+summary:     JConvert: fixed #403 - Cannot add extra members in the statics class
+34912CF2DAABFF7E126957B12B571F29F7E7A716 clank_0.3.9.zip
