@@ -95,7 +95,7 @@ public abstract class Disassembly implements StateModel.Listener {
     private int disLength = 0;
     private DisText disText;
     public static final String REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY = "org.netbeans.modules.cnd.debugger.common.RegistersWindow.format"; // NOI18N    
-    public static enum DATA_REPRESENTATION {OCTAL, DECIMAL, HEXADECIMAL, BINARY};
+    public static enum DATA_REPRESENTATION {binary, octal,decimal, hexadecimal, natural};
     protected static enum RequestMode {FILE_SRC, FILE_NO_SRC, ADDRESS_SRC, ADDRESS_NO_SRC, NONE};
     protected RequestMode requestMode = RequestMode.FILE_SRC;
     public static final Preferences PREFS = NbPreferences.forModule(NativeDebuggerManager.class);
@@ -310,7 +310,7 @@ public abstract class Disassembly implements StateModel.Listener {
     }
     
     public static final DATA_REPRESENTATION getCurrentDataRepresentationFormat() {
-        return DATA_REPRESENTATION.valueOf(PREFS.get(REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY, DATA_REPRESENTATION.HEXADECIMAL.toString()));
+        return DATA_REPRESENTATION.valueOf(PREFS.get(REGISTER_DATA_REPRESENTATION_PREF_FORMAT_KEY, DATA_REPRESENTATION.hexadecimal.toString()));
     }
     
     protected int getAddressLine(String address) {
