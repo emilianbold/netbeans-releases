@@ -173,10 +173,13 @@ public class ConfigurationPanel extends javax.swing.JPanel implements Configurat
         certTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
 
+        nameLabel.setLabelFor(nameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.nameLabel.text")); // NOI18N
 
+        urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.urlLabel.text")); // NOI18N
 
+        certDirectoryLabel.setLabelFor(certTextField);
         org.openide.awt.Mnemonics.setLocalizedText(certDirectoryLabel, org.openide.util.NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.certDirectoryLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigurationPanel.class, "ConfigurationPanel.browseButton.text")); // NOI18N
