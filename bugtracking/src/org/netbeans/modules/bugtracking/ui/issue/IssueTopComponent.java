@@ -129,7 +129,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         instanceContent.add(getActionMap());
         associateLookup(new AbstractLookup(instanceContent));
         
-        RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
             @Override
@@ -201,6 +200,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository.getRepository());
             }
+            RepositoryRegistry.getInstance().removePropertyChangeListener(this);
+            RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         }
         repositoryComboBox.addItemListener(new ItemListener() {
             @Override
@@ -530,6 +531,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     @Override
     public void componentOpened() {
+        if (rs != null) {
+            RepositoryRegistry.getInstance().removePropertyChangeListener(this);
+            RepositoryRegistry.getInstance().addPropertyChangeListener(this);
+        }
         openIssues.add(this);
         if(issue != null) {
             getController().opened();
@@ -540,6 +545,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     @Override
     public void componentClosed() {
+        RepositoryRegistry.getInstance().removePropertyChangeListener(this);
         openIssues.remove(this);
         if(issue != null) {
             undoRedoSupport.register(this, false);

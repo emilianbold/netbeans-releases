@@ -125,7 +125,6 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         this.projectHandle = projectHandle;
         this.project = projectHandle.getTeamProject();
         this.refresher = new DashboardRefresher();
-        project.getServer().addPropertyChangeListener(this);
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("List.background")); // NOI18N
         initComponents();
@@ -506,12 +505,15 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         initDetails();
         loadRecentActivities();
         loadBuildStatus();
+        project.getServer().addPropertyChangeListener(this);
     }
 
     @Override
     public void componentClosed() {
+        OdcsSettings.getInstance().removePropertyChangedListener(this);
         refresher.setRefreshEnabled(false);
         if (project != null) {
+            project.getServer().removePropertyChangeListener(this);
             projectToTC.remove(project.getId());
         }
         buildStatusPanel.removeBuildListeners();
