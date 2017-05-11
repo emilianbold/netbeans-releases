@@ -42,10 +42,13 @@
 package org.netbeans.modules.dlight.terminal.action;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.dlight.terminal.ui.RemoteInfoDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -77,8 +80,14 @@ public final class RemoteTerminalAction extends TerminalAction {
                 true, DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION, null);
 
+        cfgPanel.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            if (NotifyDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
+                dd.setValid((boolean) evt.getNewValue());
+            }
+        });
+
         Dialog cfgDialog = DialogDisplayer.getDefault().createDialog(dd);
-        
+
         try {
             cfgDialog.setVisible(true);
         } catch (Throwable th) {
