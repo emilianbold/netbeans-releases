@@ -56,6 +56,7 @@ import java.util.Map;
 public interface FindState {
 
     public static final String FIND_HIGHLIGHT_SEARCH = "find-highlight-search"; // NOI18N
+    public static final String FIND_SEARCH_BACKWARDS = "find-search-backwards"; // NOI18N
 
     public enum Status {
         /**

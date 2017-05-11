@@ -59,7 +59,6 @@ public class DefaultFindState implements FindState {
     private boolean visible = false;
     private String pattern;
     private boolean tentative;
-    private Direction direction;
     private Extent extent = null;
     private Status status = Status.EMPTYPATTERN;
     private boolean found = false;
@@ -71,7 +70,6 @@ public class DefaultFindState implements FindState {
     public DefaultFindState(Term term) {
         super();
         this.term = term;
-        this.direction = Direction.FORWARD;
     }
 
     private final LogicalLineVisitor forwardVisitor = new LogicalLineVisitor() {
@@ -141,6 +139,23 @@ public class DefaultFindState implements FindState {
 
     @Override
     public void next() {
+        if (isSearchBackwards()) {
+            findPrev();
+        } else {
+            findNext();
+        }
+    }
+
+    @Override
+    public void prev() {
+        if (isSearchBackwards()) {
+            findNext();
+        } else {
+            findPrev();
+        }
+    }
+
+    public void findNext() {
         if (status == Status.EMPTYPATTERN) {
             return;
         }
@@ -166,8 +181,7 @@ public class DefaultFindState implements FindState {
         }
     }
 
-    @Override
-    public void prev() {
+    public void findPrev() {
         if (status == Status.EMPTYPATTERN) {
             return;
         }
@@ -215,5 +229,10 @@ public class DefaultFindState implements FindState {
     public void setProperties(Map<String, Object> properties) {
         this.properties.clear();
         this.properties.putAll(properties);
+    }
+
+    private boolean isSearchBackwards() {
+        Object property = getProperty(FIND_SEARCH_BACKWARDS);
+        return (property instanceof Boolean && (boolean) property);
     }
 }

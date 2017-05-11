@@ -72,6 +72,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import static org.netbeans.lib.terminalemulator.support.FindState.FIND_HIGHLIGHT_SEARCH;
+import static org.netbeans.lib.terminalemulator.support.FindState.FIND_SEARCH_BACKWARDS;
 
 /**
  * A panel to facilitate text searches with the following elements: <ul <li>A
@@ -100,11 +101,13 @@ public final class FindBar extends JPanel {
     private final JLabel errorLabel;
     private final Color originalColor;
     private final JToggleButton highlightButton;
+    private final JToggleButton searchBackwardsButton;
 
     private final Action closeAction = new FindBarAction("CTL_Close", "resources/find_close.png", this::close); //NOI18N
     private final Action nextAction = new FindBarAction("CTL_Next", "resources/find_next.png", this::next); //NOI18N
     private final Action prevAction = new FindBarAction("CTL_Previous", "resources/find_previous.png", this::prev); //NOI18N
     private final Action highlightAction = new FindBarAction("CTL_Highlight", "resources/highlight.png", this::toggleHighlight); //NOI18N
+    private final Action searchBackwardsAction = new FindBarAction("CTL_Backwards", "resources/search_backwards.png", this::searchBackwards); //NOI18N
 
     /**
      * Callback interface used to communicate to the owner of a {@link FindBar}
@@ -202,6 +205,11 @@ public final class FindBar extends JPanel {
         highlightButton.setToolTipText(Catalog.get("TOOLTIP_Highlight")); // NOI18N
         adjustButton(highlightButton);
 
+        searchBackwardsButton = new JToggleButton(searchBackwardsAction);
+        searchBackwardsButton.setText(null);
+        searchBackwardsButton.setToolTipText(Catalog.get("TOOLTIP_Backwards")); // NOI18N
+        adjustButton(searchBackwardsButton);
+
         InputMap inputMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), getName(prevAction));
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), getName(nextAction));
@@ -227,6 +235,7 @@ public final class FindBar extends JPanel {
         add(nextButton);
         add(leftSeparator);
         add(highlightButton);
+        add(searchBackwardsButton);
         add(Box.createRigidArea(new Dimension(5, 0)));
         add(errorLabel);
         add(Box.createHorizontalGlue());
@@ -331,6 +340,13 @@ public final class FindBar extends JPanel {
         if (state != null) {
             boolean isSelected = highlightButton.isSelected();
             state.putProperty(FIND_HIGHLIGHT_SEARCH, isSelected);
+        }
+    }
+
+    private void searchBackwards() {
+        if (state != null) {
+            boolean isSelected = searchBackwardsButton.isSelected();
+            state.putProperty(FIND_SEARCH_BACKWARDS, isSelected);
         }
     }
 
