@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.cnd.remote.projectui.actions;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -72,6 +75,13 @@ public class NewRemoteProjectAction extends RemoteOpenActionBase {
     @Override
     protected Icon getIcon() {
         return icon;
+    }
+
+    @Override
+    protected void updateToolTip() {
+        ServerRecord rec = ServerList.getDefaultRecord();
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(NewRemoteProjectAction.class, "NewRemoteProjectAction.tooltip", 
+                (rec == null/*paranoia*/) ? "?" : rec.getDisplayName())); //NOI18N
     }
 
     @Override
