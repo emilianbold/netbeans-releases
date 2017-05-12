@@ -315,12 +315,16 @@ made subject to such option by the copyright holder.
   <target name="build-nozip" depends="init,download-selected-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build,add-junit" description="Build the IDE but do not create a final ZIP file."/>
   <target name="finish-build" depends="init">
     <loadproperties srcFile="${clusters.list.file}" />
-        
+
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}" includes="ide/external/binaries-list"/>
+    </downloadbinaries>
+
     <mkdir dir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
     <chmod file="${netbeans.dest.dir}/bin/netbeans" perm="ugo+rx"/>
-    <copy file="../ide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
-    <copy file="../ide/launcher/windows/netbeans64.exe" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../ide/external/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../ide/external/netbeans64.exe" todir="${netbeans.dest.dir}/bin" />
     <!-- if anybody knows better place for icons, let me know: jtulach@netbeans.org -->
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
