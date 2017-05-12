@@ -66,6 +66,7 @@ import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.modules.terminal.api.ui.IOVisibilityControl;
 import org.netbeans.modules.terminal.api.ui.TerminalContainer;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
+import org.openide.awt.CloseButtonFactory;
 
 abstract class TerminalContainerCommon extends TerminalContainer implements IOContainer.Provider {
 
@@ -397,8 +398,12 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
                 validate();
                 requestFocus();
             }
-        });
 
+            @Override
+            public JButton createCloseButton(Action closeAction) {
+                return CloseButtonFactory.createBigCloseButton();
+            }
+        });
     }
 
     protected final void componentRemove(JComponent comp) {

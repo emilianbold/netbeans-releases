@@ -70,6 +70,8 @@ public class DefaultFindState implements FindState {
     public DefaultFindState(Term term) {
         super();
         this.term = term;
+        
+        putProperty(FIND_SEARCH_BACKWARDS, true);
     }
 
     private final LogicalLineVisitor forwardVisitor = new LogicalLineVisitor() {

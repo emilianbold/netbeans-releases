@@ -116,6 +116,10 @@ public final class FindBar extends JPanel {
     public interface Owner {
 
         public void close(FindBar who);
+
+        default JButton createCloseButton(Action closeAction) {
+            return new JButton(closeAction);
+        }
     }
 
     private class FindBarAction extends AbstractAction {
@@ -146,7 +150,7 @@ public final class FindBar extends JPanel {
         super();
         this.owner = owner;
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
         JLabel findLabel = new JLabel();
         findLabel.setText(Catalog.get("LBL_Find") + ":");// NOI18N
         findText = new JTextField() {
@@ -194,8 +198,8 @@ public final class FindBar extends JPanel {
         adjustButton(prevButton);
         JButton nextButton = new JButton(nextAction);
         adjustButton(nextButton);
-        JButton closeButton = new JButton(closeAction);
-        adjustButton(closeButton);
+        JButton closeButton = owner.createCloseButton(closeAction);
+        adjustButtonLook(closeButton);
 
         JToolBar.Separator leftSeparator = new JToolBar.Separator();
         leftSeparator.setOrientation(SwingConstants.VERTICAL);
@@ -265,10 +269,15 @@ public final class FindBar extends JPanel {
             if (state != null) {
                 findText.setText(state.getPattern());
 
-                Object property = state.getProperty(FIND_HIGHLIGHT_SEARCH);
-                Boolean highlight = property instanceof Boolean && (Boolean) property;
+                Object highlightProperty = state.getProperty(FIND_HIGHLIGHT_SEARCH);
+                Boolean highlight = highlightProperty instanceof Boolean && (Boolean) highlightProperty;
                 state.putProperty(FIND_HIGHLIGHT_SEARCH, highlight);
                 highlightButton.setSelected(highlight);
+                
+                Object backwardsProperty = state.getProperty(FIND_SEARCH_BACKWARDS);
+                Boolean backwards = backwardsProperty instanceof Boolean && (Boolean) backwardsProperty;
+                state.putProperty(FIND_SEARCH_BACKWARDS, backwards);
+                searchBackwardsButton.setSelected(backwards);
 
                 error(state.getStatus(), false);
             } else {
@@ -356,11 +365,7 @@ public final class FindBar extends JPanel {
      * Because of it's graded background which we don't want.
      */
     private void adjustButton(final AbstractButton button) {
-        button.setContentAreaFilled(false);
-        button.setBorderPainted(false);
-
-        button.setMargin(BUTTON_INSETS);
-        button.setFocusable(false);
+        adjustButtonLook(button);
         if (button instanceof JToggleButton) {
             button.addChangeListener((ChangeEvent e) -> {
                 updateButtonLook(button, button.isSelected());
@@ -383,6 +388,14 @@ public final class FindBar extends JPanel {
                 updateButtonLook(button, false);
             }
         });
+    }
+
+    private void adjustButtonLook(final AbstractButton button) {
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+
+        button.setMargin(BUTTON_INSETS);
+        button.setFocusable(false);
     }
 
     private void updateButtonLook(AbstractButton button, boolean selected) {
