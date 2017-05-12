@@ -1557,7 +1557,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                             if (path.startsWith(getPath()) && path.length() > getPath().length() + 1 && path.charAt(getPath().length()) == '/') {
                                 String relPath = path.substring(getPath().length() + 1);
                                 ZipEntry entry = new ZipEntry(relPath);
-                                //entry.setTime(file.lastModified());
+                                entry.setTime(System.currentTimeMillis() - TimeZone.getDefault().getRawOffset());
                                 zipStream.putNextEntry(entry);
                                 try (FileInputStream fis = new FileInputStream(fo.getCache())) {
                                     FileUtil.copy(fis, zipStream);
@@ -1581,6 +1581,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         }
     }
 
+    /** NB: zip entries time should be in UTC */
     void uploadAndUnzip(InputStream zipStream) throws ConnectException, InterruptedException, IOException {        
         final ExecutionEnvironment env = getExecutionEnvironment();        
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
@@ -1597,7 +1598,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             } finally {
                 zipStream.close();
             }
-            uploadAndUnzip(localZipFile, true);            
+            uploadAndUnzip(localZipFile, true);
         } finally {
             if (localZipFile != null) {
                 localZipFile.delete();
@@ -1605,6 +1606,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         }        
     }
 
+    /** NB: zip entries time should be in UTC */
     @SuppressWarnings("ReplaceStringBufferByString")
     private void uploadAndUnzip(File localZipFile, boolean alsoUnzipToCache) throws InterruptedException, IOException  {
         final ExecutionEnvironment env = getExecutionEnvironment();
@@ -1626,7 +1628,8 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             CommonTasksSupport.rmFile(env, remoteZipPath, null);
             throw new IOException(errorMessage + " when uploading " + localZipFile + " to " + remoteZipPath); //NOI18N
         }
-        StringBuilder script = new StringBuilder("unzip -q -o \"").append(remoteZipPath); // NOI18N
+        StringBuilder script = new StringBuilder("TZ=UTC "); // NOI18N
+        script.append("unzip -q -o \"").append(remoteZipPath); // NOI18N
         script.append("\" && rm \"").append(remoteZipPath).append("\""); //NOI18N
 //            if (adjustLineEndings && Utils.isWindows()) {
 //                script.append(" && (which dos2unix > /dev/null; if [ $? = 0 ]; then find . -name \"*[Mm]akefile*\" -exec dos2unix {}  \\; ; else echo \"no_dos2unix\"; fi)"); //NOI18N
