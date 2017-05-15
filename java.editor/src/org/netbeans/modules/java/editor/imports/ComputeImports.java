@@ -59,6 +59,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.model.JavacElements;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -204,8 +205,6 @@ public final class ComputeImports {
     
     Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(Set<String> forcedUnresolved) {
         final CompilationUnitTree cut = info.getCompilationUnit();
-        Element el = info.getTrees().getElement(new TreePath(cut));
-        ModuleElement modle = el != null ? info.getElements().getModuleOf(el) : null;
         final TreeVisitorImpl v = new TreeVisitorImpl(info);
         setVisitor(v);
         try {
@@ -234,7 +233,7 @@ public final class ComputeImports {
                 if (isCancelled())
                     return null;
 
-                TypeElement te = modle != null ? info.getElements().getTypeElement(modle, typeName.getQualifiedName()) : info.getElements().getTypeElement(typeName.getQualifiedName());
+                TypeElement te = typeName.resolve(info);
                 
                 if (te == null) {
                     Logger.getLogger(ComputeImports.class.getName()).log(Level.INFO, "Cannot resolve type element \"" + typeName + "\".");
