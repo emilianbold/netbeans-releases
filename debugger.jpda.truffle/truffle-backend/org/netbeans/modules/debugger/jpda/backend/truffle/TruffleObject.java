@@ -77,14 +77,18 @@ public class TruffleObject {
         DebugValue metaObject = null;
         try {
             metaObject = value.getMetaObject();
-        } catch (Exception | LinkageError ex) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable ex) {
             LangErrors.exception("Value "+name+" .getMetaObject()", ex);
         }
         String typeStr = "";
         if (metaObject != null) {
             try {
                 typeStr = metaObject.as(String.class);
-            } catch (Exception ex) {
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable ex) {
                 LangErrors.exception("Meta object of "+name+" .as(String.class)", ex);
             }
         }
@@ -93,7 +97,9 @@ public class TruffleObject {
         String valueStr = null;
         try {
             valueStr = value.as(String.class);
-        } catch (Exception ex) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable ex) {
             LangErrors.exception("Value "+name+" .as(String.class)", ex);
         }
         if (valueStr == null) {
@@ -114,7 +120,9 @@ public class TruffleObject {
         Collection<DebugValue> valueProperties;
         try {
             valueProperties = value.getProperties();
-        } catch (Exception ex) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable ex) {
             LangErrors.exception("Value "+name+" .getProperties()", ex);
             valueProperties = null;
         }
@@ -124,7 +132,9 @@ public class TruffleObject {
         boolean valueIsArray;
         try {
             valueIsArray = value.isArray();
-        } catch (Exception ex) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable ex) {
             LangErrors.exception("Value "+name+" .isArray()", ex);
             valueIsArray = false;
         }
@@ -133,7 +143,9 @@ public class TruffleObject {
             List<DebugValue> valueArray;
             try {
                 valueArray = value.getArray();
-            } catch (Exception ex) {
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable ex) {
                 LangErrors.exception("Value "+name+" .getArray()", ex);
                 valueArray = null;
             }
@@ -148,7 +160,9 @@ public class TruffleObject {
             if (sourceLocation != null) {
                 sp = JPDATruffleDebugManager.getPosition(sourceLocation);
             }
-        } catch (Exception | LinkageError ex) {
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable ex) {
             LangErrors.exception("Value "+name+" .getSourceLocation()", ex);
         }
         this.valueSourcePosition = sp;
@@ -160,7 +174,9 @@ public class TruffleObject {
                 if (sourceLocation != null) {
                     sp = JPDATruffleDebugManager.getPosition(sourceLocation);
                 }
-            } catch (Exception | LinkageError ex) {
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable ex) {
                 LangErrors.exception("Meta object of "+name+" .getSourceLocation()", ex);
             }
         }
