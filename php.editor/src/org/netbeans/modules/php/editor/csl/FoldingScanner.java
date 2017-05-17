@@ -65,6 +65,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -119,6 +120,11 @@ public final class FoldingScanner {
     public static final FoldType TYPE_FUNCTION = FoldType.MEMBER.derive("function",
             Bundle.FT_Functions(),
             FoldTemplate.DEFAULT_BLOCK);
+
+    @NbBundle.Messages("FT_Arrays=Arrays")
+    public static final FoldType TYPE_ARRAY = FoldType.NESTED.derive(
+            "array",
+            Bundle.FT_Arrays(), new FoldTemplate(0, 0, "[...]")); // NOI18N
 
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY"; //NOI18N
 
@@ -362,15 +368,38 @@ public final class FoldingScanner {
             }
         }
 
+        @Override
+        public void visit(ArrayCreation node) {
+            super.visit(node);
+            ArrayCreation.Type type = node.getType();
+            if (type == ArrayCreation.Type.NEW) {
+                addFold(node, TYPE_ARRAY);
+            } else {
+                addFold(new OffsetRange(node.getStartOffset() + "array".length(), node.getEndOffset()), TYPE_ARRAY); // NOI18N
+            }
+        }
+
         private void addFold(final ASTNode node) {
             if (!(node instanceof ASTError) && !(node instanceof EmptyStatement)) {
                 addFold(createOffsetRange(node));
             }
         }
 
+        private void addFold(final ASTNode node, FoldType type) {
+            if (!(node instanceof ASTError) && !(node instanceof EmptyStatement)) {
+                addFold(createOffsetRange(node), type);
+            }
+        }
+
         private void addFold(final OffsetRange offsetRange) {
             if (offsetRange != null && offsetRange.getLength() > 1) {
                 getRanges(folds, TYPE_CODE_BLOCKS).add(offsetRange);
+            }
+        }
+
+        private void addFold(final OffsetRange offsetRange, FoldType type) {
+            if (offsetRange != null && offsetRange.getLength() > 1) {
+                getRanges(folds, type).add(offsetRange);
             }
         }
 

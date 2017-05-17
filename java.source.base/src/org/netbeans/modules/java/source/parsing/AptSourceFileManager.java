@@ -47,18 +47,25 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 
 /**
@@ -77,18 +84,23 @@ public class AptSourceFileManager extends SourceFileManager {
      * Transactional support, makes files visible at the end of scanning
      */
     private final FileManagerTransaction fileTx;
+    private final ModuleSourceFileManager moduleSourceFileManager;
+
+    private Iterable<Set<Location>> cachedModuleLocations;
 
     public AptSourceFileManager (
             final @NonNull ClassPath userRoots,
             final @NonNull ClassPath aptRoots,
             final @NonNull SiblingProvider siblings,
-            final @NonNull FileManagerTransaction fileTx) {
+            final @NonNull FileManagerTransaction fileTx,
+            final @NullAllowed ModuleSourceFileManager moduleSFileManager) {
         super(aptRoots, true);
         assert userRoots != null;
         assert siblings != null;
         this.userRoots = userRoots;
         this.siblings = siblings;
         this.fileTx = fileTx;
+        this.moduleSourceFileManager = moduleSFileManager;
     }
 
     @Override
@@ -99,10 +111,21 @@ public class AptSourceFileManager extends SourceFileManager {
     @Override
     public javax.tools.FileObject getFileForOutput(Location l, String pkgName, String relativeName, javax.tools.FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        if (StandardLocation.SOURCE_OUTPUT != l) {
+        URL aptRoot = getAptRoot(sibling);
+        if (ModuleLocation.isInstance(l)) {
+            ModuleLocation mloc = ModuleLocation.cast(l);
+            l = mloc.getBaseLocation();
+            if (aptRoot == null) {
+                final Iterator<? extends URL> it = mloc.getModuleRoots().iterator();
+                aptRoot = it.hasNext() ? it.next() : null;
+            } else if (!mloc.getModuleRoots().contains(aptRoot)) {
+                throw new UnsupportedOperationException("ModuleLocation's APT root differs from the sibling's APT root");
+            }
+        }
+        final Location location = l;
+        if (StandardLocation.SOURCE_OUTPUT != location) {
             throw new UnsupportedOperationException("Only apt output is supported."); // NOI18N
         }
-        final FileObject aptRoot = getAptRoot(sibling);
         if (aptRoot == null) {
             throw new UnsupportedOperationException(noAptRootDebug(sibling));
         }
@@ -110,26 +133,42 @@ public class AptSourceFileManager extends SourceFileManager {
             relativeName :
             pkgName.replace('.', File.separatorChar) + File.separatorChar + relativeName;    //NOI18N
         //Always on master fs -> file is save.
-        File rootFile = FileUtil.toFile(aptRoot);
-        return fileTx.createFileObject(l, new File(rootFile,nameStr), rootFile, null, null);
+        return Optional.ofNullable(URLMapper.findFileObject(aptRoot))
+                .map(fo -> {
+                    File f = FileUtil.toFile(fo);
+                    return fileTx.createFileObject(location, new File(f, nameStr), f, null, null);
+                }).get();
     }
 
 
     @Override
     public JavaFileObject getJavaFileForOutput (Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        if (StandardLocation.SOURCE_OUTPUT != l) {
+        URL aptRoot = getAptRoot(sibling);
+        if (ModuleLocation.isInstance(l)) {
+            ModuleLocation mloc = ModuleLocation.cast(l);
+            l = mloc.getBaseLocation();
+            if (aptRoot == null) {
+                final Iterator<? extends URL> it = mloc.getModuleRoots().iterator();
+                aptRoot = it.hasNext() ? it.next() : null;
+            } else if (!mloc.getModuleRoots().contains(aptRoot)) {
+                throw new UnsupportedOperationException("ModuleLocation's APT root differs from the sibling's APT root");
+            }
+        }
+        final Location location = l;
+        if (StandardLocation.SOURCE_OUTPUT != location) {
             throw new UnsupportedOperationException("Only apt output is supported."); // NOI18N
         }
-        final FileObject aptRoot = getAptRoot(sibling);
         if (aptRoot == null) {
             throw new UnsupportedOperationException(noAptRootDebug(sibling));
         }
         final String nameStr = className.replace('.', File.separatorChar) + kind.extension;    //NOI18N
         //Always on master fs -> file is save.
-        File rootFile = FileUtil.toFile(aptRoot);
-        final JavaFileObject result = fileTx.createFileObject(l, new File(rootFile,nameStr), rootFile, null, null);
-        return result;
+        return Optional.ofNullable(URLMapper.findFileObject(aptRoot))
+                .map(fo -> {
+                    File f = FileUtil.toFile(fo);
+                    return fileTx.createFileObject(location, new File(f, nameStr), f, null, null);
+                }).get();
     }
 
     @Override
@@ -137,13 +176,81 @@ public class AptSourceFileManager extends SourceFileManager {
         return super.handleOption(head, tail);
     }
 
-    private FileObject getAptRoot (final javax.tools.FileObject sibling) {
+    @Override
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
+        if (location != StandardLocation.SOURCE_OUTPUT) {
+            throw new UnsupportedOperationException("Only apt output is supported."); // NOI18N
+        }
+        if (cachedModuleLocations == null) {
+            if (moduleSourceFileManager != null) {
+                final Set<URL> entriesUrl = new HashSet<>();
+                sourceRoots.entries().forEach((e) -> entriesUrl.add(e.getURL()));
+                cachedModuleLocations = moduleSourceFileManager.sourceModuleLocations().stream()
+                        .map((ml) -> {
+                            ModuleLocation oml = ModuleLocation.create(
+                                    StandardLocation.SOURCE_OUTPUT,
+                                    ml.getModuleRoots().stream()
+                                            .map((src) -> {
+                                                try {
+                                                    return BaseUtilities.toURI(JavaIndex.getAptFolder(src, false)).toURL();
+                                                } catch (IOException ioe) {
+                                                    Exceptions.printStackTrace(ioe);
+                                                    return null;
+                                                }
+                                            })
+                                            .filter((cacheEntry) -> cacheEntry != null && entriesUrl.contains(cacheEntry))
+                                            .collect(Collectors.toSet()),
+                                    ml.getModuleName());
+                            return oml.getModuleRoots().isEmpty() ? null : Collections.singleton((Location)oml);
+                        })
+                        .filter(locations -> locations != null)
+                        .collect(Collectors.toList());
+            } else {
+                cachedModuleLocations = Collections.emptySet();
+            }
+        }
+        return cachedModuleLocations;
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
+        return StreamSupport.stream(
+                listLocationsForModules(location).spliterator(),
+                false)
+                .flatMap((c) -> c.stream())
+                .filter((l) -> moduleName.equals(ModuleLocation.cast(l).getModuleName()))
+                .findAny()
+                .orElse(null);
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
+        final URL foUrl = fo.toUri().toURL();
+        for (Set<Location> s :  listLocationsForModules(location)) {
+            for (Location l : s) {
+                ModuleLocation ml = ModuleLocation.cast(l);
+                for (URL root : ml.getModuleRoots()) {
+                    if (FileObjects.isParentOf(root, foUrl)) {
+                        return l;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String inferModuleName(Location location) throws IOException {
+        final ModuleLocation ml = ModuleLocation.cast(location);
+        return ml.getModuleName();
+    }
+
+    private URL getAptRoot (final javax.tools.FileObject sibling) {
         final URL ownerRoot = getOwnerRoot (sibling);
         if (ownerRoot == null) {
             return null;
         }
-        final URL aptRoot = AptCacheForSourceQuery.getAptFolder(ownerRoot);
-        return aptRoot == null ? null : URLMapper.findFileObject(aptRoot);
+        return AptCacheForSourceQuery.getAptFolder(ownerRoot);
     }
 
     private URL getOwnerRoot (final javax.tools.FileObject sibling) {

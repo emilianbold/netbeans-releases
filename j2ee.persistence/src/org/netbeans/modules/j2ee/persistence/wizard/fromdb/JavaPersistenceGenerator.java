@@ -52,12 +52,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -244,11 +246,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         if (persistenceUnit == null && !addToAutoDiscoveredPU) {
             return;
         }
+        FileObject fo = entities.iterator().next();
 
-        Project project = FileOwnerQuery.getOwner(entities.iterator().next());
-        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project, fo) != null) {
             try {
-                PUDataObject pudo = ProviderUtil.getPUDataObject(project);
+                PUDataObject pudo = ProviderUtil.getPUDataObject(project, fo, null);
                 // no persistence unit was provider, we'll try find one
                 if (persistenceUnit == null) {
                     PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
@@ -511,7 +514,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
             Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
             Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
-            JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
+            JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs)
+                    .setModuleBootPaths(getAllClassPaths(generationPackageFOs, JavaClassPathConstants.MODULE_BOOT_PATH))
+                    .setModuleCompilePaths(getAllClassPaths(generationPackageFOs, JavaClassPathConstants.MODULE_COMPILE_PATH))
+                    .setModuleClassPaths(getAllClassPaths(generationPackageFOs, JavaClassPathConstants.MODULE_CLASS_PATH))
+                    .setModuleSourcePaths(getAllClassPaths(generationPackageFOs, JavaClassPathConstants.MODULE_SOURCE_PATH));
             //1st just go through to refresh, in some rare cases entities can't be found/parsed, see #213736
             for (int i = 0; i < entityClasses.length; i++) {
                 final EntityClass entityClass = entityClasses[i];
@@ -620,7 +627,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private static Set<ClassPath> getAllClassPaths(Set<FileObject> fileObjects, String id) {
             Set<ClassPath> classPaths = new HashSet<ClassPath>();
             for (FileObject fileObject : fileObjects) {
-                classPaths.add(ClassPath.getClassPath(fileObject, id));
+                ClassPath cp = ClassPath.getClassPath(fileObject, id);
+                if (cp != null) {
+                    classPaths.add(cp);
+                }
             }
             return classPaths;
         }
@@ -661,6 +671,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             protected ClassTree newClassTree;
             // the TypeElement corresponding to classTree
             protected TypeElement typeElement;
+            // classTree's module
+            protected ModuleElement moduleElement;
             // the generating type like New, Update etc
             protected UpdateType updateType;
 
@@ -684,6 +696,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     throw new IllegalStateException("Cannot find a public top-level class named " + entityClass.getClassName() + // NOI18N
                             " in " + FileUtil.getFileDisplayName(copy.getFileObject())); // NOI18N
                 }
+                moduleElement = copy.getElements().getModuleOf(typeElement);
                 originalClassTree = (ClassTree) copy.getTrees().getTree(typeElement);
                 assert originalClassTree != null;
                 newClassTree = originalClassTree;
@@ -977,8 +990,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     if (xmlTransient) {
                         AnnotationTree xmlTransientAn = genUtils.createAnnotation(
                                 "javax.xml.bind.annotation.XmlTransient"); //NOI18N
-                        TypeElement jsonIgnore = copy.getElements().getTypeElement(
-                            "org.codehaus.jackson.annotate.JsonIgnore");    // NOI18N
+                        TypeElement jsonIgnore = moduleElement != null
+                                ? copy.getElements().getTypeElement(
+                                        moduleElement,
+                                        "org.codehaus.jackson.annotate.JsonIgnore") // NOI18N
+                                : copy.getElements().getTypeElement(
+                                        "org.codehaus.jackson.annotate.JsonIgnore"); // NOI18N
                         List<AnnotationTree> annotationTrees;
                         if ( jsonIgnore == null ){
                             annotationTrees = Collections.singletonList(xmlTransientAn);
@@ -1442,7 +1459,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if(replacedTypeNames.containsKey(typeName)) {
                     typeName = replacedTypeNames.get(typeName);
                 }
-                TypeElement typeEl = copy.getElements().getTypeElement(typeName);
+                TypeElement typeEl = moduleElement != null
+                        ? copy.getElements().getTypeElement(moduleElement, typeName)
+                        : copy.getElements().getTypeElement(typeName);
                 //need some extended logging if null, see issue # 217461
                 if(typeEl == null) {
                      Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Null typeelement for {0}", typeName); //NOI18N
@@ -1460,7 +1479,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 TypeMirror fieldType = typeEl.asType();
                 if (role.isToMany()) {
                     // Use the collection type the user wants
-                    TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionType.className());
+                    TypeElement collectionTypeElem = moduleElement != null
+                            ? copy.getElements().getTypeElement(moduleElement, collectionType.className())
+                            : copy.getElements().getTypeElement(collectionType.className());
                     fieldType = copy.getTypes().getDeclaredType(collectionTypeElem, fieldType);
                 }
 

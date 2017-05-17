@@ -51,4 +51,4 @@ made subject to such option by the copyright holder.
              localizing_bundle="org.netbeans.modules.cnd.navigation.overrides.Bundle"
              visible="true"
              glyph="nbresloc:/org/netbeans/modules/cnd/navigation/resources/overrides/specializes.png"
-             priority="5"/>
+             priority="60"/>

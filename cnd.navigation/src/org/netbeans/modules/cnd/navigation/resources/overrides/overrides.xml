@@ -50,4 +50,5 @@ made subject to such option by the copyright holder.
              description_key="LAB_OverridesAnnotation"
              localizing_bundle="org.netbeans.modules.cnd.navigation.overrides.Bundle"
              visible="true"
-             glyph="nbresloc:/org/netbeans/modules/cnd/navigation/resources/overrides/overrides.png"/>
+             glyph="nbresloc:/org/netbeans/modules/cnd/navigation/resources/overrides/overrides.png"
+             priority="60"/>

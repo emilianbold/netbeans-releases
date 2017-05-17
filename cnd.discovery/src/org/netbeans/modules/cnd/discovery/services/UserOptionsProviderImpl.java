@@ -223,14 +223,14 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         return res;
     }
 
-    private PkgConfig getPkgConfig(ExecutionEnvironment env){
+    private PkgConfig getPkgConfig(ExecutionEnvironment env, MakeConfiguration conf){
         String hostKey = ExecutionEnvironmentFactory.toUniqueID(env);
         PkgConfig pkg;
         synchronized(pkgConfigs){
             pkg = pkgConfigs.get(hostKey);
             if (pkg == null) {
                 if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                    pkg = PkgConfigManager.getDefault().getPkgConfig(env);
+                    pkg = PkgConfigManager.getDefault().getPkgConfig(env, conf); //pass conf
                     pkgConfigs.put(hostKey, pkg);
                 }
             }
@@ -239,8 +239,8 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     @Override
-    public NativeFileSearch getPackageFileSearch(final ExecutionEnvironment env) {
-        final PkgConfig pkg = getPkgConfig(env);
+    public NativeFileSearch getPackageFileSearch(final ExecutionEnvironment env, MakeConfiguration conf) {
+        final PkgConfig pkg = getPkgConfig(env, conf);
         if (pkg != null) {
             return new NativeFileSearch() {
                 @Override
@@ -280,7 +280,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             findPkg = aPkg;
         }
         if (readFlags && findPkg != null) {
-            PkgConfig configs = getPkgConfig(getExecutionEnvironment(conf));
+            PkgConfig configs = getPkgConfig(getExecutionEnvironment(conf), conf);
             if (configs != null) {
                 PackageConfiguration config = configs.getPkgConfig(findPkg);
                 if (config != null){

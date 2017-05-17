@@ -76,6 +76,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.Annotate;
 import com.sun.tools.javac.comp.ArgumentAttr;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
@@ -364,6 +365,7 @@ public class Utilities {
 
     private static Tree parseAndAttribute(CompilationInfo info, JavacTaskImpl jti, String pattern, Scope scope, SourcePositions[] sourcePositions, Collection<Diagnostic<? extends JavaFileObject>> errors) {
         Context c = jti.getContext();
+        JavaCompiler.instance(c); //force reasonable initialization order
         TreeFactory make = TreeFactory.instance(c);
         List<Diagnostic<? extends JavaFileObject>> patternTreeErrors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
         Tree toAttribute;
@@ -755,6 +757,7 @@ public class Utilities {
         JavaCompiler compiler = JavaCompiler.instance(context);
         Log log = Log.instance(context);
         NBResolve resolve = NBResolve.instance(context);
+        Annotate annotate = Annotate.instance(context);
         Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log);
 
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/$" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
@@ -764,9 +767,12 @@ public class Utilities {
         try {
             compiler.skipAnnotationProcessing = true;
             resolve.disableAccessibilityChecks();
+            if (compiler.isEnterDone()) {
+                annotate.blockAnnotations();
+                compiler.resetEnterDone();
+            }
             
             JCCompilationUnit cut = compiler.parse(jfo);
-
             compiler.enterTrees(compiler.initModules(com.sun.tools.javac.util.List.of(cut)));
 
             Todo todo = compiler.todo;
@@ -1287,7 +1293,7 @@ public class Utilities {
                          boolean keepLineMap,
                          CancelService cancelService,
                          Names names) {
-            super(fac, S, keepDocComments, keepLineMap, true, cancelService);
+            super(fac, S, keepDocComments, keepLineMap, true, false, cancelService);
             this.ctx = ctx;
             this.dollar = names.fromString("$");
         }

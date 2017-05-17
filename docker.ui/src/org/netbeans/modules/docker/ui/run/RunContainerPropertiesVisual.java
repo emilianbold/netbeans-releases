@@ -208,6 +208,7 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
 
         nameTextField.setColumns(15);
 
+        userLabel.setLabelFor(userTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.userLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(privilegedCheckBox, org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.privilegedCheckBox.text")); // NOI18N
@@ -245,6 +246,7 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
             }
         });
         volumesTable.setEnabled(false);
+        volumesTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(volumesTable);
         if (volumesTable.getColumnModel().getColumnCount() > 0) {
             volumesTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(RunContainerPropertiesVisual.class, "RunContainerPropertiesVisual.volumesTable.columnModel.title0")); // NOI18N
@@ -270,11 +272,11 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
             .addComponent(privilegedCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(mountVolumesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 447, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(deleteButton, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)))
+                    .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -315,12 +317,6 @@ public class RunContainerPropertiesVisual extends javax.swing.JPanel {
         volumesTable.setEnabled(selected);
         addButton.setEnabled(selected);
         deleteButton.setEnabled(selected);
-
-        TableCellEditor editor = volumesTable.getCellEditor();
-        if (editor != null) {
-            editor.cancelCellEditing();
-        }
-        volumesTable.clearSelection();
     }//GEN-LAST:event_mountVolumesCheckBoxStateChanged
 
 

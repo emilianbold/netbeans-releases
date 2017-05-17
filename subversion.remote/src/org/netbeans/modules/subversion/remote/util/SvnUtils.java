@@ -231,6 +231,13 @@ public class SvnUtils {
             if (ctx != null) return ctx;
         }
         VCSContext vcsCtx = VCSContext.forNodes(nodes);
+        VCSFileProxy topmostManagedAncestor = null;
+        for (VCSFileProxy root : vcsCtx.getRootFiles()) {
+            topmostManagedAncestor = Subversion.getInstance().getTopmostManagedAncestor(root);
+        }
+        if (topmostManagedAncestor == null) {
+            return Context.Empty;
+        }
         Context ctx = new Context(new ArrayList<>(vcsCtx.computeFiles(svnFileFilter)), new ArrayList<>(vcsCtx.getRootFiles()), new ArrayList<>(vcsCtx.getExclusions()));
         contextCached = new WeakReference<>(ctx);
         contextNodesCached = new WeakReference<>(nodes);

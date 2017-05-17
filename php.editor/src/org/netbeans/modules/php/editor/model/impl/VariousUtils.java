@@ -101,6 +101,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
@@ -118,6 +119,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -244,6 +246,9 @@ public final class VariousUtils {
         if (returnType != null) {
             QualifiedName name = QualifiedName.create(returnType);
             assert name != null : returnType;
+            if (returnType instanceof NullableType) {
+                return CodeUtils.NULLABLE_TYPE_PREFIX + name.toString();
+            }
             return name.toString();
         }
         return getReturnTypeFromPHPDoc(root, functionDeclaration);
@@ -265,8 +270,8 @@ public final class VariousUtils {
         return getDeprecatedDescriptionFromPHPDoc(root, node) != null;
     }
 
-    public static Map<String, List<QualifiedName>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
-        Map<String, List<QualifiedName>> retval = new HashMap<>();
+    public static Map<String, List<Pair<QualifiedName, Boolean>>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
+        Map<String, List<Pair<QualifiedName, Boolean>>> retval = new HashMap<>();
         Comment comment = Utils.getCommentForNode(root, node);
 
         if (comment instanceof PHPDocBlock) {
@@ -274,10 +279,15 @@ public final class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind().equals(PHPDocTag.Type.PARAM)) {
-                    List<QualifiedName> types = new ArrayList<>();
+                    List<Pair<QualifiedName, Boolean>> types = new ArrayList<>();
                     PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag) tag;
                     for (PHPDocTypeNode type : paramTag.getTypes()) {
-                        types.add(QualifiedName.create(type.getValue()));
+                        String typeName = type.getValue();
+                        boolean isNullableType = CodeUtils.isNullableType(typeName);
+                        if (isNullableType) {
+                            typeName = typeName.substring(1);
+                        }
+                        types.add(Pair.of(QualifiedName.create(typeName), isNullableType));
                     }
                     retval.put(paramTag.getVariable().getValue(), types);
                 }
@@ -443,6 +453,15 @@ public final class VariousUtils {
             String semiTypeName,
             int offset,
             boolean justDispatcher) {
+        return getType(varScope, semiTypeName, offset, justDispatcher, Collections.emptyList());
+    }
+
+    public static Collection<? extends TypeScope> getType(
+            final VariableScope varScope,
+            String semiTypeName,
+            int offset,
+            boolean justDispatcher,
+            Collection<? extends TypeScope> callerTypes) {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
         Collection<? extends TypeScope> oldRecentTypes;
         Stack<VariableName> fldVarStack = new Stack<>();
@@ -559,7 +578,12 @@ public final class VariousUtils {
                         for (TypeScope type : types) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(type, methodName, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(meth.getReturnTypes(true, types));
+                                if (callerTypes.isEmpty()) {
+                                    newRecentTypes.addAll(meth.getReturnTypes(true, types));
+                                } else {
+                                    // #269108
+                                    newRecentTypes.addAll(meth.getReturnTypes(true, callerTypes));
+                                }
                             }
                         }
                         recentTypes = newRecentTypes;
@@ -638,9 +662,10 @@ public final class VariousUtils {
                 }
             }
         } else if (semiTypeName != null) {
-            QualifiedName qn = QualifiedName.create(semiTypeName);
+            String typeName = CodeUtils.removeNullableTypePrefix(semiTypeName);
+            QualifiedName qn = QualifiedName.create(typeName);
             qn = qn.toNamespaceName().append(translateSpecialClassName(varScope, qn.getName()));
-            if (semiTypeName.startsWith("\\")) { // NOI18N
+            if (typeName.startsWith("\\")) { // NOI18N
                 qn = qn.toFullyQualified();
             } else {
                 NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(varScope);
@@ -1689,6 +1714,10 @@ public final class VariousUtils {
             if (!typeNames.matches(SPACES_AND_TYPE_DELIMITERS)) { //NOI18N
                 for (String typeName : TYPE_SEPARATOR_PATTERN.split(typeNames)) {
                     String typeRawPart = typeName;
+                    if (CodeUtils.isNullableType(typeRawPart)) {
+                        retval.append(CodeUtils.NULLABLE_TYPE_PREFIX);
+                        typeRawPart = typeRawPart.substring(1);
+                    }
                     String typeArrayPart = ""; //NOI18N
                     int indexOfArrayDelim = typeName.indexOf('[');
                     if (indexOfArrayDelim != -1) {

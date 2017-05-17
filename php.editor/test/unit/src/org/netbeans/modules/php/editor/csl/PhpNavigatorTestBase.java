@@ -45,6 +45,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -81,8 +84,7 @@ public abstract class PhpNavigatorTestBase extends ParserTestBase {
             }
         };
         final List<StructureItem> result = new ArrayList<>();
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
-
+        UserTask task = new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult info = (PHPParseResult)resultIterator.getParserResult();
@@ -90,7 +92,18 @@ public abstract class PhpNavigatorTestBase extends ParserTestBase {
                     result.addAll(instance.scan(info));
                 }
             }
-        });
+        };
+
+        Map<String, ClassPath> classPaths = createClassPathsForTest();
+        if (classPaths == null || classPaths.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            if (!future.isDone()) {
+                future.get();
+            }
+        }
+
         Comparator<StructureItem> comparator = new Comparator<StructureItem>() {
             @Override
             public int compare(StructureItem o1, StructureItem o2) {

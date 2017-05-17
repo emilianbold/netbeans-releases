@@ -359,6 +359,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         if (previousToken == PHPTokenId.PHPDOC_COMMENT_START || previousToken == PHPTokenId.PHP_COMMENT_START) {
             return null;
         }
+        boolean foundQuestionMark = false;
         // at fist there should be find a bracket  '{' or column ':'
         Token<? extends PHPTokenId> bracketColumnToken = LexUtilities.findPrevious(ts,
                 Arrays.asList(PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
@@ -378,7 +379,8 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             Token<? extends PHPTokenId> keyToken = LexUtilities.findPreviousToken(ts, lookFor);
             while (keyToken.id() == PHPTokenId.PHP_TOKEN) {
                 if (TokenUtilities.textEquals(keyToken.text(), "?")) { // NOI18N
-                    return null;
+                    // nullable type prefix or ternary operator
+                    foundQuestionMark = true;
                 }
                 ts.movePrevious();
                 keyToken = LexUtilities.findPreviousToken(ts, lookFor);
@@ -421,6 +423,10 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         }
         ts.move(offset);
         if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+        // #270233 also see #196596
+        if (foundQuestionMark && result != PHPTokenId.PHP_FUNCTION) {
             return null;
         }
         return result;

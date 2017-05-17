@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.openide.util.Pair;
 
 /**
  *
@@ -60,7 +61,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
  */
 public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDeclaration> {
 
-    private final Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+    private final Map<String, List<Pair<QualifiedName, Boolean>>> paramDocTypes = Collections.emptyMap();
 
 
     protected LambdaFunctionDeclarationInfo(LambdaFunctionDeclaration node) {

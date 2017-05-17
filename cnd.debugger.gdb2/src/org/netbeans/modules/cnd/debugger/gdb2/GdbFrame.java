@@ -46,19 +46,26 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 
 public final class GdbFrame extends Frame {
   
     private MITList MIframe;
     private final List<GdbLocal> argsArray = new ArrayList<GdbLocal>();
     private String fullname;
+    
+    public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, 
+            Thread thread) {
+        this(debugger, frame, null, thread);
+    }
 
-    public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, MIResult frameargs, Thread thread) {
+    public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, 
+            MIResult frameargs, 
+            Thread thread) {
 	super(debugger, thread);
 	if (frame == null) {
 	    return;
@@ -77,9 +84,9 @@ public final class GdbFrame extends Frame {
         fullname = MIframe.getConstValue("fullname", null); // NOI18N
         
         MITList args_list = (MITList) MIframe.valueOf("args"); // NOI18N
-	if (args_list != null && frameargs != null) {
-	    System.out.println("GdbFrame Impossible "); // NOI18N
-        }
+//	if (args_list != null && frameargs != null) {
+//	    System.out.println("GdbFrame Impossible "); // NOI18N
+//        }
 
 	// handle args info
 	if (frameargs != null) {
@@ -93,16 +100,25 @@ public final class GdbFrame extends Frame {
                 int args_count = args_list.size();
                     // iterate through args list
                 for (int vx=0; vx < args_count; vx++) {
-                    MIValue arg = (MIValue)args_list.get(vx);
                     if (vx != 0) {
                         sb.append(", "); // NOI18N
-                    }
-                    sb.append( arg.asTuple().getConstValue("name")); // NOI18N
-                    MIValue value = arg.asTuple().valueOf("value"); // NOI18N
-                    if (value != null) {
-                        argsArray.add(new GdbLocal(arg));
-                        sb.append("="); // NOI18N
-                        sb.append(value.asConst().value());
+                    }                    
+                    if (args_list.get(vx) instanceof MIValue) {
+                        MIValue arg = (MIValue)args_list.get(vx);
+
+                        sb.append( arg.asTuple().getConstValue("name")); // NOI18N
+                        MIValue value = arg.asTuple().valueOf("value"); // NOI18N
+                        if (value != null) {
+                            argsArray.add(new GdbLocal(arg));
+                            sb.append("="); // NOI18N
+                            sb.append(value.asConst().value());
+                        }
+                    } else if (args_list.get(vx) instanceof MIResult) {
+                        //mromashova_bz#269898: 
+                        //we have the list of names, no values at all
+                        //which is correct!! as we will never call -stack-list-arguments 1 
+                        //to get values, will call -stack-list-arguments 0 to get args names only
+                        sb.append(((MIResult)args_list.get(vx)).value().asConst().value());
                     }
                 }
             }
@@ -121,10 +137,14 @@ public final class GdbFrame extends Frame {
     public MITList getMIframe() {
 	return MIframe;
     }
-
-    public List<GdbLocal> getArgsList() {
-	return argsArray;
+    
+    public String getLevel() {
+        return frameno;
     }
+
+//    public List<GdbLocal> getArgsList() {
+//	return argsArray;
+//    }
     
     @Override
     public String getFullPath() {
@@ -135,11 +155,11 @@ public final class GdbFrame extends Frame {
         return fullname;
     }
     
-    void varUpdated(String name, String value) {
-        for (GdbLocal var : argsArray) {
-            if (var.getName().equals(name)) {
-                var.setValue(value);
-            }
-        }
-    }
+//    void varUpdated(String name, String value) {
+//        for (GdbLocal var : argsArray) {
+//            if (var.getName().equals(name)) {
+//                var.setValue(value);
+//            }
+//        }
+//    }
 }

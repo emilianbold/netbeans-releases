@@ -73,8 +73,12 @@ public class ModelTestBase extends PHPNavTestBase {
     }
 
     protected Model getModel(Source testSource) throws Exception {
+        return getModel(testSource, true);
+    }
+
+    protected Model getModel(Source testSource, boolean wait) throws Exception {
         final Model[] globals = new Model[1];
-        Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), new UserTask() {
+        UserTask userTask = new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
@@ -83,8 +87,13 @@ public class ModelTestBase extends PHPNavTestBase {
                     globals[0] = model;
                 }
             }
-        });
-        parseWhenScanFinished.get();
+        };
+        if (wait) {
+            Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), userTask);
+            parseWhenScanFinished.get();
+        } else {
+            ParserManager.parse(Collections.singleton(testSource), userTask);
+        }
         return globals[0];
     }
 

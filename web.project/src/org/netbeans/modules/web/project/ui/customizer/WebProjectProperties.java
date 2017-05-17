@@ -263,6 +263,7 @@ final public class WebProjectProperties {
     ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
     ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
     DefaultListModel ANNOTATION_PROCESSORS_MODEL;
+    DefaultTableModel PROCESSOR_OPTIONS_MODEL;
     JToggleButton.ToggleButtonModel COMPILE_ON_SAVE_MODEL;
     JToggleButton.ToggleButtonModel COPY_STATIC_RESOURCE_ON_SAVE_MODEL;
     
@@ -427,6 +428,31 @@ final public class WebProjectProperties {
             annotationProcessors = ""; //NOI18N
         ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
                 (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
+        String processorOptions = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
+        if (processorOptions == null)
+            processorOptions = ""; //NOI18N
+        PROCESSOR_OPTIONS_MODEL = new DefaultTableModel(new String[][]{}, new String[] {
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Processor_Options_Key"), //NOI18N
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Processor_Options_Value") //NOI18N
+        }) {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        for (String option : processorOptions.split("\\s")) { //NOI18N
+            if (option.startsWith("-A") && option.length() > 2) { //NOI18N
+                int sepIndex = option.indexOf('='); //NOI18N
+                String key = null;
+                String value = null;
+                if (sepIndex == -1)
+                    key = option.substring(2);
+                else if (sepIndex >= 3) {
+                    key = option.substring(2, sepIndex);
+                    value = (sepIndex < option.length() - 1) ? option.substring(sepIndex + 1) : null;
+                }
+                PROCESSOR_OPTIONS_MODEL.addRow(new String[] {key, value});
+            }
+        }
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         COMPILE_JSP_MODEL = projectGroup.createToggleButtonModel( evaluator, COMPILE_JSPS );
         
@@ -819,6 +845,24 @@ final public class WebProjectProperties {
             projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         }
 
+        sb = new StringBuilder();
+        for (int i = 0; i < PROCESSOR_OPTIONS_MODEL.getRowCount(); i++) {
+            String key = (String) PROCESSOR_OPTIONS_MODEL.getValueAt(i, 0);
+            String value = (String) PROCESSOR_OPTIONS_MODEL.getValueAt(i, 1);
+            sb.append("-A").append(key); //NOI18N
+            if (value != null && value.length() > 0) {
+                sb.append('=').append(value); //NOI18N
+            }
+            if (i < PROCESSOR_OPTIONS_MODEL.getRowCount() - 1) {
+                sb.append(' '); //NOI18N
+            }
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, sb.toString());
+        } else {
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
+        }
+        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );

@@ -1648,13 +1648,18 @@ public final class EditorCaret implements Caret {
                                 caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
+                        boolean updateDispatched = false;
                         if (activeTransaction.isDotOrStructuralChange()) {
                             if (!inAtomicSectionL) {
                                 // For now clear the lists and use old way TODO update to selective updating and rendering
                                 fireStateChanged(activeTransaction.getOrigin());
                                 dispatchUpdate(false);
+                                updateDispatched = true;
                                 resetBlink();
                             }
+                        }
+                        if (activeTransaction.isScrollToLastCaret() && !updateDispatched) {
+                            dispatchUpdate(false);
                         }
                         return diffCount;
                     } finally {

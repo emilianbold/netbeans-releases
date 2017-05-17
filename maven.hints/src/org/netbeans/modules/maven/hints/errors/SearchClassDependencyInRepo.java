@@ -57,21 +57,25 @@ import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Name;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -80,6 +84,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.ModuleInfoUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.hints.errors.Bundle.*;
 import org.netbeans.modules.maven.hints.ui.SearchDependencyUI;
@@ -103,6 +108,7 @@ import org.openide.util.RequestProcessor;
  */
 public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
+    private static final String MODULE_DOES_NOT_READ = "compiler.err.package.not.visible/compiler.misc.not.def.access.does.not.read";
     private final AtomicBoolean cancel = new AtomicBoolean(false);
 
     public SearchClassDependencyInRepo() {
@@ -111,6 +117,7 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
     @Override
     public Set<String> getCodes() {
         return new HashSet<String>(Arrays.asList(
+                MODULE_DOES_NOT_READ, 
                 "compiler.err.cant.resolve",//NOI18N
                 "compiler.err.cant.resolve.location",//NOI18N
                 "compiler.err.doesnt.exist",//NOI18N
@@ -312,17 +319,22 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
         }
 
         List<Fix> fixes = new ArrayList<Fix>();
+        if(MODULE_DOES_NOT_READ.equals(diagnosticKey)) {
+            Artifact artifact = getArtifact(mavProj, getVersionInfos(simpleOrQualifiedName), isTestSource);
+            if(artifact != null) {
+                URL url = FileUtil.urlForArchiveOrDir(artifact.getFile());
+                String name = url != null ? SourceUtils.getModuleName(url) : null;
+                fixes.add(new AddRequiresFix(mavProj, name, artifact));
+            }
+            return fixes;
+        }
         if (SearchClassDependencyHint.isSearchDialog()) {
-
             fixes.add(new MavenSearchFix(project, simpleOrQualifiedName, isTestSource));
         } else {
             //mkleint: this option is has rather serious performance impact.
             // we need to work on performance before we enable it..
             // the result() version's impact is better, always just searching matters, never indexing.
-            Collection<NBVersionInfo> findVersionsByClass = filter(mavProj,
-                    RepositoryQueries.findVersionsByClassResult(simpleOrQualifiedName, RepositoryPreferences.getInstance().getRepositoryInfos()).getResults(), isTestSource);
-
-
+            Collection<NBVersionInfo> findVersionsByClass = filter(mavProj, getVersionInfos(simpleOrQualifiedName), isTestSource);
 
             for (NBVersionInfo nbvi : findVersionsByClass) {
                 fixes.add(new MavenFixImport(project, nbvi, isTestSource));
@@ -330,6 +342,10 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
         }
 
         return fixes;
+    }
+
+    private static List<NBVersionInfo> getVersionInfos(String simpleOrQualifiedName) {
+        return RepositoryQueries.findVersionsByClassResult(simpleOrQualifiedName, RepositoryPreferences.getInstance().getRepositoryInfos()).getResults();
     }
 
     private Collection<NBVersionInfo> filter(NbMavenProject mavProj, List<NBVersionInfo> nbvis, boolean test) {
@@ -370,6 +386,25 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
         return filterd;
 
     }
+    
+    private Artifact getArtifact(NbMavenProject mavProj, List<NBVersionInfo> nbvis, boolean isTestSource) {
+        MavenProject mp = mavProj.getMavenProject();
+        List<Artifact> arts = new LinkedList<Artifact>(isTestSource ? mp.getTestArtifacts() : mp.getCompileArtifacts());
+        for (NBVersionInfo info : nbvis) {
+            for (Artifact a : arts) {
+                if (a.getGroupId() != null && a.getGroupId().equals(info.getGroupId())) {
+                    if (a.getArtifactId() != null && a.getArtifactId().equals(info.getArtifactId())) {
+                        String scope = a.getScope();
+                        if ("compile".equals(scope) || "test".equals(scope)) { // NOI18N
+                            return a;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
     //copyed from ImportClass
 
     private static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
@@ -542,6 +577,38 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
             } else {
                 EventQueue.invokeLater(r);
             }
+            return null;
+        }
+    }
+    
+    static final class AddRequiresFix implements EnhancedFix {
+
+        private final NbMavenProject prj;
+        private final String moduleName;
+        private final Artifact artifact;
+
+        public AddRequiresFix(NbMavenProject prj, String moduleName, Artifact artifact) {
+            this.prj = prj;
+            this.moduleName = moduleName;
+            this.artifact = artifact;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return getText();
+        }
+
+        @Override
+        @Messages({
+            "# {0} - classname",
+            "LBL_Add_Fix=Add module {0} to ModuleInfo"})
+        public String getText() {
+            return LBL_Add_Fix(moduleName);
+        }
+
+        @Override
+        public ChangeInfo implement() {
+            ModuleInfoUtils.addRequires(prj, Arrays.asList(artifact));
             return null;
         }
     }

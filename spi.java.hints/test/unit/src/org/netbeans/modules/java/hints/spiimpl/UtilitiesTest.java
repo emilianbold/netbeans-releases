@@ -257,7 +257,7 @@ public class UtilitiesTest extends TestBase {
 
         assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
 
-        String golden = "try ($t$ final $type $name = $init;) { $stmts$; }$catches$";
+        String golden = "try ($t$; final $type $name = $init) { $stmts$; }$catches$";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
     
@@ -269,7 +269,7 @@ public class UtilitiesTest extends TestBase {
 
         assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
 
-        String golden = "try (final $t $n = $init$;) { $stmts$; }$catches$";
+        String golden = "try (final $t $n = $init$) { $stmts$; }$catches$";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
 

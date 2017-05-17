@@ -125,7 +125,7 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
         }
         synchronized (this) {
             if (delegate == null) {
-                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, null);
+                this.delegate = ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo, "9");
             }
             return delegate;
         }
@@ -197,8 +197,11 @@ final class SwitchingJavaFileManger implements StandardJavaFileManager, ChangeLi
     }
 
     @Override
-    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
-        return delegate().getLocationForModule(location, fo, pkgName);
+    public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
+        if ("string".equals(fo.toUri().getScheme())) {
+            return null;
+        }
+        return delegate().getLocationForModule(location, fo);
     }
 
     @Override

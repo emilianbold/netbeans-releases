@@ -181,6 +181,7 @@ public final class ShellAgent {
         return debuggerMachine;
     }
 
+    // called only from ShellLaunchManager
     void destroy() throws IOException {
         LOG.log(Level.FINE, "ShellAgent destroyed: authKey = {0}, socket = {1}", new Object[]{authorizationKey, handshakeSocket});
         List<JShellConnection> conns;
@@ -192,8 +193,6 @@ public final class ShellAgent {
             closed = true;
             conns = new ArrayList<>(connections);
         }
-        ShellLaunchEvent ev = new ShellLaunchEvent(mgr, this);
-        mgr.fire((l) -> l.agentDestroyed(ev));
         for (JShellConnection c : conns) {
             disconnect(c, true);
         }
@@ -276,6 +275,10 @@ public final class ShellAgent {
      * @param c 
      */
     void disconnect(JShellConnection c, boolean remote) {
+        LOG.log(Level.FINE, 
+                "Connection closing: {0}, remove = {1}", new Object[] {
+                    c, remote
+                });
         synchronized (this) {
             if (c == null || !connections.contains(c)) {
                 return;
@@ -289,11 +292,8 @@ public final class ShellAgent {
         }
         // fire destroy if the handshake socket got closed.
         if (handshakeSocket.isClosed()) {
-            try {
-                destroy();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            // detroy the agent through the manager, removing it from the tables:
+            mgr.destroyAgent(authorizationKey);
         } else {
             ShellLaunchEvent ev = new ShellLaunchEvent(mgr, c, remote);
             mgr.fire((l) -> l.connectionClosed(ev));
@@ -364,6 +364,12 @@ public final class ShellAgent {
         public Debug(ShellAgent agent, String targetSpec) {
             super(agent, targetSpec);
         }
+
+        @Override
+        public String name() {
+            return getClass().getName();
+        }
+        
         @Override
         protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
             return new DebugExecutionEnvironment(agent, out, in, c.getVirtualMachine(), c);
@@ -378,6 +384,11 @@ public final class ShellAgent {
             this.targetSpec = targetSpec;
         }
         
+        @Override
+        public String name() {
+            return getClass().getName();
+        }
+
         @Override
         protected ExecutionControl createExecControl(ShellAgent agent, ObjectOutput out, ObjectInput in, JShellConnection c) {
             return new RunExecutionEnvironment(agent, out, in, targetSpec, c);

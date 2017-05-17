@@ -781,8 +781,75 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/issue262144");
     }
 
+    // PHP7.1
+    public void testNullableTypes_01() throws Exception {
+        performTest("parser/nullableTypes_01");
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        performTest("parser/nullableTypes_02");
+    }
+
+    public void testNullableTypes_03() throws Exception {
+        performTest("parser/nullableTypes_03");
+    }
+
+    public void testMultiCatchInFirstCatchClause() throws Exception {
+        performTest("parser/multiCatchInFirstCatchClause");
+    }
+
+    public void testMultiCatchInSecondCatchClause() throws Exception {
+        performTest("parser/multiCatchInSecondCatchClause");
+    }
+
+    public void testMultiCatchWithFinally() throws Exception {
+        performTest("parser/multiCatchWithFinally");
+    }
+
+    public void testClassConstantVisibility_01() throws Exception {
+        performTest("parser/classConstantVisibility_01");
+    }
+
+    public void testKeyedList_01() throws Exception {
+        performTest("parser/keyedList_01");
+    }
+
+    public void testSymmetricArrayDestructuring_01() throws Exception {
+        performTest("parser/symmetricArrayDestructuring_01");
+    }
+
+    public void testIssue269707() throws Exception {
+        performTest("parser/issue269707");
+    }
+
+    // #262141 PHP7.0
+    public void testContextSensitiveLexer_01() throws Exception {
+        performTest("parser/contextSensitiveLexer_01");
+    }
+
+    public void testContextSensitiveLexer_02() throws Exception {
+        performTest("parser/contextSensitiveLexer_02");
+    }
+
+    public void testContextSensitiveLexer_03() throws Exception {
+        performTest("parser/contextSensitiveLexer_03");
+    }
+
+    public void testContextSensitiveLexer_04() throws Exception {
+        performTest("parser/contextSensitiveLexer_04");
+    }
+
+    public void testContextSensitiveLexer_05() throws Exception {
+        performTest("parser/contextSensitiveLexer_05");
+    }
+
+    public void testContextSensitiveLexerWithConstVisibility_01() throws Exception {
+        performTest("parser/contextSensitiveLexerWithConstVisibility_01");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
+        // the same <Comment /> is shown twice becase the scanner is used twice
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
         StringBuilder result = new StringBuilder();
         String content = PHPLexerUtils.getFileContent(testFile);

@@ -42,24 +42,19 @@
 package org.netbeans.modules.java.source.parsing;
 
 import com.sun.tools.javac.code.Source;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
@@ -71,9 +66,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.util.Iterators;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Pair;
 
 /**
  *
@@ -82,17 +75,14 @@ import org.openide.util.Pair;
 final class ModuleFileManager implements JavaFileManager {
 
     private static final Logger LOG = Logger.getLogger(ModuleFileManager.class.getName());
-    private static final Pattern MATCHER_PATCH =
-                Pattern.compile("(.+)=(.+)");  //NOI18N
 
     private final CachingArchiveProvider cap;
     private final ClassPath modulePath;
     private final Function<URL,Collection<? extends URL>> peers;
     private final Source sourceLevel;
     private final boolean cacheFile;
-    private final Map<String,List<URL>> patches;
+    private final Location forLocation;
     private Set<ModuleLocation> moduleLocations;
-    private Location forLocation;
 
 
     public ModuleFileManager(
@@ -100,16 +90,18 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final ClassPath modulePath,
             @NonNull final Function<URL,Collection<? extends URL>> peers,
             @NullAllowed final Source sourceLevel,
+            @NonNull final Location forLocation,
             final boolean cacheFile) {
         assert cap != null;
         assert modulePath != null;
         assert peers != null;
+        assert forLocation != null;
         this.cap = cap;
         this.modulePath = modulePath;
         this.peers = peers;
         this.sourceLevel = sourceLevel;
+        this.forLocation = forLocation;
         this.cacheFile = cacheFile;
-        this.patches = new HashMap<>();
     }
 
     // FileManager implementation ----------------------------------------------
@@ -120,7 +112,7 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final String packageName,
             @NonNull final Set<JavaFileObject.Kind> kinds,
             final boolean recursive ) {
-        final ModuleLocation ml = asModuleLocation(l);
+        final ModuleLocation ml = ModuleLocation.cast(l);
         final String folderName = FileObjects.convertPackage2Folder(packageName);
         try {
             final List<Iterable<JavaFileObject>> res = new ArrayList<>();
@@ -185,7 +177,7 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String pkgName,
             @NonNull final String relativeName ) {
-        return findFile(asModuleLocation(l), pkgName, relativeName);
+        return findFile(ModuleLocation.cast(l), pkgName, relativeName);
     }
 
     @Override
@@ -193,7 +185,7 @@ final class ModuleFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String className,
             @NonNull final JavaFileObject.Kind kind) {
-        final ModuleLocation ml = asModuleLocation(l);
+        final ModuleLocation ml = ModuleLocation.cast(l);
         final String[] namePair = FileObjects.getParentRelativePathAndName(className);
         final boolean supportsMultiRelease = sourceLevel != null && sourceLevel.compareTo(Source.JDK1_9)>= 0;
         List<? extends String> reloc = null;
@@ -267,20 +259,6 @@ final class ModuleFileManager implements JavaFileManager {
 
     @Override
     public boolean handleOption (final String head, final Iterator<String> tail) {
-        if (JavacParser.OPTION_PATCH_MODULE.equals(head)) {
-            final Pair<String,List<URL>> modulePatches = parseModulePatches(tail);
-            if (modulePatches != null) {
-                if (patches.putIfAbsent(modulePatches.first(), modulePatches.second()) != null) {
-                    //Don't abort compilation by Abort
-                    //Log error into javac Logger doe not help - no source to attach to.
-                    LOG.log(
-                            Level.WARNING,
-                            "Duplicate " +JavacParser.OPTION_PATCH_MODULE+ " option, ignoring: {0}",    //NOI18N
-                            modulePatches.second());
-                }
-                return true;
-            }            
-        }
         return false;
     }
 
@@ -320,13 +298,13 @@ final class ModuleFileManager implements JavaFileManager {
     @Override
     @NullUnknown
     public String inferModuleName(@NonNull final Location location) throws IOException {
-        final ModuleLocation ml = asModuleLocation(location);
+        final ModuleLocation ml = ModuleLocation.cast(location);
         return ml.getModuleName();
     }
 
     @Override
     @CheckForNull
-    public Location getLocationForModule(Location location, JavaFileObject fo, String pkgName) throws IOException {
+    public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
         //todo: Only for Source Module Path & Output Path
         return null;
     }
@@ -341,6 +319,12 @@ final class ModuleFileManager implements JavaFileManager {
     }
 
     private Set<ModuleLocation> moduleLocations(final Location baseLocation) {
+        if (!forLocation.equals(baseLocation)) {
+            throw new IllegalStateException(String.format(
+                    "Locations computed for: %s, but queried for: %s",  //NOI18N
+                    forLocation,
+                    baseLocation));
+        }
         if (moduleLocations == null) {
             final Set<ModuleLocation> moduleRoots = new HashSet<>();
             final Set<URL> seen = new HashSet<>();
@@ -350,25 +334,12 @@ final class ModuleFileManager implements JavaFileManager {
                     final String moduleName = SourceUtils.getModuleName(root);
                     if (moduleName != null) {
                         Collection<? extends URL> p = peers.apply(root);
-                        final List<? extends URL> x = patches.get(moduleName);
-                        if (x != null) {
-                            final List<URL> tmp = new ArrayList(x.size() + p.size());
-                            tmp.addAll(x);
-                            tmp.addAll(p);
-                            p = tmp;
-                        }
                         moduleRoots.add(ModuleLocation.create(baseLocation, p, moduleName));
                         seen.addAll(p);
                     }
                 }
             }
             moduleLocations = moduleRoots;
-            forLocation = baseLocation;
-        } else if (!forLocation.equals(baseLocation)) {
-                throw new IllegalStateException(String.format(
-                        "Locations computed for: %s, but queried for: %s",  //NOI18N
-                        forLocation,
-                        baseLocation));
         }
         return moduleLocations;
     }
@@ -410,31 +381,6 @@ final class ModuleFileManager implements JavaFileManager {
                 Exceptions.printStackTrace(e);
             }
         }
-        return null;
-    }
-
-    @NonNull
-    private static ModuleLocation asModuleLocation (@NonNull final Location l) {
-        if (l.getClass() != ModuleLocation.class) {
-            throw new IllegalArgumentException (String.valueOf(l));
-        }
-        return (ModuleLocation) l;
-    }
-    
-    @CheckForNull
-    private static Pair<String,List<URL>> parseModulePatches(@NonNull final Iterator<? extends String> tail) {
-        if (tail.hasNext()) {
-            //<module>=<file>(:<file>)*
-            final Matcher m = MATCHER_PATCH.matcher(tail.next());
-            if (m.matches() && m.groupCount() == 2) {
-                final String module = m.group(1);
-                final List<URL> patches = Arrays.stream(m.group(2).split(File.pathSeparator))
-                        .map((p) -> FileUtil.normalizeFile(new File(p)))
-                        .map(FileUtil::urlForArchiveOrDir)
-                        .collect(Collectors.toList());
-                return Pair.of(module, patches);
-            }
-        }        
         return null;
     }
 

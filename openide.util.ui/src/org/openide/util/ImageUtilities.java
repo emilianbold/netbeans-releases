@@ -87,6 +87,9 @@ import javax.swing.UIManager;
  * @since 7.15
  */
 public final class ImageUtilities {
+
+    private static final Logger LOGGER = Logger.getLogger(ImageUtilities.class.getName());
+
     /** separator for individual parts of tool tip text */
     static final String TOOLTIP_SEPAR = "<br>"; // NOI18N
     /** a value that indicates that the icon does not exists */
@@ -281,6 +284,10 @@ public final class ImageUtilities {
      * @param icon {@link javax.swing.Icon} to be converted.
      */
     public static final Image icon2Image(Icon icon) {
+        if (icon == null) {
+            LOGGER.log(Level.WARNING, null, new NullPointerException());
+            return loadImage("org/openide/nodes/defaultNode.png", true);
+        }
         if (icon instanceof ImageIcon) {
             return ((ImageIcon) icon).getImage();
         } else {

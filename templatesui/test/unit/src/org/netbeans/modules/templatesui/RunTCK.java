@@ -60,6 +60,7 @@ final class RunTCK extends AbstractWizard {
     private final URL test;
     private final String init;
     private final CountDownLatch ready = new CountDownLatch(1);
+    private final TCK tck = new TCK();
     private Throwable error;
     
     static void test(String prefix, String init) throws Throwable {
@@ -113,7 +114,7 @@ final class RunTCK extends AbstractWizard {
         );
         
         Object regFn = executeScript("(function(def) { window.tck = def; })");
-        evaluateCall(regFn, new TCK());
+        evaluateCall(regFn, tck);
         
         InputStreamReader r = new InputStreamReader(test.openStream());
         StringBuilder sb = new StringBuilder();

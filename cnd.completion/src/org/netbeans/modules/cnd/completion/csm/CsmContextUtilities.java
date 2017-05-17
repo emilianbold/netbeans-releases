@@ -98,6 +98,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
+import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
@@ -1289,11 +1290,19 @@ public class CsmContextUtilities {
      */
     static boolean checkDecltype(CsmType type) {
         final CharSequence classifierText = type.getClassifierText();
-        if (CharSequenceUtils.indexOf(classifierText, "decltype") >= 0) { // NOI18N
+        CharSequence aliases[] = CsmTypes.getDecltypeAliases();
+        boolean checlFullName = false;
+        for (CharSequence alias : aliases) {
+            if (CharSequenceUtils.indexOf(classifierText, alias) >= 0) {
+                checlFullName = true;
+                break;
+            }
+        }
+        if (checlFullName) { // NOI18N
             String fullName = classifierText.toString();
             String nameParts[] = fullName.split("::"); // NOI18N
             for (String part : nameParts) {
-                if (part.equals("decltype")) { // NOI18N
+                if (CsmTypes.isDecltype(part)) {
                     return true;
                 }
             }

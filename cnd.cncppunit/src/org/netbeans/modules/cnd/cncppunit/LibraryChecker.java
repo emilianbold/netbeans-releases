@@ -128,12 +128,14 @@ public class LibraryChecker {
         } catch (CancellationException ex) {
             return false; // TODO:CancellationException error processing
         } finally {
-            if (execEnv.isLocal()) {
-                new File(dummySourceFile).delete();
-                new File(dummySourceFile + ".out").delete(); // NOI18N
-            } else {
-                CommonTasksSupport.rmFile(execEnv, dummySourceFile, null);
-                CommonTasksSupport.rmFile(execEnv, dummySourceFile + ".out", null); // NOI18N
+            if (dummySourceFile != null) {
+                if (execEnv.isLocal()) {
+                    new File(dummySourceFile).delete();
+                    new File(dummySourceFile + ".out").delete(); // NOI18N
+                } else {
+                    CommonTasksSupport.rmFile(execEnv, dummySourceFile, null);
+                    CommonTasksSupport.rmFile(execEnv, dummySourceFile + ".out", null); // NOI18N
+                }
             }
         }
     }

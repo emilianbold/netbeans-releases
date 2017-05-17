@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.cnd.remote.actions;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -57,7 +60,10 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction", category = "Project")
-@ActionRegistration(iconInMenu = true, displayName = "#OpenRemoteProjectAction.submenu.title")
+@ActionRegistration(iconInMenu = true, 
+        displayName = "#OpenRemoteProjectAction.submenu.title", //NOI18N
+        iconBase="org/netbeans/modules/cnd/remote/ui/resources/openProject.png", //NOI18N
+        lazy = false)
 @ActionReferences({
     //@ActionReference(path = "Menu/File", position = 520),
     @ActionReference(path = "Toolbars/Remote", position = 2000)
@@ -68,13 +74,20 @@ public class OpenRemoteProjectAction extends RemoteOpenActionBase {
     
     public OpenRemoteProjectAction() {
         super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title")); //NOI18N
-        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openProject.png", false); //NOI18N
-        putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openProject.png"); //NOI18N
+        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/ui/resources/openProject.png", false); //NOI18N
+        putValue("iconBase","org/netbeans/modules/cnd/remote/ui/resources/openProject.png"); //NOI18N
     }
 
     @Override
     protected Icon getIcon() {
         return icon;
+    }
+
+    @Override
+    protected void updateToolTip() {
+        ServerRecord rec = ServerList.getDefaultRecord();
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteProjectAction.tooltip", 
+                (rec == null/*paranoia*/) ? "?" : rec.getDisplayName())); //NOI18N
     }
 
     @Override

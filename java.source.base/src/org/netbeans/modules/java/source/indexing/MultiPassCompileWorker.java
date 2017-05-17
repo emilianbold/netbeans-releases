@@ -53,6 +53,7 @@ import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Modules;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -326,7 +327,12 @@ final class MultiPassCompileWorker extends CompileWorker {
                         }
                     }
                     if (!moduleName.assigned) {
-                        ModuleElement module = Modules.instance(jt.getContext()).getDefaultModule();
+                        ModuleElement module = trees.iterator().hasNext() ?
+                            ((JCTree.JCCompilationUnit)trees.iterator().next()).modle :
+                            null;
+                        if (module == null) {
+                            module = module = Modules.instance(jt.getContext()).getDefaultModule();
+                        }
                         moduleName.name = module == null || module.isUnnamed() ?
                                 null :
                                 module.getQualifiedName().toString();

@@ -381,6 +381,19 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/classConstant.php");
     }
 
+    public void testClassConstantWithWhitespace() throws Exception {
+        checkErrors("testfiles/parser/classConstantWithWhitespace.php");
+    }
+
+    public void testConstDefine_01() throws Exception {
+        // const DEFINE = ""; is not a syntax error
+        checkErrors("testfiles/parser/constDefine_01.php");
+    }
+
+    public void testConstDefine_02() throws Exception {
+        checkErrors("testfiles/parser/constDefine_02.php");
+    }
+
     // #250579
     public void testConstantArrayAccess_01() throws Exception {
         checkErrors("testfiles/parser/constantArrayAccess_01.php");
@@ -679,6 +692,68 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue262144() throws Exception {
         // yeild and yield from expressions for PHP7
         checkErrors("testfiles/parser/issue262144.php");
+    }
+
+    // PHP7.1
+    public void testNullableTypes_01() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_01.php");
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_02.php");
+    }
+
+    public void testNullableTypes_03() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_03.php");
+    }
+
+    public void testMultiCatchInFirstCatchClause() throws Exception {
+        checkErrors("testfiles/parser/multiCatchInFirstCatchClause.php");
+    }
+
+    public void testMultiCatchInSecondCatchClause() throws Exception {
+        checkErrors("testfiles/parser/multiCatchInSecondCatchClause.php");
+    }
+
+    public void testMultiCatchWithFinally() throws Exception {
+        checkErrors("testfiles/parser/multiCatchWithFinally.php");
+    }
+
+    public void testClassConstantVisibility_01() throws Exception {
+        checkErrors("testfiles/parser/classConstantVisibility_01.php");
+    }
+
+    public void testKeyedList_01() throws Exception {
+        checkErrors("testfiles/parser/keyedList_01.php");
+    }
+
+    public void testSymmetricArrayDestructuring_01() throws Exception {
+        checkErrors("testfiles/parser/symmetricArrayDestructuring_01.php");
+    }
+
+    // #262141 PHP7.0
+    public void testContextSensitiveLexer_01() throws Exception {
+        checkErrors("testfiles/parser/contextSensitiveLexer_01.php");
+    }
+
+    public void testContextSensitiveLexer_02() throws Exception {
+        checkErrors("testfiles/parser/contextSensitiveLexer_02.php");
+    }
+
+    public void testContextSensitiveLexer_03() throws Exception {
+        checkErrors("testfiles/parser/contextSensitiveLexer_03.php");
+    }
+
+    public void testContextSensitiveLexer_04() throws Exception {
+        checkErrors("testfiles/parser/contextSensitiveLexer_04.php");
+    }
+
+    public void testContextSensitiveLexer_05() throws Exception {
+        checkErrors("testfiles/parser/contextSensitiveLexer_05.php");
+    }
+
+    public void testContextSensitiveLexerWithConstVisibility_01() throws Exception {
+        checkErrors("testfiles/parser/contextSensitiveLexerWithConstVisibility_01.php");
     }
 
 }

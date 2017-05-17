@@ -77,7 +77,7 @@ Contributor(s):
           <executablePath>build/Debug/src/welcome</executablePath>
           <ccTool>
             <incDir>
-              <pElem>build/Debug/src</pElem>
+              <pElem>src</pElem>
             </incDir>
           </ccTool>
         </makeTool>
@@ -109,7 +109,7 @@ Contributor(s):
           <executablePath>build/Release/src/welcome</executablePath>
           <ccTool>
             <incDir>
-              <pElem>build/Release/src</pElem>
+              <pElem>src</pElem>
             </incDir>
             <preprocessorList>
               <Elem>NDEBUG</Elem>

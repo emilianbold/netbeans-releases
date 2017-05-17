@@ -231,10 +231,9 @@ public abstract class GitCommand {
             if(canceled.canceled()) {
                 return;
             }
-            ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(getRepository().getLocation());
             String executable = getExecutable();
             String[] args = getCliArguments(command);
-            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, processBuilder, executable, args); //NOI18N
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(getRepository().getLocation().getPath(), getEnvVar(), false, canceled, getRepository().getLocation(), executable, args); //NOI18N
             if(canceled.canceled()) {
                 return;
             }

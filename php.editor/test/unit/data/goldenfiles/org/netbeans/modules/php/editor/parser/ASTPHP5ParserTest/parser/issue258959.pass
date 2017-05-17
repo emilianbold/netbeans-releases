@@ -1245,13 +1245,13 @@
     </scanner>
     <Program start='0' end='1373'>
         <Comments>
-            Comment start='571' end='595' commentType='singleLine'/>
-            Comment start='833' end='860' commentType='singleLine'/>
-            Comment start='571' end='595' commentType='singleLine'/>
-            Comment start='833' end='860' commentType='singleLine'/>
+            <Comment start='571' end='595' commentType='singleLine'/>
+            <Comment start='833' end='860' commentType='singleLine'/>
+            <Comment start='571' end='595' commentType='singleLine'/>
+            <Comment start='833' end='860' commentType='singleLine'/>
         </Comments>
         <Statements>
-            <ClassConstantDeclaration start='7' end='26'>
+            <GlobalConstantDeclaration start='7' end='26'>
                 <Names>
                     <Identifier start='13' end='14' name='A'/>
                 </Names>
@@ -1266,7 +1266,7 @@
                         </ArrayElement>
                     </ArrayCreation>
                 </Initializers>
-            </ClassConstantDeclaration>
+            </GlobalConstantDeclaration>
             <ClassDeclaration start='27' end='358' modifier='NONE'>
                 <ClassName>
                     <Identifier start='33' end='40' name='MyClass'/>
@@ -1276,7 +1276,7 @@
                 <Interfaces>
                 </Interfaces>
                 <Block start='41' end='358' isCurly='true'>
-                    <ClassConstantDeclaration start='47' end='114'>
+                    <ClassConstantDeclaration start='47' end='114' modifier='public'>
                         <Names>
                             <Identifier start='53' end='61' name='CONSTANT'/>
                         </Names>

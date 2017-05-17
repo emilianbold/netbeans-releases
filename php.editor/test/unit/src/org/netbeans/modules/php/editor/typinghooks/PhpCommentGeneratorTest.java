@@ -351,6 +351,176 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
         );
     }
 
+    public void testIssue269104_01() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**^\n"
+                + "    function callableType(callable $callable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n",
+
+                // expected
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param callable $callable^\n"
+                + "     */\n"
+                + "    function callableType(callable $callable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"
+        );
+    }
+
+     public void testIssue269104_02() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**^\n"
+                + "    function intType(int $int) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n",
+
+                // expected
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param int $int^\n"
+                + "     */\n"
+                + "    function intType(int $int) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"
+        );
+    }
+
+     public void testIssue269104_03() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**^\n"
+                + "    function iterableType(iterable $iterable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n",
+
+                // expected
+                "<?php\n"
+                + "\n"
+                + "namespace Foo;\n"
+                + "\n"
+                + "class Bar {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param iterable $iterable^\n"
+                + "     */\n"
+                + "    function iterableType(iterable $iterable) {\n"
+                + "        //...\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"
+        );
+    }
+
+    // Nullable Types
+    public void testIssue270235_01() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "class Foo {}\n"
+                + "/**^\n"
+                + "function test(?string $string): ?Foo {\n"
+                + "    \n"
+                + "}",
+
+                // expected
+                "<?php\n"
+                + "class Foo {}\n"
+                + "/**\n"
+                + " * \n"
+                + " * @param string|null $string\n"
+                + " * @return Foo|null^\n"
+                + " */\n"
+                + "function test(?string $string): ?Foo {\n"
+                + "    \n"
+                + "}"
+        );
+    }
+
+    public void testIssue270235_02() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "class Foo {}\n"
+                + "interface TestInterface {\n"
+                + "    /**^\n"
+                + "    public function test(?int $int) : ?Foo;\n"
+                + "}",
+
+                // expected
+                "<?php\n"
+                + "class Foo {}\n"
+                + "interface TestInterface {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param int|null $int\n"
+                + "     * @return \\Foo|null^\n"
+                + "     */\n"
+                + "    public function test(?int $int) : ?Foo;\n"
+                + "}"
+        );
+    }
+
+    public void testVoidReturnType() throws Exception {
+        insertBreak(
+                // original
+                "<?php\n"
+                + "/**^\n"
+                + "function test(?string $string): void {\n"
+                + "    \n"
+                + "}",
+
+                // expected
+                "<?php\n"
+                + "/**\n"
+                + " * \n"
+                + " * @param string|null $string\n"
+                + " * @return void^\n"
+                + " */\n"
+                + "function test(?string $string): void {\n"
+                + "    \n"
+                + "}"
+        );
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');

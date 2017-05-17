@@ -53,7 +53,6 @@ import org.netbeans.modules.docker.HttpUtils;
 import org.netbeans.modules.docker.DirectStreamResult;
 import org.netbeans.modules.docker.Demuxer;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -72,6 +71,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,6 +86,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.net.ssl.SSLContext;
 import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
@@ -100,6 +101,7 @@ import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.Endpoint;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.io.NullInputStream;
@@ -160,7 +162,7 @@ public class DockerAction {
                     Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
-                JSONObject json  = (JSONObject) o;
+                JSONObject json = (JSONObject) o;
                 JSONArray repoTags = (JSONArray) json.get("RepoTags");
                 String id = (String) json.get("Id");
                 long created = (long) json.get("Created");
@@ -351,7 +353,28 @@ public class DockerAction {
             tty = (boolean) getOrDefault(config, "Tty", false);
             stdin = (boolean) getOrDefault(config, "OpenStdin", false);
         }
-        return new DockerContainerDetail(name, status, stdin, tty);
+        JSONObject ports = (JSONObject) ((JSONObject) value.get("NetworkSettings")).get("Ports");
+        if (ports == null || ports.isEmpty()) {
+            return new DockerContainerDetail(name, status, stdin, tty);
+        } else {
+            List<PortMapping> portMapping = new ArrayList<>();
+            for (String containerPortData : (Set<String>) ports.keySet()) {
+                JSONArray hostPortsArray = (JSONArray) ports.get(containerPortData);
+                if (hostPortsArray != null && !hostPortsArray.isEmpty()) {
+                    Matcher m = PORT_PATTERN.matcher(containerPortData);
+                    if (m.matches()) {
+                        int containerPort = Integer.parseInt(m.group(1));
+                        String type = m.group(2).toUpperCase(Locale.ENGLISH);
+                        int hostPort = Integer.parseInt((String) ((JSONObject) hostPortsArray.get(0)).get("HostPort"));
+                        String hostIp = (String) ((JSONObject) hostPortsArray.get(0)).get("HostIp");
+                        portMapping.add(new PortMapping(ExposedPort.Type.valueOf(type), containerPort, hostPort, hostIp));
+                    } else {
+                        LOGGER.log(Level.FINE, "Unparsable port: {0}", containerPortData);
+                    }
+                }
+            }
+            return new DockerContainerDetail(name, status, stdin, tty, portMapping);
+        }
     }
 
     public DockerImageDetail getDetail(DockerImage image) throws DockerException {
@@ -376,6 +399,26 @@ public class DockerAction {
             }
         }
         return new DockerImageDetail(ports);
+    }
+
+    public DockerfileDetail getDetail(FileObject dockerfile) throws IOException {
+        // Each ARG line looks like:
+        // "(\w)*ARG(\w)*key=val(\w)*"
+
+        // Filter this lines and remove ARG from the beginning
+        List<String> argLines = dockerfile.asLines().stream()
+                .filter((line) -> line.trim().matches("^(?i)arg(.*)$")) // NOI18N
+                .map((argLine) -> argLine.trim().replaceFirst("^(?i)arg", "").trim()) // NOI18N
+                .collect(Collectors.toList());
+
+        // Now each line looks like: "key=val"
+        Map<String, String> pairs = new HashMap<>();
+        for (String line : argLines) {
+            String[] split = line.split("=", 2); // NOI18N
+            pairs.put(split[0], split.length == 2 ? split[1] : ""); //NOI18N
+        }
+
+        return new DockerfileDetail(pairs);
     }
 
     public void start(DockerContainer container) throws DockerException {
@@ -462,7 +505,7 @@ public class DockerAction {
             OutputStream os = s.getOutputStream();
             os.write(("POST /containers/" + container.getId()
                     + "/attach?logs=" + (logs ? 1 : 0)
-                    + "&stream=1&stdout=1&stdin="+ (stdin ? 1 : 0)
+                    + "&stream=1&stdout=1&stdin=" + (stdin ? 1 : 0)
                     + "&stderr=1 HTTP/1.1\r\n").getBytes("ISO-8859-1"));
             HttpUtils.configureHeaders(os, DockerConfig.getDefault().getHttpHeaders(),
                     getHostHeader(),
@@ -520,7 +563,7 @@ public class DockerAction {
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("POST /images/create?fromImage="
-                    + HttpUtils.encodeParameter(imageName) + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
+                        + HttpUtils.encodeParameter(imageName) + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
@@ -570,7 +613,7 @@ public class DockerAction {
             throw new DockerException(e);
         } catch (IOException e) {
             throw new DockerException(e);
-       }
+        }
     }
 
     // this call is BLOCKING
@@ -646,7 +689,7 @@ public class DockerAction {
             throw new DockerException(e);
         } catch (IOException e) {
             throw new DockerException(e);
-       }
+        }
     }
 
     public FutureTask<DockerImage> createBuildTask(@NonNull FileObject buildContext, @NullAllowed FileObject dockerfile,
@@ -671,9 +714,9 @@ public class DockerAction {
                     throw new IllegalArgumentException("Repository can't be empty when using tag");
                 }
 
-                String dockerfileName = null;
+                String dockerRelativePath = null;
                 if (dockerfile != null) {
-                    dockerfileName = dockerfile.getName();
+                    dockerRelativePath = FileUtil.getRelativePath(buildContext, dockerfile);
                 }
 
                 Endpoint s = null;
@@ -690,8 +733,8 @@ public class DockerAction {
                     request.append("POST /build?");
                     request.append("pull=").append(pull ? 1 : 0);
                     request.append("&nocache=").append(noCache ? 1 : 0);
-                    if (dockerfileName != null) {
-                        request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
+                    if (dockerRelativePath != null) {
+                        request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerRelativePath));
                     }
                     if (repository != null) {
                         request.append("&t=").append(HttpUtils.encodeParameter(repository));
@@ -726,6 +769,8 @@ public class DockerAction {
                     OutputStream os = s.getOutputStream();
                     os.write(request.toString().getBytes("ISO-8859-1"));
                     os.flush();
+
+                    buildListener.onEvent(new BuildEvent(instance, request.toString(), false, null, false));
 
                     // FIXME should we allow \ as separator as that would be formally
                     // separator on windows without possibility to escape anything
@@ -1058,7 +1103,7 @@ public class DockerAction {
             throw new DockerException(e);
         } catch (IOException e) {
             throw new DockerException(e);
-       }
+        }
     }
 
     private Object doGetRequest(@NonNull String action, Set<Integer> okCodes) throws DockerException {

@@ -147,7 +147,7 @@ public class BuildArtifactMapperImpl {
 
     private static final Set<Object> alreadyWarned = new WeakSet<Object>();
 
-    private static boolean protectAgainstErrors(File targetFolder, FileObject[][] sources, Object context) throws MalformedURLException {
+    private static boolean protectAgainstErrors(URL targetFolder, FileObject[][] sources, Object context) throws MalformedURLException {
         Preferences pref = NbPreferences.forModule(BuildArtifactMapperImpl.class).node(BuildArtifactMapperImpl.class.getSimpleName());
 
         if (!pref.getBoolean(UIProvider.ASK_BEFORE_RUN_WITH_ERRORS, true)) {
@@ -170,11 +170,9 @@ public class BuildArtifactMapperImpl {
         return true;
     }
 
-    private static void sources(File targetFolder, FileObject[][] sources) throws MalformedURLException {
+    private static void sources(URL targetFolder, FileObject[][] sources) throws MalformedURLException {
         if (sources[0] == null) {
-            URL targetFolderURL = FileUtil.urlForArchiveOrDir(targetFolder);
-            
-            sources[0] = SourceForBinaryQuery.findSourceRoots(targetFolderURL).getRoots();
+            sources[0] = SourceForBinaryQuery.findSourceRoots(targetFolder).getRoots();
         }
     }
     
@@ -732,11 +730,17 @@ public class BuildArtifactMapperImpl {
         
         private Boolean performSync(@NonNull final Context ctx) throws IOException {
             final URL sourceRoot = ctx.getSourceRoot();
-            final File targetFolder = ctx.getTarget();
+            final URL targetFolderURL = ctx.getTargetURL();
             final boolean copyResources = ctx.isCopyResources();
             final boolean keepResourceUpToDate = ctx.isKeepResourcesUpToDate();
             final Object context = ctx.getOwner();
         
+            if (targetFolderURL == null) {
+                return null;
+            }
+        
+            final File targetFolder = FileUtil.archiveOrDirForURL(targetFolderURL);
+
             if (targetFolder == null) {
                 return null;
             }
@@ -759,10 +763,10 @@ public class BuildArtifactMapperImpl {
         
             FileObject[][] sources = new FileObject[1][];
         
-            if (!protectAgainstErrors(targetFolder, sources, context)) {
+            if (!protectAgainstErrors(targetFolderURL, sources, context)) {
                 return false;
             }
-        
+                        
             File tagFile = new File(targetFolder, TAG_FILE_NAME);
             File tagUpdateResourcesFile = new File(targetFolder, TAG_UPDATE_RESOURCES);
             final boolean forceResourceCopy = copyResources && keepResourceUpToDate && !tagUpdateResourcesFile.exists();
@@ -779,7 +783,7 @@ public class BuildArtifactMapperImpl {
                 throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
             }
 
-            sources(targetFolder, sources);
+            sources(targetFolderURL, sources);
 
             for (int i = sources[0].length - 1; i>=0; i--) {
                 final FileObject sr = sources[0][i];

@@ -63,7 +63,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;

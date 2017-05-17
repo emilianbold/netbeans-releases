@@ -219,7 +219,7 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameUsageIfMatch(final TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
+        if (JavaPluginUtils.isSyntheticPath(workingCopy, path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
             return;
         }
         TreePath elementPath = path;
@@ -388,7 +388,7 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameShadowIfMatch(final TreePath path, Tree tree, Element elementToFind) {
-        if (shadowed == null || workingCopy.getTreeUtilities().isSynthetic(path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
+        if (shadowed == null || JavaPluginUtils.isSyntheticPath(workingCopy, path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
             return;
         }
         TreePath elementPath = path;
@@ -449,7 +449,7 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
+        if (JavaPluginUtils.isSyntheticPath(workingCopy, path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
             return;
         }
         Element el = workingCopy.getTrees().getElement(path);

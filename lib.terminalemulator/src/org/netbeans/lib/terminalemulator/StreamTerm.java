@@ -55,6 +55,9 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,48 +102,61 @@ public class StreamTerm extends Term {
      */
     private static final class InputMonitor implements TermInputListener {
 	private final OutputStreamWriter outputStreamWriter;
-
+        private final ExecutorService singlePool = Executors.newSingleThreadExecutor();
 	public InputMonitor(OutputStreamWriter outputStreamWriter) {
 	    this.outputStreamWriter = outputStreamWriter;
 	}
+        
+        @Override
+        public void sendChars(final char c[], final int offset, final int count) {
+            final char[] copy = new char[count];
+            System.arraycopy(c, offset, copy, 0, count);
+            
+            singlePool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        outputStreamWriter.write(copy, 0, count);
+                        outputStreamWriter.flush();
+                    } catch (IOException x) {
+                        // no-op
+                    } catch (Exception x) {
+                        Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, x);
+                    }
+                }
+            });
+        }
 
-	@Override
-	public void sendChars(char c[], int offset, int count) {
-	    try {
-		outputStreamWriter.write(c, offset, count);
-		outputStreamWriter.flush();
-	    } catch (IOException x) {
-		// no-op
-	    } catch (Exception x) {
-		Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, x);
-	    }
-	}
-
-	@Override
-	public void sendChar(char c) {
-	    try {
-		outputStreamWriter.write(c);
-		// writer is buffered, need to use flush!
-		// perhaps SHOULD use an unbuffered writer?
-		// Also fix send_chars()
-		outputStreamWriter.flush();
-	    } catch (IOException x) {
-		// no-op
-	    } catch (Exception x) {
-		Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, x);
-	    }
-	}
+        @Override
+        public void sendChar(final char c) {
+            singlePool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        outputStreamWriter.write(c);
+                        // writer is buffered, need to use flush!
+                        // perhaps SHOULD use an unbuffered writer?
+                        // Also fix send_chars()
+                        outputStreamWriter.flush();
+                    } catch (IOException x) {
+                        // no-op
+                    } catch (Exception x) {
+                        Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, x);
+                    }
+                }
+            });
+        }
     }
-
+    
     public StreamTerm() {
     }
 
+    private static final int BUFSZ = 1024;
     /*
      * Monitor output from process and forward to terminal
      */
     private static final class OutputMonitor extends Thread {
-
-        private static final int BUFSZ = 1024;
+ 
         private final char[] buf = new char[BUFSZ];
         private final Term term;
         private final InputStreamReader reader;
@@ -261,7 +277,6 @@ public class StreamTerm extends Term {
             }
         }
     }
-
     /**
      * Connect an I/O stream pair or triple to this Term.
      * Call disconnect() before attempting to connect() again.

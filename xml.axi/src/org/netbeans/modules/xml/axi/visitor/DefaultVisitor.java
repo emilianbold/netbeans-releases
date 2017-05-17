@@ -60,13 +60,14 @@ import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.ContentModel;
+import org.netbeans.modules.xml.axi.SchemaReference;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 
 /**
  *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
-public abstract class DefaultVisitor implements AXIVisitor {
+public abstract class DefaultVisitor implements AXIVisitor2 {
         
     /**
      * Creates a new instance of DefaultVisitor
@@ -97,4 +98,8 @@ public abstract class DefaultVisitor implements AXIVisitor {
     
     public void visit(Datatype datatype) {      
     }	
+
+    @Override
+    public void visit(SchemaReference ref) {
+    }
 }

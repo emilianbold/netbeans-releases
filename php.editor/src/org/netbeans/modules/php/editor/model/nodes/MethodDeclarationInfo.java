@@ -58,12 +58,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.openide.util.Pair;
 
 /**
  * @author Radek Matous
  */
 public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
-    Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+    Map<String, List<Pair<QualifiedName, Boolean>>> paramDocTypes = Collections.emptyMap();
     private final boolean isFromInterface;
 
     MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {

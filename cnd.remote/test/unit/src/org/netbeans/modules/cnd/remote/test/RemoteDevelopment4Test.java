@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.remote.pbuild.RemoteBuildRequiredProjectsTestCas
 import org.netbeans.modules.cnd.remote.pbuild.RemoteBuildSamplesTestCase;
 import org.netbeans.modules.cnd.remote.pbuild.RfsGnuRemoteBuildTestCase;
 import org.netbeans.modules.cnd.remote.pbuild.RfsSunStudioRemoteBuildTestCase;
+import org.netbeans.modules.cnd.remote.pbuild.SftpGnuRemoteBuildTestCase;
+import org.netbeans.modules.cnd.remote.pbuild.SftpSunStudioRemoteBuildTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
@@ -63,11 +65,13 @@ public class RemoteDevelopment4Test extends CndBaseTestSuite {
    public RemoteDevelopment4Test() {
        this("Remote Development", // NOI18N           
            RfsSunStudioRemoteBuildTestCase.class,
+           SftpSunStudioRemoteBuildTestCase.class,
            LinuxTouchRfsBuildTestCase.class,
            RemoteBuildLinksTestCase.class,
            RemoteBuildRequiredProjectsTestCase.class,
            RemoteBuildSamplesTestCase.class,
            RfsGnuRemoteBuildTestCase.class,
+           SftpGnuRemoteBuildTestCase.class,
            RemoteBuildMakefileTestCase.class,
            FullRemoteBuildTestCase.class
        );

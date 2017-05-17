@@ -49,6 +49,7 @@ import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.axi.SchemaReference;
 import org.netbeans.modules.xml.schema.model.*;
 
 /**
@@ -282,6 +283,28 @@ public class AXIComponentCreator extends AbstractModelBuilder {
         ContentModel cm = factory.createContentModel(schemaComponent);
         Util.updateContentModel(cm);
         newAXIComponent = cm;
+    }
+
+    @Override
+    public void visit(Import im) {
+        if(!model.fromSameSchemaModel(im)) {
+            newAXIComponent = model.lookupFromOtherModel(im);
+            return;
+        }
+        SchemaReference ref = factory.createSchemaReference(im);
+        Util.updateSchemaReference(ref);
+        newAXIComponent = ref;
+    }
+
+    @Override
+    public void visit(Include include) {
+        if(!model.fromSameSchemaModel(include)) {
+            newAXIComponent = model.lookupFromOtherModel(include);
+            return;
+        }
+        SchemaReference ref = factory.createSchemaReference(include);
+        Util.updateSchemaReference(ref);
+        newAXIComponent = ref;
     }
             
     public void visit(LocalComplexType component) {        

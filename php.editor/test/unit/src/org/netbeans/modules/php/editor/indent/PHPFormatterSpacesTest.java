@@ -1158,4 +1158,238 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/spaces/issue253093d.php", options);
     }
 
+    // PHP7.1
+    public void testSpacesAfterNullableTypePrefixForReturn01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn01.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn02.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn03.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn04.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn05.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn06.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn07.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn08.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForReturn09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForReturn09.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter01.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter02.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter03.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter04.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter05.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter06.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter07.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter08.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForParameter09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForParameter09.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed01.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed02.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed03.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed04.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed05.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed06.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed07.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed08.php", options);
+    }
+
+    public void testSpacesAfterNullableTypePrefixForMixed09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAfterNullableTypePrefixForMixed09.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch01.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch02.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch03.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch04.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch05.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch06.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch07.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch08.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch09.php", options);
+    }
+
+    public void testSpacesAroundMultiCatch10() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundMultiCatch10.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual01a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual01a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual02a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual02a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual03a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual03a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual04a() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual04a.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual01b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual01b.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual02b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual02b.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual03b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual03b.php", options);
+    }
+
+    public void testSpacesAroundDeclareEqual04b() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_DECLARE_EQUAL, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundDeclareEqual04b.php", options);
+    }
+
 }

@@ -32,12 +32,44 @@ package org.netbeans.modules.cnd.navigation.services;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
  *
  * @author Alexander Simon
  */
 public interface HierarchyModel extends HierarchyActions {
+    
+    public class Node {
 
-    public Collection<CsmClass> getHierarchy(CsmClass cls);
+        private final CsmOffsetableDeclaration object;
+        private final boolean specialization;
+
+        public Node(CsmOffsetableDeclaration object, boolean specialization) {
+            this.object = object;
+            this.specialization = specialization;
+        }
+
+        public CsmOffsetableDeclaration getDeclaration() {
+            return object;
+        }
+
+        public CharSequence getDisplayName() {
+            if (CsmKindUtilities.isTemplate(object)) {
+                CsmTemplate tpl = (CsmTemplate)object;
+                if (tpl.isSpecialization()) {
+                    return (tpl).getDisplayName();
+                }
+            }
+            return object.getName();
+        }
+        
+        public boolean isSpecialization() {
+            return specialization;
+        }
+    }
+
+    public Collection<Node> getHierarchy(CsmClass cls);
 }

@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -82,7 +83,6 @@ import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
-import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
@@ -143,7 +143,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         //
         boolean noPuNeeded = true;
         try {
-            noPuNeeded = ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project);
+            noPuNeeded = ProviderUtil.persistenceExists(project, Templates.getTargetFolder(wiz)) || !ProviderUtil.isValidServerInstanceOrNone(project);
         } catch (InvalidPersistenceXmlException ex){
             Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml"); //NOI18N
         } catch (RuntimeException ex){
@@ -177,7 +177,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getPersistenceConnection()!=null ? puPanel.getPersistenceConnection().getName() : puPanel.getDatasource(), TableGeneration.NONE, puPanel.getSelectedProvider());
                 ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
                 if (punit != null){
-                    Util.addPersistenceUnitToProject( project, punit);
+                    Util.addPersistenceUnitToProjectRoot( project, result, punit);
                 }
             } else {
                 Util.addPersistenceUnitToProject( project );
@@ -213,8 +213,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 entityFQN = clsPath.getResourceName(entity, '.', false);
             }
 
-            if (!(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
-                PUDataObject pudo = ProviderUtil.getPUDataObject(project);
+            if (!(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project, entity) != null) {
+                PUDataObject pudo = ProviderUtil.getPUDataObject(project, entity, null);
                 try {
                     PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
                     //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
@@ -283,14 +283,21 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         
         FileObject entityFo = GenerationUtils.createClass(targetFolder, targetName, null);
         ClassPath boot = ClassPath.getClassPath(targetFolder, ClassPath.BOOT);
+        ClassPath moduleBoot = ClassPath.getClassPath(targetFolder, JavaClassPathConstants.MODULE_BOOT_PATH);
         ClassPath compile = ClassPath.getClassPath(targetFolder, ClassPath.COMPILE);
+        ClassPath moduleCompile = ClassPath.getClassPath(targetFolder, JavaClassPathConstants.MODULE_COMPILE_PATH);
+        ClassPath moduleClass = ClassPath.getClassPath(targetFolder, JavaClassPathConstants.MODULE_CLASS_PATH);
         ClassPath source = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
+        ClassPath moduleSource = ClassPath.getClassPath(targetFolder, JavaClassPathConstants.MODULE_SOURCE_PATH);
         
         JPAClassPathHelper cpHelper = new JPAClassPathHelper(
                 Collections.<ClassPath>singleton(boot), 
                 Collections.<ClassPath>singleton(compile), 
-                Collections.<ClassPath>singleton(source)
-                );
+                Collections.<ClassPath>singleton(source))
+                .setModuleBootPaths(moduleBoot != null ? Collections.<ClassPath>singleton(moduleBoot) : null)
+                .setModuleCompilePaths(moduleCompile != null ? Collections.<ClassPath>singleton(moduleCompile) : null)
+                .setModuleClassPaths(moduleClass != null ? Collections.<ClassPath>singleton(moduleClass) : null)
+                .setModuleSourcePaths(moduleSource != null ? Collections.<ClassPath>singleton(moduleSource) : null);
         
 
         JavaSource targetSource = JavaSource.create(cpHelper.createClasspathInfo(), entityFo);

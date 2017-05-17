@@ -129,6 +129,7 @@ public class RemoteSyncNotifierImpl extends RemoteSyncNotifier {
         return res;
     }
     
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void arrangeComboBox(JComboBox cbSyncMode, ExecutionEnvironment execEnv) {
 
         List<RemoteSyncFactory> factories = new ArrayList<>();

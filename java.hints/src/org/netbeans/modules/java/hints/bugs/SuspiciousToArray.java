@@ -194,7 +194,7 @@ public class SuspiciousToArray {
                 ).toEditorFix();
         } else {
             // and if the $c is not a simple identifier / MemberSelect composed of only identifiers, 
-            SideEffectVisitor sev = new SideEffectVisitor(ci);
+            SideEffectVisitor sev = new SideEffectVisitor(ctx);
             try {
                 if (colPath != null) {
                     sev.scan(colPath, ci);

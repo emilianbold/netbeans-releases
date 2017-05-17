@@ -1557,7 +1557,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                             if (path.startsWith(getPath()) && path.length() > getPath().length() + 1 && path.charAt(getPath().length()) == '/') {
                                 String relPath = path.substring(getPath().length() + 1);
                                 ZipEntry entry = new ZipEntry(relPath);
-                                //entry.setTime(file.lastModified());
+                                entry.setTime(System.currentTimeMillis() - TimeZone.getDefault().getRawOffset());
                                 zipStream.putNextEntry(entry);
                                 try (FileInputStream fis = new FileInputStream(fo.getCache())) {
                                     FileUtil.copy(fis, zipStream);
@@ -1568,16 +1568,20 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
                         }
                     }
                 }
-                uploadAndUnzip(zipFile);
+                uploadAndUnzip(zipFile, false);
             } finally {
                 zipFile.delete();
                 this.refresh(true);
             }
         } finally {
+            for (RemoteFileObjectBase fo : suspendInfo.getAllSuspended()) {
+                fo.setFlag(MASK_SUSPENDED_DUMMY, false);
+            }
             suspendInfo.dispose();
         }
     }
 
+    /** NB: zip entries time should be in UTC */
     void uploadAndUnzip(InputStream zipStream) throws ConnectException, InterruptedException, IOException {        
         final ExecutionEnvironment env = getExecutionEnvironment();        
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
@@ -1594,7 +1598,7 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             } finally {
                 zipStream.close();
             }
-            uploadAndUnzip(localZipFile);            
+            uploadAndUnzip(localZipFile, true);
         } finally {
             if (localZipFile != null) {
                 localZipFile.delete();
@@ -1602,8 +1606,9 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         }        
     }
 
+    /** NB: zip entries time should be in UTC */
     @SuppressWarnings("ReplaceStringBufferByString")
-    private void uploadAndUnzip(File localZipFile) throws InterruptedException, IOException  {
+    private void uploadAndUnzip(File localZipFile, boolean alsoUnzipToCache) throws InterruptedException, IOException  {
         final ExecutionEnvironment env = getExecutionEnvironment();
         // Copy local zip file to remote
         String remoteZipPath = getPath() + '/' + ".rfs_tmp_" + System.currentTimeMillis() + ".zip"; // NOI18N
@@ -1623,7 +1628,8 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
             CommonTasksSupport.rmFile(env, remoteZipPath, null);
             throw new IOException(errorMessage + " when uploading " + localZipFile + " to " + remoteZipPath); //NOI18N
         }
-        StringBuilder script = new StringBuilder("unzip -q -o \"").append(remoteZipPath); // NOI18N
+        StringBuilder script = new StringBuilder("TZ=UTC "); // NOI18N
+        script.append("unzip -q -o \"").append(remoteZipPath); // NOI18N
         script.append("\" && rm \"").append(remoteZipPath).append("\""); //NOI18N
 //            if (adjustLineEndings && Utils.isWindows()) {
 //                script.append(" && (which dos2unix > /dev/null; if [ $? = 0 ]; then find . -name \"*[Mm]akefile*\" -exec dos2unix {}  \\; ; else echo \"no_dos2unix\"; fi)"); //NOI18N
@@ -1633,19 +1639,35 @@ public class RemoteDirectory extends RemoteFileObjectWithCache {
         if (!rc.isOK()) {
             throw new IOException(rc.getErrorString() + " when unzipping and removing " + remoteZipPath + " in " + this); //NOI18N
         }
-        getCache().mkdirs();
-        try (InputStream is = new FileInputStream(localZipFile)) {
-            RemoteFileSystemUtils.unpackZipFile(is, getCache());
+        if (alsoUnzipToCache) {
+            getCache().mkdirs();
+            try (InputStream is = new FileInputStream(localZipFile)) {
+                RemoteFileSystemUtils.unpackZipFile(is, getCache());
+            }
         }
+        class CacheFiller {
+            void fillRecursively(File cacheDir) throws IOException {
+                File cacheList = new File(cacheDir, RemoteFileSystem.CACHE_FILE_NAME);
+                if (!cacheList.exists()) {
+                    // We need to create a .rfs_cache files for each directory, otherwise it won't be refreshed -
+                    // and changing this logic in refreshImpl is too dangerous.                    
+                    //final Collection<DirEntryImpl> entries = DirEntryImpl.createFromCacheDir(cacheDir);
+                    // We create an empty cache file: in suspend mode no events were raised, 
+                    // so let all "file created" events be raised now.
+                    DirectoryStorage.store(cacheList, Collections.<DirEntryImpl>emptyList() /*entries*/);
+                }
+            }
+        }
+        new CacheFiller().fillRecursively(getCache());
         try {
-            refreshImpl(trace, null, true, RefreshMode.DEFAULT, 0);
+            refreshImpl(true, null, true, RefreshMode.DEFAULT, 0);
         } catch (TimeoutException ex) {
             RemoteFileSystemUtils.reportUnexpectedTimeout(ex, this);
         } catch (ExecutionException ex) {
             throw new IOException(ex);
         }
     }
-
+    
     private boolean ensureChildSyncFromZip(RemotePlainFile child) {
         File file = new File(getCache(), RemoteFileSystem.CACHE_ZIP_FILE_NAME);
         if (file.exists()) {

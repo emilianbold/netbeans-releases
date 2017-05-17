@@ -62,6 +62,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -72,6 +73,7 @@ import org.openide.util.CharSequences;
  */
 @SuppressWarnings("unchecked")
 public class CsmSortUtilities {
+    private static boolean CAMEL_CASE_COMPLETION = CndUtils.getBoolean("cnd.api.model.util.camelcase", true);
     
     /* ------------------- COMPARATORS --------------------------- */
     public static final Comparator CLASS_NAME_COMPARATOR = new DefaultClassNameComparator();
@@ -119,11 +121,15 @@ public class CsmSortUtilities {
     }
 
     public static boolean startsWith(String theString, String prefix, boolean match, boolean caseSensitive) {
-        return isCamelCasePrefix(prefix) && !match
-                ? caseSensitive
-                        ? startsWithCamelCase(theString, prefix)
-                        : startsWithCamelCase(theString, prefix) || CsmSortUtilities.matchName(theString, prefix, match, caseSensitive)
-                : CsmSortUtilities.matchName(theString, prefix, match, caseSensitive);
+        if (CAMEL_CASE_COMPLETION) {
+            return !match && isCamelCasePrefix(prefix)
+                    ? caseSensitive
+                            ? startsWithCamelCase(theString, prefix)
+                            : CsmSortUtilities.matchName(theString, prefix, match, caseSensitive) || startsWithCamelCase(theString, prefix)
+                    : CsmSortUtilities.matchName(theString, prefix, match, caseSensitive);
+        } else {
+            return CsmSortUtilities.matchName(theString, prefix, match, caseSensitive);
+        }
     }
 
     public static boolean startsWithCamelCase(String theString, String prefix) {
@@ -148,7 +154,7 @@ public class CsmSortUtilities {
             if (Character.isUpperCase(text.charAt(i))) {
                 return i;
             }
-            }
+        }
         return -1;
     }
 

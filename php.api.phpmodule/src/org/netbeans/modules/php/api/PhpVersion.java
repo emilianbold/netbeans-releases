@@ -54,6 +54,7 @@ import org.openide.util.NbBundle;
     "PhpVersion.PHP_55=PHP 5.5",
     "PhpVersion.PHP_56=PHP 5.6",
     "PhpVersion.PHP_70=PHP 7.0",
+    "PhpVersion.PHP_71=PHP 7.1",
 })
 public enum PhpVersion {
 
@@ -79,10 +80,15 @@ public enum PhpVersion {
      */
     PHP_56(Bundle.PhpVersion_PHP_56()),
     /**
-     * PHP 5.7.
+     * PHP 7.0.
      * @since 2.58
      */
-    PHP_70(Bundle.PhpVersion_PHP_70());
+    PHP_70(Bundle.PhpVersion_PHP_70()),
+    /**
+     * PHP 7.1.
+     * @since 2.60
+     */
+    PHP_71(Bundle.PhpVersion_PHP_71());
 
     private final String displayName;
     private final boolean namespaces;

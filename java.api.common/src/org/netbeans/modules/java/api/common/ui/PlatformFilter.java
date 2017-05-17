@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.api.common.ui;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 
 /**
@@ -49,15 +50,14 @@ import org.netbeans.api.java.platform.JavaPlatform;
  * lists of platforms to only platforms fulfilling project's needs. This mechanism
  * is useful in projects that extend the SE Project and need to hook into the
  * underlying SE UI infrastructure.
- * 
+ *
  * @author Petr Somol
  */
+@FunctionalInterface
 public interface PlatformFilter {
-    
     /**
      * Returns true if platform fulfills whatever condition is implemented
      * @since 1.49
      */
-    boolean accept(JavaPlatform platform);
-    
+    boolean accept(@NonNull JavaPlatform platform);
 }

@@ -67,7 +67,6 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
     private NodePesentation compilerSetNodeProp;
     private String flavor;
     private boolean dirty = false;
-    private final Map<String, String> oldNameMap = new HashMap<>();
     
     private static final RequestProcessor RP = new RequestProcessor("CompilerSet2Configuration", 1); // NOI18N
 
@@ -290,7 +289,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
         CompilerSet ocs;
         String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getHostKey();
         final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
-        final String oldName = oldNameMap.get(hkey);
+        final String oldName = getName();
         if (oldName != null) {
             ocs = CompilerSetManager.get(env).getCompilerSet(oldName);
         } else {
@@ -303,8 +302,6 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
             return;
         }
 
-        String okey = (String) evt.getOldValue();
-        oldNameMap.put(okey, getName());
         if (env.isLocal()) {
             setValue(ocs.getName());
         } else {

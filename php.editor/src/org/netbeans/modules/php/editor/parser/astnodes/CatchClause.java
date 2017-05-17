@@ -41,37 +41,42 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
- * Represents a catch clause (as part of a try statement)
- * <pre>e.g.<pre> catch (ExceptionClassName $variable) { body; },
+ * Represents a catch clause (as part of a try statement).
  *
+ * <pre>e.g.
+ * catch (ExceptionClassName $variable) { body; },
+ * catch (ExceptionA | ExceptionB $ex) { body; } // PHP7.1
+ * </pre>
  */
 public class CatchClause extends Statement {
 
-    private Expression className;
-    private Variable variable;
-    private Block body;
+    private final List<Expression> classNames;
+    private final Variable variable;
+    private final Block body;
 
-    public CatchClause(int start, int end, Expression className, Variable variable, Block statement) {
+    public CatchClause(int start, int end, List<Expression> classNames, Variable variable, Block statement) {
         super(start, end);
 
-        assert className != null && variable != null && statement != null;
-        this.className = className;
+        assert !classNames.isEmpty() && variable != null && statement != null;
+        this.classNames = classNames;
         this.variable = variable;
         this.body = statement;
 //        className.setParent(this);
 //        variable.setParent(this);
 //        statement.setParent(this);
-
     }
 
     /**
-     * Returns the class name of this catch clause.
+     * Returns the class names of this catch clause.
      *
-     * @return the exception variable declaration node
+     * @return the exception class names
      */
-    public Expression getClassName() {
-        return this.className;
+    public List<Expression> getClassNames() {
+        return Collections.unmodifiableList(this.classNames);
     }
 
     /**
@@ -99,7 +104,15 @@ public class CatchClause extends Statement {
 
     @Override
     public String toString() {
-        return "catch (" + getClassName() + " " + getVariable() + ")" + getBody(); //NOI18N
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        getClassNames().forEach((name) -> {
+            if (!first) {
+                sb.append(" | "); // NOI18N
+            }
+            sb.append(name);
+        });
+        return "catch (" + sb.toString() + " " + getVariable() + ")" + getBody(); //NOI18N
     }
 
 }

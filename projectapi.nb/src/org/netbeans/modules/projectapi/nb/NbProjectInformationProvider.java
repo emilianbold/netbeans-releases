@@ -47,6 +47,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -68,6 +70,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = ProjectInformationProvider.class, position = 100)
 public final class NbProjectInformationProvider implements ProjectInformationProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(NbProjectInformationProvider.class.getName());
 
     @Override
     @NonNull
@@ -183,6 +187,7 @@ public final class NbProjectInformationProvider implements ProjectInformationPro
             Icon original = pinfo.getIcon();
             if (original == null) {
                 // Forbidden generally but common in tests.
+                LOGGER.log(Level.WARNING, "no icon for {0}", pinfo);
                 return;
             }
             Image _icon = ImageUtilities.icon2Image(original);

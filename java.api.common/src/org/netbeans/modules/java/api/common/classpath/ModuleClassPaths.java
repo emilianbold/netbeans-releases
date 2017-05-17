@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.java.api.common.classpath;
 
+import com.sun.source.tree.ModuleTree;
+import com.sun.source.tree.RequiresTree;
+import com.sun.source.util.TreeScanner;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -55,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -63,6 +67,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -78,6 +83,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -90,7 +96,8 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.java.api.common.impl.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.util.CommonModuleUtils;
+import org.netbeans.modules.java.api.common.impl.MultiModule;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.preprocessorbridge.api.ModuleUtilities;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -125,6 +132,7 @@ final class ModuleClassPaths {
      * to make changes done by invalidate visible due to ParserManager.parse nesting.
      */
     private static final RequestProcessor CLASS_INDEX_FIRER = new RequestProcessor(ModuleClassPaths.class);
+    private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
 
     private ModuleClassPaths() {
         throw new IllegalArgumentException("No instance allowed."); //NOI18N
@@ -162,14 +170,7 @@ final class ModuleClassPaths {
             @NonNull final String platformType) {
         return new PlatformModulePath(eval, platformType);
     }
-    
-    static ClassPathImplementation createPropertyBasedModulePath(
-            @NonNull final File projectDir,
-            @NonNull final PropertyEvaluator eval,
-            @NonNull final String... props) {
-        return createPropertyBasedModulePath(projectDir, eval, null, props);
-    }
-    
+
     @NonNull
     static ClassPathImplementation createPropertyBasedModulePath(
             @NonNull final File projectDir,
@@ -177,6 +178,179 @@ final class ModuleClassPaths {
             @NullAllowed final Function<URL,Boolean> filter,
             @NonNull final String... props) {
         return new PropertyModulePath(projectDir, eval, filter, props);
+    }
+
+    @NonNull
+    static ClassPathImplementation createMultiModuleBinariesPath(
+            @NonNull final MultiModule model,
+            final boolean archives,
+            final boolean requiresModuleInfo) {
+        return new MultiModuleBinaries(model, archives, requiresModuleInfo);
+    }
+
+    private static final class MultiModuleBinaries extends BaseClassPathImplementation implements PropertyChangeListener, ChangeListener, FileChangeListener {
+        private final MultiModule model;
+        private final boolean archives;
+        private final boolean requiresModuleInfo;
+        //@GuardedBy("this")
+        private Collection<BinaryForSourceQuery.Result> currentResults;
+        //@GuardedBy("this")
+        private Collection<ClassPath> currentSourcePaths;
+        private final Set</*@GuardedBy("this")*/File> currentModuleInfos;
+
+        MultiModuleBinaries(
+                @NonNull final MultiModule model,
+                final boolean archives,
+                final boolean requiresModuleInfo) {
+            Parameters.notNull("model", model); //NOI18N
+            this.model = model;
+            this.archives = archives;
+            this.requiresModuleInfo = requiresModuleInfo;
+            this.currentModuleInfos = new HashSet<>();
+            this.model.addPropertyChangeListener(WeakListeners.propertyChange(this, this.model));
+        }
+
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = getCache();
+            if (res != null) {
+                return res;
+            }
+            final List<BinaryForSourceQuery.Result> results = new ArrayList<>();
+            final List<ClassPath> sourcePaths = new ArrayList<>();
+            final Set<File> moduleInfos = new HashSet<>();
+            res = createResources(results, sourcePaths, moduleInfos);
+            synchronized (this) {
+                assert res != null;
+                if (getCache() == null) {
+                    setCache(res);
+                    if (currentResults != null) {
+                        currentResults.forEach((r)->r.removeChangeListener(this));
+                    }
+                    results.forEach((r)->r.addChangeListener(this));
+                    currentResults = results;
+                    if (currentSourcePaths != null) {
+                        currentSourcePaths.forEach((scp)->scp.removePropertyChangeListener(this));
+                    }
+                    sourcePaths.forEach((scp)->scp.addPropertyChangeListener(this));
+                    currentSourcePaths = sourcePaths;
+                    final Set<File> toRemove = new HashSet<>(currentModuleInfos);
+                    toRemove.removeAll(moduleInfos);
+                    moduleInfos.removeAll(currentModuleInfos);
+                    for (File f : toRemove) {
+                        FileUtil.removeFileChangeListener(this, f);
+                        currentModuleInfos.remove(f);
+                    }
+                    for (File f : moduleInfos) {
+                        FileUtil.addFileChangeListener(this, f);
+                        currentModuleInfos.add(f);
+                    }
+                } else {
+                    res = getCache();
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (MultiModule.PROP_MODULES.equals(propName) || ClassPath.PROP_ENTRIES.equals(propName)) {
+                resetCache(PROP_RESOURCES);
+            }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            resetCache(PROP_RESOURCES);
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            //Not important
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            //Not important
+        }
+
+        private List<PathResourceImplementation> createResources(
+                @NonNull final Collection<? super BinaryForSourceQuery.Result> results,
+                @NonNull final Collection<? super ClassPath> sourcePaths,
+                @NonNull final Collection<? super File> moduleInfos) {
+            final Set<URL> binaries = new LinkedHashSet<>();
+            for (String moduleName : model.getModuleNames()) {
+                final ClassPath scp = model.getModuleSources(moduleName);
+                if (scp != null) {
+                    sourcePaths.add(scp);
+                    final Consumer<URL> consummer = !requiresModuleInfo || scp.findResource(MODULE_INFO_JAVA) != null ?
+                            (u) -> {
+                                final BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(u);
+                                results.add(r);
+                                binaries.addAll(filterArtefact(archives, r.getRoots()));
+                            }:
+                            (u) -> {};
+                        for (ClassPath.Entry e : scp.entries()) {
+                            try {
+                                final URL url = e.getURL();
+                                consummer.accept(url);
+                                Optional.ofNullable(requiresModuleInfo ? BaseUtilities.toFile(url.toURI()) : null)
+                                        .map ((root) -> new File(root, MODULE_INFO_JAVA))
+                                        .ifPresent(moduleInfos::add);
+                            } catch (URISyntaxException use) {
+                                LOG.log(
+                                        Level.WARNING,
+                                        "Cannot convert to URI: {0}",   //NOI18N
+                                        e.getURL());
+                            }
+                        }
+
+                }
+            }
+            return binaries.stream()
+                    .map((url) -> org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
+                    .collect(Collectors.toList());
+        }
+
+        
+
+        private static Collection<? extends URL> filterArtefact(
+                final boolean archive,
+                @NonNull final URL... urls) {
+            final Collection<URL> res = new ArrayList<>(urls.length);
+            for (URL url : urls) {
+                if ((archive && FileUtil.isArchiveArtifact(url)) ||
+                    (!archive && !FileUtil.isArchiveArtifact(url))) {
+                    res.add(url);
+                    break;
+                }
+            }
+            if (res.isEmpty()) {
+                Collections.addAll(res, urls);
+            }
+            return res;
+        }
     }
 
     private static final class PlatformModulePath extends BaseClassPathImplementation implements PropertyChangeListener {
@@ -258,6 +432,7 @@ final class ModuleClassPaths {
     }
 
     private static final class PropertyModulePath extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
+        private static final String MODULE_INFO_CLASS = "module-info.class";    //NOI18N
 
         private final File projectDir;
         private final PropertyEvaluator eval;
@@ -423,9 +598,12 @@ final class ModuleClassPaths {
             //No project's dist folder do File.list
             File[] modules = modulesFolder.listFiles((File f) -> {
                 try {
-                    return f.isFile() &&
-                            !f.getName().startsWith(".") &&
-                            FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL());
+                    if (f.getName().startsWith(".")) {
+                        return false;
+                    }
+                    return f.isFile() ?
+                            FileUtil.isArchiveFile(BaseUtilities.toURI(f).toURL()) :
+                            new File(f, MODULE_INFO_CLASS).exists();
                 } catch (MalformedURLException e) {
                     Exceptions.printStackTrace(e);
                     return false;
@@ -439,7 +617,6 @@ final class ModuleClassPaths {
 
     private static final class ModuleInfoClassPathImplementation  extends BaseClassPathImplementation implements FlaggedClassPathImplementation, PropertyChangeListener, ChangeListener, FileChangeListener, ClassIndexListener {
 
-        private static final String MODULE_INFO_JAVA = "module-info.java";   //NOI18N
         private static final String MOD_JAVA_BASE = "java.base";    //NOI18N
         private static final String MOD_JAVA_SE = "java.se";        //NOI18N
         private static final String MOD_ALL_UNNAMED = "ALL-UNNAMED";    //NOI18N
@@ -523,10 +700,6 @@ final class ModuleClassPaths {
                 return (List<? extends PathResourceImplementation>) bestSoFar[0];
             }
             final Collection<File> newModuleInfos = new ArrayDeque<>();
-            final Map<String, List<URL>> modulesPatches = getPatches();
-            final Map<String,List<URL>> modulesByName = getModulesByName(
-                    base,
-                    modulesPatches);
             final List<URL> newActiveProjectSourceRoots = new ArrayList<>();
             collectProjectSourceRoots(systemModules, newActiveProjectSourceRoots);
             collectProjectSourceRoots(userModules, newActiveProjectSourceRoots);
@@ -558,6 +731,45 @@ final class ModuleClassPaths {
             });
             boolean incompleteVote = false;
             if(supportsModules(systemModules, userModules, sources)) {
+                final Map<String, List<URL>> modulesPatches = getPatches();
+                String xmodule = getXModule();
+                String patchedModule = null;
+                final Function<URL,Stream<URL>> patchRootTransformer;
+                {
+                    final Map<URL,List<URL>> sourcePatches = new HashMap<>();
+                    final Map<URL,String> mpBmn = new HashMap<>();
+                    modulesPatches.entrySet()
+                        .forEach((e) -> e.getValue().forEach((url) -> mpBmn.put(url, e.getKey())));
+                    for (ClassPath.Entry e : sources.entries()) {
+                        final URL url = e.getURL();
+                        final String mn = mpBmn.get(url);
+                        if (mn != null) {
+                            if (patchedModule == null) {
+                                patchedModule = mn;
+                            }
+                            sourcePatches.put(url, Collections.emptyList());
+                        }
+                    }
+                    for (URL pRoot : mpBmn.keySet()) {
+                        final URL[] bin;
+                        if (!sourcePatches.containsKey(pRoot) && (bin = BinaryForSourceQuery.findBinaryRoots(pRoot).getRoots()).length > 0) {
+                            sourcePatches.put(pRoot, Arrays.asList(bin));
+                        }
+                    }
+                    patchRootTransformer = (u) -> {
+                        final List<URL> transformation = sourcePatches.get(u);
+                        return transformation == null ?
+                                Stream.of(u) :
+                                transformation.stream();
+                    };
+                }
+                if (xmodule == null) {
+                    xmodule = patchedModule;
+                }
+                final Map<String,List<URL>> modulesByName = getModulesByName(
+                        base,
+                        modulesPatches,
+                        patchRootTransformer);
                 res = modulesByName.values().stream()
                         .flatMap((urls) -> urls.stream())
                         .map((url)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(url))
@@ -610,11 +822,10 @@ final class ModuleClassPaths {
                     }
                     final List<PathResourceImplementation> bcprs = base == systemModules ?
                             selfResResources :   //java.base
-                            findJavaBase(getModulesByName(systemModules, modulesPatches));
+                            findJavaBase(getModulesByName(systemModules, modulesPatches, patchRootTransformer));
                     final ClassPath bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(bcprs);
                     final JavaSource src;
                     final Predicate<ModuleElement> rootModulesPredicate;
-                    final String xmodule;
                     if (found != null) {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -626,7 +837,6 @@ final class ModuleClassPaths {
                         final Set<String> additionalModules = getAddMods();
                         additionalModules.remove(MOD_ALL_UNNAMED);
                         rootModulesPredicate = ModuleNames.create(additionalModules);
-                        xmodule = null;
                     } else {
                         src = JavaSource.create(
                                 new ClasspathInfo.Builder(bootCp)
@@ -643,7 +853,6 @@ final class ModuleClassPaths {
                         } else {
                             rootModulesPredicate = ModuleNames.create(additionalModules);
                         }
-                        xmodule = getXModule();
                     }
                     boolean dependsOnUnnamed = false;
                     if (src != null) {
@@ -653,19 +862,41 @@ final class ModuleClassPaths {
                                 final Set<URL> requires = new HashSet<>();
                                 if (found != null || xmodule != null) {
                                     final ModuleElement myModule;
+                                    final ModuleTree myModuleTree;
                                     if (found != null) {
-                                        myModule = mu.parseModule();
+                                        myModuleTree = mu.parseModule();
+                                        myModule = myModuleTree != null ?
+                                                mu.resolveModule(myModuleTree) :
+                                                null;
+                                        if (xmodule != null &&
+                                                LOG.isLoggable(Level.WARNING) &&
+                                                !xmodule.equals(Optional.ofNullable(myModuleTree)
+                                                    .map((mt) -> mt.getName().toString())
+                                                    .orElse(xmodule))) {
+                                            LOG.log(
+                                                    Level.WARNING,
+                                                    "Xmodule: {0} combined with module-info: {1}, ignoring xmodule.",   //NOI18N
+                                                    new Object[]{
+                                                        xmodule,
+                                                        FileUtil.getFileDisplayName(found)
+                                                    });
+                                        }
                                     } else {
                                         final List<URL> xmoduleLocs = modulesByName.get(xmodule);
+                                        myModuleTree = null;
                                         myModule = mu.resolveModule(xmodule);
-                                        if (myModule != null && xmoduleLocs != null) {
+                                        if (xmoduleLocs != null) {
                                             requires.addAll(xmoduleLocs);
                                         }
                                         incompleteVote = myModule == null;
                                     }
                                     if (myModule != null) {
                                         dependsOnUnnamed = dependsOnUnnamed(myModule, true);
-                                        requires.addAll(collectRequiredModules(myModule, true, false, modulesByName));
+                                        requires.addAll(collectRequiredModules(myModule, myModuleTree, true, false, modulesByName));
+                                    } else if (base == systemModules) {
+                                        //When module unresolvable add at least java.base to systemModules
+                                        Optional.ofNullable(modulesByName.get(MOD_JAVA_BASE))
+                                                .ifPresent(requires::addAll);
                                     }
                                 } else {
                                     //Unnamed module
@@ -673,7 +904,7 @@ final class ModuleClassPaths {
                                     for (String moduleName : modulesByName.keySet()) {
                                         Optional.ofNullable(mu.resolveModule(moduleName))
                                                 .filter(rootModulesPredicate)
-                                                .map((m) -> collectRequiredModules(m, true, true, modulesByName))
+                                                .map((m) -> collectRequiredModules(m, null, true, true, modulesByName))
                                                 .ifPresent(requires::addAll);
                                     }
                                 }
@@ -916,7 +1147,8 @@ final class ModuleClassPaths {
         @NonNull
         private static Map<String,List<URL>> getModulesByName(
                 @NonNull final ClassPath cp,
-                @NonNull final Map<String,List<URL>> patches) {
+                @NonNull final Map<String,List<URL>> patches,
+                @NonNull final Function<URL,Stream<URL>> patchRootTrannsformer) {
             final Map<String,List<URL>> res = new LinkedHashMap<>();
             cp.entries().stream()
                     .map((entry)->entry.getURL())
@@ -924,8 +1156,12 @@ final class ModuleClassPaths {
                         final String moduleName = SourceUtils.getModuleName(url, true);
                         if (moduleName != null) {
                             final List<URL> roots = new ArrayList<>();
-                            Optional.ofNullable(patches.get(moduleName))
-                                    .ifPresent(roots::addAll);
+                            final List<URL> patchRoots = patches.get(moduleName);
+                            if (patchRoots != null) {
+                                patchRoots.stream()
+                                        .flatMap(patchRootTrannsformer)
+                                        .forEach(roots::add);
+                            }
                             roots.add(url);
                             res.put(moduleName, roots);
                         }
@@ -991,6 +1227,7 @@ final class ModuleClassPaths {
         @NonNull
         private static Set<URL> collectRequiredModules(
                 @NonNull final ModuleElement module,
+                @NullAllowed final ModuleTree moduleTree,
                 final boolean transitive,
                 final boolean includeTopLevel,
                 @NonNull final Map<String,List<URL>> modulesByName) {
@@ -1002,12 +1239,13 @@ final class ModuleClassPaths {
                     res.addAll(moduleLocs);
                 }
             }
-            collectRequiredModulesImpl(module, transitive, !includeTopLevel, modulesByName, seen, res);
+            collectRequiredModulesImpl(module, moduleTree, transitive, !includeTopLevel, modulesByName, seen, res);
             return res;
         }
 
         private static boolean collectRequiredModulesImpl(
                 @NullAllowed final ModuleElement module,
+                @NullAllowed final ModuleTree moduleTree,
                 final boolean transitive,
                 final boolean topLevel,
                 @NonNull final Map<String,List<URL>> modulesByName,
@@ -1021,7 +1259,7 @@ final class ModuleClassPaths {
                             final ModuleElement dependency = req.getDependency();
                             boolean add = true;
                             if (transitive) {
-                                add = collectRequiredModulesImpl(dependency, transitive, false, modulesByName, seen, c);
+                                add = collectRequiredModulesImpl(dependency, null, transitive, false, modulesByName, seen, c);
                             }
                             if (add) {
                                 final List<URL> dependencyURLs = modulesByName.get(dependency.getQualifiedName().toString());
@@ -1031,6 +1269,19 @@ final class ModuleClassPaths {
                             }
                         }
                     }
+                }
+                if (moduleTree != null) {
+                    //Add dependencies for non resolvable modules.
+                    moduleTree.accept(new TreeScanner<Void, Void>() {
+                                @Override
+                                public Void visitRequires(RequiresTree node, Void p) {
+                                    final String moduleName = node.getModuleName().toString();
+                                    Optional.ofNullable(modulesByName.get(moduleName))
+                                            .ifPresent(c::addAll);
+                                    return super.visitRequires(node, p);
+                                }
+                            },
+                            null);
                 }
                 return true;
             } else {

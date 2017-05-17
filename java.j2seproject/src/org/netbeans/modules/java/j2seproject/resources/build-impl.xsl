@@ -54,6 +54,8 @@ made subject to such option by the copyright holder.
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
                 xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
+                xmlns:if="ant:if"
+                xmlns:unless="ant:unless"
                 exclude-result-prefixes="xalan p projdeps projdeps2 j2seproject2 libs">
     <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -231,6 +233,8 @@ is divided into following sections:
                         <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
                     </and>
                 </condition>
+                <property name="dist.jlink.dir" value="${{dist.dir}}/jlink"/>
+                <property name="dist.jlink.output" value="${{dist.jlink.dir}}/${{application.title}}"/>
                 <property name="module.name" value=""/>
             </target>
             <target name="-do-init">
@@ -532,6 +536,10 @@ is divided into following sections:
                         <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">processormodulepath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processormodulepath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
                         <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
                     </attribute>
@@ -563,6 +571,13 @@ is divided into following sections:
                         <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
                         <mkdir dir="${{empty.dir}}"/>
                         <mkdir dir="@{{apgeneratedsrcdir}}"/>
+                        <condition property="processormodulepath.set">
+                            <resourcecount when="greater" count="0">
+                                <path>
+                                    <pathelement path="@{{processormodulepath}}"/>
+                                </path>
+                            </resourcecount>
+                        </condition>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
@@ -605,8 +620,10 @@ is divided into following sections:
                             <compilerarg line="${{javac.systemmodulepath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
-                            <compilerarg value="-processorpath" />
-                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
+                            <compilerarg value="--processor-module-path" if:set="processormodulepath.set"/>
+                            <compilerarg path="@{{processormodulepath}}" if:set="processormodulepath.set"/>
+                            <compilerarg value="-processorpath" unless:set="processormodulepath.set"/>
+                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" unless:set="processormodulepath.set"/>
                             <compilerarg line="${{ap.processors.internal}}" />
                             <compilerarg line="${{annotation.processing.processor.options}}" />
                             <compilerarg value="-s" />
@@ -2131,10 +2148,15 @@ is divided into following sections:
             </target>
 
             <target name ="-check-module-main-class" depends="init,compile">
+                <pathconvert property="main.class.file">
+                    <string value="${{main.class}}"/>
+                    <unpackagemapper from="*" to="*.class"/>
+                </pathconvert>
                 <condition property="do.module.main.class">
                     <and>
                         <isset property="main.class.available"/>
                         <available file="${{build.classes.dir}}/module-info.class"/>
+                        <available file="${{build.classes.dir}}/${{main.class.file}}"/>
                         <isset property="libs.CopyLibs.classpath"/>
                         <available classpath="${{libs.CopyLibs.classpath}}" classname="org.netbeans.modules.java.j2seproject.moduletask.ModuleMainClass"/>
                     </and>
@@ -2271,10 +2293,84 @@ is divided into following sections:
             </target>
             
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar,-post-jar,deploy</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
-            
+
+            <xsl:comment>
+                =================
+                DEPLOY SECTION
+                =================
+            </xsl:comment>
+            <target name="-pre-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            <target name="-check-jlink" depends="init">
+                <condition property="do.jlink.internal">
+                    <and>
+                        <istrue value="${{do.jlink}}"/>
+                        <isset property="do.archive"/>
+                        <isset property="named.module.internal"/>
+                    </and>
+                </condition>
+            </target>
+            <target name="-do-deploy" depends="init,-do-jar,-post-jar,-pre-deploy,-check-jlink" if="do.jlink.internal">
+                <delete dir="${{dist.jlink.dir}}" quiet="true" failonerror="false"/>
+                <property name="jlink.launcher.name" value="${{application.title}}"/>
+                <condition property="jlink.add.modules" value="${{module.name}},${{jlink.additionalmodules}}" else="${{module.name}}">
+                    <and>
+                        <isset property="jlink.additionalmodules"/>
+                        <length string="${{jlink.additionalmodules}}" when="greater" length="0"/>
+                    </and>
+                </condition>
+                <condition property="jlink.do.strip.internal">
+                    <and>
+                        <isset property="jlink.strip"/>
+                        <istrue value="${{jlink.strip}}"/>
+                    </and>
+                </condition>
+                <condition property="jlink.do.additionalparam.internal">
+                    <and>
+                        <isset property="jlink.additionalparam"/>
+                        <length string="${{jlink.additionalparam}}" when="greater" length="0"/>
+                    </and>
+                </condition>
+                <condition property="jlink.do.launcher.internal">
+                    <and>
+                        <istrue value="${{jlink.launcher}}"/>
+                        <isset property="main.class.available"/>
+                    </and>
+                </condition>
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                        <property name="platform.jlink" value="${{platform.home}}/bin/jlink"/>
+                        <property name="jlink.systemmodules.internal" value="${{platform.home}}/jmods"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <property name="platform.jlink" value="${{jdk.home}}/bin/jlink"/>
+                        <property name="jlink.systemmodules.internal" value="${{jdk.home}}/jmods"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <exec executable="${{platform.jlink}}">
+                    <arg value="--module-path"/>
+                    <arg path="${{jlink.systemmodules.internal}}:${{run.modulepath}}:${{dist.jar}}"/>
+                    <arg value="--add-modules"/>
+                    <arg value="${{jlink.add.modules}}"/>
+                    <arg value="--strip-debug" if:set="jlink.do.strip.internal"/>
+                    <arg value="--launcher" if:set="jlink.do.launcher.internal"/>
+                    <arg value="${{jlink.launcher.name}}=${{module.name}}/${{main.class}}" if:set="jlink.do.launcher.internal"/>
+                    <arg line="${{jlink.additionalparam}}" if:set="jlink.do.additionalparam.internal"/>
+                    <arg value="--output"/>
+                    <arg value="${{dist.jlink.output}}"/>
+                </exec>
+            </target>
+            <target name="-post-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            <target name="deploy" depends="-do-jar,-post-jar,-pre-deploy,-do-deploy,-post-deploy"/>
+
             <xsl:comment>
                 =================
                 EXECUTION SECTION
@@ -2527,6 +2623,19 @@ is divided into following sections:
                         </condition>
                     </xsl:otherwise>
                 </xsl:choose>
+                <condition property="javadoc.html5.cmd.line.arg" value="-html5" else="">
+                    <and>
+                        <isset property="javadoc.html5"/>
+                        <xsl:choose>
+                            <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                <available file="${{platform.home}}${{file.separator}}lib${{file.separator}}jrt-fs.jar"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <available file="${{jdk.home}}${{file.separator}}lib${{file.separator}}jrt-fs.jar"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </and>
+                </condition>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>
                     <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
@@ -2548,7 +2657,7 @@ is divided into following sections:
                     <xsl:attribute name="charset">UTF-8</xsl:attribute>
                     <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                         <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
-                    </xsl:if>                                                        
+                    </xsl:if>
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
@@ -2576,6 +2685,7 @@ is divided into following sections:
                         <exclude name="*.java"/>
                     </fileset>
                     <arg line="${{javadoc.endorsed.classpath.cmd.line.arg}}"/>
+                    <arg line="${{javadoc.html5.cmd.line.arg}}"/>
                 </javadoc>
                 <copy todir="${{dist.javadoc.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -2958,6 +3068,7 @@ is divided into following sections:
             <target name="-do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
+                <delete dir="${{dist.jlink.output}}"/> <!-- Jlink artefact has symlinks inside -->
                 <delete dir="${{dist.dir}}" followsymlinks="false" includeemptydirs="true"/> <!-- see issue 176851 -->
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
             </target>
@@ -3050,6 +3161,7 @@ is divided into following sections:
                             <param name="call.target" value="{$subtarget}"/>
                             <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
                             <param name="transfer.not.archive.disabled" value="true"/>
+                            <param name="transfer.do.jlink" value="false"/>
                             <xsl:for-each select="projdeps2:properties/projdeps2:property">
                                 <param name="transfer.{@name}" value="{.}"/>
                             </xsl:for-each>
@@ -3063,6 +3175,7 @@ is divided into following sections:
                             <param name="call.target" value="{$subtarget}"/>
                             <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
                             <param name="transfer.not.archive.disabled" value="true"/>
+                            <param name="transfer.do.jlink" value="false"/>
                         </antcall>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -3089,6 +3202,7 @@ is divided into following sections:
                     <param name="call.target" value="{$subtarget}"/>
                     <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
                     <param name="transfer.not.archive.disabled" value="true"/>
+                    <param name="transfer.do.jlink" value="false"/>
                 </antcall>
             </xsl:for-each>
             

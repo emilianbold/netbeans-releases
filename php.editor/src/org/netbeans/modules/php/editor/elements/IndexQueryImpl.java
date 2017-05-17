@@ -917,7 +917,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             private ElementFilter[] subtypesFilters = null;
             @Override
             public boolean isAccepted(final PhpElement element) {
-                if (element instanceof TypeMemberElement && !element.getPhpElementKind().equals(PhpElementKind.TYPE_CONSTANT)) {
+                if (element instanceof TypeMemberElement) {
                     if (enclosingType != null) {
                         return isFromEnclosingType(element) || isFromTraitOfEnclosingType(element)
                                 ? true

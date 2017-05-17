@@ -562,7 +562,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class TypedefPaintComponent extends CsmPaintComponent{
 
         String formatTypedefName;
-        private final Color TYPEDEF_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.TYPEDEF); //new Color(64,64,255).darker().darker().darker();
+        private final Color TYPEDEF_COLOR = new Color(46,146,199);//CsmFontColorManager.instance().getColor(FontColorProvider.Entity.TYPEDEF); //new Color(64,64,255).darker().darker().darker();
         //private boolean displayFQN;
 
         public void setFormatTypedefName(String formatTypedefName){
@@ -622,7 +622,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
 
     public static class FieldPaintComponent extends CsmPaintComponent{
-        private Color FIELD_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.CLASS_FIELD);//new Color(64,64,255).darker();
+        private Color FIELD_COLOR = new Color(79,155,27);//CsmFontColorManager.instance().getColor(FontColorProvider.Entity.CLASS_FIELD);//new Color(64,64,255).darker();
         protected String typeName;
         protected Color typeColor;
         protected String fldName;
@@ -751,7 +751,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
 
     public static class MacroPaintComponent extends CsmPaintComponent{
-        private Color MACRO_NAME_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.DEFINED_MACRO);//new Color(64,255,64).darker().darker();
+        private Color MACRO_NAME_COLOR = new Color(46,146,199);//CsmFontColorManager.instance().getColor(FontColorProvider.Entity.DEFINED_MACRO);//new Color(64,255,64).darker().darker();
         private Color MACRO_PARAMETER_NAME_COLOR = LFCustoms.shiftColor(new Color(227, 166, 74));//Color.magenta.darker();
         private List<CharSequence> params = null;
         private String name;

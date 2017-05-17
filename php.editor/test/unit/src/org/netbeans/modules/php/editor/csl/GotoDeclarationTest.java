@@ -41,23 +41,14 @@
  */
 package org.netbeans.modules.php.editor.csl;
 
-import java.io.File;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
 /**
  *
  * @author Radek Matous
  */
-public class GotoDeclarationTest extends PHPNavTestBase {
+public class GotoDeclarationTest extends GotoDeclarationTestBase {
 
     public GotoDeclarationTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
     }
 
     public void testConstAccesInFldDecl() throws Exception {
@@ -1407,6 +1398,11 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "            echo self::myTe^stStatic() . PHP_EOL;", "    public static function ^myTestStatic() {");
     }
 
+    // related to #171249
+    public void testIssue270422() throws Exception {
+        checkDeclaration(getTestPath(), " * @method Paren^tClass testMethod()", "class ^ParentClass {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
@@ -2227,25 +2223,4 @@ public class GotoDeclarationTest extends PHPNavTestBase {
 //                                         "}\n" +
 //                                         "?> ");
 
-    @Override
-    protected FileObject[] createSourceClassPathsForTest() {
-        return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
-    }
-
-    private String getTestFolderPath() {
-        return "testfiles/gotodeclaration/" + getTestName();
-    }
-
-    private String getTestPath() {
-        return getTestFolderPath() + "/" + getTestName() + ".php";
-    }
-
-    private String getTestName() {
-        String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
-        return name;
-    }
 }

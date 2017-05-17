@@ -62,7 +62,10 @@ fi
 
 cd ${WORKSPACE}
 
-perl nbbuild/misc/i18ncheck.pl `pwd`/cnd* `pwd`/asm* `pwd`/dlight* `pwd`/remotefs* `pwd`/mercurial.remote/src `pwd`/lib.terminalemulator/src `pwd`/terminal | grep -v "/versioning/core/" | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/" | grep -v "parser/FortranLexicalPrepass.java" | grep -v "parser/FortranTokenStream.java" | tee ${LOG}
+perl nbbuild/misc/i18ncheck.pl `pwd`/cnd* `pwd`/asm* `pwd`/dlight* `pwd`/remotefs* `pwd`/mercurial.remote/src `pwd`/lib.terminalemulator/src `pwd`/terminal\
+ | grep -v "/versioning/core/" | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/"\
+ | grep -v "Catalog.get" | grep -v "Catalog.format"\
+ | grep -v "parser/FortranLexicalPrepass.java" | grep -v "parser/FortranTokenStream.java" | tee ${LOG}
 cnt=`cat ${LOG} | wc -l`
 if [ ${cnt} -gt 0 ]; then
 	echo "I18n check FAILED"

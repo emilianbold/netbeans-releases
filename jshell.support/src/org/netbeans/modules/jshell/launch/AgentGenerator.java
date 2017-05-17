@@ -80,7 +80,7 @@ abstract class AgentGenerator implements RemoteJShellAccessor, ShellLaunchListen
     }
 
     @Override
-    public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
+    public ExecutionControl generate(ExecutionEnv ee, Map<String, String> optionsIgnored) throws Throwable {
         InputStream in;
         OutputStream out;
         JShellConnection c;

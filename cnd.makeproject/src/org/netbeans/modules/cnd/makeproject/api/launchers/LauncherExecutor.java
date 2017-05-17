@@ -39,9 +39,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.launchers;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -50,6 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
+import org.netbeans.modules.cnd.makeproject.api.TempEnv;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -58,9 +63,15 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.UIGesturesSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -100,24 +111,52 @@ public final class LauncherExecutor {
     }
     
     // Preprocessing commands inside `` and macroses
-    private static String preprocessValueField(String value, MakeConfiguration conf) {
+    private static String preprocessValueField(String value, MakeConfiguration conf, MacroConverter converter, String defaultPWD) {
         value = value.trim();
-        if (value.startsWith("`") && value.endsWith("`")) { //NOI18N
-            final String command = value.substring(1, value.length() - 1);
-            final String[] execAndArgs = command.split(" ");    //NOI18N
-            final String exec = execAndArgs[0];
-            final String[] args = Arrays.copyOfRange(execAndArgs, 1, execAndArgs.length);
+        value = conf.expandMacros(value);
+        if (value.indexOf('$')>=0) {
+            value = converter.expand(value);
+        }
+        if (value.indexOf('`') >= 0) {
+            StringBuilder line = new StringBuilder();
+            StringBuilder subCommand = new StringBuilder();
+            int state = 0; // in line
+            for(int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (c == '`') {
+                    if (state == 0) {
+                        state = 1; // in command
+                    } else if (state == 1) { // end command
+                        state = 0;
+                        final String command = subCommand.toString();
+                        final String[] execAndArgs = command.split(" ");    //NOI18N
+                        final String exec = execAndArgs[0];
+                        final String[] args = Arrays.copyOfRange(execAndArgs, 1, execAndArgs.length);
 
-            final NativeProcessBuilder builder = NativeProcessBuilder.newProcessBuilder(
-                    conf.getFileSystemHost()).setExecutable(exec).setArguments(args);
-            final ProcessUtils.ExitStatus status = ProcessUtils.execute(builder);
-            if (status.isOK()) {
-                value = status.getOutputString();
-            } else {
-                LOG.info(status.getErrorString());
+                        final NativeProcessBuilder builder = NativeProcessBuilder.newProcessBuilder(
+                                conf.getFileSystemHost()).setExecutable(exec).setArguments(args).setWorkingDirectory(defaultPWD);
+                        final ProcessUtils.ExitStatus status = ProcessUtils.execute(builder);
+                        if (!status.isOK()) {
+                            LOG.info(status.getErrorString());
+                        }
+                        List<String> outputLines = status.getOutputLines();
+                        if (!outputLines.isEmpty()) {
+                            line.append(outputLines.get(0));
+                        }
+                    }
+                } else {
+                    if (state == 0) {  // in line
+                        line.append(c);
+                    } else if (state == 1) { // in sub command
+                        subCommand.append(c);
+                    }
+                }
             }
-        } else {
-            value = conf.expandMacros(value);
+            if (state == 1) {
+                value = line.toString()+"`"+subCommand.toString(); //NOI18N
+            } else {
+                value = line.toString();
+            }
         }
         return value;
     }
@@ -181,17 +220,20 @@ public final class LauncherExecutor {
     private void onBuild(final Project project) {
         MakeConfigurationDescriptor pd = getProjectDescriptor(project);
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project).clone();
-
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+
         Map<String, String> env = launcher.getEnv();    //Environment
-        Env e = new Env();
-        if (env != null) {
+        MacroConverter converter = new MacroConverter(conf.getDevelopmentHost().getExecutionEnvironment());
+        Env buildEnv = new Env();
+        if (env != null && !env.isEmpty()) {
             env.keySet().forEach((key) -> {
                 String value = env.get(key);
-                value = preprocessValueField(value, conf);
-                e.putenv(key, value);
+                value = preprocessValueField(value, conf, converter, makeArtifact.getWorkingDirectory());
+                converter.addVariable(key, value);
+                buildEnv.putenv(key, value);
             });
         }
+        
         HashMap lookupMap = new HashMap();
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         String buildCommand = launcher.getBuildCommand();
@@ -207,12 +249,12 @@ public final class LauncherExecutor {
             profile.setArgs(args);
         } else {
             //expand macros if presented
-            buildCommand = preprocessValueField(buildCommand, conf);
+            buildCommand = preprocessValueField(buildCommand, conf, converter, makeArtifact.getWorkingDirectory());
             profile.getRunCommand().setValue(buildCommand);
             lookupMap.put("UseCommandLine", "true"); // NOI18N
         }
         
-        profile.setEnvironment(e);
+        profile.setEnvironment(buildEnv);
         Lookup context = Lookups.fixed(new ExecutionListenerImpl(), lookupMap);
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                 project, 
@@ -227,9 +269,21 @@ public final class LauncherExecutor {
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project).clone();
         if (conf != null) {
             RunProfile profile = conf.getProfile();
+            
+            MacroConverter converter = new MacroConverter(conf.getDevelopmentHost().getExecutionEnvironment());
+            Map<String, String> env = launcher.getEnv();    //Environment
+            Env runEnv = new Env();
+            if (env != null && !env.isEmpty()) {
+                env.keySet().forEach((key) -> {
+                    String value = env.get(key);
+                    value = preprocessValueField(value, conf, converter, profile.getBaseDir());
+                    converter.addVariable(key, value);
+                    runEnv.putenv(key, value);
+                });
+            }
 
             String runCommand = launcher.getCommand();
-            runCommand = preprocessValueField(runCommand, conf);
+            runCommand = preprocessValueField(runCommand, conf, converter, profile.getBaseDir());
             profile.getRunCommand().setValue(runCommand);     //RunCommand
             String runDir;    //RunDir
             //use run dir from the launcher if exists, use default from RunProfile otherwise
@@ -238,25 +292,16 @@ public final class LauncherExecutor {
             } else {
                 runDir = profile.getBaseDir();
             }
-            runDir = preprocessValueField(runDir, conf);
+            runDir = preprocessValueField(runDir, conf, converter, profile.getBaseDir());
             profile.setRunDir(runDir);
-            Map<String, String> env = launcher.getEnv();    //Environment
-            Env e = new Env();
-            if (env != null) {
-                env.keySet().forEach((key) -> {
-                    String value = env.get(key);
-                    value = preprocessValueField(value, conf);
-                    e.putenv(key, value);
-                });
-            }
-            profile.setEnvironment(e);
+            profile.setEnvironment(runEnv);
             String executable = ""; //NOI18N
             if (launcher.getSymbolFiles() != null) {
                 // SymbolFiles (now the single symbol file is only supported!!)
                 executable = launcher.getSymbolFiles().split(",")[0]; //NOI18N
                 
                 //expand macros if presented
-                executable = preprocessValueField(executable, conf);
+                executable = preprocessValueField(executable, conf, converter, runDir);
             }
             Lookup context;
             if (launcher.runInOwnTab()) {
@@ -340,5 +385,47 @@ public final class LauncherExecutor {
         }
                 
     }
+    
+    private static final class MacroConverter {
+
+        private final MacroExpanderFactory.MacroExpander expander;
+        private final Map<String, String> envVariables;
+        private String homeDir;
+
+        public MacroConverter(ExecutionEnvironment env) {
+            envVariables = new HashMap<>();
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    envVariables.putAll(hostInfo.getEnvironment());
+                    homeDir = hostInfo.getUserDir();
+                } catch (IOException | ConnectionManager.CancellationException ex) {
+                    // should never == null occur if isHostInfoAvailable(env) => report
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                LOG.log(Level.INFO, "Host info should be available here!", new Exception());
+            }
+            TempEnv.getInstance(env).addTemporaryEnv(envVariables);
+            this.expander = (envVariables == null) ? null : MacroExpanderFactory.getExpander(env, false);
+        }
+        
+        public void addVariable(String key, String value) {
+            envVariables.put(key, value);
+        }
+
+        public String expand(String in) {
+            try {
+                if (in.startsWith("~") && homeDir != null) { //NOI18N
+                    in = homeDir+in.substring(1);
+                }
+                return expander != null ? expander.expandMacros(in, envVariables) : in;
+            } catch (ParseException ex) {
+                //nothing to do
+            }
+            return in;
+        }
+    }
+
 
 }

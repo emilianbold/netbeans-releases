@@ -130,7 +130,7 @@ public class J2SEModularProjectGenerator {
         final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(() -> {
             final SpecificationVersion sourceLevel = getSourceLevel(platform);
-            h[0] = createProject(dirFO, name, sourceLevel, "src", "*/classes", "*/tests", platform.getProperties().get(PROP_PLATFORM_ANT_NAME));   //NOI18N
+            h[0] = createProject(dirFO, name, sourceLevel, "src", "classes", "tests", platform.getProperties().get(PROP_PLATFORM_ANT_NAME));   //NOI18N
             final J2SEModularProject p = (J2SEModularProject) ProjectManager.getDefault().findProject(dirFO);
             ProjectManager.getDefault().saveProject(p);
             try {
@@ -157,7 +157,7 @@ public class J2SEModularProjectGenerator {
             String testSrcRootPath,
             @NonNull final String platformId
             ) throws IOException {
-
+        final String antName = PropertyUtils.getUsablePropertyName(name);
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEModularProject.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -177,7 +177,7 @@ public class J2SEModularProjectGenerator {
             root.setAttribute ("pathref","src.dir.path");   //NOI18N
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
-            ep.setProperty("src.dir.path", "${src.dir}/" + srcRootPath); // NOI18N
+            ep.setProperty("src.dir.path", srcRootPath); // NOI18N
         }
         data.appendChild (sourceRoots);
         Element testRoots = doc.createElementNS(J2SEModularProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
@@ -187,7 +187,7 @@ public class J2SEModularProjectGenerator {
             root.setAttribute ("pathref","test.src.dir.path");   //NOI18N
             testRoots.appendChild (root);
             ep.setProperty("test.src.dir", srcRoot); // NOI18N
-            ep.setProperty("test.src.dir.path", "${test.src.dir}/" + testSrcRootPath); // NOI18N
+            ep.setProperty("test.src.dir.path", testSrcRootPath); // NOI18N
         }
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);
@@ -199,7 +199,6 @@ public class J2SEModularProjectGenerator {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEModularProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", ""); // NOI18N
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {ref(ProjectProperties.JAVAC_CLASSPATH, true)}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[] {ref(ProjectProperties.JAVAC_TEST_CLASSPATH,true)}); // NOI18N
@@ -223,14 +222,10 @@ public class J2SEModularProjectGenerator {
         ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
         ep.setProperty("javac.test.classpath", new String[] { // NOI18N
-            ref(ProjectProperties.JAVAC_CLASSPATH, false),
-            ref(ProjectProperties.BUILD_CLASSES_DIR, false),
-            ref("libs.junit.classpath", false), // NOI18N
-            ref("libs.junit_4.classpath", true)  //NOI18N
+            ref(ProjectProperties.JAVAC_CLASSPATH, true)
         });
         ep.setProperty("run.test.classpath", new String[] { // NOI18N
-            ref(ProjectProperties.JAVAC_TEST_CLASSPATH, false),
-            ref(ProjectProperties.BUILD_TEST_CLASSES_DIR, true)
+            ref(ProjectProperties.JAVAC_TEST_CLASSPATH, true)
         });
         ep.setProperty("debug.test.classpath", new String[] { // NOI18N
             ref(ProjectProperties.RUN_TEST_CLASSPATH, true)
@@ -238,18 +233,21 @@ public class J2SEModularProjectGenerator {
 
         //Modules
         ep.setProperty(ProjectProperties.JAVAC_MODULEPATH, ""); //NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_PROCESSORMODULEPATH, ""); //NOI18N
         ep.setProperty(ProjectProperties.RUN_MODULEPATH, new String[] {
             ref(ProjectProperties.JAVAC_MODULEPATH, false),
-            ref(ProjectProperties.BUILD_CLASSES_DIR, true)
+            ref(ProjectProperties.BUILD_MODULES_DIR, true)
         });
         ep.setProperty(ProjectProperties.DEBUG_MODULEPATH, new String[] {
             ref(ProjectProperties.RUN_MODULEPATH, true)
         });
         ep.setProperty(ProjectProperties.JAVAC_TEST_MODULEPATH, new String[] {
-                ref(ProjectProperties.JAVAC_MODULEPATH, true)
+                ref(ProjectProperties.JAVAC_MODULEPATH, false),
+                ref(ProjectProperties.BUILD_MODULES_DIR, true)
         });
         ep.setProperty(ProjectProperties.RUN_TEST_MODULEPATH, new String[] {
-            ref(ProjectProperties.JAVAC_TEST_MODULEPATH, true)
+            ref(ProjectProperties.JAVAC_TEST_MODULEPATH, false),
+            ref(ProjectProperties.BUILD_TEST_MODULES_DIR, true)
         });
         ep.setProperty(ProjectProperties.DEBUG_TEST_MODULEPATH, new String[] {
             ref(ProjectProperties.RUN_TEST_MODULEPATH, true)
@@ -259,9 +257,11 @@ public class J2SEModularProjectGenerator {
 
         ep.setProperty("build.dir", "build"); // NOI18N
         ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(J2SEModularProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
-        ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
+        ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N  //TODO: For What?
+        ep.setProperty(ProjectProperties.BUILD_MODULES_DIR, "${build.dir}/modules"); // NOI18N  //TODO: For What?
         ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
         ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
+        ep.setProperty("build.test.modules.dir", "${build.dir}/test/modules"); // NOI18N
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
@@ -279,6 +279,7 @@ public class J2SEModularProjectGenerator {
         ep.setProperty(ProjectProperties.JAVADOC_USE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_HTML5, "false"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
         ep.setProperty(ProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
@@ -293,6 +294,23 @@ public class J2SEModularProjectGenerator {
                     "# " + NbBundle.getMessage(J2SEModularProjectGenerator.class, "COMMENT_dist.archive.excludes") //NOI18N
                 },
                 false);
+        //JLink
+        ep.setProperty(ProjectProperties.DIST_JLINK_DIR, "${"+ProjectProperties.DIST_DIR+"}/jlink");
+        ep.setProperty(ProjectProperties.DIST_JLINK_OUTPUT, "${"+ProjectProperties.DIST_JLINK_DIR+"}/"+antName);
+        ep.setProperty(ProjectProperties.JLINK_ADDITIONALMODULES, "");
+        ep.setComment(ProjectProperties.JLINK_ADDITIONALMODULES,
+                new String[] {
+                    "# " + NbBundle.getMessage(J2SEModularProjectGenerator.class, "COMMENT_jlink.additionalmodules") //NOI18N
+                },
+                false);
+        ep.setProperty(ProjectProperties.JLINK_ADDITIONALPARAM, "");
+        ep.setComment(ProjectProperties.JLINK_ADDITIONALPARAM,
+                new String[] {
+                    "# " + NbBundle.getMessage(J2SEModularProjectGenerator.class, "COMMENT_jlink.additionalparam") //NOI18N
+                },
+                false);
+        ep.setProperty(ProjectProperties.JLINK_LAUNCHER, "true");
+        ep.setProperty(ProjectProperties.JLINK_LAUNCHER_NAME, antName);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N

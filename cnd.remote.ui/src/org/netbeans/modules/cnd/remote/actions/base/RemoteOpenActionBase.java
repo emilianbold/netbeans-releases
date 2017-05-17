@@ -46,12 +46,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
@@ -62,7 +65,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Vladimir Kvashin
  */
-public abstract class RemoteOpenActionBase extends AbstractAction implements DynamicMenuContent, Presenter.Toolbar {
+public abstract class RemoteOpenActionBase extends AbstractAction implements DynamicMenuContent, Presenter.Toolbar, PropertyChangeListener {
 
     static final String ENV_KEY = "org.netbeans.modules.cnd.remote.actions.ENV"; // NOI18N
     public static final String ACTIVATED_PSEUDO_ACTION_COMAND = "performerActivated"; // NOI18N
@@ -73,18 +76,34 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
     
     public RemoteOpenActionBase(String name) {
         super(name);
+        ServerList.addPropertyChangeListener(this);
+        updateToolTip();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ServerList.PROP_DEFAULT_RECORD.equals(evt.getPropertyName())) {
+            defaultRemoteHostChanged();
+        }
+    }
+
+    protected void defaultRemoteHostChanged() {
+        SwingUtilities.invokeLater(() -> updateToolTip());
+    }
+
+    protected void updateToolTip() {
     }
 
     @Override
     public JComponent[] getMenuPresenters() {
         initPerformer();
-        return ((DynamicMenuContent)peformer).getMenuPresenters();
+        return ((DynamicMenuContent)getPerformer()).getMenuPresenters();
     }
 
     @Override
     public JComponent[] synchMenuPresenters(JComponent[] jcs) {
         initPerformer();
-        return ((DynamicMenuContent)peformer).synchMenuPresenters(jcs);
+        return ((DynamicMenuContent)getPerformer()).synchMenuPresenters(jcs);
     }
     
     @Override
@@ -116,6 +135,13 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
         return lastToolbarPresenter;
     }
 
+    private ActionListener getPerformer() {
+        if (peformer == null) {
+            initPerformer();
+        }
+        return peformer;
+    }
+
     private void initPerformer() {
         assert SwingUtilities.isEventDispatchThread();
         if (peformer == null) {
@@ -140,10 +166,10 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
             if (env == null) {
                 ServerListUI.showServerListDialog();
             } else {
-                peformer.actionPerformed(e);
+                getPerformer().actionPerformed(e);
             }
         } else {
-            peformer.actionPerformed(e);
+            getPerformer().actionPerformed(e);
         }
     }
 

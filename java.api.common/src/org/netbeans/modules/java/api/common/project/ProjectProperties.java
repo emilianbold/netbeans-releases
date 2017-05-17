@@ -129,6 +129,18 @@ public final class ProjectProperties {
      */
     public static final String DEBUG_TEST_MODULEPATH = "debug.test.modulepath"; //NOI18N
 
+    /**
+     * Property for the modules build folder.
+     * @since 1.93
+     */
+    public static final String BUILD_MODULES_DIR="build.modules.dir";   //NOI18N
+
+    /**
+     * The name of the property holding the output directory for modular test compilation. Module directories
+     * holding test classes will be created at this location
+     * @since 1.101
+     */
+    public static final String BUILD_TEST_MODULES_DIR = "build.test.modules.dir"; // NOI18N
 
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
@@ -137,9 +149,12 @@ public final class ProjectProperties {
         "${" + RUN_CLASSPATH + "}", // NOI18N
         "${" + RUN_TEST_CLASSPATH + "}", // NOI18N
         "${" + BUILD_CLASSES_DIR + "}", // NOI18N
+        "${" + BUILD_MODULES_DIR + "}", // NOI18N
         "${" + ENDORSED_CLASSPATH + "}", // NOI18N
         "${" + BUILD_TEST_CLASSES_DIR + "}", // NOI18N
+        "${" + BUILD_TEST_MODULES_DIR + "}", // NOI18N
         "${" + JAVAC_MODULEPATH + "}", // NOI18N
+        "${" + JAVAC_PROCESSORMODULEPATH + "}", // NOI18N
         "${" + JAVAC_TEST_MODULEPATH + "}", // NOI18N
         "${" + RUN_MODULEPATH + "}", // NOI18N
         "${" + RUN_TEST_MODULEPATH + "}", // NOI18N
@@ -336,6 +351,11 @@ public final class ProjectProperties {
      */
     public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex"; // NOI18N
     /**
+     * Name of property enabling generation of HTML 5 javadoc.
+     * @since 1.119
+     */
+    public static final String JAVADOC_HTML5="javadoc.html5"; // NOI18N
+    /**
      * Name of property holding the javadoc author.
      * @since 1.60
      */
@@ -371,6 +391,22 @@ public final class ProjectProperties {
     public static final String DO_DEPEND = "do.depend"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
     public static final String DO_JAR = "do.jar"; // NOI18N
+    /** @since 1.119 */
+    public static final String DO_JLINK ="do.jlink"; // NOI18N
+    /** @since 1.119 */
+    public static final String JLINK_STRIP ="jlink.strip"; // NOI18N
+    /** @since 1.119 */
+    public static final String DIST_JLINK_DIR="dist.jlink.dir";
+    /** @since 1.119 */
+    public static final String DIST_JLINK_OUTPUT="dist.jlink.output";   //NOI18N
+    /** @since 1.119 */
+    public static final String JLINK_ADDITIONALMODULES="jlink.additionalmodules"; //NOI18N
+    /** @since 1.119 */
+    public static final String JLINK_ADDITIONALPARAM="jlink.additionalparam"; //NOI18N
+    /** @since 1.120 */
+    public static final String JLINK_LAUNCHER="jlink.launcher";      //NOI18N
+    /** @since 1.120 */
+    public static final String JLINK_LAUNCHER_NAME="jlink.launcher.name";   //NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.21 */
     public static final String COMPILE_ON_SAVE = "compile.on.save"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.19 */
@@ -378,4 +414,7 @@ public final class ProjectProperties {
 
     //NB 6.1 tracking of files modifications
     public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
+
+    /** @since 1.122*/
+    public static final String MANIFEST_FILE="manifest.file";   //NOI18N
 }

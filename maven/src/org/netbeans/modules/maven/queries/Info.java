@@ -205,7 +205,15 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
         }
         SpecialIcon special = project.getLookup().lookup(SpecialIcon.class);
-        return special != null ? special.getIcon() : ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
+        if (special != null) {
+            Icon icon = special.getIcon();
+            if (icon != null) {
+                return icon;
+            } else {
+                LOG.log(Level.WARNING, "No icon provided by {0}", special);
+            }
+        }
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
     }
     
     @Override public Project getProject() {

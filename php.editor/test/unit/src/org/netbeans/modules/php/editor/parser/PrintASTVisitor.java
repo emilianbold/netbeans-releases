@@ -274,14 +274,20 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(CatchClause node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "CatchClause");
-        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChildrenGroup("ClassNames", node.getClassNames());
         printNode.addChild(node.getVariable());
         printNode.addChild(node.getBody());
+        printNode.print(this);
     }
 
     @Override
     public void visit(ConstantDeclaration node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ClassConstantDeclaration");
+        XMLPrintNode printNode;
+        if (node.isGlobal()) {
+            printNode = new XMLPrintNode(node, "GlobalConstantDeclaration");
+        } else {
+            printNode = new XMLPrintNode(node, "ClassConstantDeclaration", new String[]{"modifier", node.getModifierString() });
+        }
         printNode.addChildrenGroup("Names", node.getNames());
         printNode.addChildrenGroup("Initializers", node.getInitializers());
         printNode.print(this);
@@ -329,7 +335,7 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(Comment comment) {
-        addNodeDescription("Comment", comment, false);
+        addNodeDescription("<Comment", comment, false);
 	buffer.append(" commentType='").append(comment.getCommentType()).append("'/>").append(NEW_LINE);
     }
 
@@ -481,6 +487,13 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
+    public void visit(NullableType nullableType) {
+        XMLPrintNode printNode = new XMLPrintNode(nullableType, "NullableType");
+        printNode.addChild(nullableType.getType());
+        printNode.print(this);
+    }
+
+    @Override
     public void visit(Identifier identifier) {
         (new XMLPrintNode(identifier, "Identifier", new String[]{"name", identifier.getName()})).print(this);
     }
@@ -616,8 +629,8 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(ListVariable node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ListVariable");
-        printNode.addChildren(node.getVariables());
+        XMLPrintNode printNode = new XMLPrintNode(node, "ListVariable", new String[]{"type", node.getSyntaxType().name()});
+        printNode.addChildren(node.getElements());
         printNode.print(this);
     }
 

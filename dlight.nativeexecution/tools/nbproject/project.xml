@@ -53,7 +53,15 @@ Contributor(s):
             </sourceRootList>
             <confList>
                 <confElem>
-                    <name>Default</name>
+                    <name>Stripped_32-bit</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Stripped_64-bit</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug_64bit</name>
                     <type>0</type>
                 </confElem>
             </confList>

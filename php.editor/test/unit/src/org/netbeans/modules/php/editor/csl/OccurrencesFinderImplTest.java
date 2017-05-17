@@ -42,14 +42,10 @@
 
 package org.netbeans.modules.php.editor.csl;
 
-import java.io.File;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
 /**
  * @author Radek Matous
  */
-public class OccurrencesFinderImplTest extends PHPNavTestBase {
+public class OccurrencesFinderImplTest extends OccurrencesFinderImplTestBase {
 
     public OccurrencesFinderImplTest(String testName) {
         super(testName);
@@ -1907,25 +1903,4 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "const S^UB = [\"sub\" => \"sub\"];", true);
     }
 
-    @Override
-    protected FileObject[] createSourceClassPathsForTest() {
-        return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
-    }
-
-    private String getTestFolderPath() {
-        return "testfiles/markoccurences/" + getTestName();//NOI18N
-    }
-
-    private String getTestPath() {
-        return getTestFolderPath() + "/" + getTestName() + ".php";//NOI18N
-    }
-
-    private String getTestName() {
-        String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
-        return name;
-    }
 }

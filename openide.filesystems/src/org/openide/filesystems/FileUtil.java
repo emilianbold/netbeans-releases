@@ -68,6 +68,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -699,6 +700,19 @@ public final class FileUtil extends Object {
         }
 
         StringTokenizer st = new StringTokenizer(name, separators);
+
+        if(name.startsWith("//") || name.startsWith("\\\\")) {      // NOI18N
+            // if it is UNC absolute path, start with \\ComputerName\sharedFolder
+            try {
+                File root = new File("\\\\"+st.nextToken()+"\\"+st.nextToken());    // NOI18N
+                folder = FileUtil.toFileObject(root);
+                if (folder == null) {
+                    throw new IOException("Windows share "+root.getPath()+" does not exist");   // NOI18N
+                }
+            } catch (NoSuchElementException ex) {
+                throw new IOException("Invalid Windows share "+name);   // NOI18N
+            }
+        }
 
         while (st.hasMoreElements()) {
             name = st.nextToken();
@@ -1694,15 +1708,15 @@ public final class FileUtil extends Object {
     private static File normalizeFileOnMac(final File file) {
         File retVal = file;
 
+        File absoluteFile = BaseUtilities.toFile(BaseUtilities.toURI(file).normalize());
+        String absolutePath = absoluteFile.getAbsolutePath();
+        if (absolutePath.equals("/..")) { // NOI18N
+            // Special treatment.
+            absoluteFile = new File(absolutePath = "/"); // NOI18N
+        }
         try {
-            // URI.normalize removes ../ and ./ sequences nicely.            
-            File absoluteFile = BaseUtilities.toFile(BaseUtilities.toURI(file).normalize());
+            // URI.normalize removes ../ and ./ sequences nicely.
             File canonicalFile = file.getCanonicalFile();
-            String absolutePath = absoluteFile.getAbsolutePath();
-            if (absolutePath.equals("/..")) { // NOI18N
-                // Special treatment.
-                absoluteFile = new File(absolutePath = "/"); // NOI18N
-            }
             boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absolutePath);
 
             if (isSymLink) {
@@ -1714,7 +1728,7 @@ public final class FileUtil extends Object {
             LOG.log(Level.FINE, "Normalization failed on file " + file, ioe);
 
             // OK, so at least try to absolutize the path
-            retVal = file.getAbsoluteFile();
+            retVal = absoluteFile.getAbsoluteFile();
         }
 
         return retVal;

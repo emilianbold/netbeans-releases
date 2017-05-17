@@ -97,6 +97,10 @@ public class FormalParameter extends ASTNode {
         return getParameterName() instanceof Reference;
     }
 
+    public boolean isNullableType() {
+        return getParameterType() instanceof NullableType;
+    }
+
     public Expression getParameterName() {
         return parameterName;
     }

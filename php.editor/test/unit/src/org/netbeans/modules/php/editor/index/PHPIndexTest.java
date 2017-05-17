@@ -45,10 +45,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 import org.junit.Test;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -84,8 +91,20 @@ public class PHPIndexTest extends PHPNavTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        QuerySupport querySupport = QuerySupportFactory.get(Arrays.asList(createSourceClassPathsForTest()));
-        index = ElementQueryFactory.createIndexQuery(querySupport);
+        Source source = getTestSource();
+        Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                final ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
+                if (parserResult != null) {
+                    QuerySupport querySupport = QuerySupportFactory.get(parserResult);
+                    index = ElementQueryFactory.createIndexQuery(querySupport);
+                }
+            }
+        });
+        if (!future.isDone()) {
+            future.get();
+        }
     }
 
     /**
@@ -566,10 +585,29 @@ public class PHPIndexTest extends PHPNavTestBase {
         checkIndexer(getTestPath());
     }
 
+    // PHP7.1
+    public void testNullableTypesForFunctions() throws Exception {
+        checkIndexer(getTestPath());
+    }
+
+    public void testNullableTypesForMethods() throws Exception {
+        checkIndexer(getTestPath());
+    }
+
+    public void testClassConstantVisibility() throws Exception {
+        checkIndexer(getTestPath());
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         final File folder = new File(getDataDir(), getTestFolderPath());
         return new FileObject[]{FileUtil.toFileObject(folder)};
+    }
+
+    protected Source getTestSource() {
+        final File file = new File(getDataDir(), getTestPath());
+        FileObject fileObject = FileUtil.toFileObject(file);
+        return Source.create(fileObject);
     }
 
     private String getTestFolderPath() {

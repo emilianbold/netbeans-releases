@@ -255,7 +255,7 @@ public class RemoteFileZipper {
                         return;
                     }
                 }
-                RemoteLogger.fine("uploading {0}:{1} to {2} took {3} ms", //NOI18N
+                RemoteLogger.fine("downloading {0}:{1} to {2} took {3} ms", //NOI18N
                         execEnv, path, zipPartFile.getAbsolutePath(), System.currentTimeMillis() - time);
                 
                 if (!zipPartFile.renameTo(zipFile)) {

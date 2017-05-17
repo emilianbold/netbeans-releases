@@ -73,7 +73,6 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -89,10 +88,11 @@ import org.openide.util.WeakListeners;
  * Defines the various class paths for a J2SE project.
  * @since org.netbeans.modules.java.api.common/1 1.5
  */
-public final class ClassPathProviderImpl implements ClassPathProvider {
+public final class ClassPathProviderImpl extends AbstractClassPathProvider {
 
     private static final String buildGeneratedDir = "build.generated.sources.dir"; // NOI18N
     private static final String[] processorTestClasspath = new String[]{"javac.test.processorpath"};  //NOI18N
+    private static final String[] processorTestModulepath = new String[]{"javac.test.processormodulepath"};  //NOI18N
 
     private final AntProjectHelper helper;
     private final File projectDirectory;
@@ -110,6 +110,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final String[] endorsedClasspath;
     private final String[] modulePath;
     private final String[] testModulePath;
+    private final String[] processorModulePath;
     private final String[] moduleExecutePath;
     private final String[] testModuleExecutePath;
     private final Union2<String,String[]> platform;
@@ -147,8 +148,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      * 26  - JDK8 test execute class path           - internal only
      * 27  - JDK8 execute class path for dist.jar   - internal only
      * 28  - JDK8 boot class path                   - internal only
+     * 29  - processor module path
+     * 30  - test processor module path
      */
-    private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[29];
+    private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[31];
     private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new ConcurrentHashMap<>();
 
 
@@ -237,6 +240,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             endorsedClasspath,
             Builder.DEFAULT_MODULE_PATH,
             Builder.DEFAULT_TEST_MODULE_PATH,
+            Builder.DEFAULT_PROCESSOR_MODULE_PATH,
             Builder.DEFAULT_MODULE_EXECUTE_PATH,
             Builder.DEFAULT_TEST_MODULE_EXECUTE_PATH,
             Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE),
@@ -260,6 +264,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         @NonNull final String[] endorsedClasspath,
         @NonNull final String[] modulePath,
         @NonNull final String[] testModulePath,
+        @NonNull final String[] processorModulePath,
         @NonNull final String[] moduleExecutePath,
         @NonNull final String[] testModuleExecutePath,
         @NonNull final Union2<String,String[]> platform,
@@ -280,6 +285,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         Parameters.notNull("endorsedClasspath", endorsedClasspath); //NOI18N
         Parameters.notNull("modulePath", modulePath);   //NOI18N
         Parameters.notNull("testModulePath", testModulePath);   //NOI18N
+        Parameters.notNull("processorModulePath", processorModulePath);   //NOI18N
         Parameters.notNull("moduleExecutePath", moduleExecutePath); //NOI18N
         Parameters.notNull("testModuleExecutePath", testModuleExecutePath); //NOI18N
         Parameters.notNull("platform", platform); //NOI18N
@@ -301,6 +307,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.endorsedClasspath = endorsedClasspath;
         this.modulePath = modulePath;
         this.testModulePath = testModulePath;
+        this.processorModulePath = processorModulePath;
         this.moduleExecutePath = moduleExecutePath;
         this.testModuleExecutePath = testModuleExecutePath;
         this.platform = platform;
@@ -325,6 +332,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private static final String[] DEFAULT_ENDORSED_CLASSPATH = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
         private static final String[] DEFAULT_MODULE_PATH = new String[]{ProjectProperties.JAVAC_MODULEPATH};
         private static final String[] DEFAULT_TEST_MODULE_PATH = new String[] {ProjectProperties.JAVAC_TEST_MODULEPATH};
+        private static final String[] DEFAULT_PROCESSOR_MODULE_PATH = new String[] {ProjectProperties.JAVAC_PROCESSORMODULEPATH};        
         private static final String[] DEFAULT_MODULE_EXECUTE_PATH = new String[]{ProjectProperties.RUN_MODULEPATH};
         private static final String[] DEFAULT_TEST_MODULE_EXECUTE_PATH = new String[]{ProjectProperties.RUN_TEST_MODULEPATH};
         private static final String DEFAULT_JAVAC_SOURCE = ProjectProperties.JAVAC_SOURCE;
@@ -346,6 +354,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private String[] endorsedClasspath = DEFAULT_ENDORSED_CLASSPATH;
         private String[] modulePath = DEFAULT_MODULE_PATH;
         private String[] testModulePath = DEFAULT_TEST_MODULE_PATH;
+        private String[] processorModulePath = DEFAULT_PROCESSOR_MODULE_PATH;
         private String[] moduleExecutePath = DEFAULT_MODULE_EXECUTE_PATH;
         private String[] testModuleExecutePath = DEFAULT_TEST_MODULE_EXECUTE_PATH;
         private String[] bootClasspathProperties;
@@ -514,6 +523,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         
         /**
+         * Sets module path properties.
+         * @param processorModulePathProperties  the names of properties containing the processor module path, by default {@link ProjectProperties#JAVAC_PROCESSORMODULEPATH}
+         * @return {@link Builder}
+         * @since 1.117
+         */
+        @NonNull
+        public Builder setProcessorModulepathProperties(@NonNull final String[] processorModulePathProperties) {
+            Parameters.notNull("processorModulePathProperties", processorModulePathProperties);
+            this.modulePath = Arrays.copyOf(processorModulePathProperties, processorModulePathProperties.length);
+            return this;
+        }
+
+        /**
          * Sets runtime module path properties.
          * @param modulePathProperties  the names of properties containing the runtime module path, by default {@link ProjectProperties#RUN_MODULEPATH}
          * @return {@link Builder}
@@ -607,6 +629,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 endorsedClasspath,
                 modulePath,
                 testModulePath,
+                processorModulePath,
                 moduleExecutePath,
                 testModuleExecutePath,
                 platform,
@@ -935,6 +958,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             ()->ClassPathFactory.createClassPath(ModuleClassPaths.createPropertyBasedModulePath(
                                 projectDirectory,
                                 evaluator,
+                                null,
                                 type == 0 ? modulePath : testModulePath))));
                 });
             default:
@@ -963,6 +987,24 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 });
             default:
                 throw new IllegalArgumentException(Integer.toString(type));
+        }
+    }
+
+    private ClassPath getProcessorModulePath(FileObject file) {
+        int type = getType(file);
+        return this.getProcessorModulePath(type);
+    }
+
+    private ClassPath getProcessorModulePath(int type) {
+        switch (type) {
+            case 0:
+            case 1:
+                return computeIfAbsent(29+type, () -> {
+                    return ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                            projectDirectory, evaluator, type == 0 ? processorModulePath : processorTestModulepath));
+                });
+            default:
+                return null;
         }
     }
 
@@ -1003,6 +1045,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     return ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
+                        null,
                         props);
                 };
                 break;
@@ -1014,6 +1057,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     return ModuleClassPaths.createPropertyBasedModulePath(
                         projectDirectory,
                         evaluator,
+                        null,
                         props);
                 };
                 break;
@@ -1170,6 +1214,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return getModuleCompilePath(file);
         } else if (type.equals(JavaClassPathConstants.MODULE_CLASS_PATH)) {
             return getModuleLegacyClassPath(file);
+        } else if (type.equals(JavaClassPathConstants.MODULE_PROCESSOR_PATH)) {
+            return getProcessorModulePath(file);
         } else if (type.equals(JavaClassPathConstants.MODULE_EXECUTE_PATH)) {
             return getModuleExecutePath(file);
         } else if (type.equals(JavaClassPathConstants.MODULE_EXECUTE_CLASS_PATH)) {
@@ -1230,6 +1276,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 l[1] = getModuleLegacyClassPath(1);
                 return l;
             }
+            if (JavaClassPathConstants.MODULE_PROCESSOR_PATH.equals(type)) {
+                ClassPath[] l = new ClassPath[2];
+                l[0] = getProcessorModulePath(0);
+                l[1] = getProcessorModulePath(1);
+                return l;
+            }
             assert false;
             return null;
         });
@@ -1261,6 +1313,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
             return getModuleCompilePath(0);
         }
+        if (JavaClassPathConstants.MODULE_PROCESSOR_PATH.equals(type)) {
+            return getProcessorModulePath(0);
+        }
         if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
             return getModuleLegacyClassPath(0);
         }
@@ -1291,6 +1346,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
                 return testModulePath;
             }
+            else if (JavaClassPathConstants.MODULE_PROCESSOR_PATH.equals(type)) {
+                return processorTestModulepath;
+            }
             else {
                 return null;
             }
@@ -1308,12 +1366,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
                 return modulePath;
             }
+            else if (JavaClassPathConstants.MODULE_PROCESSOR_PATH.equals(type)) {
+                return processorModulePath;
+            }
             else {
                 return null;
             }
         }
     }
-    
+
+    @Override
     public String[] getPropertyName (SourceGroup sg, String type) {
         if (ClassPathSupport.ENDORSED.equals(type)) {
             return endorsedClasspath;
@@ -1322,40 +1384,42 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         FileObject[] path = getPrimarySrcPath();
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
-                if (ClassPath.COMPILE.equals(type)) {
-                    return javacClasspath;
-                }
-                else if (ClassPath.EXECUTE.equals(type)) {
-                    return runClasspath;
-                }
-                else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
-                    return processorClasspath;
-                }
-                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
-                    return modulePath;
-                }
-                else {
-                    return null;
+                switch (type) {
+                    case ClassPath.COMPILE:
+                        return javacClasspath;
+                    case ClassPath.EXECUTE:
+                        return runClasspath;
+                    case JavaClassPathConstants.PROCESSOR_PATH:
+                        return processorClasspath;
+                    case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                        return modulePath;
+                    case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                        return moduleExecutePath;
+                    case JavaClassPathConstants.MODULE_PROCESSOR_PATH:
+                        return processorModulePath;
+                    default:
+                        return null;
                 }
             }
         }
         path = getTestSrcDir();
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
-                if (ClassPath.COMPILE.equals(type)) {
-                    return javacTestClasspath;
-                }
-                else if (ClassPath.EXECUTE.equals(type)) {
-                    return runTestClasspath;
-                }
-                else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
-                    return processorTestClasspath;
-                }
-                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
-                    return testModulePath;
-                }
-                else {
-                    return null;
+                switch (type) {
+                    case ClassPath.COMPILE:
+                        return javacTestClasspath;
+                    case ClassPath.EXECUTE:
+                        return runTestClasspath;
+                    case JavaClassPathConstants.PROCESSOR_PATH:
+                        return processorTestClasspath;
+                    case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                        return testModulePath;
+                    case JavaClassPathConstants.MODULE_EXECUTE_PATH:
+                        return moduleExecutePath;
+                    case JavaClassPathConstants.MODULE_PROCESSOR_PATH:
+                        return processorTestModulepath;
+                    default:
+                        return null;
                 }
             }
         }

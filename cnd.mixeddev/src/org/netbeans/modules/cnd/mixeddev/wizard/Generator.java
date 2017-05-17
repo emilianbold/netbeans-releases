@@ -91,7 +91,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
+import org.netbeans.modules.java.api.common.project.ProjectPlatformProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
@@ -147,7 +147,7 @@ public class Generator implements PropertyChangeListener {
         if (javaProject == null) {
             return NbBundle.getMessage(Generator.class, "Generator_NoOwner", sr.getPath()); // NOI18N
         }
-        J2SEProjectPlatform pp = javaProject.getLookup().lookup(J2SEProjectPlatform.class);
+        ProjectPlatformProvider pp = javaProject.getLookup().lookup(ProjectPlatformProvider.class);
         if (pp == null) {
             return NbBundle.getMessage(Generator.class, "Generator_NoJavaSE", javaProject.getClass()); // NOI18N
         }
@@ -177,7 +177,7 @@ public class Generator implements PropertyChangeListener {
         ClassPath compileCP = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
         FileObject sr = sourceCP != null ? sourceCP.findOwnerRoot(fileObject) : null;
         javaProject = FileOwnerQuery.getOwner(sr);
-        J2SEProjectPlatform pp = javaProject.getLookup().lookup(J2SEProjectPlatform.class);
+        ProjectPlatformProvider pp = javaProject.getLookup().lookup(ProjectPlatformProvider.class);
         JavaPlatform jp = pp.getProjectPlatform();
         final FileObject binFO = jp.findTool("javah"); // NOI18N
         final String headerName = fileObject.getName() + ".h"; // NOI18N

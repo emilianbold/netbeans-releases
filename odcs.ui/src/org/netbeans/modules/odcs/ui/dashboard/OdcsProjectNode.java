@@ -63,6 +63,7 @@ import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.commons.treelist.ProgressLabel;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.awt.Notification;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -141,6 +142,10 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                     }
                 } else if (ProjectHandle.PROP_BUILD_LIST.equals(evt.getPropertyName())) {
                     scheduleUpdateBuilds();
+                } else if (TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
+                    if (evt.getNewValue() == null) {
+                        dispose();
+                    }
                 }
             }
         };

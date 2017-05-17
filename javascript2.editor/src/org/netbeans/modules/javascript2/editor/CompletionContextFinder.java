@@ -196,6 +196,10 @@ public class CompletionContextFinder {
                 || (WHITESPACES_TOKENS.contains(token.id()) && !ts.movePrevious())) {
             return CompletionContext.GLOBAL;
         }
+        token = LexUtilities.findPreviousToken(ts, Utils.LOOK_FOR_IMPORT_EXPORT_TOKENS);
+        if (token.id() == JsTokenId.KEYWORD_EXPORT || token.id() == JsTokenId.KEYWORD_IMPORT) {
+            return CompletionContext.IMPORT_EXPORT_SPECIAL_TOKENS;
+        }
         if (tokenId == JsTokenId.DOC_COMMENT) {
             return CompletionContext.DOCUMENTATION;
         }

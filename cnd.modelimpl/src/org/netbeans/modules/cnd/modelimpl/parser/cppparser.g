@@ -2098,7 +2098,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             unknown_posttype_declaration_specifiers
 
     //  |   LITERAL_typename        {td=true;}        direct_declarator 
-        |   literal_typeof LPAREN typeof_param RPAREN
+        |   type_typeof
         )
     )
     ({allowTypedef}? LITERAL_typedef {td=true;})?
@@ -2172,15 +2172,6 @@ decl_specifiers_before_type
             LITERAL_typedef
         )+
     ;
-
-protected
-typeof_param :
-            // fast check of simple typeof (type) but skip typeof (type1() + type2()) which would be considered as expression
-            (type_name {LA(1) != PLUS}?) => type_name
-        |
-            expression
-        ;
-
 
 storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     :
@@ -2912,7 +2903,14 @@ direct_declarator[int kind, int level]
                  is_address = false; is_pointer = false;
             }
             (options {warnWhenFollowAmbig = false;}:
-             LSQUARE ({isC()}? (options {greedy=true;} : tq=type_qualifier)*)? (constant_expression)? RSQUARE)+
+                LSQUARE 
+                ({isC()}? (options {greedy=true;} : 
+                    ({kind == declFunctionParam}? (LITERAL_static)=>LITERAL_static
+                    | tq=type_qualifier)
+                )*)? 
+                (constant_expression)? 
+                RSQUARE
+            )+
             {declaratorArray();}
             {
                 if (_td==true) {
@@ -4925,15 +4923,27 @@ type_decltype
         {#type_decltype=#(#[CSM_TYPE_DECLTYPE,"CSM_TYPE_DECLTYPE"], #type_decltype);}
     ;
 
+type_typeof
+    :
+        literal_typeof 
+        // Let's pretend it is a decltype.
+        // Note: decltypes do not support function types, so in case of need the rule with type_name
+        // must be used and ASTRenderer fixed to support function types inside typeof
+        // (LPAREN type_name RPAREN) => LPAREN type_name RPAREN
+        decltype_expression
+        {#type_typeof=#(#[CSM_TYPE_DECLTYPE,"CSM_TYPE_DECLTYPE"], #type_typeof);}
+        {#type_typeof=#(#[CSM_TYPE_COMPOUND,"CSM_TYPE_COMPOUND"], #type_typeof);}
+    ;
+
 constant
-:       OCTALINT
-    |   DECIMALINT
-    |   HEXADECIMALINT
-    |   BINARYINT
-    |   CHAR_LITERAL
-    |   (options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+
-    |   FLOATONE
-    |   FLOATTWO
+:       OCTALINT (options {greedy=true;} : IDENT)?
+    |   DECIMALINT (options {greedy=true;} : IDENT)?
+    |   HEXADECIMALINT (options {greedy=true;} : IDENT)?
+    |   BINARYINT (options {greedy=true;} : IDENT)?
+    |   CHAR_LITERAL (options {greedy=true;} : IDENT)?
+    |   (options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+ (options {greedy=true;} : IDENT)?
+    |   FLOATONE (options {greedy=true;} : IDENT)?
+    |   FLOATTWO (options {greedy=true;} : IDENT)?
     |   LITERAL_true
     |   LITERAL_false
     |   LITERAL_nullptr

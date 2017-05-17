@@ -229,6 +229,10 @@ public class ConsoleFoldManager implements FoldManager {
 
         @Override
         public void run(ConsoleContents result, SchedulerEvent event) {
+            Document d = result.getSnapshot().getSource().getDocument(false);
+            if (d == null) {
+                return;
+            }
             List<FoldInfo>  infos = new ArrayList<>();
             for (ConsoleSection s : result.getSectionModel().getSections()) {
                 if (s == result.getInputSection()) {
@@ -247,7 +251,7 @@ public class ConsoleFoldManager implements FoldManager {
                 
                     case MESSAGE:
                         // the section may contain version information:
-                        if (!processMessageSection(s, result.getSnapshot().getSource().getDocument(false), infos)) {
+                        if (!processMessageSection(s, d, infos)) {
                             infos.add(FoldInfo.range(so, eo, ConsoleFoldsProvider.MESSAGE));
                         }
                         break;
@@ -300,6 +304,10 @@ public class ConsoleFoldManager implements FoldManager {
             "FoldDesc_SystemInfo_2=System information",
         })
         private boolean processMessageSection(ConsoleSection section, Document d, List<FoldInfo> infos) {
+            if (d == null) {
+                // someone has closed the document
+                return true;
+            }
             String contents = section.getContents(d);
             Matcher m = JAVA_RUNTIME_PATTERN.matcher(contents);
             if (!m.find()) {

@@ -555,7 +555,7 @@ int visit_dir_entries(const char* path,
                     ssize_t sz = readlink(abspath, link, buf_size);
                     if (sz == -1) {
                         error_handler(false, abspath, errno, "error performing readlink", data);
-                        strcpy(link, "?");
+                        strcpy(link, "?"); // strcpy is safe, data is more than 1 byte anyhow
                     } else {
                         link[sz] = 0;
                     }
@@ -590,10 +590,10 @@ const char* get_basename(const char *path) {
 int utf8_bytes_count(const char *buffer, int char_count) {
     unsigned const char* p = (unsigned const char*) buffer;
     // 0x80 - middle byte
-    while (char_count > 0 ) {
+    while (*p && (char_count > 0)) {
         char_count -= (*p++ & 0xC0) != 0x80;
     }
-    while ((*p & 0xC0) == 0x80) {
+    while (*p && ((*p & 0xC0) == 0x80)) {
         p++;
     }
     return (const char*) p - buffer;

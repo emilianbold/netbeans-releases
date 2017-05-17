@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.preprocessorbridge.spi;
 
+import com.sun.source.tree.ModuleTree;
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import java.util.Map;
@@ -53,6 +54,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
  * SPI interface provided by java.source to java.preprocessorbridge, used by JavaSourceUtil
@@ -74,6 +76,14 @@ public abstract class JavaSourceUtilImpl {
             throw new IllegalArgumentException ();
         }
     }
+    
+    protected long createTaggedCompilationController (FileObject file, int position, long currenTag, Object[] out) throws IOException {
+        if (position == -1) {
+            return createTaggedCompilationController(file, currenTag, out);
+        }
+        throw new UnsupportedOperationException("Not supported in the registered implementation: " + getClass().getName()); //NOI18N
+    }
+    
 
     protected abstract long createTaggedCompilationController (FileObject file, long currenTag, Object[] out) throws IOException;
 
@@ -91,7 +101,10 @@ public abstract class JavaSourceUtilImpl {
         public abstract String parseModuleName() throws IOException;
 
         @CheckForNull
-        public abstract ModuleElement parseModule() throws IOException;
+        public abstract ModuleTree parseModule() throws IOException;
+
+        @CheckForNull
+        public abstract ModuleElement resolveModule(@NonNull ModuleTree moduleTree) throws IOException;
 
         @CheckForNull
         public abstract ModuleElement resolveModule(@NonNull String moduleName) throws IOException;
@@ -103,7 +116,7 @@ public abstract class JavaSourceUtilImpl {
     private static class MyAccessor extends JavaSourceUtilImplAccessor {
 
         @Override
-        public long createTaggedCompilationController(JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException {
+        public long createTaggedCompilationController(JavaSourceUtilImpl spi, FileObject fo, int position, long currentTag, Object[] out) throws IOException {
             assert spi != null;
             return spi.createTaggedCompilationController(fo, currentTag, out);
         }

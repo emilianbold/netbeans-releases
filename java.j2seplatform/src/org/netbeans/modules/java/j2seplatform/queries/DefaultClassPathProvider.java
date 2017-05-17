@@ -77,7 +77,6 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -92,18 +91,16 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
-import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
  *
- * @author  tom
+ * @author  Tomas Zezula
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=10000)
 public class DefaultClassPathProvider implements ClassPathProvider, PropertyChangeListener {
@@ -140,7 +137,7 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
     }
     
     @Override
-    public synchronized ClassPath findClassPath(FileObject file, String type) {
+    public ClassPath findClassPath(FileObject file, String type) {
         if (!file.isValid ()) {
             return null;
         }
@@ -186,6 +183,8 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
                 }
             } else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type) && hasJava9(file, true) != null) {
                 return getModulePath();
+            } else if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type) && hasJava9(file, true) != null) {
+                return getCompiledClassPath();
             }
         } else if (CLASS_EXT.equals(file.getExt())) {
             if (ClassPath.BOOT.equals (type)) {
@@ -194,31 +193,33 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
                     return defaultPlatform.getBootstrapLibraries();
                 }
             } else if (ClassPath.EXECUTE.equals(type)) {
-                ClassPath cp = null;
-                Reference<FileObject> foRef = this.sourceRootsCache.get (file);
-                FileObject execRoot = null;
-                if (foRef == null || (execRoot = foRef.get()) == null ) {
-                    execRoot = execRoot = getRootForFile (file, TYPE_CLASS);
-                    if (execRoot == null || !execRoot.isFolder()) {
-                        return null;
-                    }
-                    this.sourceRootsCache.put (file, new WeakReference<>(execRoot));
-                }
-                if (!execRoot.isValid()) {
-                    this.sourceClasPathsCache.remove (execRoot);
-                }
-                else {
-                    Reference<ClassPath> cpRef = this.sourceClasPathsCache.get(execRoot);
-                    if (cpRef == null || (cp = cpRef.get()) == null ) {
-                        final URL url = execRoot.toURL();
-                        if (!execRoot.isValid()) {
-                            //The root is not valid, URL may be broken
+                synchronized (this) {
+                    ClassPath cp = null;
+                    Reference<FileObject> foRef = this.sourceRootsCache.get (file);
+                    FileObject execRoot = null;
+                    if (foRef == null || (execRoot = foRef.get()) == null ) {
+                        execRoot = execRoot = getRootForFile (file, TYPE_CLASS);
+                        if (execRoot == null || !execRoot.isFolder()) {
                             return null;
                         }
-                        cp = ClassPathSupport.createClassPath(url);
-                        this.sourceClasPathsCache.put (execRoot, new WeakReference<>(cp));
+                        this.sourceRootsCache.put (file, new WeakReference<>(execRoot));
                     }
-                    return cp;
+                    if (!execRoot.isValid()) {
+                        this.sourceClasPathsCache.remove (execRoot);
+                    }
+                    else {
+                        Reference<ClassPath> cpRef = this.sourceClasPathsCache.get(execRoot);
+                        if (cpRef == null || (cp = cpRef.get()) == null ) {
+                            final URL url = execRoot.toURL();
+                            if (!execRoot.isValid()) {
+                                //The root is not valid, URL may be broken
+                                return null;
+                            }
+                            cp = ClassPathSupport.createClassPath(url);
+                            this.sourceClasPathsCache.put (execRoot, new WeakReference<>(cp));
+                        }
+                        return cp;
+                    }
                 }
             } else if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
                 final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
@@ -303,11 +304,6 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
     private JavaPlatform hasJava9(
             @NonNull final FileObject artefact,
             final boolean source) {
-        //For the default platfrom >= Java9 return the default platform
-        final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        if (defaultPlatform != null && Util.JDK9.compareTo(defaultPlatform.getSpecification().getVersion()) <= 0) {
-            return defaultPlatform;
-        }
         //Last recently used check
         Pair<Reference<FileObject>, JavaPlatform> lruEntry = lru.get();
         FileObject lruKey;
@@ -322,7 +318,11 @@ public class DefaultClassPathProvider implements ClassPathProvider, PropertyChan
                         WeakListeners.propertyChange(this, JavaPlatformManager.getDefault()));
             }
             JavaPlatform java9 = null;
-            for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            //Prefer default platform
+            final List<JavaPlatform> platforms = new ArrayList<>();
+            platforms.add(JavaPlatformManager.getDefault().getDefaultPlatform());
+            Collections.addAll(platforms, JavaPlatformManager.getDefault().getInstalledPlatforms());
+            for (JavaPlatform jp : platforms) {
                 final Specification spec = jp.getSpecification();
                 if ("j2se".equals(spec.getName()) && Util.JDK9.compareTo(spec.getVersion()) <= 0) { //NOI18N
                     java9 = jp;

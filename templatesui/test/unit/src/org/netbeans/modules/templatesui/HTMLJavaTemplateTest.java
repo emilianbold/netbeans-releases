@@ -192,8 +192,8 @@ public class HTMLJavaTemplateTest {
         Object obj = ((JComponent)c).getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         assertTrue(msg + " it is array: " + obj, obj instanceof Object[]);
         Object[] real = (Object[]) obj;
-        assertEquals(msg + " same size", arr.length, real.length - 1);
-        assertEquals(msg, Arrays.asList(arr), Arrays.asList(real).subList(1, real.length));
+        assertEquals(msg + " same size", arr.length, real.length);
+        assertEquals(msg, Arrays.asList(arr), Arrays.asList(real));
     }
     
     static void assertCurrentStep(HTMLPanel p, String name) throws Exception {

@@ -168,7 +168,10 @@ public final class Icons {
             break;
         case PARAMETER:
         case CONSTANT:
-            img = ImageUtilities.loadImage(ICON_BASE + "constant" + PNG_EXTENSION );
+            img = ImageUtilities.loadImage(getIconName(ICON_BASE + "constant", PNG_EXTENSION, modifiers)); // NOI18N
+            if (img == null) {
+                img = ImageUtilities.loadImage(ICON_BASE + "constantPublic" + PNG_EXTENSION); // NOI18N
+            }
             break;
         case CONSTRUCTOR:
             img = ImageUtilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );

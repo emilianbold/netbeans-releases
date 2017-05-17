@@ -44,16 +44,15 @@ package org.netbeans.modules.nativeexecution.support;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.spi.support.NativeExecutionUserNotification;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public class MiscUtils {
-    // if a remote host echoing some text, this exception will occur many times for sure
-    // will show only once, but change a priority to high
     private static boolean wasShown = false;
 
     public static boolean isJSCHTooLongException(Exception ex) {
@@ -77,14 +76,7 @@ public class MiscUtils {
         }
         wasShown = true;
         NativeExecutionUserNotification.getDefault().showErrorNotification(title, shortText, longText);
-//        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
-//        longText = "<html>" + longText + "</html>"; // NOI18N
-//        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
     }
-    
-//    public static JComponent getNotificationLabel(String text) {
-//        return new JLabel(text);
-//    }
     
     /**
      * If an sftp exception occurs, a question arises, whether we should call ChannelSftp.quit().
@@ -107,4 +99,33 @@ public class MiscUtils {
             return Arrays.asList(msg.split("\n")); //NOI18N
         }
     }
+    
+    public static boolean isDebugged() {
+        return DebugChecker.DEBUGGED;
+    }
+    
+    private static class DebugChecker {
+
+        public static final boolean DEBUGGED = checkIfDebugged();
+
+        private static boolean checkIfDebugged() {
+            try {
+                RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+                List<String> args = runtime.getInputArguments();
+                for (String arg : args) {
+                    if ("-Xdebug".equals(arg)) { // NOI18N
+                        return true;                        
+                    } else if ("-agentlib:jdwp".equals(arg)) { // NOI18N
+                        // The idea of checking -agentlib:jdwp 
+                        // is taken from org.netbeans.modules.sampler.InternalSampler
+                        return true;
+                    } else if (arg.startsWith("-agentlib:jdwp=")) { // NOI18N
+                        return true;
+                    }
+                }
+            } catch (SecurityException ex) {                
+            }
+            return false;
+        }
+    }    
 }

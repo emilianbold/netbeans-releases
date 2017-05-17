@@ -54,6 +54,8 @@ import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
+import org.openide.util.Pair;
 
 /**
  *
@@ -62,18 +64,19 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 public final class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
     private final ParameterElement parameter;
 
-    private FormalParameterInfo(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
+    private FormalParameterInfo(FormalParameter node, Map<String, List<Pair<QualifiedName, Boolean>>> paramDocTypes) {
         super(node);
         FormalParameter formalParameter = getOriginalNode();
         String name = getName();
         String defVal = CodeUtils.getParamDefaultValue(formalParameter);
         Expression parameterType = formalParameter.getParameterType();
         final boolean isRawType = parameterType != null;
+        final boolean isNullableType = parameterType instanceof NullableType;
         QualifiedName parameterTypeName = QualifiedName.create(parameterType);
-        List<QualifiedName> types;
+        List<Pair<QualifiedName, Boolean>> types;
         if (isRawType && parameterTypeName != null) {
             if (!Type.isPrimitive(parameterTypeName.toString()) || paramDocTypes.isEmpty()) {
-                types = Collections.singletonList(parameterTypeName);
+                types = Collections.singletonList(Pair.of(parameterTypeName, isNullableType));
             } else {
                 types = paramDocTypes.get(name);
             }
@@ -87,14 +90,14 @@ public final class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
                 name,
                 defVal,
                 getRange().getStart(),
-                TypeResolverImpl.forNames(types), 
+                TypeResolverImpl.forNames(types),
                 formalParameter.isMandatory(),
                 isRawType,
                 formalParameter.isReference(),
                 formalParameter.isVariadic());
     }
 
-    public static FormalParameterInfo create(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
+    public static FormalParameterInfo create(FormalParameter node, Map<String, List<Pair<QualifiedName, Boolean>>> paramDocTypes) {
         return new FormalParameterInfo(node, paramDocTypes);
     }
 

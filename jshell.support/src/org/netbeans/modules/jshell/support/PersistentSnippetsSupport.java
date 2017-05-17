@@ -186,6 +186,10 @@ public class PersistentSnippetsSupport  {
         @Override
         public void shellShutdown(ShellEvent ev) {
         }
+
+        @Override
+        public void shellSettingsChanged(ShellEvent ev) {
+        }
     }
     
     private static void runStartupSnippets(JShellEnvironment env) {

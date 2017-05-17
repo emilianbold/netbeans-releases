@@ -1924,12 +1924,9 @@ public class AstRenderer {
                 ) {
             typeof = true;
             AST next = tokType.getNextSibling();
-            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+            if (next.getType() == CPPTokenTypes.LPAREN) {
                 next = next.getNextSibling();
                 typeAST = next;
-            }
-            if (typeAST != null && typeAST.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                typeAST = typeAST.getFirstChild();
             }
             tokType = next.getNextSibling();
         }
@@ -2761,18 +2758,25 @@ public class AstRenderer {
             return _static;
         }
 
-        public static boolean isConst(AST node) {
+        public static FunctionImpl.CV_RL isConst(AST node) {
+            FunctionImpl.CV_RL res = new FunctionImpl.CV_RL();
             AST token = node.getFirstChild();
             while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
                 token = token.getNextSibling();
             }
             while( token != null ) {
                 if (AstRenderer.isConstQualifier(token.getType())) {
-                    return true;
+                    res._const = true;
+                } else if (AstRenderer.isVolatileQualifier(token.getType())) {
+                    res._volatile = true;
+                } else if (token.getType() == CPPTokenTypes.AMPERSAND) { //the & ref-qualifier
+                    res._lvalue = true;
+                } else if (token.getType() == CPPTokenTypes.AND) { //the && ref-qualifier
+                    res._rvalue = true;
                 }
                 token = token.getNextSibling();
             }
-            return false;
+            return res;
         }
 
         public static CsmScope getScope(CsmScope scope, CsmFile file, boolean _static, boolean definition) {

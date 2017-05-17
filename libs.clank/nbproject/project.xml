@@ -51,16 +51,40 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <public-packages>
                 <package>org.clang.analysis</package>
+                <package>org.clang.analysis.analyses</package>
+                <package>org.clang.analysis.analyses.analyze_format_string</package>
+                <package>org.clang.analysis.analyses.analyze_printf</package>
+                <package>org.clang.analysis.analyses.analyze_scanf</package>
+                <package>org.clang.analysis.analyses.consumed</package>
+                <package>org.clang.analysis.analyses.reachable_code</package>
+                <package>org.clang.analysis.analyses.threadSafety</package>
+                <package>org.clang.analysis.analyses.threadSafety.lexpr</package>
+                <package>org.clang.analysis.analyses.threadSafety.sx</package>
+                <package>org.clang.analysis.analyses.threadSafety.til</package>
+                <package>org.clang.analysis.analyses.threadSafety.til.ThreadSafetyTIL</package>
+                <package>org.clang.analysis.domainspecific</package>
+                <package>org.clang.analysis.domainspecific.ento</package>
+                <package>org.clang.analysis.java</package>
+                <package>org.clang.analysis.llvm</package>
+                <package>org.clang.analysis.support</package>
+                <package>org.clang.analysis.threadSafety.impl</package>
                 <package>org.clang.arcmigrate</package>
                 <package>org.clang.ast</package>
+                <package>org.clang.ast.aliases</package>
+                <package>org.clang.ast.ast_type_traits</package>
                 <package>org.clang.ast.comments</package>
+                <package>org.clang.ast.declvisitor</package>
                 <package>org.clang.ast.java</package>
                 <package>org.clang.ast.llvm</package>
+                <package>org.clang.astmatchers.ast_matchers</package>
+                <package>org.clang.astmatchers.ast_matchers.internal</package>
+                <package>org.clang.astmatchers.ast_matchers.java</package>
+                <package>org.clang.astmatchers.dynamic.ast_matchers</package>
                 <package>org.clang.basic</package>
-                <package>org.clang.basic.SanitizerKind</package>
                 <package>org.clang.basic.declcontext</package>
                 <package>org.clang.basic.java</package>
                 <package>org.clang.basic.llvm</package>
+                <package>org.clang.basic.llvm.impl</package>
                 <package>org.clang.basic.markup</package>
                 <package>org.clang.basic.spi</package>
                 <package>org.clang.basic.target</package>
@@ -73,25 +97,44 @@ made subject to such option by the copyright holder.
                 <package>org.clang.clangc.java</package>
                 <package>org.clang.clangc.spi</package>
                 <package>org.clang.codegen</package>
+                <package>org.clang.codegen.java</package>
                 <package>org.clang.driver</package>
                 <package>org.clang.driver.frontend</package>
                 <package>org.clang.edit</package>
+                <package>org.clang.format</package>
                 <package>org.clang.frontend</package>
                 <package>org.clang.frontend.java</package>
                 <package>org.clang.frontend.llvm</package>
+                <package>org.clang.frontend.staticanalyzer</package>
+                <package>org.clang.frontend.staticanalyzer.spi</package>
                 <package>org.clang.frontendtool</package>
                 <package>org.clang.frontendtool.java</package>
                 <package>org.clang.lex</package>
                 <package>org.clang.lex.frontend</package>
                 <package>org.clang.lex.java</package>
                 <package>org.clang.lex.llvm</package>
+                <package>org.clang.lex.spi</package>
                 <package>org.clang.parse</package>
+                <package>org.clang.parse.java</package>
                 <package>org.clang.rewrite.core</package>
                 <package>org.clang.rewrite.frontend</package>
                 <package>org.clang.sema</package>
                 <package>org.clang.sema.java</package>
                 <package>org.clang.serialization</package>
+                <package>org.clang.serialization.java</package>
+                <package>org.clang.serialization.llvm</package>
+                <package>org.clang.serialization.spi</package>
+                <package>org.clang.staticanalyzer.checkers.ento</package>
                 <package>org.clang.staticanalyzer.core</package>
+                <package>org.clang.staticanalyzer.core.bugreporter.ento</package>
+                <package>org.clang.staticanalyzer.core.bugreporter.llvm</package>
+                <package>org.clang.staticanalyzer.core.ento</package>
+                <package>org.clang.staticanalyzer.core.ento.check</package>
+                <package>org.clang.staticanalyzer.core.pathsensitive.ento</package>
+                <package>org.clang.staticanalyzer.core.pathsensitive.llvm</package>
+                <package>org.clang.staticanalyzer.frontend.ento</package>
+                <package>org.clang.staticanalyzer.java</package>
+                <package>org.clang.tooling.core</package>
                 <package>org.clang.tools.driver</package>
                 <package>org.clang.tools.services</package>
                 <package>org.clang.tools.services.support</package>
@@ -110,22 +153,37 @@ made subject to such option by the copyright holder.
                 <package>org.llvm.support</package>
                 <package>org.llvm.support.dwarf</package>
                 <package>org.llvm.support.endian</package>
+                <package>org.llvm.support.impl</package>
                 <package>org.llvm.support.spi</package>
                 <package>org.llvm.support.sys</package>
+                <package>org.llvm.support.target</package>
                 <package>org.llvm.support.yaml</package>
                 <package>org.llvm.support.zlib</package>
+                <package>org.llvm.analysis</package>
                 <package>org.llvm.bitcode</package>
                 <package>org.llvm.bitcode.bitc</package>
                 <package>org.llvm.bitcode.java</package>
                 <package>org.llvm.ir</package>
                 <package>org.llvm.ir.intrinsic</package>
                 <package>org.llvm.ir.java</package>
+                <package>org.llvm.ir.legacy</package>
+                <package>org.llvm.ir.mdconst</package>
+                <package>org.llvm.pass</package>
+                <package>org.llvm.irreader</package>
                 <package>org.llvm.linker</package>
-                <package>org.llvm.linker</package>
+                <package>org.llvm.llvmc</package>
+                <package>org.llvm.llvmc.java</package>
                 <package>org.llvm.option</package>
                 <package>org.llvm.option.opt</package>
                 <package>org.llvm.profiledata</package>
+                <package>org.llvm.profiledata.IndexedInstrProf</package>
+                <package>org.llvm.profiledata.coverage</package>
+                <package>org.llvm.profiledata.impl</package>
                 <package>org.llvm.target.target</package>
+                <package>org.llvm.transforms.ipo</package>
+                <package>org.llvm.transforms.java</package>
+                <package>org.llvm.transforms.utils</package>
+                <package>org.llvm.object</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-analysis.jar</runtime-relative-path>
@@ -228,6 +286,14 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/org-llvm-adtsupport.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/org-llvm-analysis.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-analysis.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-llvm-asmparser.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-asmparser.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/org-llvm-bitcode.jar</runtime-relative-path>
                 <binary-origin>external/org-llvm-bitcode.jar</binary-origin>
             </class-path-extension>
@@ -236,12 +302,16 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/org-llvm-ir.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org-llvm.jar</runtime-relative-path>
-                <binary-origin>external/org-llvm.jar</binary-origin>
+                <runtime-relative-path>ext/org-llvm-irreader.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-irreader.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-llvm-linker.jar</runtime-relative-path>
                 <binary-origin>external/org-llvm-linker.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-llvm-llvmc.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-llvmc.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/org-llvm-option.jar</runtime-relative-path>
@@ -260,8 +330,16 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/org-llvm-target.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/org-llvm-transforms.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm-transforms.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/org-llvm-utils.jar</runtime-relative-path>
                 <binary-origin>external/org-llvm-utils.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/org-llvm.jar</runtime-relative-path>
+                <binary-origin>external/org-llvm.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

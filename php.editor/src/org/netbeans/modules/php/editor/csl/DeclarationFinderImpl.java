@@ -301,7 +301,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (hierarchy != null && hierarchy.length > 0) {
                         if (hierarchy[0] instanceof PHPDocTypeTag) {
                             PHPDocTypeTag typeTag = (PHPDocTypeTag) hierarchy[0];
-                            if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
+                            // parameter does not start with ws, so check not only "<" but also "=="
+                            // e.g. @method C testMechod(C $class)
+                            if (typeTag.getStartOffset() <= caretOffset && caretOffset <= typeTag.getEndOffset()) {
                                 VariableScope scope = model.getVariableScope(caretOffset);
                                 List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS, scope);
                                 for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {

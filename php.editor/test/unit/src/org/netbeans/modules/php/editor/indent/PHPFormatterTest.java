@@ -768,4 +768,33 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue268920.php", options);
     }
+
+    public void testIssue269707() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue269707.php", options);
+    }
+
+    public void testIssue270385_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/issue270385_01.php", options);
+    }
+
+    public void testIssue270385_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/issue270385_02.php", options);
+    }
+
+    public void testIssue270385_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/issue270385_03.php", options);
+    }
+
+    public void testIssue270385_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/issue270385_04.php", options);
+    }
 }

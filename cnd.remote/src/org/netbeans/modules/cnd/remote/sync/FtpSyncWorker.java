@@ -173,7 +173,7 @@ import org.openide.util.RequestProcessor;
     private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException, ConnectionManager.CancellationException {
 
         fileData = FileData.get(privProjectStorageDir, executionEnvironment);
-        fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, executionEnvironment, err);
+        fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, executionEnvironment, err, true);
 
         uploadCount = 0;
         uploadSize = 0;
@@ -515,7 +515,7 @@ import org.openide.util.RequestProcessor;
             private boolean mapErrorReported = false;
             @Override
             public void processLine(String line) {
-                String localPath = mapper.getLocalPath(line, false);
+                String localPath = mapper.getLocalPath(line);
                 if (localPath != null) {
                     fileData.setState(new File(localPath), FileState.INITIAL);
                 } else {
@@ -838,7 +838,7 @@ import org.openide.util.RequestProcessor;
     @Override
     public void shutdown() {
         try {
-            fileCollector.runNewFilesDiscovery(true);
+            fileCollector.runNewFilesDiscovery();
             fileCollector.shutDownNewFilesDiscovery();
         } catch (IOException ex) {
             ex.printStackTrace(System.err);

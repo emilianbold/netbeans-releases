@@ -60,6 +60,8 @@ import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -80,6 +82,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -88,6 +91,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import javax.tools.JavaFileManager;
+import javax.tools.StandardJavaFileManager;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
@@ -95,9 +100,8 @@ import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.SourceCodeAnalysis;
-import jdk.jshell.spi.ExecutionControl;
 import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
-import jdk.jshell.spi.ExecutionEnv;
+import jdk.jshell.spi.ExecutionControlProvider;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -113,6 +117,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.lib.nbjshell.NbExecutionControl;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.SnippetHandle;
@@ -401,7 +406,7 @@ public class ShellSession  {
         return snippetRegistry.snippetFile(snippet, editedSnippetIndex);
     }
     
-    public JShellTool   getJShellTool() {
+    public synchronized JShellTool   getJShellTool() {
         return launcher;
     }
     
@@ -557,6 +562,9 @@ public class ShellSession  {
     private RemoteJShellService exec;
     
     private String addRoots(String prev, ClassPath cp) {
+        if (cp == null) {
+            return prev;
+        }
         FileObject[] roots = cp.getRoots();
         StringBuilder sb = new StringBuilder(prev);
         
@@ -577,7 +585,8 @@ public class ShellSession  {
     }
     
     private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
-        String cp = createProjectClasspath();
+        ClassPath compile = getEnv().getCompilerClasspath();
+        String cp = addRoots("", compile);
         JShellAccessor.resetCompileClasspath(jshell, cp);
     }
     
@@ -592,47 +601,17 @@ public class ShellSession  {
         //cp = addRoots(cp, compile);
         return cp;
     }
-    
-    private class GenProxy implements JShellGenerator {
-        private final JShellGenerator del;
 
-        public GenProxy(JShellGenerator del) {
-            this.del = del;
-        }
-
-        @Override
-        public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-            ExecutionControl ctrl = del.generate(ee);
-            exec = (RemoteJShellService)ctrl;
-            return ctrl;
-        }
-
-        @Override
-        public String getTargetSpec() {
-            return del.getTargetSpec();
-        } 
-    }
-    
     /**
      * Finds appropriate source (language) version for the environment.
      * @return 
      */
     private SpecificationVersion findSourceVersion() {
-        Project p = env.getProject();
-        if (p == null) {
-            return findTargetVersion();
-        }
-        Result r = SourceLevelQuery.getSourceLevel2(p.getProjectDirectory());
-        String s = r.getSourceLevel();
-        if (s != null) {
-            return new SpecificationVersion(s);
-        } else {
-            return findTargetVersion();
-        }
+        return env.getSourceLevel();
     }
     
     private SpecificationVersion findTargetVersion() {
-        return env.getPlatform().getSpecification().getVersion();
+        return env.getTargetLevel();
     }
     
     private Preferences createShellPreferences() {
@@ -647,7 +626,7 @@ public class ShellSession  {
     private class Launcher extends JShellLauncher implements Consumer<SnippetEvent> {
         Subscription subscription;
         
-        public Launcher(JShellGenerator execEnv) throws IOException {
+        public Launcher(ExecutionControlProvider execEnv) throws IOException {
             super(
                 createShellPreferences(),
                 shellControlOutput, 
@@ -729,6 +708,14 @@ public class ShellSession  {
             }
             return homeResolvedPath;
         }
+
+        @Override
+        protected NbExecutionControl execControlCreated(NbExecutionControl ctrl) {
+            if (ctrl instanceof RemoteJShellService) {
+                exec = (RemoteJShellService)ctrl;
+            }
+            return super.execControlCreated(ctrl);
+        }
     }
     
     private SwitchingJavaFileManger fileman;
@@ -743,17 +730,104 @@ public class ShellSession  {
             b.compilerOptions("-target", v.toString()); // NOI18N
         }
         b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
-        b.fileManager(fileman = new SwitchingJavaFileManger(getClasspathInfo()));
+        ClasspathInfo cpI = getClasspathInfo();
+        if (LOG.isLoggable(Level.FINEST)) {
+            StringBuilder sb = new StringBuilder("Starting jshell with ClasspathInfo:");
+            for (PathKind kind : PathKind.values()) {
+                if (kind == PathKind.OUTPUT) {
+                    continue;
+                }
+                sb.append(kind + ": ");
+                ClassPath cp;
+                try {
+                    cp = cpI.getClassPath(kind);
+                } catch (IllegalArgumentException ex) {
+                    sb.append("<not supported>\n");
+                    continue;
+                }
+                if (cp == null) {
+                    sb.append("<null>\n");
+                    continue;
+                }
+                sb.append("\n");
+                for (ClassPath.Entry e : cp.entries()) {
+                    sb.append("\t" + e.getURL() + "\n");
+                }
+                sb.append("---------------\n");
+                LOG.log(Level.FINEST, sb.toString());
+            }
+        }
+        customizeBuilderOnJDK9(b);
+        b.fileManager((Function)this::createJShellFileManager);
         return getEnv().customizeJShell(b);
+    }
+
+    /**
+     * In case the JFM comes from JDK9 runtime, use reflection to parametrize the
+     * JFM
+     * @return the original object
+     */
+    private Object createJShellFileManager(Object original) {
+        if (original instanceof StandardJavaFileManager) {
+            return fileman = new SwitchingJavaFileManger(getClasspathInfo());
+        } else {
+            return original;
+        }
+    }
+    
+    private void customizeBuilderOnJDK9(JShell.Builder builder) {
+        try {
+            Class c = JShell.Builder.class.getClassLoader().loadClass("javax.tools.StandardJavaFileManager");
+            if (c.isAssignableFrom(StandardJavaFileManager.class)) {
+                return;
+            }
+        } catch (ClassNotFoundException ex) {
+        }
+        fileman = null;
+        Project p = env.getProject();
+        
+        String systemHome = platform.getSystemProperties().get("java.home"); // NOI18N
+        if (systemHome != null) {
+            if (ShellProjectUtils.isModularJDK(platform)) {
+                builder.compilerOptions("--system", systemHome); // NOI18N
+            } else {
+                builder.compilerOptions("--boot-class-path", getClasspathAsString(PathKind.BOOT));
+            }
+        }
+        JavaPlatform platform = ShellProjectUtils.findPlatform(p);
+        
+        String classpath;
+        String modulepath = "";
+        
+        if (p != null && ShellProjectUtils.isModularProject(p)) {
+            List<String[]> opts = ShellProjectUtils.compilerPathOptions(p);
+            for (String[] o : opts) {
+                if (o[1] != null) {
+                    builder.compilerOptions(o[0], o[1]);
+                } else {
+                    builder.compilerOptions(o[0]);
+                }
+            }
+            modulepath = getClasspathAsString(PathKind.MODULE_COMPILE);
+            classpath = getClasspathAsString(PathKind.MODULE_CLASS);
+        } else {
+            classpath = getClasspathAsString(PathKind.COMPILE);
+        }
+        
+        if (!classpath.isEmpty()) {
+            builder.compilerOptions("-classpath", classpath); // NOI18N
+        }
+        if (!modulepath.isEmpty()) {
+            builder.compilerOptions("--module-path", modulepath); // NOI18N
+        }
     }
     
     private synchronized Launcher initShellLauncher() throws IOException {
         if (launcher != null) {
             return launcher;
         }
-        JShellGenerator gen = new GenProxy(env.createExecutionEnv());
         try {
-            launcher = new Launcher(gen);
+            launcher = new Launcher(env.createExecutionEnv());
         } catch (IOException | RuntimeException | Error e) {
             e.printStackTrace();
         }
@@ -794,7 +868,7 @@ public class ShellSession  {
     private ShellAccessBridge bridgeImpl = new ShellAccessBridge() {
         @Override
         public <T> T execute(Callable<T> xcode) throws Exception {
-            if (evaluator.isRequestProcessorThread()) {
+            if (fileman == null || evaluator.isRequestProcessorThread()) {
                 return xcode.call();
             } else {
                 return fileman.withLocalManager(xcode);
@@ -909,13 +983,16 @@ public class ShellSession  {
     
     private boolean scrollbackEndsWithNewline() {
         boolean[] ret = new boolean[1];
+        ConsoleSection s = model.getInputSection();
+        int end = s == null ? -1 : s.getStart();
         consoleDocument.render(() -> {
             int l = consoleDocument.getLength();
             if (l == 0) {
                 ret[0] = true;
             } else {
+                int e = end == -1 ? consoleDocument.getLength() : end;
                 try {
-                    ret[0] = consoleDocument.getText(consoleDocument.getLength() - 1, 1).charAt(0) == '\n';
+                    ret[0] = consoleDocument.getText(e - 1, 1).charAt(0) == '\n';
                 } catch (BadLocationException ex) {
                     ret[0] = false;
                 }
@@ -930,6 +1007,10 @@ public class ShellSession  {
     
     private Set<Snippet>    excludedSnippets = new HashSet<>();
     
+    private String getClasspathAsString(PathKind pk) {
+        return addRoots("", getClasspathInfo().getClassPath(pk));
+    }
+    
     private String createClasspathString() {
         String sep = System.getProperty("path.separator");
         boolean modular = ShellProjectUtils.isModularJDK(platform);
@@ -940,15 +1021,15 @@ public class ShellSession  {
         
                 
         File remoteProbeJar = InstalledFileLocator.getDefault().locate(agentJar, 
-                "org.netbeans.libs.jshell", false);
+                "org.netbeans.lib.jshell.agent", false);
         StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
         
         if (!modular) {
-            File replJar = 
-                    InstalledFileLocator.getDefault().locate(
-                            "modules/ext/nb-jshell.jar", 
-                            "org.netbeans.libs.jshell", false);
-            sb.append(sep).append(replJar.getAbsolutePath());
+//            File replJar = 
+//                    InstalledFileLocator.getDefault().locate(
+//                            "modules/ext/nb-jshell.jar", 
+//                            "org.netbeans.libs.jshell", false);
+//            sb.append(sep).append(replJar.getAbsolutePath());
 
             File toolsJar = null;
             for (FileObject jdkInstallDir : platform.getInstallFolders()) {
@@ -967,7 +1048,10 @@ public class ShellSession  {
             }
         }
         
-        String projectCp = createProjectClasspath();
+        // classpath construction
+        
+        ClassPath compile = getEnv().getVMClassPath();
+        String projectCp = addRoots("", compile); // NOi18N
         sb.append(sep).append(projectCp);
         return sb.toString();
     }

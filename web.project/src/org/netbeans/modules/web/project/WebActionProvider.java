@@ -218,6 +218,8 @@ public class WebActionProvider extends BaseActionProvider {
         commands.put(COMMAND_PROFILE_TEST_SINGLE, new String[]{"profile-test"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[]{"debug-fix"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[]{"verify"}); // NOI18N
+        commands.put(SingleMethod.COMMAND_RUN_SINGLE_METHOD, new String[] {"test-single-method"}); // NOI18N
+        commands.put(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD, new String[] {"debug-single-method"}); // NOI18N
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
             COMMAND_RUN_SINGLE
         ));

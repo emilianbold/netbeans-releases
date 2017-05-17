@@ -39,6 +39,8 @@
  */
 
 #include "util.h"
+#include "poll.h"
+#include "error.h"
 
 ssize_t writen(int fd, const void *ptr, size_t n) {
     const char *pos = ptr;
@@ -56,6 +58,39 @@ ssize_t writen(int fd, const void *ptr, size_t n) {
         }
         nleft -= nwritten;
         pos += nwritten;
+    }
+    return (n - nleft); /* return >= 0 */
+}
+
+ssize_t writen_no_block(int fd, struct buffer *ptr) {
+    size_t n = ptr->length - ptr->offset;
+    size_t nleft = n;
+    ssize_t nwritten;
+
+    int ret;
+    struct pollfd block[1];
+    block[0].fd = fd;
+    block[0].events = POLLOUT;
+    block[0].revents = 0;
+
+    while (nleft > 0) {
+        ret = poll((struct pollfd*) & block, 1, 1);
+        if (ret == -1) {
+            err_sys("polling in writen_no_block failed");
+        }
+        if (!(block[0].revents & POLLOUT)) {
+            break;
+        }
+        if ((nwritten = write(fd, ptr->buf + ptr->offset, nleft)) < 0) {
+            if (nleft == n)
+                return (-1); /* error, return -1 */
+            else
+                break; /* error, return amount written so far */
+        } else if (nwritten == 0) {
+            break;
+        }
+        nleft -= nwritten;
+        ptr->offset += nwritten;
     }
     return (n - nleft); /* return >= 0 */
 }

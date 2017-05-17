@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.cnd.remote.actions;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -61,8 +64,8 @@ import org.openide.util.NbBundle;
 //@ActionReference(path = "Menu/File", position = 510)
 @ActionRegistration(
     displayName="#OpenRemoteFileAction.submenu.title",  //NOI18N
-    iconBase="org/netbeans/modules/cnd/remote/resources/openFile.png", //NOI18N
-    iconInMenu=true
+    iconBase="org/netbeans/modules/cnd/remote/ui/resources/openFile.png", //NOI18N
+    iconInMenu=true, lazy = false
 )
 @ActionID(category="System", id="org.netbeans.modules.openfile.OpenRemoteFileAction")
 @ActionReferences({
@@ -75,8 +78,8 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase {
     
     public OpenRemoteFileAction() {
         super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title")); //NOI18N
-        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openFile.png", false); //NOI18N
-        putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openFile.png"); //NOI18N
+        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/ui/resources/openFile.png", false); //NOI18N
+        putValue("iconBase","org/netbeans/modules/cnd/remote/ui/resources/openFile.png"); //NOI18N
     }
 
     @Override
@@ -85,10 +88,17 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase {
     }
 
     @Override
-    protected String getSubmenuTitle() {
-        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"); //NOI18N
+    protected void updateToolTip() {
+        ServerRecord rec = ServerList.getDefaultRecord();
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.tooltip", 
+                (rec == null/*paranoia*/) ? "?" : rec.getDisplayName())); //NOI18N
     }
 
+    @Override
+    protected String getSubmenuTitle() {
+        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"); //NOI18N    
+    }
+    
     @Override
     protected String getItemTitle(String record) {
         return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.item.title", record); //NOI18N

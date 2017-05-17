@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
@@ -268,7 +269,16 @@ public final class MainClassUpdater extends FileChangeAdapter implements Propert
                     LOG.log(Level.WARNING, "No classpath for: {0}", FileUtil.getFileDisplayName(roots[0]));  //NOI18N
                     compileCp = ClassPathSupport.createClassPath(new URL[0]);
                 }
-                final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                final ClassPath systemModules = ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_BOOT_PATH);
+                final ClassPath modulePath = ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_COMPILE_PATH);
+                final ClassPath allUnnamed = ClassPath.getClassPath(roots[0], JavaClassPathConstants.MODULE_CLASS_PATH);
+                final ClasspathInfo cpInfo = new ClasspathInfo.Builder(bootCp)
+                        .setClassPath(compileCp)
+                        .setSourcePath(sourcePath)
+                        .setModuleBootPath(systemModules)
+                        .setModuleCompilePath(modulePath)
+                        .setModuleClassPath(allUnnamed)
+                        .build();
                 final JavaSource js = JavaSource.create(cpInfo);
 
                 // execute immediately, or delay if cannot find main class

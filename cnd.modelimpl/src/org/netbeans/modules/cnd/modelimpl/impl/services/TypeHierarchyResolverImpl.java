@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -93,7 +94,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
     }
 
     private Collection<CsmReference> getSubTypesImpl(CsmClass referencedClass, boolean directSubtypesOnly) {
-        CsmFile file = referencedClass.getContainingFile();
+         CsmFile file = referencedClass.getContainingFile();
         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
         CsmProject project = file.getProject();
         Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap(project, fileVersion);
@@ -171,6 +172,12 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         for (CsmInheritance inh : project.findInheritances(referencedClass.getName())){
             CsmClassifier classifier = inh.getClassifier();
             if (classifier != null) {
+                if (CsmKindUtilities.isClassForwardDeclaration(classifier)) {
+                    CsmClass refferedClass = ((CsmClassForwardDeclaration) classifier).getCsmClass();
+                    if (CsmKindUtilities.isClassifier(refferedClass)) {
+                        classifier = (CsmClassifier) refferedClass;
+                    }
+                }
                 if (CsmKindUtilities.isInstantiation(classifier)) {
                     CsmOffsetableDeclaration template = ((CsmInstantiation)classifier).getTemplateDeclaration();
                     if (CsmKindUtilities.isClassifier(template)) {

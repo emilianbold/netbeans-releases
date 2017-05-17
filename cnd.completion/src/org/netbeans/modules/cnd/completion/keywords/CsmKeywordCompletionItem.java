@@ -46,19 +46,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -96,8 +91,10 @@ public class CsmKeywordCompletionItem implements CompletionItem {
         if (CndUtils.isUnitTestMode()) {
             coloredItemText = sortItemText;
         } else {
-            AttributeSet keywordsColor = MimeLookup.getLookup(MimePath.get(MIMENames.CPLUSPLUS_MIME_TYPE)).lookup(FontColorSettings.class).getTokenFontColors("keyword"); //NOI18N
-            coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, keywordsColor);
+            //AttributeSet keywordsColor = MimeLookup.getLookup(MimePath.get(MIMENames.CPLUSPLUS_MIME_TYPE)).lookup(FontColorSettings.class).getTokenFontColors("keyword"); //NOI18N
+            //coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, keywordsColor);
+            coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, new Color(11,48,116), true);
+            
         }
         return new CsmKeywordCompletionItem(substitutionOffset, NbCsmCompletionQuery.KEYWORDS_PRIORITY, sortItemText, appendItemText, coloredItemText, true, firstCompletion);
     }

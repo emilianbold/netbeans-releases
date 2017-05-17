@@ -46,6 +46,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -104,6 +107,35 @@ public class DebuggerTest extends NbTestCase {
         startDebugging(sessionId, scriptFile);
         sessionId.isInitialized(true);
         testWrapper.assertTested();//sometimes, randomly fails
+    }
+
+    // #254298
+    public void testCancelSessionIdInitialization()  throws Exception {
+        FileObject scriptFo = createPHPTestFile("index.php"); // NOI18N
+        assertNotNull(scriptFo);
+        Project dummyProject = DummyProject.create(scriptFo);
+        assertNotNull(dummyProject);
+        final SessionId sessionId = new SessionId(scriptFo, dummyProject);
+        File scriptFile = FileUtil.toFile(scriptFo);
+        assertNotNull(scriptFile);
+        assertTrue(scriptFile.exists());
+        // don't connect to the debugger (cannot initialize the session id)
+        AtomicBoolean initialized = new AtomicBoolean(true);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        new Thread(() -> {
+            // wait initialization
+            initialized.set(sessionId.isInitialized(true));
+            countDownLatch.countDown();
+        }).start();
+        countDownLatch.await(1000, TimeUnit.MILLISECONDS);
+        new Thread(() -> {
+            synchronized(sessionId) {
+                sessionId.cancel();
+                sessionId.notifyAll();
+            }
+        }).start();
+        countDownLatch.await(1000, TimeUnit.MILLISECONDS);
+        assertFalse(initialized.get());
     }
 
     private static Breakpoint addBreakpoint(final FileObject fo, final int line, final TestWrapper testObj, final Continuation move) {

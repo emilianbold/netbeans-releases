@@ -51,8 +51,52 @@ import org.openide.util.RequestProcessor;
 /** a stream to delegate to logging.
  */
 public final class PrintStreamLogger extends PrintStream implements Runnable {
+    /**
+     * Threshold of buffered data before the background thread starts to flush it to the logger.
+     */
+    // not private bcs of test
+    static final int BUFFER_THRESHOLD = 2 * 1024 * 1024;
+    
+    /**
+     * Minimum capacity, does not shring below this size.
+     */
+    private static final int BUFFER_MIN_CAPACITY = 1024 * 1024;
+    
+    /**
+     * Time after which the buffer shrinks/is recycled, if not adequately used.
+     */
+    // not private bcs of test
+    static final int BUFFER_SHRINK_TIME = 10 * 1000;
+    
+    /**
+     * Ratio of required buffer usage. If the buffer is used up to less than
+     * 1/n, the builder will be recycled on the next flush.
+     */
+    private static final int BUFFER_CAPACITY_DIV = 5;
+    
     private Logger log;
-    private final StringBuilder sb = new StringBuilder();
+    
+    @SuppressWarnings("RedundantStringConstructorCall") // prevent interning
+    private final Object lock = new String("lock"); // NOI18N
+    
+    // @GuardedBy(lock)
+    private StringBuilder sb = new StringBuilder();
+
+    // @GuardedBy(lock)
+    private int bufferTop = 0;
+    
+    /**
+     * Maximum useful buffer size at the time of flush
+     * @GuardedBy(lock)
+     */
+    private int maxBufferSize;
+    
+    /**
+     * Last time the buffer was checked/shrinked
+     * @GuardedBy(lock)
+     */
+    private long lastCleanupTime;
+    
     private static RequestProcessor RP = new RequestProcessor("StdErr Flush");
     private RequestProcessor.Task flush = RP.create(this, true);
 
@@ -93,10 +137,10 @@ public final class PrintStreamLogger extends PrintStream implements Runnable {
         if (RP.isRequestProcessorThread()) {
             return;
         }
-        synchronized (sb) {
+        synchronized (lock) {
             sb.append((char) b);
+            checkFlush();
         }
-        checkFlush();
     }
 
     @Override
@@ -104,10 +148,10 @@ public final class PrintStreamLogger extends PrintStream implements Runnable {
         if (NbLogging.DEBUG != null && !NbLogging.wantsMessage(s)) {
             new Exception().printStackTrace(NbLogging.DEBUG);
         }
-        synchronized (sb) {
+        synchronized (lock) {
             sb.append(s);
+            checkFlush();
         }
-        checkFlush();
     }
 
     @Override
@@ -125,7 +169,7 @@ public final class PrintStreamLogger extends PrintStream implements Runnable {
     @Override
     public void flush() {
         boolean empty;
-        synchronized (sb) {
+        synchronized (lock) {
             empty = sb.length() == 0;
         }
         if (!empty) {
@@ -142,8 +186,9 @@ public final class PrintStreamLogger extends PrintStream implements Runnable {
 
     private void checkFlush() {
         //if (DEBUG != null) DEBUG.println("checking flush; buffer: " + sb); // NOI18N
+        boolean immediate = sb.length() - bufferTop > BUFFER_THRESHOLD;
         try {
-            flush.schedule(100);
+            flush.schedule(immediate ? 0 : 100);
         } catch (IllegalStateException ex) {
             /* can happen during shutdown:
             Nested Exception is:
@@ -169,26 +214,67 @@ public final class PrintStreamLogger extends PrintStream implements Runnable {
              */
         }
     }
+    
+    private final RequestProcessor.Task cleanupTask = RP.create(new Runnable() {
+        public void run() {
+            synchronized (lock) {
+                maybeFreeBuffer();
+            }
+        }
+    });
+    
+    /**
+     * Conditionally shrinks the buffer. Called synchronously from flusher, and 
+     * scheduled (by the flusher) to cover the case logging ends within BUFFER_SHRINK_TIME
+     * and no more data comes.
+     * <p/>
+     * The intention is to recycle the buffer, if it was not filled at least to 1/BUFFER_CAPACITY_DIV
+     * of its capacity during the last BUFFER_SHRINK_TIME millis.
+     */
+    private void maybeFreeBuffer() {
+        int c = sb.capacity();
+        long t = System.currentTimeMillis();
+        if (t - lastCleanupTime > BUFFER_SHRINK_TIME) {
+            if (c > BUFFER_MIN_CAPACITY &&
+                c / BUFFER_CAPACITY_DIV > maxBufferSize) {
+                // recycle the buffer, reclaim potential memory
+                sb = new StringBuilder(sb);
+            }
+            maxBufferSize = sb.length();
+            lastCleanupTime = t;
+        }
+    }
 
     public void run() {
         for (;;) {
             String toLog;
-            synchronized (sb) {
+            synchronized (lock) {
                 if (sb.length() == 0) {
                     break;
                 }
+                maxBufferSize = Math.max(maxBufferSize, sb.length());
                 int last = -1;
-                for (int i = sb.length() - 1; i >= 0; i--) {
+                for (int i = sb.length() - 1; i >= bufferTop; i--) {
                     if (sb.charAt(i) == '\n') {
                         last = i;
                         break;
                     }
                 }
                 if (last == -1) {
+                    // no \n in the buffer
+                    bufferTop = sb.length();
                     break;
                 }
                 toLog = sb.substring(0, last + 1);
+                // the remained does not contain a newline
+                // PEDNING: perf: circular buffer should be used here. 
                 sb.delete(0, last + 1);
+                bufferTop = sb.length();
+                // attempt to free the buffer
+                maybeFreeBuffer();
+                // schedule for the case that data stops coming in
+                cleanupTask.schedule(BUFFER_SHRINK_TIME);
+                lock.notifyAll();
             }
             int begLine = 0;
             while (begLine < toLog.length()) {
@@ -199,4 +285,10 @@ public final class PrintStreamLogger extends PrintStream implements Runnable {
         }
     }
     
+    // Testing only
+    int[] bufferSizes() {
+        synchronized (lock) {
+            return new int[] { sb.length(), sb.capacity() };
+        }
+    }
 } // end of LgStream

@@ -42,6 +42,7 @@
 package org.netbeans.modules.templatesui;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.lang.ref.Reference;
@@ -75,6 +76,7 @@ import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.json.Model;
 import net.java.html.json.Models;
+import netscape.javascript.JSObject;
 import org.netbeans.api.templates.FileBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -203,7 +205,19 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
-        return getPanels().get(index);
+        WizardDescriptor.Panel<WizardDescriptor> ret = getPanels().get(index);
+        if (ret.getComponent() != p) {
+            if (ret.getComponent() instanceof JComponent) {
+                JComponent update = (JComponent) ret.getComponent();
+                update.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA,
+                    p.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA)
+                );
+                update.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                    p.getClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX)
+                );
+            }
+        }
+        return ret;
     }
 
     @NbBundle.Messages({
@@ -257,14 +271,19 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         }
     }
     
-    private void fireChange() {
-        ChangeListener l;
+    final void fireChange() {
+        final ChangeListener l;
         synchronized (this) {
             l = this.listener;
             notifyAll();
         }
         if (l != null) {
-            l.stateChanged(new ChangeEvent(this));
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    l.stateChanged(new ChangeEvent(this));
+                }
+            });
         }
     }
 
@@ -374,11 +393,12 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         FXBrowsers.runInBrowser(v, t);
         return t.get();
     }
-    final Object evaluateCall(final Object fn, final Object... args) throws InterruptedException, ExecutionException {
+    final Object evaluateCall(final Object fn, final Object p) throws InterruptedException, ExecutionException {
         FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-                return callFn(fn, args);
+                JSObject jsRegFn = (JSObject) fn;
+                return jsRegFn.call("call", null, p);
             }
         });
         FXBrowsers.runInBrowser(v, t);
@@ -436,7 +456,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                 steps = arr;
                 fireChange();
             }
-            List<String> names = new ArrayList<>();
+            final List<String> names = new ArrayList<>();
             for (Object s : obj) {
                 String id = stringOrId(s, "text", "id"); // NOI18N
                 if (id != null && id.equals("targetChooser") || id.startsWith("targetChooser:")) { // NOI18N
@@ -445,11 +465,20 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                 names.add(id);
             }
             stepNames = new ArrayList<>(names);
-            names.add(0, Bundle.LBL_TemplatesPanel_Name());
-            p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names.toArray(new String[names.size()]));
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names.toArray(new String[names.size()]));
+                }
+            });
             fireChange();
         }
-        p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
+            }
+        });
         if (steps != null && steps.size() > index) {
             current = steps.get(index);
             FXBrowsers.runInBrowser(v, new Runnable() {

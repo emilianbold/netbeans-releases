@@ -70,7 +70,7 @@ import org.openide.util.CharSequences;
  */
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
-    protected DestructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected DestructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, cls, visibility, defKind, _virtual, false, false, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
@@ -86,7 +86,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         CharSequence rawName = initRawName(ast);
 
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
         boolean afterParen = false;
@@ -168,7 +168,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
             boolean _explicit = false;
 
 
-            DestructorDDImpl method = new DestructorDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            DestructorDDImpl method = new DestructorDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), FunctionImpl.CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             //StringBuilder clsTemplateSuffix = new StringBuilder();

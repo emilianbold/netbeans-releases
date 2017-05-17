@@ -49,15 +49,24 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -77,14 +86,16 @@ public class OutputFileManager extends CachingFileManager {
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)
      */
-    public class InvalidSourcePath extends IllegalStateException {
+    public static class InvalidSourcePath extends IllegalStateException {
     }
 
-    private ClassPath scp;
-    private ClassPath apt;
-    private  Pair<URI,File> cachedClassFolder;
+    private final ClassPath scp;
+    private final ClassPath apt;
     private final SiblingProvider siblings;
     private final FileManagerTransaction tx;
+    private final ModuleSourceFileManager moduleSourceFileManager;
+    private Pair<URI,File> cachedClassFolder;
+    private Iterable<Set<Location>> cachedModuleLocations;
 
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(
@@ -93,7 +104,8 @@ public class OutputFileManager extends CachingFileManager {
             @NonNull final ClassPath sourcePath,
             @NonNull final ClassPath aptPath,
             @NonNull final SiblingProvider siblings,
-            @NonNull final FileManagerTransaction tx) {
+            @NonNull final FileManagerTransaction tx,
+            @NullAllowed final ModuleSourceFileManager moduleSFileManager) {
         super (provider, outputClassPath, null, false, true);
         assert outputClassPath != null;
         assert sourcePath != null;
@@ -103,11 +115,20 @@ public class OutputFileManager extends CachingFileManager {
         this.apt = aptPath;
         this.siblings = siblings;
         this.tx = tx;
+        this.moduleSourceFileManager = moduleSFileManager;
     }
 
     @Override
     public Iterable<JavaFileObject> list(Location l, String packageName, Set<Kind> kinds, boolean recursive) {
-        final Iterable<JavaFileObject> sr =  super.list(l, packageName, kinds, recursive);
+        final Iterable<JavaFileObject> sr;
+        if (!ModuleLocation.isInstance(l)) {
+            //List output
+            sr =  super.list(l, packageName, kinds, recursive);
+        } else {
+            //List module
+            final ModuleLocation.WithExcludes ml = ModuleLocation.WithExcludes.cast(l);
+            sr = listImpl(l, ml.getModuleEntries(), packageName, kinds, recursive);
+        }
         return tx.filter(l, packageName, sr);
     }
 
@@ -117,9 +138,9 @@ public class OutputFileManager extends CachingFileManager {
             throw new IllegalArgumentException ();
         } else {
             String baseName = FileObjects.convertPackage2Folder(className);     //Todo: Use File.separatorChar and remove below baseName = ...
-            File activeRoot = getClassFolderForSource(sibling, baseName);
+            File activeRoot = getClassFolderForSource(l, sibling, baseName);
             if (activeRoot == null) {
-                activeRoot = getClassFolderForApt(sibling, baseName);
+                activeRoot = getClassFolderForApt(l, sibling, baseName);
                 if (activeRoot == null) {
                     //Deleted project
                     if (this.scp.getRoots().length > 0) {
@@ -135,6 +156,7 @@ public class OutputFileManager extends CachingFileManager {
                     throw new InvalidSourcePath ();
                 }
             }
+            assertValidRoot(activeRoot, l);
             baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;
             final File f = new File (activeRoot, nameStr);
@@ -169,6 +191,7 @@ public class OutputFileManager extends CachingFileManager {
                 throw new InvalidSourcePath ();
             }
         }
+        assertValidRoot(activeRoot, l);
         final String path = FileObjects.resolveRelativePath(pkgName, relativeName);
         final File file = FileUtil.normalizeFile(new File (activeRoot,path.replace(FileObjects.NBFS_SEPARATOR_CHAR, File.separatorChar)));
         return tx.createFileObject(l, file, activeRoot,null,null);
@@ -184,7 +207,16 @@ public class OutputFileManager extends CachingFileManager {
         if (fo != null) {
             return fo;
         }
-        return super.getFileForInput(l, pkgName, relativeName);
+        if (!ModuleLocation.isInstance(l)) {
+            //File in output
+            return super.getFileForInput(l, pkgName, relativeName);
+        } else {
+            //File in module
+            return getFileForInputImpl(
+                    ModuleLocation.WithExcludes.cast(l).getModuleEntries(),
+                    pkgName,
+                    relativeName);
+        }
     }
 
     @Override
@@ -197,7 +229,17 @@ public class OutputFileManager extends CachingFileManager {
                 return (JavaFileObject)fo;
             }
         }
-        return super.getJavaFileForInput(l, className, kind);
+        if (!ModuleLocation.isInstance(l)) {
+            //File in output
+            return super.getJavaFileForInput(l, className, kind);
+        } else {
+            //File in module
+            return getJavaFileForInputImpl(
+                    ModuleLocation.WithExcludes.cast(l).getModuleEntries(),
+                    className,
+                    kind
+            );
+        }
     }
 
     @Override
@@ -205,8 +247,88 @@ public class OutputFileManager extends CachingFileManager {
         return location == StandardLocation.CLASS_OUTPUT;
     }
 
-    private File getClassFolderForSource (final javax.tools.FileObject sibling, final String baseName) throws IOException {
-        return sibling == null ? getClassFolderForSourceImpl(baseName) : getClassFolderForSourceImpl(sibling.toUri().toURL());
+    @Override
+    public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
+        if (location != StandardLocation.CLASS_OUTPUT) {
+            throw new IllegalStateException(String.format("Unsupported location: %s", location));
+        }
+        if (cachedModuleLocations == null) {
+            if (moduleSourceFileManager != null) {
+                final Map<URL,ClassPath.Entry> entriesByUrl = new HashMap<>();
+                getClassPath().entries().forEach((e) -> entriesByUrl.put(e.getURL(), e));
+                cachedModuleLocations = moduleSourceFileManager.sourceModuleLocations().stream()
+                        .map((ml) -> {
+                            Location oml = ModuleLocation.WithExcludes.createExcludes(
+                                    StandardLocation.CLASS_OUTPUT,
+                                    ml.getModuleRoots().stream()
+                                            .map((src) -> {
+                                                try {
+                                                    final URL cacheRoot = BaseUtilities.toURI(JavaIndex.getClassFolder(src, false, false)).toURL();
+                                                    final ClassPath.Entry cacheEntry = entriesByUrl.get(cacheRoot);
+                                                    assert cacheEntry != null : String.format(
+                                                            "No cache entry for cache root: %s (src root: %s), known entries: %s",  //NOI18N
+                                                            cacheRoot,
+                                                            src,
+                                                            entriesByUrl.keySet());
+                                                    return cacheEntry;
+                                                } catch (IOException ioe) {
+                                                    Exceptions.printStackTrace(ioe);
+                                                    return null;
+                                                }
+                                            })
+                                            .filter((cacheEntry) -> cacheEntry != null)
+                                            .collect(Collectors.toSet()),
+                                    ml.getModuleName());
+                            return Collections.singleton(oml);
+                        })
+                        .collect(Collectors.toList());
+            } else {
+                cachedModuleLocations = Collections.emptySet();
+            }
+        }
+        return cachedModuleLocations;
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, String moduleName) throws IOException {
+        return StreamSupport.stream(
+                listLocationsForModules(location).spliterator(),
+                false)
+                .flatMap((c) -> c.stream())
+                .filter((l) -> moduleName.equals(ModuleLocation.cast(l).getModuleName()))
+                .findAny()
+                .orElse(null);
+    }
+
+    @Override
+    public Location getLocationForModule(Location location, JavaFileObject fo) throws IOException {
+        final URL foUrl = fo.toUri().toURL();
+        for (Set<Location> s :  listLocationsForModules(location)) {
+            for (Location l : s) {
+                ModuleLocation ml = ModuleLocation.cast(l);
+                for (URL root : ml.getModuleRoots()) {
+                    if (FileObjects.isParentOf(root, foUrl)) {
+                        return l;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String inferModuleName(Location location) throws IOException {
+        final ModuleLocation ml = ModuleLocation.cast(location);
+        return ml.getModuleName();
+    }
+
+    private File getClassFolderForSource (
+            final Location l,
+            final javax.tools.FileObject sibling,
+            final String baseName) throws IOException {
+        return sibling == null ?
+                getClassFolderForSourceImpl(l, baseName) :
+                getClassFolderForSourceImpl(sibling.toUri().toURL());
     }
 
     private File getClassFolderForSourceImpl (final URL sibling) throws IOException {
@@ -233,7 +355,9 @@ public class OutputFileManager extends CachingFileManager {
         return null;
     }
 
-    private File getClassFolderForSourceImpl (String baseName) throws IOException {
+    private File getClassFolderForSourceImpl (
+            final Location l,
+            final String baseName) throws IOException {
         List<ClassPath.Entry> entries = this.scp.entries();
         int eSize = entries.size();
         if (eSize == 1) {
@@ -243,13 +367,17 @@ public class OutputFileManager extends CachingFileManager {
             return null;
         }
         final String[] parentName = splitParentName(baseName);
+        final Collection<? extends URL> roots = getLocationRoots(l);
         for (ClassPath.Entry entry : entries) {
             FileObject root = entry.getRoot();
             if (root != null) {
                 FileObject parentFile = root.getFileObject(parentName[0]);
                 if (parentFile != null) {
                     if (parentFile.getFileObject(parentName[1], FileObjects.JAVA) != null) {
-                        return getClassFolder(entry.getURL());
+                        final File cacheFolder = getClassFolder(entry.getURL());
+                        if (roots.contains(BaseUtilities.toURI(cacheFolder).toURL())) {
+                            return cacheFolder;
+                        }
                     }
                 }
             }
@@ -257,8 +385,13 @@ public class OutputFileManager extends CachingFileManager {
 	return null;
     }
         
-    private File getClassFolderForApt(final javax.tools.FileObject sibling, final String baseName) throws IOException {
-        return sibling == null ? getClassFolderForApt(baseName) : getClassFolderForApt(sibling.toUri().toURL());
+    private File getClassFolderForApt(
+            final Location l,
+            final javax.tools.FileObject sibling,
+            final String baseName) throws IOException {
+        return sibling == null ?
+                getClassFolderForApt(l, baseName) :
+                getClassFolderForApt(sibling.toUri().toURL());
     }
 
     private File getClassFolderForApt(final @NonNull URL surl) {
@@ -277,8 +410,11 @@ public class OutputFileManager extends CachingFileManager {
         return null;
     }
 
-    private File getClassFolderForApt(final String baseName) {
+    private File getClassFolderForApt(
+            final Location l,
+            final String baseName) {
         String[] parentName = splitParentName(baseName);
+        final Collection<? extends URL> roots = getLocationRoots(l);
         for (ClassPath.Entry entry : this.apt.entries()) {
             FileObject root = entry.getRoot();
             if (root != null) {
@@ -286,7 +422,7 @@ public class OutputFileManager extends CachingFileManager {
                 if (parentFile != null) {
                     if (parentFile.getFileObject(parentName[1], FileObjects.JAVA) != null) {
                         final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
-                        if (classFolder != null) {
+                        if (classFolder != null && roots.contains(classFolder)) {
                             try {
                                 return BaseUtilities.toFile(classFolder.toURI());
                             } catch (URISyntaxException ex) {
@@ -340,5 +476,28 @@ public class OutputFileManager extends CachingFileManager {
                 result);
         }
         return result;
+    }
+
+    private Collection<? extends URL> getLocationRoots(final Location l) {
+        if (!ModuleLocation.isInstance(l)) {
+            return getClassPath().entries().stream()
+                    .map((e) -> e.getURL())
+                    .collect(Collectors.toSet());
+        } else {
+            return ModuleLocation.cast(l).getModuleRoots();
+        }
+    }
+
+    private void assertValidRoot(
+            final File activeRoot,
+            final Location l) throws IOException {
+        final Collection<? extends URL> roots = getLocationRoots(l);
+        if (!roots.contains(BaseUtilities.toURI(activeRoot).toURL())) {
+            throw new IOException(String.format(
+                    "Wrong cache folder: %s, allowed: %s, location: %s",    //NOI18N
+                    activeRoot,
+                    roots,
+                    l));
+        }
     }
 }

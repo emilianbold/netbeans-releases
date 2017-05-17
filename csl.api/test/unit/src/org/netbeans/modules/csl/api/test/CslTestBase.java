@@ -125,6 +125,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -1369,7 +1370,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("getOccurrencesFinder must be implemented", finder);
         finder.setCaretPosition(caretOffset);
 
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult(caretOffset);
                 if (r instanceof ParserResult) {
@@ -1395,7 +1396,15 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 }
             }
-        });
+        };
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            if (!future.isDone()) {
+                future.get();
+            }
+        }
     }
 
     protected String annotateFinderResult(Snapshot snapshot, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
@@ -1484,7 +1493,7 @@ public abstract class CslTestBase extends NbTestCase {
             enforceCaretOffset(testSource, caretOffset);
         }
 
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
@@ -1506,7 +1515,17 @@ public abstract class CslTestBase extends NbTestCase {
                 String annotatedSource = annotateSemanticResults(doc, highlights);
                 assertDescriptionMatches(relFilePath, annotatedSource, false, ".semantic");
             }
-        });
+        };
+
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            if (!future.isDone()) {
+                future.get();
+            }
+        }
+
     }
 
     protected void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
@@ -2796,7 +2815,10 @@ public abstract class CslTestBase extends NbTestCase {
         if (classPathsForTest == null || classPathsForTest.isEmpty()) {
             ParserManager.parse(Collections.singleton(testSource), task);
         } else {
-            ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            if (!future.isDone()) {
+                future.get();
+            }
         }
     }
 
@@ -4135,7 +4157,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         final ComputedHints [] result = new ComputedHints[] { null };
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
@@ -4252,7 +4274,16 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 }
             }
-        });
+        };
+
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            if (!future.isDone()) {
+                future.get();
+            }
+        }
 
         return result[0];
     }
@@ -4507,7 +4538,7 @@ public abstract class CslTestBase extends NbTestCase {
         enforceCaretOffset(testSource, caretOffset);
 
         final DeclarationLocation [] location = new DeclarationLocation[] { null };
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
@@ -4516,7 +4547,16 @@ public abstract class CslTestBase extends NbTestCase {
                 DeclarationFinder finder = getFinder();
                 location[0] = finder.findDeclaration(pr, caretOffset);
             }
-        });
+        };
+
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            Future<Void> future = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+            if (!future.isDone()) {
+                future.get();
+            }
+        }
 
         return location[0];
     }

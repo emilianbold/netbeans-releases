@@ -176,7 +176,7 @@ public class UnusedAssignmentOrBranch {
     }
     
     private static boolean mayHaveSideEffects(HintContext ctx, TreePath path) {
-        SideEffectVisitor visitor = new SideEffectVisitor(ctx.getInfo()).stopOnUnknownMethods(true);
+        SideEffectVisitor visitor = new SideEffectVisitor(ctx).stopOnUnknownMethods(true);
         Tree culprit = null;
         try {
             visitor.scan(path, null);

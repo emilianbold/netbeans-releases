@@ -47,16 +47,37 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Vladimir Kvashin
  */
 public class InvalidFileObjectSupportTest {
-    
+
+    static {
+        // otherwise we get java.net.MalformedURLException: unknown protocol
+        // even if we register via @URLStreamHandlerRegistration annotation
+        URL.setURLStreamHandlerFactory(Lookup.getDefault().lookup(URLStreamHandlerFactory.class));
+    }    
+
+    @Test
+    public void testInvalidFileObjectURL() throws Exception {
+        // see #270390 - StackOverflowError at java.io.UnixFileSystem.getBooleanAttributes
+        FileSystem dummyFS = InvalidFileObjectSupport.getDummyFileSystem();
+        FileObject invalidFO = InvalidFileObjectSupport.getInvalidFileObject(dummyFS, "/inexistent");
+        final URL url = invalidFO.getURL();
+        FileObject foundFO = URLMapper.findFileObject(url);
+        //assertEquals("Invalid and found by URL ", invalidFO, foundFO);
+    }
+
     @Test
     public void testInvalidFileObject() throws Exception {
         File file = File.createTempFile("qwe", "asd");
@@ -72,7 +93,11 @@ public class InvalidFileObjectSupportTest {
             file.delete();
         }
         FileObject invalidFo1 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
+        URI uri1 = invalidFo1.toURI(); // just to check that there is no assertions
+        URL url1 = invalidFo1.toURL(); // just to check that there is no assertions
         FileObject invalidFo2 = InvalidFileObjectSupport.getInvalidFileObject(fs, path);
+        URI uri2 = invalidFo2.toURI(); // just to check that there is no assertions
+        URL url2 = invalidFo2.toURL(); // just to check that there is no assertions
         assertTrue(invalidFo1 == invalidFo2);
         assertFalse(invalidFo1.isValid());
         assertEquals(origFo.getName(), invalidFo1.getName());

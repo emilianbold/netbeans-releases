@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,75 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2017 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a list expression.
- * The list contains variables and/or other lists.
+ * Represents a list expression. The list contains key => value list, variables
+ * and/or other lists.<br>
+ * <b>Note:</b>Can be contained ArrayCreation instead of ListVariable when list
+ * is nested with new syntax. Because it is the same syntax pattern as short
+ * array syntax.
  *
- * <pre>e.g.<pre> list($a,$b) = array (1,2),
- * list($a, list($b, $c))
+ * <pre>e.g.
+ * list($a,$b) = array (1,2),
+ * list($a, list($b, $c)),
+ * list("id" => $id, "name" => $name) = $data[0]; // PHP7.1,
+ * [$a, $b, $c] = [1, 2, 3]; // PHP7.1,
+ * ["a" => $a, "b" => $b, "c" => $c] = ["a" => 1, "b" => 2, "c" => 3]; // PHP7.1
+ * </pre>
  */
 public class ListVariable extends VariableBase {
 
-    private final ArrayList<VariableBase> variables = new ArrayList<>();
+    public enum SyntaxType {
+        OLD {
+            @Override
+            String toString(String innerElements) {
+                return "list(" + innerElements + ")"; // NOI18N
+            }
+        },
+        NEW {
+            @Override
+            String toString(String innerElements) {
+                return "[" + innerElements + "]"; // NOI18N
+            }
+        };
 
-    private ListVariable(int start, int end, VariableBase[] variables) {
-        super(start, end);
-
-        if (variables == null) {
-            throw new IllegalArgumentException();
-        }
-        this.variables.addAll(Arrays.asList(variables));
+        abstract String toString(String innerElements);
     }
 
-    public ListVariable(int start, int end, List<VariableBase> variables) {
-        this(start, end, variables == null ? null : (VariableBase[]) variables.toArray(new VariableBase[variables.size()]));
+    private final List<ArrayElement> elements = new ArrayList<>();
+    private final SyntaxType syntaxType;
+
+    private ListVariable(int start, int end, ArrayElement[] elements, SyntaxType syntaxType) {
+        super(start, end);
+
+        if (elements == null) {
+            throw new IllegalArgumentException();
+        }
+        this.elements.addAll(Arrays.asList(elements));
+        this.syntaxType = syntaxType;
+    }
+
+    public ListVariable(int start, int end, List<ArrayElement> elements, SyntaxType syntaxType) {
+        this(start, end, elements == null ? null : (ArrayElement[]) elements.toArray(new ArrayElement[elements.size()]), syntaxType);
     }
 
     /**
-     * @return the list of variables
+     * @return the list of elements
      */
-    public List<VariableBase> getVariables() {
-        return variables;
+    public List<ArrayElement> getElements() {
+        return Collections.unmodifiableList(elements);
+    }
+
+    public SyntaxType getSyntaxType() {
+        return syntaxType;
     }
 
     @Override
@@ -84,10 +116,10 @@ public class ListVariable extends VariableBase {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (VariableBase variableBase : getVariables()) {
-            sb.append(variableBase).append(","); //NOI18N
-        }
-        return "list(" + sb.toString() + ")"; //NOI18N
+        getElements().forEach((element) -> {
+            sb.append(element).append(","); //NOI18N
+        });
+        return syntaxType.toString(sb.toString());
     }
 
 }

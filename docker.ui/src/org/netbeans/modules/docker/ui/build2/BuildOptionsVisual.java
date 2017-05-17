@@ -102,8 +102,8 @@ public final class BuildOptionsVisual extends JPanel {
     public void setDockerfile(String dockerfile) {
         dockerfileTextField.setText(dockerfile);
     }
-    
-    public Map<String, String> getBuildargs() {
+
+    public Map<String, String> getBuildArgs() {
         Map<String, String> result = new TreeMap<>();
         DefaultTableModel model = (DefaultTableModel) buildargsTable.getModel();
         if (buildargsTable.isEditing()) {
@@ -118,6 +118,15 @@ public final class BuildOptionsVisual extends JPanel {
             }
         }
         return result;
+    }
+
+    public void setBuildArgs(Map<String, String> buildArgs) {
+        DefaultTableModel model = (DefaultTableModel) buildargsTable.getModel();
+        // Clear JTable first
+        model.setRowCount(0);
+        buildArgs.forEach((key, value) -> {
+            model.addRow(new Object[]{key, value});
+        });
     }
 
     public boolean isPull() {
@@ -194,6 +203,7 @@ public final class BuildOptionsVisual extends JPanel {
                 return types [columnIndex];
             }
         });
+        buildargsTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         buildargsTable.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 buildargsTablePropertyChange(evt);
@@ -235,11 +245,11 @@ public final class BuildOptionsVisual extends JPanel {
             .addComponent(noCacheCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 347, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addVariableButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(deleteVariableButton, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE)))
+                    .addComponent(deleteVariableButton, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addVariableButton, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

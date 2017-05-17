@@ -38,7 +38,7 @@ made subject to such option by the copyright holder.
 
 Contributor(s):
 -->
-<configurationDescriptor version="94">
+<configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -53,6 +53,7 @@ Contributor(s):
                    projectFiles="true">
       <itemPath>netbeans.exe.manifest</itemPath>
       <itemPath>netbeans.rc</itemPath>
+      <itemPath>netbeans64.exe.manifest</itemPath>
       <itemPath>version.rc</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
@@ -117,6 +118,8 @@ Contributor(s):
       </item>
       <item path="netbeans.rc" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="netbeans64.exe.manifest" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="version.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="version.rc" ex="false" tool="3" flavor2="0">
@@ -168,6 +171,8 @@ Contributor(s):
       <item path="netbeans.exe.manifest" ex="false" tool="3" flavor2="0">
       </item>
       <item path="netbeans.rc" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="netbeans64.exe.manifest" ex="false" tool="3" flavor2="0">
       </item>
       <item path="version.h" ex="false" tool="3" flavor2="0">
       </item>

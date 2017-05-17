@@ -657,7 +657,7 @@ public final class ClassHierarchyPanel extends JPanel implements ExplorerManager
                             children.remove(children.getNodes());
                             HierarchyModel curModel = model;
                             if (curModel != null) {
-                                final Node node = new HierarchyNode(csmClass, curModel, null);
+                                final Node node = new HierarchyNode(new HierarchyModel.Node(csmClass, false), curModel, null);
                                 children.add(new Node[]{node});
                                 try {
                                     getExplorerManager().setSelectedNodes(new Node[]{node});

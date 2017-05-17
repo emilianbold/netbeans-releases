@@ -58,10 +58,17 @@ public final class PhpModifiers extends Modifier {
     public static PhpModifiers noModifiers() {
         return fromBitMask(new int[]{});
     }
+
     // usage: bitMasks(Modifier.PUBLIC | Modifier.FINAL) or bitMasks(Modifier.PUBLIC, Modifier.FINAL)
     public static PhpModifiers fromBitMask(int... bitmasks) {
         return bitmasks.length == 0 ? EMPTY : new PhpModifiers(bitmasks);
     }
+
+    public PhpModifiers setImplicitPublic() {
+        mod |= Modifier.IMPLICIT_PUBLIC;
+        return this;
+    }
+
     public PhpModifiers setPublic() {
         mod |= Modifier.PUBLIC;
         return this;
@@ -91,18 +98,20 @@ public final class PhpModifiers extends Modifier {
         mod |= Modifier.ABSTRACT;
         return this;
     }
+
     private PhpModifiers(int... bitmask) {
         for (int mode : bitmask) {
             this.mod |= mode;
         }
-        if (!Modifier.isPrivate(mod) && !Modifier.isProtected(mod)) {
+        if (!Modifier.isPrivate(mod) && !Modifier.isProtected(mod) && !Modifier.isImplicitPublic(mod)) {
             mod |= Modifier.PUBLIC;
         }
     }
+
     public Set<org.netbeans.modules.csl.api.Modifier> toModifiers() {
         @SuppressWarnings("SetReplaceableByEnumSet")
         Set<org.netbeans.modules.csl.api.Modifier> retval = new LinkedHashSet<>();
-        if (isPublic() && !isStatic()) {
+        if ((isPublic() || isImplicitPublic()) && !isStatic()) {
             retval.add(org.netbeans.modules.csl.api.Modifier.PUBLIC);
         }
         if (isProtected()) {
@@ -119,8 +128,13 @@ public final class PhpModifiers extends Modifier {
         }
         return retval;
     }
+
     public int toFlags() {
         return mod;
+    }
+
+    public boolean isImplicitPublic() {
+        return Modifier.isImplicitPublic(mod);
     }
 
     public boolean isPublic() {

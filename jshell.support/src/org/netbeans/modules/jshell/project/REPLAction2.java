@@ -46,12 +46,17 @@ import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
+import org.netbeans.spi.project.ActionProgress;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -74,11 +79,50 @@ public class REPLAction2 implements ProjectActionPerformer {
 
     @Override
     public boolean enable(Project project) {
-        return ShellProjectUtils.findPlatform(project) != null;
+        if (ShellProjectUtils.findPlatform(project) == null) {
+            return false;
+        }
+        ActionProvider p = project.getLookup().lookup(ActionProvider.class);
+        if (p == null) {
+            return false;
+        }
+        return p.isActionEnabled(ActionProvider.COMMAND_BUILD, Lookups.singleton(project));
     }
 
+    @NbBundle.Messages({
+        "ERR_CannotBuildProject=Could not build the project",
+        "ERR_ProjectBuildFailed=Project build failed, please check Output window",
+    })
     @Override
     public void perform(Project project) {
+        ActionProvider p = project.getLookup().lookup(ActionProvider.class);
+        // check whether the is CoS enabled fo the project
+        if (ShellProjectUtils.isCompileOnSave(project)) {
+            doRunShell(project);
+            return;
+        }
+        if (p == null || !p.isActionEnabled(ActionProvider.COMMAND_BUILD, Lookups.singleton(project))) {
+            StatusDisplayer.getDefault().setStatusText(Bundle.ERR_CannotBuildProject());
+            return;
+        }
+        p.invokeAction(ActionProvider.COMMAND_BUILD, Lookups.fixed(project, new ActionProgress() {
+            @Override
+            protected void started() {
+                // no op
+            }
+
+            @Override
+            public void finished(boolean success) {
+                if (success) {
+                    doRunShell(project);
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(Bundle.ERR_ProjectBuildFailed());
+                }
+            }
+        }));
+    }
+    
+    private void doRunShell(Project project) {
         JShellEnvironment env;
         try {
             env = ShellRegistry.get().openProjectSession(project);

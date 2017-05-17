@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seproject.api;
 
+import org.netbeans.modules.java.api.common.project.PropertyEvaluatorProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
@@ -53,11 +54,16 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
  * @author Milan Kubec
  * @since 1.10
  */
-public interface J2SEPropertyEvaluator {
+public interface J2SEPropertyEvaluator extends PropertyEvaluatorProvider {
     /**
      * Gives PropertyEvaluator for resolving project properties
      *
      * @return PropertyEvaluator for given project
      */
     PropertyEvaluator evaluator();
+
+    @Override
+    public default PropertyEvaluator getPropertyEvaluator() {
+        return evaluator();
+    }
 }

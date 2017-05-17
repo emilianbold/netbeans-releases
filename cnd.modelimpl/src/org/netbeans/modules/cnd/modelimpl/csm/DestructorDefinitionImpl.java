@@ -66,7 +66,7 @@ import org.openide.util.CharSequences;
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> {
 
-    protected DestructorDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected DestructorDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
 
@@ -84,7 +84,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         CharSequence rawName = initRawName(ast);
         
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         DestructorDefinitionImpl res = new DestructorDefinitionImpl(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
@@ -127,7 +127,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         public DestructorDefinitionImpl create() {
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
 
-            DestructorDefinitionImpl impl = new DestructorDefinitionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            DestructorDefinitionImpl impl = new DestructorDefinitionImpl(getName(), getRawName(), scope, isStatic(), FunctionImpl.CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, impl);
 
             if(getTemplateDescriptorBuilder() != null) {

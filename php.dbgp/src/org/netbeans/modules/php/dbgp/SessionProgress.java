@@ -111,6 +111,7 @@ public final class SessionProgress implements Cancellable {
             SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
             if (id != null) {
                 synchronized (id) {
+                    id.cancel();
                     id.notifyAll();
                 }
             }

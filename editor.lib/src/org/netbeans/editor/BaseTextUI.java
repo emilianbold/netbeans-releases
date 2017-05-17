@@ -51,6 +51,8 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -89,6 +91,9 @@ import org.openide.util.WeakListeners;
 
 public class BaseTextUI extends BasicTextUI implements
         PropertyChangeListener, DocumentListener, AtomicLockListener {
+
+    // -J-Dorg.netbeans.editor.BaseTextUI.level=FINEST
+    private static final Logger LOG = Logger.getLogger(BaseTextUI.class.getName());
 
     /* package */ static final String PROP_DEFAULT_CARET_BLINK_RATE = "nbeditor-default-swing-caret-blink-rate"; //NOI18N
 
@@ -626,32 +631,36 @@ public class BaseTextUI extends BasicTextUI implements
         
         public void propertyChange(PropertyChangeEvent evt) {
             Object newValue = evt.getNewValue();
-            if ("UI".equals(evt.getPropertyName())
-                && (newValue != null) && !(newValue instanceof BaseTextUI)
-            ) {
-                JTextComponent c = (JTextComponent)evt.getSource();
-                EditorKit kit = ((TextUI)newValue).getEditorKit(c);
-                if (kit instanceof BaseKit) {
-                    // BaseKit but not BaseTextUI -> restore BaseTextUI
-                    try {
-                        BaseTextUI newUI = (BaseTextUI) uiClass.newInstance();
-                        c.setUI(newUI);
-                        if (evt.getOldValue() instanceof BaseTextUI) {
-                            BaseTextUI oldUI = (BaseTextUI) evt.getOldValue();
-                            if (oldUI.getEditorUI().hasExtComponent()) {
-                                // Remove and re-parent the new ext component in place of original one.
-                                JComponent oldExtComponent = oldUI.getEditorUI().getExtComponent();
-                                Container parent = oldExtComponent.getParent();
-                                if (parent != null) {
-                                    // According to CloneableEditor's code add as BorderLayout.CENTER
-                                    parent.remove(oldExtComponent);
-                                    parent.add(newUI.getEditorUI().getExtComponent());
+            if ("UI".equals(evt.getPropertyName())) {
+                LOG.log(Level.FINE, "UI property changed for text component {0}\nOldUI: {1}\nNewUI: {2}\n", new Object[] {
+                    evt.getSource(), evt.getOldValue(), evt.getNewValue()
+                });
+                
+                if ((newValue != null) && !(newValue instanceof BaseTextUI)) {
+                    JTextComponent c = (JTextComponent)evt.getSource();
+                    EditorKit kit = ((TextUI)newValue).getEditorKit(c);
+                    if (kit instanceof BaseKit) {
+                        // BaseKit but not BaseTextUI -> restore BaseTextUI
+                        try {
+                            BaseTextUI newUI = (BaseTextUI) uiClass.newInstance();
+                            c.setUI(newUI);
+                            if (evt.getOldValue() instanceof BaseTextUI) {
+                                BaseTextUI oldUI = (BaseTextUI) evt.getOldValue();
+                                if (oldUI.getEditorUI().hasExtComponent()) {
+                                    // Remove and re-parent the new ext component in place of original one.
+                                    JComponent oldExtComponent = oldUI.getEditorUI().getExtComponent();
+                                    Container parent = oldExtComponent.getParent();
+                                    if (parent != null) {
+                                        // According to CloneableEditor's code add as BorderLayout.CENTER
+                                        parent.remove(oldExtComponent);
+                                        parent.add(newUI.getEditorUI().getExtComponent());
+                                    }
                                 }
                             }
-                        }
 
-                    } catch (InstantiationException e) {
-                    } catch (IllegalAccessException e) {
+                        } catch (InstantiationException e) {
+                        } catch (IllegalAccessException e) {
+                        }
                     }
                 }
             }

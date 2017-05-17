@@ -102,7 +102,7 @@ public class ProjectRunnerImplTest extends NbTestCase {
         ClassPath cp = ClassPathSupport.createClassPath(new URL("file:///E/"));
         final String wd = workDir.getAbsolutePath();
         checkProperties(Arrays.asList("classname", "A", "platform.java", "J", "execute.classpath", cp, "work.dir", wd,"boot.classpath",cp,"runtime.encoding",Charset.defaultCharset()),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", "/E", "work.dir", wd, "application.args", "", "run.jvmargs", "", "platform.bootcp", "/E","encoding",Charset.defaultCharset().name()));
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", "/E/", "work.dir", wd, "application.args", "", "run.jvmargs", "", "platform.bootcp", "/E","encoding",Charset.defaultCharset().name()));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ProjectRunnerImplTest extends NbTestCase {
         Lookup.getDefault().lookup(MockProjectFactory.class).prjDir = prj;
 
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J"),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", prjPath, "run.jvmargs", "", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath + File.separatorChar, "work.dir", prjPath, "run.jvmargs", "", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
                         "prj");
     }
 
@@ -165,7 +165,7 @@ public class ProjectRunnerImplTest extends NbTestCase {
         Collection<String> jvmArgs = Arrays.asList("test3", "test4");
 
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J", "work.dir", dir, "project", fake, "application.args", args, "run.jvmargs", jvmArgs),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", FileUtil.toFile(dir).getAbsolutePath(), "run.jvmargs", "test3 test4", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath + File.separatorChar, "work.dir", FileUtil.toFile(dir).getAbsolutePath(), "run.jvmargs", "test3 test4", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
                         "fake");
     }
 
@@ -177,9 +177,9 @@ public class ProjectRunnerImplTest extends NbTestCase {
         String prjPath = FileUtil.toFile(prj).getAbsolutePath();
         Lookup.getDefault().lookup(MockProjectFactory.class).prjDir = prj;
         checkProperties(JavaRunner.QUICK_RUN, Arrays.asList("execute.file", java, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_RUN_JVMARGS, "-ea -Ddir=prj -Dvm=j2se", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath + File.separatorChar, "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_RUN_JVMARGS, "-ea -Ddir=prj -Dvm=j2se", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
         checkProperties(JavaRunner.QUICK_DEBUG, Arrays.asList("execute.file", java, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_RUN_JVMARGS, "-ea", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath + File.separatorChar, "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_RUN_JVMARGS, "-ea", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
         checkProperties(JavaRunner.QUICK_RUN, Arrays.asList(JavaRunner.PROP_WORK_DIR, prj, JavaRunner.PROP_CLASSNAME, "A", JavaRunner.PROP_EXECUTE_CLASSPATH, ClassPath.EMPTY, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
                         Arrays.asList("classname", "A", "platform.java", "J", "classpath", "", "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_APPLICATION_ARGS, "", JavaRunner.PROP_RUN_JVMARGS, "-ea -Ddir=prj -Dvm=j2se", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
     }

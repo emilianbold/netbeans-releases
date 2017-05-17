@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
@@ -330,6 +331,9 @@ final class DocRenderer {
                     Identifier paramId = CodeUtils.extractUnqualifiedIdentifier(param.getParameterType());
                     if (paramId != null) {
                         header.type(true);
+                        if (param.isNullableType()) {
+                            header.appendText(CodeUtils.NULLABLE_TYPE_PREFIX);
+                        }
                         header.appendText(paramId.getName() + " "); //NOI18N
                         header.type(false);
                     }
@@ -793,7 +797,8 @@ final class DocRenderer {
             if (inheritdoc.trim().isEmpty()) {
                 return description;
             }
-            return INLINE_INHERITDOC_PATTERN.matcher(description).replaceAll(inheritdoc);
+            // #270415 escape "$" and "\"
+            return INLINE_INHERITDOC_PATTERN.matcher(description).replaceAll(Matcher.quoteReplacement(inheritdoc));
         }
 
         static boolean hasInlineInheritdoc(String description) {

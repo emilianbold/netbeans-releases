@@ -150,7 +150,7 @@ public final class ShellLaunchManager {
      * Collects all known or preallocated agents. Keyed by agent authorization key.
      */
     // @GuardedBy(this)
-    private Map<String, ShellAgent>    registeredAgents = new HashMap<>();
+    private final Map<String, ShellAgent>  registeredAgents = new HashMap<>();
     
     /**
      * Agents attached to a project. A project may have multiple agents, if the
@@ -200,7 +200,7 @@ public final class ShellLaunchManager {
         ssc.bind(local);
         ssc.accept();
         ss = ssc.socket();
-        LOG.log(Level.FINE, "Creating new server socket {0} for {1}", new Object[] {
+        LOG.log(Level.FINE, "Creating new server socket {0} for project: {1}", new Object[] {
             ss, p
         });
         ShellAgent agent = new ShellAgent(this, p, ss, encodedKey, debugger);
@@ -274,9 +274,6 @@ public final class ShellLaunchManager {
                                     continue;
                                 }
                                 LOG.fine("Accepted socket " + ss);
-//                                    ((ProjectData)k.attachment()).accept(
-//                                        ss
-//                                    );
                                 processHandshake(ss);
                             } catch (IOException ex) {
                                 LOG.log(Level.INFO, "Error during Java Shell agent handshake", ex);
@@ -486,28 +483,6 @@ public final class ShellLaunchManager {
         }
     }
     
-    private String getAgentKey(Session debuggerSession) {
-        JPDADebugger debugger = debuggerSession.lookupFirst(null, JPDADebugger.class);
-        if (debugger == null) {
-            return null;
-        }
-        List<JPDAClassType> classes = debugger.getClassesByName("org.netbeans.lib.jshell.agent.NbJShellAgent"); // NOI18N
-        if (classes == null || classes.size() != 1) {
-            return null;
-        }
-        JPDAClassType ct = classes.get(0);
-        for (Field ff : ct.staticFields()) {
-            if ("debuggerKey".equals(ff.getName())) {  // NOI18N
-                String s = ff.getValue();
-                if (s.charAt(0) != '"' || s.charAt(s.length() - 1) != '"') {
-                    return "";
-                } 
-                return s.substring(1, s.length() -1);
-            }
-        }
-        return null;
-    }
-    
     /* package-private, for ShellAgent */ Session findWaitingDebugger(String authKey) {
         List<WaitForDebuggerStart> al;
         synchronized (uninitializedDebuggers) {
@@ -533,8 +508,10 @@ public final class ShellLaunchManager {
     
     public void destroyAgent(String authKey) {
         if (authKey == null || "".equals(authKey)) {
+            LOG.log(Level.FINE, "Attempt to destroy unknown agent key: {0}", authKey);
             return;
         }
+        LOG.log(Level.FINE, "Unregistering agent for key: {0}", authKey);
         ShellAgent agent;
         synchronized (this) {
             agent = registeredAgents.remove(authKey);
@@ -548,6 +525,8 @@ public final class ShellLaunchManager {
             LOG.log(Level.INFO, "Java Shell agent shut down unsuccessfully:", ex);
         }
         // PENDING: fire event that agent has been destroyed
+        ShellLaunchEvent ev = new ShellLaunchEvent(this, agent);
+        fire((l) -> l.agentDestroyed(ev));
     }
 
 

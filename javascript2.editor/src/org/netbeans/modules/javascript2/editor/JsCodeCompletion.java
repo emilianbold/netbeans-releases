@@ -208,6 +208,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case STRING_ELEMENTS_BY_CLASS_NAME:
                     completeCSSClassNames(request, resultList);
                     break;
+                case IMPORT_EXPORT_SPECIAL_TOKENS:
+                    addImportExportKeywords(request, resultList);
+                    break;
                 case IMPORT_EXPORT_MODULE:
                     completeJsModuleNames(request, resultList);
                     break;
@@ -1196,6 +1199,14 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
     }
     
+    private void addImportExportKeywords(CompletionRequest request, List<CompletionProposal> resultList) {
+        for (Map.Entry<String, JsKeywords.CompletionDescription> entry : JsKeywords.SPECIAL_KEYWORDS_IMPORTEXPORT.entrySet()) {
+            if (startsWith(entry.getKey(), request.prefix)) {
+                resultList.add(new JsCompletionItem.KeywordItem(entry.getKey(), entry.getValue(), request));
+            }
+        }
+    } 
+   
     private void completeJsModuleNames(CompletionRequest request,  List<CompletionProposal> resultList) {
         final Snapshot snapshot = request.info.getSnapshot();
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();

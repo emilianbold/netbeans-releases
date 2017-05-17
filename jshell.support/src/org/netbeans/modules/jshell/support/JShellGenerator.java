@@ -41,12 +41,13 @@
  */
 package org.netbeans.modules.jshell.support;
 
-import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.spi.ExecutionControlProvider;
 
 /**
  *
  * @author sdedic
  */
-public interface JShellGenerator extends ExecutionControl.Generator {
+public interface JShellGenerator extends ExecutionControlProvider {
+    // FIXME: seems that noone really calls this method.
     public String getTargetSpec();
 }

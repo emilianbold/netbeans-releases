@@ -76,7 +76,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
     private final CsmUID<CsmClass> friendClassUID;
     private SpecializationDescriptor specializationDesctiptor;
     
-    protected FriendFunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, CsmClass cls, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected FriendFunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, CsmClass cls, boolean _static,  FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
         friendClassUID = UIDs.get(cls);
     }
@@ -94,7 +94,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
         CharSequence rawName = initRawName(ast);
         
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
@@ -176,7 +176,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
         
         @Override
         public FunctionImpl create() {
-            FriendFunctionImpl fun = new FriendFunctionImpl(getName(), getRawName(), getScope(), getCls(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            FriendFunctionImpl fun = new FriendFunctionImpl(getName(), getRawName(), getScope(), getCls(), isStatic(), FunctionImpl.CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), true);
             init(fun);
             return fun;
         }

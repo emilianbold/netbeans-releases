@@ -1317,4 +1317,58 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/blankLines/issue268710_14.php", options);
     }
 
+    public void testClassConstantVisibility01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility01.php", options);
+    }
+
+    public void testClassConstantVisibility02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility02.php", options);
+    }
+
+    public void testClassConstantVisibility03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility03.php", options);
+    }
+
+    public void testClassConstantVisibility04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility04.php", options);
+    }
+
+    public void testClassConstantVisibility05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 1);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, false);
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility05.php", options);
+    }
+
+    public void testClassConstantVisibility06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 1);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, false);
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility06.php", options);
+    }
+
+    public void testClassConstantVisibility07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility07.php", options);
+    }
+
+    public void testClassConstantVisibility08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility08.php", options);
+    }
+
+    public void testClassConstantVisibility09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility09.php", options);
+    }
+
+    public void testClassConstantVisibility10() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/ClassConstantVisibility10.php", options);
+    }
+
 }

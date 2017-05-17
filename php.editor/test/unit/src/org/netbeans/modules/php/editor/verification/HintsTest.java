@@ -495,51 +495,51 @@ public class HintsTest extends PHPHintsTestBase {
     }
 
     public void testArraySyntaxSuggestion_01() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
     }
 
     public void testArraySyntaxSuggestion_02() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "11, ^22,");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "11, ^22,");
     }
 
     public void testArraySyntaxSuggestion_03() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "2, ^3);");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "2, ^3);");
     }
 
     public void testArraySyntaxSuggestion_04() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
     }
 
     public void testArraySyntaxSuggestion_05() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
     }
 
     public void testArraySyntaxSuggestion_06() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", ")^; //huhu");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_54), "testArraySyntaxSuggestion.php", ")^; //huhu");
     }
 
     public void testIssue248013_01() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
     }
 
     public void testIssue248013_02() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "11, ^22,");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "11, ^22,");
     }
 
     public void testIssue248013_03() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "2, ^3);");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "2, ^3);");
     }
 
     public void testIssue248013_04() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
     }
 
     public void testIssue248013_05() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
     }
 
     public void testIssue248013_06() throws Exception {
-        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", ")^; //huhu");
+        checkHints(new ArraySyntaxSuggestionStub(PhpVersion.PHP_53), "testArraySyntaxSuggestion.php", ")^; //huhu");
     }
 
     public void testIssue248213() throws Exception {
@@ -614,7 +614,132 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new FieldRedeclarationHintError(), "testIssue268557.php");
     }
 
-    //~ Inner classes
+    public void testConstantModifiersCheckHint() throws Exception {
+        checkHints(new ModifiersCheckHintError(), "testConstantModifiersCheckHint.php");
+    }
+
+    public void testConstantModifiersCheckFix_01() throws Exception {
+        applyHint(new ModifiersCheckHintError(), "testConstantModifiersCheckFix.php", "private const PRIVATE_INT^ERFACE_CONST = 2;", "Remove modifier");
+    }
+
+    public void testConstantModifiersCheckFix_02() throws Exception {
+        applyHint(new ModifiersCheckHintError(), "testConstantModifiersCheckFix.php", "protected const P^ROTECTED_INTERFACE_CONST = 3;", "Remove modifier");
+    }
+
+    public void testVoidReturnTypeHint_01() throws Exception {
+        checkHints(new ReturnTypeHintErrorStub(PhpVersion.PHP_70), "testVoidReturnTypeHint.php");
+    }
+
+    public void testVoidReturnTypeHint_02() throws Exception {
+        checkHints(new ReturnTypeHintErrorStub(PhpVersion.PHP_71), "testVoidReturnTypeHint.php");
+    }
+
+    public void testIssue270237Fix01a() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_71), "testIssue270237Fix01.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue270237Fix01b() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_56), "testIssue270237Fix01.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue270237Fix02a() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_71), "testIssue270237Fix02.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue270237Fix02b() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_56), "testIssue270237Fix02.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue270237Fix03a() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_71), "testIssue270237Fix03.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue270237Fix03b() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_56), "testIssue270237Fix03.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue270237Fix04a() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_71), "testIssue270237Fix04.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testIssue270237Fix04b() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintErrorStub(PhpVersion.PHP_56), "testIssue270237Fix04.php", "class Fo^o implements FooInterface", "Implement");
+    }
+
+    public void testDeclareStrictTypes_01a() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_01.php", "^<?php");
+    }
+
+    public void testDeclareStrictTypes_01b() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_01.php", "^<?php");
+    }
+
+    public void testDeclareStrictTypes_02a() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_02.php", "<?p^hp // first line");
+    }
+
+    public void testDeclareStrictTypes_02b() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_02.php", "<?ph^p // first line");
+    }
+
+    public void testDeclareStrictTypes_02c() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_02.php", "<?php ec^ho \"multiple open tags\" ?>");
+    }
+
+    public void testDeclareStrictTypes_02d() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_02.php", "<?php echo \"multiple open tags\"^ ?>");
+    }
+
+    public void testDeclareStrictTypes_03a() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_03.php", "<?p^hp");
+    }
+
+    public void testDeclareStrictTypes_03b() throws Exception {
+        checkHints(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_56), "testDeclareStrictTypesSuggestion_03.php", "<?p^hp");
+    }
+
+    public void testDeclareStrictTypesFix_01() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_01.php", "<?p^hp", "Add declare(strict_types=1)");
+    }
+
+    public void testDeclareStrictTypesFix_02a() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_02.php", "<?p^hp // first line", "Add declare(strict_types=1)");
+    }
+
+    public void testDeclareStrictTypesFix_02b() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_70), "testDeclareStrictTypesSuggestion_02.php", "<?php ec^ho \"multiple open tags\" ?>", "Add declare(strict_types=1)");
+    }
+
+    public void testDeclareStrictTypesFix_03() throws Exception {
+        applyHint(new DeclareStrictTypesSuggestionStub(PhpVersion.PHP_71), "testDeclareStrictTypesSuggestion_03.php", "<?p^hp", "Add declare(strict_types=1)");
+    }
+
+    public void testIssue270368_01() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue270368_01.php", "function __construct(?string $tes^t) {");
+    }
+
+    public void testIssue270368_02() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue270368_02.php", "function __construct(?\\Foo\\Bar $^test) {");
+    }
+
+    public void testIssue270368Fix_01() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_01.php", "function __construct(?string $tes^t) {", "Initialize Field");
+    }
+
+    public void testIssue270368Fix_02() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_02.php", "function __construct(?\\Foo\\Bar $^test) {", "Initialize Field");
+    }
+
+    public void testIssue270368Fix_03() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_03.php", "function __construct($^test) {", "Initialize Field");
+    }
+
+    public void testIssue270368Fix_04() throws Exception {
+        applyHint(new InitializeFieldSuggestion(), "testIssue270368_04.php", "function __construct(\\Foo\\Bar $^test) {", "Initialize Field");
+    }
+
+
+   //~ Inner classes
 
     private static final class ImplementAbstractMethodsHintErrorStub extends ImplementAbstractMethodsHintError {
 
@@ -633,12 +758,12 @@ public class HintsTest extends PHPHintsTestBase {
 
     }
 
-    private static final class ArraySyntaxSuggesionStub extends ArraySyntaxSuggestion {
+    private static final class ArraySyntaxSuggestionStub extends ArraySyntaxSuggestion {
 
         private final PhpVersion phpVersion;
 
 
-        ArraySyntaxSuggesionStub(PhpVersion phpVersion) {
+        ArraySyntaxSuggestionStub(PhpVersion phpVersion) {
             assert phpVersion != null;
             this.phpVersion = phpVersion;
         }
@@ -646,6 +771,36 @@ public class HintsTest extends PHPHintsTestBase {
         @Override
         protected boolean isAtLeastPhp54(FileObject fileObject) {
             return phpVersion.compareTo(PhpVersion.PHP_54) >= 0;
+        }
+
+    }
+
+    private static final class ReturnTypeHintErrorStub extends ReturnTypeHintError {
+
+        private final PhpVersion phpVersion;
+
+        public ReturnTypeHintErrorStub(PhpVersion phpVersion) {
+            this.phpVersion = phpVersion;
+        }
+
+        @Override
+        protected PhpVersion getPhpVersion(FileObject file) {
+            return phpVersion;
+        }
+
+    }
+
+    private static final class DeclareStrictTypesSuggestionStub extends DeclareStrictTypesSuggestion {
+
+        private final PhpVersion phpVersion;
+
+        public DeclareStrictTypesSuggestionStub(PhpVersion phpVersion) {
+            this.phpVersion = phpVersion;
+        }
+
+        @Override
+        protected PhpVersion getPhpVersion(FileObject fileObject) {
+            return phpVersion;
         }
 
     }

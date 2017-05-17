@@ -40,30 +40,6 @@ MAKEFILE = $(shell echo gmake)
 MAKEFILE:sh = echo make
 ROOT_DIR = $(shell pwd)
 ROOT_DIR:sh = pwd
-OS = $(shell uname -s)
-OS:sh = uname -s
-ARCH = $(shell arch)
-ARCH:sh = arch
-
-ifeq (armv, $(shell expr substr `arch` 1 4))
-    OS_ARCH = $(OS)-arm
-else 
-  ifeq (sun4, $(ARCH))
-    OS_ARCH = $(OS)-sparc
-  else 
-    ifeq (sparc64, $(ARCH))
-      OS_ARCH = $(OS)-sparc
-    else
-      OS_ARCH = $(OS)-x86
-    endif
-  endif
-endif
-
-ifdef 64BITS
-    CONF=$(OS_ARCH)_64
-else
-    CONF=$(OS_ARCH)
-endif
 
 CC=gcc
 
@@ -78,14 +54,6 @@ OBJ_DIR=$(ROOT_DIR)/build/$(CONF)
 DIST_DIR=$(ROOT_DIR)/dist/$(CONF)
 INSTALL_DIR=../../release/bin/nativeexecution/$(CONF)
 LINE=sh $(ROOT_DIR)/make/line
-
-CF_COMMON         = -O2
-
-ifndef NOSTRIP
-    CF_COMMON += -s 
-else 
-    CF_COMMON += -g
-endif
 
 CF_Linux-x86      = $(CF_COMMON) -DLINUX -shared -fPIC -m32
 EX_Linux-x86      = unbuffer.so

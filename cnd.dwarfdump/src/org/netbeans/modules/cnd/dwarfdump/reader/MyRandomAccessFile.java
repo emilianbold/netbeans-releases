@@ -198,14 +198,14 @@ public final class MyRandomAccessFile extends RandomAccessFile {
         // See also JDK-4724038 : (fs) Add unmap method to MappedByteBuffer
         // http://bugs.java.com/view_bug.do?bug_id=4724038
         try {
-            Method cleaner = buffer.getClass().getMethod("cleaner"); //NOI18N
-            cleaner.setAccessible(true);
-            // TODO: does not work on Java 9
-            // It seems EA of Java 9 have class jdk.internal.ref.Cleaner instead sun.misc.Cleaner
-            // But Java 9 prevent to access to class jdk.internal.ref.Cleaner due to module system
-            Method clean = Class.forName("sun.misc.Cleaner").getMethod("clean"); //NOI18N
-            clean.setAccessible(true);
-            clean.invoke(cleaner.invoke(buffer));
+            Method cleanerMethod = buffer.getClass().getMethod("cleaner"); //NOI18N
+            cleanerMethod.setAccessible(true);
+            // sun.misc.Cleaner in JDK8
+            // java.lang.ref.Cleaner in JDK9
+            Object cleaner = cleanerMethod.invoke(buffer);
+            Method cleanMethod = cleaner.getClass().getMethod("clean"); //NOI18N
+            cleanMethod.setAccessible(true);
+            cleanMethod.invoke(cleaner);
         } catch (Throwable e) {
             // do nothing
             //e.printStackTrace(System.err);

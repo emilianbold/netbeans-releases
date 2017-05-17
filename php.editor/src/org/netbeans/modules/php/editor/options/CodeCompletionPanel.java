@@ -113,6 +113,7 @@ public class CodeCompletionPanel extends JPanel {
     static final String PHP_CODE_COMPLETION_SMART_PARAMETERS_PRE_FILLING = "phpCodeCompletionSmartParametersPreFilling"; //NOI18N
     static final String PHP_AUTO_COMPLETION_SMART_QUOTES = "phpCodeCompletionSmartQuotes"; //NOI18N
     static final String PHP_AUTO_STRING_CONCATINATION = "phpCodeCompletionStringAutoConcatination"; //NOI18N
+    static final String PHP_AUTO_COMPLETION_USE_LOWERCASE_TRUE_FALSE_NULL = "phpAutoCompletionUseLowercaseTrueFalseNull"; //NOI18N
 
     // default values
     static final boolean PHP_AUTO_COMPLETION_FULL_DEFAULT = true;
@@ -124,6 +125,7 @@ public class CodeCompletionPanel extends JPanel {
     static final boolean PHP_CODE_COMPLETION_SMART_PARAMETERS_PRE_FILLING_DEFAULT = true;
     static final boolean PHP_AUTO_COMPLETION_SMART_QUOTES_DEFAULT = true;
     static final boolean PHP_AUTO_STRING_CONCATINATION_DEFAULT = true;
+    static final boolean PHP_AUTO_COMPLETION_USE_LOWERCASE_TRUE_FALSE_NULL_DEFAULT = true;
 
     private final Preferences preferences;
     private final ItemListener defaultCheckBoxListener = new DefaultCheckBoxListener();
@@ -153,6 +155,7 @@ public class CodeCompletionPanel extends JPanel {
         id2Saved.put(PHP_CODE_COMPLETION_SMART_PARAMETERS_PRE_FILLING, codeCompletionSmartParametersPreFillingCheckBox.isSelected());
         id2Saved.put(PHP_AUTO_COMPLETION_SMART_QUOTES, autoCompletionSmartQuotesCheckBox.isSelected());
         id2Saved.put(PHP_AUTO_STRING_CONCATINATION, autoStringConcatenationCheckBox.isSelected());
+        id2Saved.put(PHP_AUTO_COMPLETION_USE_LOWERCASE_TRUE_FALSE_NULL, trueFalseNullCheckBox.isSelected());
     }
 
     public static PreferencesCustomizer.Factory getCustomizerFactory() {
@@ -224,6 +227,12 @@ public class CodeCompletionPanel extends JPanel {
                 PHP_AUTO_STRING_CONCATINATION_DEFAULT);
         autoStringConcatenationCheckBox.setSelected(codeCompletionStringAutoConcatination);
         autoStringConcatenationCheckBox.addItemListener(defaultCheckBoxListener);
+
+        boolean codeCompletionUseLowercaseTrueFalseNull = preferences.getBoolean(
+                PHP_AUTO_COMPLETION_USE_LOWERCASE_TRUE_FALSE_NULL,
+                PHP_AUTO_COMPLETION_USE_LOWERCASE_TRUE_FALSE_NULL_DEFAULT);
+        trueFalseNullCheckBox.setSelected(codeCompletionUseLowercaseTrueFalseNull);
+        trueFalseNullCheckBox.addItemListener(defaultCheckBoxListener);
     }
 
     private void initCodeCompletionForMethods() {
@@ -293,6 +302,7 @@ public class CodeCompletionPanel extends JPanel {
         preferences.putBoolean(PHP_CODE_COMPLETION_SMART_PARAMETERS_PRE_FILLING, codeCompletionSmartParametersPreFillingCheckBox.isSelected());
         preferences.putBoolean(PHP_AUTO_COMPLETION_SMART_QUOTES, autoCompletionSmartQuotesCheckBox.isSelected());
         preferences.putBoolean(PHP_AUTO_STRING_CONCATINATION, autoStringConcatenationCheckBox.isSelected());
+        preferences.putBoolean(PHP_AUTO_COMPLETION_USE_LOWERCASE_TRUE_FALSE_NULL, trueFalseNullCheckBox.isSelected());
 
         VariablesScope variablesScope = null;
         if (allVariablesRadioButton.isSelected()) {
@@ -356,6 +366,8 @@ public class CodeCompletionPanel extends JPanel {
         autoCompletionSmartQuotesLabel = new JLabel();
         autoCompletionSmartQuotesCheckBox = new JCheckBox();
         autoStringConcatenationCheckBox = new JCheckBox();
+        useLowercaseLabel = new JLabel();
+        trueFalseNullCheckBox = new JCheckBox();
 
         enableAutocompletionLabel.setLabelFor(autoCompletionFullRadioButton);
         Mnemonics.setLocalizedText(enableAutocompletionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.text")); // NOI18N
@@ -420,10 +432,14 @@ public class CodeCompletionPanel extends JPanel {
 
         Mnemonics.setLocalizedText(autoStringConcatenationCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoStringConcatenationCheckBox.text")); // NOI18N
 
+        useLowercaseLabel.setLabelFor(trueFalseNullCheckBox);
+        Mnemonics.setLocalizedText(useLowercaseLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.useLowercaseLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(trueFalseNullCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.trueFalseNullCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -460,11 +476,16 @@ public class CodeCompletionPanel extends JPanel {
                                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                                     .addComponent(smartInfoLabel)
                                     .addComponent(fullyQualifiedInfoLabel)
-                                    .addComponent(unqualifiedInfoLabel))))))
+                                    .addComponent(unqualifiedInfoLabel)))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(useLowercaseLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(trueFalseNullCheckBox)))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(enableAutocompletionLabel)
@@ -512,6 +533,10 @@ public class CodeCompletionPanel extends JPanel {
                 .addComponent(autoCompletionSmartQuotesCheckBox)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addComponent(autoStringConcatenationCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(useLowercaseLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(trueFalseNullCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -580,8 +605,10 @@ public class CodeCompletionPanel extends JPanel {
     private JLabel methodCodeCompletionLabel;
     private JLabel smartInfoLabel;
     private JRadioButton smartRadioButton;
+    private JCheckBox trueFalseNullCheckBox;
     private JLabel unqualifiedInfoLabel;
     private JRadioButton unqualifiedRadioButton;
+    private JLabel useLowercaseLabel;
     // End of variables declaration//GEN-END:variables
 
     private final class DefaultRadioButtonListener implements ItemListener {

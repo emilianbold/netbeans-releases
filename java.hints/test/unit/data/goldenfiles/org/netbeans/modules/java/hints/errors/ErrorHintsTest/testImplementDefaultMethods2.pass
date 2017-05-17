@@ -6,14 +6,17 @@ package org.netbeans.test.java.hints;
  */
 public class ImplementDefaultMethods2 implements java.util.Iterator {
 
+    @Override
     public boolean hasNext() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public Object next() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void remove() {
         Iterator.super.remove();
     }

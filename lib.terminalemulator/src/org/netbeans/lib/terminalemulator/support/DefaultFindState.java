@@ -43,6 +43,9 @@
  */
 package org.netbeans.lib.terminalemulator.support;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.LogicalLineVisitor;
@@ -50,11 +53,12 @@ import org.netbeans.lib.terminalemulator.Term;
 
 public class DefaultFindState implements FindState {
 
+    private final Map<String, Object> properties = new HashMap<>();
+
     private final Term term;
     private boolean visible = false;
     private String pattern;
     private boolean tentative;
-    private Direction direction;
     private Extent extent = null;
     private Status status = Status.EMPTYPATTERN;
     private boolean found = false;
@@ -66,11 +70,13 @@ public class DefaultFindState implements FindState {
     public DefaultFindState(Term term) {
         super();
         this.term = term;
-        this.direction = Direction.FORWARD;
+        
+        putProperty(FIND_SEARCH_BACKWARDS, true);
     }
 
-    private LogicalLineVisitor forwardVisitor = new LogicalLineVisitor() {
+    private final LogicalLineVisitor forwardVisitor = new LogicalLineVisitor() {
 
+        @Override
         public boolean visit(int line, Coord begin, Coord end, String text) {
             int i = text.indexOf(pattern);
             if (i == -1) {
@@ -86,8 +92,9 @@ public class DefaultFindState implements FindState {
         }
     };
 
-    private LogicalLineVisitor backwardVisitor = new LogicalLineVisitor() {
+    private final LogicalLineVisitor backwardVisitor = new LogicalLineVisitor() {
 
+        @Override
         public boolean visit(int line, Coord begin, Coord end, String text) {
             int i = text.lastIndexOf(pattern);
             if (i == -1) {
@@ -107,6 +114,7 @@ public class DefaultFindState implements FindState {
         }
     };
 
+    @Override
     public void setPattern(String pattern) {
         this.pattern = pattern;
         this.found = false;
@@ -121,15 +129,35 @@ public class DefaultFindState implements FindState {
         return pattern;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
 
+    @Override
     public boolean isVisible() {
         return visible;
     }
 
+    @Override
     public void next() {
+        if (isSearchBackwards()) {
+            findPrev();
+        } else {
+            findNext();
+        }
+    }
+
+    @Override
+    public void prev() {
+        if (isSearchBackwards()) {
+            findNext();
+        } else {
+            findPrev();
+        }
+    }
+
+    public void findNext() {
         if (status == Status.EMPTYPATTERN) {
             return;
         }
@@ -155,7 +183,7 @@ public class DefaultFindState implements FindState {
         }
     }
 
-    public void prev() {
+    public void findPrev() {
         if (status == Status.EMPTYPATTERN) {
             return;
         }
@@ -181,6 +209,7 @@ public class DefaultFindState implements FindState {
         }
     }
 
+    @Override
     public Status getStatus() {
         return status;
     }
@@ -191,5 +220,21 @@ public class DefaultFindState implements FindState {
 
     private Coord end() {
         return (extent == null) ? null : extent.end;
+    }
+
+    @Override
+    public Map<String, Object> getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+
+    @Override
+    public void setProperties(Map<String, Object> properties) {
+        this.properties.clear();
+        this.properties.putAll(properties);
+    }
+
+    private boolean isSearchBackwards() {
+        Object property = getProperty(FIND_SEARCH_BACKWARDS);
+        return (property instanceof Boolean && (boolean) property);
     }
 }

@@ -67,13 +67,15 @@ public final class Type {
     public static final String NUMBER = "number"; //NOI18N
     public static final String CALLBACK = "callback"; //NOI18N
     public static final String CALLABLE = "callable"; //NOI18N
+    public static final String ITERABLE = "iterable"; //NOI18N
     public static final String RESOURCE = "resource"; //NOI18N
     public static final String VOID = "void"; //NOI18N
     public static final String MIXED = "mixed"; //NOI18N
 
-    private static final List<String> TYPES_FOR_EDITOR = Arrays.asList(ARRAY, CALLABLE, BOOL, FLOAT, INT, STRING);
+    private static final List<String> TYPES_FOR_EDITOR = Arrays.asList(ARRAY, CALLABLE, ITERABLE, BOOL, FLOAT, INT, STRING);
+    private static final List<String> TYPES_FOR_RETURN_TYPE = Arrays.asList(ARRAY, CALLABLE, ITERABLE, BOOL, FLOAT, INT, STRING, VOID);
     private static final List<String> TYPES_FOR_PHP_DOC = Arrays.asList(STRING, INTEGER, INT, BOOLEAN, BOOL, FLOAT, DOUBLE, OBJECT, MIXED, ARRAY,
-            RESOURCE, VOID, NULL, CALLBACK, "false", "true", "self"); // NOI18N
+            RESOURCE, VOID, NULL, CALLBACK, CALLABLE, ITERABLE, "false", "true", "self"); // NOI18N
 
 
     public static boolean isPrimitive(String typeName) {
@@ -83,7 +85,7 @@ public final class Type {
                 || ARRAY.equals(typeName) || OBJECT.equals(typeName) || MIXED.equals(typeName)
                 || NUMBER.equals(typeName) || CALLBACK.equals(typeName) || RESOURCE.equals(typeName)
                 || DOUBLE.equals(typeName) || STRING.equals(typeName) || NULL.equals(typeName)
-                || VOID.equals(typeName)) {
+                || VOID.equals(typeName) || CALLABLE.equals(typeName) || ITERABLE.equals(typeName)) {
             retval = true;
         }
         return retval;
@@ -107,6 +109,15 @@ public final class Type {
      */
     public static List<String> getTypesForEditor() {
         return TYPES_FOR_EDITOR;
+    }
+
+    /**
+     * Get valid types for the Return Type. This contains "void".
+     *
+     * @return valid types for the Return Type
+     */
+    public static List<String> getTypesForReturnType() {
+        return TYPES_FOR_RETURN_TYPE;
     }
 
     public static List<String> getTypesForPhpDoc() {

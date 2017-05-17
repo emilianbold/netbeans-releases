@@ -50,8 +50,8 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Names;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -137,7 +137,10 @@ public final class ElementHandle<T extends Element> {
     @SuppressWarnings ("unchecked")     // NOI18N
     public @CheckForNull T resolve (@NonNull final CompilationInfo compilationInfo) {
         Parameters.notNull("compilationInfo", compilationInfo); // NOI18N
-        T result = resolveImpl (compilationInfo.impl.getJavacTask());
+        ModuleElement module = compilationInfo.getFileObject() != null
+                ? ((JCTree.JCCompilationUnit)compilationInfo.getCompilationUnit()).modle
+                : null;
+        T result = resolveImpl (module, compilationInfo.impl.getJavacTask());
         if (result == null) {
             if (log.isLoggable(Level.INFO))
                 log.log(Level.INFO, "Cannot resolve: {0}", toString()); //NOI18N                
@@ -149,7 +152,7 @@ public final class ElementHandle<T extends Element> {
     }
         
     
-    private T resolveImpl (final JavacTaskImpl jt) {
+    private T resolveImpl (final ModuleElement module, final JavacTaskImpl jt) {
         if (log.isLoggable(Level.FINE))
             log.log(Level.FINE, "Resolving element kind: {0}", this.kind); // NOI18N       
         switch (this.kind) {
@@ -161,7 +164,7 @@ public final class ElementHandle<T extends Element> {
             case ENUM:
             case ANNOTATION_TYPE: {
                 assert signatures.length == 1;
-                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                final Element type = getTypeElementByBinaryName (module, signatures[0], jt);
                 if (type instanceof TypeElement) {
                     return (T) type;
                 } else  {
@@ -171,12 +174,12 @@ public final class ElementHandle<T extends Element> {
             }
             case OTHER:
                 assert signatures.length == 1;
-                return (T) getTypeElementByBinaryName (signatures[0], jt);
+                return (T) getTypeElementByBinaryName (module, signatures[0], jt);
             case METHOD:
             case CONSTRUCTOR:            
             {
                 assert signatures.length == 3;
-                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                final Element type = getTypeElementByBinaryName (module, signatures[0], jt);
                 if (type instanceof TypeElement) {
                    final List<? extends Element> members = type.getEnclosedElements();
                    for (Element member : members) {
@@ -198,7 +201,7 @@ public final class ElementHandle<T extends Element> {
             case STATIC_INIT:
             {
                 assert signatures.length == 2;
-                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                final Element type = getTypeElementByBinaryName (module, signatures[0], jt);
                 if (type instanceof TypeElement) {
                    final List<? extends Element> members = type.getEnclosedElements();
                    for (Element member : members) {
@@ -218,7 +221,7 @@ public final class ElementHandle<T extends Element> {
             case ENUM_CONSTANT:
             {
                 assert signatures.length == 3;
-                final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                final Element type = getTypeElementByBinaryName (module, signatures[0], jt);
                 if (type instanceof TypeElement) {
                     final List<? extends Element> members = type.getEnclosedElements();
                     for (Element member : members) {
@@ -239,7 +242,7 @@ public final class ElementHandle<T extends Element> {
             case TYPE_PARAMETER:
             {
                 if (signatures.length == 2) {
-                     Element type = getTypeElementByBinaryName (signatures[0], jt);
+                     Element type = getTypeElementByBinaryName (module, signatures[0], jt);
                      if (type instanceof TypeElement) {
                          List<? extends TypeParameterElement> tpes = ((TypeElement)type).getTypeParameters();
                          for (TypeParameterElement tpe : tpes) {
@@ -251,7 +254,7 @@ public final class ElementHandle<T extends Element> {
                         log.log(Level.INFO, "Resolved type is null for kind = {0} signatures.length = {1}", new Object[] {this.kind, signatures.length});   // NOI18N
                 }
                 else if (signatures.length == 4) {
-                    final Element type = getTypeElementByBinaryName (signatures[0], jt);
+                    final Element type = getTypeElementByBinaryName (module, signatures[0], jt);
                     if (type instanceof TypeElement) {
                         final List<? extends Element> members = type.getEnclosedElements();
                         for (Element member : members) {
@@ -634,7 +637,7 @@ public final class ElementHandle<T extends Element> {
 
         @Override
         public <T extends Element> T resolve(ElementHandle<T> handle, JavacTaskImpl jti) {
-            return handle.resolveImpl (jti);
+            return handle.resolveImpl (null, jti);
         }
 
         @Override
@@ -645,7 +648,7 @@ public final class ElementHandle<T extends Element> {
 
     }
     
-    private static Element getTypeElementByBinaryName (final String signature, final JavacTaskImpl jt) {
+    private static Element getTypeElementByBinaryName (final ModuleElement module, final String signature, final JavacTaskImpl jt) {
         if (log.isLoggable(Level.FINE))
             log.log(Level.FINE, "Calling getTypeElementByBinaryName: signature = {0}", signature);
         if (isNone(signature)) {
@@ -656,7 +659,9 @@ public final class ElementHandle<T extends Element> {
         }
         else {
             final JavacElements elements = (JavacElements) jt.getElements();                    
-            return (TypeElement) elements.getTypeElementByBinaryName(signature);
+            return (TypeElement) (module != null
+                    ? elements.getTypeElementByBinaryName(module, signature)
+                    : elements.getTypeElementByBinaryName(signature));
         }
     }
     

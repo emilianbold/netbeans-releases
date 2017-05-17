@@ -389,7 +389,13 @@ public final class SnippetRegistry {
     }
     
     private String snippetFileName(SnippetHandle snippet) {
-        return snippet.getClassName() + ".java"; 
+        String cn = snippet.getClassName();
+        int dot = cn.lastIndexOf('.');
+        if (dot != -1) {
+            return cn.substring(dot + 1) + ".java";
+        } else {
+            return cn + ".java"; 
+        }
     }
     
     class SWR extends WeakReference<SnippetHandle> implements Runnable {
@@ -470,8 +476,10 @@ public final class SnippetRegistry {
                     ows.flush();
                 }
                 FileObject ret = pkg.getFileObject(fn);
-                synchronized (this) {
-                    snippetTimeStamps.put(snip, ret.lastModified().getTime());
+                if (snip != null) {
+                    synchronized (this) {
+                        snippetTimeStamps.put(snip, ret.lastModified().getTime());
+                    }
                 }
                 ModelAccessor.INSTANCE.setFile(info, ret);
                 return finalize(info, ret);
@@ -511,9 +519,6 @@ public final class SnippetRegistry {
                 end = snapshot.length();
                 curRange = new Rng(curRange.start, end);
             }
-            if (curRange.len() == 0) {
-                continue;
-            }
             Rng[] fragments;
             
             if (index < snips.size()) {
@@ -535,7 +540,7 @@ public final class SnippetRegistry {
                 ex.printStackTrace();
                 return Collections.emptyList();
             }
-            if (text == null || text.isEmpty()) {
+            if (text == null) {
                 continue;
             }
             SnippetWrapping shellWrapping = wrap(text);//JShellAccessor.wrapInput(state, text);

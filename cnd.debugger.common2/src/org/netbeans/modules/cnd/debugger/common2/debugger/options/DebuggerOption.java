@@ -691,6 +691,14 @@ public class DebuggerOption extends Option {
 			    "on",    // NOI18N //default value
 			    false, // is engine option
 			    radio_or_check, false, true);  //type
+    
+    public static final DebuggerOption ARGS_VALUES_IN_STACK  =
+	new DebuggerOption( // NOI18N
+			    "args_values_in_stack",  // NOI18N //name
+			    new String[] {"on", "off"},  // NOI18N //values
+			    "on",    // NOI18N //default value
+			    false, // is engine option
+			    radio_or_check, false, true);  //type    
 
 
     public static final DebuggerOption SESSION_REUSE  =

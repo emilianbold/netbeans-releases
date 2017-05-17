@@ -132,12 +132,15 @@ public class J2SEProjectProperties {
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
     private static final String COS_MARK = ".netbeans_automatic_build";     //NOI18N
-    private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProjectProperties.class.getName());
     private Integer javacDebugBooleanKind;
     private Integer doJarBooleanKind;
     private Integer javadocPreviewBooleanKind;
-    
+    private Integer doJLinkKind;
+    private Integer jLinkStripKind;
+    private Integer jLinkLauncherKind;
+
+    public static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
     // Properties stored in the PROJECT.PROPERTIES
@@ -218,6 +221,10 @@ public class J2SEProjectProperties {
     ButtonModel JAR_COMPRESS_MODEL;
     ButtonModel DO_JAR_MODEL;
     ButtonModel COPY_LIBS_MODEL;
+    ButtonModel JLINK_MODEL;
+    ButtonModel JLINK_STRIP_MODEL;
+    ButtonModel JLINK_LAUNCHER_MODEL;
+    Document    JLINK_LAUNCHER_NAME_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -226,6 +233,7 @@ public class J2SEProjectProperties {
     ButtonModel JAVADOC_NO_NAVBAR_MODEL; 
     ButtonModel JAVADOC_NO_INDEX_MODEL; 
     ButtonModel JAVADOC_SPLIT_INDEX_MODEL; 
+    ButtonModel JAVADOC_HTML5_MODEL; 
     ButtonModel JAVADOC_AUTHOR_MODEL; 
     ButtonModel JAVADOC_VERSION_MODEL;
     Document JAVADOC_WINDOW_TITLE_MODEL;
@@ -319,9 +327,7 @@ public class J2SEProjectProperties {
         String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
         processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
         JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
-        String processorModulePath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORMODULEPATH);
-        processorModulePath = processorModulePath == null ? "${javac.modulepath}" : processorModulePath;
-        JAVAC_PROCESSORMODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorModulePath));
+        JAVAC_PROCESSORMODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_PROCESSORMODULEPATH)));
         JAVAC_TEST_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_MODULEPATH)));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH)));
         RUN_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(createExtendedPathItems(projectProperties, ProjectProperties.RUN_MODULEPATH, null, isNamedModule() ? ProjectProperties.BUILD_CLASSES_DIR : null, runModulePathExtension));
@@ -350,7 +356,7 @@ public class J2SEProjectProperties {
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         Integer[] kind = new Integer[1];
-        JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, kind);
+        JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, true, kind);
         javacDebugBooleanKind = kind[0];
 
         DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, ProjectProperties.DO_DEPEND);
@@ -397,10 +403,28 @@ public class J2SEProjectProperties {
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
-        DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, kind);
+        DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, true, kind);
         doJarBooleanKind = kind[0];
         COPY_LIBS_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, MKDIST_DISABLED);
-        
+        JLINK_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JLINK, false, kind);
+        doJLinkKind = kind[0];
+        JLINK_STRIP_MODEL = createToggleButtonModel(evaluator, ProjectProperties.JLINK_STRIP, false, kind);
+        jLinkStripKind = kind[0];
+        JLINK_LAUNCHER_MODEL = createToggleButtonModel(evaluator, ProjectProperties.JLINK_LAUNCHER, false, kind);
+        jLinkLauncherKind = kind[0];
+        JLINK_LAUNCHER_NAME_MODEL = projectGroup.createStringDocument( evaluator, JLINK_LAUNCHER_NAME);
+        final String launcherName = evaluator.getProperty(JLINK_LAUNCHER_NAME);
+        if (launcherName == null) {
+            try {
+                JLINK_LAUNCHER_NAME_MODEL.insertString(
+                        0,
+                        PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation(project).getDisplayName()),
+                        null);
+            } catch (BadLocationException ex) {
+                // just do not set anything
+            }
+        }
+
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
         JAVADOC_NO_TREE_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_TREE );
@@ -408,12 +432,13 @@ public class J2SEProjectProperties {
         JAVADOC_NO_NAVBAR_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_NAVBAR );
         JAVADOC_NO_INDEX_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, JAVADOC_NO_INDEX ); 
         JAVADOC_SPLIT_INDEX_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_SPLIT_INDEX );
+        JAVADOC_HTML5_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_HTML5 );
         JAVADOC_AUTHOR_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_AUTHOR );
         JAVADOC_VERSION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_VERSION );
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel        
-        JAVADOC_PREVIEW_MODEL = createToggleButtonModel ( evaluator, JAVADOC_PREVIEW, kind);
+        JAVADOC_PREVIEW_MODEL = createToggleButtonModel ( evaluator, JAVADOC_PREVIEW, true, kind);
         javadocPreviewBooleanKind = kind[0];
         
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
@@ -612,7 +637,11 @@ public class J2SEProjectProperties {
         //Save javac.debug
         privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
         privateProperties.setProperty(ProjectProperties.DO_JAR, encodeBoolean(DO_JAR_MODEL.isSelected(), doJarBooleanKind));
-                
+        //JLink
+        privateProperties.setProperty(ProjectProperties.DO_JLINK, encodeBoolean(JLINK_MODEL.isSelected(), doJLinkKind));
+        privateProperties.setProperty(ProjectProperties.JLINK_STRIP, encodeBoolean(JLINK_STRIP_MODEL.isSelected(), jLinkStripKind));
+        projectProperties.setProperty(ProjectProperties.JLINK_LAUNCHER, encodeBoolean(JLINK_LAUNCHER_MODEL.isSelected(), jLinkLauncherKind));
+
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javadoc.preview
@@ -831,12 +860,18 @@ public class J2SEProjectProperties {
     
     //Hotfix of the issue #70058
     //Should be removed when the StoreGroup SPI will be extended to allow true default value in ToggleButtonModel
-    private static JToggleButton.ToggleButtonModel createToggleButtonModel (final PropertyEvaluator evaluator, final String propName, Integer[] kind) {
-        assert evaluator != null && propName != null && kind != null && kind.length == 1;
+    private static JToggleButton.ToggleButtonModel createToggleButtonModel (
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String propName,
+            final boolean defaultValue,
+            @NonNull final Integer[] kind) {
+        assert evaluator != null;
+        assert propName != null;
+        assert kind != null && kind.length == 1;
         String value = evaluator.getProperty( propName );
         boolean isSelected = false;
         if (value == null) {
-            isSelected = true;
+            isSelected = defaultValue;
         }
         else {
            String lowercaseValue = value.toLowerCase();

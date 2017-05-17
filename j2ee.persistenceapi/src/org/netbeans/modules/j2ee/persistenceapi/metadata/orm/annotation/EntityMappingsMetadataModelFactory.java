@@ -57,7 +57,7 @@ public class EntityMappingsMetadataModelFactory {
 
     private EntityMappingsMetadataModelFactory() {}
 
-    public static MetadataModel<EntityMappingsMetadata> createMetadataModel(ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
-        return MetadataModelFactory.createMetadataModel(new EntityMappingsMetadataModelImpl(bootPath, compilePath, sourcePath));
+    public static MetadataModel<EntityMappingsMetadata> createMetadataModel(ClassPath bootPath, ClassPath moduleBootPath, ClassPath compilePath, ClassPath moduleCompilePath, ClassPath moduleClassPath, ClassPath sourcePath, ClassPath moduleSourcePath) {
+        return MetadataModelFactory.createMetadataModel(new EntityMappingsMetadataModelImpl(bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, sourcePath, moduleSourcePath));
     }
 }

@@ -114,7 +114,8 @@ final class EmbeddingProcessor {
             if (te > ts || index < 0) {
                 break;
             }
-            if (!Character.isWhitespace(source.charAt(index--))) {
+            char c = source.charAt(index--);
+            if (!(Character.isWhitespace(c) || c == ';')) {
                 break;
             }
             index--;

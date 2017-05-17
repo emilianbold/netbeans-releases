@@ -50,6 +50,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -62,6 +63,7 @@ import org.openide.util.Parameters;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.api.project.ui.ProjectProblems;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -319,8 +321,47 @@ public class BrokenReferencesSupport {
             @NonNull final String platformType,
             @NonNull final String platformProperty,
             @NonNull final String... versionProperties) {
+        return createPlatformVersionProblemProvider(
+                projectHelper,
+                evaluator,
+                postPlatformSetHook,
+                platformType,
+                SourceLevelQuery.MINIMAL_SOURCE_LEVEL,
+                platformProperty,
+                versionProperties);
+    }
+
+    /**
+     * Creates a {@link ProjectProblemsProvider} creating wrong Java platform
+     * version problems.
+     * @param projectHelper AntProjectHelper associated with the project.
+     * @param evaluator the {@link PropertyEvaluator} used to resolve broken references
+     * @param postPlatformSetHook called by problem resolution after the platform property has changed
+     * to a new platform. The project type can do project specific changes like updating project.xml file.
+     * The hook is called under {@link ProjectManager#mutex} write access before the project is saved.
+     * @param platformType the type of platform, for example j2se
+     * @param minimalVersion the minimal source level required by the project
+     * @param platformProperty a property holding the active platform id.
+     * @param versionProperties array of property names which values hold the source,
+     * target level.
+     * @return {@link ProjectProblemsProvider} to be laced into project lookup.
+     *
+     * @see ProjectProblemsProvider
+     * @since 1.74
+     */
+    @NonNull
+    public static ProjectProblemsProvider createPlatformVersionProblemProvider(
+            @NonNull final AntProjectHelper projectHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NullAllowed final PlatformUpdatedCallBack postPlatformSetHook,
+            @NonNull final String platformType,
+            @NonNull final SpecificationVersion minimalVersion,
+            @NonNull final String platformProperty,
+            @NonNull final String... versionProperties) {
         Parameters.notNull("projectHelper", projectHelper);             //NOI18N
         Parameters.notNull("evaluator", evaluator);                     //NOI18N
+        Parameters.notNull("platformType", platformType);               //NOI18N
+        Parameters.notNull("minimalVersion", minimalVersion);           //NOI18N
         Parameters.notNull("platformProperty", platformProperty);       //NOI18N
         Parameters.notNull("versionProperties", versionProperties);     //NOI18N
         return ProjectProblemsProviders.createPlatformVersionProblemProvider(
@@ -328,6 +369,7 @@ public class BrokenReferencesSupport {
                 evaluator,
                 postPlatformSetHook,
                 platformType,
+                minimalVersion,
                 platformProperty,
                 versionProperties);
     }

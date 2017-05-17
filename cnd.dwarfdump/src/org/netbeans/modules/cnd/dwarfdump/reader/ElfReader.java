@@ -94,12 +94,12 @@ public class ElfReader extends ByteStreamReader {
         sections = new ElfSection[sectionHeadersTable.length];
         
         if (!isCoffFormat) {
-            // Before reading all sections need to read ElfStringTable section.
-            int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
-            if (sections.length > elfStringTableIdx) {
-                stringTableSection = new StringTableSection(this, elfStringTableIdx);
-                sections[elfStringTableIdx] = stringTableSection;
-            }
+              // Before reading all sections need to read ElfStringTable section.
+              int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
+              if (sections.length > elfStringTableIdx) {
+                  stringTableSection = new StringTableSection(this, elfStringTableIdx);
+                  sections[elfStringTableIdx] = stringTableSection;
+              }
         }
         
         // Initialize Name-To-Idx map
@@ -252,8 +252,12 @@ public class ElfReader extends ByteStreamReader {
             sharedLibraries = new SharedLibraries();
             for(String string : stringTableSection.getStrings()){
                 //_libhello4lib_dll_iname
-                if (string.endsWith("_dll_iname") && string.startsWith("_")) { //NOI18N
-                    String lib = string.substring(1,string.length()-10)+".dll"; //NOI18N
+                //libhello3lib_dll_iname (mingw and cygwin start to use without _)
+                if (string.endsWith("_dll_iname")) { //NOI18N
+                    String lib = string.substring(0,string.length()-10)+".dll"; //NOI18N
+                    if (string.startsWith("_")) { //NOI18N
+                        lib = lib.substring(1);
+                    }
                     sharedLibraries.addDll(lib);
                 }
             }
@@ -395,8 +399,11 @@ public class ElfReader extends ByteStreamReader {
         sectionHeadersTable = new SectionHeader[headers.size()];
         for(int i = 0; i < headers.size(); i++){
             sectionHeadersTable[i] = headers.get(i);
+            if (SECTIONS.DEBUG_STR.equals(sectionHeadersTable[i].name)) {
+                elfHeader.e_shstrndx = (short)i;
+            }
         }
-        elfHeader.e_shstrndx = (short)(headers.size()-1);
+        //elfHeader.e_shstrndx = (short)(headers.size()-1);
         return true;
     }
     

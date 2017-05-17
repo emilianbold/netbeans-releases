@@ -223,6 +223,27 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/completion/general/issue222780.js", "$scope.getServoConfigurations = fun^", false);
     }
 
+    public void testIssue269609_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue269609.js", "import member f^", false);
+    }
+
+    public void testIssue269609_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue269609.js", "import * a^", false);
+    }
+    
+    public void testIssue269609_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue269609.js", "import { name1 a^", false);
+    }
+    
+    public void testIssue269609_04() throws Exception {
+        checkCompletion("testfiles/completion/general/issue269609.js", "import { default a^", false);
+    }
+    
+    public void testIssue269609_05() throws Exception {
+        checkCompletion("testfiles/completion/general/issue269609.js", "export { foo a^", false);
+    }
+    
+
     public void testIssue214205_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue214205/issue214205.js", "number.^", false);
     }

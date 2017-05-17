@@ -90,16 +90,16 @@ public class NBParserFactory extends ParserFactory {
     }
 
     @Override
-    public JavacParser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap) {
+    public JavacParser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap, boolean parseModuleInfo) {
         Lexer lexer = scannerFactory.newScanner(input, keepDocComments);
-        return new NBJavacParser(this, lexer, keepDocComments, keepLineMap, keepEndPos, cancelService);
+        return new NBJavacParser(this, lexer, keepDocComments, keepLineMap, keepEndPos, parseModuleInfo, cancelService);
     }
 
     public JavacParser newParser(CharSequence input, int startPos, final EndPosTable endPos) {
         Scanner lexer = scannerFactory.newScanner(input, true);
         lexer.seek(startPos);
         ((NBJavacParser.EndPosTableImpl)endPos).resetErrorEndPos();
-        return new NBJavacParser(this, lexer, true, false, true, cancelService) {
+        return new NBJavacParser(this, lexer, true, false, true, false, cancelService) {
             @Override protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
                 return new AbstractEndPosTable(this) {
 
@@ -145,8 +145,8 @@ public class NBParserFactory extends ParserFactory {
         private final Names names;
         private final CancelService cancelService;
 
-        public NBJavacParser(NBParserFactory fac, Lexer S, boolean keepDocComments, boolean keepLineMap, boolean keepEndPos, CancelService cancelService) {
-            super(fac, S, keepDocComments, keepLineMap, keepEndPos);
+        public NBJavacParser(NBParserFactory fac, Lexer S, boolean keepDocComments, boolean keepLineMap, boolean keepEndPos, boolean parseModuleInfo, CancelService cancelService) {
+            super(fac, S, keepDocComments, keepLineMap, keepEndPos, parseModuleInfo);
             this.names = fac.names;
             this.cancelService = cancelService;
         }

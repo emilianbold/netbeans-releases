@@ -622,6 +622,18 @@ public class Util {
      * @param pu
      */
     public static void addPersistenceUnitToProject(Project project, PersistenceUnit persistenceUnit) {
+        addPersistenceUnitToProjectRoot(project, null, persistenceUnit);
+    }
+    
+    /**
+     * add pu to the project's root, add persistence libraries if appropriate and known
+     * add db libraries for connection if it's not conteiner managed project
+     * @param project
+     * @param root
+     * @param pu
+     * @since 1.55
+     */
+    public static void addPersistenceUnitToProjectRoot(Project project, FileObject root, PersistenceUnit persistenceUnit) {
         String providerClass = persistenceUnit.getProvider();
         boolean libAdded = false;
         Library lib = null;
@@ -649,7 +661,7 @@ public class Util {
         }
 
         try {
-            ProviderUtil.addPersistenceUnit(persistenceUnit, project);
+            ProviderUtil.addPersistenceUnit(persistenceUnit, project, root);
         } catch (InvalidPersistenceXmlException ipx) {
             // just log for debugging purposes, at this point the user has
             // already been warned about an invalid persistence.xml

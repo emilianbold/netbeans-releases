@@ -90,8 +90,6 @@ import org.openide.util.lookup.Lookups;
 //@NotThreadSafe
 final class JavaParsingContext {
 
-    static final String ATTR_MODULE_NAME = "moduleName"; //NOI18N
-
     private final Context ctx;
     private final boolean rootNotNeeded;    
     private final ClasspathInfo cpInfo;
@@ -137,6 +135,10 @@ final class JavaParsingContext {
             if (srcPath == null) {
                 srcPath = ClassPath.EMPTY;
             }
+            ClassPath moduleSrcPath = ClassPath.getClassPath(ctx.getRoot(), JavaClassPathConstants.MODULE_SOURCE_PATH);
+            if (moduleSrcPath == null) {
+                moduleSrcPath = ClassPath.EMPTY;
+            }
             cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
                 bootPath,
                 moduleBootPath,
@@ -144,25 +146,39 @@ final class JavaParsingContext {
                 moduleCompilePath,
                 moduleClassPath,
                 srcPath,
+                moduleSrcPath,
                 null,
                 true,
                 context.isSourceForBinaryRootIndexing(),
                 false,
                 context.checkForEditorModifications(),
+                false,
                 null);
         } else {
             cpInfo = null;
         }
     }
 
-    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath moduleClassPath, final ClassPath sourcePath,
+    public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath moduleBootPath, final ClassPath compilePath, final ClassPath moduleCompilePath, final ClassPath moduleClassPath, final ClassPath sourcePath, final ClassPath moduleSourcePath,
             final Collection<? extends CompileTuple> virtualSources) throws IOException {
         ctx = context;
         rootNotNeeded = false;
         uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, sourcePath,
-                filter, true, context.isSourceForBinaryRootIndexing(),
-                !virtualSources.isEmpty(), context.checkForEditorModifications(), null);
+        cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
+                bootPath,
+                moduleBootPath,
+                compilePath,
+                moduleCompilePath,
+                moduleClassPath,
+                sourcePath,
+                moduleSourcePath,
+                filter,
+                true,
+                context.isSourceForBinaryRootIndexing(),
+                !virtualSources.isEmpty(),
+                context.checkForEditorModifications(),
+                true,
+                null);
         registerVirtualSources(cpInfo, virtualSources);
     }
     
@@ -245,7 +261,7 @@ final class JavaParsingContext {
     @CheckForNull
     String getModuleName() {
         try {
-            return JavaIndex.getAttribute(ctx.getRootURI(), ATTR_MODULE_NAME, null);
+            return JavaIndex.getAttribute(ctx.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
         } catch (IOException ioe) {
             return null;
         }

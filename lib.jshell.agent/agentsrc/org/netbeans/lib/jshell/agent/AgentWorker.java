@@ -494,6 +494,8 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             if (!killed.get()) {
                 throw td;
             }
+        } catch (ExecutionControlException ex) {
+            throw ex; 
         } catch (Throwable t) {
             killed.set(true);
         } finally {
@@ -524,21 +526,6 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         return prepareClassLoader().findClass(name);
-    }
-
-    @Override
-    public void setClasspath(String path) throws EngineTerminationException, InternalException {
-        List<URL> savePath = additionalClasspath;
-        additionalClasspath = new ArrayList<>();
-        boolean success = false;
-        try {
-            addToClasspath(path);
-            success = true;
-        } finally {
-            if (!success) {
-                additionalClasspath = savePath;
-            }
-        }
     }
 
     @Override

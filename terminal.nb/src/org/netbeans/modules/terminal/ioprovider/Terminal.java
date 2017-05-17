@@ -132,6 +132,7 @@ import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.TermAdapter;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.lib.terminalemulator.TermStream;
+import org.netbeans.lib.terminalemulator.support.HiglightMatchesFindState;
 import org.netbeans.modules.terminal.nb.actions.ActionFactory;
 import org.netbeans.modules.terminal.nb.actions.PinTabAction;
 import org.netbeans.modules.terminal.api.IOResizable;
@@ -377,7 +378,7 @@ public final class Terminal extends JComponent {
 
         this.term.setCursorVisible(true);
 
-        findState = new DefaultFindState(term);
+        findState = new HiglightMatchesFindState(new DefaultFindState(term), term);
 
         term.setHorizontallyScrollable(false);
         term.setEmulation("xterm");	// NOI18N
@@ -690,9 +691,6 @@ public final class Terminal extends JComponent {
     }
 
     public void activateSearch() {
-        if (findState.isVisible()) {
-            return;
-        }
         findState.setVisible(true);
         Container ancestor = SwingUtilities.getAncestorOfClass(TerminalContainer.class, this);
         if (ancestor != null && ancestor instanceof TerminalContainer) {

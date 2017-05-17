@@ -70,5 +70,6 @@ public enum CompletionContext {
     NUMBER, // cc should offer methods of Number objects
     STRING, // cc should offer methods of String objects
     REGEXP,  // cc should offer methods of RegEx objects
-    IMPORT_EXPORT_MODULE // the position where js modules names should be offered
+    IMPORT_EXPORT_MODULE, // the position where js modules names should be offered
+    IMPORT_EXPORT_SPECIAL_TOKENS //the position where as,from keywords should be displayed in CC list 
 }

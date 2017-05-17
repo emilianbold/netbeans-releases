@@ -88,7 +88,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
     private CsmCompoundStatement body;
 
-    protected FunctionDDImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected FunctionDDImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, FunctionImpl.CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
     
@@ -112,7 +112,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         CharSequence rawName = initRawName(ast);
         
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
@@ -283,7 +283,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             }
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), true);
 
-            FunctionDDImpl<?> functionDDImpl = new FunctionDDImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);        
+            FunctionDDImpl<?> functionDDImpl = new FunctionDDImpl(getName(), getRawName(), scope, isStatic(), FunctionImpl.CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), true);        
             temporaryRepositoryRegistration(true, functionDDImpl);
 
 //            StringBuilder clsTemplateSuffix = new StringBuilder();

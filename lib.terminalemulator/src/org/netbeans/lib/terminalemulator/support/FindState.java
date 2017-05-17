@@ -43,49 +43,63 @@
  */
 package org.netbeans.lib.terminalemulator.support;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * FindState is the "model" and engine for find operations where {@link FindBar}
  * is the controller. Different Term's in one window may share one
  * {@link FindBar} which can multiplex between per-instance FindState.
+ *
  * @author ivan
  */
 public interface FindState {
 
+    public static final String FIND_HIGHLIGHT_SEARCH = "find-highlight-search"; // NOI18N
+    public static final String FIND_SEARCH_BACKWARDS = "find-search-backwards"; // NOI18N
+
     public enum Status {
-        /** Pattern found w/o the need for wrapping */
+        /**
+         * Pattern found w/o the need for wrapping
+         */
         OK,
-
-        /** Pattern not found */
+        /**
+         * Pattern not found
+         */
         NOTFOUND,
-
-        /** pattern found but need to wrap by issuing one next() // or prev */
+        /**
+         * pattern found but need to wrap by issuing one next() // or prev
+         */
         WILLWRAP,
-
-        /** pattern is null or "" */
+        /**
+         * pattern is null or ""
+         */
         EMPTYPATTERN
     }
 
     /**
-     * Set the pattern to be searched.
-     * At the moment no searches are performed on setting.
-     * Upon return status is either OK or EMPTYPATTERN.
+     * Set the pattern to be searched. At the moment no searches are performed
+     * on setting. Upon return status is either OK or EMPTYPATTERN.
      */
     public void setPattern(String pattern);
 
     /**
      * Return the pattern being searched.
+     *
      * @return the pattern.
      */
     public String getPattern();
 
     /**
      * Remember whether the FindBar is visible in this instance of Term.
+     *
      * @param visible the FindBar is visible.
      */
     public void setVisible(boolean visible);
 
     /**
      * Recall whether the FindBar is visible in this instance of Term.
+     *
      * @return the FindBar is visible.
      */
     public boolean isVisible();
@@ -102,7 +116,28 @@ public interface FindState {
 
     /**
      * Get the status of a search after a call to prev() or next().
+     *
      * @return the status.
      */
     public Status getStatus();
+
+    /**
+     * Get property map associated with this search.
+     */
+    public Map<String, Object> getProperties();
+
+    /**
+     * Set properties of this search.
+     */
+    public void setProperties(Map<String, Object> properties);
+
+    default Object getProperty(String name) {
+        return getProperties().get(name);
+    }
+
+    default void putProperty(String name, Object value) {
+        Map<String, Object> properties = new HashMap<>(getProperties());
+        properties.put(name, value);
+        setProperties(properties);
+    }
 }

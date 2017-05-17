@@ -9,12 +9,14 @@ CLASS      Bar                             [PUBLIC]   Name\Space
 KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    boolean                                    null
+KEYWORD    callable                                   null
 KEYWORD    callback                                   null
 KEYWORD    double                                     null
 KEYWORD    false                                      null
 KEYWORD    float                                      null
 KEYWORD    int                                        null
 KEYWORD    integer                                    null
+KEYWORD    iterable                                   null
 KEYWORD    mixed                                      null
 KEYWORD    null                                       null
 KEYWORD    object                                     null

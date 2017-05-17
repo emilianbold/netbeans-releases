@@ -95,7 +95,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
-        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (JavaPluginUtils.isSyntheticPath(workingCopy, getCurrentPath())) {
             return null;
         }
         Element current = getCurrentElement();

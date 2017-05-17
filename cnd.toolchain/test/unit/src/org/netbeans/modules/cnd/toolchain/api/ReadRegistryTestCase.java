@@ -455,25 +455,25 @@ public class ReadRegistryTestCase extends NbTestCase {
         assertTrue(pattern.matcher(output).find());
     }
 
-    public void testVersionPatternCygwin() throws Exception {
-        String output = "gcc-4 (GCC) 4.3.2 20080827 (beta) 2\n"+
-        "Copyright (C) 2008 Free Software Foundation, Inc.\n"+
-        "This is free software; see the source for copying conditions.  There is NO\n"+
-        "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n";
-//gcc-4 (GCC) 4.3.2 20080827 (beta) 2
-//Copyright (C) 2008 Free Software Foundation, Inc.
-//This is free software; see the source for copying conditions.  There is NO
-//warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
-        assertNotNull(d);
-        String s = d.getC().getVersionPattern();
-//.*\\(GCC\\) 4\\.[3-9]
-        Pattern pattern = Pattern.compile(s);
-        assertTrue(pattern.matcher(output).find());
-        output = "  (GCC) 4.2.3\n";
-        pattern = Pattern.compile(".*\\(GCC\\) 4\\.[3-9]");
-        assertFalse(pattern.matcher(output).find());
-    }
+//    public void testVersionPatternCygwin() throws Exception {
+//        String output = "gcc-4 (GCC) 4.3.2 20080827 (beta) 2\n"+
+//        "Copyright (C) 2008 Free Software Foundation, Inc.\n"+
+//        "This is free software; see the source for copying conditions.  There is NO\n"+
+//        "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n";
+////gcc-4 (GCC) 4.3.2 20080827 (beta) 2
+////Copyright (C) 2008 Free Software Foundation, Inc.
+////This is free software; see the source for copying conditions.  There is NO
+////warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+//        assertNotNull(d);
+//        String s = d.getC().getVersionPattern();
+////.*\\(GCC\\) 4\\.[3-9]
+//        Pattern pattern = Pattern.compile(s);
+//        assertTrue(pattern.matcher(output).find());
+//        output = "  (GCC) 4.2.3\n";
+//        pattern = Pattern.compile(".*\\(GCC\\) 4\\.[3-9]");
+//        assertFalse(pattern.matcher(output).find());
+//    }
 
     public void testIntelErrorPattern() throws Exception {
         String output =

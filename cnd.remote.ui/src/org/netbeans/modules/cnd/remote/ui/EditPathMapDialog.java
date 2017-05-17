@@ -144,7 +144,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private final JButton btnOK;
     private Dialog presenter;
     private final ServerRecord currentHost;
-    private final DefaultComboBoxModel serverListModel;
+    private final DefaultComboBoxModel<ServerRecord> serverListModel;
     private final List<String> pathsToValidate;
     private final Map<ServerRecord, PathMapTableModel> cache = new HashMap<>();
     private ProgressHandle phandle;
@@ -154,7 +154,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         this.btnOK = btnOK;
         this.pathsToValidate = pathsToValidate;
         currentHost = defaultHost;
-        serverListModel = new DefaultComboBoxModel();
+        serverListModel = new DefaultComboBoxModel<>();
 
         for (ServerRecord host : hostList) {
             if (host.isRemote()) {
@@ -560,6 +560,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void handleProgress(boolean start) {
         if (start) {
             phandle = ProgressHandleFactory.createHandle("");

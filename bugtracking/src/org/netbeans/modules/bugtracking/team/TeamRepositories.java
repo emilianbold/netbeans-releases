@@ -111,19 +111,25 @@ public abstract class TeamRepositories implements PropertyChangeListener {
     //--------------------------------------------------------------------------
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        boolean hadListeners = support.hasListeners(null);
         support.addPropertyChangeListener(listener);
-        TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
-        for (TeamAccessor teamAccessor : teamAccessors) {
-            teamAccessor.addPropertyChangeListener(this);
-        }        
+        if (!hadListeners && support.hasListeners(null)) {
+            TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
+            for (TeamAccessor teamAccessor : teamAccessors) {
+                teamAccessor.addPropertyChangeListener(this);
+            }
+        }
     }
 
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        boolean hadListeners = support.hasListeners(null);
         support.removePropertyChangeListener(listener);
-        TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
-        for (TeamAccessor teamAccessor : teamAccessors) {
-            teamAccessor.removePropertyChangeListener(this);
-        }        
+        if (hadListeners && !support.hasListeners(null)) {
+            TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
+            for (TeamAccessor teamAccessor : teamAccessors) {
+                teamAccessor.removePropertyChangeListener(this);
+            }
+        }
     }
 
     private void fireProjectsChanged(Collection<RepositoryImpl> removed, Collection<RepositoryImpl> added) {

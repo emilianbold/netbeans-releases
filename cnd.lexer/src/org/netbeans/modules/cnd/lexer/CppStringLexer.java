@@ -175,6 +175,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
         while(true) {
             int ch;
             if (startState == START_DELIMETER) {
+                assert rawString : "this state is valid only for raw strings";
                 ch = input.read();
                 StringBuilder delim = new StringBuilder();
                 while (isRawStringDelimeterCharacter(ch)) {
@@ -190,9 +191,24 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     } else {
                         return token(CppStringTokenId.START_DELIMETER_PAREN);
                     }
-                } else if (delim.length() > 0) {
-                    input.backup(delim.length());
-                    ch = read();
+                } else {
+                    // failed to get delimeter, need to recover
+                    // we backup 1 or 2 symbols: one for the last non-delim ch 
+                    // and 
+                    // one for possible closing dbl-quote if was stored in delim
+                    if (delim.length() > 0 && delim.charAt(delim.length()-1) == '\"') {
+                        input.backup(2);
+                    } else {
+                        input.backup(1);
+                    }
+                    if (input.readLength() > 0) {
+                        state = AFTER_END_DELIMETER;
+                        return token(CppStringTokenId.TEXT, null, PartType.MIDDLE);
+                    } else {
+                        state = OTHER;
+                        startState = AFTER_END_DELIMETER;
+                        continue;
+                    }
                 }
             } else if (startState == END_DELIMETER) {
                 int read = input.read();
@@ -521,7 +537,11 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     if (read == '(') {
                         delimeter = delim.toString();
                         state = RawStringLexingState.BODY;
+                    } else if (read == EOF) {
+                        return PartType.START;
                     } else {
+                        // return back non-delim character for better recover
+                        input.backup(1);
                         state = RawStringLexingState.ERROR;
                     }
                     break;
@@ -568,6 +588,8 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                             return PartType.START;
                         case '\r':
                         case '\n':
+                        case ' ':
+                        case '\t':
                             input.backup(1);
                             return PartType.START;
                         case EOF:

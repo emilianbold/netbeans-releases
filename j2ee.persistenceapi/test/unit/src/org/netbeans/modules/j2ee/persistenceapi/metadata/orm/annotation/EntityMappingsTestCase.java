@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.Collections;
 import javax.persistence.spi.PersistenceProvider;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
@@ -86,8 +87,12 @@ public class EntityMappingsTestCase extends JavaSourceTestCase {
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         return EntityMappingsMetadataModelFactory.createMetadataModel(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
+                ClassPath.getClassPath(srcFO, JavaClassPathConstants.MODULE_BOOT_PATH),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
-                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
+                ClassPath.getClassPath(srcFO, JavaClassPathConstants.MODULE_COMPILE_PATH),
+                ClassPath.getClassPath(srcFO, JavaClassPathConstants.MODULE_CLASS_PATH),
+                ClassPath.getClassPath(srcFO, ClassPath.SOURCE),
+                ClassPath.getClassPath(srcFO, JavaClassPathConstants.MODULE_SOURCE_PATH));
     }
 
     protected static Entity getEntityByName(Entity[] entityList, String name) {

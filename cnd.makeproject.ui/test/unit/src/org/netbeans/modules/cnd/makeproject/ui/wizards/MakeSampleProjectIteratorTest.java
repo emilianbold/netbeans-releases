@@ -54,6 +54,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,10 +74,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
+import org.netbeans.modules.cnd.test.CndTestIOProvider.Listener;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -94,10 +96,12 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     private CompilerSet MinGWSet = null;
     private CompilerSet CygwinSet = null;
 
-    List<CompilerSet> allAvailableCompilerSets = null;
-    List<CompilerSet> SunStudioCompilerSet = null;
-    List<CompilerSet> GNUCompilerSet = null;
-    String[] defaultConfs = new String[] {"Debug", "Release"};
+    private List<CompilerSet> allAvailableCompilerSets = null;
+    private List<CompilerSet> SunStudioCompilerSet = null;
+    private List<CompilerSet> GNUCompilerSet = null;
+    private String[] defaultConfs = new String[] {"Debug", "Release"};
+    private Logger executionLogger;
+    private Logger baseExecutionLogger;
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
@@ -136,6 +140,10 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
         GNUCompilerSet = new ArrayList<>();
         GNUCompilerSet.add(GNUSet);
+        executionLogger = Logger.getLogger("nativeexecution.support.logger");
+        executionLogger.setLevel(Level.FINEST);
+        baseExecutionLogger = Logger.getLogger("org.netbeans.api.extexecution.base.BaseExecutionService");
+        baseExecutionLogger.setLevel(Level.FINEST);
     }
 
     @Test
@@ -264,6 +272,8 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     }
 
     public void testSample(List<CompilerSet> sets, String sample, String[] confs, String makeOptions, int timeout) throws IOException, InterruptedException, InvocationTargetException {
+        // keep IOProvider in local variable to prevent weak lookup storage garbage collected.
+        final IOProvider iop = IOProvider.getDefault();
         for (CompilerSet set : sets) {
             if (set != null) {
                 for (String conf : confs) {
@@ -304,34 +314,37 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final String successLine = "BUILD SUCCESSFUL";
         final String failureLine = "BUILD FAILED";
 
-        IOProvider iop = IOProvider.getDefault();
+        final IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
         final StringBuilder buf = new StringBuilder();
-        ((CndTestIOProvider) iop).addListener((String line) -> {
-            if(line != null) {
-                buf.append(line).append('\n');
-                if (line.trim().startsWith(successLine)) {
-                    build_rc.set(0);
-                    done.countDown();
-                }
-                else if (line.trim().startsWith(failureLine)) {
-                    // message is:
-                    // BUILD FAILED (exit value 1, total time: 326ms)
-                    int rc = -1;
-                    String[] tokens = line.split("[ ,]");
-                    if (tokens.length > 4) {
-                        try {
-                            rc = Integer.parseInt(tokens[4]);
-                        } catch(NumberFormatException nfe) {
-                            nfe.printStackTrace(System.err);
-                        }
+        final Listener listener = new CndTestIOProvider.Listener() {
+            @Override
+            public void linePrinted(String line) {
+                if(line != null) {
+                    buf.append(line).append('\n');
+                    if (line.trim().startsWith(successLine)) {
+                        build_rc.set(0);
+                        done.countDown();
                     }
-                    build_rc.set(rc);
-                    done.countDown();
+                    else if (line.trim().startsWith(failureLine)) {
+                        // message is:
+                        // BUILD FAILED (exit value 1, total time: 326ms)
+                        int rc = -1;
+                        String[] tokens = line.split("[ ,]");
+                        if (tokens.length > 4) {
+                            try {
+                                rc = Integer.parseInt(tokens[4]);
+                            } catch(NumberFormatException nfe) {
+                                nfe.printStackTrace(System.err);
+                            }
+                        }
+                        build_rc.set(rc);
+                        done.countDown();
+                    }
                 }
             }
-        });
-        
+        };
+        ((CndTestIOProvider) iop).addListener(listener);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
         assertNotNull(makeProject);
         MakeActionProviderImpl makeActionProvider = new MakeActionProviderImpl(makeProject);
@@ -358,6 +371,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             done.await(timeout, TimeUnit.SECONDS);
         } catch (InterruptedException ir) {
         }
+        ((CndTestIOProvider) iop).removeListener(listener);
         String shell = null;
         try {
             shell = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getShell();

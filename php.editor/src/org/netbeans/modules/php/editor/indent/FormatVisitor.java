@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -72,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -85,13 +87,16 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
@@ -345,7 +350,9 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ArrayElement node) {
-        boolean multilinedArray = isMultilinedNode(getParentArrayCreation());
+        // ArrayCreation and ListVariable has ArrayElements
+        ArrayCreation arrayCreation = getParentArrayCreation();
+        boolean multilinedArray = arrayCreation != null ? isMultilinedNode(arrayCreation) : false;
         if (node.getKey() != null && node.getValue() != null) {
             scan(node.getKey());
             while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
@@ -371,10 +378,14 @@ public class FormatVisitor extends DefaultVisitor {
         return result;
     }
 
+    @CheckForNull
     private ArrayCreation getParentArrayCreation() {
         ArrayCreation result = null;
         for (int i = 0; i < path.size(); i++) {
             ASTNode parentInPath = path.get(i);
+            if (parentInPath instanceof ListVariable) {
+                break;
+            }
             if (parentInPath instanceof ArrayCreation) {
                 result = (ArrayCreation) parentInPath;
                 break;
@@ -1167,12 +1178,20 @@ public class FormatVisitor extends DefaultVisitor {
         if (returnType == null) {
             return;
         }
+        int endPosition = returnType.getEndOffset();
+        if (returnType instanceof NullableType) {
+            NullableType nullableType = (NullableType) returnType;
+            endPosition = nullableType.getStartOffset();
+        }
         while (ts.moveNext()
-                && ts.offset() < returnType.getEndOffset()
+                && ts.offset() < endPosition
                 && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         ts.movePrevious();
+        if (returnType instanceof NullableType) {
+            scan((NullableType) returnType);
+        }
     }
 
     @Override
@@ -1545,6 +1564,23 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(CatchClause node) {
+        addAllUntilOffset(node.getStartOffset());
+        List<Expression> classNames = node.getClassNames();
+        boolean addIndent = !classNames.isEmpty() && classNames.size() > 1;
+        if (addIndent) {
+            addAllUntilOffset(classNames.get(0).getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        }
+        scan(node.getClassNames());
+        scan(node.getVariable());
+        if (addIndent) {
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize * -1));
+        }
+        scan(node.getBody());
+    }
+
+    @Override
     public void visit(WhileStatement node) {
         scan(node.getCondition());
         ASTNode body = node.getBody();
@@ -1685,6 +1721,32 @@ public class FormatVisitor extends DefaultVisitor {
         addRestOfLine();
         super.visit(node);
     }
+
+    @Override
+    public void visit(NullableType nullableType) {
+        if (ts.moveNext()) {
+            assert TokenUtilities.equals(ts.token().text(), "?"); // NOI18N
+            addFormatToken(formatTokens); // add "?"
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NULLABLE_TYPE_PREFIX, ts.offset() + 1));
+            Expression type = nullableType.getType();
+            scan(type);
+        }
+    }
+
+    @Override
+    public void visit(DeclareStatement node) {
+        List<Identifier> names = node.getDirectiveNames();
+        List<Expression> values = node.getDirectiveValues();
+        assert names.size() == values.size();
+        for (int i = 0; i < names.size(); i++) {
+            scan(names.get(i));
+            // add "="
+            addAllUntilOffset(values.get(i).getStartOffset());
+            scan(values.get(i));
+        }
+        scan(node.getBody());
+    }
+
     private int lastIndex = -1;
 
     private String showAssertionFor188809() {
@@ -1925,6 +1987,13 @@ public class FormatVisitor extends DefaultVisitor {
             case PHP_OPERATOR:
                 CharSequence txt2 = ts.token().text();
                 // assignment?
+                if (TokenUtilities.equals(txt2, "=") // NOI18N
+                        && path.get(0) instanceof DeclareStatement) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_DECLARE_EQUAL, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), txt2.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_DECLARE_EQUAL, ts.offset() + ts.token().length()));
+                    break;
+                }
                 if (TokenUtilities.endsWith(txt2, "=")) { // NOI18N
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ASSIGN_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
@@ -1961,6 +2030,11 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), txt2.toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                } else if (TokenUtilities.textEquals(txt2, "|") // NOI18N
+                        && path.get(0) instanceof CatchClause) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_MULTI_CATCH_SEPARATOR, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_MULTI_CATCH_SEPARATOR, ts.offset() + ts.token().length()));
                 } else {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }
