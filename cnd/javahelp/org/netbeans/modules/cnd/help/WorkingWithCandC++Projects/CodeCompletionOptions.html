@@ -1,44 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
-particular file as subject to the "Classpath" exception as provided
-by Oracle in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
-
-Contributor(s):
-
-Portions Copyrighted 2016 Sun Microsystems, Inc.
+Copyright &copy; 2014, 2015 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -67,18 +29,25 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
         triggers, and you can add or remove symbols.
       </li>
       <li>
-        <b>Auto Insert #include Directives for Completed Identifiers.</b> If you select this
-        option, the editor&nbsp;automatically inserts the appropriate #include directive required
-        for an identifier you selected from a code completion popup window. This option is enabled
+        <b>Auto Insert <code>#include</code> Directives for Completed Identifiers.</b> If you select this
+        option, the editor&nbsp;automatically inserts the appropriate <code>#include</code> directive required
+        for an identifier that you have selected from a code completion popup window. This option is enabled
         by default.
       </li>
       <li>
-        <b>Auto Popup Triggers for #include Directives.</b> Specify the characters that,&nbsp;when
-        typed after the #include directive, cause the popup completion window to display a list of
-        headers files. If you type a double-quotation mark (") a completion popup of header files
-        from your project displays. If you type a left-angle bracket&nbsp;(&lt;) the completion
+        <b>Auto Popup Triggers for <code>#include</code> Directives.</b> Specify the characters that,&nbsp;when
+        typed after the <code>#include</code> directive, cause the popup completion window to display a list of
+        headers files. If you type a double-quotation mark ("), a completion popup of header files
+        from your project displays. If you type a left-angle bracket&nbsp;(&lt;), the completion
         popup shows header files that are on the compiler search path. This option is enabled by
         default.
+      </li>
+      <li>
+        <b>Auto Include Standard Headers.</b> When you type the symbols in this field, the editor opens up a popup
+        completion window to enable you to select a standard header from a list. Special headers that
+        contain all standard headers for C and C++ are created by default. Also, index for all 
+        symbols in the standard headers are created. Code completion inserts the required standard 
+        header. You can add or remove content of the special headers to modify this functionality.
       </li>
     </ul>
     <p>
@@ -87,7 +56,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
     <table>
       <tr>
         <th align="left" colspan="2">
-          <a name="seealso">See also</a>
+          <a name="seealso">See also</a> 
         </th>
       </tr>
       <tr>
@@ -103,7 +72,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
             <param name="textColor" value="blue">
           </object><br>
            <a href="../CandC++ProjectBasics/CandC++Options.html">Options Window: C/C++</a><br>
-
+           
         </td>
       </tr>
     </table>
