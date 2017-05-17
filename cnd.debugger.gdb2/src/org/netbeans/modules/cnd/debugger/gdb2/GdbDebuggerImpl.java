@@ -2928,7 +2928,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         //but if the tooltip is pinned -> use as Output Base in Variables
         //see bz#270494 - Wrong variable values if user opens Disassembly tab 
         String format = v != null && (!v.isWatch() || 
-                (v.isWatch() && ((GdbWatch)v).getNativeWatch() != null)) ?  v.getFormat() : 
+                (v.isWatch() && (v instanceof GdbWatch) && ((GdbWatch)v).getNativeWatch() != null)) ?  v.getFormat() : 
                 Disassembly.getCurrentDataRepresentationFormat().toString();
         String result = value_string;
         if (Disassembly.isInDisasm()) {
