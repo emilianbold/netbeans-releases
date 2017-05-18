@@ -478,7 +478,7 @@ import org.openide.util.Utilities;
                 HostUpdatesRegistry.register(remoteUpdates, execEnv, fileData.getDataFile().getParent());
                 logger.log(Level.FINE, "registered  %d updated files", remoteUpdates.size());
             }
-            if (timeStampFile != null) {
+            if (timeStampFile != null && !Boolean.getBoolean("cnd.remote.keep.time.stamp")) { //NOI18N
                 CommonTasksSupport.rmFile(execEnv, timeStampFile, err).get();
             }
         } catch (InterruptedIOException | InterruptedException ex) {

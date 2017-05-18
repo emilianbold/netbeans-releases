@@ -1,44 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
-particular file as subject to the "Classpath" exception as provided
-by Oracle in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
-
-Contributor(s):
-
-Portions Copyrighted 2016 Sun Microsystems, Inc.
+Copyright &copy; 2014,2015 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -55,13 +17,13 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
     <p>
-       When you create a project with existing sources the project is parsed to support the code
+       When you create a project with existing sources, the project is parsed to support the code
       assistance features of the IDE. The parsing data is saved on disk in the code assistance
-      cache. Each time you open the project the IDE examines the cache and if necessary parses any
+      cache. Each time you open the project, the IDE examines the cache and if necessary parses any
       changed or new files to update the cache.
     </p>
     <p>
-       By default the IDE creates one code assistance cache for all your projects in your user
+       By default, the IDE creates one code assistance cache for all your projects in your user
       directory. The cache in your user directory cannot be copied or shared.
     </p>
     <p>
@@ -71,8 +33,8 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
     <p>
        A solution is for one developer using this version of the IDE to create a project-specific
       cache and copy it to a shared location where other developers using this version of the IDE
-      can copy it to their computer. Then each developer can modify their project properties to
-      reference the copied cache. After this, the parsing when you open the project is much faster.
+      can copy it to their computer. Then, each developer can modify their project properties to
+      reference the copied cache. After this, when you open the project, the parsing is much faster.
     </p>
     <p>
        In order to use a code assistance cache copied from another computer, your computer must
@@ -80,18 +42,19 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
     </p>
     <ul>
       <li>
-        operating system is identical to the operating system on the computer where the code was
+        Operating system must be identical to the operating system on the computer where the code was
         parsed
       </li>
       <li>
-        tool collection used by the project is available at the same path on both computers
+        Tool collection used by the project must be available at the same path on both computers
       </li>
     </ul>
     <p>
        Note that if your team uses several different versions of operating systems and tool
       collections, you must create a different version of the cache for each combination of
-      operating systems and tool collections.
+      the operating system and tool collection.
     </p>
+    <br>
     <p>
        <b>To instruct the IDE to create the code assistance cache in a non-default location:</b>
     </p>
@@ -102,18 +65,18 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
       </li>
       <li>
         Specify the new path for the cache by setting the cache.location property. For example, if
-        you want the cache to be located in <tt>nbproject/private/cache</tt>:
+        you want the cache to be located in <tt>nbproject/private/cache</tt>: 
         <p>
            Add the line <tt>cache.location=nbproject/private/cache</tt> to one of the following
           files:
         </p>
         <ul>
           <li>
-            <tt>nbproject/project.properties</tt> - if you want this cache location setting
+            <tt>nbproject/project.properties</tt> - If you want this cache location setting
             propagated to developer repositories
           </li>
           <li>
-            <tt>nbproject/private/private.properties</tt> - if you want to keep the cache location
+            <tt>nbproject/private/private.properties</tt> - If you want to keep the cache location
             setting out of version control and let developers set their own cache locations
           </li>
         </ul>
@@ -125,7 +88,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
         Close and reopen the project. 
         <p>
            The IDE parses the project and places the code assistance cache in
-          <tt>nbproject/private/cache</tt>. For very large projects this can take a long time.
+          <tt>nbproject/private/cache</tt>. For very large projects, this can take a long time.
         </p>
       </li>
       <li>
@@ -157,7 +120,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
       <li>
         If your computer has the same operating system and tool collection, copy the archive of the
         cache from the shared location and extract it to a location that is not in your IDE user
-        directory or managed by version control. Following the example, you should copy it to the
+        directory or is not managed by version control. Following the example, you should copy it to the
         project's <tt>nbproject/private/cache</tt> directory.
       </li>
       <li>
@@ -178,6 +141,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
         </p>
       </li>
     </ol>
+      <br>
     <table>
       <tr>
         <th align="left" colspan="2">
@@ -191,6 +155,8 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
         <td>
           <a href="../WorkingWithCandC++Projects/ConfiguringParsingSettings.html">Configuring Code
           Assistance Settings for C and C++ Projects</a><br>
+            <a href="../WorkingWithCandC++Projects/CodeAssistance.html">Configuring Code Assistance 
+           For Projects with Existing Sources</a></br>
            <a href="../WorkingWithCandC++Projects/PublicPrivateProperties.html">Using Properties
           Files for Version Controlled Projects</a> 
         </td>

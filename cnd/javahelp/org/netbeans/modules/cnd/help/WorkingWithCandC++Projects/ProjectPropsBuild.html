@@ -1,50 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
-particular file as subject to the "Classpath" exception as provided
-by Oracle in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
-
-Contributor(s):
-
-Portions Copyrighted 2016 Sun Microsystems, Inc.
+Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link href="../ide.css" rel="StyleSheet" type="text/css">
-
+     
     <title>C/C++ Project Properties Dialog Box: Build</title>
   </head>
   <body>
@@ -60,8 +22,11 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
         a dialog for working with build hosts.</p>
     <p><b>Source.</b> Indicates how the IDE access the source files for a remote project.  You cannot change
     the value here because this property is associated with the Build Host.</p>
-    <p><b>Tool collection.</b> Select the tool set that you want to use to compile the project. The tool
+    <p><b>Tool collection.</b> Selects the tool set that you want to use to compile the project. The tool
         collections are defined in the C/C++ panel of the Options dialog box.</p>
+    <p><b>Prepending or Appending a Toolchain Path.</b> Selects the Modify Tool Collection Path option to 
+      specify if the toolchain directory should be appended to the PATH variable or not. By default, 
+      the <code>$TOOLS_PATH</code> will be prepended. You can modify this field by choosing Options &gt; C/C++ &gt; Build tools.</p>
     <p> <b>Configuration Type.</b> The project has a configuration type that is determined
          when you create the project in the IDE. For unmanaged projects, which are
          projects from existing sources, the Configuration Type is Makefile. Projects created
@@ -78,10 +43,11 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
     rebuilt when any property is changed. With large projects that take a long time to build,
     you should not select this option to ensure that the project is built only when
     you build it. </p>
+    <br>
     <table>
       <tr>
         <th align="left" colspan="2">
-          <a name="seealso">See also</a>
+          <a name="seealso">See also</a> 
         </th>
       </tr>
       <tr>
