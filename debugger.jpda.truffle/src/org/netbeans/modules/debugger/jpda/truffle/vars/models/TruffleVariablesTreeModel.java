@@ -47,9 +47,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
-import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleScope;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariableImpl;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -95,6 +94,10 @@ public class TruffleVariablesTreeModel implements TreeModelFilter {
                 parent = tv;
             }
         }
+        if (parent instanceof TruffleScope) {
+            TruffleScope scope = (TruffleScope) parent;
+            return scope.getVariables();
+        }
         if (parent instanceof TruffleVariable) {
             return ((TruffleVariable) parent).getChildren();
         }
@@ -108,6 +111,9 @@ public class TruffleVariablesTreeModel implements TreeModelFilter {
 
     @Override
     public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
+        if (node instanceof TruffleScope) {
+            return false;
+        }
         if (node instanceof TruffleVariable) {
             return ((TruffleVariable) node).isLeaf();
         } else {

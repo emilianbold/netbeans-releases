@@ -44,13 +44,12 @@ package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleScope;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariableImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -88,7 +87,19 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
                     }
                 }
                 TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
-                //return currentPCInfo.getVars();
+                TruffleScope[] scopes = selectedStackFrame.getScopes();
+                if (scopes.length == 0) {
+                    return new Object[] {};
+                }
+                TruffleVariable[] innerMostVars = scopes[0].getVariables();
+                if (scopes.length == 1) {
+                    return innerMostVars;
+                }
+                Object[] varsAndScopes = new Object[innerMostVars.length + scopes.length - 1];
+                System.arraycopy(innerMostVars, 0, varsAndScopes, 0, innerMostVars.length);
+                System.arraycopy(scopes, 1, varsAndScopes, innerMostVars.length, scopes.length - 1);
+                return varsAndScopes;
+                /*
                 TruffleVariable[] vars = selectedStackFrame.getVars();
                 ObjectVariable thisObj = selectedStackFrame.getThis();
                 if (false && thisObj != null) {
@@ -101,7 +112,11 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
                     }
                 }
                 return vars;
+                */
             }
+        } else if (parent instanceof TruffleScope) {
+            TruffleScope scope = (TruffleScope) parent;
+            return scope.getVariables();
         } else if (parent instanceof TruffleVariable) {
             return ((TruffleVariable) parent).getChildren();
         }

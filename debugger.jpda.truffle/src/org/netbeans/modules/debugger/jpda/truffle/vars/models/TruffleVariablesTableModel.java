@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleScope;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariableImpl;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -57,6 +60,7 @@ import static org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.WATCH_VALUE_COLUMN_ID;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableHTMLModel;
 import org.netbeans.spi.viewmodel.TableHTMLModelFilter;
@@ -77,6 +81,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 public class TruffleVariablesTableModel implements TableModelFilter, TableHTMLModelFilter {
     
     private final JPDADebugger debugger;
+    private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     
     public TruffleVariablesTableModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -84,6 +89,9 @@ public class TruffleVariablesTableModel implements TableModelFilter, TableHTMLMo
 
     @Override
     public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        if (node instanceof TruffleScope) {
+            return "";
+        }
         TruffleVariable tv = null;
         if (node instanceof JPDAWatch) {// && !isEnabled((JPDAWatch) node)) {
             Object orig = original.getValueAt(node, columnID); // Call in any case because of error displaying
@@ -93,8 +101,7 @@ public class TruffleVariablesTableModel implements TableModelFilter, TableHTMLMo
             if (tv == null) {
                 return orig;
             }
-        }
-        if (node instanceof TruffleVariable) {
+        } else if (node instanceof TruffleVariable) {
             tv = (TruffleVariable) node;
         }
         if (tv != null) {
@@ -116,15 +123,32 @@ public class TruffleVariablesTableModel implements TableModelFilter, TableHTMLMo
 
     @Override
     public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
-        if (node instanceof TruffleVariable) {
+        if (node instanceof TruffleScope) {
             return true;
+        }
+        if (node instanceof TruffleVariable) {
+            if (LOCALS_VALUE_COLUMN_ID.equals(columnID) || WATCH_VALUE_COLUMN_ID.equals(columnID)) {
+                return !((TruffleVariable) node).isWritable();
+            } else {
+                return true;
+            }
         }
         return original.isReadOnly(node, columnID);
     }
 
     @Override
     public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
-        original.setValueAt(node, columnID, value);
+        if (node instanceof TruffleVariable) {
+            boolean success = ((TruffleVariable) node).setValue(debugger, value.toString()) != null;
+            if (success) {
+                ModelEvent evt = new ModelEvent.NodeChanged(this, node);
+                for (ModelListener l : listeners) {
+                    l.modelChanged(evt);
+                }
+            }
+        } else {
+            original.setValueAt(node, columnID, value);
+        }
     }
 
     @Override
@@ -142,10 +166,12 @@ public class TruffleVariablesTableModel implements TableModelFilter, TableHTMLMo
 
     @Override
     public void addModelListener(ModelListener l) {
+        listeners.add(l);
     }
 
     @Override
     public void removeModelListener(ModelListener l) {
+        listeners.remove(l);
     }
 
 }

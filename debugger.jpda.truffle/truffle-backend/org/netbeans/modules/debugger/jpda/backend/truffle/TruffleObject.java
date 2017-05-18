@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
+import com.oracle.truffle.api.debug.DebugStackFrame;
 import com.oracle.truffle.api.debug.DebugValue;
 import com.oracle.truffle.api.source.SourceSection;
 import java.lang.reflect.InvocationTargetException;
@@ -59,11 +60,14 @@ import java.util.Objects;
 public class TruffleObject {
     
     static final int DISPLAY_TRIM = 1000;
-    
+
+    final DebugValue value;
     final String name;
     final String type;
     final String displayValue;
+    final boolean readable;
     final boolean writable;
+    final boolean internal;
     final boolean leaf;
     final boolean isArray;
     final Collection<DebugValue> properties;
@@ -72,6 +76,7 @@ public class TruffleObject {
     final SourcePosition typeSourcePosition;
 
     TruffleObject(DebugValue value) {
+        this.value = value;
         this.name = value.getName();
         //System.err.println("new TruffleObject("+name+")");
         DebugValue metaObject = null;
@@ -116,7 +121,9 @@ public class TruffleObject {
         }
         this.displayValue = valueStr;
         //System.err.println("  have display value "+valueStr);
-        this.writable = value.isWriteable();
+        this.readable = value.isReadable();
+        this.writable = value.isWritable();
+        this.internal = value.isInternal();
         Collection<DebugValue> valueProperties;
         try {
             valueProperties = value.getProperties();
@@ -186,6 +193,27 @@ public class TruffleObject {
         } catch (Exception ex) {
             ex.printStackTrace();
         }*/
+    }
+
+    public TruffleObject setValue(DebugStackFrame frame, String newExpression) {
+        DebugValue newValue;
+        try {
+            newValue = frame.eval(newExpression);
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            LangErrors.exception("Evaluation of '"+newExpression+"'", t);
+            return null;
+        }
+        try {
+            value.set(newValue);
+            return new TruffleObject(value);
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            LangErrors.exception("Set of a value created from '"+newExpression+"'", t);
+            return null;
+        }
     }
 
     public TruffleObject[] getProperties() {

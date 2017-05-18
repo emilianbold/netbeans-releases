@@ -55,25 +55,29 @@ public class TruffleStackVariable implements TruffleVariable {
     
     private final JPDADebugger debugger;
     private final String name;
-    private final String type;
+    private String type;
+    private final boolean readable;
     private final boolean writable;
-    private final String valueStr;
-    private final Supplier<SourcePosition> valueSourceSupp;
-    private final Supplier<SourcePosition> typeSourceSupp;
+    private final boolean internal;
+    private String valueStr;
+    private Supplier<SourcePosition> valueSourceSupp;
+    private Supplier<SourcePosition> typeSourceSupp;
     private SourcePosition valueSource;
     private SourcePosition typeSource;
-    private final ObjectVariable truffleObj;
-    private final boolean leaf;
+    private ObjectVariable truffleObj;
+    private boolean leaf;
     
     public TruffleStackVariable(JPDADebugger debugger, String name, String type,
-                                boolean writable, String valueStr,
-                                Supplier<SourcePosition> valueSource,
+                                boolean readable, boolean writable, boolean internal,
+                                 String valueStr, Supplier<SourcePosition> valueSource,
                                 Supplier<SourcePosition> typeSource,
                                 ObjectVariable truffleObj) {
         this.debugger = debugger;
         this.name = name;
         this.type = type;
+        this.readable = readable;
         this.writable = writable;
+        this.internal = internal;
         this.valueStr = valueStr;
         this.valueSourceSupp = valueSource;
         this.typeSourceSupp = typeSource;
@@ -90,10 +94,41 @@ public class TruffleStackVariable implements TruffleVariable {
     public String getType() {
         return type;
     }
+
+    @Override
+    public boolean isReadable() {
+        return readable;
+    }
+
+    @Override
+    public boolean isWritable() {
+        return writable;
+    }
+
+    @Override
+    public boolean isInternal() {
+        return internal;
+    }
     
     @Override
     public Object getValue() {
         return valueStr;
+    }
+
+    @Override
+    public ObjectVariable setValue(JPDADebugger debugger, String newExpression) {
+        ObjectVariable newTruffleObject = TruffleVariableImpl.setValue(debugger, truffleObj, newExpression);
+        if (newTruffleObject != null) {
+            this.truffleObj = newTruffleObject;
+            TruffleVariable newVar = TruffleVariableImpl.get(newTruffleObject);
+            this.type = newVar.getType();
+            this.valueStr = newVar.getValue().toString();
+            this.valueSource = this.typeSource = null;
+            this.valueSourceSupp = () -> newVar.getValueSource();
+            this.typeSourceSupp = () -> newVar.getTypeSource();
+            this.leaf = TruffleVariableImpl.isLeaf(truffleObj);
+        }
+        return newTruffleObject;
     }
 
     @Override

@@ -49,6 +49,7 @@ import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.debug.DebuggerSession;
 import com.oracle.truffle.api.debug.SuspendedCallback;
 import com.oracle.truffle.api.debug.SuspendedEvent;
+import com.oracle.truffle.api.debug.SuspensionFilter;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import java.lang.ref.Reference;
@@ -67,6 +68,7 @@ class JPDATruffleDebugManager implements SuspendedCallback {
     public JPDATruffleDebugManager(Debugger debugger, boolean doStepInto) {
         this.debugger = new WeakReference<>(debugger);
         DebuggerSession debuggerSession = debugger.startSession(this);
+        debuggerSession.setSteppingFilter(SuspensionFilter.newBuilder().ignoreLanguageContextInitialization(true).build());
         if (doStepInto) {
             debuggerSession.suspendNextExecution();
         }
@@ -160,7 +162,7 @@ class JPDATruffleDebugManager implements SuspendedCallback {
                         break;
                 case 2: event.prepareStepOver(1);
                         break;
-                case 3: event.prepareStepOut();
+                case 3: event.prepareStepOut(1);
                         break;
                 default:
                         throw new IllegalStateException("Unknown step command: "+stepCmd);

@@ -51,7 +51,7 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleScope;
 
 /**
  * Container of information about the current program counter.
@@ -65,7 +65,7 @@ public class CurrentPCInfo {
     private final LocalVariable stepCmd;
     private final Reference<JPDAThread> threadRef;
     private final SourcePosition sp;
-    private final TruffleVariable[] vars;
+    private final TruffleScope[] scopes;
     private final TruffleStackFrame topFrame;
     private final TruffleStackInfo stack;
     private volatile TruffleStackFrame selectedStackFrame; // the top frame initially
@@ -73,12 +73,12 @@ public class CurrentPCInfo {
     private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     
     public CurrentPCInfo(LocalVariable stepCmd, JPDAThread thread, SourcePosition sp,
-                         TruffleVariable[] vars, TruffleStackFrame topFrame,
+                         TruffleScope[] scopes, TruffleStackFrame topFrame,
                          TruffleStackInfo stack) {
         this.stepCmd = stepCmd;
         this.threadRef = new WeakReference<>(thread);
         this.sp = sp;
-        this.vars = vars;
+        this.scopes = scopes;
         this.topFrame = topFrame;
         this.stack = stack;
         selectedStackFrame = topFrame;
@@ -96,8 +96,8 @@ public class CurrentPCInfo {
         return sp;
     }
 
-    public TruffleVariable[] getVars() {
-        return vars;
+    public TruffleScope[] getScopes() {
+        return scopes;
     }
     
     public TruffleStackFrame getTopFrame() {

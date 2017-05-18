@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars;
 
+import java.io.InvalidObjectException;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
+import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 import org.openide.util.Exceptions;
@@ -60,10 +63,15 @@ public class TruffleVariableImpl implements TruffleVariable {
     private static final String TRUFFLE_OBJECT_TYPE = "org.netbeans.modules.debugger.jpda.backend.truffle.TruffleObject";   // NOI18N
     private static final String FIELD_NAME = "name";                            // NOI18N
     private static final String FIELD_TYPE = "type";                            // NOI18N
+    private static final String FIELD_READABLE = "readable";                    // NOI18N
+    private static final String FIELD_WRITABLE = "writable";                    // NOI18N
+    private static final String FIELD_INTERNAL = "internal";                    // NOI18N
     private static final String FIELD_LEAF = "leaf";                            // NOI18N
     private static final String FIELD_DISPLAY_VALUE = "displayValue";           // NOI18N
     private static final String METHOD_GET_CHILDREN = "getProperties";          // NOI18N
     private static final String METHOD_GET_CHILDREN_SIG = "()[Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleObject;";  // NOI18N
+    private static final String METHOD_SET_VALUE = "setValue";                  // NOI18N
+    private static final String METHOD_SET_VALUE_SIG = "(Lcom/oracle/truffle/api/debug/DebugStackFrame;Ljava/lang/String;)Lorg/netbeans/modules/debugger/jpda/backend/truffle/TruffleObject;";  // NOI18N
     private static final String FIELD_VALUE_SOURCE = "valueSourcePosition";     // NOI18N
     private static final String FIELD_TYPE_SOURCE = "typeSourcePosition";       // NOI18N
     
@@ -71,17 +79,24 @@ public class TruffleVariableImpl implements TruffleVariable {
     private final String name;
     private final String type;
     private final String displayValue;
+    private final boolean readable;
+    private final boolean writable;
+    private final boolean internal;
     private final boolean leaf;
     private SourcePosition valueSource;
     private SourcePosition typeSource;
     
     private TruffleVariableImpl(ObjectVariable truffleObject, String name,
                                 String type, String displayValue,
+                                boolean readable, boolean writable, boolean internal,
                                 boolean leaf) {
         this.truffleObject = truffleObject;
         this.name = name;
         this.type = type;
         this.displayValue = displayValue;
+        this.readable = readable;
+        this.writable = writable;
+        this.internal = internal;
         this.leaf = leaf;
     }
     
@@ -95,18 +110,45 @@ public class TruffleVariableImpl implements TruffleVariable {
                 return null;
             }
             String name = (String) f.createMirrorObject();
+
             f = truffleObj.getField(FIELD_TYPE);
             if (f == null) {
                 return null;
             }
             String type = (String) f.createMirrorObject();
+
             f = truffleObj.getField(FIELD_DISPLAY_VALUE);
             if (f == null) {
                 return null;
             }
             String dispVal = (String) f.createMirrorObject();
+
+            f = truffleObj.getField(FIELD_READABLE);
+            boolean readable;
+            if (f == null) {
+                readable = true;
+            } else {
+                readable = (Boolean) f.createMirrorObject();
+            }
+
+            f = truffleObj.getField(FIELD_WRITABLE);
+            boolean writable;
+            if (f == null) {
+                writable = true;
+            } else {
+                writable = (Boolean) f.createMirrorObject();
+            }
+
+            f = truffleObj.getField(FIELD_INTERNAL);
+            boolean internal;
+            if (f == null) {
+                internal = true;
+            } else {
+                internal = (Boolean) f.createMirrorObject();
+            }
+
             boolean leaf = isLeaf(truffleObj);
-            return new TruffleVariableImpl(truffleObj, name, type, dispVal, leaf);
+            return new TruffleVariableImpl(truffleObj, name, type, dispVal, readable, writable, internal, leaf);
         } else {
             return null;
         }
@@ -133,6 +175,21 @@ public class TruffleVariableImpl implements TruffleVariable {
     public String getType() {
         return type;
     }
+
+    @Override
+    public boolean isReadable() {
+        return readable;
+    }
+
+    @Override
+    public boolean isWritable() {
+        return writable;
+    }
+
+    @Override
+    public boolean isInternal() {
+        return internal;
+    }
     
     public String getDisplayValue() {
         return displayValue;
@@ -142,7 +199,29 @@ public class TruffleVariableImpl implements TruffleVariable {
     public Object getValue() {
         return displayValue; // TODO
     }
-    
+
+    @Override
+    public ObjectVariable setValue(JPDADebugger debugger, String newExpression) {
+        return setValue(debugger, truffleObject, newExpression);
+    }
+
+    static ObjectVariable setValue(JPDADebugger debugger, ObjectVariable truffleObject, String newExpression) {
+        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        if (currentPCInfo != null) {
+            ObjectVariable selectedFrame = currentPCInfo.getSelectedStackFrame().getStackFrameInstance();
+            try {
+                Variable retVar = truffleObject.invokeMethod(METHOD_SET_VALUE, METHOD_SET_VALUE_SIG,
+                                                             new Variable[] { selectedFrame, debugger.createMirrorVar(newExpression) });
+                if (retVar instanceof ObjectVariable) {
+                    return (ObjectVariable) retVar;
+                }
+            } catch (NoSuchMethodException | InvalidExpressionException | InvalidObjectException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }
+
     @Override
     public synchronized SourcePosition getValueSource() {
         if (valueSource == null) {
