@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,37 +36,40 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.truffle.testapps;
+package org.netbeans.modules.debugger.jpda.truffle.vars;
 
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.vm.PolyglotEngine;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+/**
+ * Representation of DebugScope.
+ */
+public final class TruffleScope {
 
-public class SLAppFromFile {
-    public static void main(String... args) throws Exception {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        PolyglotEngine engine = PolyglotEngine.newBuilder().
-            setOut(os).
-            build();
+    private final String name;
+    private final boolean function;
+    private final TruffleVariable[] arguments;
+    private final TruffleVariable[] variables;
 
-        String path = args[0];
-        Source src = Source.newBuilder(new File(path)).build();
-        
-        Object result = engine.eval(src).get(); // LBREAKPOINT
-        //assertNull("No code executed yet", result);
-
-        //PolyglotEngine.Value main = engine.findGlobalSymbol("main");
-        //assertNotNull("main method found", main);
-        //result = main.invoke(null).get(); // L XXX BREAKPOINT
-
-        assertEquals("Expected result", 42L, result);
-        assertEquals("Expected output", "42\n", os.toString("UTF-8"));
+    public TruffleScope(String name, boolean function, TruffleVariable[] arguments, TruffleVariable[] variables) {
+        this.name = name;
+        this.function = function;
+        this.arguments = arguments;
+        this.variables = variables;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isFunction() {
+        return function;
+    }
+
+    public TruffleVariable[] getArguments() {
+        return arguments;
+    }
+
+    public TruffleVariable[] getVariables() {
+        return variables;
+    }
+
 }

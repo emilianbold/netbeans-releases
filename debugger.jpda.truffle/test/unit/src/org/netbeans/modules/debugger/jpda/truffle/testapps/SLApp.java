@@ -55,7 +55,7 @@ public class SLApp {
             setOut(os).
             build();
 
-        Source src = Source.fromText(
+        Source src = Source.newBuilder(
             "function main() {\n" +
             "  x = 42;\n" +
             "  println(x);\n" +
@@ -65,9 +65,8 @@ public class SLApp {
             "  obj = new();\n"+
             "  obj.fourtyTwo = main;\n"+
             "  return obj;\n"+
-            "}\n",
-            "Meaning of world.sl"
-        ).withMimeType("application/x-sl");
+            "}\n"
+        ).name("Meaning of world.sl").mimeType("application/x-sl").build();
         
         Object result = engine.eval(src).get();                         // LBREAKPOINT
         //Was before: assertNull("No code executed yet", result);

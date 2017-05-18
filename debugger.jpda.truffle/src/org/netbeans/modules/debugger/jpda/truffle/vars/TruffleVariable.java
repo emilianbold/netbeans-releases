@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars;
 
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 
 /**
@@ -53,6 +55,12 @@ public interface TruffleVariable {
     String getName();
     
     String getType();
+
+    boolean isReadable();
+    
+    boolean isWritable();
+    
+    boolean isInternal();
     
     Object getValue();
     
@@ -63,4 +71,6 @@ public interface TruffleVariable {
     boolean isLeaf();
     
     Object[] getChildren();
+
+    ObjectVariable setValue(JPDADebugger debugger, String newExpression);
 }

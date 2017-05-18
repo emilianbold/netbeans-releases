@@ -51,6 +51,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
@@ -80,6 +82,7 @@ import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleScope;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleStackVariable;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.modules.debugger.jpda.util.WeakHashMapActive;
@@ -219,13 +222,13 @@ public class TruffleAccess implements JPDABreakpointListener {
             ObjectVariable frameInfoVar = haltedInfo.frameInfo;
             ObjectVariable frame = (ObjectVariable) frameInfoVar.getField(VAR_FRAME);
             ObjectVariable topVars = (ObjectVariable) frameInfoVar.getField(VAR_TOP_VARS);
-            TruffleVariable[] vars = createVars(debugger, topVars);
+            TruffleScope[] scopes = createScopes(debugger, topVars);
             ObjectVariable stackTrace = (ObjectVariable) frameInfoVar.getField(VAR_STACK_TRACE);
             String topFrameDescription = (String) frameInfoVar.getField(VAR_TOP_FRAME).createMirrorObject();
             ObjectVariable thisObject = null;// TODO: (ObjectVariable) frameInfoVar.getField("thisObject");
-            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, frame, topFrameDescription, null/*code*/, vars, thisObject, true);
+            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, frame, topFrameDescription, null/*code*/, scopes, thisObject, true);
             TruffleStackInfo stack = new TruffleStackInfo(debugger, stackTrace);
-            return new CurrentPCInfo(haltedInfo.stepCmd, thread, sp, vars, topFrame, stack);
+            return new CurrentPCInfo(haltedInfo.stepCmd, thread, sp, scopes, topFrame, stack);
         } catch (AbsentInformationException | IllegalStateException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -233,7 +236,12 @@ public class TruffleAccess implements JPDABreakpointListener {
     }
     
     public static SourcePosition getSourcePosition(JPDADebugger debugger, ObjectVariable sourcePositionVar) {
-        long id = (Long) sourcePositionVar.getField(VAR_SRC_ID).createMirrorObject();
+        Field varSrcId = sourcePositionVar.getField(VAR_SRC_ID);
+        if (varSrcId == null) {
+            // sourcePositionVar represents null
+            return null;
+        }
+        long id = (Long) varSrcId.createMirrorObject();
         int line = (Integer) sourcePositionVar.getField(VAR_SRC_LINE).createMirrorObject();
         Source src = Source.getExistingSource(debugger, id);
         if (src == null) {
@@ -246,29 +254,47 @@ public class TruffleAccess implements JPDABreakpointListener {
         return new SourcePosition(debugger, id, src, line);
     }
     
-    private static TruffleVariable[] createVars(JPDADebugger debugger, ObjectVariable varsArrVar) {
+    private static TruffleScope[] createScopes(JPDADebugger debugger, ObjectVariable varsArrVar) {
         Field[] varsArr = varsArrVar.getFields(0, Integer.MAX_VALUE);
-        int n = varsArr.length/9;
-        TruffleVariable[] vars = new TruffleVariable[n];
-        for (int i = 0; i < n; i++) {
-            int vi = 9*i;
-            String name = (String) varsArr[vi].createMirrorObject();
-            String type = (String) varsArr[vi + 1].createMirrorObject();
-            boolean writable = (Boolean) varsArr[vi + 2].createMirrorObject();
-            String valueStr = (String) varsArr[vi + 3].createMirrorObject();
-            Supplier<SourcePosition> valueSource = parseSourceLazy(debugger,
-                                                                   varsArr[vi + 4],
-                                                                   (JDIVariable) varsArr[vi + 5]);
-            Supplier<SourcePosition> typeSource = parseSourceLazy(debugger,
-                                                                  varsArr[vi + 6],
-                                                                  (JDIVariable) varsArr[vi + 7]);
-            ObjectVariable value = (ObjectVariable) varsArr[vi + 8];
-            vars[i] = new TruffleStackVariable(debugger, name, type, writable, valueStr,
-                                               valueSource, typeSource, value);
+        List<TruffleScope> scopes = new LinkedList<>();
+        int n = varsArr.length;
+        int i = 0;
+        while (i < n) {
+            String scopeName = (String) varsArr[i++].createMirrorObject();
+            boolean scopeFunction = (Boolean) varsArr[i++].createMirrorObject();
+            int numArgs = (Integer) varsArr[i++].createMirrorObject();
+            int numVars = (Integer) varsArr[i++].createMirrorObject();
+            TruffleVariable[] arguments = new TruffleVariable[numArgs];
+            i = fillVars(debugger, arguments, varsArr, i);
+            TruffleVariable[] variables = new TruffleVariable[numVars];
+            i = fillVars(debugger, variables, varsArr, i);
+            scopes.add(new TruffleScope(scopeName, scopeFunction, arguments, variables));
         }
-        return vars;
+        return scopes.toArray(new TruffleScope[scopes.size()]);
     }
     
+    private static int fillVars(JPDADebugger debugger, TruffleVariable[] vars, Field[] varsArr, int i) {
+        for (int vi = 0; vi < vars.length; vi++) {
+            String name = (String) varsArr[i++].createMirrorObject();
+            String type = (String) varsArr[i++].createMirrorObject();
+            boolean readable = (Boolean) varsArr[i++].createMirrorObject();
+            boolean writable = (Boolean) varsArr[i++].createMirrorObject();
+            boolean internal = (Boolean) varsArr[i++].createMirrorObject();
+            String valueStr = (String) varsArr[i++].createMirrorObject();
+            Supplier<SourcePosition> valueSource = parseSourceLazy(debugger,
+                                                                   varsArr[i++],
+                                                                   (JDIVariable) varsArr[i++]);
+            Supplier<SourcePosition> typeSource = parseSourceLazy(debugger,
+                                                                  varsArr[i++],
+                                                                  (JDIVariable) varsArr[i++]);
+            ObjectVariable value = (ObjectVariable) varsArr[i++];
+            vars[vi] = new TruffleStackVariable(debugger, name, type, readable,
+                                                writable, internal, valueStr,
+                                                valueSource, typeSource, value);
+        }
+        return i;
+    }
+
     private static Supplier<SourcePosition> parseSourceLazy(JPDADebugger debugger, Variable sourceDefVar, JDIVariable codeRefVar) {
         return () -> parseSource(debugger,
                                  (String) sourceDefVar.createMirrorObject(),
@@ -310,7 +336,7 @@ public class TruffleAccess implements JPDABreakpointListener {
         return new SourcePosition(debugger, sourceId, src, sourceLine);
     }
     
-    public static TruffleVariable[] createFrameVars(final JPDADebugger debugger,
+    public static TruffleScope[] createFrameScopes(final JPDADebugger debugger,
                                                     //final Variable suspendedInfo,
                                                     final Variable frameInstance) {
         JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
@@ -318,11 +344,11 @@ public class TruffleAccess implements JPDABreakpointListener {
             Variable frameVars = debugAccessor.invokeMethod(METHOD_GET_VARIABLES,
                                                             METHOD_GET_VARIABLES_SGN,
                                                             new Variable[] { frameInstance });
-            TruffleVariable[] vars = createVars(debugger, (ObjectVariable) frameVars);
-            return vars;
+            TruffleScope[] scopes = createScopes(debugger, (ObjectVariable) frameVars);
+            return scopes;
         } catch (InvalidExpressionException | NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
-            return new TruffleVariable[] {};
+            return new TruffleScope[] {};
         }
     }
     

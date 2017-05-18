@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleScope;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
@@ -125,6 +126,9 @@ public class TruffleVariablesNodeModel implements ExtendedNodeModelFilter {
 
     @Override
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
+        if (node instanceof TruffleScope) {
+            return ((TruffleScope) node).getName();
+        }
         if (node instanceof TruffleVariable) {
             return ((TruffleVariable) node).getName();
         } else {

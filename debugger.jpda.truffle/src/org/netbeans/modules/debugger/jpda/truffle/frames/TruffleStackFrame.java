@@ -54,7 +54,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleScope;
 
 /**
  *
@@ -76,20 +76,20 @@ public final class TruffleStackFrame {
     private final URI    sourceURI;
     private final int    sourceLine;
     private final StringReference codeRef;
-    private TruffleVariable[] vars;
+    private TruffleScope[] scopes;
     private final ObjectVariable thisObject;
     private final boolean isInternal;
     
     public TruffleStackFrame(JPDADebugger debugger, int depth,
                              ObjectVariable frameInstance,
                              String frameDefinition, StringReference codeRef,
-                             TruffleVariable[] vars, ObjectVariable thisObject,
+                             TruffleScope[] scopes, ObjectVariable thisObject,
                              boolean includeInternal) {
         if (LOG.isLoggable(Level.FINE)) {
             try {
                 LOG.fine("new TruffleStackFrame("+depth+", "+
                          frameInstance.getToStringValue()+" of type "+frameInstance.getClassType().getName()+
-                         ", "+frameDefinition+", vars = "+Arrays.toString(vars)+
+                         ", "+frameDefinition+", vars = "+Arrays.toString(scopes)+
                          ", "+thisObject+")");
             } catch (InvalidExpressionException iex) {
                 LOG.log(Level.FINE, iex.getMessage(), iex);
@@ -135,7 +135,7 @@ public final class TruffleStackFrame {
             throw new IllegalStateException("frameDefinition='"+frameDefinition+"'", ioob);
         }
         this.codeRef = codeRef;
-        this.vars = vars;
+        this.scopes = scopes;
         this.thisObject = thisObject;
         this.isInternal = internalFrame;
     }
@@ -177,11 +177,11 @@ public final class TruffleStackFrame {
         return frameInstance;// also is: (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
     }
     
-    public TruffleVariable[] getVars() {
-        if (vars == null) {
-            vars = TruffleAccess.createFrameVars(debugger, /*suspendedInfo,*/ getStackFrameInstance());
+    public TruffleScope[] getScopes() {
+        if (scopes == null) {
+            scopes = TruffleAccess.createFrameScopes(debugger, /*suspendedInfo,*/ getStackFrameInstance());
         }
-        return vars;
+        return scopes;
     }
     
     public ObjectVariable getThis() {

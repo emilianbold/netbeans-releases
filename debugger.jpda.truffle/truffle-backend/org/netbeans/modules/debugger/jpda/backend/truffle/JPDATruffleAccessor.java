@@ -43,22 +43,19 @@
 package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.debug.Breakpoint;
+import com.oracle.truffle.api.debug.DebugScope;
 import com.oracle.truffle.api.debug.DebugStackFrame;
 import com.oracle.truffle.api.debug.DebugValue;
 import com.oracle.truffle.api.debug.Debugger;
 import com.oracle.truffle.api.debug.DebuggerSession;
 import com.oracle.truffle.api.debug.SuspendedEvent;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -167,7 +164,7 @@ public class JPDATruffleAccessor extends Object {
                     break;
             case 2: evt.prepareStepOver(1);
                     break;
-            case 3: evt.prepareStepOut();
+            case 3: evt.prepareStepOut(1);
                     break;
             default:
                     throw new IllegalStateException("Unknown step command: "+stepCmd);
@@ -391,32 +388,65 @@ public class JPDATruffleAccessor extends Object {
 
     // 9*vars: <name>, <type>, <writable>, <String value>,
     //         <var source>, <VS code>, <type source>, <TS code>, <DebugValue>
+    // An array of scopes and their variables:
+    // <scope name>, <is functional>, <num args>, <num vars>, [(num args)+(num vars) variables]
+    // Variable: 11 elements: <name>, <type>, <readable>, <writable>, <internal>, <String value>,
+    //                        <var source>, <VS code>, <type source>, <TS code>, <DebugValue>
     static Object[] getVariables(DebugStackFrame sf) {
-        List<DebugValue> values = new ArrayList<>();
-        for (Iterator<DebugValue> iterator = sf.iterator(); iterator.hasNext(); ) {
-            values.add(iterator.next());
-        }
-        int numValues = values.size();
-        Object[] vars = new Object[numValues*9];
-        for (int i = 0; i < numValues; i++) {
-            DebugValue value = values.get(i);
-            int vi = 9*i;
-            TruffleObject tobj = new TruffleObject(value);
-            vars[vi] = tobj.name;
-            vars[vi + 1] = tobj.type;
-            vars[vi + 2] = tobj.writable;
-            vars[vi + 3] = tobj.displayValue;
-            if (tobj.valueSourcePosition != null) {
-                vars[vi + 4] = createPositionIdentificationString(tobj.valueSourcePosition);
-                vars[vi + 5] = tobj.valueSourcePosition.code;
+        List<Object> elements = new ArrayList<>();
+        DebugScope scope = sf.getScope();
+        while (scope != null) {
+            elements.add(scope.getName());
+            elements.add(scope.isFunctionScope());
+            List<DebugValue> arguments = new ArrayList<>();
+            Iterable<DebugValue> sargs = scope.getArguments();
+            if (sargs != null) {
+                for (DebugValue arg : sargs) {
+                    arguments.add(arg);
+                }
             }
-            if (tobj.typeSourcePosition != null) {
-                vars[vi + 6] = createPositionIdentificationString(tobj.typeSourcePosition);
-                vars[vi + 7] = tobj.typeSourcePosition.code;
+            List<DebugValue> variables = new ArrayList<>();
+            for (DebugValue var : scope.getDeclaredValues()) {
+                variables.add(var);
             }
-            vars[vi + 8] = tobj;
+            elements.add(arguments.size());
+            elements.add(variables.size());
+            for (DebugValue v : arguments) {
+                addValueElement(v, elements);
+            }
+            for (DebugValue v : variables) {
+                addValueElement(v, elements);
+            }
+            scope = scope.getParent();
         }
-        return vars;
+        return elements.toArray();
+    }
+
+    // Store 11 elements: <name>, <type>, <readable>, <writable>, <internal>, <String value>,
+    //                    <var source>, <VS code>, <type source>, <TS code>, <DebugValue>
+    static void addValueElement(DebugValue value, List<Object> elements) {
+        TruffleObject tobj = new TruffleObject(value);
+        elements.add(tobj.name);
+        elements.add(tobj.type);
+        elements.add(tobj.readable);
+        elements.add(tobj.writable);
+        elements.add(tobj.internal);
+        elements.add(tobj.displayValue);
+        if (tobj.valueSourcePosition != null) {
+            elements.add(createPositionIdentificationString(tobj.valueSourcePosition));
+            elements.add(tobj.valueSourcePosition.code);
+        } else {
+            elements.add(null);
+            elements.add(null);
+        }
+        if (tobj.typeSourcePosition != null) {
+            elements.add(createPositionIdentificationString(tobj.typeSourcePosition));
+            elements.add(tobj.typeSourcePosition.code);
+        } else {
+            elements.add(null);
+            elements.add(null);
+        }
+        elements.add(tobj);
     }
 
     static void debuggerAccess() {
