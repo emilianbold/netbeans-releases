@@ -451,4 +451,11 @@ Contributor(s):
 	<mapID target="WorkingWithJNA" url="WorkingWithCandC++Projects/WorkingWithJNA.html"/>
 	<mapID target="IntroduceMethod" url="EditingSourceFiles/IntroduceMethod.html"/>
 	<mapID target="RefactorInline" url="EditingSourceFiles/RefactorInline.html"/>
+	<mapID target="AboutDocker" url="Docker/AboutDocker.html"/>
+	<mapID target="AddingDockerInstance" url="Docker/AddingDockerInstance.html"/>
+	<mapID target="BuildImageDialog" url="Docker/BuildImageDialog.html"/>
+	<mapID target="RunningDockerContainers" url="Docker/RunningDockerContainers.html"/>
+	<mapID target="ManageLaunchers" url="WorkingWithCandC++Projects/ManageLaunchersDialog.html"/>
+	<mapID target="CleanCacheDir" url="WorkingWithCandC++Projects/CleanCache.html"/>
+	<mapID target="TerminalExtensions" url="EditingSourceFiles/TerminalExtensions.html"/>
 </map>
