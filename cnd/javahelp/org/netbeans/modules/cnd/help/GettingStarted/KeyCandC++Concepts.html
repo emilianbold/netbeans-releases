@@ -1,11 +1,49 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
  <!--
-Copyright &copy; 2009, 2015 Oracle and/or its affiliates. All rights reserved.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2016 Sun Microsystems, Inc.
  -->
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<link rel="StyleSheet" href="../ide.css" 
+<link rel="StyleSheet" href="../ide.css"
 type="text/css">
 <title>Key C and C++ Development Concepts</title>
 </head>
@@ -13,7 +51,7 @@ type="text/css">
 <h2>Key C and C++ Development Concepts
 </h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>Before you begin developing C and C++ applications in the IDE, you should be 
+<p>Before you begin developing C and C++ applications in the IDE, you should be
 familiar with the following concepts:
 </p>
 <ul>
@@ -24,35 +62,35 @@ familiar with the following concepts:
 Projects<a name="projects"></a></h3>
 <p>
 A C or C++ project is a group of C or C++ source files and associated information about
-how to build and run the project. The IDE stores project information 
+how to build and run the project. The IDE stores project information
 in a project folder that includes a makefile and metadata files. Your source directories do not need to be located in the project folder.
 </p>
 <p>
-In the IDE, you always work inside of a project. You can create projects 
-that use an IDE-generated makefile to build the project, or create  
+In the IDE, you always work inside of a project. You can create projects
+that use an IDE-generated makefile to build the project, or create
 projects that are based on your existing makefiles.
 </p>
 <h3>Makefiles<a name="makefiles"></a></h3>
-<p>A makefile is a file of shell commands that the <tt>make</tt> utility uses. Typically, 
-the <tt>make</tt> utility uses the makefile to determine which portions of a program to 
-compile, but there are other uses also. 
+<p>A makefile is a file of shell commands that the <tt>make</tt> utility uses. Typically,
+the <tt>make</tt> utility uses the makefile to determine which portions of a program to
+compile, but there are other uses also.
 </p>
 <p>
-The C and C++ project system is built directly on top of the <tt>make</tt> utility. 
-All of the project commands, like Build Project or Run Project, call targets in 
-the project's makefile. You can therefore build and run your C, C++, or Fortran project outside the 
+The C and C++ project system is built directly on top of the <tt>make</tt> utility.
+All of the project commands, like Build Project or Run Project, call targets in
+the project's makefile. You can therefore build and run your C, C++, or Fortran project outside the
 IDE exactly as it is built and run inside the IDE.
 </p>
 <p>
-You do not need to know the <tt>make</tt> utility to work with the IDE. For a 
-C/C++ Application, Dynamic Library, or Static Library project, you can set all the basic 
-compilation and runtime options in the project's Project Properties dialog box 
-and the IDE automatically updates your makefile. If you know how to work with makefiles, 
-you can customize a project's makefile or write your own makefile 
+You do not need to know the <tt>make</tt> utility to work with the IDE. For a
+C/C++ Application, Dynamic Library, or Static Library project, you can set all the basic
+compilation and runtime options in the project's Project Properties dialog box
+and the IDE automatically updates your makefile. If you know how to work with makefiles,
+you can customize a project's makefile or write your own makefile
 for your project. You can create a makefile with the Makefile wizard in the IDE.
 </p>
-<p>For a C/C++ Project with Existing Makefile, the makefile is not 
-updated when you set project properties in the IDE. To change a makefile that was 
+<p>For a C/C++ Project with Existing Makefile, the makefile is not
+updated when you set project properties in the IDE. To change a makefile that was
 created outside the IDE, you must edit the makefile manually.
 </p>
 <p>If a C/C++ Project with Existing Makefile has a configure script, a qmake *.pro
