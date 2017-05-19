@@ -1,41 +1,79 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2011 Oracle and/or its affiliates. All rights reserved.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2016 Sun Microsystems, Inc.
  -->
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<link rel="StyleSheet" href="../ide.css" 
+<link rel="StyleSheet" href="../ide.css"
 type="text/css">
 <title>C and C++ Sessions Window</title>
 </head>
 <body>
 <h2>C and C++ Sessions Window</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Sessions window lists the debugging sessions currently running 
-in the IDE. When you start a second debugging session, the window opens automatically. 
-You can open the Sessions window by choosing Window &gt; 
-Debugging &gt; Sessions. If you open the Sessions window when a 
-debugging session is running, it closes automatically when you end 
-the debugging session. If you open the window when no debugging 
+<p>The Sessions window lists the debugging sessions currently running
+in the IDE. When you start a second debugging session, the window opens automatically.
+You can open the Sessions window by choosing Window &gt;
+Debugging &gt; Sessions. If you open the Sessions window when a
+debugging session is running, it closes automatically when you end
+the debugging session. If you open the window when no debugging
 session is running, it stays open until you close it.
 </p>
 <p>
-The information given for each session includes the session name 
-and state. In most cases, the state corresponds to the state of the 
-process associated with the session. One session is always 
-considered the current session, unless no sessions are running. By 
-default, the current session is the session that you most recently 
+The information given for each session includes the session name
+and state. In most cases, the state corresponds to the state of the
+process associated with the session. One session is always
+considered the current session, unless no sessions are running. By
+default, the current session is the session that you most recently
 started.
 </p>
-<p>By default, the window displays the name, process ID, process state, 
-and host for each session. To display additional information, click the 
-Change Visible Columns button <img src="../images/visibleColumns.png" alt="Change Visible Columns icon">&nbsp;and 
+<p>By default, the window displays the name, process ID, process state,
+and host for each session. To display additional information, click the
+Change Visible Columns button <img src="../images/visibleColumns.png" alt="Change Visible Columns icon">&nbsp;and
 select columns in the Change Visible Columns dialog box.
-</p> 
+</p>
 <h3>Session States</h3>
 The following table describes the session states.
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists  
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists
 the state. The right column describes the state.">
 <tr valign="top">
 <th scope="col" align="left">State</th>
@@ -43,20 +81,20 @@ the state. The right column describes the state.">
 </tr>
 <tr valign="top">
 <td>Starting</td>
-<td>The program is being started. You cannot pause, resume, or single-step 
+<td>The program is being started. You cannot pause, resume, or single-step
 the application.
 </td>
 </tr>
 <tr valign="top">
 <td>Running</td>
-<td>The application being debugged has been started and is 
+<td>The application being debugged has been started and is
 executing instructions.
 </td>
 </tr>
 <tr valign="top">
 <td>Paused</td>
-<td>The application is suspended because it hit a breakpoint or 
-because you either paused the application or performed a step 
+<td>The application is suspended because it hit a breakpoint or
+because you either paused the application or performed a step
 command (Step Into, Step Over, Step Out, or Run to Cursor).
 </td>
 </tr>
@@ -67,7 +105,7 @@ command (Step Into, Step Over, Step Out, or Run to Cursor).
 </table>
 <h3>Icons</h3>
 The following table describes the icons displayed in the Sessions window.
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column shows  
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column shows
 the icon. The right column describes the icon.">
 <tr valign="top">
 <th scope="col" align="left">Icon</th>

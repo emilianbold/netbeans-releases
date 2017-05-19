@@ -1,70 +1,108 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2016 Sun Microsystems, Inc.
  -->
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<link rel="StyleSheet" href="../ide.css" 
+<link rel="StyleSheet" href="../ide.css"
 type="text/css">
 <title>Resolve Missing Native Build Tools Dialog Box</title>
 </head>
 <body>
 <h2>Resolve Missing Native Build Tools Dialog Box</h2>
 
-<p>If the tools required to build the project are not in the  
-collection specified for the project, the 
+<p>If the tools required to build the project are not in the
+collection specified for the project, the
 Resolve Missing Native Build Tools dialog box opens.</p>
 <p>
 To resolve the missing build tools, you can set the following properties:</p>
 <ul>
-<li><b>Build Host.</b> The Build Host drop-down list includes 
-your local host and any remote hosts you have defined. For information 
+<li><b>Build Host.</b> The Build Host drop-down list includes
+your local host and any remote hosts you have defined. For information
 on using remote hosts, see <a href="../WorkingWithCandC++Projects/RemoteDevelopment.html">Remote Development</a>.
-You can add and remove 
-remote build hosts, change the default host, and share project sources 
+You can add and remove
+remote build hosts, change the default host, and share project sources
 on the local host with the remote host.
 <ul>
-<li>To add a remote host, click Edit. In the Build Hosts Manager 
-dialog box, click Add. In the Add New Server dialog box, type the 
-name of the host in the Build Server field. Change 
-the default Login name if needed. Type your password 
+<li>To add a remote host, click Edit. In the Build Hosts Manager
+dialog box, click Add. In the Add New Server dialog box, type the
+name of the host in the Build Server field. Change
+the default Login name if needed. Type your password
 in the Password field and click OK.
 </li>
-<li>To remove a remote host, click Edit. In the Build Hosts Manager 
+<li>To remove a remote host, click Edit. In the Build Hosts Manager
 dialog box, select the host you want to remove, click Remove, then click OK.
 </li>
-<li>To set a host as the default build host, select the host 
+<li>To set a host as the default build host, select the host
 from the Build Host drop-down list.
 </li>
-<li>To map the project sources on the local host to a remote host, 
-click Path Mapper. In the Edit Path's Map dialog box, select the 
-remote host in the Host drop-down list. For each mapping, type 
-the local path to project sources in the Local Path field and the 
-corresponding remote path in the Remote Path field. 
+<li>To map the project sources on the local host to a remote host,
+click Path Mapper. In the Edit Path's Map dialog box, select the
+remote host in the Host drop-down list. For each mapping, type
+the local path to project sources in the Local Path field and the
+corresponding remote path in the Remote Path field.
 </li>
 </ul>
-<li><b>Tool Collection.</b> The tool collection list displays 
-the collections found on the current build host and the local 
-host. The default  
+<li><b>Tool Collection.</b> The tool collection list displays
+the collections found on the current build host and the local
+host. The default
 collection is listed in bold type. For the local host, you can modify
 the list by adding or removing collections.
 <ul>
-<li>To add a collection to the list, click Add and specify the 
+<li>To add a collection to the list, click Add and specify the
 base directory in the Add New Tool Collection dialog box. The Tool Collection
 Family and Tool Collection Name are filled in automatically. You can specify
-a different name for the collection. If you change the family,  
-make sure that the family you specify is the correct family for the 
+a different name for the collection. If you change the family,
+make sure that the family you specify is the correct family for the
 collection or the compiler flags might not be valid.
 </li>
-<li>To remove a collection from the list, select the collection and 
+<li>To remove a collection from the list, select the collection and
 click Remove.
 </li>
-<li>To duplicate a collection, select the collection from the list 
+<li>To duplicate a collection, select the collection from the list
 and modify the base directory, tool collection family, or tool collection name in
 the dialog box.
 </li>
-<li>To make a collection the default, select the collection and 
+<li>To make a collection the default, select the collection and
 click Default.
 </li>
 </ul>

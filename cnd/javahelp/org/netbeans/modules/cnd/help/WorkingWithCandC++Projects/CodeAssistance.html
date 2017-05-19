@@ -1,6 +1,44 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2016 Sun Microsystems, Inc.
  -->
 <html>
   <head>
@@ -23,7 +61,7 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
     <p>
        Code assistance is a set of IDE features that help you navigate and edit source code. See <a
       href="../EditingSourceFiles/EditingSourceFiles.html">About Editing C and C++ Source Files</a>
-      for more information about these features.
+      for more about these features.
     </p>
     <p>
        The IDE can use several ways to gather information from a project to enable code assistance
@@ -32,7 +70,7 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
       Oracle Solaris, Linux, and Mac platforms.
     </p>
     <p>
-       The build analyzer is used when you create a project with existing sources, and whenever you
+       The build analyzer is used when you create a project with existing sources and whenever you
       build the project to automatically discover changed code assistance configuration. The build
       analyzer also runs if you manually run the Configure Code Assistance wizard.
     </p>
@@ -44,36 +82,22 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
     <p>
        For some projects you might not want to use the build analyzer, so you can disable it.
     </p>
-    <br>
     <p>
-       <b>To Enable and Disable the Build Analyzer</b>
+       <b>To enable and disable the build analyzer:</b>
     </p>
     <ol>
       <li>
-        Right-click on your project in the Projects window and choose Properties.
+        Right-click your project in the Projects window and choose Properties.
       </li>
       <li>
-        Click the Code Assistance category.
+        Click the Code Assistance category
       </li>
       <li>
         Click the Use Build Analyzer check box.
       </li>
     </ol>
-      <br>
-    <p><b>Build Analyzer Based on Tool Collection Wrapper</b></p>
-    <p>The tool collection wrapper created by IDE is used to build
-      the Project and as a result, all the compile command lines are stored and used for 
-      configuring code assistance.</p>
-    <p>IDE uses several techniques to catch real compiler invocation, depending on your operating system:</p>
-    <ul>
-      <li>Preload libraries on Linux and Oracle Solaris</li>
-      <li>Wrapper script for Mac</li>
-      <li>Wrapper binary for Windows</li>
-    </ul>
-    <p>The appropriate wrapper files can be found in the <tt>/nbproject/private/..</tt> folder.</p>
-        <br>
     <p>
-       <b>To start the Configure Code Assistance Wizard, perform one of the following tasks:</b>
+       <b>To start the Configure Code Assistance wizard do one of the following:</b>
     </p>
     <ul>
       <li>
@@ -81,22 +105,21 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
         in the left margin.
       </li>
       <li>
-        Right-click on your project in the Projects window and choose Code Assistance &gt; Configure
+        Right-click your project in the Projects window and choose Code Assistance &gt; Configure
         Code Assistance.
       </li>
     </ul>
     <p>
        When the project is parsed, the data is stored in the code assistance cache. Whenever you
       open a project, the IDE examines the cache and reparses the project if the cache is not up to
-      date with the code. If the cache is up to date, the IDE does not reparse the project and loads
+      date with the code. If the cache is up to date the IDE does not reparse the project and loads
       the data from the code assistance cache.
     </p>
     <p>
        If you later add files to a project, you should include the new files in code assistance.
     </p>
-          <br>
     <p>
-       <b>To include extra files in code assistance, perform one of the following tasks:</b>
+       <b>To include extra files in code assistance do one of the following:</b>
     </p>
     <ul>
       <li>
@@ -106,7 +129,6 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
         In project properties, click the Code Assistance node and select Extra Source Files.
       </li>
     </ul>
-        <br>
     <table>
       <tr>
         <th align="left" colspan="2">
@@ -119,8 +141,7 @@ Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
         </td>
         <td>
           <a href="../WorkingWithCandC++Projects/CodeAssistanceWizardP1.html">Configure Code
-            Assistance Wizard: Select Mode</a><br>
-              <a href="../WorkingWithCandC++Projects/CleanCache.html">Cleaning Cache Directory</a><br>
+          Assistance Wizard: Select Mode</a><br>
            <a href="../WorkingWithCandC++Projects/ConfiguringParsingSettings.html">Configuring Code
           Assistance Settings for C and C++ Projects</a><br>
            <a href="../WorkingWithCandC++Projects/CodeAssistanceCache.html">Relocating the Code

@@ -56,6 +56,7 @@ import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -386,38 +387,122 @@ public class JPDATruffleAccessor extends Object {
         return str.toString();
     }
 
-    // 9*vars: <name>, <type>, <writable>, <String value>,
-    //         <var source>, <VS code>, <type source>, <TS code>, <DebugValue>
     // An array of scopes and their variables:
     // <scope name>, <is functional>, <num args>, <num vars>, [(num args)+(num vars) variables]
     // Variable: 11 elements: <name>, <type>, <readable>, <writable>, <internal>, <String value>,
     //                        <var source>, <VS code>, <type source>, <TS code>, <DebugValue>
+    // Parent scopes: <scope name>, <is functional>, <has args>, <has vars>, <DebugScope>
     static Object[] getVariables(DebugStackFrame sf) {
         List<Object> elements = new ArrayList<>();
-        DebugScope scope = sf.getScope();
-        while (scope != null) {
-            elements.add(scope.getName());
-            elements.add(scope.isFunctionScope());
-            List<DebugValue> arguments = new ArrayList<>();
-            Iterable<DebugValue> sargs = scope.getArguments();
-            if (sargs != null) {
-                for (DebugValue arg : sargs) {
-                    arguments.add(arg);
+        try {
+            DebugScope scope = sf.getScope();
+            do {
+                Iterable<DebugValue> argsIt = scope.getArguments();
+                Iterator<DebugValue> args;
+                if (argsIt != null) {
+                    args = argsIt.iterator();
+                } else {
+                    args = null;
+                }
+                Iterable<DebugValue> varsIt = scope.getDeclaredValues();
+                Iterator<DebugValue> vars = varsIt.iterator();
+                if ((args == null || !args.hasNext()) && !vars.hasNext()) {
+                    // An empty scope, skip it
+                    scope = scope.getParent();
+                    continue;
+                }
+                elements.add(scope.getName());
+                elements.add(scope.isFunctionScope());
+                List<DebugValue> arguments = null;
+                if (args != null && args.hasNext()) {
+                    arguments = new ArrayList<>();
+                    while (args.hasNext()) {
+                        arguments.add(args.next());
+                    }
+                    elements.add(arguments.size());
+                } else {
+                    elements.add(0);
+                }
+                List<DebugValue> variables = new ArrayList<>();
+                while (vars.hasNext()) {
+                    variables.add(vars.next());
+                }
+                elements.add(variables.size());
+                if (arguments != null) {
+                    for (DebugValue v : arguments) {
+                        addValueElement(v, elements);
+                    }
+                }
+                for (DebugValue v : variables) {
+                    addValueElement(v, elements);
+                }
+                // We've filled the first scope in.
+                break;
+            } while (scope != null);
+            
+            if (scope != null) {
+                while ((scope = scope.getParent()) != null) {
+                    elements.add(scope.getName());
+                    elements.add(scope.isFunctionScope());
+                    Iterable<DebugValue> args = scope.getArguments();
+                    boolean hasArgs = (args != null && args.iterator().hasNext());
+                    elements.add(hasArgs);
+                    boolean hasVars = scope.getDeclaredValues().iterator().hasNext();
+                    elements.add(hasVars);
+                    elements.add(scope);
                 }
             }
-            List<DebugValue> variables = new ArrayList<>();
-            for (DebugValue var : scope.getDeclaredValues()) {
-                variables.add(var);
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            LangErrors.exception("An error when accessing scopes", t);
+        }
+        return elements.toArray();
+    }
+
+    // An array of scope's arguments and variables:
+    // <num args>, <num vars>, [(num args)+(num vars) variables]
+    // Variable: 11 elements: <name>, <type>, <readable>, <writable>, <internal>, <String value>,
+    //                        <var source>, <VS code>, <type source>, <TS code>, <DebugValue>
+    static Object[] getScopeVariables(DebugScope scope) {
+        List<Object> elements = new ArrayList<>();
+        try {
+            Iterable<DebugValue> argsIt = scope.getArguments();
+            Iterator<DebugValue> args;
+            if (argsIt != null) {
+                args = argsIt.iterator();
+            } else {
+                args = null;
             }
-            elements.add(arguments.size());
+            Iterable<DebugValue> varsIt = scope.getDeclaredValues();
+            Iterator<DebugValue> vars = varsIt.iterator();
+            List<DebugValue> arguments = null;
+            if (args != null && args.hasNext()) {
+                arguments = new ArrayList<>();
+                while (args.hasNext()) {
+                    arguments.add(args.next());
+                }
+                elements.add(arguments.size());
+            } else {
+                elements.add(0);
+            }
+            List<DebugValue> variables = new ArrayList<>();
+            while (vars.hasNext()) {
+                variables.add(vars.next());
+            }
             elements.add(variables.size());
-            for (DebugValue v : arguments) {
-                addValueElement(v, elements);
+            if (arguments != null) {
+                for (DebugValue v : arguments) {
+                    addValueElement(v, elements);
+                }
             }
             for (DebugValue v : variables) {
                 addValueElement(v, elements);
             }
-            scope = scope.getParent();
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            LangErrors.exception("An error when accessing scope "+scope, t);
         }
         return elements.toArray();
     }

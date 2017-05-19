@@ -131,6 +131,8 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static final String METHOD_GET_FRAME_SLOTS_SGN = "(Lcom/oracle/truffle/api/frame/FrameInstance;)[Ljava/lang/Object;";   // NOI18N
     private static final String METHOD_GET_VARIABLES = "getVariables";          // NOI18N
     private static final String METHOD_GET_VARIABLES_SGN = "(Lcom/oracle/truffle/api/debug/DebugStackFrame;)[Ljava/lang/Object;";  // NOI18N
+    private static final String METHOD_GET_SCOPE_VARIABLES = "getScopeVariables";// NOI18N
+    private static final String METHOD_GET_SCOPE_VARIABLES_SGN = "(Lcom/oracle/truffle/api/debug/DebugScope;)[Ljava/lang/Object;"; // NOI18N
     
     private static final Map<JPDADebugger, CurrentPCInfo> currentPCInfos = new WeakHashMap<>();
     
@@ -259,7 +261,7 @@ public class TruffleAccess implements JPDABreakpointListener {
         List<TruffleScope> scopes = new LinkedList<>();
         int n = varsArr.length;
         int i = 0;
-        while (i < n) {
+        if (i < n) {
             String scopeName = (String) varsArr[i++].createMirrorObject();
             boolean scopeFunction = (Boolean) varsArr[i++].createMirrorObject();
             int numArgs = (Integer) varsArr[i++].createMirrorObject();
@@ -269,6 +271,15 @@ public class TruffleAccess implements JPDABreakpointListener {
             TruffleVariable[] variables = new TruffleVariable[numVars];
             i = fillVars(debugger, variables, varsArr, i);
             scopes.add(new TruffleScope(scopeName, scopeFunction, arguments, variables));
+        }
+        while (i < n) {
+            // There are further scopes, retrieved lazily
+            String scopeName = (String) varsArr[i++].createMirrorObject();
+            boolean scopeFunction = (Boolean) varsArr[i++].createMirrorObject();
+            boolean hasArgs = (Boolean) varsArr[i++].createMirrorObject();
+            boolean hasVars = (Boolean) varsArr[i++].createMirrorObject();
+            ObjectVariable scope = (ObjectVariable) varsArr[i++];
+            scopes.add(new TruffleScope(scopeName, scopeFunction, hasArgs, hasVars, debugger, scope));
         }
         return scopes.toArray(new TruffleScope[scopes.size()]);
     }
@@ -293,6 +304,30 @@ public class TruffleAccess implements JPDABreakpointListener {
                                                 valueSource, typeSource, value);
         }
         return i;
+    }
+
+    public static TruffleVariable[][] getScopeArgsAndVars(JPDADebugger debugger, ObjectVariable debugScope) {
+        JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
+        try {
+            Variable scopeVars = debugAccessor.invokeMethod(METHOD_GET_SCOPE_VARIABLES,
+                                                            METHOD_GET_SCOPE_VARIABLES_SGN,
+                                                            new Variable[] { debugScope });
+            Field[] varsArr = ((ObjectVariable) scopeVars).getFields(0, Integer.MAX_VALUE);
+            int n = varsArr.length;
+            int i = 0;
+            if (i < n) {
+                int numArgs = (Integer) varsArr[i++].createMirrorObject();
+                int numVars = (Integer) varsArr[i++].createMirrorObject();
+                TruffleVariable[] arguments = new TruffleVariable[numArgs];
+                i = fillVars(debugger, arguments, varsArr, i);
+                TruffleVariable[] variables = new TruffleVariable[numVars];
+                i = fillVars(debugger, variables, varsArr, i);
+                return new TruffleVariable[][] { arguments, variables };
+            }
+        } catch (InvalidExpressionException | NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new TruffleVariable[][] { new TruffleVariable[] {}, new TruffleVariable[] {} };
     }
 
     private static Supplier<SourcePosition> parseSourceLazy(JPDADebugger debugger, Variable sourceDefVar, JDIVariable codeRefVar) {
