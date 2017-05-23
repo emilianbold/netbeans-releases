@@ -72,14 +72,14 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
-import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
-import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 
 import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties.PROPERTY_ADMIN_PORT;
 
+import org.netbeans.modules.javaee.wildfly.ide.WildflyDeploymentStatus;
+import org.netbeans.modules.javaee.wildfly.ide.WildflyProgressObject;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
