@@ -90,7 +90,6 @@ made subject to such option by the copyright holder.
                 <package>org.clang.basic.target</package>
                 <package>org.clang.basic.vfs</package>
                 <package>org.clang.basic.vfs.detail</package>
-                <package>org.clang.config</package>
                 <package>org.clang.clangc</package>
                 <package>org.clang.clangc.api</package>
                 <package>org.clang.clangc.api.buildsystem</package>
@@ -98,6 +97,7 @@ made subject to such option by the copyright holder.
                 <package>org.clang.clangc.spi</package>
                 <package>org.clang.codegen</package>
                 <package>org.clang.codegen.java</package>
+                <package>org.clang.config</package>
                 <package>org.clang.driver</package>
                 <package>org.clang.driver.frontend</package>
                 <package>org.clang.edit</package>
@@ -137,6 +137,7 @@ made subject to such option by the copyright holder.
                 <package>org.clang.tooling.core</package>
                 <package>org.clang.tools.driver</package>
                 <package>org.clang.tools.services</package>
+                <package>org.clang.tools.services.spi</package>
                 <package>org.clang.tools.services.support</package>
                 <package>org.clank.java</package>
                 <package>org.clank.java.stdimpl</package>
@@ -146,10 +147,30 @@ made subject to such option by the copyright holder.
                 <package>org.llvm.adt</package>
                 <package>org.llvm.adt.aliases</package>
                 <package>org.llvm.adt.java</package>
+                <package>org.llvm.analysis</package>
+                <package>org.llvm.bitcode</package>
+                <package>org.llvm.bitcode.bitc</package>
+                <package>org.llvm.bitcode.java</package>
                 <package>org.llvm.cl</package>
                 <package>org.llvm.config</package>
+                <package>org.llvm.ir</package>
+                <package>org.llvm.ir.intrinsic</package>
+                <package>org.llvm.ir.java</package>
+                <package>org.llvm.ir.legacy</package>
+                <package>org.llvm.ir.mdconst</package>
+                <package>org.llvm.irreader</package>
+                <package>org.llvm.linker</package>
+                <package>org.llvm.llvmc</package>
+                <package>org.llvm.llvmc.java</package>
                 <package>org.llvm.mc</package>
                 <package>org.llvm.mc.mcparser</package>
+                <package>org.llvm.object</package>
+                <package>org.llvm.option</package>
+                <package>org.llvm.pass</package>
+                <package>org.llvm.profiledata</package>
+                <package>org.llvm.profiledata.IndexedInstrProf</package>
+                <package>org.llvm.profiledata.coverage</package>
+                <package>org.llvm.profiledata.impl</package>
                 <package>org.llvm.support</package>
                 <package>org.llvm.support.dwarf</package>
                 <package>org.llvm.support.endian</package>
@@ -159,31 +180,10 @@ made subject to such option by the copyright holder.
                 <package>org.llvm.support.target</package>
                 <package>org.llvm.support.yaml</package>
                 <package>org.llvm.support.zlib</package>
-                <package>org.llvm.analysis</package>
-                <package>org.llvm.bitcode</package>
-                <package>org.llvm.bitcode.bitc</package>
-                <package>org.llvm.bitcode.java</package>
-                <package>org.llvm.ir</package>
-                <package>org.llvm.ir.intrinsic</package>
-                <package>org.llvm.ir.java</package>
-                <package>org.llvm.ir.legacy</package>
-                <package>org.llvm.ir.mdconst</package>
-                <package>org.llvm.pass</package>
-                <package>org.llvm.irreader</package>
-                <package>org.llvm.linker</package>
-                <package>org.llvm.llvmc</package>
-                <package>org.llvm.llvmc.java</package>
-                <package>org.llvm.option</package>
-                <package>org.llvm.option.opt</package>
-                <package>org.llvm.profiledata</package>
-                <package>org.llvm.profiledata.IndexedInstrProf</package>
-                <package>org.llvm.profiledata.coverage</package>
-                <package>org.llvm.profiledata.impl</package>
                 <package>org.llvm.target.target</package>
                 <package>org.llvm.transforms.ipo</package>
                 <package>org.llvm.transforms.java</package>
                 <package>org.llvm.transforms.utils</package>
-                <package>org.llvm.object</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-analysis.jar</runtime-relative-path>

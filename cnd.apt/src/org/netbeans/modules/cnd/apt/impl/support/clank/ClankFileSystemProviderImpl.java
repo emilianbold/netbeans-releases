@@ -42,25 +42,28 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import org.clang.basic.vfs.FileSystem;
+import org.clang.tools.services.spi.ClankFileSystemProvider;
 import org.llvm.adt.IntrusiveRefCntPtr;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author vkvashin
  */
-public class ClankFileSystemProviderImpl {
+@ServiceProvider(service = ClankFileSystemProvider.class, position = 100)
+public class ClankFileSystemProviderImpl extends  ClankFileSystemProvider{
     
     public static final String RFS_PREFIX = "rfs:"; //NOI18N
 
-    private static final ClankFileSystemProviderImpl INSTANCE = new ClankFileSystemProviderImpl();
+    
+    public ClankFileSystemProviderImpl() {
+        
+    }    
 
-    public static ClankFileSystemProviderImpl getInstance() {
-        return INSTANCE;
-    }
-
+    @Override
     public IntrusiveRefCntPtr<FileSystem> getFileSystem() {
         boolean useFS;
         if (APTTraceFlags.ALWAYS_USE_NB_FS || Utilities.isWindows()) {

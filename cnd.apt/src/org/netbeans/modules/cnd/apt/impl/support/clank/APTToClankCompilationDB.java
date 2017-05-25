@@ -46,6 +46,7 @@ import java.util.Collections;
 import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.tools.services.ClankCompilationDataBase;
+import org.clang.tools.services.spi.ClankFileSystemProvider;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
 import static org.clank.support.NativePointer.*;
 import org.llvm.adt.StringRef;
@@ -174,7 +175,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             builder.addUserMacroDef(macro);
         }
 
-        builder.setFileSystem(ClankFileSystemProviderImpl.getInstance().getFileSystem());
+        builder.setFileSystem(ClankFileSystemProvider.getDefault().getFileSystem());
         if (CndFileSystemProvider.isRemote(startEntry.getFileSystem())) {
             CharSequence prefix = CndFileSystemProvider.toUrl(startEntry.getFileSystem(), "/"); //NOI18N
             builder.setAbsPathLookupPrefix(prefix);
