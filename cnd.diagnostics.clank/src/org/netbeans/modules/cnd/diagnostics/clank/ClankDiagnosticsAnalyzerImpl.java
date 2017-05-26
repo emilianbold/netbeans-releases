@@ -163,10 +163,10 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
                 }
             };
 
-            return ErrorDescriptionFactory.createErrorDescription("clank",
+            return ErrorDescriptionFactory.createErrorDescription("clank",//NOI18N
                      Severity.ERROR,
                      message,
-                     message + "DETAILSSSS",
+                     message,
                      list,
                      fo,
                      errorInfo.getStartOffset(),
@@ -175,7 +175,7 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
 //            return null;
         }
     }
-    
+   
     @ServiceProvider(service=AnalyzerFactory.class)
     public static final class AnalyzerFactoryImpl extends AnalyzerFactory {
         

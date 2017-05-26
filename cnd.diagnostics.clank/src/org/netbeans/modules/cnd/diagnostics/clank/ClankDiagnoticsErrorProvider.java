@@ -389,17 +389,17 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
         @Override
         public String minimalSeverity() {
-            return "hint";
+            return "hint";//NOI18N
         }
 
         @Override
         public String getDefaultSeverity() {
-            return "hint";
+            return "hint";//NOI18N
         }
 
         @Override
         public String getKind() {
-            return "inspection";
+            return "inspection";//NOI18N
         }
 
         @Override
