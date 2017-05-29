@@ -47,6 +47,12 @@ made subject to such option by the copyright holder.
     <description>Builds, tests, and runs the project org.netbeans.lib.profiler</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 
+  <property name="profiler.cluster" value="./release"/>
+
+    <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/profiler-external-binaries.zip" dest="${profiler.cluster}"/>
+    </target>
+
   <!-- Compile the JFluid engine system library, that depends on JDK version - so there are two libraries -->
   <!-- Compile the engine system library -->
     <target name="compile-system" depends="init">
@@ -117,6 +123,10 @@ made subject to such option by the copyright holder.
            <property name="cluster" location="${cluster}"/>
            <property name="dest.dir" location="${build.dir}"/>
        </ant>
+       <mkdir dir="${cluster}/lib/deployed"/>
+       <copy todir="${cluster}/lib/deployed">
+           <fileset dir="${profiler.cluster}/lib/deployed"/>
+       </copy>
     </target>
 
     <target name="clean" depends="projectized-common.clean">
