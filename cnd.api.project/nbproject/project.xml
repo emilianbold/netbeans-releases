@@ -113,7 +113,6 @@ Contributor(s):
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
-                <friend>com.sun.tools.ide.analysis.modernize</friend>
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
@@ -124,6 +123,7 @@ Contributor(s):
                 <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
+                <friend>org.netbeans.modules.ide.analysis.modernize</friend>
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.analysis.api</friend>
