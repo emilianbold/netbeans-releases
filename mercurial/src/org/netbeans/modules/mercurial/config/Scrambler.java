@@ -1,4 +1,4 @@
-/**
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
@@ -38,14 +38,6 @@
  * made subject to such option by the copyright holder.
  *
  */
-/*
- * Contributor(s): Robert Greig.
- *
- * The Original Software is the CVS Client Library.
- * The Initial Developer of the Original Software is Robert Greig.
- * Portions created by Robert Greig are Copyright (C) 2000.
- * All Rights Reserved.
- */
 
 package org.netbeans.modules.mercurial.config;
 
@@ -57,7 +49,6 @@ import org.netbeans.modules.proxy.Base64Encoder;
  * CVS protocol version 1.10. This encoding is trivial and should not be
  * used for security, but rather as a mechanism for avoiding inadvertant
  * compromise.
- * @author  Robert Greig, Tomas Stupka
  */
 public class Scrambler {
     /**

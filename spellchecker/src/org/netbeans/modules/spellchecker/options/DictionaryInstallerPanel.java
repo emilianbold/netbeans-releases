@@ -26,11 +26,6 @@
  *
  * Contributor(s):
  *
- * The Original Software is the LaTeX module.
- * The Initial Developer of the Original Software is David Kaspar.
- * Portions created by David Kaspar are Copyright (C) 2004-2010.
- * All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -72,9 +67,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-/**
- * @author David Kaspar
- */
 @OptionsPanelController.Keywords(keywords = {"install", "dictionary", "#KW_DictionaryInstallerOptions"}, location = OptionsDisplayer.EDITOR, tabTitle="#TITLE_OptionsPanel")
 public class DictionaryInstallerPanel extends javax.swing.JPanel {
     private final JButton okButton;

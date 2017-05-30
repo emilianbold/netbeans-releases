@@ -11,12 +11,6 @@
     provides hooks that allow the inclusion of user-defined literal result elements,
     extension instructions, and top-level data elements.
     
-    The schema is derived (with kind permission) from a schema for XSLT 1.0 stylesheets
-    produced by Asir S Vedamuthu of WebMethods Inc.
-    
-    This schema is available for use under the conditions of the W3C Software License
-    published at http://www.w3.org/Consortium/Legal/copyright-software-19980720
-    
     The schema is organized as follows:
     
     PART A: definitions of complex types and model groups used as the basis 
@@ -36,14 +30,6 @@
 
     Simplified stylesheets (those with a literal result element as the outermost element)
     will validate against this schema only if validation starts in lax mode.
-    
-    This version is dated 2007-03-16
-    Authors: Michael H Kay, Saxonica Limited
-             Jeni Tennison, Jeni Tennison Consulting Ltd.
-             
-    2007-03-15: added xsl:document element
-                revised xsl:sequence element
-                see http://www.w3.org/Bugs/Public/show_bug.cgi?id=4237         
     
   </xs:documentation>
 </xs:annotation>   

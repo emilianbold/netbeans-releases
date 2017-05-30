@@ -96,19 +96,6 @@ package org.netbeans.modules.editor.lib;
  * but also of each presentation form, something the author of these
  * routines has avoided to do so far.</p>
  *
- * <p><a href="http://www.unicode.org/unicode/reports/tr11/">
- * http://www.unicode.org/unicode/reports/tr11/</a></p>
- *
- * <p>Markus Kuhn -- 2007-05-26 (Unicode 5.0)</p>
- *
- * <p>Permission to use, copy, modify, and distribute this software
- * for any purpose and without fee is hereby granted. The author
- * disclaims all warranties with regard to this software.</p>
- *
- * Latest version: <a href="http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c">
- * http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c</a>
- *
- * @author johnsonlau@netbeans.org
  */
 public class WcwdithUtil {
 
