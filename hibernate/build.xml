@@ -46,4 +46,11 @@ made subject to such option by the copyright holder.
 <project basedir="." default="netbeans" name="hibernate">
     <description>Builds, tests, and runs the project org.netbeans.modules.hibernate</description>
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <property name="hibernate.resources.dir" value="./src/org/netbeans/modules/hibernate/resources/"/>
+
+    <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/hibernate-external-resources.zip" dest="${hibernate.resources.dir}"/>
+    </target>
+
 </project>
