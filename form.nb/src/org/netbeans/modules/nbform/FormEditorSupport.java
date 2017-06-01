@@ -1468,23 +1468,27 @@ public final class FormEditorSupport extends DataEditorSupport implements Editor
         }
     }
     
-    private FormGEditor guardedEditor;
-    private GuardedSectionsProvider guardedProvider;
+    private volatile FormGEditor guardedEditor;
+    private volatile GuardedSectionsProvider guardedProvider;
     
     @Override
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        if (guardedEditor == null) {
-            guardedEditor = new FormGEditor();
+        FormGEditor gEditor = guardedEditor;
+        GuardedSectionsProvider gProvider = guardedProvider;
+        if (gEditor == null) {
+            gEditor = new FormGEditor();
+            guardedEditor = gEditor;
             GuardedSectionsFactory gFactory = GuardedSectionsFactory.find(((DataEditorSupport.Env) env).getMimeType());
             if (gFactory != null) {
-                guardedProvider = gFactory.create(guardedEditor);
+                gProvider = gFactory.create(gEditor);
+                guardedProvider = gProvider;
             }
         }
         
-        if (guardedProvider != null) {
-            guardedEditor.doc = doc;
+        if (gProvider != null) {
+            gEditor.doc = doc;
             Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-            Reader reader = guardedProvider.createGuardedReader(stream, c);
+            Reader reader = gProvider.createGuardedReader(stream, c);
             try {
                 kit.read(reader, doc, 0);
             } finally {
