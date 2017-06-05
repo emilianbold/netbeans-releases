@@ -96,6 +96,7 @@ import org.netbeans.installer.wizard.ui.WizardUi;
  * @author Kirill Sorokin
  */
 public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
+    private static boolean updateEnabled = false;
     private boolean removeNBInstallationLocation = false;
     private boolean removeNBUserDir = false;
     private File userDir;
@@ -518,7 +519,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 removeUserdirCheckbox.doClick();
             }
 
-            if (nbBasePresent) {
+            // #270757 - NB C++ Installer prompts for JDK (now in NetBeans 8.2)
+            // Temporarily disabled the update in installer - for all distributions but applied only to C/C++ distro
+            if (updateEnabled && nbBasePresent) {
                 checkForUpdatesCheckbox.setSelected(true);
                 System.setProperty(CHECK_FOR_UPDATES_CHECKBOX_PROPERTY, Boolean.TRUE.toString());
                 
