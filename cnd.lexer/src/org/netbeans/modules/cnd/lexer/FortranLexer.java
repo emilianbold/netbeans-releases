@@ -587,6 +587,8 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case 'D':
                         case 'e':
                         case 'E':
+                        case 'q':
+                        case 'Q':
                             if (!hasNumericUnderscore) {
                                 state = IN_REAL;
                             }
@@ -608,6 +610,9 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         return token(FortranTokenId.NUM_LITERAL_REAL);
                     }
                     switch (c) {
+                        case '+':
+                        case '-':
+                            break;
                         case '_':
                             hasNumericUnderscore = true;
                             break;
@@ -615,6 +620,8 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case 'D':
                         case 'e':
                         case 'E':
+                        case 'q':
+                        case 'Q':
                             if (!hasNumericUnderscore) {
                                 break;
                             }
