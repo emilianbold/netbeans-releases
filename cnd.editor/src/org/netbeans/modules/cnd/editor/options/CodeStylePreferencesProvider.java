@@ -72,8 +72,13 @@ public class CodeStylePreferencesProvider implements CodeStylePreferences.Provid
     public static final CodeStylePreferences.Provider INSTANCE = new CodeStylePreferences.Provider() {
         @Override
         public Preferences forFile(FileObject file, String mimeType) {
+            // forFile can be called with (null, null) by infrastructure
+            if (mimeType == null) {              
+                mimeType = file == null ? null : MIMESupport.getSourceFileMIMEType(file);
+            }
             if (mimeType == null) {
-                mimeType = MIMESupport.getSourceFileMIMEType(file);
+              // not accepted 
+              return null;
             }
             if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
                 return NbPreferences.forModule(CodeStyle.class);
