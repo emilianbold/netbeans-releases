@@ -39,10 +39,8 @@
  */
 package org.netbeans.modules.cnd.diagnostics.clank;
 
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
