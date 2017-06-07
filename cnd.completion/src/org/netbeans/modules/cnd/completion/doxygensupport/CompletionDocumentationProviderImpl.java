@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.completion.doxygensupport.DoxygenDocumentation.CompletionDocumentationImpl;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -100,37 +101,43 @@ public class CompletionDocumentationProviderImpl implements CsmDocProvider {
     }
 
     private static CompletionDocumentation createDocumentationImpl(CsmObject obj, CsmFile file) {
-        CompletionDocumentation bestDocumentation = null;
-        CompletionDocumentationImpl codeDocumentation = DoxygenDocumentation.create(obj);
         String errorText = null;
-
-        if (codeDocumentation != null && codeDocumentation.getKind() == CppTokenId.DOXYGEN_COMMENT) {
-            bestDocumentation = codeDocumentation;
-        } else {
-            CompletionDocumentation manDocumentation = null;
-            try {
-                manDocumentation = ManDocumentation.getDocumentation(obj, file);
-            } catch (IOException ioe) {
-                errorText = ioe.getMessage();
-            }
-            if (manDocumentation != null) {
-                bestDocumentation = manDocumentation;
-            } else if (codeDocumentation != null) {
-                bestDocumentation = codeDocumentation;
-                errorText = null;
+        CompletionDocumentationImpl codeDocumentation = null;
+        CsmCompletionUtils.DocProviderList docProviderList = CsmCompletionUtils.getDocProviderList();
+        for(CsmCompletionUtils.DocProvider provider : docProviderList.getProviders()) {
+            if (docProviderList.isEnabled(provider)) {
+                switch (provider) {
+                    case SourceCode:{
+                        codeDocumentation = DoxygenDocumentation.create(obj);
+                        if (codeDocumentation != null && codeDocumentation.getKind() == CppTokenId.DOXYGEN_COMMENT) {
+                            return codeDocumentation;
+                        }
+                        break;
+                    }
+                    case Manual: {
+                        CompletionDocumentation manDocumentation = null;
+                        try {
+                            manDocumentation = ManDocumentation.getDocumentation(obj, file);
+                        } catch (IOException ioe) {
+                            errorText = ioe.getMessage();
+                        }
+                        if (manDocumentation != null) {
+                            return manDocumentation;
+                        }
+                        break;
+                    }
+                }
             }
         }
-
-        if (bestDocumentation == null) {
-            StringBuilder w = new StringBuilder();
-
-            w.append("<p>").append(getString("NO_DOC_FOUND")).append("</p>"); // NOI18N
-            if (errorText != null) {
-                w.append("<p>").append(errorText).append("</p>"); // NOI18N
-            }
-            bestDocumentation = new EmptyCompletionDocumentationImpl(w.toString());
+        if (codeDocumentation != null) {
+            return codeDocumentation;
         }
-        return bestDocumentation;
+        StringBuilder w = new StringBuilder();
+        w.append("<p>").append(getString("NO_DOC_FOUND")).append("</p>"); // NOI18N
+        if (errorText != null) {
+            w.append("<p>").append(errorText).append("</p>"); // NOI18N
+        }
+        return new EmptyCompletionDocumentationImpl(w.toString());
     }
 
     private static class DocQuery extends AsyncCompletionQuery {

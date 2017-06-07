@@ -53,6 +53,7 @@ package org.netbeans.api.debugger.jpda;
 public class InvalidExpressionException extends Exception {
 
     private final String message;
+    private final boolean isFromApp;
 
     /**
      * Constructs a InvalidExpressionException with given message.
@@ -60,8 +61,7 @@ public class InvalidExpressionException extends Exception {
      * @param message a exception message
      */
     public InvalidExpressionException (String message) {
-        super (message);
-        this.message = message;
+        this(message, null);
     }
 
     /**
@@ -70,10 +70,22 @@ public class InvalidExpressionException extends Exception {
      * @param t a target exception
      */
     public InvalidExpressionException (Throwable t) {
-        super (t);
-        this.message = null;
+        this(null, t);
     }
     
+    /**
+     * Constructs a InvalidExpressionException for a given target exception.
+     *
+     * @param t a target exception
+     * @param isFromApp <code>true</code> when the target exception is a mirror
+     *                  of an application-level exception, <code>false</code>
+     *                  otherwise.
+     * @since 3.7
+     */
+    public InvalidExpressionException (Throwable t, boolean isFromApp) {
+        this(null, t, isFromApp);
+    }
+
     /**
      * Constructs a InvalidExpressionException with given message and target exception.
      *
@@ -82,8 +94,25 @@ public class InvalidExpressionException extends Exception {
      * @since 3.1
      */
     public InvalidExpressionException (String message, Throwable t) {
+        this(message, t, false);
+    }
+
+    /**
+     * Constructs a InvalidExpressionException with given message and target exception.
+     *
+     * @param message a exception message
+     * @param t a target exception
+     * @param isFromApp <code>true</code> when the target exception is a mirror
+     *                  of an application-level exception, <code>false</code>
+     *                  otherwise.
+     * @since 3.7
+     */
+    public InvalidExpressionException (String message, Throwable t, boolean isFromApp) {
         super(message, t);
+        // Assert that application-level exceptions have the appropriate mirror:
+        assert isFromApp && t != null || !isFromApp;
         this.message = message;
+        this.isFromApp = isFromApp;
     }
 
     @Override
@@ -106,6 +135,17 @@ public class InvalidExpressionException extends Exception {
      */
     public Throwable getTargetException () {
         return getCause();
+    }
+
+    /**
+     * Test whether the target exception is a mirror of an application-level
+     * exception.
+     * @return <code>true</code> when the target exception represents an
+     *         exception in the application code, <code>false</code> otherwise.
+     * @since 3.7
+     */
+    public final boolean hasApplicationTarget() {
+        return isFromApp;
     }
 }
 

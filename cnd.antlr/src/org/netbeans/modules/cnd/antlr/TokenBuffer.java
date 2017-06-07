@@ -107,9 +107,11 @@ public class TokenBuffer {
                 data[pos++] = (short) type;
                 t = input.nextToken();
             }
-        }
-        catch (TokenStreamException tse) {
+        } catch (TokenStreamException tse) {
                 System.err.println("tmp error: can't load tokens: "+tse);
+        } catch (Throwable ex) {
+                System.err.println(ex.getClass().getName() + ":" + ex.getMessage() + ":" + ex + ":" + ex.getCause()  + ":" + (ex.getStackTrace() == null ? "null stack" : "" + ex.getStackTrace().length) + " in onID "); // NOI18N
+                ex.printStackTrace(System.err);
         }
         size = pos;
     }

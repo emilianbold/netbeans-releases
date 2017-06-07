@@ -746,10 +746,10 @@ If you are sure you want to build with JDK 9+ anyway, use: -Dpermit.jdk9.builds=
         <antcall target="javadoc">
             <param name="netbeans.javadoc.dir" location="${maven.tmp.javadoc}"/>
         </antcall>
-        <condition property=".bat" value=".bat" else="">
+        <condition property=".cmd" value=".cmd" else="">
           <os family="windows"/>
         </condition>
-        <exec executable="${maven.embedder.dir}/maven/bin/mvn${.bat}" failonerror="true">
+        <exec executable="${maven.embedder.dir}/maven/bin/mvn${.cmd}" failonerror="true">
             <arg value="-DforcedVersion=SNAPSHOT"/>
             <arg value="-DdefineCluster=false"/>
             <arg value="-DdependencyRepositoryId=netbeans-snapshot"/>
@@ -758,7 +758,7 @@ If you are sure you want to build with JDK 9+ anyway, use: -Dpermit.jdk9.builds=
             <arg value="-DnetbeansNbmDirectory=${maven.tmp.nbms}"/>
             <arg value="-DnetbeansSourcesDirectory=${maven.tmp.sources}"/>
             <arg value="-DnetbeansJavadocDirectory=${maven.tmp.javadoc}"/>
-            <arg value="org.codehaus.mojo:nbm-maven-plugin:3.7:populate-repository"/>
+            <arg value="org.codehaus.mojo:nb-repository-plugin:1.3:populate"/>
         </exec>
     </target>
 

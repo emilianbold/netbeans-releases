@@ -62,23 +62,14 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
  *
  * @author Tomas Zezula
  */
-public final class PathArchive implements Archive {
+public final class PathArchive extends AbstractPathArchive {
 
-    private final Path root;
-    private final String rootURI;
-    private final char separator;
+    
 
     PathArchive(
             @NonNull final Path root,
             @NullAllowed final URI rootURI) {
-        assert root != null;
-        this.root = root;
-        this.rootURI = rootURI == null ? null : rootURI.toString();
-        final String separator = root.getFileSystem().getSeparator();
-        if (separator.length() != 1) {
-            throw new IllegalArgumentException("Multi character separators are unsupported");
-        }
-        this.separator = separator.charAt(0);
+        super(root, rootURI);
     }
 
     @Override
@@ -119,9 +110,5 @@ public final class PathArchive implements Archive {
     @Override
     public JavaFileObject create(String relativeName, JavaFileFilterImplementation filter) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Write not supported");   //NOI18N
-    }
-
-    @Override
-    public void clear() {
     }
 }

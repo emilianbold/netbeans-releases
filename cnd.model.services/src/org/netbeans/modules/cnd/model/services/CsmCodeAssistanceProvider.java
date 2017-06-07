@@ -249,8 +249,8 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
         if (flavors.contains(NativeFileItem.LanguageFlavor.C11)) {
             prefFlavor = NativeFileItem.LanguageFlavor.C11;
         }
-        if (flavors.contains(NativeFileItem.LanguageFlavor.CPP)) {
-            prefFlavor = NativeFileItem.LanguageFlavor.CPP;
+        if (flavors.contains(NativeFileItem.LanguageFlavor.CPP98)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.CPP98;
         }
         if (flavors.contains(NativeFileItem.LanguageFlavor.CPP11)) {
             prefFlavor = NativeFileItem.LanguageFlavor.CPP11;

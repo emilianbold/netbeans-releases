@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.phpunit.run;
@@ -60,7 +60,8 @@ public final class TestSessionVo {
     private final List<TestSuiteVo> testSuites = new ArrayList<>();
     private final String customSuitePath;
 
-    private boolean started = false;
+    private long time = -1;
+    private int tests = -1;
 
 
     public TestSessionVo(@NullAllowed String customSuitePath) {
@@ -75,12 +76,20 @@ public final class TestSessionVo {
         return Collections.unmodifiableList(testSuites);
     }
 
-    public boolean isStarted() {
-        return started;
+    public int getTests() {
+        return tests;
     }
 
-    public void setStarted(boolean started) {
-        this.started = started;
+    public void setTests(int tests) {
+        this.tests = tests;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     @NbBundle.Messages({
@@ -98,22 +107,15 @@ public final class TestSessionVo {
     @CheckForNull
     public String getFinishMessage() {
         if (testSuites.isEmpty()) {
+            // no message if we have no testsuites
             return null;
         }
         return Bundle.TestSessionVo_msg_output();
     }
 
-    @NbBundle.Messages("TestSessionVo.err.output=Review Output window for full output.")
-    public String getFinishError() {
-        if (testSuites.isEmpty()) {
-            return Bundle.TestSessionVo_err_output();
-        }
-        return null;
-    }
-
     @Override
     public String toString() {
-        return String.format("TestSessionVo{started: %s, suites: %d}", started, testSuites.size());
+        return String.format("TestSessionVo{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size());
     }
 
     public OutputLineHandler getOutputLineHandler() {

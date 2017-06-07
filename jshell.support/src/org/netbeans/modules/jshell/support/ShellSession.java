@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.jshell.support;
 
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.jshell.tool.JShellLauncher;
+import org.netbeans.modules.jshell.tool.JShellTool;
 import org.netbeans.modules.jshell.parsing.ModelAccessor;
 import org.netbeans.modules.jshell.parsing.LexerEmbeddingAdapter;
 import org.netbeans.modules.jshell.model.Rng;
@@ -51,14 +54,14 @@ import org.netbeans.modules.jshell.model.ConsoleEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -66,33 +69,39 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import javax.tools.JavaFileManager;
+import javax.tools.StandardJavaFileManager;
 import org.netbeans.lib.nbjshell.RemoteJShellService;
 import jdk.jshell.JShell;
-import jdk.jshell.JShellAccessor;
+import jdk.jshell.JShell.Subscription;
+import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
-import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
-import jdk.jshell.spi.ExecutionControl;
+import jdk.jshell.SourceCodeAnalysis;
 import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
-import jdk.jshell.spi.ExecutionControl.InternalException;
-import jdk.jshell.spi.ExecutionEnv;
+import jdk.jshell.spi.ExecutionControlProvider;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -101,14 +110,28 @@ import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.openide.execution.ExecutorTask;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.lib.nbjshell.NbExecutionControl;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
-import org.netbeans.modules.jshell.model.ConsoleModel.SnippetHandle;
+import org.netbeans.modules.jshell.model.ConsoleContents;
+import org.netbeans.modules.jshell.model.SnippetHandle;
+import org.netbeans.modules.jshell.parsing.ShellAccessBridge;
+import org.netbeans.modules.jshell.parsing.SnippetRegistry;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
+import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
+import org.netbeans.modules.jshell.support.ShellHistory.Item;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -117,11 +140,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -145,10 +168,11 @@ import org.openide.util.Task;
  *
  * @author sdedic
  */
-public class ShellSession {
+public class ShellSession  {
     private static Logger LOG = Logger.getLogger(ShellSession.class.getName());
     
     public static final String PROP_ACTIVE = "active";
+    public static final String PROP_ENGINE = "active";
 
     /**
      * Work root, contains console file and snippet files
@@ -192,7 +216,7 @@ public class ShellSession {
      * should not receive anything from the JShell. Detached ShellSession
      * MAY receive something, but should not reflect it in the document.
      */
-    private volatile boolean closed;
+    private volatile boolean ignoreClose;
     
     private FileObject consoleFile;
     private JShellEnvironment env;
@@ -201,21 +225,31 @@ public class ShellSession {
     
     private volatile Set<Snippet>    initialSetupSnippets = Collections.emptySet();
 
+    /**
+     * True, if the Session was detached from the document. Another session
+     * now 'owns' the document. The flag cannot be reset back to false.
+     */
+    private volatile boolean detached;
+    
     private static final RequestProcessor FORCE_CLOSE_RP = new RequestProcessor("JShell socket closer");
     
     /**
      * Mapps snippets to the timestamps of their snippet files. Only valid snippets will
      */
-    private Map<Snippet, Long>  snippetTimeStamps = new WeakHashMap<>();
+    private final Map<Snippet, Long>    snippetTimeStamps = new WeakHashMap<>();
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     
+    // @GuardedBy(this)
+    private SnippetRegistry     snippetRegistry;
+        
     public ShellSession(JShellEnvironment env) {
         this(env.getDisplayName(), 
-                       env.getConsoleDocument(), 
-                       env.getClasspathInfo(),
-                       env.getPlatform(),
-                       env.getWorkRoot(), env.getConsoleFile());
+             env.getConsoleDocument(), 
+             env.getClasspathInfo(),
+             env.getPlatform(),
+             env.getWorkRoot(), 
+             env.getConsoleFile());
         this.env = env;
     }
     
@@ -233,9 +267,8 @@ public class ShellSession {
         this.workRoot = workRoot;
         
         this.editorSnippetsFileSystem = FileUtil.createMemoryFileSystem();
-        editorWorkRoot = editorSnippetsFileSystem.getRoot();
-        
-                shellControlOutput = new PrintStream(
+        this.editorWorkRoot = editorSnippetsFileSystem.getRoot();
+        this.shellControlOutput = new PrintStream(
             new WriterOutputStream(
                     // delegate to whatever Writer will be set
                     new Writer() {
@@ -258,11 +291,13 @@ public class ShellSession {
         );
     }
     
-    /**
-     * True, if the Session was detached from the document. Another session
-     * now 'owns' the document.
-     */
-    private volatile boolean detached;
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.addPropertyChangeListener(pcl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propSupport.removePropertyChangeListener(pcl);
+    }
     
     public boolean isActive() {
         return !detached;
@@ -279,15 +314,15 @@ public class ShellSession {
                 return Task.EMPTY;
             }
         }
-        closed = true;
-        JShell.Subscription sub = model.detach();
+//        closed = true;
+        model.detach();
         closed();
         if (exec != null) {
             FORCE_CLOSE_RP.post(this::forceCloseStreams, 300);
         }
         // leave the model
         gsm.getGuardedSections().forEach((GuardedSection gs) -> gs.removeSection());
-        return sendJShellClose(sub);
+        return sendJShellClose();
     }
     
     private synchronized void forceCloseStreams() {
@@ -308,30 +343,9 @@ public class ShellSession {
         return consoleFile;
     }
     
-    public void setShellCountrolOutput(PrintStream stm) {
-        this.shellControlOutput = stm;
-    }
-
-    public PrintStream setShellCountrolOutput(Writer stm) {
-        return this.shellControlOutput = new PrintStream(
-            new WriterOutputStream(stm)
-        );
-    }
-
-    private class OuterWriterFilter extends FilterWriter {
-        public OuterWriterFilter(Writer out) {
-            super(out);
-        }
-
-        @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            super.write(cbuf, off, len); 
-            
-        }
-    }
-    
     public boolean isValid() {
-        return !closed && !detached;
+        Launcher l = this.launcher;
+        return l != null && l.isLive() && !detached;
     }
     
     /**
@@ -389,84 +403,11 @@ public class ShellSession {
         if (launcher == null) {
             return null;
         }
-//        String resName = snippetFileName(snippet, editedSnippetIndex);
-//        FileObject fob = workRoot.getFileObject(resName);
-//        if (fob != null && fob.isValid()) {
-//            return fob;
-//        }
-        return createSnippetFile(snippet, null, editedSnippetIndex >= 0);
+        return snippetRegistry.snippetFile(snippet, editedSnippetIndex);
     }
     
-    private String snippetFileName(SnippetHandle snippet, int editedSnippet) {
-        // this is the snippet being just edited.
-        boolean editable = editedSnippet >= 0 || snippet.getStatus() == Status.NONEXISTENT;
-        String suffix = editedSnippet < 1 ? "" : Integer.toString(editedSnippet);
-        return (editable ? EDITED_SNIPPET_CLASS + suffix :  // NOI18N
-                snippet.getClassName()) + ".java"; 
-    }
-    
-    /**
-     * Special prefix for snippets generated from the currently edited console section.
-     */
-    private static final String EDITED_SNIPPET_CLASS = "$$REPLEDIT"; // NOI18N
-    
-    private FileObject createSnippetFile(SnippetHandle info, String resName, boolean transientFile) {
-        FileObject pkg;
-        try {
-            pkg = FileUtil.createFolder(transientFile ? 
-                    editorWorkRoot : workRoot, "REPL");
-        } catch (IOException ex) {
-            // this is quite unexpected
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-        String fn = resName != null ? resName : snippetFileName(info, -1); 
-        String contents = info.getWrappedCode();
-        
-        if (contents == null) {
-            return null;
-        }
-        Snippet snip = info.getSnippet();
-        Long l = null;
-        if (snip != null) {
-            synchronized (this) {
-                l = snippetTimeStamps.get(snip);
-            }
-        }
-        
-        int retries = 0;
-        IOException lastException = null;
-        while (retries++ < 10) {
-            FileObject fob = pkg.getFileObject(fn);
-            if (fob != null) {
-                if (l != null && l == fob.lastModified().getTime()) {
-                    return fob;
-                }
-                try {
-                    fob.delete();
-                } catch (IOException ex1) {
-                    lastException = ex1;
-                }
-            }
-            try (OutputStream ostm = pkg.createAndOpen(fn)) {
-                try (OutputStreamWriter ows = new OutputStreamWriter(ostm, "UTF-8")) {
-                    ows.append(contents);
-                    ows.flush();
-                }
-                FileObject ret = pkg.getFileObject(fn);
-                synchronized (this) {
-                    snippetTimeStamps.put(snip, ret.lastModified().getTime());
-                }
-                return ret;
-            } catch (IOException ex) {
-                // perhaps the file is being created in another thread ?
-                lastException = ex;
-            }
-        }
-        if (lastException != null) {
-            Exceptions.printStackTrace(lastException);
-        }
-        return null;
+    public synchronized JShellTool   getJShellTool() {
+        return launcher;
     }
     
     /**
@@ -553,7 +494,7 @@ public class ShellSession {
         }
     }
 
-    private volatile JShellLauncher launcher;
+    private volatile Launcher launcher;
     
     public Pair<ShellSession, Task> start() {
         ShellSession previous  = null;
@@ -588,6 +529,9 @@ public class ShellSession {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { 
             env.getSnippetClassPath()
         });
+        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] { 
+            env.getUserLibraryPath()
+        });
 
         return Pair.of(previous, evaluator.post(() -> {
 
@@ -618,6 +562,9 @@ public class ShellSession {
     private RemoteJShellService exec;
     
     private String addRoots(String prev, ClassPath cp) {
+        if (cp == null) {
+            return prev;
+        }
         FileObject[] roots = cp.getRoots();
         StringBuilder sb = new StringBuilder(prev);
         
@@ -638,89 +585,314 @@ public class ShellSession {
     }
     
     private void setupJShellClasspath(JShell jshell) throws ExecutionControlException {
-        ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
-        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
-        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
-        
-        String cp = addRoots("", bcp);
-        cp = addRoots(cp, compile);
-        
+        ClassPath compile = getEnv().getCompilerClasspath();
+        String cp = addRoots("", compile);
         JShellAccessor.resetCompileClasspath(jshell, cp);
     }
     
     private boolean initializing;
     
-    public  String getClasspath() {
-        return createClasspathString();
+    private String createProjectClasspath() {
+        //ClassPath bcp = getClasspathInfo().getClassPath(PathKind.BOOT);
+        ClassPath compile = getClasspathInfo().getClassPath(PathKind.COMPILE);
+        ClassPath source = getClasspathInfo().getClassPath(PathKind.SOURCE);
+        
+        String cp = addRoots("", compile);
+        //cp = addRoots(cp, compile);
+        return cp;
+    }
+
+    /**
+     * Finds appropriate source (language) version for the environment.
+     * @return 
+     */
+    private SpecificationVersion findSourceVersion() {
+        return env.getSourceLevel();
     }
     
-    private class GenProxy implements JShellGenerator {
-        private final JShellGenerator del;
-
-        public GenProxy(JShellGenerator del) {
-            this.del = del;
-        }
-
-        @Override
-        public ExecutionControl generate(ExecutionEnv ee) throws Throwable {
-            ExecutionControl ctrl = del.generate(ee);
-            exec = (RemoteJShellService)ctrl;
-            return ctrl;
-        }
-
-        @Override
-        public String getTargetSpec() {
-            return del.getTargetSpec();
+    private SpecificationVersion findTargetVersion() {
+        return env.getTargetLevel();
+    }
+    
+    private Preferences createShellPreferences() {
+        Project p = env.getProject();
+        if (p != null) {
+            return ProjectUtils.getPreferences(p, ShellSession.class, false).node("jshell");
+        } else {
+            return NbPreferences.forModule(ShellSession.class).node("jshell");
         }
     }
+    
+    private class Launcher extends JShellLauncher implements Consumer<SnippetEvent> {
+        Subscription subscription;
+        
+        public Launcher(ExecutionControlProvider execEnv) throws IOException {
+            super(
+                createShellPreferences(),
+                shellControlOutput, 
+                shellControlOutput, 
+                env.getInputStream(),
+                env.getOutputStream(),
+                env.getErrorStream(),
+                execEnv);
+        }
 
+        @Override
+        protected JShell.Builder makeBuilder() {
+            return customizeBuilder(super.makeBuilder());
+        }
+
+        @Override
+        protected JShell createJShellInstance() {
+            JShell shell = super.createJShellInstance();
+            try {
+                setupJShellClasspath(shell);
+            } catch (ExecutionControlException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            synchronized (ShellSession.this) {
+                snippetRegistry = new SnippetRegistry(
+                        shell, bridgeImpl, workRoot, editorWorkRoot, 
+                        snippetRegistry);
+                // replace for fresh instance !
+                JShell oldShell = ShellSession.this.shell;
+                ShellSession.this.shell = shell;
+                if (oldShell != null) {
+                    FORCE_CLOSE_RP.post(() -> {
+                        propSupport.firePropertyChange(PROP_ENGINE, oldShell, shell);
+                    });
+                }
+            }
+            this.subscription = shell.onSnippetEvent(this);
+            // it's possible that the shell's startup will terminate the session
+            if (!detached) {
+                shell.onShutdown(sh -> closedDelayed());
+                ignoreClose = false;
+            }
+            return shell;
+        }
+
+        @Override
+        public void accept(SnippetEvent e) {
+            SnippetHandle handle = snippetRegistry.installSnippet(
+                e.snippet(), null, 0, true);
+            // create an indexed file for the snippet.
+            snippetRegistry.snippetFile(handle, 0);
+        }
+
+        @Override
+        protected void classpathAdded(String arg) {
+            super.classpathAdded(arg);
+            File f = new File(arg);
+            FileObject fob = FileUtil.toFileObject(f);
+            if (fob != null) {
+                env.appendClassPath(fob);
+            }
+        }
+
+        @Override
+        protected Path toPathResolvingUserHome(String pathString) {
+            Path homeResolvedPath = super.toPathResolvingUserHome(pathString);
+            
+            if (!homeResolvedPath.isAbsolute()) {
+                // prepend project's directory
+                Project p = env.getProject();
+                if (p != null) {
+                    File f = FileUtil.toFile(p.getProjectDirectory());
+                    if (f == null) {
+                        return homeResolvedPath;
+                    }
+                    Path projectPath = f.toPath();
+                    return projectPath.resolve(homeResolvedPath);
+                }
+            }
+            return homeResolvedPath;
+        }
+
+        @Override
+        protected NbExecutionControl execControlCreated(NbExecutionControl ctrl) {
+            if (ctrl instanceof RemoteJShellService) {
+                exec = (RemoteJShellService)ctrl;
+            }
+            return super.execControlCreated(ctrl);
+        }
+    }
+    
+    private SwitchingJavaFileManger fileman;
+    
+    private JShell.Builder customizeBuilder(JShell.Builder b) {
+        SpecificationVersion v = findSourceVersion();
+        if (v != null) {
+            b.compilerOptions("-source", v.toString()); // NOI18N
+        }
+        v = findTargetVersion();
+        if (v != null) {
+            b.compilerOptions("-target", v.toString()); // NOI18N
+        }
+        b.remoteVMOptions("-classpath", quote(createClasspathString())); // NOI18N
+        ClasspathInfo cpI = getClasspathInfo();
+        if (LOG.isLoggable(Level.FINEST)) {
+            StringBuilder sb = new StringBuilder("Starting jshell with ClasspathInfo:");
+            for (PathKind kind : PathKind.values()) {
+                if (kind == PathKind.OUTPUT) {
+                    continue;
+                }
+                sb.append(kind + ": ");
+                ClassPath cp;
+                try {
+                    cp = cpI.getClassPath(kind);
+                } catch (IllegalArgumentException ex) {
+                    sb.append("<not supported>\n");
+                    continue;
+                }
+                if (cp == null) {
+                    sb.append("<null>\n");
+                    continue;
+                }
+                sb.append("\n");
+                for (ClassPath.Entry e : cp.entries()) {
+                    sb.append("\t" + e.getURL() + "\n");
+                }
+                sb.append("---------------\n");
+                LOG.log(Level.FINEST, sb.toString());
+            }
+        }
+        customizeBuilderOnJDK9(b);
+        b.fileManager((Function)this::createJShellFileManager);
+        return getEnv().customizeJShell(b);
+    }
+
+    /**
+     * In case the JFM comes from JDK9 runtime, use reflection to parametrize the
+     * JFM
+     * @return the original object
+     */
+    private Object createJShellFileManager(Object original) {
+        if (original instanceof StandardJavaFileManager) {
+            return fileman = new SwitchingJavaFileManger(getClasspathInfo());
+        } else {
+            return original;
+        }
+    }
+    
+    private void customizeBuilderOnJDK9(JShell.Builder builder) {
+        try {
+            Class c = JShell.Builder.class.getClassLoader().loadClass("javax.tools.StandardJavaFileManager");
+            if (c.isAssignableFrom(StandardJavaFileManager.class)) {
+                return;
+            }
+        } catch (ClassNotFoundException ex) {
+        }
+        fileman = null;
+        Project p = env.getProject();
+        
+        String systemHome = platform.getSystemProperties().get("java.home"); // NOI18N
+        if (systemHome != null) {
+            if (ShellProjectUtils.isModularJDK(platform)) {
+                builder.compilerOptions("--system", systemHome); // NOI18N
+            } else {
+                builder.compilerOptions("--boot-class-path", getClasspathAsString(PathKind.BOOT));
+            }
+        }
+        JavaPlatform platform = ShellProjectUtils.findPlatform(p);
+        
+        String classpath;
+        String modulepath = "";
+        
+        if (p != null && ShellProjectUtils.isModularProject(p)) {
+            List<String[]> opts = ShellProjectUtils.compilerPathOptions(p);
+            for (String[] o : opts) {
+                if (o[1] != null) {
+                    builder.compilerOptions(o[0], o[1]);
+                } else {
+                    builder.compilerOptions(o[0]);
+                }
+            }
+            modulepath = getClasspathAsString(PathKind.MODULE_COMPILE);
+            classpath = getClasspathAsString(PathKind.MODULE_CLASS);
+        } else {
+            classpath = getClasspathAsString(PathKind.COMPILE);
+        }
+        
+        if (!classpath.isEmpty()) {
+            builder.compilerOptions("-classpath", classpath); // NOI18N
+        }
+        if (!modulepath.isEmpty()) {
+            builder.compilerOptions("--module-path", modulepath); // NOI18N
+        }
+    }
+    
+    private synchronized Launcher initShellLauncher() throws IOException {
+        if (launcher != null) {
+            return launcher;
+        }
+        try {
+            launcher = new Launcher(env.createExecutionEnv());
+        } catch (IOException | RuntimeException | Error e) {
+            e.printStackTrace();
+        }
+        return launcher;
+    }
+    
     private void initJShell() {
         if (shell != null) {
             return;
         }
-        JShell shell;
+        Launcher l = null;
+        JShell shell = null;
+        Subscription sub = null;
         try {
             initializing = true;
-            synchronized (this) {
-                if (launcher == null) {
-                    launcher = new JShellLauncher(
-                        shellControlOutput,
-                        shellControlOutput, 
-                        env.getInputStream(),
-                        env.getOutputStream(),
-                        env.getErrorStream(),
-                        new GenProxy(env.createExecutionEnv())
-                    );
-                    launcher.setClasspath(createClasspathString());
-                }
-            }
+            l = initShellLauncher();
             shell = launcher.getJShell();
-            setupJShellClasspath(shell);
             // not necessary to launch  the shell, but WILL display the initial prompt
             launcher.start();
-            initialSetupSnippets = new HashSet<>(shell.snippets());
-        } catch (IOException | ExecutionControlException | InternalError err) {
+            initialSetupSnippets = new HashSet<>(shell.snippets().collect(Collectors.toList()));
+        } catch (IOException | InternalError err) {
             Throwable t = err.getCause();
             if (t == null) {
                 t = err;
             }
             reportErrorMessage(t);
             closed();
-            env.notifyDisconnected(this);
+            env.notifyDisconnected(this, false);
             return;
         } finally {
             initializing = false;
-        }
-        synchronized (this) {
-            this.shell = shell;
-            // it's possible that the shell's startup will terminate the session
-            if (isValid()) {
-                shell.onShutdown(sh -> closedDelayed());
-                model.attach(shell);
-                // must first give chance to the model to map the snippet to console contents
-                model.forwardSnippetEvent(this::acceptSnippet);
+            if (l != null && l.subscription != null && shell != null) {
+                shell.unsubscribe(l.subscription);
             }
         }
+    }
+    
+    private ShellAccessBridge bridgeImpl = new ShellAccessBridge() {
+        @Override
+        public <T> T execute(Callable<T> xcode) throws Exception {
+            if (fileman == null || evaluator.isRequestProcessorThread()) {
+                return xcode.call();
+            } else {
+                return fileman.withLocalManager(xcode);
+            }
+        }
+
+        @Override
+        public SourceCodeAnalysis.CompletionInfo analyzeInput(String input) {
+            try {
+                return execute(() -> ensureShell().sourceCodeAnalysis().analyzeCompletion(input));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        @Override
+        public boolean isInitialized() {
+            return shell != null;
+        }
+        
+    };
+    
+    public synchronized SnippetRegistry getSnippetRegistry() {
+        return snippetRegistry;
     }
 
     @NbBundle.Messages({
@@ -766,16 +938,19 @@ public class ShellSession {
         "MSG_JShellCannotStart=The Java Shell VM is not reachable. You may only use shell commands, or re-run the target process.",
         "MSG_JShellDisconnected=The remote Java Shell has terminated. Restart the Java Shell to continue"
     })
-    public void notifyClosed(JShellEnvironment env) {
+    public void notifyClosed(JShellEnvironment env, boolean remote) {
         synchronized (this) {
-            if (closed) {
+            if (ignoreClose) {
                 return;
             }
-            closed = true;
+            ignoreClose = true;
         }
         String s;
         if (initializing) {
             s = Bundle.MSG_JShellCannotStart();
+        } else if (!remote) {
+            // somewhat expected, do not report
+            return;
         } else if (env.isClosed()) {
             s = Bundle.MSG_JShellClosed();
         } else {
@@ -808,13 +983,16 @@ public class ShellSession {
     
     private boolean scrollbackEndsWithNewline() {
         boolean[] ret = new boolean[1];
+        ConsoleSection s = model.getInputSection();
+        int end = s == null ? -1 : s.getStart();
         consoleDocument.render(() -> {
             int l = consoleDocument.getLength();
             if (l == 0) {
                 ret[0] = true;
             } else {
+                int e = end == -1 ? consoleDocument.getLength() : end;
                 try {
-                    ret[0] = consoleDocument.getText(consoleDocument.getLength() - 1, 1).charAt(0) == '\n';
+                    ret[0] = consoleDocument.getText(e - 1, 1).charAt(0) == '\n';
                 } catch (BadLocationException ex) {
                     ret[0] = false;
                 }
@@ -824,106 +1002,78 @@ public class ShellSession {
     }
     
     private void writeToShellDocument(String text) {
-        /*
-        try {
-            documentWriter.append(text);
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Could not report console message: {0}", text);
-        }
-        */
         model.writeToShellDocument(text);
     }
     
-    private boolean erroneous;
-    
     private Set<Snippet>    excludedSnippets = new HashSet<>();
     
-    private void acceptSnippet(SnippetEvent e) {
-        if (launcher == null) {
-            return;
-        }
-        switch (e.status()) {
-            case REJECTED:
-                erroneous = true;
-            case VALID:
-            case RECOVERABLE_DEFINED:
-            case RECOVERABLE_NOT_DEFINED:
-            case NONEXISTENT:
-                createSnippetFile(
-                        model.getInfo(e.snippet()), 
-                        null, false
-                );
-            if (recordNoSave) {
-                excludedSnippets.add(e.snippet());
-            }
-        }
+    private String getClasspathAsString(PathKind pk) {
+        return addRoots("", getClasspathInfo().getClassPath(pk));
     }
     
     private String createClasspathString() {
-        File remoteProbeJar = InstalledFileLocator.getDefault().locate(
-                "modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.libs.jshell", false);
-        File replJar = InstalledFileLocator.getDefault().locate("modules/ext/nb-jshell.jar", "org.netbeans.libs.jshell", false);
-        File toolsJar = null;
-
-        for (FileObject jdkInstallDir : platform.getInstallFolders()) {
-            FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
-
-            if (toolsJarFO == null) {
-                toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
-            }
-            if (toolsJarFO != null) {
-                toolsJar = FileUtil.toFile(toolsJarFO);
-            }
-        }
-        ClassPath compilePath = cpInfo.getClassPath(PathKind.COMPILE);
+        String sep = System.getProperty("path.separator");
+        boolean modular = ShellProjectUtils.isModularJDK(platform);
+        String agentJar = 
+                modular ?
+                    "modules/ext/nb-mod-jshell-probe.jar" :
+                    "modules/ext/nb-custom-jshell-probe.jar";
         
-        FileObject[] roots = compilePath.getRoots();
-        File[] urlFiles = new File[roots.length];
-        int index = 0;
-        for (FileObject fo : roots) {
-            File f = FileUtil.toFile(fo);
-            if (f != null) {
-                urlFiles[index++] = f;
+                
+        File remoteProbeJar = InstalledFileLocator.getDefault().locate(agentJar, 
+                "org.netbeans.lib.jshell.agent", false);
+        StringBuilder sb = new StringBuilder(remoteProbeJar.getAbsolutePath());
+        
+        if (!modular) {
+//            File replJar = 
+//                    InstalledFileLocator.getDefault().locate(
+//                            "modules/ext/nb-jshell.jar", 
+//                            "org.netbeans.libs.jshell", false);
+//            sb.append(sep).append(replJar.getAbsolutePath());
+
+            File toolsJar = null;
+            for (FileObject jdkInstallDir : platform.getInstallFolders()) {
+                FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
+
+                if (toolsJarFO == null) {
+                    toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
+                }
+                if (toolsJarFO != null) {
+                    toolsJar = FileUtil.toFile(toolsJarFO);
+                    break;
+                }
+            }
+            if (toolsJar != null) {
+                sb.append(sep).append(toolsJar);
             }
         }
-        String cp = addClassPath(
-                toolsJar != null ? toClassPath(remoteProbeJar, replJar, toolsJar) : 
-                                   toClassPath(remoteProbeJar, replJar),
-                urlFiles) + System.getProperty("path.separator") + " "; // NOI18N avoid REPL bug
         
-        return cp;
-    }
-
-    private static String addClassPath(String prefix, File... files) {
-        String suffix = toClassPath(files);
-        if (prefix != null && !prefix.isEmpty()) {
-            return prefix + System.getProperty("path.separator") + suffix;
-        }
-        return suffix;
-    }
-
-    private static String toClassPath(File... files) {
-        String sep = "";
-        StringBuilder cp = new StringBuilder();
-
-        for (File f : files) {
-            if (f == null) continue;
-            cp.append(sep);
-            cp.append(f.getAbsolutePath());
-            sep = System.getProperty("path.separator");
-        }
-
-        return cp.toString();
+        // classpath construction
+        
+        ClassPath compile = getEnv().getVMClassPath();
+        String projectCp = addRoots("", compile); // NOi18N
+        sb.append(sep).append(projectCp);
+        return sb.toString();
     }
 
     private void closed() {
         synchronized (this) {
-            if (closed) {
+            if (ignoreClose) {
                 return;
             }
         }
-        env.notifyDisconnected(this);
+        env.notifyDisconnected(this, false);
         propSupport.firePropertyChange(PROP_ACTIVE, true, false);
+        
+        // save the history
+        ShellHistory h = env.getLookup().lookup(ShellHistory.class);
+        if (h != null) {
+            saveInputSections(h);
+        }
+    }
+    
+    private void saveInputSections(ShellHistory history) {
+        history.pushItems(historyItems());
     }
     
     private void closedDelayed() {
@@ -935,12 +1085,13 @@ public class ShellSession {
     }
 
     private synchronized void init(ShellSession prev) {
+        ConsoleModel.initModel();
         evaluator = new RequestProcessor("Evaluator for " + displayName);
         initClasspath();
-        model = ConsoleModel.create(consoleDocument, null, evaluator);
+        model = ModelAccessor.INSTANCE.createModel((LineDocument)consoleDocument, evaluator, bridgeImpl);
         model.addConsoleListener(new LexerEmbeddingAdapter());
         model.addConsoleListener(new GuardedSectionUpdater());
-
+        
         // missing API to create a GuardedSectionManager against a plain document:
         AbstractGuardedSectionsProvider hack = new AbstractGuardedSectionsProvider(
                 new GuardedEditorSupport() {
@@ -971,18 +1122,37 @@ public class ShellSession {
     private GuardedSectionManager gsm;
 
     private void initClasspath() {
+        ClasspathInfo.Builder bld = new ClasspathInfo.Builder(
+                projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT)
+        );
+        
         ClassPath snippetSource = ClassPathSupport.createProxyClassPath(
                 projectInfo.getClassPath(PathKind.SOURCE),
                 ClassPathSupport.createClassPath(editorWorkRoot),
                 ClassPathSupport.createClassPath(workRoot)
         );
+        
+        ClassPath compileClasspath = projectInfo.getClassPath(PathKind.COMPILE);
 
+        ClassPath modBoot = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_BOOT);
+        ClassPath modClass = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_CLASS);
+        ClassPath modCompile = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_COMPILE);
+        
+        bld.
+            setClassPath(compileClasspath).
+            setSourcePath(snippetSource).
+                
+            setModuleBootPath(modBoot).
+            setModuleClassPath(modClass).
+            setModuleCompilePath(modCompile);
+        /*
         this.cpInfo = ClasspathInfo.create(
                 projectInfo.getClassPath(PathKind.BOOT),
-                projectInfo.getClassPath(PathKind.COMPILE),
+                compileClasspath,
                 snippetSource
         );
-        
+        */
+        this.cpInfo = bld.build();
         this.consoleDocument.putProperty("java.classpathInfo", this.cpInfo);
     }
 
@@ -993,9 +1163,13 @@ public class ShellSession {
     public ClasspathInfo getClasspathInfo() {
         return cpInfo;
     }
+    
+    public JShell ensureShell() {
+        initJShell();
+        return shell;
+    }
 
     public JShell getShell() {
-        initJShell();
         return shell;
     }
 
@@ -1134,43 +1308,117 @@ public class ShellSession {
      * by {@link #acceptSnippet} when it sees a REJECTED snippet (an error).
      */
     @NbBundle.Messages({
-        "MSG_ErrorExecutingCommand=Note: You may need to restart the Java Shell to resume proper operation"
+        "MSG_ErrorExecutingCommand=Note: You may need to restart the Java Shell to resume proper operation",
+        "MSG_JShellCannotExecute=Java Shell cannot execute commands. Restart Java Shell or its host process."
     })
     private void doExecuteCommands(final String cmd) {
         ConsoleSection sec = model.processInputSection(true);
         if (sec == null) {
             return;
         }
-
         // rely on JShell's own parsing from the input section
         // just for case:
         ModelAccessor.INSTANCE.execute(model, cmd != null, () -> {
-            ConsoleSection exec = model.getExecutingSection();
-            erroneous = false;
+            Executor executor = new Executor(cmd, model.getExecutingSection());
+            executor.execute();
+        }, this::getPromptAfterError);
+    }
+    
+    private class Executor implements Runnable, Consumer<SnippetEvent> {
+        private final String          cmd;
+        private final ConsoleSection  exec;
+        
+        private List<String>    toExec = new ArrayList<>();
+        private boolean         erroneous;
+        private int             execOffset;
+
+        public Executor(String cmd, ConsoleSection exec) {
+            this.cmd = cmd;
+            this.exec = exec;
+        }
+        
+        private boolean isExternal() {
+            return cmd != null;
+        }
+        
+        @Override
+        public void accept(SnippetEvent e) {
+            switch (e.status()) {
+                case REJECTED:
+                    erroneous = true;
+                case VALID:
+                case RECOVERABLE_DEFINED:
+                case RECOVERABLE_NOT_DEFINED:
+                case NONEXISTENT:
+                if (recordNoSave) {
+                    excludedSnippets.add(e.snippet());
+                }
+
+                // register in the registry:
+                SnippetHandle handle;
+                
+                if (isExternal()) {
+                    handle = snippetRegistry.installSnippet(
+                        e.snippet(), null, 0, true);
+                } else {
+                    handle = snippetRegistry.installSnippet(
+                        e.snippet(), exec, execOffset, false);
+                }
+                // create an indexed file for the snippet.
+                snippetRegistry.snippetFile(handle, 0);
+            }
+        }
+        
+        @Override
+        public void run() {
+            if (exec.getType() == ConsoleSection.Type.COMMAND) {
+                toExec.add(exec.getContents(consoleDocument));
+            } else {
+                for (Rng r : exec.getAllSnippetBounds()) {
+                    toExec.add(exec.getRangeContents(consoleDocument, r));
+                }
+            }
+        }
+        
+        void execute() {
             try {
-                final List<String> toExec = new ArrayList<>();
                 if (cmd != null) {
                     toExec.add(cmd);
                 } else {
-                    if (exec.getType() == ConsoleSection.Type.COMMAND) {
-                        // execute entire section
-                        consoleDocument.render(() -> {
-                            toExec.add(exec.getContents(consoleDocument));
-                        });
-                    } else {
-                        consoleDocument.render(() -> {
-                            for (Rng r : exec.getAllSnippetBounds()) {
-                                toExec.add(exec.getRangeContents(consoleDocument, r));
-                            }
-                        });
-                    }
+                    // fill toExec
+                    consoleDocument.render(this);
+                }
+                if (toExec.isEmpty()) {
+                    return;
                 }
                 Rng[] ranges = cmd == null ? exec.getAllSnippetBounds() : null;
                 int index = 0;
+                execOffset = 0;
+                Subscription sub = null;
+                JShell sh = null;
                 try {
                     for (String s : toExec) {
+                            launcher.ensureLive();
+                            if (!launcher.isLive()) {
+                                RemoteJShellService ec = ShellSession.this.exec;
+                                if (ec != null) {
+                                    ExecutionControlException ee = 
+                                            ec.getBrokenException();
+                                    if (ee != null) {
+                                        throw ee;
+                                    }
+                                }
+                                break;
+                            }
+                            sh = launcher.getJShell();
+                            if (sub == null) {
+                                String t = s.trim();
+                                if (!t.isEmpty() && t.charAt(0) != '/') { // shell commands
+                                    sub = sh.onSnippetEvent(this);
+                                }
+                            }
                             if (ranges != null) {
-                                ModelAccessor.INSTANCE.setSnippetOffset(model, exec.offsetToContents(ranges[index].start, true));
+                                execOffset = exec.offsetToContents(ranges[index].start, true);
                             }
                             launcher.evaluate(s, index == toExec.size() - 1);
                             if (erroneous) {
@@ -1178,21 +1426,29 @@ public class ShellSession {
                             }
                         index++;
                     }
+                } catch (IllegalStateException | ExecutionControlException ex) {
+                    reportShellMessage(Bundle.MSG_JShellCannotExecute());
                 } catch (RuntimeException | IOException ex) {
                     reportErrorMessage(ex);
                     reportShellMessage(Bundle.MSG_ErrorExecutingCommand());
+                } finally {
+                    if (sub != null) {
+                        sh.unsubscribe(sub);
+                    }
+                    ensureInputSectionAvailable();
                 }
             } finally {
-                erroneous = false;
+                
             }
-        }, this::getPromptAfterError);
+        }
+        
     }
     
     private String getPromptAfterError() {
         return launcher.prompt(false);
     }
     
-    private synchronized Task sendJShellClose(JShell.Subscription unsub) {
+    private synchronized Task sendJShellClose() {
         RemoteJShellService e;
         synchronized (this) {
             if (launcher == null) {
@@ -1205,9 +1461,6 @@ public class ShellSession {
         }
         // possibly delayed, if the evaluator is just processing some remote call.
         return evaluator.post(() -> {
-            if (shell != null && unsub != null) {
-                shell.unsubscribe(unsub);
-            }
             try {
                 launcher.closeState();
             } catch (InternalError ex) {
@@ -1322,7 +1575,7 @@ public class ShellSession {
             return Collections.emptyList();
         }
         
-        List<Snippet> snips = new ArrayList<>(sh.snippets());
+        List<Snippet> snips = new ArrayList<>(sh.snippets().collect(Collectors.toList()));
         if (onlyUser) {
             snips.removeAll(initial);
             snips.removeAll(excludedSnippets);
@@ -1352,5 +1605,60 @@ public class ShellSession {
         }
         shell.stop();
     }
+
+    public List<ShellHistory.Item> historyItems() {
+        final List<Item> historyLines = new ArrayList<>();
+        try {
+            ParserManager.parse(Collections.singleton(Source.create(getConsoleDocument())), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ConsoleContents console = ConsoleContents.get(resultIterator);
+                    ConsoleSection input = console.getInputSection();
+                    for (ConsoleSection s : console.getSectionModel().getSections()) {
+                        if (!s.getType().input) {
+                            continue;
+                        }
+                        if (s == input) {
+                            // do not save current input
+                            continue;
+                        }
+                        String contents = s.getContents(consoleDocument);
+                        // ignore such lines, which contain just history command
+                        if (contents.startsWith("/") && contents.length() > 2) {
+                            if (contents.charAt(1) == '-' || Character.isDigit(contents.charAt(1))) {
+                                continue;
+                            }
+                        }
+                        List<SnippetHandle> handles = console.getHandles(s);
+                        
+                        Snippet.Kind sectionKind;
+                        boolean command;
+                        if (s.getType() == ConsoleSection.Type.COMMAND) {
+                            command = true;
+                            sectionKind = null;
+                        } else {
+                            command = false;
+                            if (handles.isEmpty()) {
+                                sectionKind = Snippet.Kind.ERRONEOUS;
+                            } else {
+                                sectionKind = handles.get(0).getKind();
+                            }
+                        }
+                        contents = contents.trim();
+                        if (contents.isEmpty()) {
+                            continue;
+                        }
+                        historyLines.add(new ShellHistory.Item(sectionKind, command, contents));
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            return Collections.emptyList();
+        }
+        return historyLines;
+    }
     
+    public Path resolvePath(String s) {
+        return launcher == null ? Paths.get(s) : launcher.toPathResolvingUserHome(s);
+    }
 }

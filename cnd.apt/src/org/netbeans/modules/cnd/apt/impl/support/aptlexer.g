@@ -50,7 +50,7 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 }
 
 options {
@@ -581,20 +581,8 @@ tokens {
 }
 {
     private boolean reportErrors;
-    private Language lang;
-    private Flavor flavor;
+    private APTFile.Kind aptKind;
     private APTLexerCallback callback;
-    public static enum Language {
-        C,
-        CPP,
-        FORTRAN
-    };
-    public static enum Flavor {
-        UNKNOWN,
-        FORTRAN_FIXED,
-        FORTRAN_FREE,
-        CPP11
-    };
 
     public interface APTLexerCallback {
         void onMakeToken(int tokType, int startColumn, int startLine);
@@ -604,28 +592,14 @@ tokens {
         this.callback = callback;
     }
 
-    public void init(String filename, int flags, String language, String flavor) {
+    public void init(String filename, int flags, APTFile.Kind aptKind) {
         preprocPossible = true;
         preprocPending = false;
         reportErrors = true;
 
         setFilename(filename);
-
-        if(language.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
-            this.lang = Language.FORTRAN;
-        } else {
-            this.lang = Language.CPP;
-        }
-
-        if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FIXED)) {
-            this.flavor = Flavor.FORTRAN_FIXED;
-        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FREE)) {
-            this.flavor = Flavor.FORTRAN_FREE;
-        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_CPP11)) {
-            this.flavor = Flavor.CPP11;
-        } else {
-            this.flavor = Flavor.UNKNOWN;
-        }
+        
+        this.aptKind = aptKind;
 
 //        if ((flags & CPPParser.CPP_SUPPRESS_ERRORS) > 0) {
 //            reportErrors = false;
@@ -686,12 +660,16 @@ tokens {
         errorCount++;
     }
 
-    private boolean isCPlusPlus() {
-        return lang == Language.CPP;
+    private boolean isCOrCPP() {
+        return aptKind == APTFile.Kind.C_CPP;
     }
 
-    private boolean isCPlusPlus11() {
-        return isCPlusPlus() && flavor == Flavor.CPP11;
+    private boolean isFortran() {
+        return aptKind == APTFile.Kind.FORTRAN_FIXED || aptKind == APTFile.Kind.FORTRAN_FREE;
+    }
+
+    private boolean isFreeFormFortran() {
+        return aptKind == APTFile.Kind.FORTRAN_FREE;
     }
 
 /*
@@ -907,7 +885,7 @@ tokens {
 /* Comments: */
 
 FORTRAN_COMMENT options { constText=true; } :
-    {lang == Language.FORTRAN && (inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ') || (flavor == Flavor.FORTRAN_FREE && LA(1) == '!') )}?
+    {isFortran() && (inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ') || (isFreeFormFortran() && LA(1) == '!') )}?
     ('!' | ('c'|'C') | '*')
     (~('\n' | '\r'))*
     {$setType(FORTRAN_COMMENT);}
@@ -950,8 +928,8 @@ FIRST_ASSIGN options { constText=true; } :
 FIRST_DIVIDE :
     '/' ( {$setType(DIVIDE);}               //DIVIDE          : '/' ;
     | '=' {$setType(DIVIDEEQUAL);} )        //DIVIDEEQUAL     : "/=" ;
-    | {(lang == Language.CPP || lang == Language.C)}? COMMENT {$setType(COMMENT);}
-    | {lang == Language.CPP}? CPP_COMMENT {$setType(CPP_COMMENT);};
+    | {isCOrCPP()}? COMMENT {$setType(COMMENT);}
+    | {isCOrCPP()}? CPP_COMMENT {$setType(CPP_COMMENT);};
 
 FIRST_STAR options { constText=true; } :
     '*' ( {$setType(STAR);}                 //STAR            : '*' ;
@@ -1036,7 +1014,7 @@ FIRST_COLON options { constText=true; } :
 FIRST_LESS :
     ( 
         // C++11 standard - 2.5 p3, bullet 2
-        ({isCPlusPlus11()}? "<::" ~(':'|'>')) => '<' {$setType(LESSTHAN);}
+        ("<::" ~(':'|'>')) => '<' {$setType(LESSTHAN);}
     | 
         ('<' (options{generateAmbigWarnings = false;}:
             {isAfterInclude()}? H_char_sequence ('>')? {$setType(SYS_INCLUDE_STRING);setAfterInclude(false);}
@@ -1220,7 +1198,7 @@ protected CHAR_LITERAL_BODY
 		|	
                          ~('\'' | '\r' | '\n' | '\\')
 		)*
-            ('\'' (Suffix)? // correct ending of char literal
+            ('\'' //(Suffix)? // correct ending of char literal
                 |  {LA(1)=='\r'||LA(1)=='\n'}? // error char literal doesn't have closing quote
             )
         ;
@@ -1247,7 +1225,7 @@ protected STRING_LITERAL_BODY :
 		|	
                          ~('"' | '\r' | '\n' | '\\')
 		)*
-            ('"' (Suffix)? // correct ending of string
+            ('"' //(Suffix)? // correct ending of string
                 |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
             )
         ;
@@ -1290,7 +1268,7 @@ protected RAW_STRING_LITERAL_BODY
                 { !end }? '"' 
             
         )*
-    ('"' (Suffix)? // correct ending of string
+    ('"' //(Suffix)? // correct ending of string
         |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
     )
     ;
@@ -1330,12 +1308,12 @@ protected Digit:	'0'..'9' ;
 
 //protected Decimal:	('0'..'9')+ ;
 
-protected Suffix:
-    (
-        (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') // '$' added for gcc support
-        (options {combineChars=true;greedy=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')* // '$' added for gcc support
-    )
-    ;
+//protected Suffix:
+//    (
+//        (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') // '$' added for gcc support
+//        (options {combineChars=true;greedy=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9')* // '$' added for gcc support
+//    )
+//    ;
 
 protected Exponent:	('e' | 'E') ('+' | '-')? (Digit)* ;
 
@@ -1348,18 +1326,18 @@ NUMBER
 		(options {greedy=true;} : '.' (Digit)* (options {greedy=true;} : Exponent)? {$setType(FLOATONE);} //Zuo 3/12/01
 		| Exponent                 {$setType(FLOATTWO);} //Zuo 3/12/01
 		)
-                (Suffix)?
+                //(Suffix)?
 	|	'.'  (                  {$setType(DOT);}	//TODO: solve "dot & ellipsis"! 
 		| 	(Digit)+ (options {greedy=true;} : Exponent)?   
                                         {$setType(FLOATONE);} //Zuo 3/12/01
-                        (Suffix)?
+                        //(Suffix)?
 		| '*' {$setType(DOTMBR);}
                 | {(LA(2)=='.')}? ".."  {$setType(ELLIPSIS);}
                 )
 
 	|	'1'..'9' (Digit)*
                                         {$setType(DECIMALINT);}  
-                (Suffix)?
+                //(Suffix)?
         |
                 (       '0'
                     (   ('x' | 'X') => ('x' | 'X') (options {greedy=true;} : 'a'..'f' | 'A'..'F' | Digit)*
@@ -1370,7 +1348,7 @@ NUMBER
                                         {$setType(OCTALINT);}
                     )
                 )
-                (Suffix)?
+                //(Suffix)?
     )    
     ;
 

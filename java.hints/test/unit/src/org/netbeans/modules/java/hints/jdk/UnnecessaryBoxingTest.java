@@ -114,6 +114,29 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 + "    }\n"
                 + "}");
     }
+    
+    /**
+     * As one of the operands is not known to be non-null, unnecessary unboxing
+     * warning should be suppressed; unboxing the operands could cause a NPE.
+     */
+    public void testConditionalUnboxingPossibleNull() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n"
+                + "final class Test  {\n"
+                + "    public Long l() {\n"
+                + "        return null;\n"
+                + "    }\n"
+                        
+                + "    public void test(boolean t) {\n"
+                + "        Long a = t ? new Integer(1) : l();\n"
+                + "    }\n"
+                + "}", false)
+                .sourceLevel("1.5").preference(UnnecessaryBoxing.PREFER_CAST_TO_BOXING, true)
+                .run(UnnecessaryBoxing.class)
+                .assertWarnings()
+                ;
+    }
 
     public void testConditionalCompatible() throws Exception {
         HintTest

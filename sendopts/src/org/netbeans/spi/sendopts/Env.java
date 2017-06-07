@@ -107,6 +107,14 @@ public final class Env {
     public InputStream getInputStream() {
         return is;
     }
+    /** Prints the help usage for current set of options. Same
+     * as {@link #usage(java.io.OutputStream) usage}({@link #getOutputStream()}).
+     *
+     * @since 2.21
+     */
+    public void usage() {
+        usage(getOutputStream());
+    }
     
     /** Prints the help usage for current set of options. This is a handy method if
      * one wants to define a <em>help</em> option. In such case: <pre>
@@ -116,18 +124,19 @@ public final class Env {
      * 
      *   {@code @}{@link Override}
      *   public void process({@link Env} env) {
-     *     if (help) env.usage();
+     *     if (help) env.usage(env.{@link #getErrorStream()});
      *   }
      * }
      * </pre>
      * This method finds associated {@link CommandLine} and calls its
      * {@link CommandLine#usage(java.io.PrintWriter) usage} method to print
      * the help text to {@link #getOutputStream()}.
-     * 
-     * @since 2.21
+     *
+     * @param os output stream to write the output to
+     * @since 2.37
      */
-    public void usage() {
-        PrintWriter pw = new PrintWriter(getOutputStream());
+    public void usage(OutputStream os) {
+        PrintWriter pw = new PrintWriter(os);
         cmd.usage(pw);
         pw.flush();
     }

@@ -117,5 +117,23 @@ public class WhereUsedFiltersTestCase extends CsmWhereUsedQueryPluginTestCaseBas
         props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
         performWhereUsed("testRWFilters.cpp", 2, 9, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
     }
+
+    public void testRFilterSelected2() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters2.cpp", 1, 18, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ.getKey()));
+    }
+
+    public void testWFilterSelected2() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters2.cpp", 1, 18, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.WRITE.getKey()));
+    }
+
+    public void testRWFilterSelected2() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        performWhereUsed("testRWFilters2.cpp", 1, 18, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(),CsmWhereUsedFilters.READ_WRITE.getKey()));
+    }
 }
 

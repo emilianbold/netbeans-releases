@@ -108,7 +108,7 @@ public class MoveTransformer extends RefactoringVisitor {
     
     @Override
     public Tree visitMemberSelect(MemberSelectTree node, Element p) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (!JavaPluginUtils.isSyntheticPath(workingCopy, getCurrentPath())) {
             final Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el != null) {
                 if (isElementMoving(el)) {
@@ -212,7 +212,7 @@ public class MoveTransformer extends RefactoringVisitor {
     
     @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (!JavaPluginUtils.isSyntheticPath(workingCopy, getCurrentPath())) {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el != null) {
                 if (!isThisFileMoving) {
@@ -475,10 +475,10 @@ public class MoveTransformer extends RefactoringVisitor {
     @Override
     public Tree visitExports(ExportsTree node, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-            final Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), node.getExportName()));
+            final Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), node.getPackageName()));
             if (el != null && el.getKind() == ElementKind.PACKAGE && isThisPackageMoving((PackageElement)el)) {
                 Tree nju = make.Identifier(getTargetPackageName(el));
-                rewrite(node.getExportName(), nju);                 
+                rewrite(node.getPackageName(), nju);                 
             }
         }
         return super.visitExports(node, p);

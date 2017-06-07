@@ -118,7 +118,7 @@ public final class ModRootElement extends AbstractRootElement<ModElement> implem
     }
 
     @Override
-    public void insertUpdate(DocumentEvent evt) {
+    public void changedUpdate(DocumentEvent evt) {
         if (enabled) {
             UndoableEdit compoundEdit = (UndoableEdit) evt;
             int offset = evt.getOffset();
@@ -143,12 +143,16 @@ public final class ModRootElement extends AbstractRootElement<ModElement> implem
 
     @Override
     public void removeUpdate(DocumentEvent evt) {
-        insertUpdate(evt);
+        if (evt.getType() == DocumentEvent.EventType.REMOVE) {
+            changedUpdate(evt);
+        }
     }
 
     @Override
-    public void changedUpdate(DocumentEvent evt) {
-        insertUpdate(evt);
+    public void insertUpdate(DocumentEvent evt) {
+        if (evt.getType() == DocumentEvent.EventType.INSERT) {
+            changedUpdate(evt);
+        }
     }
 
     private boolean isCovered(int offset, int length) {

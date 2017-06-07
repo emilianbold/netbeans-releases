@@ -44,6 +44,7 @@
 package org.netbeans.lib.profiler.heap;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -65,13 +66,14 @@ public interface Heap {
     List /*<JavaClass>*/ getAllClasses();
     
     /**
-     * computes List of N biggest {@link JavaClass} instances in this heap.
-     * The classes are ordered according to their retained size.
+     * computes List of N biggest {@link Instance}-s in this heap.
+     * The instances are ordered according to their retained size.
      * <br>
      * Speed: slow for the first time, subsequent invocations are normal.
-     * @return list of N biggest {@link JavaClass} instances.
+     * @param number size of the returned List
+     * @return list of N biggest {@link Instance}.
      */
-    List /*<JavaClass>*/ getBiggestObjectsByRetainedSize(int number);
+    List /*<Instance>*/ getBiggestObjectsByRetainedSize(int number);
     
     /**
      * returns {@link GCRoot} for {@link Instance}.
@@ -131,6 +133,16 @@ public interface Heap {
      */
     Collection getJavaClassesByRegExp(String regexp);
 
+    /**
+     * returns an iterator over the {@link Instance}es in the whole heap. There are no
+     * guarantees concerning the order in which the {@link Instance}es are returned.
+     * <br>
+     * Speed: fast
+     *
+     * @return an <tt>Iterator</tt> over the {@link Instance}es in this heap
+     */
+    public Iterator getAllInstancesIterator();
+    
     /**
      * returns optional summary information of the heap.
      * If this information is not available in the dump,

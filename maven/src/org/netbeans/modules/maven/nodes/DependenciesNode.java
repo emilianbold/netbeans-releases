@@ -42,12 +42,14 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import org.netbeans.modules.maven.DependencyType;
+import org.netbeans.modules.maven.ModuleInfoSupport;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,6 +58,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -66,6 +72,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -95,7 +102,9 @@ import org.openide.util.lookup.Lookups;
  * @author  Milos Kleint
  */
 public class DependenciesNode extends AbstractNode {
-    enum Type {COMPILE, TEST, RUNTIME, /** any scope */NONCP}
+    
+    private static final Logger LOG = Logger.getLogger(DependenciesNode.class.getName());
+    
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     private static final @StaticResource String LIBS_BADGE = "org/netbeans/modules/maven/libraries-badge.png";
     private static final @StaticResource String DEF_FOLDER = "org/netbeans/modules/maven/defaultFolder.gif";
@@ -164,7 +173,7 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected Node createNodeForKey(DependencyWrapper wr) {
-            return new DependencyNode(dependencies.project, wr.getArtifact(), wr.getFileObject(), true, wr.getNodeDelegate());
+            return new DependencyNode(dependencies.project, wr.getArtifact(), wr.getFileObject(), true, wr.getNodeDelegate(), wr.isDeclaredInModuleInfo());
         }
 
         @Override public void stateChanged(ChangeEvent e) {
@@ -177,44 +186,47 @@ public class DependenciesNode extends AbstractNode {
         }
 
     }
-
+    
     static final class DependenciesSet implements PropertyChangeListener {
 
         private NbMavenProjectImpl project;
-        private final Type type;
+        private final DependencyType type;
         private final ChangeSupport cs = new ChangeSupport(this);
+        private final ModuleInfoSupport moduleInfoSupport;
 
-        @SuppressWarnings("LeakingThisInConstructor")
-        DependenciesSet(NbMavenProjectImpl project, Type type) {
+        @SuppressWarnings("LeakingThisInConstructor")       
+        DependenciesSet(NbMavenProjectImpl project, DependencyType type) {
             this.project = project;
-            this.type = type;
+            this.type = type;           
+            switch (type) {   
+                case COMPILE:
+                case TEST:
+                    moduleInfoSupport = new ModuleInfoSupport(project, type);
+                    break;
+                default:
+                    moduleInfoSupport = null;
+                    break;
+            }
+            
             NbMavenProject nbmp = project.getProjectWatcher();
             nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
         }
-
-        Collection<DependencyWrapper> list(boolean longLiving) {
-            HashSet<DependencyWrapper> lst = new HashSet<DependencyWrapper>();
+        
+        Collection<DependencyWrapper> list(boolean longLiving) {  
+            HashSet<DependencyWrapper> lst;
             MavenProject mp = project.getOriginalMavenProject();
             Set<Artifact> arts = mp.getArtifacts();
             switch (type) {
-            case COMPILE:
-                create(lst, arts, longLiving, Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_SYSTEM);
-                break;
-            case TEST:
-                create(lst, arts, longLiving, Artifact.SCOPE_TEST);
-                break;
-            case RUNTIME:
-                create(lst, arts, longLiving, Artifact.SCOPE_RUNTIME);
-                break;
-            default:
-                for (Artifact a : arts) {
-                    if (!a.getArtifactHandler().isAddedToClasspath()) {
-                        lst.add(new DependencyWrapper(a, longLiving));
-                    }
-                }
+                case COMPILE:
+                case TEST:
+                case RUNTIME:
+                    lst = create(arts, longLiving, type.artifactScopes());
+                    break;
+                default:
+                    lst = create(arts, longLiving, (a) -> !a.getArtifactHandler().isAddedToClasspath());
             }
             //#200927 do not use comparator in treeset, comparator not equivalent to equals/hashcode
-            ArrayList<DependencyWrapper> l = new ArrayList<DependencyWrapper>(lst);
+            ArrayList<DependencyWrapper> l = new ArrayList<>(lst);
             Collections.sort(l, new DependenciesComparator());
             return l;
         }
@@ -233,18 +245,26 @@ public class DependenciesNode extends AbstractNode {
             }
         }
 
-        private void create(Set<DependencyWrapper> lst, Collection<Artifact> arts, boolean longLiving, String... scopes) {
-            final List<String> scopesList = Arrays.asList(scopes);
-            for (Artifact a : arts) {
-                if (!scopesList.contains(a.getScope())) {
-                    continue;
-                }
-                if (a.getArtifactHandler().isAddedToClasspath()) {
-                    lst.add(new DependencyWrapper(a, longLiving));
-                }
-            }
+        private HashSet<DependencyWrapper> create(Set<Artifact> arts, boolean longLiving, List<String> scopesList) {
+            return create(arts, longLiving, (a) -> a.getArtifactHandler().isAddedToClasspath() && scopesList.contains(a.getScope()));
         }
 
+        private HashSet<DependencyWrapper> create(Set<Artifact> arts, boolean longLiving, Function<Artifact, Boolean> accept) {
+            HashSet<DependencyWrapper> lst = new HashSet<>();
+            for (Artifact a : arts) {
+                if (accept.apply(a)) {
+                    URL url = FileUtil.urlForArchiveOrDir(a.getFile());
+                    String name = url != null ? SourceUtils.getModuleName(url) : null;
+                    if(name != null) {
+                        LOG.log(Level.FINE, "Artifact {0} has module name ''{1}''", new Object[]{url, name}); // NOI18N
+                        lst.add(new DependencyWrapper(a, longLiving, () -> moduleInfoSupport != null ? moduleInfoSupport.canAddToModuleInfo(name) : false));
+                    } else {
+                        LOG.log(Level.WARNING, "Could not determine module name for artifact {0}", new Object[]{url}); // NOI18N
+                    }
+                }
+            }
+            return lst;
+        }
     }
     
     private final static class DependencyWrapper {
@@ -258,12 +278,15 @@ public class DependenciesNode extends AbstractNode {
         private final String filePath;
         private final int dependencyTrailSize;
         private final String artifactId;
+        private final Supplier<Boolean> canAddToModuleInfo;
 
-        public DependencyWrapper(Artifact artifact, boolean longLiving) {                                    
+        public DependencyWrapper(Artifact artifact, boolean longLiving, Supplier<Boolean> canAddToModuleInfo) {   
             this.artifact = artifact;
             assert artifact.getFile() != null : "#200927 Artifact.getFile() is null: " + artifact;
             assert artifact.getDependencyTrail() != null : "#200927 Artifact.getDependencyTrail() is null:" + artifact;
             assert artifact.getVersion() != null : "200927 Artifact.getVersion() is null: " + artifact;
+            
+            this.canAddToModuleInfo = canAddToModuleInfo;
             
             // artifact is mutable and might be the source of issues like in #250473
             // lets fix the values necessary for an imutable hasCode, equals 
@@ -301,6 +324,10 @@ public class DependenciesNode extends AbstractNode {
             return artifact;
         }
 
+        public Supplier<Boolean> isDeclaredInModuleInfo() {
+            return canAddToModuleInfo;
+        }
+        
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -354,7 +381,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         @Override public void actionPerformed(ActionEvent event) {
-            String typeString = dependencies.type == Type.RUNTIME ? "runtime" : (dependencies.type == Type.TEST ? "test" : "compile"); //NOI18N
+            String typeString = dependencies.type == DependencyType.RUNTIME ? "runtime" : (dependencies.type == DependencyType.TEST ? "test" : "compile"); //NOI18N
             final String[] data = AddDependencyPanel.show(dependencies.project, true, typeString);
             if (data != null) {
                 RP.post(new Runnable() {

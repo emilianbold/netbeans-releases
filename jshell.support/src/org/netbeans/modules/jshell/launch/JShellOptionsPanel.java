@@ -47,6 +47,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
 import javax.swing.ComboBoxModel;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.platform.*;
 import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -56,7 +57,8 @@ import org.openide.modules.SpecificationVersion;
  *
  * @author sdedic
  */
-public class JShellOptionsPanel extends javax.swing.JPanel implements ActionListener, ItemListener {
+public class JShellOptionsPanel extends javax.swing.JPanel 
+        implements ActionListener, ItemListener {
     private ShellOptions options;
     private JShellOptionsController ctrl;
     
@@ -93,6 +95,8 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
         btnManage = new javax.swing.JButton();
         chAutoOpen = new javax.swing.JCheckBox();
         chReuseConsoles = new javax.swing.JCheckBox();
+        jLabel2 = new javax.swing.JLabel();
+        historyLines = new javax.swing.JSpinner();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JShellOptionsPanel.class, "JShellOptionsPanel.jLabel1.text")); // NOI18N
 
@@ -108,6 +112,16 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
         chReuseConsoles.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(chReuseConsoles, org.openide.util.NbBundle.getMessage(JShellOptionsPanel.class, "JShellOptionsPanel.chReuseConsoles.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(JShellOptionsPanel.class, "JShellOptionsPanel.jLabel2.text")); // NOI18N
+
+        historyLines.setModel(new javax.swing.SpinnerNumberModel(50, 0, null, 1));
+        historyLines.setName(""); // NOI18N
+        historyLines.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                historyLinesStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -122,9 +136,13 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
                         .addGap(18, 18, 18)
                         .addComponent(btnManage))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(chReuseConsoles)
-                            .addComponent(chAutoOpen))
+                            .addComponent(chAutoOpen)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(historyLines)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -140,7 +158,11 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
                 .addComponent(chAutoOpen)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(chReuseConsoles)
-                .addContainerGap(205, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(historyLines, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(167, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -157,6 +179,10 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
             disableUpdates = false;
         }
     }//GEN-LAST:event_btnManageActionPerformed
+
+    private void historyLinesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_historyLinesStateChanged
+        changed();
+    }//GEN-LAST:event_historyLinesStateChanged
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -164,7 +190,9 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
     private javax.swing.JComboBox<String> cbPlatform;
     private javax.swing.JCheckBox chAutoOpen;
     private javax.swing.JCheckBox chReuseConsoles;
+    private javax.swing.JSpinner historyLines;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 
 
@@ -178,7 +206,13 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
         if (getSelectedPlatformObject() != options.getSelectedPlatform()) {
             return true;
         }
-        
+        Object val = historyLines.getModel().getValue();
+        if (!(val instanceof Integer)) {
+            return true;
+        }
+        if ((Integer)val != options.getHistoryLines()) {
+            return true;
+        }
         return false;
     }
     
@@ -205,6 +239,7 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
         chReuseConsoles.setSelected(options.isReuseDeadConsoles());
         chAutoOpen.setSelected(options.isOpenConsole());
         setSelectedItem(options.getSelectedPlatform());
+        historyLines.getModel().setValue(options.getHistoryLines());
         disableUpdates = false;
     }
     
@@ -217,6 +252,10 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
         }
         if (getSelectedPlatformObject() != options.getSelectedPlatform()) {
             options.setSelectedPlatform(getSelectedPlatform());
+        }
+        Object val = historyLines.getModel().getValue();
+        if (val instanceof Integer && ((Integer)val != options.getHistoryLines())) {
+            options.setHistoryLines((Integer)val);
         }
     }
     

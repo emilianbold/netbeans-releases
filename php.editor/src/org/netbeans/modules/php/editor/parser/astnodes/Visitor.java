@@ -152,6 +152,8 @@ public interface Visitor {
     //public void endVisit(Identifier identifier);
     public void visit(NamespaceName namespaceName);
 
+    public void visit(NullableType nullableType);
+
     public void visit(NamespaceDeclaration declaration);
 
     public void visit(GotoLabel label);

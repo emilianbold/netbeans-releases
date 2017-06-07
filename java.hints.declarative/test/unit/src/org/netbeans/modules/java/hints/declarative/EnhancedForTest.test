@@ -15,6 +15,7 @@ package test;
 public class Test {
     private void test() {
         String[] a = new String[2];
+
         for (String s : a) {
             System.err.println(s);
         }

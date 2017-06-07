@@ -381,7 +381,6 @@ Hg ID:    ${hg.id}
           </fileset>
       </delete>
   </target>
-  
   <target name="build" depends="build-nozip"
           description="Create a complete build including a ZIP distribution (but do not try it).">
     <delete file="NetBeans-${buildnum}.zip"/>
@@ -424,6 +423,15 @@ Hg ID:    ${hg.id}
       <mkdir dir="${netbeans.dest.dir}"/>
       <ant dir="." target="-build-platform" inheritAll="false">
           <property name="cluster.config" value="platform"/>
+      </ant>
+  </target>
+
+  <target name="test-platform" description="Test the NetBeans Platform modules.">
+      <mkdir dir="${netbeans.dest.dir}"/>
+      <ant dir="." target="test" inheritAll="false">
+          <property name="cluster.config" value="platform"/>
+          <property name="test.type" value="test-unit"/>
+          <property name="test-unit-sys-prop.ignore.random.failures" value="true"/>
       </ant>
   </target>
   
@@ -927,8 +935,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   <target name="tryme-setup-debug-args" if="debug.port" >
     <property name="debug.pause" value="y" />
     <property name="debug.server" value="y" />
-    
-    <property name="tryme.debug.args" value="-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
+    <property name="tryme.debug.args" value="-J-agentlib:jdwp=transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
   </target>
           
   <target name="tryme-debug" depends="-jdk-presetdef-nbjpdastart" description="Start IDE in debugger. May only be called from within IDE.">
@@ -995,6 +1002,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         }
         project.setNewProperty('tryme.args', v)
     </script>
+    <property name="tryme.jdkhome" value="${nbjdk.home}"/>
     <property name="tryme.debug.args" value="" />
     <property environment="env"/>
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
@@ -1009,7 +1017,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="run.args.ide" value=""/>
     <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans${jvm.arch.string}.exe" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
+      <arg file="${tryme.jdkhome}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
@@ -1019,7 +1027,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <exec osfamily="unix" executable="sh" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
+      <arg file="${tryme.jdkhome}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
@@ -1282,7 +1290,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </classpath>
         </nbjpdastart>
         <antcall target="localtest-single">
-            <param name="junit.vm.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <param name="junit.vm.args" value="-agentlib:jdwp=transport=dt_socket,address=${jpda.address}"/>
         </antcall>
     </target>
 
@@ -1810,7 +1818,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </optionsimport>
     </target>
 
-    <target name="test" description="Runs ${test.type} target in modules specified by ${test.modules}.">
+    <target name="test" depends="init" description="Runs ${test.type} target in modules specified by ${test.modules}.">
+        <property name="test.modules" value="${allmodules}"/>
+        <property name="test.type" value="test"/>
         <subant target="${test.type}" >
             <property name="continue.after.failing.tests" value="true"/>
             <dirset dir=".." includes="${test.modules}"/>

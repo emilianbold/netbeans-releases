@@ -62,6 +62,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -266,11 +267,11 @@ final class CompletionFilter extends DocTrees {
     private DocTrees   delegate;
 
     @Override
-    public DocTreePath getDocTreePath(FileObject fileObject) {
+    public DocTreePath getDocTreePath(FileObject fileObject, PackageElement el) {
         if (delegate == null) {
             return null;
         }
-        return delegate.getDocTreePath(fileObject);
+        return delegate.getDocTreePath(fileObject, el);
     }
 
     @Override

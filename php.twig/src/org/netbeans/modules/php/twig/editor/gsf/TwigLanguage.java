@@ -60,6 +60,8 @@ import org.netbeans.modules.php.twig.editor.parsing.TwigParser;
 public class TwigLanguage extends DefaultLanguageConfig {
 
     public static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
+    public static final String TWIG_BLOCK_MIME_TYPE = "text/x-twig-block"; // NOI18N
+    public static final String TWIG_VARIABLE_MIME_TYPE = "text/x-twig-variable"; // NOI18N
 
     public TwigLanguage() {
     }

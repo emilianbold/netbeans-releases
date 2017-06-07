@@ -77,6 +77,9 @@ typedef enum TraceLevel {
 void set_trace(TraceLevel new_level);
 bool is_traceable(TraceLevel level);
 void trace(TraceLevel level, const char *format, ...);
+void redirect_err(const char* file_name);
+
+void log_and_err_print(const char *format, ...);
 
 void log_print(const char *format, ...);
 void log_open(const char* path);
@@ -89,6 +92,7 @@ void mutex_unlock_wrapper(pthread_mutex_t *mutex);
 void mutex_lock_wrapper(pthread_mutex_t *mutex);
 void *malloc_wrapper(size_t size);
 void *realloc_wrapper(void *ptr, size_t size);
+char *strdup_wrapper(const char* str);
 
 bool get_home_dir(char* home, int size);
 bool file_exists(const char* path);
@@ -103,7 +107,7 @@ void stopwatch_stop(TraceLevel level, const char* message);
 char *replace_first(char *s, char c, char replacement);
 
 /** opens a file in write-only exclusive mode with O_CREAT flag and mode 600 */
-FILE* fopen600(const char* path);
+FILE* fopen600(const char* path, int flags);
 
 int escape_strlen(const char* s);
 

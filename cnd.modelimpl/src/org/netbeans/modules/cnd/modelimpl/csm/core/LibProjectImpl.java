@@ -133,9 +133,10 @@ public final class LibProjectImpl extends ProjectBaseWithEditing {
 
     @Override
     public Collection<ProjectBase> getDependentProjects() {
+        final LibraryManager instance = LibraryManager.getInstance(getUnitId());
         // TODO: looks like not very safe way to get dependencies
         // see issue #211061
-        return LibraryManager.getInstance(getUnitId()).getProjectsByLibrary(this);
+        return instance == null ? Collections.<ProjectBase>emptyList() : instance.getProjectsByLibrary(this);
     }
 
     @Override

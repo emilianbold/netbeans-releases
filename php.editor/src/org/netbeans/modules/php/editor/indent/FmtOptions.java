@@ -152,6 +152,7 @@ public final class FmtOptions {
     public static final String SPACE_AROUND_ASSIGN_OPS = "spaceAroundAssignOps"; //NOI18N
     public static final String SPACE_AROUND_KEY_VALUE_OPS = "spaceAroundKeyValueOps"; //NOI18N
     public static final String SPACE_AROUND_OBJECT_OPS = "spaceAroundObjectOps"; //NOI18N
+    public static final String SPACE_AROUND_DECLARE_EQUAL = "spaceAroundDeclareEqual"; //NOI18N
     public static final String SPACE_BEFORE_CLASS_DECL_LEFT_BRACE = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE = "spaceBeforeAnonymousClassLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_DECL_LEFT_BRACE = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
@@ -322,6 +323,7 @@ public final class FmtOptions {
             {SPACE_AROUND_KEY_VALUE_OPS, TRUE},
             {SPACE_AROUND_ASSIGN_OPS, TRUE},
             {SPACE_AROUND_OBJECT_OPS, FALSE},
+            {SPACE_AROUND_DECLARE_EQUAL, FALSE},
             {SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, TRUE},
             {SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, TRUE},
             {SPACE_BEFORE_IF_LEFT_BRACE, TRUE},

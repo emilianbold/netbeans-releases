@@ -91,6 +91,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.VersioningQuery;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.ErrorManager;
 import org.openide.awt.AcceleratorBinding;
@@ -298,9 +299,50 @@ public final class Utils {
      * @return <code>true</code> if the folder identified by the given path
      * should be skipped when searching for metadata.
      * @since 1.54
+     * @deprecated  use isForbiddenFolder(File) or isForbiddenFolder(VCSFileProxy)
      */
     public static boolean isForbiddenFolder (String folderPath) {
         return forbiddenFolders.contains(folderPath);
+    }
+
+    /**
+     * Some folders are special and versioning should not look for metadata in
+     * them. Folders like /net with automount enabled may take a long time to
+     * answer I/O on their children, so
+     * <code>VCSFileProxy.exists("/net/.git")</code> will freeze until it
+     * timeouts. You should call this method before asking any I/O on children
+     * of this folder you are unsure to actually exist. This does not mean
+     * however that whole subtree should be excluded from version control, only
+     * that you should not look for the metadata directly in this folder.
+     * Returns <code>true</code> if the given folder is among such folders.
+     *
+     * @param folderPath path to a folder to query
+     * @return <code>true</code> if the folder identified by the given path
+     * should be skipped when searching for metadata.
+     * @since 1.71.0
+     */
+    public static boolean isForbiddenFolder (File folder) {
+        return org.netbeans.modules.versioning.core.util.Utils.isForbiddenFolder(VCSFileProxy.createFileProxy(folder));
+    }
+
+    /**
+     * Some folders are special and versioning should not look for metadata in
+     * them. Folders like /net with automount enabled may take a long time to
+     * answer I/O on their children, so
+     * <code>VCSFileProxy.exists("/net/.git")</code> will freeze until it
+     * timeouts. You should call this method before asking any I/O on children
+     * of this folder you are unsure to actually exist. This does not mean
+     * however that whole subtree should be excluded from version control, only
+     * that you should not look for the metadata directly in this folder.
+     * Returns <code>true</code> if the given folder is among such folders.
+     *
+     * @param folderPath path to a folder to query
+     * @return <code>true</code> if the folder identified by the given path
+     * should be skipped when searching for metadata.
+     * @since 1.71.0
+     */
+    public static boolean isForbiddenFolder (VCSFileProxy folder) {
+        return org.netbeans.modules.versioning.core.util.Utils.isForbiddenFolder(folder);
     }
 
     private static DataObject findDataObject(File file) {

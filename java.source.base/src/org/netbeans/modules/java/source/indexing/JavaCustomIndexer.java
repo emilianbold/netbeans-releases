@@ -167,6 +167,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
             APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+            final ClassPath moduleSourcePath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_SOURCE_PATH);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath moduleBootPath = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_BOOT_PATH);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);                                    
@@ -200,6 +201,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY,
                             moduleClassPath != null ? moduleClassPath : ClassPath.EMPTY,
                             sourcePath,
+                            moduleSourcePath,
                             Collections.<CompileTuple>emptySet());
                     try {
                         final ClassIndexImpl cii = javaContext.getClassIndexImpl();
@@ -223,7 +225,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 final JavaParsingContext javaContext;
                 try {
                     //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
-                    javaContext = new JavaParsingContext(context, bootPath, moduleBootPath != null ? moduleBootPath : ClassPath.EMPTY, compilePath, moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY, moduleClassPath != null ? moduleClassPath : ClassPath.EMPTY, sourcePath, virtualSourceTuples);
+                    javaContext = new JavaParsingContext(context, bootPath, moduleBootPath != null ? moduleBootPath : ClassPath.EMPTY, compilePath, moduleCompilePath != null ? moduleCompilePath : ClassPath.EMPTY, moduleClassPath != null ? moduleClassPath : ClassPath.EMPTY, sourcePath, moduleSourcePath, virtualSourceTuples);
                 } finally {
                     JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                 }
@@ -257,11 +259,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                         clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
                         if (isModuleInfo[0]) {
-                            final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                            final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
                             removedModule = moduleName == null ?
                                     null :
                                     ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);
-                            JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                            JavaIndex.setAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
                         }
                     }
                     for (CompileTuple tuple : virtualSourceTuples) {
@@ -305,7 +307,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                     }
                     if (moduleName != null) {
-                        JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, moduleName);
+                        JavaIndex.setAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, moduleName);
                     }
                     finished = compileResult.success;
 
@@ -470,8 +472,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             for (Indexable i : files) {
                 clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
                 if (isModuleInfo[0]) {
-                    final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
-                    JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                    final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
+                    JavaIndex.setAttribute(context.getRootURI(), JavaIndex.ATTR_MODULE_NAME, null);
                     module = moduleName == null ?
                             null :
                             ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);

@@ -47,9 +47,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
@@ -185,6 +187,9 @@ public class MakeSampleProjectGenerator {
         try {
             // Change project name in 'project.xml'
             FileObject fo = prjLoc.getFileObject(MakeProjectHelper.PROJECT_XML_PATH);
+            if (fo == null) {
+                throw new FileNotFoundException("" + prjLoc + '/' + MakeProjectHelper.PROJECT_XML_PATH);
+            }
             Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, true, null, null);
             if (name != null) {
                 //changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
@@ -442,11 +447,20 @@ public class MakeSampleProjectGenerator {
         } else {
             prjLoc = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
         }
-        unzip(inputStream, prjLoc);
-        postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
-        customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
-
-        prjLoc.refresh(false);
+        FileSystemProvider.suspendWritesUpload(prjLoc);
+        try {
+            unzip(inputStream, prjLoc);
+            postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
+            customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
+        } finally {
+            try {
+                FileSystemProvider.resumeWritesUpload(prjLoc);
+            } catch (InterruptedException ex) {
+                InterruptedIOException iioe = new InterruptedIOException(ex.getMessage());
+                iioe.setStackTrace(ex.getStackTrace());
+                throw iioe;
+            }
+        }
 
         return Collections.singleton(prjLoc);
     }
@@ -464,15 +478,26 @@ public class MakeSampleProjectGenerator {
 
     private static Set<FileObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, FileObject parentFolderLocation, FileObject mainProjectLocation, FileObject[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         List<FileObject> set = new ArrayList<>();
-        unzip(templateResourceStream, parentFolderLocation);
-        addToSet(set, mainProjectLocation, prjParams, prjParams.getProjectName());
-        if (subProjectLocations != null) {
-            for (int i = 0; i < subProjectLocations.length; i++) {
-                addToSet(set, subProjectLocations[i], prjParams, null);
+        FileSystemProvider.suspendWritesUpload(parentFolderLocation);
+        try {
+            unzip(templateResourceStream, parentFolderLocation);
+            addToSet(set, mainProjectLocation, prjParams, prjParams.getProjectName());
+            if (subProjectLocations != null) {
+                for (int i = 0; i < subProjectLocations.length; i++) {
+                    addToSet(set, subProjectLocations[i], prjParams, null);
+                }
+            }
+            FileObject prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
+            customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
+        } finally {
+            try {
+                FileSystemProvider.resumeWritesUpload(parentFolderLocation);
+            } catch (InterruptedException ex) {
+                InterruptedIOException iis = new InterruptedIOException(ex.getMessage());
+                iis.setStackTrace(ex.getStackTrace());
+                throw iis;
             }
         }
-        FileObject prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
-        customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         return new LinkedHashSet<>(set);
     }
 
@@ -521,7 +546,6 @@ public class MakeSampleProjectGenerator {
     }
 
     private static void unzip(InputStream source, FileObject targetFolder) throws IOException {
-        //installation
         ZipInputStream zip = new ZipInputStream(source);
         try {
             ZipEntry ent;

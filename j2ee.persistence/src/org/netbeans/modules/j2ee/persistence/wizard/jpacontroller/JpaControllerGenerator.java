@@ -157,12 +157,12 @@ public class JpaControllerGenerator {
 
         controllerFileObject = addImplementsClause(controllerFileObject, controllerClass, "java.io.Serializable"); //NOI18N
         generateJpaController(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, exceptionPackage,
-                entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, getPersistenceVersion(project));
+                entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, getPersistenceVersion(project, controllerFileObject));
     }
     
-    private static String getPersistenceVersion(Project project) throws IOException {
+    private static String getPersistenceVersion(Project project, FileObject fo) throws IOException {
         String version = Persistence.VERSION_1_0;
-        PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
+        PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project, fo);
         if (persistenceScopes.length > 0) {
             FileObject persXml = persistenceScopes[0].getPersistenceXml();
             if (persXml != null) {

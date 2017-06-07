@@ -118,7 +118,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public final class NativeProjectProvider implements NativeProject, PropertyChangeListener, ChangeListener, NativeProjectChangeSupport {
-
+    private static final boolean USE_STANDARD_HEADER_INDEX_FILES = CndUtils.getBoolean("cnd.use.headers.indexer", true); // NOI18N
     private static final boolean TRACE = false;
     private final Project project;
     private final String projectRoot;
@@ -230,6 +230,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
                         }
                     }
                 }
+                list.addAll(getStandardHeadersIndexers());
                 return list;
             }
         }
@@ -244,13 +245,13 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             if (conf != null) {
                 List<NativeFileItem> list = new ArrayList<>();
                 synchronized(this) {
-                    if (indexerC == null) {
+                    if (USE_STANDARD_HEADER_INDEX_FILES && indexerC == null) {
                         indexerC = createIndexer(descriptor, this, NativeFileItem.Language.C);
                     }
                     if (indexerC != null) {
                         list.add(indexerC);
                     }
-                    if (indexerCpp == null) {
+                    if (USE_STANDARD_HEADER_INDEX_FILES && indexerCpp == null) {
                         indexerCpp = createIndexer(descriptor, this, NativeFileItem.Language.CPP);
                     }
                     if (indexerCpp != null) {
@@ -343,15 +344,17 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             if (nativeFileIetm == null) {
                 continue;
             }
-            PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
-            if (tool == PredefinedToolKind.CustomTool
-                    // check of mime type is better to support headers without extensions
-                    && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
-                continue; // IZ 87407
+            if (nativeFileIetm instanceof Item) {
+                PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
+                if (tool == PredefinedToolKind.CustomTool
+                        // check of mime type is better to support headers without extensions
+                        && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
+                    continue; // IZ 87407
+                }
             }
             actualList.add(nativeFileIetm);
             if (TRACE) {
-                System.out.println("    " + ((Item) nativeFileIetm).getPath()); // NOI18N
+                System.out.println("    " + nativeFileIetm.getAbsolutePath()); // NOI18N
             }
         }
         // Fire NativeProject change event
@@ -446,13 +449,24 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public NativeFileItem findFileItem(FileObject fileObject) {
+        NativeFileItem out = null;
         if (projectDescriptorProvider.gotDescriptor()) {
             MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
             if (descr != null) {
-                return (NativeFileItem) descr.findItemByFileObject(fileObject);
+                out = (NativeFileItem) descr.findItemByFileObject(fileObject);
+                if (out == null && fileObject != null) {
+                    // could be standard headers indexer
+                    List<NativeFileItem> standardHeadersIndexers = getStandardHeadersIndexers();
+                    for (NativeFileItem standardHeadersIndexer : standardHeadersIndexers) {
+                        if (fileObject.equals(standardHeadersIndexer.getFileObject())) {
+                            out = standardHeadersIndexer;
+                            break;
+                        }
+                    }
+                }
             }
         }
-        return null;
+        return out;
     }
 
     private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
@@ -987,21 +1001,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
             // important flags were lost or user set language standard
             // try to restore right important flag by standard
             NativeFileItem.LanguageFlavor languageFlavor = getLanguageFlavor(language);
-            switch(languageFlavor) {
-                case C11:
-                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.C11
-                    res = "-std=c11"; //NOI18N
-                    break;
-                case CPP11:
-                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP11
-                    res = "-std=c++11"; //NOI18N
-                    break;
-                case CPP14:
-                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
-                    res = "-std=c++14"; //NOI18N
-                    break;
-                default:
-            }
+            res = DefaultSystemSettingsImpl.getStdFlagsForFlavor(languageFlavor);
         } 
         return res;
     }
@@ -1087,7 +1087,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
                     if (ccCompilerConfiguration != null) {
                         switch (ccCompilerConfiguration.getCppStandard().getValue()) {
                             case CCCompilerConfiguration.STANDARD_CPP98:
-                                return NativeFileItem.LanguageFlavor.CPP;
+                                return NativeFileItem.LanguageFlavor.CPP98;
                             case CCCompilerConfiguration.STANDARD_CPP11:
                                 return NativeFileItem.LanguageFlavor.CPP11;
                             case CCCompilerConfiguration.STANDARD_CPP14:
@@ -1278,7 +1278,7 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
     
-    private static class NativeFileIndexer implements NativeFileItem {
+    public static class NativeFileIndexer implements NativeFileItem {
 
         private final FileObject indexer;
         private final NativeFileItem.Language language;

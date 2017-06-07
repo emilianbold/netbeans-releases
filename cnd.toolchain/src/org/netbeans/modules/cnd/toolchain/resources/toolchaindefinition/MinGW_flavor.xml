@@ -58,5 +58,7 @@ made subject to such option by the copyright holder.
         <command_folder regestry="hklm\software\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>
         <command_folder regestry="hklm\software\Wow6432Node\microsoft\windows\currentversion\uninstall\msys-1.0_is1" pattern="Inno Setup: App Path.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]msys[\\/]1.0[\\/]bin[\\/]?$"/>
         <command_folder relative_path="../msys/1.0/bin"/>
+        <command_folder path_patern=".*[\\/]msys64[\\/]usr[\\/]bin[\\/]?$"/>
+        <command_folder path_patern=".*[\\/]msys32[\\/]usr[\\/]bin[\\/]?$"/>
     </command_folders>
 </toolchaindefinition>

@@ -112,4 +112,24 @@ public class OverloadedOperatorTestCase extends CompletionBaseTestCase {
     public void testBug254273() throws Exception {
         performTest("bug254273.cpp", 19, 9, "ccc->");
     }
+    
+    public void testBug268930_1() throws Exception {
+        performTest("bug268930_cc.cpp", 46, 13);
+    }
+    
+    public void testBug268930_2() throws Exception {
+        performTest("bug268930_cc.cpp", 47, 14);
+    }
+    
+    public void testBug268930_3() throws Exception {
+        performTest("bug268930_cc.cpp", 49, 21);
+    }
+    
+    public void testBug268930_4() throws Exception {
+        performTest("bug268930_cc.cpp", 53, 27);
+    }
+    
+    public void testBug268930_5() throws Exception {
+        performTest("bug268930_cc.cpp", 56, 27);
+    }
 }

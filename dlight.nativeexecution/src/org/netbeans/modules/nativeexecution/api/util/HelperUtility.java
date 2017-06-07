@@ -121,6 +121,14 @@ public class HelperUtility {
         }
 
         String result;
+        HostInfo localHostInfo;
+        
+        try {
+            localHostInfo = env.isLocal() ? hinfo
+                    : HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+        } catch (CancellationException ex) {
+            throw new IOException(ex);
+        }
 
         synchronized (cache) {
             result = cache.get(env);
@@ -139,8 +147,6 @@ public class HelperUtility {
 
                     final String fileName = localFile.getName();
                     // Construct destination: {tmpbase}/{hash}/{name}
-                    HostInfo localHostInfo = env.isLocal() ? hinfo
-                            : HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
                     File localTmpBase = localHostInfo.getTempDirFile();
                     // hash - a string unique to pair: 
                     //        local file location and env
@@ -201,14 +207,13 @@ public class HelperUtility {
                             }
                             result = remoteFile;
                         } catch (SftpException ex) {
-                            log.log(Level.WARNING, "Failed to upload {0}", fileName); // NOI18N
+                            log.log(Level.WARNING, "Failed to upload a file to a remote host: {0}", ex.toString()); // NOI18N
                             if (remoteSize >= 0) {
                                 log.log(Level.WARNING, "File {0} exists, but cannot be updated. Used by other process?", remoteFile); // NOI18N
                             } else {
-                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough privileges?", remoteFile); // NOI18N
+                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough privileges? Is there enough space?", remoteFile); // NOI18N
                             }
                             log.log(Level.WARNING, "You could try to use -J-Dcnd.tmpbase=<other base location> to re-define default one."); // NOI18N
-                            Exceptions.printStackTrace(ex);
                         } finally {
                             RemoteStatistics.stopChannelActivity(activityID);
                             cmAccess.closeAndReleaseChannel(env, channel);
@@ -218,13 +223,13 @@ public class HelperUtility {
                 } catch (MissingResourceException ex) {
                     return null;
                 } catch (JSchException ex) {
-                  if (MiscUtils.isJSCHTooLongException(ex)) {
-                      MiscUtils.showJSCHTooLongNotification(env.getDisplayName());
-                  }  
-                  throw new IOException(ex);
-                } catch (IOException ex) {
-                    throw ex;
-                } catch (Exception ex) {
+                    if (MiscUtils.isJSCHTooLongException(ex)) {
+                        MiscUtils.showJSCHTooLongNotification(env.getDisplayName());
+                        log.log(Level.WARNING, "Handshaking process with a remote host failed. See IDE notifications. {0}", ex.toString());
+                    } else {
+                        throw new IOException(ex);
+                    }
+                } catch (ParseException | InterruptedException ex) {
                     if (ex.getCause() instanceof IOException) {
                         throw (IOException) ex.getCause();
                     }

@@ -49,6 +49,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Modules;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -221,7 +222,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (context.isCancelled()) {
                     return null;
                 }
-                Pair<CompilationUnitTree, CompileTuple> unit = units.removeFirst();
+                final Pair<CompilationUnitTree, CompileTuple> unit = units.removeFirst();
                 active = unit.second();
                 if (finished.contains(active.indexable)) {
                     continue;
@@ -309,7 +310,10 @@ final class OnePassCompileWorker extends CompileWorker {
                             }
                         }
                         if (!moduleName.assigned) {
-                            ModuleElement module = Modules.instance(jtFin.getContext()).getDefaultModule();
+                            ModuleElement module = ((JCTree.JCCompilationUnit)unit.first()).modle;
+                            if (module == null) {
+                                module = Modules.instance(jtFin.getContext()).getDefaultModule();
+                            }
                             moduleName.name = module == null || module.isUnnamed() ?
                                 null :
                                 module.getQualifiedName().toString();

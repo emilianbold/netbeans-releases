@@ -151,6 +151,13 @@ public final class FilePreprocessorConditionState {
         sb.append("]");//NOI18N
         return sb.toString();
     }
+    
+    public int getActiveCoverage(int startContext, int endContext) {
+        assert endContext >= startContext;
+        int coverage = getCoverage(offsets, startContext, endContext);
+        assert(coverage >= 0 || !isInActiveBlock(startContext, endContext));
+        return coverage;
+    }
 
     public boolean isInActiveBlock(int startContext, int endContext) {
         if (offsets.length == 0 || startContext == 0) {
@@ -242,6 +249,46 @@ public final class FilePreprocessorConditionState {
     static int[] getDeadBlocks(FilePreprocessorConditionState pcState) {
         // TODO: copy offsets?
         return pcState.offsets;
+    }
+    
+    /**
+     * Calculates covered area from start to end if there are excluded blocks.
+     * NB! startContext and endContext shouldn't be at the border of a block
+     * or inside any block. If they are, coverage is -1.
+     * 
+     * @param excluded - sorted blocks in format: [startOffset, endOffset], [startOffset, endOffset]...
+     * @param start - start offset of area we are interested in
+     * @param end - end offset of area we are interested in
+     * @return size of covered area
+     */
+    static int getCoverage(int excluded[], int startContext, int endContext) {
+        if (excluded.length == 0 || startContext == 0) {
+            return endContext - startContext;
+        }
+        int index = Arrays.binarySearch(excluded, startContext);
+        if (index >= 0) {
+            // startContext is at the border of some block
+            return -1;
+        }
+        index = -index - 1;
+        if ((index & 1) != 0) {
+            // startContext is inside some block
+            return -1;
+        }
+        int coverage = endContext - startContext;
+        for (int i = index; i < excluded.length; i += 2) {
+            int start = excluded[i];
+            int end = excluded[i + 1];
+            if (endContext < start) {
+                break;
+            }
+            if (start <= endContext && endContext <= end) {
+                // check that endContext is not inside some block or at its border
+                return -1;
+            }
+            coverage -= (end - start);
+        }
+        return coverage;
     }
     
     private static void checkConsistency(FilePreprocessorConditionState pcState) {

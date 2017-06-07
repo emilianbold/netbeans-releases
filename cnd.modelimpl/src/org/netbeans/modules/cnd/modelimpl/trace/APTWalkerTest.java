@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
@@ -102,13 +103,14 @@ public class APTWalkerTest extends APTAbstractWalker {
             try {
                 FileObject resolvedFO = resolvedPath.getFileObject();
                 if (resolvedFO != null && resolvedFO.isValid()) {
+                    APTFile.Kind aptKind = APTHandlersSupport.getAPTFileKind(getPreprocHandler());
                     if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                        APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedFO), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
+                        APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedFO), aptKind);
                         APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                         includeStream(apt, walker);
                         resolvingTime += walker.resolvingTime;
                     } else {
-                        APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedFO));
+                        APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedFO), aptKind);
                         APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                         walker.visit();
                         resolvingTime += walker.resolvingTime;

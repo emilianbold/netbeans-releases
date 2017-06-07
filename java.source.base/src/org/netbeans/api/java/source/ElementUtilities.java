@@ -46,12 +46,14 @@ package org.netbeans.api.java.source;
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -198,6 +200,15 @@ public final class ElementUtilities {
         return (((Symbol) element).flags() & Flags.SYNTHETIC) != 0 || (((Symbol) element).flags() & Flags.GENERATEDCONSTR) != 0;
     }
     
+    /**Returns true if the given module is open.
+     * 
+     *  @param element to check
+     *  @return true if and only if the given module is open, false otherwise
+     */
+    public boolean isOpen(ModuleElement element) {
+        return ((Symbol.ModuleSymbol) element).flags.contains(Symbol.ModuleFlags.OPEN);
+    }
+    
     /**
      * Returns true if this element represents a method which overrides a
      * method in one of its superclasses.
@@ -222,7 +233,10 @@ public final class ElementUtilities {
     }
     
     /**Get javadoc for given element.
+     * @deprecated The new DocTree API should be used to traverse Javadoc comments.
+     * Use {@link DocTrees#getDocCommentTree(javax.lang.model.element.Element)} instead.
      */
+    @Deprecated
     public Doc javaDocFor(Element element) {
         if (element != null) {
             DocEnv env = DocEnv.instance(ctx);
@@ -249,7 +263,10 @@ public final class ElementUtilities {
     }
     
     /**Find a {@link Element} corresponding to a given {@link Doc}.
+     * @deprecated The new DocTree API should be used to traverse Javadoc comments.
+     * Use {@link DocTrees#getElement(com.sun.source.util.DocTreePath)} instead.
      */
+    @Deprecated
     public Element elementFor(Doc doc) {
         return (doc instanceof JavadocEnv.ElementHolder) ? ((JavadocEnv.ElementHolder)doc).getElement() : null;
     }
@@ -794,6 +811,9 @@ public final class ElementUtilities {
      */
     public boolean isErroneous(@NullAllowed Element e) {
         if (e == null) {
+            return true;
+        }
+        if (e.getKind() == ElementKind.MODULE && ((Symbol)e).kind == Kinds.Kind.ERR) {
             return true;
         }
         final TypeMirror type = e.asType();

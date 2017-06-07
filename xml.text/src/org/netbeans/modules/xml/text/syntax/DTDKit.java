@@ -44,7 +44,10 @@
 package org.netbeans.modules.xml.text.syntax;
 
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.Syntax;
+import org.netbeans.modules.xml.text.syntax.bridge.LegacySyntaxBridge;
 import org.netbeans.modules.xml.text.syntax.javacc.lib.*;
 import org.netbeans.modules.xml.text.syntax.javacc.*;
 
@@ -70,19 +73,8 @@ public class DTDKit extends UniKit {
      */
     public static final String MIME_TYPE = "application/xml-dtd"; // NOI18N
     
-    /** Create new instance of syntax coloring parser */
-    @Override
-    public Syntax createSyntax(Document doc) {
-        return new JJEditorSyntax( 
-            new DTDSyntaxTokenManager(null).new Bridge(),
-            new DTDSyntaxTokenMapper(),
-            DTDTokenContext.contextPath
-        );
-    }
-
     @Override
     public String getContentType() {
         return MIME_TYPE;
     }
-
 }

@@ -183,38 +183,67 @@ public class EvaluatorTest extends NbTestCase {
         String expression = null;
         try {
             expression = m.getName()+"()";
-            Variable eMethod = support.getDebugger ().evaluate (expression);
+            Variable eMethod = null;
+            String eMethodExc = null;
+            try {
+                eMethod = support.getDebugger ().evaluate (expression);
+            } catch (InvalidExpressionException iexe) {
+                if (iexe.hasApplicationTarget()) {
+                    eMethodExc = iexe.getTargetException().getClass().getName();
+                    eMethodExc = getTargetExceptionDescription(iexe.getTargetException());
+                } else {
+                    throw iexe;
+                }
+            }
             String undo = m.getUndo();
             if (undo != null) {
                 expression = undo+"()";
                 support.getDebugger ().evaluate (expression);
             }
             expression = m.getExpression();
-            Variable eVal = support.getDebugger ().evaluate (expression);
+            Variable eVal = null;
+            String eValExc = null;
+            try {
+                eVal = support.getDebugger ().evaluate (expression);
+            } catch (InvalidExpressionException iexe) {
+                if (iexe.hasApplicationTarget()) {
+                    eValExc = iexe.getTargetException().getClass().getName();
+                    eValExc = getTargetExceptionDescription(iexe.getTargetException());
+                } else {
+                    throw iexe;
+                }
+            }
             if (undo != null) {
                 expression = undo+"()";
                 support.getDebugger ().evaluate (expression);
             }
-            /*System.err.println("  eMethod = "+eMethod);
-            System.err.println("  eVal = "+eVal);
-            System.err.println("   equals = "+eMethod.equals(eVal));*/
-            Value eMethodJDIValue = ((JDIVariable) eMethod).getJDIValue();
-            Value eValJDIValue = ((JDIVariable) eVal).getJDIValue();
-            /*System.err.println("  eMethod JDI Value = "+eMethodJDIValue);
-            System.err.println("  eVal JDI Value = "+eValJDIValue);
-            System.err.println("   equals = "+eMethodJDIValue.equals(eValJDIValue));*/
-            if (eMethod != null) {
+            
+            if (eMethodExc != null) {
+                assertEquals(
+                    "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced different exceptions:",
+                    eMethodExc,
+                    eValExc
+                );
+            } else {
+                /*System.err.println("  eMethod = "+eMethod);
+                System.err.println("  eVal = "+eVal);
+                System.err.println("   equals = "+eMethod.equals(eVal));*/
+                Value eMethodJDIValue = ((JDIVariable) eMethod).getJDIValue();
+                Value eValJDIValue = ((JDIVariable) eVal).getJDIValue();
+                /*System.err.println("  eMethod JDI Value = "+eMethodJDIValue);
+                System.err.println("  eVal JDI Value = "+eValJDIValue);
+                System.err.println("   equals = "+eMethodJDIValue.equals(eValJDIValue));*/
                 assertEquals (
                     "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong type of result:",
                     eMethod.getType(), 
                     eVal.getType()
                 );
+                assertEquals (
+                    "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong value:",
+                    new JDIValue(eMethodJDIValue),
+                    new JDIValue(eValJDIValue)
+                );
             }
-            assertEquals (
-                "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong value:",
-                new JDIValue(eMethodJDIValue),
-                new JDIValue(eValJDIValue)
-            );
             System.err.println("  Method "+m.getName()+"() evaluated successfully.");
         } catch (InvalidExpressionException e) {
             e.printStackTrace();
@@ -222,6 +251,19 @@ public class EvaluatorTest extends NbTestCase {
                 "Evaluation of expression '"+expression+"' was unsuccessful: " + e
             );
         }
+    }
+    
+    private String getTargetExceptionDescription(Throwable t) {
+        java.io.StringWriter s = new java.io.StringWriter();
+        java.io.PrintWriter p = new java.io.PrintWriter(s);
+        t.printStackTrace(p);
+        p.close();
+        String str = s.toString();
+        int end = str.indexOf('\n');
+        if (end > 0) {
+            str = str.substring(0, end);
+        }
+        return str;
     }
 
     private List<Method> getMethods(boolean staticMethods) throws Exception{

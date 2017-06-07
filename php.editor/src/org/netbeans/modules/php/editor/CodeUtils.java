@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
@@ -99,8 +100,8 @@ public final class CodeUtils {
     public static final String FUNCTION_TYPE_PREFIX = "@fn:";
     public static final String METHOD_TYPE_PREFIX = "@mtd:";
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
+    public static final String NULLABLE_TYPE_PREFIX = "?"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
-
 
     private CodeUtils() {
     }
@@ -231,7 +232,7 @@ public final class CodeUtils {
 
     @CheckForNull
     public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
-        Parameters.notNull("typeName", typeName);
+        Parameters.notNull("typeName", typeName); // NOI18N
         if (typeName instanceof Identifier) {
             return (Identifier) typeName;
         } else if (typeName instanceof NamespaceName) {
@@ -241,18 +242,29 @@ public final class CodeUtils {
             return extractUnqualifiedIdentifier(v.getName()); // #167863
         } else if (typeName instanceof FieldAccess) {
             return extractUnqualifiedIdentifier(((FieldAccess) typeName).getField()); // #167863
+        } else if (typeName instanceof NullableType) {
+            return extractUnqualifiedIdentifier(((NullableType) typeName).getType());
         }
         //TODO: php5.3 !!!
         //assert false : typeName.getClass(); //NOI18N
         return null;
     }
 
+    /**
+     * Extract unqualified name for Identifier, NamespaceName, and NullableType.
+     *
+     * @param typeName The type name
+     * @return The type name. If it is a nullable type, the name is returned with "?"
+     */
+    @CheckForNull
     public static String extractUnqualifiedName(Expression typeName) {
-        Parameters.notNull("typeName", typeName);
+        Parameters.notNull("typeName", typeName); // NOI18N
         if (typeName instanceof Identifier) {
             return ((Identifier) typeName).getName();
         } else if (typeName instanceof NamespaceName) {
             return extractUnqualifiedName((NamespaceName) typeName);
+        } else if (typeName instanceof NullableType) {
+            return NULLABLE_TYPE_PREFIX + extractUnqualifiedName(((NullableType) typeName).getType());
         }
 
         //TODO: php5.3 !!!
@@ -260,14 +272,24 @@ public final class CodeUtils {
         return null;
     }
 
+    /**
+     * Extract qualified name for Identifier, NamespaceName, and NullableType.
+     *
+     * @param typeName The type name
+     * @return The type name. If it is a nullable type, the name is returned with "?"
+     */
+    @CheckForNull
     public static String extractQualifiedName(Expression typeName) {
-        Parameters.notNull("clsName", typeName);
+        Parameters.notNull("typeName", typeName); // NOI18N
         if (typeName instanceof Identifier) {
             return ((Identifier) typeName).getName();
         } else if (typeName instanceof NamespaceName) {
             return extractQualifiedName((NamespaceName) typeName);
+        } else if (typeName instanceof NullableType) {
+            NullableType nullableType = (NullableType) typeName;
+            return NULLABLE_TYPE_PREFIX + extractQualifiedName(nullableType.getType());
         }
-        assert false : typeName.getClass(); //NOI18N
+        assert false : typeName.getClass();
         return null;
     }
 
@@ -284,10 +306,18 @@ public final class CodeUtils {
         return typeName != null ? extractUnqualifiedName(typeName) : null;
     }
 
-    public static String extractUnqualifiedTypeName(CatchClause catchClause) {
+    public static List<String> extractUnqualifiedTypeName(CatchClause catchClause) {
         Parameters.notNull("catchClause", catchClause);
-        Expression typeName = catchClause.getClassName();
-        return typeName != null ? extractUnqualifiedName(typeName) : null;
+        List<String> typeNames = new ArrayList<>();
+        for (Expression className : catchClause.getClassNames()) {
+            if (className != null) {
+                String typeName = extractUnqualifiedName(className);
+                if (typeName != null) {
+                    typeNames.add(typeName);
+                }
+            }
+        }
+        return typeNames;
     }
 
     public static String extractUnqualifiedSuperClassName(ClassDeclaration clsDeclaration) {
@@ -695,6 +725,34 @@ public final class CodeUtils {
             return '\\' + namespace; // NOI18N
         }
         return namespace;
+    }
+
+    /**
+     * Check whether a type name starts with "?".
+     *
+     * @param typeName a type name
+     * @return {@code true} if the name starts with "?", otherwise
+     * {@code false}
+     */
+    public static boolean isNullableType(String typeName) {
+        if (typeName == null || typeName.isEmpty()) {
+            return false;
+        }
+        return typeName.startsWith(NULLABLE_TYPE_PREFIX);
+    }
+
+    /**
+     * Remove the nullable type prefix("?") from the type name.
+     *
+     * @param typeName the type name
+     * @return the type name from which the prefix is removed if it is a
+     * nullable type, otherwise itself
+     */
+    public static String removeNullableTypePrefix(String typeName) {
+        if (isNullableType(typeName)) {
+            return typeName.substring(1);
+        }
+        return typeName;
     }
 
 }

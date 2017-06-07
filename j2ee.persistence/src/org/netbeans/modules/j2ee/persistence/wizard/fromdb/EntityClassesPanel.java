@@ -327,7 +327,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         String warning = " "; // NOI18N
         try{
 
-            boolean showWarning = !ProviderUtil.persistenceExists(project);
+            boolean showWarning = !ProviderUtil.persistenceExists(project, getLocationValue().getRootFolder());
 
             boolean isContainerManaged = Util.isContainerManaged(project);
             boolean canCreate = isContainerManaged || (ConnectionManager.getDefault().getConnections().length>0);//TODO  unhandled case if there is pu creation panel after this one, isn't the case for 7.0

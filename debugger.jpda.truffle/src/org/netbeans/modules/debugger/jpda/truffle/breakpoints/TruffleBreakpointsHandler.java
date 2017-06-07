@@ -99,8 +99,8 @@ public class TruffleBreakpointsHandler {
             "(Ljava/lang/String;IILjava/lang/String;)[Lcom/oracle/truffle/api/debug/Breakpoint;";   // NOI18N
     private static final String ACCESSOR_SET_LINE_BREAKPOINT_MGR_SIGNAT =
             "(Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/api/debug/Breakpoint;";   // NOI18N
-    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT = "removeLineBreakpoint"; // NOI18N
-    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/tools/debug/engine/LineBreakpoint;)V";    // NOI18N
+    public static final String ACCESSOR_REMOVE_BREAKPOINT = "removeBreakpoint"; // NOI18N
+    public static final String ACCESSOR_REMOVE_BREAKPOINT_SIGNAT = "(Ljava/lang/Object;)V";    // NOI18N
     
     private final JPDADebugger debugger;
     private ClassType accessorClass;
@@ -187,14 +187,10 @@ public class TruffleBreakpointsHandler {
                     accessorClass,
                     ACCESSOR_SET_LINE_BREAKPOINT,
                     ACCESSOR_SET_LINE_BREAKPOINT_MGR_SIGNAT);
-            //if (path.indexOf("/src") > 0) {
-            //    path = path.substring(path.indexOf("/src") + 1);
-            //}
             if (setLineBreakpointMethod == null) {
                 throw new IllegalStateException("Method "+ACCESSOR_SET_LINE_BREAKPOINT+" with signature:\n"+ACCESSOR_SET_LINE_BREAKPOINT_MGR_SIGNAT+"\nis not present in accessor class "+accessorClass);
             }
-            //Variable uriVar = debugger.createMirrorVar(uri);
-            Value uriRef = vm.mirrorOf(uri.toString());// ((JDIVariable) uriVar).getJDIValue();
+            Value uriRef = vm.mirrorOf(uri.toString());
             IntegerValue lineRef = vm.mirrorOf(line);
             IntegerValue icRef = vm.mirrorOf(ignoreCount);
             StringReference conditionRef = (condition != null) ? vm.mirrorOf(condition) : null;
@@ -298,11 +294,8 @@ public class TruffleBreakpointsHandler {
         try {
             final Method removeLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
                     accessorClass,
-                    //ACCESSOR_REMOVE_LINE_BREAKPOINT,
-                    //ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT);
-                    "removeBreakpoint",
-                    //"(Lcom/oracle/truffle/debug/Breakpoint;)V");
-                    "(Ljava/lang/Object;)V");
+                    ACCESSOR_REMOVE_BREAKPOINT,
+                    ACCESSOR_REMOVE_BREAKPOINT_SIGNAT);
             TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
                 @Override
                 public void callMethods(JPDAThread thread) throws InvocationException {

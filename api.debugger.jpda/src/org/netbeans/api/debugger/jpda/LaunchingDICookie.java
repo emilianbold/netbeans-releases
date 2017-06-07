@@ -151,7 +151,7 @@ public final class LaunchingDICookie extends AbstractDICookie {
         // XXX: This method is likely not called from anywhere.
         //      But it's an impl. of API method JPDADebugger.launch().
         String commandLine = System.getProperty ("java.home") + 
-            "\\bin\\java -Xdebug -Xnoagent -Xrunjdwp:transport=" + 
+            "\\bin\\java -agentlib:jdwp=transport=" +
             getTransportName () + 
             ",address=name,suspend=" + 
             (suspend ? "y" : "n") +

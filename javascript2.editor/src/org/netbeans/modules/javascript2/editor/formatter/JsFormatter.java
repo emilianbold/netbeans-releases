@@ -381,7 +381,7 @@ public class JsFormatter implements Formatter {
         if (started) {
             FormatToken indentationEndPrev = indentationEnd.previous();
             // last empty line formatted by html
-            if (indentationEnd.getId() == JsTokenId.JSX_TEXT
+            if (indentationEnd.getId() == JsTokenId.JSX_EXP_END
                     && !(indentationEndPrev != null && indentationEndPrev.getKind() == FormatToken.Kind.BEFORE_JSX_BLOCK_START)) {
                 indentationSize = computeJsxIndentation(formatContext, indentationEnd.getOffset());
             }
@@ -1123,6 +1123,10 @@ public class JsFormatter implements Formatter {
         }
 
         FormatToken next = token.next();
+        if (JsTokenId.KEYWORD_IMPORT == next.getId()
+                    || JsTokenId.KEYWORD_EXPORT == next.getId()) {
+            return false;
+        }
         for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
             if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
@@ -1175,7 +1179,9 @@ public class JsFormatter implements Formatter {
                     }
                 }
             } else if (JsTokenId.BRACKET_RIGHT_CURLY == nonVirtualNext.getId()
-                    || JsTokenId.BRACKET_RIGHT_BRACKET == nonVirtualNext.getId()) {
+                    || JsTokenId.BRACKET_RIGHT_BRACKET == nonVirtualNext.getId()
+                    || JsTokenId.KEYWORD_IMPORT == nonVirtualNext.getId()
+                    || JsTokenId.KEYWORD_EXPORT == nonVirtualNext.getId()) {
                 return false;
             // this may happen when comma separating object memebers is on new line
             } else if (JsTokenId.OPERATOR_COMMA == nonVirtualNext.getId()) {

@@ -64,8 +64,15 @@ public class EntityMappingsMetadataModelImpl implements MetadataModelImplementat
     private final EntityMappingsImpl root;
     private final EntityMappingsMetadata metadata;
 
-    public EntityMappingsMetadataModelImpl(ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
-        ClasspathInfo cpi = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+    public EntityMappingsMetadataModelImpl(ClassPath bootPath, ClassPath moduleBootPath, ClassPath compilePath, ClassPath moduleCompilePath, ClassPath moduleClassPath, ClassPath sourcePath, ClassPath moduleSourcePath) {
+        ClasspathInfo cpi = new ClasspathInfo.Builder(bootPath)
+                .setModuleBootPath(moduleBootPath)
+                .setClassPath(compilePath)
+                .setModuleCompilePath(moduleCompilePath)
+                .setModuleClassPath(moduleClassPath)
+                .setSourcePath(sourcePath)
+                .setModuleSourcePath(moduleSourcePath)
+                .build();
         helper = AnnotationModelHelper.create(cpi);
         root = new EntityMappingsImpl(helper);
         metadata = new EntityMappingsMetadataImpl(cpi, root);

@@ -71,7 +71,7 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorCopyFOTest.class, "copyAddedFile2UnversionedFolder_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFolder2UnversionedFolder_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFile2UnversionedFolder_FO");
-//        addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFile2IgnoredFolder_FO");
+        addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFile2IgnoredFolder_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyAddedFile2VersionedFolder_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyA2B2C_FO");
         addTest(suite, InterceptorCopyFOTest.class, "copyVersionedFolder_FO");
@@ -339,10 +339,13 @@ public class InterceptorCopyFOTest extends RemoteVersioningTestBase {
         assertTrue(toFile.exists());
 
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fromFile).getTextStatus());
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(toFile).getTextStatus());
 
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fromFile));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getStatus(toFile));
+        if (version.compareTo(new Version(1,7,0)) >= 0)
         assertFalse(getSVNStatus(toFile).isCopied());
     }
 

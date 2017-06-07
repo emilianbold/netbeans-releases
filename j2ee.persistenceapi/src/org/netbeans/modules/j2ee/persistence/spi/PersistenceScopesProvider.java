@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.persistence.spi;
 
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.openide.filesystems.FileObject;
 
 /**
  * Provides a {@link PersistenceScopes} instance. This interface should be
@@ -62,4 +63,15 @@ public interface PersistenceScopesProvider {
      * @return an instance of <code>PersistenceScopes</code>; never null.
      */
     PersistenceScopes getPersistenceScopes();
+
+    /**
+     * Returns a {@link PersistenceScopes} for the context associated with the given FileObject.
+     *
+     * @param fo the FileObject
+     * @return an instance of <code>PersistenceScopes</code>; never null.
+     * @since 1.37
+     */
+    default PersistenceScopes getPersistenceScopes(FileObject fo) {
+        return getPersistenceScopes();
+    }
 }

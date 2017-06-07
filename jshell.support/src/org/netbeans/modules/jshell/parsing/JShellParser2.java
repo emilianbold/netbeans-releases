@@ -204,6 +204,8 @@ public class JShellParser2 {
          * command provoked by a prompt
          */
         COMMAND,
+        COMMAND_LINE,
+        
         /**
          * Continuation after a command; may produce output
          */
@@ -289,7 +291,11 @@ public class JShellParser2 {
         createSection(Type.COMMAND);
         extendWithPart(lineContentsOffset, len());
         consumed();
-        s = State.INITIAL;
+        s = State.COMMAND;
+    }
+    
+    private void onCommandLine() {
+        
     }
     
     private void onMessageNext() {
@@ -419,6 +425,12 @@ public class JShellParser2 {
             return;
         }
         // wtf ?
+        // it is an output, does not start with a message -- so it is a plain
+        // command output
+        createSection(Type.OUTPUT);
+        // PENDING: the section should contain info on the markers
+        extendSection(section, p(endLine()));
+        consumed();
         s = State.COMMAND_OUTPUT;
     }
 
@@ -477,7 +489,14 @@ public class JShellParser2 {
         O:
         while (true) {
             SourceCodeAnalysis.CompletionInfo info = state.sourceCodeAnalysis().analyzeCompletion(input);
-            int e = info.unitEndPos();
+            int endPos;
+            String rem = info.remaining();
+            if (rem == null) {
+                endPos = input.length() - 1;
+            } else {
+                endPos = input.length() - rem.length();
+            }
+            int e = endPos;
             boolean empty = info.remaining().trim().isEmpty();
             switch (info.completeness()) {
                 case DEFINITELY_INCOMPLETE:
@@ -506,7 +525,7 @@ public class JShellParser2 {
                     }
                     input = info.remaining();
                     e -= snippetPrefixLen;
-                    addJavaSnippet(snipOffset, info.unitEndPos());
+                    addJavaSnippet(snipOffset, endPos);
                     snipOffset += e;
                     ModelAccessor.INSTANCE.setSectionComplete(section, true);
                     s = State.MAY_INPUT;
@@ -551,7 +570,9 @@ public class JShellParser2 {
     }
     
     private void appendNewline() {
-        extendWithPart(0, len());
+        if (!ranges.isEmpty()) {
+            extendWithPart(0, len());
+        }
         consumed();
     }
 
@@ -585,6 +606,9 @@ public class JShellParser2 {
                     break;
                 case COMMAND:
                     onCommand();
+                    break;
+                case COMMAND_LINE:
+                    onCommandLine();
                     break;
                 case COMMAND_OUTPUT:
                     onCommandOutput();

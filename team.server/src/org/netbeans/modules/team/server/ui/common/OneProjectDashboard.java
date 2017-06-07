@@ -77,11 +77,13 @@ import org.netbeans.modules.team.commons.treelist.TreeList;
 import org.netbeans.modules.team.commons.treelist.TreeListListener;
 import org.netbeans.modules.team.commons.treelist.TreeListModel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.netbeans.modules.team.server.Utilities;
 import org.netbeans.modules.team.server.ui.spi.RemoteMachineAccessor;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -553,9 +555,11 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 scrollPane.repaint();
                 // hack: ensure the dashboard component has focus (when
                 // added to already visible and activated TopComponent)
-                TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, scrollPane);
-                if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
-                    dashboardComponent.getComponent().requestFocus();
+                if (!MegaMenu.isShowing()) {
+                    TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, scrollPane);
+                    if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
+                        getProjectPicker().restoreFocus();
+                    }
                 }
             }
         };
@@ -952,10 +956,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         errorNode = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_LoadingProjects"), new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MegaMenu mm = MegaMenu.getCurrent();
-                if(mm != null) {
-                    mm.showAgain();
-                }
+                MegaMenu.showAgain();
             }
         });
     }
@@ -1276,7 +1277,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         @Override
         void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
             clear(); 
-            projectLinks.setBorder(new EmptyBorder(5, 10, 5, 0));
+            projectLinks.setBorder(new EmptyBorder(3, 3, 5, 4));
             panel.add(projectLinks, BorderLayout.NORTH);
             panel.add(treeList, BorderLayout.CENTER);
 
@@ -1327,7 +1328,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
             this.children = children;
             this.projectLinks = projectLinks;
-            projectLinks.setBorder(new EmptyBorder(5, 10, 5, 0));
+            projectLinks.setBorder(new EmptyBorder(3, 3, 5, 4));
             populate();
         }
 
@@ -1367,11 +1368,16 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         private final TreeList treeList = new TreeList(model);
             
         private final Object LOCK = new Object();
-        
+
+        @Messages({"# {0} - project category, e.g. Builds or Tasks",
+                   "A11Y_ProjectItems=List of items of project service: {0}"})
         public SectionImpl(SectionNode node) {
             this.title = node.getDisplayName();
             this.node = node;
             this.node.setIndentChildren(false);
+
+            treeList.getAccessibleContext().setAccessibleName(title);
+            treeList.getAccessibleContext().setAccessibleDescription(Bundle.A11Y_ProjectItems(title));
 
             // XXX Hacking the SectioNode/treelist so that instead of the actuall node, 
             // its children are shown as roots in the list (kind of not show root nodes mode)

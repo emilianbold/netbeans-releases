@@ -95,8 +95,8 @@ public class J2SEFileWizardIterator implements JavaFileWizardIteratorFactory {
             @Override
             public Set instantiate() throws IOException {
                 final J2SEProject project = (J2SEProject) Templates.getProject(wiz);
-                final boolean modularSources = hasModuleInfo(project.getSourceRoots());
-                final boolean modularTests = hasModuleInfo(project.getTestSourceRoots());
+                final boolean modularSources = J2SEProjectUtil.hasModuleInfo(project.getSourceRoots());
+                final boolean modularTests = J2SEProjectUtil.hasModuleInfo(project.getTestSourceRoots());
                 final Iterable<ClassPathSupport.Item> toMove = (Iterable<ClassPathSupport.Item>) wiz.getProperty(MoveToModulePathPanel.CP_ITEMS_TO_MOVE);
                 ProjectManager.mutex().writeAccess(() -> {
                     final EditableProperties ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -211,16 +211,6 @@ public class J2SEFileWizardIterator implements JavaFileWizardIteratorFactory {
                 }
             }
         } : null;
-    }
-
-    private static boolean hasModuleInfo(@NonNull final SourceRoots roots) {
-        boolean res = false;
-        for (FileObject root : roots.getRoots()) {
-            FileObject mInfo = J2SEProjectUtil.getModuleInfo(root);
-            res |= Optional.ofNullable(mInfo).isPresent()
-                    && ClassPath.getClassPath(root, ClassPath.SOURCE).contains(mInfo);
-        }
-        return res;
     }
 
     private static boolean hasAnyRef(

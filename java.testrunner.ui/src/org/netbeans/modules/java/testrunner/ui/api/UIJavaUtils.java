@@ -239,7 +239,16 @@ public final class UIJavaUtils {
                 : line.substring(bracketIndex + 1, endBracketIndex);
 
         /* Get the method name and the class name: */
-        String clsName, methodName;
+        String moduleName, clsName, methodName;
+        final int slashIndex = beforeBrackets.indexOf('/');
+        if (slashIndex != -1) {
+            moduleName = beforeBrackets.substring(0, slashIndex);
+            beforeBrackets = slashIndex < beforeBrackets.length() - 1 ?
+                    beforeBrackets.substring(slashIndex+1) :
+                    "";     //NOI18N
+        } else {
+            moduleName = "";    //NOI18N
+        }
         int lastDotIndex = beforeBrackets.lastIndexOf('.');
         if (lastDotIndex != -1) {
             clsName = beforeBrackets.substring(0, lastDotIndex);

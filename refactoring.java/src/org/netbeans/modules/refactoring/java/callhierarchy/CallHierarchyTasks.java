@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor;
+import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -580,7 +581,7 @@ final class CallHierarchyTasks {
         }
         
         private void resolvePath(TreePath tpath) {
-            if(javac.getTreeUtilities().isSynthetic(tpath)) {
+            if(JavaPluginUtils.isSyntheticPath(javac, tpath)) {
                 return;
             }
             Element resolved = javac.getTrees().getElement(tpath);

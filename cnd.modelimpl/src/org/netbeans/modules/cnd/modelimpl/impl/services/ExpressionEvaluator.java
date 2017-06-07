@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -104,8 +105,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
         }
-
-        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
+        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTFile.Kind.C_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
         ts = lang.getFilteredStream(ts);
@@ -167,7 +167,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
             LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
         }
 
-        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
+        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTFile.Kind.C_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
         ts = lang.getFilteredStream(ts);

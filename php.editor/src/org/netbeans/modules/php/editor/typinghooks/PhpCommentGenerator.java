@@ -131,7 +131,7 @@ public final class PhpCommentGenerator {
         addVariables(doc, toAdd, "@param", indent, i.params);
 
         if (i.hasReturn) {
-            generateDocEntry(doc, toAdd, "@return", indent, null, i.returnType);
+            generateDocEntry(doc, toAdd, "@return", indent, null, i.getReturnType()); // NOI18N
         }
 
         addVariables(doc, toAdd, "@throws", indent, i.throwsExceptions);
@@ -218,7 +218,6 @@ public final class PhpCommentGenerator {
         private final List<String> usedThrows = new LinkedList<>();
         final Set<VariableName> declaredVariables = new HashSet<>();
         private boolean hasReturn;
-        private String returnType;
         private final FunctionDeclaration decl;
         private final FunctionScope fnc;
         private Collection<? extends UseScope> declaredUses;
@@ -242,6 +241,24 @@ public final class PhpCommentGenerator {
                 fnc = null;
             }
             this.decl = decl;
+        }
+
+        public String getReturnType() {
+            StringBuilder type = new StringBuilder();
+            if (hasReturn) {
+                Collection<? extends String> typeNames = fnc.getReturnTypeNames();
+                String item;
+                String resolvedItem;
+                for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext();) {
+                    item = i.next();
+                    if (VariousUtils.isSemiType(item)) {
+                        break;
+                    }
+                    resolvedItem = resolveProperType(item);
+                    type = type.toString().isEmpty() ? type.append(resolvedItem) : type.append("|").append(resolvedItem); //NOI18N
+                }
+            }
+            return type.toString();
         }
 
         @Override
@@ -282,23 +299,30 @@ public final class PhpCommentGenerator {
         }
 
         private String resolveProperType(String type) {
-            String result = type;
-            if (declaredUses != null && type != null) {
-                QualifiedName qualifiedType = QualifiedName.create(type);
+            String typeName = type;
+            boolean isNullableType = CodeUtils.isNullableType(typeName);
+            if (isNullableType) {
+                typeName = typeName.substring(1);
+            }
+            if (declaredUses != null && typeName != null) {
+                QualifiedName qualifiedType = QualifiedName.create(typeName);
                 for (UseScope useScope : declaredUses) {
                     QualifiedName qualifiedUseScope = QualifiedName.create(useScope.getName());
                     if (QualifiedName.create(true, qualifiedUseScope.getSegments()).equals(qualifiedType)) {
                         AliasedName aliasedName = useScope.getAliasedName();
                         if (aliasedName != null) {
-                            result = aliasedName.getAliasName();
+                            typeName = aliasedName.getAliasName();
                         } else {
-                            result = qualifiedUseScope.getName();
+                            typeName = qualifiedUseScope.getName();
                         }
                         break;
                     }
                 }
             }
-            return result;
+            if (isNullableType) {
+                return typeName + "|null"; // NOI18N
+            }
+            return typeName;
         }
 
         @Override
@@ -328,19 +352,6 @@ public final class PhpCommentGenerator {
         @Override
         public void visit(ReturnStatement node) {
             hasReturn = true;
-            Collection<? extends String> typeNames = fnc.getReturnTypeNames();
-            StringBuilder type = new StringBuilder();
-            String item;
-            String resolvedItem;
-            for (Iterator<String> i = (Iterator<String>) typeNames.iterator(); i.hasNext();) {
-                item = i.next();
-                if (VariousUtils.isSemiType(item)) {
-                    break;
-                }
-                resolvedItem = resolveProperType(item);
-                type = type.toString().isEmpty() ? type.append(resolvedItem) : type.append("|").append(resolvedItem); //NOI18N
-            }
-            returnType = type.toString();
         }
 
         @Override
@@ -411,6 +422,11 @@ public final class PhpCommentGenerator {
         @Override
         public void visit(FunctionDeclaration node) {
             if (node == decl) {
+                // functions and methods can have a return type declaration since PHP7.0
+                Expression type = node.getReturnType();
+                if (type != null) {
+                    hasReturn = true;
+                }
                 super.visit(node);
             }
         }

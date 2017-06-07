@@ -44,10 +44,19 @@
 
 package org.netbeans.modules.xml.text.dom;
 
-import java.util.Collection;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.modules.xml.spi.dom.NamedNodeMapImpl;
 import org.netbeans.modules.xml.spi.dom.ROException;
 import org.netbeans.modules.xml.spi.dom.UOException;
+import org.netbeans.modules.xml.text.api.dom.TagElement;
+import org.openide.util.Exceptions;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -61,14 +70,15 @@ import org.w3c.dom.Attr;
  * <code>equals</code>. The <code>equals</code> is used for syntax element
  * purposes.
  */
-public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element {
+public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element, TagElement {
     
     protected NamedNodeMap domAttributes;
     
     protected String name;
     
-    Tag(XMLSyntaxSupport support, Token from, int start, int end) {
+    Tag(XMLSyntaxSupport support, Token from, int start, int end, String name) {
         super(support, from, start, end);
+        this.name = name;
     }
     
     public final short getNodeType() {
@@ -83,54 +93,84 @@ public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element {
         return name;
     }
     
+    private Map parseAttributes(TokenSequence ts) {
+        HashMap map = new LinkedHashMap(3);
+
+        int index = 0;
+        SCAN_LOOP:
+        while (ts.moveNext()) {
+            Token<XMLTokenId> next = ts.token();
+            XMLTokenId id = next.id();
+            String name;
+            String value;
+            if (id == XMLTokenId.ARGUMENT) {
+                Token attributeStart = next;
+                name = next.text().toString();
+                while (next.id() != XMLTokenId.VALUE) {
+                    if (!ts.moveNext()) {
+                        break SCAN_LOOP;
+                    }
+                    next = ts.token();
+                    if (next.id() == XMLTokenId.ERROR) {
+                        break SCAN_LOOP;
+                    }
+                }
+
+                // fuzziness to relax minor tokenization changes
+                String image = next.text().toString();
+                char test = image.charAt(0);
+                if (image.length() == 1) {
+                    if (test == '"' || test == '\'') {
+                        if (!ts.moveNext()) {
+                            break SCAN_LOOP;
+                        }
+                        next = ts.token();
+                    }
+                }
+
+                value = next.text().toString();
+
+                Object key = NamedNodeMapImpl.createKey(name);
+                map.put(key, new AttrImpl(support, attributeStart, this, index++));
+
+                next = skipAttributeValue(ts, test);
+                if (next == null) {
+                    break SCAN_LOOP;
+                }
+            } else if (id == XMLTokenId.WS) {
+                // just skip
+            } else {
+                break; // end of element markup
+            }
+        }
+        return map;
+    }
+    
+    private static Token skipAttributeValue(TokenSequence ts, char delim) {
+        do { 
+            Token t = ts.token();
+            if (t.text().charAt(t.length() - 1) == delim) {
+                return ts.moveNext() ? ts.token() : null;
+            }
+        } while (ts.moveNext());
+        return null;
+    }
+    
     /**
      * Create properly bound attributes and cache results.
      * Parse attributes from first token.
      */
     public synchronized NamedNodeMap getAttributes() {
-        
-//        HashMap map = new LinkedHashMap(3);
-//
-//        SCAN_LOOP:
-//            for (TokenItem next = first().getNext(); next != null; next = next.getNext()) {
-//                TokenID id = next.getTokenID();
-//                String name;
-//                String value;
-//                if (id == ARGUMENT) {
-//                    TokenItem attributeStart = next;
-//                    name = next.getImage();
-//                    while (next.getTokenID() != VALUE) {
-//                        next = next.getNext();
-//                        if (next == null || next.getTokenID() == ERROR) break SCAN_LOOP;
-//                    }
-//
-//                    // fuzziness to relax minor tokenization changes
-//                    String image = next.getImage();
-//                    char test = image.charAt(0);
-//                    if (image.length() == 1) {
-//                        if (test == '"' || test == '\'') {
-//                            next = next.getNext();
-//                        }
-//                    }
-//
-//                    if (next == null) break SCAN_LOOP;
-//                    value = next.getImage();
-//
-//                    Object key = NamedNodeMapImpl.createKey(name);
-//                    map.put(key, new AttrImpl(support, attributeStart, this));
-//
-//                    next = Util.skipAttributeValue(next, test);
-//                    if (next == null) break SCAN_LOOP;
-//                } else if (id == WS) {
-//                    // just skip
-//                } else {
-//                    break; // end of element markup
-//                }
-//            }
-//
-//            // domAttributes = new NamedNodeMapImpl(map);
-//            return new NamedNodeMapImpl(map);
-        return null;
+        try {
+            return new NamedNodeMapImpl(
+                    support.runWithSequence(offset, (TokenSequence ts) -> {
+                        return parseAttributes(ts);
+                    })
+            );
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
     
     public String getAttribute(String name) {
@@ -276,9 +316,9 @@ public abstract class Tag extends SyntaxNode implements org.w3c.dom.Element {
         return list.item(list.getLength());
     }
     
-    protected abstract Tag getStartTag();
+    public abstract Tag getStartTag();
     
-    protected abstract Tag getEndTag();
+    public abstract Tag getEndTag();
         
     // unsupported DOM level 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
     public String getAttributeNS(String namespaceURI, String localName) {

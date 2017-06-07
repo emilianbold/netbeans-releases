@@ -57,9 +57,10 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.lib.profiler.ui.swing.FilteringToolbar;
-import org.netbeans.lib.profiler.ui.swing.ProfilerPopupFactory;
+import org.netbeans.lib.profiler.ui.swing.ProfilerPopup;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.lib.profiler.ui.swing.renderer.CheckBoxRenderer;
@@ -107,15 +108,15 @@ public abstract class ProjectsSelector {
         }
         
         void show(Component invoker) {
-            ProfilerPopupFactory.getPopup(invoker, panel, -5, invoker.getHeight() - 1).show();
+            int resizeMode = ProfilerPopup.RESIZE_BOTTOM | ProfilerPopup.RESIZE_RIGHT;
+            ProfilerPopup.createRelative(invoker, panel, SwingConstants.SOUTH_WEST, resizeMode).show();
         }
         
         private void populatePopup() {
             JPanel content = new JPanel(new BorderLayout());
-            content.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
             
             JLabel hint = new JLabel(Bundle.ProjectsSelector_selectProjects(), JLabel.LEADING);
-            hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+            hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
             content.add(hint, BorderLayout.NORTH);
 
             final SelectedProjectsModel projectsModel = new SelectedProjectsModel();
@@ -127,6 +128,7 @@ public abstract class ProjectsSelector {
             projectsTable.setFitWidthColumn(1);
             projectsTable.setDefaultSortOrder(1, SortOrder.ASCENDING);
             projectsTable.setSortColumn(1);
+            projectsTable.setFixedColumnSelection(0); // #268298 - make sure SPACE always hits the Boolean column
             projectsTable.setColumnRenderer(0, new CheckBoxRenderer());
             LabelRenderer projectRenderer = new ProjectRenderer();
             projectsTable.setColumnRenderer(1, projectRenderer);
@@ -138,14 +140,17 @@ public abstract class ProjectsSelector {
             Dimension prefSize = new Dimension(w + projectRenderer.getPreferredSize().width, h);
             projectsTable.setPreferredScrollableViewportSize(prefSize);
             ProfilerTableContainer tableContainer = new ProfilerTableContainer(projectsTable, true, null);
-            content.add(tableContainer, BorderLayout.CENTER);
+            JPanel tableContent = new JPanel(new BorderLayout());
+            tableContent.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+            tableContent.add(tableContainer, BorderLayout.CENTER);
+            content.add(tableContent, BorderLayout.CENTER);
 
             JToolBar controls = new FilteringToolbar(Bundle.ProjectsSelector_filterProjects()) {
-                protected void filterChanged(final String filter) {
-                    if (filter == null) projectsTable.setRowFilter(null);
+                protected void filterChanged() {
+                    if (isAll()) projectsTable.setRowFilter(null);
                     else projectsTable.setRowFilter(new RowFilter() {
                         public boolean include(RowFilter.Entry entry) {
-                            return entry.getStringValue(1).contains(filter);
+                            return passes(entry.getStringValue(1));
                         }
                     });
                 }

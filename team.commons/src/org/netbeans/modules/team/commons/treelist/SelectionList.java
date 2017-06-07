@@ -50,19 +50,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -84,7 +89,10 @@ public final class SelectionList extends JList<ListNode> {
     static final int INSETS_RIGHT = 5;
 
     private static final int MAX_VISIBLE_ROWS = 10;
-    
+
+    private static final String ACTION_SELECT = "selectProject"; // NOI18N
+    private static final String ACTION_SHOW_POPUP = "showPopup"; // NOI18N
+
     private int mouseOverRow = -1;
 
     private final RendererImpl renderer = new RendererImpl();
@@ -163,29 +171,9 @@ public final class SelectionList extends JList<ListNode> {
                 if (e.isPopupTrigger() || e.isConsumed()) {
                     return;
                 }
-                int index = locationToIndex(e.getPoint());
-                if (index < 0 || index >= getModel().getSize() || e.getButton() != MouseEvent.BUTTON1) {
-                    return;
-                }
-                if( e.getClickCount() > 1  ) {
-                    Object value = getModel().getElementAt(index);
-                    if( value instanceof ListNode ) {
-                        ListNode node = (ListNode) value;
-
-                        if( null != node ) {
-                            ActionListener al = node.getDefaultAction();
-                            if (null != al) {
-                                al.actionPerformed(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
-                            }
-                        }
-                    }
-                } else {
-                    int row = locationToIndex( e.getPoint() );
-                    if( row >= 0 && row == getSelectedIndex() ) {
-                        e.consume();
-                        clearSelection();
-                        setSelectedIndex( row );
-                    }
+                if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 1) {
+                    int index = locationToIndex(e.getPoint());
+                    selectProjectAtIndex(index);
                 }
             }
         };
@@ -193,6 +181,45 @@ public final class SelectionList extends JList<ListNode> {
         addMouseMotionListener( adapter );
 
         addMouseListener( adapter );
+
+        initKeysAndActions();
+    }
+
+    private void selectProjectAtIndex(int index) {
+        if (index >= 0 && index < getModel().getSize()) {
+            Object value = getModel().getElementAt(index);
+            if (value instanceof ListNode) {
+                ActionListener al = ((ListNode)value).getDefaultAction();
+                if (al != null) {
+                    al.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                }
+            }
+        }
+    }
+
+    private void initKeysAndActions() {
+        unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
+
+        InputMap imp = getInputMap();
+        ActionMap am = getActionMap();
+        imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), ACTION_SELECT);
+        imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), ACTION_SHOW_POPUP);
+        am.put(ACTION_SELECT, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectProjectAtIndex(getSelectedIndex());
+            }
+        });
+        am.put(ACTION_SHOW_POPUP, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int index = getSelectedIndex();
+                if (index >= 0 && index < getModel().getSize()) {
+                    showPopupMenuAt(index, getUI().indexToLocation(SelectionList.this, index));
+                }
+            }
+        });
     }
 
     int getMouseOverRow() {

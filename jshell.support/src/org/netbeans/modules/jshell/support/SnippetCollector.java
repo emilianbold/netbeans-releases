@@ -47,7 +47,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import jdk.jshell.JShell;
-import jdk.jshell.JShellAccessor;
+import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;

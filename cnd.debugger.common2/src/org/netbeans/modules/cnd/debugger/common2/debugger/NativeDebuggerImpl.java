@@ -1062,11 +1062,20 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     @Override
-    public final void setVisitedLocation(Location loc) {
+    public final void setVisitedLocation(Location loc, boolean changeFocus) {
 	this.visitedLocation = loc;
 	requestAutos();
         getDisassembly().stateUpdated();
-	updateLocation(true, ShowMode.AUTO, false);
+        //focus is the problem
+        //if we are in Debugger Console changing focus to editor
+        //it will really annoy our user
+	updateLocation(true, ShowMode.AUTO, changeFocus);
+    }
+    
+    @Override
+    public final void setVisitedLocation(Location loc) {
+        setVisitedLocation(loc, false);
+
     }
 
     @Override
@@ -1874,7 +1883,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    return;
         StringBuilder frameStr = new StringBuilder(guiStackFrames.length);
         for (int fx = 0; fx < guiStackFrames.length; fx++) {
-	    frameStr.append(guiStackFrames[fx].getLocationName());
+	    frameStr.append(guiStackFrames[fx].getLocationName()).append(" at ").append(//NOI18N
+                    guiStackFrames[fx].getFullPath()).append(":").append(guiStackFrames[fx].getLineNo());//NOI18N
 	    frameStr.append('\n');
 	}
 	Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);

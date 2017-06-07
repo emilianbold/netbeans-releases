@@ -55,6 +55,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,6 +68,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -178,6 +180,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                     }
                     if (element.getKind().isClass() || element.getKind().isInterface()) {
                         addMembers((TypeElement)element, topLevel, info, ctx, fqn);
+                    } else if (element.getKind() == ElementKind.MODULE) {
+                        addModuleDirectives((ModuleElement)element, topLevel, ctx, info, fqn);
                     }
                 }
             }
@@ -191,12 +195,21 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
 
     private static final class Context {
+        private final FileObject file;
         private final boolean isSource;
         private final Map<Object/*Element | Directive*/,Long> pos = new HashMap<>();
         private final Map<ModuleElement.Directive, DirectiveTree> directives = new HashMap<>();
 
-        Context(boolean isSource) {
+        Context(
+                @NonNull final FileObject file,
+                final boolean isSource) {
+            this.file = file;
             this.isSource = isSource;
+        }
+
+        @NonNull
+        FileObject getFileObject() {
+            return file;
         }
 
         boolean isSourceFile() {
@@ -238,7 +251,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             this.trees = info.getTrees();
             this.sourcePositions = trees.getSourcePositions();
             this.canceled = canceled;
-            this.ctx = new Context(info.getCompilationUnit() != null);
+            this.ctx = new Context(
+                    info.getFileObject(),
+                    info.getCompilationUnit() != null);
         }
 
         @Override
@@ -344,12 +359,20 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 overridenFrom = (TypeElement) overriden.getEnclosingElement();
             }
         }
+        final boolean isModule = e.getKind() == ElementKind.MODULE;
+        Set<Modifier> mods = e.getModifiers();
+        if (isModule) {
+            //Prevent module elements be hidden when no "Show non public members"
+            final Set<Modifier> tmp = EnumSet.of(Modifier.PUBLIC);
+            tmp.addAll(mods);
+            mods = tmp;
+        }
         Description d = Description.element(
                 ui,
                 getSimpleName(e),
                 ElementHandle.create(e),
                 info.getClasspathInfo(),
-                e.getModifiers(),
+                mods,
                 ctx.getStartPosition(e),
                 inherited,
                 encElement != null && encElement.getKind() == ElementKind.PACKAGE);
@@ -363,10 +386,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             if( !(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT) )
                 return null;
             d.htmlHeader = createHtmlHeader(info,  (VariableElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
-        } else if (e.getKind() == ElementKind.MODULE) {
+        } else if (isModule) {
             final ModuleElement me = (ModuleElement) e;
             d.htmlHeader = me.getQualifiedName().toString();
-            addModuleDirectives(me, d, ctx, info, fqn);
         }
         return d;
     }
@@ -393,7 +415,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                         dir.getKind(),
                         cpInfo,
                         ctx.getStartPosition(dir),
-                        OpenAction.openable(treePathHandle, ui.getFileObject(), name));
+                        OpenAction.openable(treePathHandle, ctx.getFileObject(), name));
                 } else {
                     dirDesc = Description.directive(
                         ui,
@@ -428,7 +450,11 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if (directive instanceof ModuleElement.RequiresDirective) {
             try {
                 final Set<?> flags = (Set) directive.getClass().getField("flags").get(directive);   //NOI18N
-                final int expectedSize = ((ModuleElement.RequiresDirective)directive).isPublic() ? 1 : 0;
+                int expectedSize = 0;
+                if (((ModuleElement.RequiresDirective)directive).isStatic())
+                    expectedSize++;
+                if (((ModuleElement.RequiresDirective)directive).isTransitive())
+                    expectedSize++;
                 return flags.size() == expectedSize;
             } catch (ReflectiveOperationException e) {
                 throw new IllegalStateException(e);
@@ -447,6 +473,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             case EXPORTS:
                 sb.append(((ModuleElement.ExportsDirective)directive).getPackage().getQualifiedName());
                 break;
+            case OPENS:
+                sb.append(((ModuleElement.OpensDirective)directive).getPackage().getQualifiedName());
+                break;
             case REQUIRES:
                 sb.append(((ModuleElement.RequiresDirective)directive).getDependency().getQualifiedName());
                 break;
@@ -455,7 +484,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 sb.append(fqn ? service.getQualifiedName() : service.getSimpleName());
                 break;
             case PROVIDES:
-                final TypeElement impl = ((ModuleElement.ProvidesDirective)directive).getImplementation();
+                final TypeElement impl = ((ModuleElement.ProvidesDirective)directive).getService();
                 sb.append(fqn ? impl.getQualifiedName() : impl.getSimpleName());
                 break;
             default:
@@ -555,16 +584,16 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             case EXPORTS:
                 sb.append(((ModuleElement.ExportsDirective)directive).getPackage().getQualifiedName());
                 break;
+            case OPENS:
+                sb.append(((ModuleElement.OpensDirective)directive).getPackage().getQualifiedName());
+                break;
             case USES:
                 final TypeElement service = ((ModuleElement.UsesDirective)directive).getService();
                 sb.append((fqn ? service.getQualifiedName() : service.getSimpleName()));
                 break;
             case PROVIDES:
-                final TypeElement impl = ((ModuleElement.ProvidesDirective)directive).getImplementation();
                 final TypeElement intf = ((ModuleElement.ProvidesDirective)directive).getService();
-                sb.append(fqn ? impl.getQualifiedName() : impl.getSimpleName())
-                    .append(" :: ") // NOI18N
-                    .append(fqn ? intf.getQualifiedName() : intf.getSimpleName());
+                sb.append(fqn ? intf.getQualifiedName() : intf.getSimpleName());
                 break;
             default:
                 throw new IllegalArgumentException(directive.toString());

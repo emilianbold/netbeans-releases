@@ -265,6 +265,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
                 case ASTPHP5Symbols.T_EMPTY : text = "empty"; break; //NOI18N
                 case ASTPHP5Symbols.T_PROTECTED : text = "protected"; break; //NOI18N
                 case ASTPHP5Symbols.T_CLOSE_RECT : text = "]"; break; //NOI18N
+                case ASTPHP5Symbols.T_TRAIT_C : text = "__TRAIT__"; break; //NOI18N
                 case ASTPHP5Symbols.T_IS_NOT_EQUAL : text = "!="; break; //NOI18N
                 case ASTPHP5Symbols.T_INCLUDE : text = "include"; break; //NOI18N
                 case ASTPHP5Symbols.T_QUATE : text = "'\"'"; break; //NOI18N
@@ -308,6 +309,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
                 case ASTPHP5Symbols.T_INCLUDE_ONCE : text = "include_once"; break; //NOI18N
                 case ASTPHP5Symbols.T_ENDIF : text = "endif"; break; //NOI18N
                 case ASTPHP5Symbols.T_SR_EQUAL : text = ">>="; break; //NOI18N
+                case ASTPHP5Symbols.T_CALLABLE : text = "callable"; break; //NOI18N
                 case ASTPHP5Symbols.T_PUBLIC : text = "public"; break; //NOI18N
                 case ASTPHP5Symbols.T_OBJECT_OPERATOR : text = "->"; break; //NOI18N
                 case ASTPHP5Symbols.T_TILDA : text = "~"; break; //NOI18N

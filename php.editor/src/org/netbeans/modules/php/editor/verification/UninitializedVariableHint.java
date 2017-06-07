@@ -71,6 +71,7 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -252,7 +253,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
                 return;
             }
             initializeVariable(node.getVariable());
-            scan(node.getClassName());
+            scan(node.getClassNames());
             scan(node.getBody());
         }
 
@@ -506,9 +507,12 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         }
 
         private void initializeListVariable(ListVariable node) {
-            List<VariableBase> variables = node.getVariables();
-            for (VariableBase variableBase : variables) {
-                initializeVariableBase(variableBase);
+            List<ArrayElement> elements = node.getElements();
+            for (ArrayElement element : elements) {
+                Expression value = element.getValue();
+                if (value instanceof VariableBase) {
+                    initializeVariableBase((VariableBase)value);
+                }
             }
         }
 

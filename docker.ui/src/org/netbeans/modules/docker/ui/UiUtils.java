@@ -43,6 +43,7 @@ package org.netbeans.modules.docker.ui;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.io.File;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -61,11 +62,13 @@ import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -128,6 +131,14 @@ public final class UiUtils {
             }
         }
         return value;
+    }
+
+    public static boolean isEmpty(JTable table) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        if (model == null) {
+            return true;
+        }
+        return model.getRowCount() == 0;
     }
 
     public static void configureRowHeight(JTable table) {
@@ -219,5 +230,12 @@ public final class UiUtils {
                 });
             }
         });
+    }
+
+    public static String normalizePath(String path) {
+        if (path == null) {
+            return null;
+        }
+        return path.replace('\\', '/');
     }
 }

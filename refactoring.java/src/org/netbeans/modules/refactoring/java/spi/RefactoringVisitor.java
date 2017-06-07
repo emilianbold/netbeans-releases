@@ -62,6 +62,7 @@ import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
 import com.sun.source.doctree.LiteralTree;
 import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ProvidesTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.doctree.ReturnTree;
 import com.sun.source.doctree.SeeTree;
@@ -74,6 +75,7 @@ import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.ThrowsTree;
 import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.UsesTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.Tree;
@@ -351,6 +353,14 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
     }
 
     /**
+     * @since 1.62
+     */
+    @Override
+    public DocTree visitProvides(ProvidesTree node, Element p) {
+        return docScanner.visitProvides(node, p, null);
+    }
+
+    /**
      * @since 1.47
      */
     @Override
@@ -447,6 +457,14 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
     }
 
     /**
+     * @since 1.62
+     */
+    @Override
+    public DocTree visitUses(UsesTree node, Element p) {
+        return docScanner.visitUses(node, p, null);
+    }
+
+    /**
      * @since 1.47
      */
     @Override
@@ -532,6 +550,11 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
         }
 
         @Override
+        public DocTree visitHidden(HiddenTree node, Element p) {
+            return instance.visitHidden(node, p);
+        }
+
+        @Override
         public DocTree visitIdentifier(IdentifierTree node, Element p) {
             return instance.visitIdentifier(node, p);
         }
@@ -559,6 +582,11 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
         @Override
         public DocTree visitParam(ParamTree node, Element p) {
             return instance.visitParam(node, p);
+        }
+
+        @Override
+        public DocTree visitProvides(ProvidesTree node, Element p) {
+            return instance.visitProvides(node, p);
         }
 
         @Override
@@ -619,6 +647,11 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
         @Override
         public DocTree visitUnknownInlineTag(UnknownInlineTagTree node, Element p) {
             return instance.visitUnknownInlineTag(node, p);
+        }
+
+        @Override
+        public DocTree visitUses(UsesTree node, Element p) {
+            return instance.visitUses(node, p);
         }
 
         @Override
@@ -700,6 +733,10 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
             return super.visitParam(node, p);
         }
 
+        public DocTree visitProvides(ProvidesTree node, Element p, Void ignore) {
+            return super.visitProvides(node, p);
+        }
+
         public DocTree visitReference(ReferenceTree node, Element p, Void ignore) {
             return super.visitReference(node, p);
         }
@@ -746,6 +783,10 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
 
         public DocTree visitUnknownInlineTag(UnknownInlineTagTree node, Element p, Void ignore) {
             return super.visitUnknownInlineTag(node, p);
+        }
+
+        public DocTree visitUses(UsesTree node, Element p, Void ignore) {
+            return super.visitUses(node, p);
         }
 
         public DocTree visitValue(ValueTree node, Element p, Void ignore) {

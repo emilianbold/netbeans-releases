@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
@@ -57,8 +59,13 @@ import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.ui.output.StatusOutputListener;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.FoldHandle;
+import org.openide.windows.IOColorLines;
+import org.openide.windows.IOFolding;
 import org.openide.windows.InputOutput;
 
 /**
@@ -75,9 +82,11 @@ public class BuildTask implements Runnable {
 
     private final Hook hook;
 
-    private final File buildContext;
+    private final FileObject buildContext;
 
-    private final File dockerfile;
+    private final FileObject dockerfile;
+
+    private final Map<String, String> buildargs;
 
     private final String repository;
 
@@ -87,8 +96,8 @@ public class BuildTask implements Runnable {
 
     private final boolean noCache;
 
-    public BuildTask(DockerInstance instance, InputOutput inputOutput, Hook hook, File buildContext,
-            File dockerfile, String repository, String tag, boolean pull, boolean noCache) {
+    public BuildTask(DockerInstance instance, InputOutput inputOutput, Hook hook, FileObject buildContext,
+            FileObject dockerfile, Map<String, String> buildargs, String repository, String tag, boolean pull, boolean noCache) {
         this.instance = new WeakReference<>(instance);
         this.inputOutput = new WeakReference<>(inputOutput);
         this.hook = hook;
@@ -98,6 +107,7 @@ public class BuildTask implements Runnable {
         this.tag = tag;
         this.pull = pull;
         this.noCache = noCache;
+        this.buildargs = buildargs;
     }
 
     public WeakReference<DockerInstance> getInstance() {
@@ -108,11 +118,11 @@ public class BuildTask implements Runnable {
         return inputOutput;
     }
 
-    public File getBuildContext() {
+    public FileObject getBuildContext() {
         return buildContext;
     }
 
-    public File getDockerfile() {
+    public FileObject getDockerfile() {
         return dockerfile;
     }
 
@@ -151,19 +161,7 @@ public class BuildTask implements Runnable {
         }
         DockerAction facade = new DockerAction(inst);
         final FutureTask<DockerImage> task = facade.createBuildTask(buildContext,
-                dockerfile, repository, tag, pull, noCache, new BuildEvent.Listener() {
-            @Override
-            public void onEvent(BuildEvent event) {
-                if (event.isUpload()) {
-                    io.getOut().println(Bundle.MSG_Uploading(event.getMessage()));
-                } else if (event.isError()) {
-                    // FIXME should we display more details ?
-                    io.getErr().println(event.getMessage());
-                } else {
-                    io.getOut().println(event.getMessage());
-                }
-            }
-        }, new StatusOutputListener(io));
+                dockerfile, buildargs, repository, tag, pull, noCache, new ListenerImpl(io), new StatusOutputListener(io));
         hook.onStart(task);
         ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Building(buildContext), new Cancellable() {
             @Override
@@ -210,5 +208,56 @@ public class BuildTask implements Runnable {
         void onStart(FutureTask<DockerImage> task);
 
         void onFinish();
+    }
+
+    private static class ListenerImpl implements BuildEvent.Listener {
+
+        private final InputOutput io;
+        private final boolean foldingSupported;
+        private final boolean colorSupported;
+
+        public ListenerImpl(InputOutput io) {
+            this.io = io;
+            this.foldingSupported = IOFolding.isSupported(io);
+            this.colorSupported = IOColorLines.isSupported(io);
+        }
+
+        @Override
+        public void onEvent(BuildEvent event) {
+            String message = event.getMessage();
+            if (event.isUpload()) {
+                io.getOut().println(Bundle.MSG_Uploading(message));
+            } else if (event.isError()) {
+                // FIXME should we display more details ?
+                io.getErr().println(message);
+            } else {
+                if (colorSupported && foldingSupported && message.startsWith("POST")) { // NOI18N
+                    // Print first line of request unfolded
+                    // Fold the rest of lines
+                    String[] split = message.split("\n", 2); // NOI18N
+                    println(io, split[0]);
+                    if (split.length > 1 && !split[1].isEmpty()) {
+                        FoldHandle fold = IOFolding.startFold(io, false);
+                        println(io, split[1]);
+                        fold.silentFinish();
+                    }
+                    io.getOut().println();
+                } else {
+                    io.getOut().println(event.getMessage());
+                }
+            }
+        }
+
+        private void println(InputOutput io, String message) {
+            if (colorSupported) {
+                try {
+                    IOColorLines.println(io, message, Color.GRAY);
+                } catch (IOException ex) {
+                    // silent
+                }
+            } else {
+                io.getOut().println(message);
+            }
+        }
     }
 }

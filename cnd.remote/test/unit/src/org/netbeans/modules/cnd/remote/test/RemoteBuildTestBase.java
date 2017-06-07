@@ -296,7 +296,9 @@ public class RemoteBuildTestBase extends RemoteTestBase {
 
     protected MakeProject openProject(String projectName, final ExecutionEnvironment execEnv, Sync sync, Toolchain toolchain) throws IOException, Exception, IllegalArgumentException {
         File origBase = getDataFile(projectName).getParentFile();
-        File copiedBase = new File(new File(getWorkDir(), getTestHostName()), origBase.getName());
+        File tempFile = File.createTempFile(origBase.getName(), "copy");
+        tempFile.delete();
+        File copiedBase = new File(new File(getWorkDir(), getTestHostName()), tempFile.getName());
         removeDirectoryContent(copiedBase);
         copyDirectory(origBase, copiedBase);
         postCopyProject(origBase, copiedBase, projectName);

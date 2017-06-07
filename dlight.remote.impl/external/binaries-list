@@ -1,5 +1,8 @@
-#changeset:   300533:4cd06f905ed3
+#changeset:   315175:1197667808c9
+#branch:      release82
+#tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Sep 12 20:14:52 2016 +0300
-#summary:     better error processing, sources (fixing #267975 - NullPointerException at org.netbeans.modules.subversion.remote.RepositoryFile.<init>)
-18E39A0D10357B72EDB76F2070E27019317792F1 fs_server-1.0.zip
+#date:        Wed Apr 05 23:49:00 2017 +0300
+#summary:     fixing #270307 - Regression after recent fixes in fs_server --   sources
+00784557F614BE02268C50C1BA692A6B19F0EE27 fs_server-1.0.zip
+

@@ -129,6 +129,18 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         lambdaArrowCombo.addFocusListener(this);
         afterLambdaArrowCheckBox.putClientProperty(OPTION_ID, wrapAfterLambdaArrow);
         afterLambdaArrowCheckBox.addFocusListener(this);
+        exportsToKeywordCombo.putClientProperty(OPTION_ID, wrapExportsToKeyword);
+        exportsToKeywordCombo.addFocusListener(this);
+        exportsToListCombo.putClientProperty(OPTION_ID, wrapExportsToList);
+        exportsToListCombo.addFocusListener(this);
+        opensToKeywordCombo.putClientProperty(OPTION_ID, wrapOpensToKeyword);
+        opensToKeywordCombo.addFocusListener(this);
+        opensToListCombo.putClientProperty(OPTION_ID, wrapOpensToList);
+        opensToListCombo.addFocusListener(this);
+        providesWithKeywordCombo.putClientProperty(OPTION_ID, wrapProvidesWithKeyword);
+        providesWithKeywordCombo.addFocusListener(this);
+        providesWithListCombo.putClientProperty(OPTION_ID, wrapProvidesWithList);
+        providesWithListCombo.addFocusListener(this);
     }
     
     public static PreferencesCustomizer.Factory getController() {
@@ -222,6 +234,18 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         lambdaArrowLabel = new javax.swing.JLabel();
         lambdaArrowCombo = new javax.swing.JComboBox();
         afterLambdaArrowCheckBox = new javax.swing.JCheckBox();
+        exportsToKeywordLabel = new javax.swing.JLabel();
+        exportsToKeywordCombo = new javax.swing.JComboBox();
+        exportsToListLabel = new javax.swing.JLabel();
+        exportsToListCombo = new javax.swing.JComboBox();
+        opensToKeywordLabel = new javax.swing.JLabel();
+        opensToKeywordCombo = new javax.swing.JComboBox();
+        opensToListLabel = new javax.swing.JLabel();
+        opensToListCombo = new javax.swing.JComboBox();
+        providesWithKeywordLabel = new javax.swing.JLabel();
+        providesWithKeywordCombo = new javax.swing.JComboBox();
+        providesWithListLabel = new javax.swing.JLabel();
+        providesWithListCombo = new javax.swing.JComboBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
@@ -632,6 +656,93 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         gridBagConstraints.insets = new java.awt.Insets(2, 8, 6, 0);
         panel1.add(afterLambdaArrowCheckBox, gridBagConstraints);
 
+        exportsToKeywordLabel.setLabelFor(exportsToKeywordCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(exportsToKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_exportsToKeyword")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(exportsToKeywordLabel, gridBagConstraints);
+
+        exportsToKeywordCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(exportsToKeywordCombo, gridBagConstraints);
+
+        exportsToListLabel.setLabelFor(exportsToListCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(exportsToListLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_exportsToList")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(exportsToListLabel, gridBagConstraints);
+
+        exportsToListCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(exportsToListCombo, gridBagConstraints);
+
+        opensToKeywordLabel.setLabelFor(opensToKeywordCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(opensToKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_opensToKeyword")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(opensToKeywordLabel, gridBagConstraints);
+
+        opensToKeywordCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(opensToKeywordCombo, gridBagConstraints);
+
+        opensToListLabel.setLabelFor(opensToListCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(opensToListLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_opensToList")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(opensToListLabel, gridBagConstraints);
+
+        opensToListCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(opensToListCombo, gridBagConstraints);
+
+        providesWithKeywordLabel.setLabelFor(providesWithKeywordCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(providesWithKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_providesWithKeyword")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(providesWithKeywordLabel, gridBagConstraints);
+
+        providesWithKeywordCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(providesWithKeywordCombo, gridBagConstraints);
+
+        providesWithListLabel.setLabelFor(providesWithListCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(providesWithListLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_providesWithList")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
+        panel1.add(providesWithListLabel, gridBagConstraints);
+
+        providesWithListCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
+        panel1.add(providesWithListCombo, gridBagConstraints);
+
         scrollPane.setViewportView(panel1);
 
         add(scrollPane, java.awt.BorderLayout.CENTER);
@@ -664,6 +775,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel doWhileStatementLabel;
     private javax.swing.JComboBox enumConstantsCombo;
     private javax.swing.JLabel enumConstantsLabel;
+    private javax.swing.JComboBox exportsToKeywordCombo;
+    private javax.swing.JLabel exportsToKeywordLabel;
+    private javax.swing.JComboBox exportsToListCombo;
+    private javax.swing.JLabel exportsToListLabel;
     private javax.swing.JComboBox extendsImplementsKeywordCombo;
     private javax.swing.JComboBox extendsImplementsListCombo;
     private javax.swing.JLabel extendsImplementsListLabel;
@@ -684,7 +799,15 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel methodParamsLabel;
     private javax.swing.JComboBox multiCatchCombo;
     private javax.swing.JLabel multiCatchLabel;
+    private javax.swing.JComboBox opensToKeywordCombo;
+    private javax.swing.JLabel opensToKeywordLabel;
+    private javax.swing.JComboBox opensToListCombo;
+    private javax.swing.JLabel opensToListLabel;
     private javax.swing.JPanel panel1;
+    private javax.swing.JComboBox providesWithKeywordCombo;
+    private javax.swing.JLabel providesWithKeywordLabel;
+    private javax.swing.JComboBox providesWithListCombo;
+    private javax.swing.JLabel providesWithListLabel;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JComboBox ternaryOpsCombo;
     private javax.swing.JLabel ternaryOpsLabel;

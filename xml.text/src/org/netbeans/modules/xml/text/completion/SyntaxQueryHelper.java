@@ -45,12 +45,14 @@
 package org.netbeans.modules.xml.text.completion;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 
-import org.netbeans.editor.*;
 import org.netbeans.modules.xml.api.model.HintContext;
-import org.netbeans.modules.xml.text.syntax.*;
-import org.netbeans.modules.xml.text.syntax.dom.*;
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -71,9 +73,13 @@ final class SyntaxQueryHelper {
     public final static int COMPLETION_TYPE_ENTITY = 4;
     public final static int COMPLETION_TYPE_NOTATION = 5;
     public final static int COMPLETION_TYPE_DTD = 6;
+    
+    private XMLSyntaxSupport support;
 
     /** Currect oken or previous one if at token boundary */
-    private TokenItem token = null;
+    private Token<XMLTokenId> token = null;
+    
+    private int tokenOffset;
     
     private String preText = "";
     
@@ -91,10 +97,16 @@ final class SyntaxQueryHelper {
 
     /** Creates a new instance of SyntaxQueryHelper */
     public SyntaxQueryHelper(XMLSyntaxSupport sup, int offset) throws BadLocationException, IllegalStateException {
+        this.support = sup;
         tunedOffset = offset;
-        token = sup.getPreviousToken( tunedOffset);
+        sup.runWithSequence(tunedOffset, (TokenSequence seq) -> {
+            token = sup.getPreviousToken(tunedOffset);
+            tokenOffset = seq.offset();
+            return null;
+        });
+        
         if( token != null ) { // inside document
-            tokenBoundary = token.getOffset() + token.getImage().length() == tunedOffset;
+            tokenBoundary = tokenOffset + token.length() == tunedOffset;
         } else {
             //??? start of document no choice now, but should be prolog if not followed by it
             throw new BadLocationException("No token found at current position", offset); // NOI18N
@@ -102,17 +114,17 @@ final class SyntaxQueryHelper {
 
         // find out last typed chars that can hint
 
-        int itemOffset = token.getOffset();
+        int itemOffset = tokenOffset;
         preText = "";
         erase = 0;
         int eraseRight = 0;
-        int id = token.getTokenID().getNumericID();
+        XMLTokenId id = token.id();
 
         // determine last typed text, prefix text
 
         if ( tokenBoundary == false ) {
 
-            preText = token.getImage().substring( 0, tunedOffset - token.getOffset() );
+            preText = token.text().toString().substring( 0, tunedOffset - tokenOffset);
             if ("".equals(preText)) throw new IllegalStateException("Cannot get token prefix at " + tunedOffset);
 
             // manipulate tunedOffset to delete rest of an old name
@@ -121,11 +133,11 @@ final class SyntaxQueryHelper {
             if (sup.lastTypedChar() != '<' && sup.lastTypedChar() != '&') {
                 switch (id) {
 
-                    case XMLDefaultTokenContext.TAG_ID:
-                    case XMLDefaultTokenContext.CHARACTER_ID:
-                    case XMLDefaultTokenContext.ARGUMENT_ID:
+                    case TAG:
+                    case CHARACTER:
+                    case ARGUMENT:
 
-                        int i = token.getImage().length();
+                        int i = token.length();
                         int tail = i - (tunedOffset - itemOffset);
                         tunedOffset += tail;
                         eraseRight = tail;
@@ -134,12 +146,12 @@ final class SyntaxQueryHelper {
             }
          } else {
            switch (id) {
-                case XMLDefaultTokenContext.TEXT_ID:
-                case XMLDefaultTokenContext.TAG_ID:
-                case XMLDefaultTokenContext.ARGUMENT_ID:
-                case XMLDefaultTokenContext.CHARACTER_ID:
-                case XMLCompletionQuery.PI_CONTENT_ID:
-                    preText = token.getImage();
+                case TEXT:
+                case TAG:
+                case ARGUMENT:
+                case CHARACTER:
+                case PI_CONTENT:
+                    preText = token.text().toString();
                     break;                        
             }
          }
@@ -147,18 +159,18 @@ final class SyntaxQueryHelper {
         // adjust how much do you want to erase from the preText
 
         switch (id) {
-            case XMLDefaultTokenContext.TAG_ID:
+            case TAG:
                 // do not erase start delimiters
                 erase = preText.length() - 1 + eraseRight;
                 break;
-            case XMLDefaultTokenContext.CHARACTER_ID:
+            case CHARACTER:
                 //entity references
                 erase = preText.length() + -1 + eraseRight;
                 break;
-            case XMLDefaultTokenContext.ARGUMENT_ID:
+            case ARGUMENT:
                 erase = preText.length() + eraseRight;
                 break;
-            case XMLDefaultTokenContext.VALUE_ID:
+            case VALUE:
                 erase = preText.length();
                 if (erase > 0 && (preText.charAt(0) == '\'' || preText.charAt(0) == '"')) {
                     // Because of attribute values, preText is adjusted in initContext
@@ -172,12 +184,16 @@ final class SyntaxQueryHelper {
         if (element == null) throw new IllegalStateException("There exists a token therefore a syntax element must exist at " + offset + ", too.");
 
         // completion request originates from area covered by DOM, 
-        if (element instanceof SyntaxNode && ((SyntaxNode)element).getNodeType() != Node.DOCUMENT_TYPE_NODE) {
-            completionType = initContext();
+        if (element.getType() != SyntaxElement.NODE_ERROR && element.getType() != Node.DOCUMENT_TYPE_NODE) {
+            completionType = support.runLocked(this::initContext);
         } else {
             // prolog, internal DTD no completition yet
             completionType = COMPLETION_TYPE_DTD;
         }
+    }
+    
+    public int getTokenOffset() {
+        return tokenOffset;
     }
     
     /**
@@ -207,12 +223,11 @@ final class SyntaxQueryHelper {
      *          COMPLETION_TYPE_ENTITY = 4,
      *          COMPLETION_TYPE_NOTATION = 5.
      */
-    private int initContext() {
-        int id = token.getTokenID().getNumericID();
-        SyntaxNode syntaxNode = (SyntaxNode)element;
-
+    private int initContext() throws BadLocationException {
+        XMLTokenId id = token.id();
+        final Node syntaxNode = element.getNode();
         switch ( id) {
-            case XMLDefaultTokenContext.TEXT_ID:
+            case TEXT:
                 if ( preText.endsWith("<" ) || preText.endsWith("</")) {
                     ctx.init(syntaxNode, "");
                     return COMPLETION_TYPE_ELEMENT;
@@ -227,12 +242,11 @@ final class SyntaxQueryHelper {
                 }
 //                break;
                 
-            case XMLDefaultTokenContext.TAG_ID:
-                if ( StartTag.class.equals(syntaxNode.getClass()) 
-                || EmptyTag.class.equals(syntaxNode.getClass())) {
+            case TAG:
+                if (support.isNormalTag(element)) {
                     if (preText.equals("")) {  
                         //??? should not occure
-                        if (token.getImage().endsWith(">")) {
+                        if (token.text().toString().endsWith(">")) {
                             ctx.init(syntaxNode, preText);
                             return COMPLETION_TYPE_VALUE;
                         } else {
@@ -253,25 +267,25 @@ final class SyntaxQueryHelper {
                         ctx.init(syntaxNode, preText.substring(1));
                         return COMPLETION_TYPE_ELEMENT;
                     }
-                } else if(EndTag.class.equals(syntaxNode.getClass()) && preText.startsWith("</")){
+                } else if(support.isEndTag(element) && preText.startsWith("</")){
                     //endtag
                     ctx.init(syntaxNode, preText.substring(2));
                     return COMPLETION_TYPE_ELEMENT;
                 } else {
                     // pairing tag completion if not at boundary
-                    if ("".equals(preText) && token.getImage().endsWith(">")) {
+                    if ("".equals(preText) && token.text().toString().endsWith(">")) {
                         ctx.init(syntaxNode, preText);
                         return COMPLETION_TYPE_VALUE;
                     }
                 }
                 break;
                 
-            case XMLDefaultTokenContext.VALUE_ID:
+            case VALUE:
                 if (preText.endsWith("&")) {
                     ctx.init(syntaxNode, "");
                     return COMPLETION_TYPE_ENTITY;
                 } else if ("".equals(preText)) {   //??? improve check to addres inner '"'
-                    String image = token.getImage();
+                    String image = token.text().toString();
                     char ch = image.charAt(image.length()-1);
                     
                     // findout if it is closing '
@@ -283,23 +297,33 @@ final class SyntaxQueryHelper {
                             return COMPLETION_TYPE_UNKNOWN;                            
                         }
 
-                        boolean closing = false;
-                        TokenItem prev = token.getPrevious();
+                        int res = support.<Integer>runWithSequence(tokenOffset, (TokenSequence seq) -> {
+                            Token<XMLTokenId> prev = support.getPreviousToken(tokenOffset);
+                            boolean closing = false;
 
-                        while (prev != null) {
-                            int tid = prev.getTokenID().getNumericID();
-                            if (tid == XMLDefaultTokenContext.VALUE_ID) {
-                                closing = true;
-                                break;
-                            } else if (tid == XMLDefaultTokenContext.CHARACTER_ID) {
-                                prev = prev.getPrevious();
-                            } else {
-                                break;
+                            while (prev != null) {
+                                XMLTokenId tid = prev.id();
+                                if (tid == XMLTokenId.VALUE) {
+                                    closing = true;
+                                    break;
+                                } else if (tid == XMLTokenId.CHARACTER) {
+                                    if (!seq.movePrevious()) {
+                                        return COMPLETION_TYPE_UNKNOWN;
+                                    }
+                                    prev = seq.token();
+                                } else {
+                                    break;
+                                }
                             }
-                        }
-                        if (closing == false) {
-                            ctx.init(syntaxNode, preText);
-                            return COMPLETION_TYPE_VALUE;
+                            if (closing == false) {
+                                ctx.init(syntaxNode, preText);
+                                return COMPLETION_TYPE_VALUE;
+                            } else {
+                                return COMPLETION_TYPE_UNKNOWN;
+                            }
+                        });
+                        if (res != COMPLETION_TYPE_UNKNOWN) {
+                            return res;
                         }
                     } else {
                         ctx.init(syntaxNode, preText);
@@ -312,11 +336,11 @@ final class SyntaxQueryHelper {
                     int maxOffsetLessThanCurrent = -1;
                     Node curAttrNode = null;
                     for (int ind = 0; ind < attrs.getLength(); ind++) {
-                        AttrImpl attr = (AttrImpl)attrs.item(ind);
-                        int attrTokOffset = attr.getFirstToken().getOffset();
-                        if (attrTokOffset > maxOffsetLessThanCurrent && attrTokOffset < token.getOffset()) {
+                        SyntaxElement attr = (SyntaxElement)attrs.item(ind);
+                        int attrTokOffset = attr.getElementOffset();
+                        if (attrTokOffset > maxOffsetLessThanCurrent && attrTokOffset < tokenOffset) {
                             maxOffsetLessThanCurrent = attrTokOffset;
-                            curAttrNode = attr;
+                            curAttrNode = (Node)attr;
                         }
                     }
 
@@ -333,19 +357,18 @@ final class SyntaxQueryHelper {
                 }
                 break;
                 
-            case XMLDefaultTokenContext.OPERATOR_ID:
+            case OPERATOR:
                 if ("".equals(preText)) {
-                    if ("=".equals(token.getImage())) {
+                    if ("=".equals(token.text())) {
                         ctx.init(syntaxNode, "");
                         return COMPLETION_TYPE_VALUE;
                     }
                 }
                 break;
 
-            case XMLDefaultTokenContext.WS_ID:
-                if ((StartTag.class.equals(syntaxNode.getClass()) 
-                 || EmptyTag.class.equals(syntaxNode.getClass())) 
-                 && !token.getImage().startsWith("/")) {
+            case WS:
+                if (support.isNormalTag(element)
+                 && !token.text().toString().startsWith("/")) {
                     ctx.init((Element)syntaxNode, ""); // GrammarQuery.v2 takes Element ctx 
                     return COMPLETION_TYPE_ATTRIBUTE;
                 } else {
@@ -354,15 +377,14 @@ final class SyntaxQueryHelper {
                 }
 //                break;
                 
-            case XMLDefaultTokenContext.ARGUMENT_ID:
-                if (StartTag.class.equals(syntaxNode.getClass()) 
-                || EmptyTag.class.equals(syntaxNode.getClass())) {
+            case ARGUMENT:
+                if (support.isStartTag(element)
+                || support.isEmptyTag(element)) {
                     //try to find the current attribute 
-                    Tag tag = (Tag)syntaxNode;
-                    NamedNodeMap nnm = tag.getAttributes();
+                    NamedNodeMap nnm = syntaxNode.getAttributes();
                     for(int i = 0; i < nnm.getLength(); i++) {
-                        AttrImpl attrNode = (AttrImpl)nnm.item(i);
-                        if(attrNode.getFirstToken().getOffset() == token.getOffset()) {
+                        Attr attrNode = (Attr)nnm.item(i);
+                        if(support.getNodeOffset(attrNode) == tokenOffset) {
                             ctx.init(attrNode, preText);
                         }
                     }
@@ -373,7 +395,7 @@ final class SyntaxQueryHelper {
                 }
                 break;
                 
-            case XMLDefaultTokenContext.CHARACTER_ID:  // entity reference
+            case CHARACTER:  // entity reference
                 if (preText.startsWith("&#")) {
                     // character ref, ignore
                     return COMPLETION_TYPE_UNKNOWN;
@@ -384,7 +406,7 @@ final class SyntaxQueryHelper {
                     ctx.init(syntaxNode, preText.substring(1));
                     return COMPLETION_TYPE_ENTITY;
                 } else if ("".equals(preText)) {
-                    if (token.getImage().endsWith(";")) {
+                    if (token.text().toString().endsWith(";")) {
                         ctx.init(syntaxNode, preText);
                         return COMPLETION_TYPE_VALUE;
                     }
@@ -408,7 +430,7 @@ final class SyntaxQueryHelper {
     }
 
     /** Current token or previous one if at token boundary. */
-    public TokenItem getToken() {
+    public Token<XMLTokenId> getToken() {
         return token;
     }
     

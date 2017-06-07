@@ -46,11 +46,13 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,11 +71,13 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.RemoteServerListProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -304,6 +308,18 @@ public class RemoteVcsSupportUtil {
         }
     }
 
+    /**
+     * Deletes on disconnect
+     * @param path file to delete
+     */
+    public static void deleteOnExit(FileSystem fs, String path) {
+        RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
+        if (fs instanceof RemoteFileSystem) {
+            final RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            rfs.deleteOnDisconnect(path);
+        }
+    }
+
     public static void deleteExternally(FileSystem fs, String path) {
         RemoteLogger.assertTrue(fs instanceof RemoteFileSystem, "" + fs + " not an instance of RemoteFileSystem"); //NOI18N
         if (fs instanceof RemoteFileSystem) {
@@ -419,7 +435,7 @@ public class RemoteVcsSupportUtil {
             for (RemoteDirectory impl : refreshSet) {
                 try {
                     RemoteFileSystemTransport.refreshFast(impl, false);
-                } catch (InterruptedException | CancellationException | TimeoutException ex) {
+                } catch (InterruptedException | TimeoutException ex) {
                     InterruptedIOException ie = new InterruptedIOException(ex.getMessage());
                     ie.initCause(ex);
                     throw ie;
@@ -433,4 +449,68 @@ public class RemoteVcsSupportUtil {
             }
         }
     }
+    
+    private static boolean isForbiddenFolderImpl(RemoteFileSystem rfs, String path) {
+        if (path.isEmpty()) {
+            return true;
+        } else if (rfs.isAutoMount(path)) {
+            return true;
+        } else if(rfs.isProhibitedToEnter(path)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isForbiddenFolder(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            if (path.isEmpty() || path.equals("/tmp") && RemoteFileSystemUtils.isUnitTestMode()) { // NOI18N
+                return false;
+            }            
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            if (isForbiddenFolderImpl(rfs, path)) {
+                return true;
+            }
+            int pos = path.lastIndexOf('/');
+            if (pos >= 0) {
+                String parent = path.substring(0, pos);
+                // if we decide to remove this check, then at least return "true" for /tmp
+                // (except for unit tests!)
+                if (isForbiddenFolderImpl(rfs, parent)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+    
+    public static URI toURI(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            ExecutionEnvironment env = rfs.getExecutionEnvironment();
+            try {
+                Boolean folder = isDirectoryFast(fs, path);
+                return RemoteFileUrlMapper.toURI(env, path, folder == null ? false : folder);
+            } catch (URISyntaxException | IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public static URL toURL(FileSystem fs, String path) {
+        if (fs instanceof RemoteFileSystem) {
+            RemoteFileSystem rfs = (RemoteFileSystem) fs;
+            ExecutionEnvironment env = rfs.getExecutionEnvironment();
+            try {
+                Boolean folder = isDirectoryFast(fs, path);
+                return RemoteFileUrlMapper.toURL(env, path, folder == null ? false : folder);
+            } catch (IOException /*|MalformedURLException*/ ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        return null;        
+    }     
 }

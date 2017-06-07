@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,14 +37,13 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.access;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.spi.StrataProvider;
@@ -59,11 +58,9 @@ public class TruffleStrataProvider implements StrataProvider {
     
     public static final String TRUFFLE_STRATUM = "TruffleScript";
     
-    private static final String TRUFFLE_ACCESS_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine";   // TruffleAccess.BASIC_CLASS_NAME
-    private static final Pattern TRUFFLE_ACCESS_METHOD_REGEX = Pattern.compile("dispatch.*Event");
+    private static final String TRUFFLE_ACCESS_CLASS = TruffleAccess.BASIC_CLASS_NAME;
+    private static final String TRUFFLE_ACCESS_METHOD = "executionHalted";
     
-    private static final String VAR_LINE = "line";
-
     @Override
     public String getDefaultStratum(CallStackFrameImpl csf) {
         if (isInTruffleAccessPoint(csf)) {
@@ -82,7 +79,7 @@ public class TruffleStrataProvider implements StrataProvider {
     
     private boolean isInTruffleAccessPoint(CallStackFrameImpl csf) {
         return TRUFFLE_ACCESS_CLASS.equals(csf.getClassName()) &&
-               TRUFFLE_ACCESS_METHOD_REGEX.matcher(csf.getMethodName()).matches();
+               TRUFFLE_ACCESS_METHOD.equals(csf.getMethodName());
     }
 
     @Override
@@ -92,21 +89,6 @@ public class TruffleStrataProvider implements StrataProvider {
             if (currentPCInfo != null) {
                 return currentPCInfo.getSourcePosition().getLine();
             }
-            /*
-            try {
-                LocalVariable[] methodArguments = csf.getLocalVariables();
-                for (LocalVariable lv : methodArguments) {
-                    if (VAR_LINE.equals(lv.getName())) {
-                        Object obj = lv.createMirrorObject();
-                        if (obj instanceof Integer) {
-                            return ((Integer) obj).intValue();
-                        }
-                    }
-                }
-            } catch (AbsentInformationException aiex) {
-                
-            }
-            */
         }
         return csf.getLineNumber(stratum);
     }

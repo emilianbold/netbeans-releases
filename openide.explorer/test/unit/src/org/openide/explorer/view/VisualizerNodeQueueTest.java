@@ -43,6 +43,7 @@ package org.openide.explorer.view;
 
 import java.awt.EventQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 
@@ -56,11 +57,13 @@ public class VisualizerNodeQueueTest extends NbTestCase {
         super(name);
     }
     public void testLongExecutionInEQInterrupted() throws Exception {
+        final CountDownLatch slowCanFinish = new CountDownLatch(1);
         class Slow implements Runnable {
             @Override
             public void run() {
                 try {
                     Thread.sleep(1000);
+                    slowCanFinish.await();
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -91,6 +94,7 @@ public class VisualizerNodeQueueTest extends NbTestCase {
         VisualizerNode.runSafe(slow);
         VisualizerNode.runSafe(at);
         EventQueue.invokeLater(in);
+        slowCanFinish.countDown();
         
         cdl.await();
         

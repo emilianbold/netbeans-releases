@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.ide.ergonomics.fod.FoDLayersProvider;
@@ -61,8 +62,10 @@ import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
-public final class FeatureOnDemandWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+public final class FeatureOnDemandWizardIterator
+implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor>, ChangeListener {
     public static final String CHOSEN_ELEMENTS_FOR_INSTALL = "chosen-elements-for-install"; // NOI18N
     public static final String CHOSEN_ELEMENTS_FOR_ENABLE = "chosen-elements-for-enable"; // NOI18N
     public static final String APPROVED_ELEMENTS = "approved-elements"; // NOI18N
@@ -73,6 +76,8 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
     private Boolean doEnable = null;
     private FileObject template;
     private boolean autoEnable = true;
+    private ChangeListener weakL;
+    private ChangeListener listener;
     
     public FeatureOnDemandWizardIterator (FileObject template) {
         this.template = template;
@@ -278,15 +283,25 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:
-    public void addChangeListener (ChangeListener l) {
-        if (getDelegateIterator () != null) {
-            getDelegateIterator ().addChangeListener (l);
+    public synchronized void addChangeListener (ChangeListener l) {
+        assert listener == null;
+        listener= l;
+    }
+
+    public synchronized void removeChangeListener (ChangeListener l) {
+        if (l == listener) {
+            listener = null;
         }
     }
 
-    public void removeChangeListener (ChangeListener l) {
-        if (getDelegateIterator () != null) {
-            getDelegateIterator ().removeChangeListener (l);
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        ChangeListener l;
+        synchronized (this) {
+            l = listener;
+        }
+        if (l != null) {
+            l.stateChanged(new ChangeEvent(this));
         }
     }
     
@@ -306,6 +321,9 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
                             createPanelsForEnable ();
                         }
                     }
+                } else {
+                    this.weakL = WeakListeners.change(this, delegateIterator);
+                    delegateIterator.addChangeListener(weakL);
                 }
             }
         }

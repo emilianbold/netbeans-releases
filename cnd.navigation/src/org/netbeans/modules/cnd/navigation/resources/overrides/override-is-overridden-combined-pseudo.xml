@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
       localizing_bundle="org.netbeans.modules.cnd.navigation.overrides.Bundle"
       visible="true"
       glyph="nbresloc:/org/netbeans/modules/cnd/navigation/resources/overrides/override-is-overridden-combined-pseudo.png"
-      priority="5">
+      priority="60">
     <combination tiptext_key="LAB_OverridesAndIsOverriden">
         <combine annotationtype="org-netbeans-modules-cnd-navigation-is_overridden"/>
         <combine annotationtype="org-netbeans-modules-cnd-navigation-is_overridden_pseudo"/>

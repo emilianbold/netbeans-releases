@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle;
 
 import com.sun.jdi.ClassType;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Location;
+import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.event.Event;
+import com.sun.jdi.event.LocatableEvent;
+import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.ScriptEngineFactory;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
@@ -64,10 +69,30 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
+import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -78,15 +103,11 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     private static final Logger LOG = Logger.getLogger(TruffleDebugManager.class.getName());
     
-    //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.debug.DebugManager";
-    //public static final String TRUFFLE_CLASS_DebugManager = "com.oracle.truffle.js.engine.TruffleJSEngine";
-    //private static final String SCRIPT_CREATION_BP_CLASS = "com.oracle.truffle.api.script.TruffleScriptEngineFactory";
-    //private static final String SCRIPT_CREATION_BP_METHOD = "engineCreated";
     private static final String SESSION_CREATION_BP_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine";
-    private static final String SESSION_CREATION_BP_METHOD = "dispatchExecutionEvent";
     
     private JPDABreakpoint debugManagerLoadBP;
     private static final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
+    private static final Map<JPDADebugger, JPDABreakpointListener> debugBPListeners = new HashMap<>();
     
     public TruffleDebugManager() {
     }
@@ -101,12 +122,11 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         if (debugManagerLoadBP != null) {
             return ;
         }
-//        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(TRUFFLE_CLASS_DebugManager,
-//                                                    false,
-//                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-        //debugManagerLoadBP = MethodBreakpoint.create(TRUFFLE_CLASS_DebugManager, "<init>");
+        /* Must NOT use a method exit breakpoint! I cause a massive degradation of application performance.
         debugManagerLoadBP = MethodBreakpoint.create(SESSION_CREATION_BP_CLASS, SESSION_CREATION_BP_METHOD);
-        ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
+        ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
+        */
+        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(SESSION_CREATION_BP_CLASS, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
         debugManagerLoadBP.setHidden(true);
         
         LOG.log(Level.FINE, "TruffleDebugManager.initBreakpoints(): submitted BP {0}", debugManagerLoadBP);
@@ -126,19 +146,10 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             }
         }
         initLoadBP();
+        JPDABreakpointListener bpl = addPolyglotEngineCreationBP(debugger);
         LOG.log(Level.FINE, "TruffleDebugManager.sessionAdded({0}), adding BP listener to {1}", new Object[]{session, debugManagerLoadBP});
-        DebugManagerHandler dmh = new DebugManagerHandler(debugger);
-        debugManagerLoadBP.addJPDABreakpointListener(dmh);
-        /*debugManagerLoadBP.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                System.err.println(debugManagerLoadBP+" has changed: "+evt);
-                System.err.println("  prop name = "+evt.getPropertyName()+", new value = "+evt.getNewValue());
-                Thread.dumpStack();
-            }
-        });*/
-        synchronized (dmHandlers) {
-            dmHandlers.put(debugger, dmh);
+        synchronized (debugBPListeners) {
+            debugBPListeners.put(debugger, bpl);
         }
     }
 
@@ -148,15 +159,105 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         if (debugger == null) {
             return ;
         }
+        JPDABreakpointListener bpl;
+        synchronized (debugBPListeners) {
+            bpl = debugBPListeners.remove(debugger);
+        }
+        if (bpl != null) {
+            LOG.log(Level.FINE, "TruffleDebugManager.engineRemoved({0}), removing BP listener from {1}", new Object[]{session, debugManagerLoadBP});
+            debugManagerLoadBP.removeJPDABreakpointListener(bpl);
+        }
         DebugManagerHandler dmh;
         synchronized (dmHandlers) {
             dmh = dmHandlers.remove(debugger);
         }
         if (dmh != null) {
-            LOG.log(Level.FINE, "TruffleDebugManager.engineRemoved({0}), removing BP listener from {1}", new Object[]{session, debugManagerLoadBP});
-            debugManagerLoadBP.removeJPDABreakpointListener(dmh);
+            LOG.log(Level.FINE, "TruffleDebugManager.engineRemoved({0}), destroying {1}", new Object[]{session, dmh});
             dmh.destroy();
         }
+    }
+
+    private JPDABreakpointListener addPolyglotEngineCreationBP(final JPDADebugger debugger) {
+        JPDABreakpointListener bpl = new JPDABreakpointListener() {
+            @Override
+            public void breakpointReached(JPDABreakpointEvent event) {
+                try {
+                    submitPECreationBP(debugger, event.getReferenceType());
+                } finally {
+                    event.resume();
+                }
+            }
+        };
+        debugManagerLoadBP.addJPDABreakpointListener(bpl);
+        List<JPDAClassType> polyglotEngines = debugger.getClassesByName(SESSION_CREATION_BP_CLASS);
+        if (!polyglotEngines.isEmpty()) {
+            for (JPDAClassType pe : polyglotEngines) {
+                submitPECreationBP(debugger, ((JPDAClassTypeImpl) pe).getType());
+            }
+        }
+        return bpl;
+    }
+
+    private void submitPECreationBP(final JPDADebugger debugger, ReferenceType type) {
+        try {
+            List<Method> constructors = ReferenceTypeWrapper.methodsByName(type, "<init>");
+            for (Method c : constructors) {
+                if (!c.argumentTypeNames().isEmpty()) {
+                    Location lastLocation = null;
+                    Location l;
+                    int i = 0;
+                    // Search for the last (return) statement:
+                    while ((l = MethodWrapper.locationOfCodeIndex(c, i)) != null) {
+                        lastLocation = l;
+                        i++;
+                    }
+                    BreakpointRequest bp = EventRequestManagerWrapper.createBreakpointRequest(lastLocation.virtualMachine().eventRequestManager(), lastLocation);
+                    EventRequestWrapper.setSuspendPolicy(bp, EventRequest.SUSPEND_EVENT_THREAD);
+                    ((JPDADebuggerImpl) debugger).getOperator().register(bp, new Executor() {
+                        @Override
+                        public boolean exec(Event event) {
+                            try {
+                                ThreadReference threadReference = LocatableEventWrapper.thread((LocatableEvent) event);
+                                JPDAThreadImpl thread = ((JPDADebuggerImpl) debugger).getThread(threadReference);
+                                StackFrame topFrame = ThreadReferenceWrapper.frame(threadReference, 0);
+                                ObjectReference engine = StackFrameWrapper.thisObject(topFrame);
+                                haveNewPE(debugger, thread, engine);
+                            } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                                     ObjectCollectedExceptionWrapper ex) {
+                            } catch (IllegalThreadStateExceptionWrapper |
+                                     IncompatibleThreadStateException |
+                                     InvalidStackFrameExceptionWrapper ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            return true;
+                        }
+
+                        @Override
+                        public void removed(EventRequest eventRequest) {
+                        }
+
+                    });
+                    try {
+                        EventRequestWrapper.enable(bp);
+                    } catch (InvalidRequestStateExceptionWrapper irsx) {
+                    }
+                }
+            }
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | ClassNotPreparedExceptionWrapper ex) {
+        }
+    }
+
+    private void haveNewPE(JPDADebugger debugger, JPDAThreadImpl thread, ObjectReference engine) {
+        DebugManagerHandler dmh;
+        synchronized (dmHandlers) {
+            dmh = dmHandlers.get(debugger);
+            if (dmh == null) {
+                dmh = new DebugManagerHandler(debugger);
+                dmHandlers.put(debugger, dmh);
+            }
+        }
+        dmh.newPolyglotEngineInstance(engine, thread);
     }
 
     @Override
@@ -206,5 +307,5 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             }
         }
     }
-    
+
 }

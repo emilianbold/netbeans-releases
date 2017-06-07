@@ -74,6 +74,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.bugs.NPECheck;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.suggestions.ExpectedTypeResolver;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -283,8 +284,8 @@ public class UnnecessaryBoxing {
             return true;
         }
         TreePath prevPath = new TreePath(expr, prev);
-        
-        TypeMirror pt = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(prevPath)); // assume boxed
+        TypeMirror boxedPrev = ci.getTrees().getTypeMirror(prevPath);
+        TypeMirror pt = Utilities.unboxIfNecessary(ci, boxedPrev); // assume boxed
         if (!Utilities.isValidType(pt)) {
             return false;
         }
@@ -300,7 +301,22 @@ public class UnnecessaryBoxing {
             }
             m = Utilities.unboxIfNecessary(ci, m);
             if (ci.getTypes().isAssignable(pt, m)) {
-                return true;
+                // special case, see issue #269269; if the OTHER argument of the conditional
+                // is a primitive wrapper AND it is _not_ known to contain non-null, do not produce unboxing warning
+                // as both boxed types prevent cond.op. to unbox.
+                TreePath other = new TreePath(expr, 
+                        prev == ct.getTrueExpression() ? ct.getFalseExpression() : ct.getTrueExpression());
+                TypeMirror m2 = ci.getTrees().getTypeMirror(other);
+                if (!Utilities.isValidType(m2)) {
+                    continue;
+                }
+                if (NPECheck.isSafeToDereference(ci, other)) {
+                    return true;
+                }
+                if (!Utilities.isPrimitiveWrapperType(m2) ||
+                        ci.getTypes().isSameType(boxedPrev, m2)) {
+                    return true;
+                }
             }
         }
         return false;

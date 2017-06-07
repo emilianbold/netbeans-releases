@@ -153,6 +153,10 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     case PREPROCESSOR_SYS_INCLUDE:
                     case PREPROCESSOR_USER_INCLUDE:
                         return false;
+                    // position dependent keywords could be identifiers as well
+                    case FINAL: 
+                    case OVERRIDE: 
+                        return true;
                 }
             }
         }

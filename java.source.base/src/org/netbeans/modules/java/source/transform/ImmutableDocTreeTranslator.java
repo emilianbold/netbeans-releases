@@ -59,6 +59,7 @@ import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
 import com.sun.source.doctree.LiteralTree;
 import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ProvidesTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.doctree.ReturnTree;
 import com.sun.source.doctree.SeeTree;
@@ -71,6 +72,7 @@ import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.ThrowsTree;
 import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.UsesTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.ExpressionTree;
@@ -132,11 +134,10 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
     //<editor-fold defaultstate="collapsed" desc="Rewrites">
     protected final DocCommentTree rewriteChildren(DocCommentTree tree) {
         DocCommentTree value = tree;
-        List<? extends DocTree> firstSentence = translateDoc(tree.getFirstSentence());
-        List<? extends DocTree> body = translateDoc(tree.getBody());
+        List<? extends DocTree> fullBody = translateDoc(tree.getFullBody());
         List<? extends DocTree> blockTags = translateDoc(tree.getBlockTags());
-        if (firstSentence != tree.getFirstSentence() || body != tree.getBody() || blockTags != tree.getBlockTags()) {
-            value = make.DocComment(firstSentence, body, blockTags);
+        if (fullBody != tree.getFullBody()|| blockTags != tree.getBlockTags()) {
+            value = make.DocComment(fullBody, blockTags);
         }
         return value;
     }
@@ -244,6 +245,16 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
         List<? extends DocTree> description = translateDoc(tree.getDescription());
         if (name != tree.getName() || description != tree.getDescription()) {
             value = make.Param(tree.isTypeParameter(), name, description);
+        }
+        return value;
+    }
+
+    protected final ProvidesTree rewriteChildren(ProvidesTree tree) {
+        ProvidesTree value = tree;
+        ReferenceTree name = (ReferenceTree) translate(tree.getServiceType());
+        List<? extends DocTree> description = translateDoc(tree.getDescription());
+        if (name != tree.getServiceType()|| description != tree.getDescription()) {
+            value = make.Provides(name, description);
         }
         return value;
     }
@@ -356,6 +367,16 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
         return value;
     }
 
+    protected final UsesTree rewriteChildren(UsesTree tree) {
+        UsesTree value = tree;
+        ReferenceTree name = (ReferenceTree) translate(tree.getServiceType());
+        List<? extends DocTree> description = translateDoc(tree.getDescription());
+        if (name != tree.getServiceType()|| description != tree.getDescription()) {
+            value = make.Uses(name, description);
+        }
+        return value;
+    }
+
     protected final ValueTree rewriteChildren(ValueTree tree) {
         ValueTree value = tree;
         ReferenceTree reference = (ReferenceTree) translate(tree.getReference());
@@ -457,6 +478,11 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
     }
 
     @Override
+    public DocTree visitProvides(ProvidesTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+
+    @Override
     public DocTree visitReference(ReferenceTree tree, Object p) {
         return rewriteChildren(tree);
     }
@@ -513,6 +539,11 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
 
     @Override
     public DocTree visitUnknownInlineTag(UnknownInlineTagTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+
+    @Override
+    public DocTree visitUses(UsesTree tree, Object p) {
         return rewriteChildren(tree);
     }
 

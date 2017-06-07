@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter.FilterTextToken;
 import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter.FilterToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
@@ -69,7 +70,7 @@ final class APTFortranFilterEx implements APTLanguageFilter {
 
     @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
-        return new FilterStream(origStream);
+        return new FilterStream(new ConcatinatingFilterStream(origStream));
     }
 
     private final class FilterStream implements TokenStream {
@@ -285,6 +286,57 @@ final class APTFortranFilterEx implements APTLanguageFilter {
                 }
             }
             return newToken;
+        }
+    }
+    
+    // Concatinates two adjacent tokens if necessary (to emulate old lexer for fortran)
+    private static class ConcatinatingFilterStream implements TokenStream {
+        private final TokenStream orig;
+        private Token nextToken = null;
+        private Token nextNextToken = null;
+
+        public ConcatinatingFilterStream(TokenStream orig) {
+            this.orig = orig;
+        }
+
+        @Override
+        public Token nextToken() throws TokenStreamException {
+            if (nextToken == null) {
+                nextToken = orig.nextToken();
+            }
+            if (nextNextToken == null) {
+                nextNextToken = orig.nextToken();
+            }
+            Token retToken = concat(nextToken, nextNextToken);
+            if (retToken != null) {
+                nextNextToken = null;
+                nextToken = null;
+                return retToken;
+            } else {
+                retToken = nextToken;
+                nextToken = nextNextToken;
+                nextNextToken = null;
+                return retToken;
+            }
+        }
+        
+        private Token concat(Token first, Token second) {
+            switch (first.getType()) {
+                case APTTokenTypes.T_REAL_CONSTANT:
+                case APTTokenTypes.T_DIGIT_STRING:
+                    if (second.getType() == APTTokenTypes.T_IDENT) {
+                        if (APTUtils.areAdjacent((APTToken) first, (APTToken) second)) {
+                            return new FilterTextToken(
+                                    (APTToken) first, 
+                                    first.getType(), 
+                                    first.getText() + second.getText(), 
+                                    0
+                            );
+                        }
+                    }
+                    break;
+            }
+            return null;
         }
     }
 }

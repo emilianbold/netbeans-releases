@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.frames.models;
 
+import java.util.Arrays;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -50,12 +51,14 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
+import org.netbeans.modules.debugger.jpda.truffle.TruffleProperties;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
@@ -74,14 +77,18 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
     
     private final JPDADebugger debugger;
     
-    private Action MAKE_CURRENT_ACTION;
-    private Action GO_TO_SOURCE_ACTION;
+    private final Action MAKE_CURRENT_ACTION;
+    private final Action GO_TO_SOURCE_ACTION;
+    private final Action SHOW_INTERNAL_ACTION;
+    private final Action HIDE_INTERNAL_ACTION;
     
     public DebuggingTruffleActionsProvider(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         RequestProcessor requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
         MAKE_CURRENT_ACTION = createMAKE_CURRENT_ACTION(requestProcessor);
         GO_TO_SOURCE_ACTION = createGO_TO_SOURCE_ACTION(requestProcessor);
+        SHOW_INTERNAL_ACTION = createSHOW_INTERNAL_ACTION();
+        HIDE_INTERNAL_ACTION = createHIDE_INTERNAL_ACTION();
     }
 
     @Override
@@ -105,6 +112,19 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
                 MAKE_CURRENT_ACTION,
                 GO_TO_SOURCE_ACTION,
             };
+        } else if (node instanceof DebuggingView.DVThread) {
+            Action[] actions = original.getActions(node);
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            if (currentPCInfo != null && currentPCInfo.getStack().hasInternalFrames()) {
+                int n = actions.length;
+                actions = Arrays.copyOf(actions, n + 1);
+                if (TruffleProperties.getInstance().isShowInternal()) {
+                    actions[n] = HIDE_INTERNAL_ACTION;
+                } else {
+                    actions[n] = SHOW_INTERNAL_ACTION;
+                }
+            }
+            return actions;
         } else {
             return original.getActions(node);
         }
@@ -193,6 +213,50 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
             },
             Models.MULTISELECTION_TYPE_EXACTLY_ONE
 
+        );
+    }
+    
+    @NbBundle.Messages("CTL_StackFrameAction_ShowInternal_Label=Show Internal Frames")
+    static final Action createSHOW_INTERNAL_ACTION() {
+        return Models.createAction (
+            Bundle.CTL_StackFrameAction_ShowInternal_Label(),
+            new Models.ActionPerformer () {
+                @Override
+                public boolean isEnabled (Object node) {
+                    if (!(node instanceof DebuggingView.DVThread)) {
+                        return false;
+                    }
+                    return true;
+                }
+
+                @Override
+                public void perform (final Object[] nodes) {
+                    TruffleProperties.getInstance().setShowInternal(true);
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE
+        );
+    }
+
+    @NbBundle.Messages("CTL_StackFrameAction_HideInternal_Label=Hide Internal Frames")
+    static final Action createHIDE_INTERNAL_ACTION() {
+        return Models.createAction (
+            Bundle.CTL_StackFrameAction_HideInternal_Label(),
+            new Models.ActionPerformer () {
+                @Override
+                public boolean isEnabled (Object node) {
+                    if (!(node instanceof DebuggingView.DVThread)) {
+                        return false;
+                    }
+                    return true;
+                }
+
+                @Override
+                public void perform (final Object[] nodes) {
+                    TruffleProperties.getInstance().setShowInternal(false);
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE
         );
     }
 

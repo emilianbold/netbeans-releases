@@ -255,7 +255,7 @@ public class MakeLogReader {
                 } catch (CancellationException ex) {
                     ex.printStackTrace(System.err);
                 }
-                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(executionEnvironment);
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(executionEnvironment, conf);
                 BufferedReader in = new BufferedReader(new InputStreamReader(logFileObject.getInputStream()));
                 long length = logFileObject.getSize();
                 long read = 0;

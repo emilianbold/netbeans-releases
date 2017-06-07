@@ -47,10 +47,14 @@ import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
+import static org.clank.support.NativePointer.*;
+import org.llvm.adt.StringRef;
+import org.llvm.support.sys.path;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -115,6 +119,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 FileObject fileObject = fsPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
                     CharSequence incPathUrl = fsPath.getURL();
+                    if (CndUtils.isDebugMode()) {
+                        CndUtils.assertTrueInConsole(path.is_absolute(new StringRef(create_char$ptr_utf8(incPathUrl))), "why non-absolute path " + incPathUrl + " is used for:" + fsPath + ".PP=", ppHandler);
+                    }
                     builder.addUserIncludePath(incPathUrl, incDir.isFramework(), incDir.ignoreSysRoot());
                 }
             }
@@ -128,6 +135,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                     FileObject fileObject = fsPath.getFileObject();
                     if (fileObject != null && fileObject.isFolder()) {
                         CharSequence incPathUrl = fsPath.getURL();
+                        if (CndUtils.isDebugMode()) {
+                            CndUtils.assertTrueInConsole(path.is_absolute(new StringRef(create_char$ptr_utf8(incPathUrl))), "why non-absolute path " + incPathUrl + " is used for:" + fsPath + ".PP=", ppHandler);
+                        }
                         builder.addPredefinedSystemIncludePath(incPathUrl, incDir.isFramework(), incDir.ignoreSysRoot());
                     }
                 }
@@ -145,6 +155,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             FileObject fileObject = fsPath.getFileObject();
             if (fileObject != null && fileObject.isData()) {
                 CharSequence incPathUrl = fsPath.getURL();
+                if (CndUtils.isDebugMode()) {
+                    CndUtils.assertTrueInConsole(path.is_absolute(new StringRef(create_char$ptr_utf8(incPathUrl))), "why non-absolute path " + incPathUrl + " is used for:" + fsPath + ".PP=", ppHandler);
+                }                
                 builder.addIncFile(incPathUrl.toString());
             }
         }
@@ -172,7 +185,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     private enum LanguageFlavor {
         UNKNOWN(0),
         C(1), C89(2), C99(3),
-        CPP(4), CPP11(8),
+        CPP98(4), CPP11(8),
         F77(5), F90(6), F95(7),
         DEFAULT(9),
         C11(10), CPP14(11);
@@ -197,7 +210,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 case 3:
                     return C99;
                 case 4:
-                    return CPP;
+                    return CPP98;
                 case 5:
                     return F77;
                 case 6:
@@ -241,7 +254,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             case C99:
                 out_lang_std = LangStandard.Kind.lang_gnu99;
                 break;
-            case CPP:
+            case CPP98:
+                // we don't have flavor for C++98 in APT, but C++03 is used in fact
                 out_lang_std = LangStandard.Kind.lang_cxx03;
                 break;
             case CPP11:
@@ -252,7 +266,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 break;
             case CPP14:
                 // FIXME
-                out_lang_std = LangStandard.Kind.lang_gnucxx1y;
+                out_lang_std = LangStandard.Kind.lang_gnucxx14;
                 break;
             case F77:
             case F90:

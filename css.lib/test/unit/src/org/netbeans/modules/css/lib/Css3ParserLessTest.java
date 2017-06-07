@@ -939,4 +939,31 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "    content: @@var;\n"
                 + "}");
     }
+    
+    public void testMixinArgsWithSemicolonAtTheEnd() {
+        assertParses(".classA {\n"
+                + "     .transitions(300ms border linear, transform 300ms linear;);\n"
+                + "}");
+    }
+    
+    public void testUnderscoreInNameWithInterpolation() {
+        assertParses(".classname {\n"
+                + "   &__@{classname_in_variable} { \n"
+                + "       height:0;\n"
+                + "   }\n"
+                + "}"
+        );
+    }
+    
+    public void testMixinCallWithGreater() {
+        assertParses("#gradient {\n"
+                + "    .vertical(@start-color: #555; @end-color: #333; @start-percent: 0%; @end-percent: 100%) {\n"
+                + "        background-image: -webkit-linear-gradient(top, @start-color @start-percent, @end-color @end-percent);  // Safari 5.1-6, Chrome 10+\n"
+                + "   }\n"
+                + "}\n"
+                + "  \n"
+                + ".bg-gd{\n"
+                + "  #gradient > .vertical(rgba(40,50,60,0), rgba(40,50,60,0.075), 0, 100%);\n"
+                + "}");
+    }
 }

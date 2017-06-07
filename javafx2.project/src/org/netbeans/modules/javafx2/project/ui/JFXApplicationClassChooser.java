@@ -232,7 +232,7 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
     
     private void initClassesModel() {
         
-        final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
+        final Map<FileObject,Map<String,ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
         if (classpathMap.isEmpty()) {
             //No sources at all.
             return;
@@ -241,8 +241,7 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
             @Override
             public void run() {
                 LOG.log(Level.FINE, LOG_INIT);
-                final List<ClassPath> cps = classpathMap.values().iterator().next();
-                final ClasspathInfo cpInfo = ClasspathInfo.create(cps.get(0), cps.get(1), cps.get(2));
+                final ClasspathInfo cpInfo = ClasspathInfo.create(classpathMap.keySet().iterator().next());
                 final JavaSource js = JavaSource.create(cpInfo);
                 ScanUtils.postUserActionTask(js, new Task<CompilationController>() {
                     @Override

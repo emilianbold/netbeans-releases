@@ -102,7 +102,6 @@ public final class SourceURLMapper extends URLMapper {
             }
         }
         try {
-            //return new URL(null, PROTOCOL + "://fs" + fs.getID() + "/" + path, new SourceURLHandler());
             return new URL(Source.URL_PROTOCOL, "fs" + fs.getID(), -1, "/" + percentEncode(path), new SourceURLHandler());
         } catch (MalformedURLException x) {
             throw new AssertionError(x);

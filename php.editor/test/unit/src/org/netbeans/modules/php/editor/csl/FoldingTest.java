@@ -101,4 +101,9 @@ public class FoldingTest extends PHPTestBase {
         checkFolds("testfiles/parser/anonymousClass_01.php");
     }
 
+    // #262471
+    public void testArrays() throws Exception {
+        checkFolds("testfiles/parser/foldingArrays.php");
+    }
+
 }

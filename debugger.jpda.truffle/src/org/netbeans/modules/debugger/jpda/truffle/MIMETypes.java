@@ -78,9 +78,9 @@ public final class MIMETypes {
 
     private static final Logger LOG = Logger.getLogger(MIMETypes.class.getName());
     
-    public static final String PROP_MIME_TYPES = "MIME types";
+    public static final String PROP_MIME_TYPES = "MIME types";                  // NOI18N
     
-    private static final String MIME_TYPES_MAIN = "org.netbeans.modules.debugger.jpda.backend.truffle.GetMIMETypes";
+    private static final String MIME_TYPES_MAIN = "org.netbeans.modules.debugger.jpda.backend.truffle.GetMIMETypes";    // NOI18N
     private static final MIMETypes INSTANCE = new MIMETypes();
     private static String TEMP_TRUFFLE_JAR;
 
@@ -108,14 +108,14 @@ public final class MIMETypes {
     private synchronized Set<String> get(JavaPlatform jp) {
         Set<String> mTypes = platformMIMETypes.get(jp);
         if (mTypes == null) {
-            FileObject graalvm = jp.findTool("graalvm");
+            FileObject graalvm = jp.findTool("graalvm");                        // NOI18N
             if (graalvm != null) {
                 File graalvmFile = FileUtil.toFile(graalvm);
                 if (graalvmFile != null) {
                     ProcessBuilder pb = ProcessBuilder.getLocal();
                     pb.setExecutable(graalvmFile.getAbsolutePath());
                     try {
-                        pb.setArguments(Arrays.asList("-J:-cp", "-J:"+getTruffleJarPath(), MIME_TYPES_MAIN));
+                        pb.setArguments(Arrays.asList("-J:-cp", "-J:"+getTruffleJarPath(), MIME_TYPES_MAIN));   // NOI18N
                         Process proc = pb.call();
                         try (BufferedReader r = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
                             mTypes = new HashSet<>();
@@ -146,7 +146,7 @@ public final class MIMETypes {
     
     private static synchronized String getTruffleJarPath() throws IOException {
         if (TEMP_TRUFFLE_JAR == null) {
-            File truffleJarFile = File.createTempFile("TmpTruffleBcknd", ".jar");
+            File truffleJarFile = File.createTempFile("TmpTruffleBcknd", ".jar");   // NOI18N
             truffleJarFile.deleteOnExit();
             FileUtil.copy(RemoteServices.openRemoteClasses(), new FileOutputStream(truffleJarFile));
             TEMP_TRUFFLE_JAR = truffleJarFile.getAbsolutePath();

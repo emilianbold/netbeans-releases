@@ -51,6 +51,24 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="GetAuthenticationPassword">
+        <api name="util"/>
+        <summary>API <code>NetworkSettings.getAuthenticationPassword</code> added</summary>
+        <version major="9" minor="8"/>
+        <date day="11" month="11" year="2016"/>
+        <author login="tstupka"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                The SPI <a href="@TOP@/org/openide/util/NetworkSettings.ProxyCredentialsProvider.html">
+                NetworkSettings.ProxyCredentialsProvider</a> allows NetBeans Platform
+                users to provide proxy and network credentials, but the according API should also provide
+                the password, not only the username.
+            </p>
+        </description>
+        <class package="org.openide.util" name="NetworkSettings"/>
+        <issue number="268803"/>
+    </change>
     <change id="server.is.free">
         <api name="util"/>
         <summary>Desktop independent utilities extracted</summary>

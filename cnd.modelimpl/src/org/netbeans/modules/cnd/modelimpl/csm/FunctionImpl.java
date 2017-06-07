@@ -145,10 +145,24 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final short FLAGS_CONST = 1 << 2;
     private static final short FLAGS_OPERATOR = 1 << 3;
     private static final short FLAGS_INVALID = 1 << 4;
-    protected static final int LAST_USED_FLAG_INDEX = 4;
+    private static final short FLAGS_VOLATILE = 1 << 5;
+    private static final short FLAGS_LVALUE_REF = 1 << 6; //the & ref-qualifier
+    private static final short FLAGS_RVALUE_REF = 1 << 7; //the && ref-qualifier
+    protected static final int LAST_USED_FLAG_INDEX = 7;
     private short flags;
+    public static class CV_RL {
+        public boolean _const;
+        public boolean _volatile;
+        public boolean _lvalue;
+        public boolean _rvalue;
+        public static CV_RL isConst(boolean isConst){
+            CV_RL res = new CV_RL();
+            res._const = isConst;
+            return res;
+        }
+    }
     
-    protected FunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected FunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, CV_RL _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(file, startOffset, endOffset);
 
         this.name = name;
@@ -156,7 +170,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         setFlags(FLAGS_STATIC, _static);
         _setScope(scope);
-        setFlags(FLAGS_CONST, _const);
+        setFlags(FLAGS_CONST, _const._const);
+        setFlags(FLAGS_VOLATILE, _const._volatile);
+        setFlags(FLAGS_LVALUE_REF, _const._lvalue);
+        setFlags(FLAGS_RVALUE_REF, _const._rvalue);
         if (CharSequenceUtils.startsWith(name, OPERATOR) &&
                 (name.length() > OPERATOR.length()) &&
                 !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
@@ -176,7 +193,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         CharSequence rawName = initRawName(ast);
         
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
-        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        FunctionImpl.CV_RL _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
@@ -776,7 +793,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     @Override
     public CharSequence getSignature() {         
         if( signature == null ) {
-            signature = QualifiedNameCache.getManager().getString(createSignature(getName(), getParameters(), getOwnTemplateParameters(), isConst()));
+            signature = QualifiedNameCache.getManager().getString(createSignature(getName(), getParameters(), getOwnTemplateParameters(), isConst(), isVolatile(), isLValue(), isRValue()));
         }
         assert !signature.toString().startsWith(UID_INTERNAL_DATA_PREFIX) : "Signature requested when object is not fully constructed!"; // NOI18N
         return signature;
@@ -837,7 +854,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return l;
     }
 
-    static CharSequence createSignature(CharSequence name, Collection<CsmParameter> params, List<CsmTemplateParameter> templateParams, boolean isConstQualifier) {
+    static CharSequence createSignature(CharSequence name, Collection<CsmParameter> params, List<CsmTemplateParameter> templateParams, boolean isConstQualifier, boolean isVolatileQualifier, boolean isLValueQualifier, boolean isRValueQualifier) {
         // TODO: this fake implementation for Deimos only!
         // we should resolve parameter types and provide
         // kind of canonical representation here
@@ -846,6 +863,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         InstantiationProviderImpl.appendParametersSignature(params, sb);
         if (isConstQualifier) {
             sb.append(" const"); // NOI18N
+        }
+        if (isVolatileQualifier) {
+            sb.append(" volatile"); // NOI18N
+        }
+        if (isLValueQualifier) {
+            sb.append(" &"); // NOI18N
+        }
+        if (isRValueQualifier) {
+            sb.append(" &&"); // NOI18N
         }
         return sb;
     }
@@ -888,6 +914,18 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      */
     protected boolean isConst() {
         return hasFlags(FLAGS_CONST);
+    }
+
+    protected boolean isVolatile() {
+        return hasFlags(FLAGS_VOLATILE);
+    }
+
+    protected boolean isLValue() {
+        return hasFlags(FLAGS_LVALUE_REF);
+    }
+
+    protected boolean isRValue() {
+        return hasFlags(FLAGS_RVALUE_REF);
     }
 
     private synchronized CsmScope _getScope() {
@@ -977,7 +1015,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         public FunctionImpl create() {
             CsmScope scope = AstRenderer.FunctionRenderer.getScope(getScope(), getFile(), isStatic(), false);
 
-            FunctionImpl fun = new FunctionImpl(getName(), getRawName(), scope, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            FunctionImpl fun = new FunctionImpl(getName(), getRawName(), scope, isStatic(), CV_RL.isConst(isConst()), getFile(), getStartOffset(), getEndOffset(), isGlobal());
             
             init(fun);
             

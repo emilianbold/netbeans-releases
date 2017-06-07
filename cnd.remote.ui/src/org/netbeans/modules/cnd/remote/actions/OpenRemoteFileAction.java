@@ -61,8 +61,8 @@ import org.openide.util.NbBundle;
 //@ActionReference(path = "Menu/File", position = 510)
 @ActionRegistration(
     displayName="#OpenRemoteFileAction.submenu.title",  //NOI18N
-    iconBase="org/netbeans/modules/cnd/remote/resources/openFile.png", //NOI18N
-    iconInMenu=true
+    iconBase="org/netbeans/modules/cnd/remote/ui/resources/openFile.png", //NOI18N
+    iconInMenu=true, lazy = false
 )
 @ActionID(category="System", id="org.netbeans.modules.openfile.OpenRemoteFileAction")
 @ActionReferences({
@@ -75,8 +75,8 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase {
     
     public OpenRemoteFileAction() {
         super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title")); //NOI18N
-        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openFile.png", false); //NOI18N
-        putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openFile.png"); //NOI18N
+        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/ui/resources/openFile.png", false); //NOI18N
+        putValue("iconBase","org/netbeans/modules/cnd/remote/ui/resources/openFile.png"); //NOI18N
     }
 
     @Override

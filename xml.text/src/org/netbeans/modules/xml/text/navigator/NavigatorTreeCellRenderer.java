@@ -50,12 +50,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
-import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
+import static org.netbeans.modules.xml.text.structure.XMLConstants.*;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 
 /** TreeCellRenderer implementatin for the XML Navigator.
@@ -100,14 +98,14 @@ public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
         
         boolean containsError = tna.getChildrenErrorCount() > 0;
         //normal icons
-        if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
-        || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
+        if(de.getType().equals(XML_TAG)
+        || de.getType().equals(XML_EMPTY_TAG)) {
             setIcon(TAG_ICON, containsError);
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
+        } else if(de.getType().equals(XML_PI)) {
             setIcon(PI_ICON, containsError);
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
+        } else if(de.getType().equals(XML_DOCTYPE)) {
             setIcon(DOCTYPE_ICON, containsError);
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+        } else if(de.getType().equals(XML_CDATA)) {
             setIcon(CDATA_ICON, containsError);
         }
         

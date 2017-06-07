@@ -112,7 +112,7 @@ public class MylynUtils {
 
             String proxyUser = NetworkSettings.getAuthenticationUsername(uri);
             if(proxyUser != null) {
-                char[] pwd = Keyring.read(NetworkSettings.getKeyForAuthenticationPassword(uri));
+                char[] pwd = NetworkSettings.getAuthenticationPassword(uri);
                 String proxyPassword = pwd == null ? "" : new String(pwd); //NOI18N
                 logCredentials(repository, proxyUser, proxyPassword, "Setting proxy credentials: ");
                 authenticationCredentials = new AuthenticationCredentials(proxyUser, proxyPassword);

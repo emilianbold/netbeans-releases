@@ -63,7 +63,7 @@ import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 import org.netbeans.modules.spring.java.PropertyType;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -77,7 +77,7 @@ public class PropertyCompletor extends Completor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        int idx = context.getCurrentToken().getOffset() + 1;
+        int idx = context.getCurrentTokenOffset() + 1;
         String typedPrefix = context.getTypedPrefix();
         int offset = typedPrefix.lastIndexOf('.'); // NOI18N
         return idx + offset + 1;
@@ -97,7 +97,7 @@ public class PropertyCompletor extends Completor {
         js.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController cc) throws Exception {
-                Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(context.getTag());
+                Node beanTag = SpringXMLConfigEditorUtils.getBean(context.getTag());
                 if (beanTag == null) {
                     return;
                 }

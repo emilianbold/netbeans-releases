@@ -42,14 +42,10 @@
 
 package org.netbeans.modules.xml.text;
 
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.indent.DTDIndentEngine;
 import org.netbeans.modules.xml.text.indent.XMLIndentEngine;
-import org.netbeans.modules.xml.text.syntax.DTDTokenContext;
 import org.openide.text.IndentEngine;
 
 /**
@@ -62,10 +58,6 @@ public final class ComplexValueSettingsFactory {
     // XML settings factory methods
     // -----------------------------------------------------------------------
     
-    // XXX: use lexer
-    public static List getXMLTokenContext() {
-        return Collections.singletonList(XMLDefaultTokenContext.context);
-    }
     // XXX: use new editor.indent API
     public static IndentEngine getXMLIndentEngine() {
         return new XMLIndentEngine();
@@ -81,10 +73,6 @@ public final class ComplexValueSettingsFactory {
     // DTD settings factory methods
     // -----------------------------------------------------------------------
     
-    // XXX: use lexer
-    public static List getDTDTokenContext() {
-        return Collections.singletonList(DTDTokenContext.context);
-    }
     // XXX: use new editor.indent API
     public static IndentEngine getDTDIndentEngine() {
         return new DTDIndentEngine();

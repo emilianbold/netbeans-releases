@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Paths;
@@ -58,6 +59,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.remote.cli.ApiUtils;
 import org.netbeans.modules.git.remote.cli.GitClient;
@@ -70,7 +72,10 @@ import org.netbeans.modules.git.remote.cli.jgit.utils.TestUtils;
 import org.netbeans.modules.git.remote.cli.progress.FileListener;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.git.remote.cli.progress.StatusListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -89,6 +94,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     protected static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor ();
     private boolean skipTest = false;
     private String gitPath;
+    protected Version version;
 
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
@@ -96,6 +102,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     public AbstractGitTestCase (String testName) throws IOException {
         super(testName);
         System.setProperty("work.dir", getWorkDirPath());
+        System.setProperty("file.encoding", "UTF-8");
         workDir = VCSFileProxy.createFileProxy(getWorkDir());
         repositoryLocation = VCSFileProxy.createFileProxy(workDir, "repo");
         wc = VCSFileProxy.createFileProxy(workDir, getName() + "_wc");
@@ -104,6 +111,15 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         FileObject git = VCSFileProxySupport.getResource(workDir, gitPath).toFileObject();
         if (git == null || !git.isValid()) {
             skipTest = true;
+            return;
+        }
+        version = new Version(ExecutionEnvironmentFactory.getLocal(), git);
+        if (version.compareTo(new Version(1,8,0)) < 0) {
+            System.err.println("Usupported git version "+version);
+            skipTest = true;
+            return;
+        } else {
+            System.err.println("git version "+version);
         }
         GitCommand.setGitCommand(gitPath);
     }
@@ -155,7 +171,8 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     protected void write(VCSFileProxy file, String str) throws IOException {
         OutputStreamWriter w = null;
         try {
-            w = new OutputStreamWriter(VCSFileProxySupport.getOutputStream(file));
+            Charset encoding = RemoteVcsSupport.getEncoding(file);
+            w = new OutputStreamWriter(VCSFileProxySupport.getOutputStream(file), encoding);
             w.write(str);
             w.flush();
         } finally {
@@ -169,7 +186,8 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         StringBuilder sb = new StringBuilder();
         BufferedReader r = null;
         try {
-            r = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            Charset encoding = RemoteVcsSupport.getEncoding(file);
+            r = new BufferedReader(new InputStreamReader(file.getInputStream(false), encoding));
             String s = r.readLine();
             if (s != null) {
                 while( true ) {
@@ -417,9 +435,8 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         String[] args = command.toArray(new String[command.size()]);
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(workdir);
         VCSFileProxySupport.mkdirs(workdir);
-        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, processBuilder, gitPath, args);
+        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, workdir, gitPath, args);
         return Arrays.asList(executeInDir.output.split("\n"));
     }
     
@@ -439,6 +456,94 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         @Override
         public void notifyStatus(GitStatus status) {
             notifiedStatuses.put(status.getFile(), status);
+        }
+    }
+    
+    protected static final class Version implements Comparable<Version> {
+
+        public final int major;
+        public final int minor;
+        public final int last;
+        public final String version;
+        
+        public Version(int major, int minor, int last) {
+            this.major = major;
+            this.minor = minor;
+            this.last = last;
+            this.version = ""+major+"."+minor+"."+last;
+        }
+
+        public Version(ExecutionEnvironment execEnv, FileObject binary) {
+            version = getVersion(execEnv, binary);
+            String[] split = version.split("\\.");
+            if (split.length >= 1) {
+                major = Integer.parseInt(split[0]);
+                if (split.length >= 2) {
+                    minor = Integer.parseInt(split[1]);
+                    if (split.length >= 3) {
+                        last = Integer.parseInt(split[2]);
+                    } else {
+                        last = 0;
+                    }
+                } else {
+                    minor = 0;
+                    last = 0;
+                }
+            } else {
+                major = 0;
+                minor = 0;
+                last = 0;
+            }
+        }
+
+        private String getVersion(ExecutionEnvironment execEnv, FileObject binary) {
+            ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
+            String[] args = new String[]{"--version"};
+            ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(binary.getParent().getPath(), null, false, canceled, VCSFileProxy.createFileProxy(binary.getParent()), binary.getPath(), args);
+            List<String> outputLines = Arrays.asList(executeInDir.output.split("\n"));
+            String aVersion = "0.0.0";
+            if (outputLines.size() > 0) {
+                String v = outputLines.get(0);
+                int i = v.indexOf("version");
+                if (i >= 0) {
+                    //OEL
+                    // svn, version 1.6.11 (r934486)
+                    // git version 1.7.1
+                    // Mercurial Distributed SCM (version 1.4)
+                    //SunOS 11.3
+                    // svn, version 1.7.20 (r1667490)
+                    // Mercurial Distributed SCM (version 3.7.3)
+                    // git version 2.7.4
+                    int last = i + 8;
+                    for (int k = i + 8; k < v.length(); k++) {
+                        char c = v.charAt(k);
+                        if (c >= '0' && c <= '9' || c == '.') {
+                        } else {
+                            break;
+                        }
+                        last++;
+                    }
+                    aVersion = v.substring(i + 8, last);
+                }
+            }
+            return aVersion;
+        }
+
+        @Override
+        public int compareTo(Version o) {
+            int res = this.major - o.major;
+            if (res == 0) {
+                res = this.minor - o.minor;
+                if (res == 0) {
+                    res = this.last - o.last;
+                }
+            }
+            return res;
+        }
+        
+        @Override
+        public String toString() {
+            return version;
         }
     }
 }

@@ -42,9 +42,9 @@
 package org.netbeans.modules.jshell.env;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.modules.jshell.env.JShellEnvironment;
-import org.netbeans.modules.jshell.env.ShellRegistry;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author sdedic
  */
-@ServiceProvider(service = ClassPathProvider.class)
+@ServiceProvider(service = ClassPathProvider.class, position=1200)
 public class ShellClasspathProvider implements ClassPathProvider {
 
     @Override
@@ -67,13 +67,29 @@ public class ShellClasspathProvider implements ClassPathProvider {
         if (ss == null) {
             return null;
         }
+        ClasspathInfo cpi = ss.getClasspathInfo();
+        if (cpi == null) {
+            return null;
+        }
         switch (type) {
+            case JavaClassPathConstants.MODULE_BOOT_PATH:
+                return cpi.getClassPath(PathKind.MODULE_BOOT);
+                
+            case JavaClassPathConstants.MODULE_COMPILE_PATH:
+                return cpi.getClassPath(PathKind.MODULE_COMPILE);
+                
+            case JavaClassPathConstants.MODULE_CLASS_PATH:
+                return cpi.getClassPath(PathKind.MODULE_CLASS);
+                
+            case JavaClassPathConstants.MODULE_SOURCE_PATH:
+                return cpi.getClassPath(PathKind.MODULE_SOURCE);
+                
             case ClassPath.COMPILE:
-                return ss.getClasspathInfo().getClassPath(PathKind.COMPILE);
+                return cpi.getClassPath(PathKind.COMPILE);
             case ClassPath.SOURCE:
-                return ss.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                return cpi.getClassPath(PathKind.SOURCE);
             case ClassPath.BOOT:
-                return ss.getClasspathInfo().getClassPath(PathKind.BOOT);
+                return cpi.getClassPath(PathKind.BOOT);
         }
         return null;
     }

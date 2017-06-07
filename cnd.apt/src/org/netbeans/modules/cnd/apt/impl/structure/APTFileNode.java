@@ -60,6 +60,7 @@ import org.openide.util.Parameters;
 public final class APTFileNode extends APTContainerNode 
                                 implements APTFile, Serializable {
     private static final long serialVersionUID = -6182803432699849825L;
+    private final Kind kind;
     transient private FileSystem fileSystem;
     private final CharSequence path;
     private volatile CharSequence guard = CharSequences.empty();
@@ -68,6 +69,7 @@ public final class APTFileNode extends APTContainerNode
     /** Copy constructor */
     /**package*/ APTFileNode(APTFileNode orig) {
         super(orig);
+        this.kind = orig.kind;
         this.fileSystem = orig.fileSystem;
         this.path = orig.path;
         this.tokenized = false;
@@ -75,8 +77,9 @@ public final class APTFileNode extends APTContainerNode
     }
     
     /** Creates a new instance of APTFileNode */
-    public APTFileNode(FileSystem fileSystem, CharSequence path) {
+    public APTFileNode(FileSystem fileSystem, CharSequence path, Kind kind) {
         Parameters.notNull("null fileSystem", fileSystem); //NOI18N
+        this.kind = kind;
         this.fileSystem = fileSystem;
         this.path = FilePathCache.getManager().getString(path);
         this.guard = TextCache.getManager().getString(guard);
@@ -110,7 +113,12 @@ public final class APTFileNode extends APTContainerNode
 
     @Override
     public String getText() {
-        return "FILE:{" + getPath() + "}"; // NOI18N
+        return "FILE: " + kind + " {" + getPath() + "}"; // NOI18N
+    }
+
+    @Override
+    public Kind getKind() {
+        return kind;
     }
 
     @Override
@@ -161,5 +169,12 @@ public final class APTFileNode extends APTContainerNode
     @Override
     public CharSequence getGuardMacro() {
         return guard;
+    }
+
+    @Override
+    public String toString() {
+        return "APTFileNode{" + "kind=" + kind + // NOI18N
+                ", fileSystem=" + fileSystem + ", path=" + path + // NOI18N
+                ", guard=" + guard + ", tokenized=" + tokenized + '}'; // NOI18N
     }
 }

@@ -119,7 +119,8 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch/*, Watch.Provi
         if (exceptionDescription == null)
             exceptionDescription = exception.getMessage ();
         Throwable t = exception.getCause();
-        if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+        if (t != null && exception instanceof InvalidExpressionException &&
+            ((InvalidExpressionException) exception).hasApplicationTarget()) {
             java.io.StringWriter s = new java.io.StringWriter();
             java.io.PrintWriter p = new java.io.PrintWriter(s);
             t.printStackTrace(p);

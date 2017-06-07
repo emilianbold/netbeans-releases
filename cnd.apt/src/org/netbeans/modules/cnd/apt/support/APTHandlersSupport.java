@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
@@ -98,6 +99,18 @@ public class APTHandlersSupport {
 
     public static int getIncludeStackDepth(PreprocHandler.State state) {
         return APTHandlersSupportImpl.getIncludeStackDepth(state);
+    }
+    
+    public static APTFile.Kind getAPTFileKind(PreprocHandler.State state) {
+        String language = (state == null) ? "" : state.getLanguage().toString();
+        String languageFlavor = (state == null) ? "" : state.getLanguageFlavor().toString();     
+        return APTDriver.langFlavorToAPTFileKind(language, languageFlavor);
+    }
+    
+    public static APTFile.Kind getAPTFileKind(PreprocHandler handler) {
+        String language = (handler == null) ? "" : handler.getLanguage().toString();
+        String languageFlavor = (handler == null) ? "" : handler.getLanguageFlavor().toString();     
+        return APTDriver.langFlavorToAPTFileKind(language, languageFlavor);
     }
     ////////////////////////////////////////////////////////////////////////////
     // help methods for preprocessor states

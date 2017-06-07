@@ -901,7 +901,8 @@ public class TraceModel extends TraceModelBase {
         try {
             stream = new BufferedInputStream(fo.getInputStream(), TraceFlags.BUF_SIZE);
             reader = new InputStreamReader(stream, FileEncodingQuery.getDefaultEncoding());
-            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(fo.getPath(), reader, getFileLanguage(fo));
+            APTFile.Kind langKind = APTDriver.langFlavorToAPTFileKind(getFileLanguage(fo));
+            TokenStream ts = APTTokenStreamBuilder.buildTokenStream(fo.getPath(), reader, langKind);
             for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
                 if (printTokens) {
                     print("" + t);
@@ -926,12 +927,12 @@ public class TraceModel extends TraceModelBase {
         FileObject fo = buffer.getFileObject();
         boolean cleanAPT = apt == null;
         long time = System.currentTimeMillis();
+        PreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.findAPTLight(buffer);
+            apt = APTDriver.findAPTLight(buffer, APTHandlersSupport.getAPTFileKind(ppHandler));
         }
-        PreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         walker.visit();
         time = System.currentTimeMillis() - time;
@@ -961,13 +962,13 @@ public class TraceModel extends TraceModelBase {
         FileObject fo = buffer.getFileObject();
         boolean cleanAPT = apt == null;
         long time = System.currentTimeMillis();
+        PPMacroMap macroMap = getMacroMap(fo);
+        PreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true, getFileLanguage(fo), CharSequences.empty());
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.findAPT(buffer, getFileLanguage(fo), APTLanguageSupport.FLAVOR_UNKNOWN);
+            apt = APTDriver.findAPT(buffer, APTHandlersSupport.getAPTFileKind(ppHandler));
         }
-        PPMacroMap macroMap = getMacroMap(fo);
-        PreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         TokenStream ts = walker.getTokenStream();
         if (expand) {
@@ -1171,7 +1172,7 @@ public class TraceModel extends TraceModelBase {
         FileObject fo = buffer.getFileObject();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(fo), APTLanguageSupport.FLAVOR_UNKNOWN);
+        APTFile apt = APTDriver.findAPT(buffer, APTDriver.langFlavorToAPTFileKind(getFileLanguage(fo)));
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {

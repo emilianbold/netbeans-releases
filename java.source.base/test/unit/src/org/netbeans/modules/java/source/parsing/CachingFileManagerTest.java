@@ -118,7 +118,7 @@ public class CachingFileManagerTest extends NbTestCase {
             final ClassPath cp,
             final List<? extends Pair<Pair<String,String>,URI>> testCases) throws IOException, URISyntaxException {
         final CachingArchiveProvider provider = CachingArchiveProvider.getDefault();
-        final CachingFileManager manager = new CachingFileManager(provider, cp, false, true);
+        final CachingFileManager manager = new CachingFileManager(provider, cp, null, false, true);
         for (Pair<Pair<String,String>,URI> testCase : testCases) {
             final Pair<String,String> name = testCase.first();
             final URI expectedURI = testCase.second();

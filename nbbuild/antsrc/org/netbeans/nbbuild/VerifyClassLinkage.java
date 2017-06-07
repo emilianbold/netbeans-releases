@@ -325,6 +325,7 @@ public class VerifyClassLinkage extends Task {
                 case 9: // CONSTANT_Fieldref
                 case 10: // CONSTANT_Methodref
                 case 11: // CONSTANT_InterfaceMethodref
+                case 18:    //CONSTANT_InvokeDynamic
                     skip(input, 4);
                     break;
                 case 12: // CONSTANT_NameAndType
@@ -336,12 +337,18 @@ public class VerifyClassLinkage extends Task {
                     isDescriptor[index] = true;
                     break;
                 case 8: // CONSTANT_String
+                case 16:    //CONSTANT_MethodType
+                case 19:    //CONSTANT_Module
+                case 20:    //CONSTANT_Package
                     skip(input, 2);
                     break;
                 case 5: // CONSTANT_Long
                 case 6: // CONSTANT_Double
                     skip(input, 8);
                     i++; // weirdness in spec
+                    break;
+                case 15:    //CONSTANT_MethodHandle
+                    skip(input, 3);
                     break;
                 default:
                     throw new IOException("Unrecognized constant pool tag " + tag + " at index " + i +

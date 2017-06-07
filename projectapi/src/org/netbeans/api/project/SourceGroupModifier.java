@@ -43,6 +43,7 @@
 package org.netbeans.api.project;
 
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
+import org.netbeans.spi.project.SourceGroupRelativeModifierImplementation;
 
 /**
  * <code>SourceGroupModifier</code> provides ways of create specific folders ({@link org.netbeans.api.project.SourceGroup} root folders)
@@ -75,6 +76,46 @@ public final class SourceGroupModifier {
             return null;
         }
         return impl.createSourceGroup(type, hint);
+    }
+    
+    /**
+     * Creates a source group associated to an existing one. In a project with multiple locations for sources or tests some of those locations
+     * can be more appropriate (or completely unrelated) to already existing specific sources. This variant of {@link #createSourceGroup(org.netbeans.api.project.Project, java.lang.String, java.lang.String)}
+     * allows to select appropriate locations, if the newly created {@code SourceGroup} should work in association with some existing one.
+     * <p/>
+     * The source group will be created on location most similar to the provided {@code original} group. If {@code projectParts} are specified, the most matching
+     * location will be selected.
+     * <p/>
+     * This feature is prototypically used in J2SE modular projects, where multiple locations exists for tests and sources, yet they are related by their owning module. Other
+     * project types may also partition project sources into logical groups, similar to modules.
+     * <p/>
+     * Some (java) examples:
+     * <ul>
+     * <li>to create a source folder in project module, use <code>relativeTo(modulesGroup, "moduleName").createSourceGroup(..)</code>
+     * <li>to create a specific module root in project module, use <code>relativeTo(modulesGroup, "moduleName", "path-to-modules").createSourceGroup(...)</code>
+     * <li>to create a test folder for a specific source location, use <code>relativeTo(sourceLocation).createSourceGroup(...)</code>
+     * <li>or, if there are more test locations to choose, you can use <code>relativeTo(sourceLocation, "test2").createSourceGroup(...)</code>.
+     * </ul>
+     * @param project the project
+     * @param original the original SourceGroup, which the new one should be related to.
+     * @param type type of sources
+     * @param hint additional type hint
+     * @param projectParts optional; abstract location within the project.
+     * @return the creaed SourceGroup or {@code null}
+     * @since 1.68
+     */
+    public static final SourceGroup createAssociatedSourceGroup(Project project, SourceGroup original, String type, String hint, String... projectParts) {
+        SourceGroupRelativeModifierImplementation relMod = project.getLookup().lookup(SourceGroupRelativeModifierImplementation.class);
+        if (relMod == null) {
+            return createSourceGroup(project, type, hint);
+        } else {
+            SourceGroupModifierImplementation impl =  relMod.relativeTo(original, projectParts);
+            if (impl == null) {
+                return createSourceGroup(project, type, hint);
+            } else {
+                return impl.createSourceGroup(type, hint);
+            }
+        }
     }
 
     /**

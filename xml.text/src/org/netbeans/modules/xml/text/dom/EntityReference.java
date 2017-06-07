@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.w3c.dom.Node;

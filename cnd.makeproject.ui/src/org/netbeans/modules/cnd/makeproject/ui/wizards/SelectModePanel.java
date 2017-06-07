@@ -393,9 +393,24 @@ public class SelectModePanel extends javax.swing.JPanel {
         }
         fileSystem = FileSystemProvider.getFileSystem(env);
         ((ExpandableEditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
-        ((ExpandableEditableComboBox)sourceFolder).setEnv(env);
         if (firstTime) {
             ((ExpandableEditableComboBox)sourceFolder).read("");
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!SwingUtilities.isEventDispatchThread()) {
+                        // init host info if it has not been inited yet.
+                        try {
+                            HostInfoUtils.getHostInfo(env);
+                        } catch (IOException | ConnectionManager.CancellationException ex) {
+                            // do nothing
+                        }
+                        SwingUtilities.invokeLater(this);
+                    } else {
+                        ((ExpandableEditableComboBox)sourceFolder).setEnv(env);
+                    }
+                }
+            });
         }
         refreshInstruction(false);
         firstTime = false;

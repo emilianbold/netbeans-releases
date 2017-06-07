@@ -1018,7 +1018,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
-                            return LanguageFlavor.CPP;
+                            return LanguageFlavor.CPP98;
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
                             for(String macro : getCompilerPreprocessorSymbols()) {
                                 if (macro.startsWith("__cplusplus=")) { //NOI18N
@@ -1030,11 +1030,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                                             return LanguageFlavor.CPP11;
                                         }
                                     } else {
-                                        return LanguageFlavor.CPP;
+                                        return LanguageFlavor.CPP98;
                                     }
                                 }
                             }
-                            return LanguageFlavor.CPP;
+                            return LanguageFlavor.DEFAULT;
                     }
                 }
             }            
@@ -1049,7 +1049,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                             return LanguageFlavor.CPP11;
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
-                }
+                    }
                 }
             }
         }
@@ -1079,34 +1079,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return true;
     }
 
-    /*package*/ int getCRC() {
-        int res = 0;
-        for(IncludePath aPath : getUserIncludePaths()) {
-            res += 37 * aPath.getFSPath().hashCode();
-        }
-        for(FSPath aPath : getIncludeFiles()) {
-            res += 37 * aPath.hashCode();
-        }
-        for(String macro: getUserMacroDefinitions()) {
-            res += 37 * macro.hashCode();
-        }
-        for(String macro: getUndefinedMacros()) {
-            res += 37 * macro.hashCode();
-        }
-        for(IncludePath aPath : getSystemIncludePaths()) {
-            res += 37 * aPath.getFSPath().hashCode();
-        }
-        for(FSPath aPath : getSystemIncludeHeaders()) {
-            res += 37 * aPath.getPath().hashCode();
-        }
-        for(String macro: getSystemMacroDefinitions()) {
-            res += 37 * macro.hashCode();
-        }
-        res += 37 * getLanguage().hashCode();
-        res += 37 * getLanguageFlavor().hashCode();
-        return res;
-    }
-    
     @Override
     public String toString() {
         return path.toString();

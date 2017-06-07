@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -140,9 +141,11 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
             project = Templates.getProject(wizardDescriptor);
             p.setProject(project);
         }
+        FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
+        p.setTargetFolder(targetFolder);
         
         try{
-            if (ProviderUtil.isValidServerInstanceOrNone(project) && !isPersistenceUnitDefined()) {
+            if (ProviderUtil.isValidServerInstanceOrNone(project) && !isPersistenceUnitDefined(targetFolder)) {
                 p.setPersistenceUnitButtonVisibility(true);
             } else {
                 p.setPersistenceUnitButtonVisibility(false);
@@ -154,8 +157,8 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         }
     }
     
-    private boolean isPersistenceUnitDefined() throws InvalidPersistenceXmlException {
-        return ProviderUtil.persistenceExists(project);
+    private boolean isPersistenceUnitDefined(FileObject targetFolder) throws InvalidPersistenceXmlException {
+        return ProviderUtil.persistenceExists(project, targetFolder);
     }
     
     @Override

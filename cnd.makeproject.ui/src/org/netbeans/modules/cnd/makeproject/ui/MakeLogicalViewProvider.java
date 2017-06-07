@@ -53,7 +53,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -76,6 +75,7 @@ import org.openide.util.lookup.ServiceProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeLogicalViewModel;
 
 /**
@@ -444,24 +444,17 @@ public class MakeLogicalViewProvider implements LogicalViewProvider, MakeLogical
     }
 
     @Override
-    public void checkForChangedViewItemNodes(Delta delta) {
+    public void checkForChangedViewItemNodes(SnapShot delta) {
         checkForChangedViewItemNodes(project, delta);
     }
 
-    private static void checkForChangedViewItemNodes(final Project project, final Delta delta) {
+    private static void checkForChangedViewItemNodes(final Project project, final SnapShot delta) {
         if (CndUtils.isStandalone()) {
             return;
         }
-        if (delta.getAdded().isEmpty()
-                && //delta.getChanged().isEmpty() &&
-                delta.getDeleted().isEmpty()
-                && delta.getExcluded().isEmpty()
-                && delta.getIncluded().isEmpty()
-                && delta.getReplaced().isEmpty()) {
-            // only changed properties => no changes in project tree
-            return;
+        if (delta.isViewChanged()) {
+            refreshProjectNodes(project);
         }
-        refreshProjectNodes(project);
     }
 
     @Override

@@ -172,9 +172,11 @@ public class MagicCache {
                 }
                 createEntry(file, res, pos);
             } catch (FileNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+                ex.printStackTrace(System.err);
+                return false;
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                ex.printStackTrace(System.err);
+                return false;
             } finally {
                 if (in != null) {
                     try {

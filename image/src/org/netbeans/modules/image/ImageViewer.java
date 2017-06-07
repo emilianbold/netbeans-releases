@@ -65,6 +65,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -127,6 +128,10 @@ public class ImageViewer extends CloneableTopComponent {
     private static final RequestProcessor RP = new RequestProcessor("Image loader", 1, true);
     
     private RequestProcessor.Task loadImageTask;
+    private int imageHeight = 0;
+    private int imageWidth = 0;
+    private long imageSize = -1;
+    private final DecimalFormat formatter = new DecimalFormat("#.##"); //NOI18N
     
     /** Default constructor. Must be here, used during de-externalization */
     public ImageViewer () {
@@ -158,15 +163,18 @@ public class ImageViewer extends CloneableTopComponent {
         setToolTipText(FileUtil.getFileDisplayName(obj.getPrimaryFile()));
         
         storedObject = obj;
+        
+        FileObject imageFile = storedObject.getPrimaryFile();
+        
+        if (imageFile.isValid()) {
+            imageSize = imageFile.getSize();
+        } else {
+            imageSize = -1;
+        }
             
         // force closing panes in all workspaces, default is in current only
         setCloseOperation(TopComponent.CLOSE_EACH);
         
-        /* compose the whole panel: */
-        JToolBar toolbar = createToolBar();
-        setLayout(new BorderLayout());
-        add(toolbar, BorderLayout.NORTH);
-
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImageViewer.class, "ACS_ImageViewer"));        
         
         nameChangeL = new PropertyChangeListener() {
@@ -461,6 +469,13 @@ public class ImageViewer extends CloneableTopComponent {
         });
     }
 
+    private void initToolbar() {
+        /* compose the whole panel: */
+        JToolBar toolbar = createToolBar();
+        setLayout(new BorderLayout());
+        add(toolbar, BorderLayout.NORTH);
+    }
+    
     private void showImage(NBImageIcon image, String errorMessage) {
         boolean wasValid = (storedImage != null);
         storedImage = image;
@@ -475,6 +490,11 @@ public class ImageViewer extends CloneableTopComponent {
         }
         if (isValid) {
             view = createImageView();
+
+            imageWidth = storedImage.getIconWidth();
+            imageHeight = storedImage.getIconHeight();
+            
+            initToolbar();
         } else {
             view = createMessagePanel(errorMessage);
         }
@@ -536,6 +556,34 @@ public class ImageViewer extends CloneableTopComponent {
         toolBar.addSeparator(new Dimension(11, 0));
         toolBar.add(button = getGridButton());
         toolbarButtons.add(button);
+        
+        // Image Dimension
+        toolBar.addSeparator(new Dimension(11, 0));
+        toolBar.add(new JLabel(NbBundle.getMessage(ImageViewer.class, "LBL_ImageDimensions", imageWidth, imageHeight)));
+
+        // Image File Size in KB, MB
+        if (imageSize != -1) {
+            toolBar.addSeparator(new Dimension(11, 0));
+
+            double kb = 1024.0;
+            double mb = kb * kb;
+
+            final double size;
+            final String label;
+
+            if (imageSize >= mb) {
+                size = imageSize / mb;
+                label = "LBL_ImageSizeMb"; // NOI18N
+            } else if (imageSize >= kb) {
+                size = imageSize / kb;
+                label = "LBL_ImageSizeKb"; // NOI18N
+            } else {
+                size = imageSize;
+                label = "LBL_ImageSizeBytes"; //NOI18N
+            }
+
+            toolBar.add(new JLabel(NbBundle.getMessage(ImageViewer.class, label, formatter.format(size))));
+        }
 
         for (Iterator it = toolbarButtons.iterator(); it.hasNext(); ) {
             ((JButton) it.next()).setFocusable(false);

@@ -81,7 +81,7 @@ final class RemoveClassPathRootAction extends NodeAction {
          * @return returns true if the action should be enabled
          */
         public boolean canRemove ();
-
+        
         /**
          * <p>Removes the classpath root. The caller has write access to
          * ProjectManager. The implementation should <strong>not</strong> save the changed project.

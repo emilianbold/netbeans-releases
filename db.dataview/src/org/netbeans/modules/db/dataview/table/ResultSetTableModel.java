@@ -89,7 +89,8 @@ public class ResultSetTableModel extends AbstractTableModel {
             case Types.DATE:
                 return Date.class;
             case Types.TIMESTAMP:
-            case -100:
+            case DBReadWriteHelper.SQL_TYPE_ORACLE_TIMESTAMP:
+            case DBReadWriteHelper.SQL_TYPE_ORACLE_TIMESTAMP_WITH_TZ:
                 return Timestamp.class;
             case Types.BIGINT:
                 return BigInteger.class;
@@ -108,9 +109,9 @@ public class ResultSetTableModel extends AbstractTableModel {
 
             case Types.CHAR:
             case Types.VARCHAR:
-            case -15:
-            case -9:
-            case -8:
+            case Types.NCHAR:
+            case Types.NVARCHAR:
+            case Types.ROWID:
                 return String.class;
 
             case Types.BIT:
@@ -120,9 +121,9 @@ public class ResultSetTableModel extends AbstractTableModel {
             case Types.BLOB:
                 return Blob.class;
             case Types.LONGVARCHAR:
-            case -16:
+            case Types.LONGNVARCHAR:
             case Types.CLOB:
-            case 2011: /*NCLOB */
+            case Types.NCLOB: /*NCLOB */
                 return Clob.class;
             case Types.OTHER:
             default:

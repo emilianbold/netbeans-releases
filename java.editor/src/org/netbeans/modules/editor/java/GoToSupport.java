@@ -54,6 +54,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.Scope;
@@ -718,7 +719,8 @@ public class GoToSupport {
                 return tp.getParentPath();
             }
             if (parent.getKind() == Kind.REQUIRES && ((RequiresTree)parent).getModuleName() == tp.getLeaf()
-                    || parent.getKind() == Kind.EXPORTS && ((ExportsTree)parent).getModuleNames().contains(tp.getLeaf())) {
+                    || parent.getKind() == Kind.EXPORTS && ((ExportsTree)parent).getModuleNames() != null && ((ExportsTree)parent).getModuleNames().contains(tp.getLeaf())
+                    || parent.getKind() == Kind.OPENS && ((OpensTree)parent).getModuleNames() != null && ((OpensTree)parent).getModuleNames().contains(tp.getLeaf())) {
                 return tp;
             }
             tp = tp.getParentPath();

@@ -77,16 +77,25 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.lang.model.SourceVersion;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -103,6 +112,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /** Creates various kinds of file objects
  *
@@ -148,6 +158,8 @@ public class FileObjects {
 
     private static final Charset SYSTEM_ENCODING = Charset.defaultCharset();
     private static final Charset UTF8_ENCODING = Charset.forName("UTF-8");  //NOI18N
+    private static final Pattern MATCHER_PATCH =
+                Pattern.compile("(.+)=(.+)");  //NOI18N
     //todo: If more clients than btrace will need this, create a SPI.
     private static final Set<String> javaFlavorExt = new HashSet<String>();
     static {
@@ -915,6 +927,45 @@ public class FileObjects {
             }
         }
         return true;
+    }
+
+    public static boolean isMultiVersionArchive(@NonNull final InputStream in) throws IOException {
+        final Manifest mf = new Manifest(in);
+        return Optional.ofNullable(mf.getMainAttributes().getValue("Multi-Release"))
+                .map((s) -> Boolean.valueOf(s.toLowerCase(Locale.ENGLISH)))
+                .orElse(Boolean.FALSE);
+    }
+
+    public static boolean isJavaPackage(@NonNull final String pkg) {
+        return isJavaPath(pkg, '.');    //NOI18N
+    }
+
+    public static boolean isJavaPath(
+            @NonNull final String path,
+            final char separator) {
+        for (String name : path.split(Pattern.quote(Character.toString(separator)))) {
+            if (!SourceVersion.isIdentifier(name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @CheckForNull
+    static Pair<String,List<URL>> parseModulePatches(@NonNull final Iterator<? extends String> tail) {
+        if (tail.hasNext()) {
+            //<module>=<file>(:<file>)*
+            final Matcher m = MATCHER_PATCH.matcher(tail.next());
+            if (m.matches() && m.groupCount() == 2) {
+                final String module = m.group(1);
+                final List<URL> patches = Arrays.stream(m.group(2).split(File.pathSeparator))
+                        .map((p) -> FileUtil.normalizeFile(new File(p)))
+                        .map(FileUtil::urlForArchiveOrDir)
+                        .collect(Collectors.toList());
+                return Pair.of(module, patches);
+            }
+        }
+        return null;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Private helper methods">

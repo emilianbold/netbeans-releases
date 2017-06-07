@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.jshell.launch;
 
-import jdk.jshell.spi.ExecutionControl;
-import org.netbeans.lib.nbjshell.RemoteJShellService;
+import jdk.jshell.spi.ExecutionControlProvider;
 
-public interface RemoteJShellAccessor extends ExecutionControl.Generator {
+public interface RemoteJShellAccessor extends ExecutionControlProvider {
     public String           getTargetSpec();
     public JShellConnection getOpenedConnection();
 }

@@ -40,11 +40,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
-import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
-import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -86,7 +83,8 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
             if (CndUtils.isUnitTestMode()) {
                 coloredItemText = noNewLine;
             } else {
-                coloredItemText = CsmDisplayUtilities.addHTMLColor(noNewLine, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+                //coloredItemText = CsmDisplayUtilities.addHTMLColor(noNewLine, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+                coloredItemText = CsmDisplayUtilities.addHTMLColor(noNewLine, new Color(79,155,27), true);
             }
         } else {
             appendItemText = "";
@@ -94,7 +92,8 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
             if (CndUtils.isUnitTestMode()) {
                 coloredItemText = sortItemText;
             } else {
-                coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+                //coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.PREPROCESSOR_DIRECTIVE));
+                coloredItemText = CsmDisplayUtilities.addHTMLColor(sortItemText, new Color(79,155,27), true);
             }
         }
         return new CsmPreprocessorDirectiveCompletionItem(substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true);

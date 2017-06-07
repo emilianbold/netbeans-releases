@@ -51,8 +51,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
@@ -88,6 +92,8 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
+import org.openide.util.Union2;
 import org.openide.util.WeakListeners;
 
 /**
@@ -257,7 +263,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         };
 
         // java platform updater
-        new ComboBoxUpdater<JavaPlatform>(comJavaPlatform, lblJavaPlatform) {
+        new ComboBoxUpdater<Union2<JavaPlatform,String>>(comJavaPlatform, lblJavaPlatform) {
             private String modifiedValue;
             private String DEFAULT_PLATFORM_VALUE = "@@DEFAU:T@@";
             private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -274,7 +280,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
             };
             
             @Override
-            public JavaPlatform getValue() {
+            public Union2<JavaPlatform,String> getValue() {
                 String val = modifiedValue;
                 if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
@@ -287,27 +293,41 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
                 }
                 if (val != null) {
                     if (val.equals(DEFAULT_PLATFORM_VALUE)) {
-                        return JavaPlatformManager.getDefault().getDefaultPlatform();
+                        return Union2.createFirst(JavaPlatformManager.getDefault().getDefaultPlatform());
                     }
-                    return BootClassPathImpl.getActivePlatform(val);
+                    return Optional.ofNullable(BootClassPathImpl.getActivePlatform(val))
+                            .filter(JavaPlatform::isValid)
+                            .map((jp) -> Union2.<JavaPlatform,String>createFirst(jp))
+                            .orElse(Union2.createSecond(val));
                 } else {
-                    return getSelPlatform();
+                    final Pair<String,JavaPlatform> nameJpP = getSelPlatform();
+                    return Optional.ofNullable(nameJpP.second())
+                            .filter(JavaPlatform::isValid)
+                            .map((jp) -> Union2.<JavaPlatform,String>createFirst(jp))
+                            .orElseGet(() -> Union2.<JavaPlatform,String>createSecond(nameJpP.first()));
                 }
             }
 
             @Override
-            public JavaPlatform getDefaultValue() {
-                return JavaPlatformManager.getDefault().getDefaultPlatform();
+            public Union2<JavaPlatform,String> getDefaultValue() {
+                return Union2.createFirst(JavaPlatformManager.getDefault().getDefaultPlatform());
             }
 
             @Override
-            public void setValue(JavaPlatform value) {
+            public void setValue(Union2<JavaPlatform,String> value) {
                 handle.removePOMModification(operation);
                 modifiedValue = null;
-                JavaPlatform platf = value == null ? JavaPlatformManager.getDefault().getDefaultPlatform() : value;
-                String platformId = platf.getProperties().get("platform.ant.name"); //NOI18N
-                if (JavaPlatformManager.getDefault().getDefaultPlatform().equals(platf)) {
-                    platformId = null;
+                final Union2<JavaPlatform,String> platf = value == null ?
+                        Union2.createFirst(JavaPlatformManager.getDefault().getDefaultPlatform()) :
+                        value;
+                final String platformId;
+                if (platf.hasFirst()) {
+                    final JavaPlatform jp = platf.first();
+                    platformId = JavaPlatformManager.getDefault().getDefaultPlatform().equals(jp) ?
+                            null :
+                            jp.getProperties().get("platform.ant.name"); //NOI18N
+                } else {
+                    platformId = platf.second();
                 }
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true) != null;
@@ -327,10 +347,10 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         };
     }
 
-    private JavaPlatform getSelPlatform () {
+    private Pair<String,JavaPlatform> getSelPlatform () {
         String platformId = project.getLookup().lookup(AuxiliaryProperties.class).
                 get(Constants.HINT_JDK_PLATFORM, true);
-        return BootClassPathImpl.getActivePlatform(platformId);
+        return Pair.of(platformId,BootClassPathImpl.getActivePlatform(platformId));
     }
 
     /** This method is called from within the constructor to
@@ -434,7 +454,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
 
     private void btnMngPlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMngPlatformActionPerformed
         // TODO add your handling code here:
-        PlatformsCustomizer.showCustomizer(getSelPlatform());
+        PlatformsCustomizer.showCustomizer(getSelPlatform().second());
 }//GEN-LAST:event_btnMngPlatformActionPerformed
 
 
@@ -538,36 +558,36 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         return null;
     }
 
-    private static class PlatformsModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
+    private class PlatformsModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
 
-        private JavaPlatform[] data;
-        private Object sel;
+        private List<Union2<JavaPlatform,String>> data;
+        private Union2<JavaPlatform,String> sel;
 
         public PlatformsModel() {
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             getPlatforms(jpm);
             jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
-            sel = jpm.getDefaultPlatform();
+            sel = Union2.createFirst(jpm.getDefaultPlatform());
         }
 
         @Override
         public int getSize() {
-            return data.length;
+            return data.size();
         }
 
         @Override
         public Object getElementAt(int index) {
-            return data[index];
+            return data.get(index);
         }
 
         @Override
         public void setSelectedItem(Object anItem) {
-            sel = anItem;
-            fireContentsChanged(this, 0, data.length);
+            sel = (Union2<JavaPlatform,String>)anItem;
+            fireContentsChanged(this, 0, data.size());
         }
 
         @Override
-        public Object getSelectedItem() {
+        public Union2<JavaPlatform,String> getSelectedItem() {
             return sel;
         }
 
@@ -575,16 +595,40 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         public void propertyChange(PropertyChangeEvent evt) {
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
             getPlatforms(jpm);
-            fireContentsChanged(this, 0, data.length);
+            fireContentsChanged(this, 0, data.size());
         }
 
-        protected void getPlatforms(JavaPlatformManager jpm) {
-            data = jpm.getPlatforms(null, new Specification (CommonProjectUtils.J2SE_PLATFORM_TYPE, null));
-            if(LOG.isLoggable(Level.FINE)) {
-                for (JavaPlatform jp : data) {
-                    LOG.log(Level.FINE, "Adding JavaPlaform: {0}", jp.getDisplayName());
+        private void getPlatforms(JavaPlatformManager jpm) {
+            final List<Union2<JavaPlatform,String>> tmp = new ArrayList<>();
+            Arrays.stream(jpm.getPlatforms(null, new Specification (CommonProjectUtils.J2SE_PLATFORM_TYPE, null)))
+                    .filter(JavaPlatform::isValid)
+                    .peek((jp) -> LOG.log(Level.FINE, "Adding JavaPlaform: {0}", jp.getDisplayName()))  //NOI18N
+                    .map((jp) -> Union2.<JavaPlatform,String>createFirst(jp))
+                    .forEach(tmp::add);
+            String val = null;
+            final Properties props = handle.getPOMModel().getProject().getProperties();
+            if (props != null) {
+                val = props.getProperty(Constants.HINT_JDK_PLATFORM);
+            }
+            if (val == null) {
+                val = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true);
+            }
+            String broken = null;
+            if (val != null) {
+                JavaPlatform jp;
+                if ((jp = BootClassPathImpl.getActivePlatform(val)) == null || !jp.isValid()) {
+                    broken = val;
+                }
+            } else {
+                final Pair<String,JavaPlatform> nameJpP = getSelPlatform();
+                if (nameJpP.second() == null || !nameJpP.second().isValid()) {
+                    broken = nameJpP.first();
                 }
             }
+            if (broken != null) {
+                tmp.add(Union2.createSecond(broken));
+            }
+            data = tmp;
         }
 
     }
@@ -595,19 +639,31 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
             setOpaque(true);
         }
 
+        @NbBundle.Messages({
+            "# {0} - platform name",
+            "TXT_BrokenPlatformFmt=Missing platform: {0}"
+        })
         @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected,
                 boolean cellHasFocus) {
             // #89393: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
-            JavaPlatform jp = (JavaPlatform)value;
-            //#171354 weird null value coming on mac..
-            if (jp != null) {
-                setText(jp.getDisplayName());
+            final String strValue;
+            if (value instanceof Union2) {
+                final Union2<JavaPlatform,String> u2 = (Union2<JavaPlatform,String>) value;
+                if (u2.hasFirst()) {
+                    strValue = u2.first().getDisplayName();
+                } else {
+                    strValue = "<html><font color=\"#A40000\">" //NOI18N
+                            + Bundle.TXT_BrokenPlatformFmt(u2.second());
+                }
             } else {
-                setText("");
+                strValue = Optional.ofNullable(value)
+                        .map(Object::toString)
+                        .orElse("");    //NOI18N
             }
+            setText(strValue);
 
             if ( isSelected ) {
                 setBackground(list.getSelectionBackground());
@@ -616,7 +672,6 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-
             return this;
         }
 

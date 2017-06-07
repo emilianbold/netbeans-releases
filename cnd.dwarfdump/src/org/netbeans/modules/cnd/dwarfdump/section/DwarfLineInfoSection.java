@@ -63,6 +63,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LNE;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LNS;
+import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 
 /**
  *
@@ -95,11 +96,11 @@ public class DwarfLineInfoSection extends ElfSection {
         stmt_list.total_length = reader.readDWlen();
         stmt_list.version = reader.readShort();
         stmt_list.prologue_length = reader.read3264();
-        stmt_list.minimum_instruction_length = 0xFF & reader.readByte();
-        stmt_list.default_is_stmt = 0xFF & reader.readByte();
+        stmt_list.minimum_instruction_length = ByteStreamReader.ubyteToInt(reader.readByte());
+        stmt_list.default_is_stmt = ByteStreamReader.ubyteToInt(reader.readByte());
         stmt_list.line_base = reader.readByte();
-        stmt_list.line_range = 0xFF & reader.readByte();
-        stmt_list.opcode_base = 0xFF & reader.readByte();
+        stmt_list.line_range = ByteStreamReader.ubyteToInt(reader.readByte());
+        stmt_list.opcode_base = ByteStreamReader.ubyteToInt(reader.readByte());
 
         stmt_list.standard_opcode_lengths = new long[stmt_list.opcode_base - 1];
 
@@ -186,7 +187,7 @@ public class DwarfLineInfoSection extends ElfSection {
 
         while (reader.getFilePointer() < header.getSectionOffset() + shift + section.total_length) {
 
-            int opcode = reader.readByte() & 0xFF;
+            int opcode = ByteStreamReader.ubyteToInt(reader.readByte());
 
             if (opcode < section.opcode_base) {
                 switch (LNS.get(opcode)) {
@@ -297,7 +298,7 @@ public class DwarfLineInfoSection extends ElfSection {
 
                     case DW_LNS_fixed_advance_pc:
                         {
-                            int amt = reader.readShort() & 0xFFFF;
+                            int amt = ByteStreamReader.ushortToInt(reader.readShort());
                             address += amt;
                         }
                         break;

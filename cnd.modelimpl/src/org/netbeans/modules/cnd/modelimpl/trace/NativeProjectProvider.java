@@ -156,12 +156,24 @@ public final class NativeProjectProvider {
         if (DebugUtils.getBoolean("cnd.language.flavor.cpp11", false)) { // NOI18N
             return NativeFileItem.LanguageFlavor.CPP11;
         }
+        if (DebugUtils.getBoolean("cnd.language.flavor.cpp14", false)) { // NOI18N
+            return NativeFileItem.LanguageFlavor.CPP14;
+        }
         String cpp11Dirs = System.getProperty("cnd.tests.cpp11directories"); // NOI18N
         if (cpp11Dirs != null && !cpp11Dirs.isEmpty()) {
             String cpp11DirList[] = cpp11Dirs.split(";"); // NOI18N
             for (String cpp11Dir : cpp11DirList) {
                 if (file.getAbsolutePath().contains(cpp11Dir)) {
                     return NativeFileItem.LanguageFlavor.CPP11;
+                }
+            }
+        }
+        String cpp14Dirs = System.getProperty("cnd.tests.cpp14directories"); // NOI18N
+        if (cpp14Dirs != null && !cpp14Dirs.isEmpty()) {
+            String cpp14DirList[] = cpp14Dirs.split(";"); // NOI18N
+            for (String cpp14Dir : cpp14DirList) {
+                if (file.getAbsolutePath().contains(cpp14Dir)) {
+                    return NativeFileItem.LanguageFlavor.CPP14;
                 }
             }
         }

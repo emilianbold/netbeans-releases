@@ -56,8 +56,8 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.HintContext;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.completion.XMLCompletionQuery;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
@@ -139,7 +139,7 @@ public final class NodeSelector {
         if (syntaxSupport == null) {
             Document doc = pane.getDocument();
             if (doc instanceof BaseDocument) {
-                syntaxSupport = (XMLSyntaxSupport) ((BaseDocument)doc).getSyntaxSupport();
+                syntaxSupport = XMLSyntaxSupport.getSyntaxSupport((BaseDocument)doc);
             }
             if (syntaxSupport == null) {
                 return;

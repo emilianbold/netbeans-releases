@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import org.netbeans.modules.maven.DependencyType;
 import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -74,10 +75,10 @@ public class DependenciesNodeFactory implements NodeFactory {
         private final DependenciesNode.DependenciesSet noncp;
         NList(NbMavenProjectImpl prj) {
             project = prj;
-            compile = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.COMPILE);
-            runtime = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.RUNTIME);
-            test = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.TEST);
-            noncp = new DependenciesNode.DependenciesSet(project, DependenciesNode.Type.NONCP);
+            compile = new DependenciesNode.DependenciesSet(project, DependencyType.COMPILE);
+            runtime = new DependenciesNode.DependenciesSet(project, DependencyType.RUNTIME);
+            test = new DependenciesNode.DependenciesSet(project, DependencyType.TEST);
+            noncp = new DependenciesNode.DependenciesSet(project, DependencyType.NONCP);
         }
         
         @Override public void propertyChange(PropertyChangeEvent evt) {

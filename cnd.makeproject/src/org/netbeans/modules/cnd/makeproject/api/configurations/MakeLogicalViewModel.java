@@ -70,5 +70,5 @@ public interface MakeLogicalViewModel {
      * 
      * @param delta 
      */
-    public void checkForChangedViewItemNodes(ConfigurationDescriptorProvider.Delta delta);
+    public void checkForChangedViewItemNodes(ConfigurationDescriptorProvider.SnapShot delta);
 }

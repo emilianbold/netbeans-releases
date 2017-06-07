@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
+import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
@@ -117,7 +118,7 @@ public class DwarfMacroInfoSection extends ElfSection {
                 }
             }
             if ((bitness & 4)==4) {
-                int count = reader.readByte() & 0xFF;
+                int count = ByteStreamReader.ubyteToInt(reader.readByte());
                 for(int i = 0; i < count; i++) {
                     byte opcode = reader.readByte();
                     long arg = reader.readUnsignedLEB128();
@@ -278,7 +279,7 @@ public class DwarfMacroInfoSection extends ElfSection {
                 }
             }
             if ((bitness & 4)==4) {
-                int count = reader.readByte() & 0xFF;
+                int count = ByteStreamReader.ubyteToInt(reader.readByte());
                 for(int i = 0; i < count; i++) {
                     byte opcode = reader.readByte();
                     long arg = reader.readUnsignedLEB128();

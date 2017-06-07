@@ -164,7 +164,7 @@ public class DependencyCalculatorTest extends NbTestCase {
     private void getTransitivesTest(int notPublicAtStart) throws IOException {
         DependencyCalculator dc = new DependencyCalculator(FileUtil.toFileObject(getWorkDir())); // just some FO so that we can create an DepCalculator instance
         
-        for (int tuples = 2; tuples < 150; tuples++) {
+        for (int tuples = 2; tuples < 10; tuples++) {
             List<DependencyEdge> deps = new LinkedList<>();
             char c = 'a';
             print("");
@@ -183,7 +183,7 @@ public class DependencyCalculatorTest extends NbTestCase {
                 assertTrue(td.isTrasitive());
                 assertFalse(td.isPublic());            
             }
-            assertEquals(getTransitiveCount(tuples + 1 - (notPublicAtStart > 0 ? notPublicAtStart - 1 : 0)), trans.size());
+            assertEquals(" tuples: " + tuples, getTransitiveCount(tuples + 1 - (notPublicAtStart > 0 ? notPublicAtStart - 1 : 0)), trans.size());
             
             print(" ==== testing existence: ");
             char s = 'a';

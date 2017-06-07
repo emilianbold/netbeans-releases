@@ -47,8 +47,8 @@ import java.util.List;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.ContentModel;
+import org.netbeans.modules.xml.axi.SchemaReference;
 import org.netbeans.modules.xml.schema.model.*;
-import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -294,6 +294,20 @@ public class AXIModelBuilder extends AbstractModelBuilder {
         visitChildren(component);
     }
 
+    @Override
+    public void visit(Include include) {
+        SchemaReference ref = model.getComponentFactory().createSchemaReference(include);
+        addChild(ref);
+        visitChildren(include);
+    }
+
+    @Override
+    public void visit(Import im) {
+        SchemaReference ref = model.getComponentFactory().createSchemaReference(im);
+        addChild(ref);
+        visitChildren(im);
+    }
+    
     /**
      * Returns an AXIComponent if one exists or creates one.
      * 

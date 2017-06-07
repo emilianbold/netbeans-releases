@@ -30,7 +30,7 @@
         <token id='T_OPEN_PARENTHESE' start='73' end='74'>
             <text>(</text>
         </token>
-        <token id='T_STRING' start='74' end='82'>
+        <token id='T_CALLABLE' start='74' end='82'>
             <text>callable</text>
         </token>
         <token id='T_VARIABLE' start='83' end='92'>
@@ -143,9 +143,7 @@
                             <FormalParameters>
                                 <FormalParameter start='74' end='92' isMandatory='true' isVariadic='false'>
                                     <ParametrType>
-                                        <NamespaceName start='74' end='82' isCurrent='false' isGlobal='false'>
-                                            <Identifier start='74' end='82' name='callable'/>
-                                        </NamespaceName>
+                                        <Identifier start='74' end='82' name='callable'/>
                                     </ParametrType>
                                     <ParametrName>
                                         <Variable start='83' end='92' isDollared='true'>

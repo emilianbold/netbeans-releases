@@ -60,7 +60,6 @@ made subject to such option by the copyright holder.
     </searchpaths>
     <arguments>
         <arg>--hide-menubar</arg>
-        <arg>--disable-factory</arg>
         <arg>--title=$title</arg>
         <arg>--execute</arg>
         <arg>$@</arg>

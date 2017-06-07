@@ -102,6 +102,7 @@ import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.ui.status.StatusAction;
 import org.netbeans.modules.remotefs.versioning.api.FileObjectIndexingBridgeProvider;
 import org.netbeans.modules.remotefs.versioning.api.FileSelector;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -796,14 +797,7 @@ public final class GitUtils {
         }
         BufferedReader r1 = null;
         BufferedReader r2 = null;
-        FileObject fo = originalFile.toFileObject();
-        Charset encoding = null;
-        if (fo != null) {
-            encoding = FileEncodingQuery.getEncoding(fo);
-        }
-        if(encoding == null) {
-            encoding = FileEncodingQuery.getDefaultEncoding();
-        }
+        Charset encoding = RemoteVcsSupport.getEncoding(originalFile);
         try {
             r1 = new BufferedReader(new InputStreamReader(file1.getInputStream(false), encoding));
             r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false), encoding));

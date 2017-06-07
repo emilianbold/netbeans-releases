@@ -230,6 +230,11 @@ public class FolderArchive implements Archive {
         );
     }
 
+    @Override
+    public boolean isMultiRelease() {
+        return false;
+    }
+
     private URL getBaseSourceRoot(final URL binRoot) {
         synchronized (this) {
             if (sourceRootInitialized) {

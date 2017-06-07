@@ -110,11 +110,12 @@ class ProjectNode extends AbstractNode {
                 @NonNull final ClassPathSupport cs,
                 @NonNull final ReferenceHelper rh,
                 @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+                @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+                boolean removeFromProject) {
         super (Children.LEAF, createLookup (
                 antArtifact, artifactLocation, 
                 helper, classPathId, entryId, webModuleElementName,
-                cs, rh, preRemoveAction, postRemoveAction));
+                cs, rh, preRemoveAction, postRemoveAction, removeFromProject));
         this.antArtifact = antArtifact;
         this.artifactLocation = artifactLocation;
     }
@@ -204,7 +205,8 @@ class ProjectNode extends AbstractNode {
             @NonNull final ClassPathSupport cs,
             @NonNull final ReferenceHelper rh,
             @NullAllowed final Consumer<Pair<String,String>> preRemoveAction,
-            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction) {
+            @NullAllowed final Consumer<Pair<String,String>> postRemoveAction,
+            boolean removeFromProject) {
         Project p = antArtifact.getProject();
         Object[] content;
         if (p == null) {
@@ -218,7 +220,7 @@ class ProjectNode extends AbstractNode {
         }
         content[0] = new ActionFilterNode.Removable(
                 helper, classPathId, entryId, webModuleElementName,
-                cs, rh, preRemoveAction, postRemoveAction);
+                cs, rh, preRemoveAction, postRemoveAction, removeFromProject);
         Lookup lkp = Lookups.fixed(content);
         return lkp;
     }

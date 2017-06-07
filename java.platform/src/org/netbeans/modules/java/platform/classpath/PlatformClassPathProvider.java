@@ -49,24 +49,30 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.openide.modules.SpecificationVersion;
 
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=150)
 public class PlatformClassPathProvider implements ClassPathProvider {
-    
+    private static final SpecificationVersion JAVA_9 = new SpecificationVersion("9");   //NOI18N
+
     private static final Set<? extends String> SUPPORTED_CLASS_PATH_TYPES =
             new HashSet<String>(Arrays.asList(new String[]{
                 ClassPath.SOURCE,
                 ClassPath.BOOT,
-                ClassPath.COMPILE
+                ClassPath.COMPILE,
+                JavaClassPathConstants.MODULE_BOOT_PATH
             }));
 
 
@@ -92,32 +98,33 @@ public class PlatformClassPathProvider implements ClassPathProvider {
             JavaPlatformManager manager = JavaPlatformManager.getDefault();
             platforms = manager.getInstalledPlatforms();
         }
-        for (int i=0; i<platforms.length; i++) {
-            ClassPath bootClassPath = platforms[i].getBootstrapLibraries();
-            ClassPath libraryPath = platforms[i].getStandardLibraries();
-            ClassPath sourcePath = platforms[i].getSourceFolders();
+        for (JavaPlatform jp : platforms) {
+            ClassPath bootClassPath = jp.getBootstrapLibraries();
+            ClassPath libraryPath = jp.getStandardLibraries();
+            ClassPath sourcePath = jp.getSourceFolders();
             FileObject root = null;
             if (ClassPath.SOURCE.equals(type) && sourcePath != null &&
                 (root = sourcePath.findOwnerRoot(fo))!=null) {
-                this.setLastUsedPlatform (root,platforms[i]);
+                this.setLastUsedPlatform (root,jp);
                 return sourcePath;
-            }
-            else if (ClassPath.BOOT.equals(type) &&
-                    ((bootClassPath != null && (root = bootClassPath.findOwnerRoot (fo))!=null) ||
-                    (sourcePath != null && (root = sourcePath.findOwnerRoot(fo)) != null) ||
-                    (libraryPath != null && (root = libraryPath.findOwnerRoot(fo))!=null))) {
-                this.setLastUsedPlatform (root,platforms[i]);
+            } else if (ClassPath.BOOT.equals(type) &&
+                    (root = getArtefactOwner(fo, bootClassPath, libraryPath, sourcePath)) != null ) {
+                this.setLastUsedPlatform (root,jp);
                 return bootClassPath;
-            }
-            else if (ClassPath.COMPILE.equals(type)) {
+            } else if (ClassPath.COMPILE.equals(type)) {
                 if (libraryPath != null && (root = libraryPath.findOwnerRoot(fo))!=null) {
-                    this.setLastUsedPlatform (root,platforms[i]);
+                    this.setLastUsedPlatform (root,jp);
                     return libraryPath;
                 }
                 else if ((bootClassPath != null && (root = bootClassPath.findOwnerRoot (fo))!=null) ||
                     (sourcePath != null && (root = sourcePath.findOwnerRoot(fo)) != null)) {
                     return this.getEmptyClassPath ();
                 }
+            } else if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)  &&
+                    JAVA_9.compareTo(jp.getSpecification().getVersion()) <= 0 &&
+                    (root = getArtefactOwner(fo, bootClassPath, libraryPath, sourcePath)) != null) {
+                this.setLastUsedPlatform (root,jp);
+                return bootClassPath;
             }
         }
         return null;
@@ -142,6 +149,19 @@ public class PlatformClassPathProvider implements ClassPathProvider {
         else {
             return null;
         }
+    }
+
+    @CheckForNull
+    private static FileObject getArtefactOwner(
+            @NonNull final FileObject file,
+            @NonNull final ClassPath... cps) {
+        for (ClassPath cp : cps) {
+            FileObject root;
+            if (cp != null && (root = cp.findOwnerRoot (file)) != null) {
+                return root;
+            }
+        }
+        return null;
     }
 
     private FileObject lastUsedRoot;

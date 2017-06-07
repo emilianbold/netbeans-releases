@@ -101,13 +101,22 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     static {
         evenLineColor = UIManager.getColor( "nb.bugtracking.table.background" ); //NOI18N
-        if( null == evenLineColor )
-            evenLineColor = Color.white;
-
         unevenLineColor = UIManager.getColor( "nb.bugtracking.table.background.alternate" ); //NOI18N
-        if( null == unevenLineColor )
-            unevenLineColor = new Color(0xf3f6fd);
+        if (evenLineColor == null || unevenLineColor == null) {
+            Color textColor = UIManager.getColor("Table.foreground"); // NOI18N
+            boolean textOnBright = textColor == null || (textColor.getRed() < 192 && textColor.getGreen() < 192 && textColor.getBlue() < 192);
+            if (evenLineColor == null) {
+                evenLineColor = UIManager.getColor("Table.background"); // NOI18N
+                if (evenLineColor == null) {
+                    evenLineColor = textOnBright ? Color.white : Color.black;
+                }
+            }
+            if (unevenLineColor == null) {
+                unevenLineColor = textOnBright ? new Color(0xf3f6fd) : Color.darkGray;
+            }
+        }
     }
+
     private boolean isSaved;
 
     public QueryTableCellRenderer(IssueTable issueTable, boolean isSaved) {

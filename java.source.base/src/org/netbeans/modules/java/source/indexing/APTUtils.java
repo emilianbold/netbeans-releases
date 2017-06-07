@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -86,6 +87,8 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.Module;
 import org.netbeans.modules.java.source.parsing.CachingArchiveClassLoader;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.LongHashMap;
@@ -108,6 +111,7 @@ import org.openide.util.lookup.Lookups;
 public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(APTUtils.class.getName());
+    private static final String PROCESSOR_MODULE_PATH = "processorModulePath"; //NOI18N
     private static final String PROCESSOR_PATH = "processorPath"; //NOI18N
     private static final String BOOT_PATH = "bootPath"; //NOI18N
     private static final String COMPILE_PATH = "compilePath";   //NOI18N
@@ -128,6 +132,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private volatile ClassPath bootPath;
     private volatile ClassPath compilePath;
     private final AtomicReference<ClassPath> processorPath;
+    private final AtomicReference<ClassPath> processorModulePath;
     private final AnnotationProcessingQuery.Result aptOptions;
     private final SourceLevelQuery.Result sourceLevel;
     private final CompilerOptionsQuery.Result compilerOptions;
@@ -140,6 +145,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
         compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
         processorPath = new AtomicReference<>(ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH));
+        processorModulePath = new AtomicReference<>(ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_PROCESSOR_PATH));
         aptOptions = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
         sourceLevel = SourceLevelQuery.getSourceLevel2(root);
         compilerOptions = CompilerOptionsQuery.getOptions(root);
@@ -264,10 +270,16 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     }
 
     public Collection<? extends Processor> resolveProcessors(boolean onScan) {
-        ClassPath pp = validatePaths();
+        ClassPath[] pps = validatePaths();
         ClassLoader cl;
+        boolean isModule = false;
         final ClassLoaderRef cache = classLoaderCache;
         if (cache == null || (cl=cache.get(root)) == null) {
+            ClassPath pp = pps[1];
+            if (pps[0] != null && !pps[0].entries().isEmpty()) {
+                pp = pps[0];
+                isModule = true;
+            }
             if (pp == null) {
                 pp = ClassPath.EMPTY;
             }
@@ -275,9 +287,11 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                     pp,
                     new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()),
                     usedRoots);
-            classLoaderCache = !DISABLE_CLASSLOADER_CACHE ? new ClassLoaderRef(cl, root) : null;
+            classLoaderCache = !DISABLE_CLASSLOADER_CACHE ? new ClassLoaderRef(cl, root, isModule) : null;
+        } else {
+            isModule = cache.isModule;                    
         }
-        Collection<Processor> result = lookupProcessors(cl, onScan);
+        Collection<Processor> result = lookupProcessors(cl, onScan, isModule);
         return result;
     }
 
@@ -296,7 +310,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
-            if (verifyProcessorPath(root, usedRoots)) {
+            if (verifyProcessorPath(root, usedRoots, PROCESSOR_MODULE_PATH) || verifyProcessorPath(root, usedRoots, PROCESSOR_PATH)) {
                 slidingRefresh.schedule(SLIDING_WINDOW);
             }
         }
@@ -304,6 +318,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     private void listen() {
         listenOnProcessorPath(processorPath.get(), this);
+        listenOnProcessorPath(processorModulePath.get(), this);
         aptOptions.addChangeListener(WeakListeners.change(this, aptOptions));
         if (sourceLevel.supportsChanges()) {
             sourceLevel.addChangeListener(WeakListeners.change(this, sourceLevel));
@@ -320,26 +335,32 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
     }
 
-    @CheckForNull
-    private ClassPath validatePaths() {
+    private ClassPath[] validatePaths() {
+        ClassPath pmp = processorModulePath.get();
+        if (pmp == null) {
+            pmp = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_PROCESSOR_PATH);
+            if (pmp != null && processorModulePath.compareAndSet(null, pmp)) {
+                listenOnProcessorPath(pmp, this);
+                classLoaderCache = null;
+            }
+        }
         ClassPath pp = processorPath.get();
-        if (pp != null) {
-            return pp;
+        if (pp == null) {
+            pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
+            if (pp != null && processorPath.compareAndSet(null, pp)) {
+                bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+                compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+                listenOnProcessorPath(pp, this);
+                classLoaderCache = null;
+            }
         }
-        pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
-        if (pp != null && processorPath.compareAndSet(null, pp)) {
-            bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
-            compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
-            listenOnProcessorPath(pp, this);
-            classLoaderCache = null;
-        }
-        return pp;
+        return new ClassPath[] {pmp, pp};
     }
 
-    private Collection<Processor> lookupProcessors(ClassLoader cl, boolean onScan) {
+    private Collection<Processor> lookupProcessors(ClassLoader cl, boolean onScan, boolean isModule) {
         Iterable<? extends String> processorNames = aptOptions.annotationProcessorsToRun();
         if (processorNames == null) {
-            processorNames = getProcessorNames(cl);
+            processorNames = getProcessorNames(cl, isModule);
         }
         List<Processor> result = new LinkedList<Processor>();
         for (String name : processorNames) {
@@ -361,31 +382,42 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     }
 
     @NonNull
-    private Iterable<? extends String> getProcessorNames(@NonNull final ClassLoader cl) {
+    private Iterable<? extends String> getProcessorNames(@NonNull final ClassLoader cl, final boolean isModule) {
         try {
             return CachingArchiveClassLoader.readAction(() -> {
                 Collection<String> result = new LinkedList<>();
-                Enumeration<URL> resources = cl.getResources("META-INF/services/" + Processor.class.getName()); //NOI18N
-                while (resources.hasMoreElements()) {
-                    BufferedReader ins = null;
-                    try {
-                        final URLConnection uc = resources.nextElement().openConnection();
-                        uc.setUseCaches(false);
-                        ins = new BufferedReader(new InputStreamReader(uc.getInputStream(), "UTF-8")); //NOI18N
-                        String line;
-                        while ((line = ins.readLine()) != null) {
-                            int hash = line.indexOf('#');
-                            line = hash != (-1) ? line.substring(0, hash) : line;
-                            line = line.trim();
-                            if (line.length() > 0) {
-                                result.add(line);
+                InputStream stream = isModule ? cl.getResourceAsStream("module-info.class") : null; //NOI18N
+                if (stream != null) {
+                    ClassFile classFile = new ClassFile(stream);
+                    Module module = classFile.getModule();
+                    module.getProvidesEntries().stream().filter((providesEntry) -> (Processor.class.getName().equals(providesEntry.getService().getExternalName()))).forEachOrdered((providesEntry) -> {
+                        providesEntry.getImplementations().forEach((implementation) -> {
+                            result.add(implementation.getExternalName());
+                        });
+                    });
+                } else {
+                    Enumeration<URL> resources = cl.getResources("META-INF/services/" + Processor.class.getName()); //NOI18N
+                    while (resources.hasMoreElements()) {
+                        BufferedReader ins = null;
+                        try {
+                            final URLConnection uc = resources.nextElement().openConnection();
+                            uc.setUseCaches(false);
+                            ins = new BufferedReader(new InputStreamReader(uc.getInputStream(), "UTF-8")); //NOI18N
+                            String line;
+                            while ((line = ins.readLine()) != null) {
+                                int hash = line.indexOf('#');
+                                line = hash != (-1) ? line.substring(0, hash) : line;
+                                line = line.trim();
+                                if (line.length() > 0) {
+                                    result.add(line);
+                                }
                             }
-                        }
-                    } catch (IOException ex) {
-                        LOG.log(Level.FINE, null, ex);
-                    } finally {
-                        if (ins != null) {
-                            ins.close();
+                        } catch (IOException ex) {
+                            LOG.log(Level.FINE, null, ex);
+                        } finally {
+                            if (ins != null) {
+                                ins.close();
+                            }
                         }
                     }
                 }
@@ -402,7 +434,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             return false;
         boolean vote = false;
         try {
-            final ClassPath pp = validatePaths();
+            final ClassPath[] pps = validatePaths();
             final URL url = fo.toURL();
             String val = JavaIndex.getAttribute(url, APT_DIRTY, null);
             if (Boolean.parseBoolean(val)) {
@@ -463,7 +495,14 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 //no need to check further:
                 return vote;
             }
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToFlaggedString(pp, false), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_MODULE_PATH, pathToFlaggedString(pps[0], false), checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to processor module path change"); //NOI18N
+                vote = true;
+                if (checkOnly) {
+                    return vote;
+                }
+            }
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToFlaggedString(pps[1], false), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -485,11 +524,16 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     private boolean verifyProcessorPath(
         @NonNull final FileObject root,
-        @NonNull final UsedRoots usedRoots) {
+        @NonNull final UsedRoots usedRoots,
+        @NonNull final String id) {
         try {
             final LongHashMap<? extends File> used = usedRoots.getRoots();
             final URL url = root.toURL();
-            final ClassPath pp = validatePaths();
+            final ClassPath[] pps = validatePaths();
+            ClassPath pp = PROCESSOR_MODULE_PATH.equals(id) ? pps[0] : pps[1];
+            if (pp == null) {
+                pp = ClassPath.EMPTY;
+            }
             final Set<File> currentExitingFiles = pp.entries().stream()
                     .map((e) -> e.getRoot())
                     .filter((fo) -> fo != null && fo.isValid())
@@ -505,7 +549,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
             final Set<File> oldExistingFiles = new HashSet<>();
             final Set<File> oldAllFiles = new HashSet<>();
-            final String raw = JavaIndex.getAttribute(url, PROCESSOR_PATH, ""); //NOI18N
+            final String raw = JavaIndex.getAttribute(url, id, ""); //NOI18N
             if (!raw.isEmpty()) {
                 final String[] parts = raw.split(File.pathSeparator);
                 for (int i=0; i < parts.length; i+=2) {
@@ -531,7 +575,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             LOG.log(Level.FINEST, "Added: {0}", added);     //NOI18N
             LOG.log(Level.FINEST, "Removed: {0}", removed); //NOI18N
             if (!added.isEmpty() || !removed.isEmpty()) {
-                JavaIndex.setAttribute(url, PROCESSOR_PATH, pathToFlaggedString(pp, true));
+                JavaIndex.setAttribute(url, id, pathToFlaggedString(pp, true));
             }
             boolean res = false;
 
@@ -707,11 +751,13 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
         private final long timeStamp;
         private final String rootPath;
+        private final boolean isModule;
 
-        public ClassLoaderRef(final ClassLoader cl, final FileObject root) {
+        public ClassLoaderRef(final ClassLoader cl, final FileObject root, final boolean isModule) {
             super(cl, BaseUtilities.activeReferenceQueue());
             this.timeStamp = getTimeStamp(root);
             this.rootPath = FileUtil.getFileDisplayName(root);
+            this.isModule = isModule;
             LOG.log(Level.FINER, "ClassLoader for root {0} created.", new Object[]{rootPath});  //NOI18N
         }
 

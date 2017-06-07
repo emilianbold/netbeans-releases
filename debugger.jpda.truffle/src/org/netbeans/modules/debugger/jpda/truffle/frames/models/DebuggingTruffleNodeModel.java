@@ -152,7 +152,9 @@ public class DebuggingTruffleNodeModel implements ExtendedNodeModelFilter {
                 }
                 TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
                 if (selectedStackFrame == tf) {
-                    displayName = Utils.toHTML(displayName, true, false, null);
+                    displayName = Utils.toHTML(displayName, true, tf.isInternal(), null);
+                } else if (tf.isInternal()) {
+                    displayName = Utils.toHTML(displayName, false, true, null);
                 }
             }
             return displayName;

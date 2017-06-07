@@ -122,7 +122,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
         cancelled = true;
     }
     
-    private static List<OffsetRange> findMemberUsage(JsObject object, String fqnType, String property, int offset, List<String> processedObjects) {
+    private static List<OffsetRange> findMemberUsage(JsObject object, String fqnType, String property, int offset, Set<String> processedObjects) {
         List<OffsetRange> result = new ArrayList<OffsetRange>();
         if (ModelUtils.wasProcessed(object, processedObjects)) {
             return Collections.emptyList();
@@ -194,7 +194,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                         }
                     }
                     if (types.isEmpty()) {
-                        List<OffsetRange> usages = findMemberUsage(Model.getModel(result, false).getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition, new ArrayList<String>());
+                        List<OffsetRange> usages = findMemberUsage(Model.getModel(result, false).getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition, new HashSet<String>());
                         for (OffsetRange range : usages) {
                             offsets.add(range);
                         }

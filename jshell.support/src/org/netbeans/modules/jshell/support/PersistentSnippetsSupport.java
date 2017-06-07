@@ -71,7 +71,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellEvent;
@@ -81,7 +80,6 @@ import org.netbeans.modules.jshell.env.ShellStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -188,6 +186,10 @@ public class PersistentSnippetsSupport  {
         @Override
         public void shellShutdown(ShellEvent ev) {
         }
+
+        @Override
+        public void shellSettingsChanged(ShellEvent ev) {
+        }
     }
     
     private static void runStartupSnippets(JShellEnvironment env) {
@@ -195,8 +197,6 @@ public class PersistentSnippetsSupport  {
             return;
         }
         Lookup lkp = env.getLookup();
-        Project prj = findProject(lkp);
-
         PersistentSnippets supp = PersistentSnippetsSupport.create(lkp);
         if (supp == null) {
             return;
@@ -424,5 +424,5 @@ public class PersistentSnippetsSupport  {
         }
     }
 
-    private static final PersistentSnippets GLOBAL = new SnippetsFolder(FileUtil.getConfigRoot());
+    private static final PersistentSnippets GLOBAL = new SnippetsFolder(FileUtil.getConfigRoot().getFileObject("jshell-snippets"));
 }

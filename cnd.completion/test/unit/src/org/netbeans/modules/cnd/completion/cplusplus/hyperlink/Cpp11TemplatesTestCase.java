@@ -60,6 +60,11 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         System.setProperty("cnd.language.flavor.cpp11", "true");         
         super.setUp();
     }
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        System.setProperty("cnd.language.flavor.cpp11", "false");
+    }
     
     public void testBug238847_1() throws Exception {
         // Bug 238913 - Unable to deduce type through uniqe_ptr and decltype

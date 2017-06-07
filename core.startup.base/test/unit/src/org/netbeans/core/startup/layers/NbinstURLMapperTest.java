@@ -53,6 +53,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.Permission;
 import java.util.StringTokenizer;
 import org.netbeans.core.startup.layers.NbinstURLMapper;
 import org.netbeans.junit.MockServices;
@@ -146,6 +147,22 @@ public class NbinstURLMapperTest extends NbTestCase {
             }
         }
     }
+    
+    public void testURLNoInetAccess() throws MalformedURLException, IOException {
+        URL url1 = new URL ("nbinst://test-module/modules/test.txt");   // NOI18N
+        URL url2 = new URL ("nbinst://foo-module/modules/test.txt");    // NOI18N
+        SecurityManager defaultManager = System.getSecurityManager();
+        
+        System.setSecurityManager(new InetSecurityManager());
+        try {
+            // make sure we do not try to resolve host name
+            url1.hashCode();
+            url1.equals(url2);
+            testURLConnection();
+        } finally {
+            System.setSecurityManager(defaultManager);
+        }
+    }
 
     public static class TestInstalledFileLocator extends InstalledFileLocator {
 
@@ -181,4 +198,20 @@ public class NbinstURLMapperTest extends NbTestCase {
         }
     }
 
+    private static class InetSecurityManager extends SecurityManager {
+
+        @Override
+        public void checkConnect(String host, int port) {
+            fail("Resolving host "+host);   // NOI18N
+        }
+
+        @Override
+        public void checkPermission(Permission perm, Object context) {
+        }
+
+        @Override
+        public void checkPermission(Permission perm) {
+        }
+
+    }
 }

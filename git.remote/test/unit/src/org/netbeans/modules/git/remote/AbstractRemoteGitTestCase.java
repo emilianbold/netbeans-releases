@@ -90,6 +90,7 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     protected VCSFileProxy repositoryLocation;
     protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
     protected StatusRefreshLogHandler refreshHandler;
+    protected Version version;
 
     private enum Scope{All, Successful, Failed};
     private static final Scope TESTS_SCOPE = Scope.Successful;
@@ -177,6 +178,14 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
         if (git == null || !git.isValid()) {
             skipTest = true;
             return;
+        }
+        version = new Version(execEnv, git);
+        if (version.compareTo(new Version(1,7,9)) < 0) {
+            System.err.println("Usupported git version "+version);
+            skipTest = true;
+            return;
+        } else {
+            System.err.println("git version "+version);
         }
         String remoteDir = mkTempAndRefreshParent(true);
         org.netbeans.modules.nativeexecution.api.util.ProcessUtils.execute(execEnv, "umask", "0002");
@@ -393,9 +402,8 @@ public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     protected final List<String> runExternally (VCSFileProxy workdir, List<String> command) throws Exception {
         ProcessUtils.Canceler canceled = new ProcessUtils.Canceler();
         String[] args = command.toArray(new String[command.size()]);
-        org.netbeans.api.extexecution.ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(workdir);
         VCSFileProxySupport.mkdirs(workdir);
-        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, processBuilder, "git", args);
+        ProcessUtils.ExitStatus executeInDir = ProcessUtils.executeInDir(workdir.getPath(), null, false, canceled, workdir, "git", args);
         if (!executeInDir.error.isEmpty()) {
             throw new Exception(executeInDir.error);
         }

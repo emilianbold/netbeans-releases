@@ -44,34 +44,49 @@ package org.netbeans.modules.jshell.env;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.FilterReader;
-import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.Document;
+import jdk.jshell.JShell;
+import jdk.jshell.spi.ExecutionControlProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.project.ShellProjectUtils;
-import org.netbeans.modules.jshell.support.JShellGenerator;
 import org.netbeans.modules.jshell.support.ShellSession;
+import static org.netbeans.modules.jshell.tool.JShellLauncher.quote;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 import org.openide.util.io.ReaderInputStream;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -104,6 +119,10 @@ public class JShellEnvironment {
     
     private String            displayName;
     
+    private ConfigurableClasspath  userClassPathImpl = new ConfigurableClasspath();
+    
+    private ClassPath         userLibraryPath = ClassPathFactory.createClassPath(userClassPathImpl);
+    
     private ClassPath         snippetClassPath;
     
     private InputOutput       inputOutput;
@@ -115,21 +134,19 @@ public class JShellEnvironment {
     
     private boolean           closed;
     
-    private PropertyChangeSupport supp = new PropertyChangeSupport(this);
-    
     private List<ShellListener>   shellListeners = new ArrayList<>();
+    
+    private Lookup            envLookup;
+    
+    private final ShellL            shellL = new ShellL();
     
     protected JShellEnvironment(Project project, String displayName) {
         this.project = project;
         this.displayName = displayName;
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        this.supp.addPropertyChangeListener(pcl);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        this.supp.removePropertyChangeListener(pcl);
+    public void appendClassPath(FileObject f) {
+        userClassPathImpl.append(f);
     }
     
     public Project getProject() {
@@ -188,7 +205,17 @@ public class JShellEnvironment {
     }
     
     public Lookup getLookup() {
-        return consoleFile.getLookup();
+        synchronized (this) {
+            if (envLookup == null) {
+                envLookup = new ProxyLookup(
+                        consoleFile.getLookup(),
+                        project == null ? 
+                                Lookup.getDefault() :
+                                project.getLookup()
+                );
+            }
+        }
+        return envLookup;
     }
     
     public PrintStream getOutputStream() throws IOException {
@@ -227,7 +254,85 @@ public class JShellEnvironment {
         return errStream;
     }
     
+    public SpecificationVersion getSourceLevel() {
+        Project p = getProject();
+        if (p == null) {
+            return getTargetLevel();
+        }
+        Result r = SourceLevelQuery.getSourceLevel2(p.getProjectDirectory());
+        String s = r.getSourceLevel();
+        if (s != null) {
+            return new SpecificationVersion(s);
+        } else {
+            return getTargetLevel();
+        }
+    }
+    
+    public SpecificationVersion getTargetLevel() {
+        return getPlatform().getSpecification().getVersion();
+    }
+    
+    /**
+     * @return modules which should be added to the compiler, or {@code null},
+     * if not modular
+     */
+    public List<String> getCompilerRequiredModules() {
+        return requiredModules;
+    }
+    
+    public JShell.Builder customizeJShell(JShell.Builder b) {
+        if (ShellProjectUtils.isModularProject(project)) {
+            if (requiredModules != null) {
+                b.compilerOptions("--add-modules", String.join(",", requiredModules)); // NOI18N
+                
+            }
+            // extra options to include the modules:
+            List<String> opts = ShellProjectUtils.launchVMOptions(project);
+            b.remoteVMOptions(opts.toArray(new String[opts.size()]));
+            
+            String modPath = addRoots("", ShellProjectUtils.projectRuntimeModulePath(project));
+            if (!modPath.isEmpty()) {
+                b.remoteVMOptions("--module-path", modPath);
+            }
+        }
+        return b;
+    }
+    
+    public ClassPath    getVMClassPath() {
+        return ShellProjectUtils.projecRuntimeClassPath(project);
+    }
+
+    public ClassPath    getCompilerClasspath() {
+        if (ShellProjectUtils.isModularProject(project)) {
+            return getClasspathInfo().getClassPath(PathKind.MODULE_COMPILE);
+        } else {
+            return getClasspathInfo().getClassPath(PathKind.COMPILE);
+        }
+    }
+    
+    private String addRoots(String prev, ClassPath cp) {
+        FileObject[] roots = cp.getRoots();
+        StringBuilder sb = new StringBuilder(prev);
+        
+        for (FileObject r : roots) {
+            FileObject ar = FileUtil.getArchiveFile(r);
+            if (ar == null) {
+                ar = r;
+            }
+            File f = FileUtil.toFile(ar);
+            if (f != null) {
+                if (sb.length() > 0) {
+                    sb.append(File.pathSeparatorChar);
+                }
+                sb.append(f.getPath());
+            }
+        }
+        return sb.toString();
+    }
+    
     private volatile boolean starting;
+    
+    private List<String>    requiredModules;
 
     public synchronized void start() throws IOException {
         assert workRoot != null;
@@ -247,19 +352,71 @@ public class JShellEnvironment {
         snippetClassPath = ClassPathSupport.createClassPath(workRoot);
 
         if (root != null) {
+            // assume project
+            boolean modular = ShellProjectUtils.isModularProject(project);
             ClasspathInfo projectInfo = ClasspathInfo.create(root);
-            cpi = ClasspathInfo.create(
-                    projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
-                    ClassPathSupport.createProxyClassPath(
-                        ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
-                        projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
-                    ),
-                    projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE)
+            ClasspathInfo.Builder bld = new ClasspathInfo.Builder(
+                    projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT)
             );
+            ClassPath classesFromProject = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+            ClassPath modBoot = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_BOOT);
+            ClassPath modClassRaw = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_CLASS);
+            ClassPath modCompileRaw = projectInfo.getClassPath(ClasspathInfo.PathKind.MODULE_COMPILE);
+            
+            // TODO: Possible duplicate entries on CP + ModuleCP in case of modular project. May impact
+            // refactoring or usages.
+            ClassPath compile = ClassPathSupport.createProxyClassPath(
+                classesFromProject,
+                userLibraryPath,
+                projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
+            );
+            ClassPath modClass;
+            ClassPath modCompile;
+            
+            if (modular) {
+                modClass = ClassPathSupport.createProxyClassPath(
+                            classesFromProject,
+                            userLibraryPath,
+                            modClassRaw);
+                modCompile = ClassPathSupport.createProxyClassPath(
+                            classesFromProject,
+                            modCompileRaw
+                        );
+            } else {
+                modClass = modClassRaw;
+                modCompile = modCompileRaw;
+            }
+            
+            bld.setClassPath(compile)
+                //.setSourcePath(source)
+                    ;
+            
+            bld.
+                setModuleBootPath(modBoot).
+                setModuleClassPath(modClass).
+                setModuleCompilePath(modCompile);
+            cpi = bld.build();
+
+            if (ShellProjectUtils.isModularProject(project)) {
+                List<String> sortedModules = new ArrayList<>(ShellProjectUtils.findProjectImportedModules(project, null));
+                if (!sortedModules.isEmpty()) {
+                    Collections.sort(sortedModules);
+                    this.requiredModules = sortedModules;
+                }
+            }
         } else {
-            cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
+            ClasspathInfo.Builder bld = new ClasspathInfo.Builder(platformTemp.getBootstrapLibraries());
+            bld.setClassPath(platformTemp.getStandardLibraries());
+            if (ShellProjectUtils.isModularJDK(platformTemp)) {
+                bld.setModuleBootPath(platformTemp.getBootstrapLibraries());
+            }
+            /*
+            cpi = ClasspathInfo.create(
+                    platformTemp.getBootstrapLibraries(),
                     platformTemp.getStandardLibraries(),
                     ClassPath.EMPTY);
+            */
+            cpi = bld.build();
         }
         this.classpathInfo = cpi;
         forceOpenDocument();
@@ -315,7 +472,7 @@ public class JShellEnvironment {
             return;
         }
         ShellEvent e = new ShellEvent(this, session, 
-                start ? ShellStatus.EXECUTE : ShellStatus.READY);
+                start ? ShellStatus.EXECUTE : ShellStatus.READY, false);
         ll.stream().forEach(l -> l.shellStatusChanged(e));
     }
     
@@ -339,9 +496,13 @@ public class JShellEnvironment {
             public void closed(ConsoleEvent e) {}
         });
         ShellSession previous = res.first();
+        if (previous != null) {
+            previous.removePropertyChangeListener(shellL);
+        }
+        nss.addPropertyChangeListener(shellL);
         ShellEvent event = new ShellEvent(this, nss, previous);
         fireShellStatus(event);
-
+        
         res.second().addTaskListener(e -> {
             starting = false;
             fireShellStarted(event);
@@ -398,6 +559,10 @@ public class JShellEnvironment {
     
     public ClassPath getSnippetClassPath() {
         return snippetClassPath;
+    }
+    
+    public ClassPath getUserLibraryPath() {
+        return userLibraryPath;
     }
     
     /**
@@ -470,7 +635,7 @@ public class JShellEnvironment {
         inputOutput.select();
     }
     
-    public void notifyDisconnected(ShellSession old) {
+    public void notifyDisconnected(ShellSession old, boolean remoteClose) {
         List<ShellListener> ll;
         ShellSession s;
         synchronized (this) {
@@ -480,12 +645,12 @@ public class JShellEnvironment {
             }
             ll = new ArrayList<>(shellListeners);
         }
-        old.notifyClosed(this);
-        ShellEvent e = new ShellEvent(this, s, ShellStatus.DISCONNECTED);
+        old.notifyClosed(this, remoteClose);
+        ShellEvent e = new ShellEvent(this, s, ShellStatus.DISCONNECTED, remoteClose);
         ll.stream().forEach(l -> l.shellStatusChanged(e));
     }
     
-    protected void notifyShutdown() {
+    protected void notifyShutdown(boolean remote) {
         List<ShellListener> ll;
         ShellSession s;
         
@@ -498,7 +663,7 @@ public class JShellEnvironment {
             s = this.shellSession;
         }
         if (s != null) {
-            s.notifyClosed(this);
+            s.notifyClosed(this, remote);
         }
         ShellEvent e = new ShellEvent(this);
         ll.stream().forEach(l -> l.shellShutdown(e));
@@ -532,7 +697,7 @@ public class JShellEnvironment {
         this.shellListeners.remove(l);
     }
     
-    public JShellGenerator createExecutionEnv() {
+    public ExecutionControlProvider createExecutionEnv() {
         return null;
     }
     
@@ -554,5 +719,25 @@ public class JShellEnvironment {
     
     public String getMode() {
         return "launch"; // NOI18N
+    }
+    
+    public JShell getShell() {
+        ShellSession s = shellSession;
+        return s == null ? null : s.getShell();
+    }
+    
+    class ShellL implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ShellSession.PROP_ENGINE.equals(evt.getPropertyName())) {
+                ShellSession s = shellSession;
+                if (s != null && s.isValid() && s.isActive()) {
+                    ShellEvent ev = new ShellEvent(JShellEnvironment.this, shellSession, shellSession);
+                    fireShellStarted(ev);
+                }
+            }
+        }
+        
     }
 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.awt.Color;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.PopLastDebuggerCallAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.PopToCurrentFrameAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxFrameAction;
@@ -121,7 +122,7 @@ public final class StackModel extends ModelListenerSupport
 	else
 	    return true;
     }
-
+    
     // interface NodeModel
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -183,7 +184,7 @@ public final class StackModel extends ModelListenerSupport
     public String getShortDescription(Object node) throws UnknownTypeException {
 	if (node instanceof Frame) {
 	    Frame frame = (Frame) node;
-	    return frame.getLoadObj();
+	    return frame.getLocationName() + "at " + frame.getLocation();//NOI18N
 	} else
 	    return getDisplayName(node);	// SHOULD do something different?
     }

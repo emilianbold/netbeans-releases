@@ -54,6 +54,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -62,8 +63,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ToolBarUI;
 import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.TeamView;
@@ -84,7 +83,7 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({"LBL_Switch=Select project", 
                     "CTL_NewServer=Add Team Server"})
-public final class OneProjectDashboardPicker<P> extends JPanel {
+public final class OneProjectDashboardPicker<P> extends JPanel implements MegaMenu.Invoker {
 
     private ProjectHandle<P> currentProject;
     private ListNode currentProjectNode;
@@ -117,7 +116,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         add(jSeparator, new GridBagConstraints(0,1,5,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
 
         lbl = new JLabel();
-        lbl.setBorder(new EmptyBorder(0, 0, 0, 10));
+        lbl.setBorder(new EmptyBorder(0, 0, 0, 5));
         lbl.setFont( lbl.getFont().deriveFont( Font.BOLD, lbl.getFont().getSize2D() + 1 ) );
         add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8,8,8,0), 0,0) );
         MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -139,7 +138,9 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
             }
         }); 
         btnPick.setToolTipText(Bundle.LBL_Switch());
+        btnPick.setBorder(BorderFactory.createEmptyBorder(1, 2, 0, 2));
         btnPick.setRolloverEnabled(true);
+        btnPick.setFocusable(true);
         add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,0,0,0), 0,0) );            
 
         progressLabel = new ProgressLabel("", this);
@@ -321,8 +322,6 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
             @Override
             public void run() {
                 lbl.setEnabled(!on);
-                btnPick.setEnabled(!on);
-                btnPick.setVisible(!on);                
                 progressLabel.setVisible(on);                
             }
         });
@@ -362,50 +361,43 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     }
     
     private void switchProject() {
-        runInAwt(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 if(!OneProjectDashboardPicker.this.isShowing()) {
                     return;
                 }
-                final MegaMenu mm = MegaMenu.create();
-                if(server != null) {
-                    mm.setInitialSelection(server, currentProjectNode);
-                }
-                mm.addChangeListener(new ChangeListener() {
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        ListNode node = mm.getSelectedItem();
-                        if(node != null && node instanceof MyProjectNode) {
-                            MyProjectNode mpn = (MyProjectNode) node;
-                            ProjectHandle<P> ph = mpn.getProject();
-                            
-                            ListNode curNode;
-                            synchronized ( LOCK ) {
-                                curNode = currentProjectNode;
-                            }
-                            if(curNode == null || !node.equals(curNode)) {
-                                setCurrentProject(mpn.getTeamServer(), ph, node, true);
-                                getDashboard(mpn.getTeamServer()).switchProject(ph, false);
-                            }
-                        }
-                    }
-                });
-                mm.show(OneProjectDashboardPicker.this);
+                MegaMenu.show(OneProjectDashboardPicker.this);
             }
         });
     }
 
+    @Override
+    public JComponent getInvokingComponent() {
+        return this;
+    }
+
+    @Override
+    public TeamServer getSelectedServer() {
+        return server;
+    }
+
+    @Override
+    public ListNode getSelectedNode() {
+        return currentProjectNode;
+    }
+
     private void hideMenu() {
-        final MegaMenu mm = MegaMenu.getCurrent();
-        if(mm != null) {
-            runInAwt(new Runnable() {
-                @Override
-                public void run() {
-                    mm.hide();
-                }
-            });
-        }
+        runInAwt(new Runnable() {
+            @Override
+            public void run() {
+                MegaMenu.hide();
+            }
+        });
+    }
+
+    void restoreFocus() {
+        btnPick.requestFocus();
     }
 
     private boolean isCurrentProject(TeamServer server, ProjectHandle<P> project) {
@@ -425,6 +417,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
             @Override
             public void run() {
                 lbl.setText(name);
+                btnPick.getAccessibleContext().setAccessibleName(name);
                 if(server != null) {
                     lbl.setIcon(server.getIcon());
                 }

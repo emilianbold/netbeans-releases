@@ -57,6 +57,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.ConnectException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -88,6 +90,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -783,4 +786,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected static void threadsDump(String header, String footer) {
         NativeExecutionTestSupport.threadsDump(header, footer);
     }
+
+    protected static boolean isDebugged() {
+        return MiscUtils.isDebugged();
+    }    
 }

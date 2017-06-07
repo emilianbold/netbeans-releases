@@ -49,7 +49,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.net.ConnectException;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -133,7 +132,7 @@ final class CachedRemoteInputStream extends InputStream {
                     }
                     return ((FileInputStream) delegate).read();
                 }
-            } catch (ConnectException | InterruptedException | CancellationException | TimeoutException ex) {
+            } catch (ConnectException | InterruptedException | TimeoutException ex) {
                 return -1;
             } catch (ExecutionException ex) {
                 RemoteLogger.finest(ex);

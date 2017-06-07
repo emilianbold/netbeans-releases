@@ -48,10 +48,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl.Separator;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.openide.util.Pair;
 
 /**
  * This is simple immutable impl.
@@ -61,12 +63,18 @@ public final class TypeResolverImpl implements TypeResolver {
     private static final Logger LOG = Logger.getLogger(TypeResolverImpl.class.getName());
 
     private final String typeName;
+    private final boolean isNullableType;
 
     public static Set<TypeResolver> parseTypes(final String typeSignature) {
         Set<TypeResolver> retval = new HashSet<>();
         if (typeSignature != null && typeSignature.length() > 0) {
             final String regexp = String.format("\\%s", Separator.PIPE.toString()); //NOI18N
-            for (String typeName : typeSignature.split(regexp)) {
+            for (String type : typeSignature.split(regexp)) {
+                String typeName = type;
+                boolean isNullableType = CodeUtils.isNullableType(typeName);
+                if (isNullableType) {
+                    typeName = typeName.substring(1);
+                }
                 String encodedTypeName;
                 if (isResolvedImpl(typeName)) {
                     encodedTypeName = ParameterElementImpl.encode(typeName);
@@ -76,7 +84,7 @@ public final class TypeResolverImpl implements TypeResolver {
                     encodedTypeName = ParameterElementImpl.encode(typeName, separators);
                 }
                 if (typeName.equals(encodedTypeName)) {
-                    retval.add(new TypeResolverImpl(typeName));
+                    retval.add(new TypeResolverImpl(typeName, isNullableType));
                 } else {
                     log(String.format("wrong typename: \"%s\" parsed from \"%s\"", typeSignature, typeName), Level.FINE); //NOI18N
                 }
@@ -85,27 +93,27 @@ public final class TypeResolverImpl implements TypeResolver {
         return retval;
     }
 
-    public static Set<TypeResolver> forNames(final Collection<QualifiedName> names) {
+    public static Set<TypeResolver> forNames(final Collection<Pair<QualifiedName, Boolean>> names) {
         Set<TypeResolver> retval = new HashSet<>();
-        for (QualifiedName qualifiedName : names) {
+        for (Pair<QualifiedName, Boolean> name : names) {
+            QualifiedName qualifiedName = name.first();
             final String typeName = qualifiedName.toString();
-                if (typeName.equals(ParameterElementImpl.encode(typeName))) {
-                    retval.add(new TypeResolverImpl(typeName));
-                } else {
-                    log(String.format("wrong typename: \"%s\"", typeName), Level.FINE); //NOI18N
-                }
-
-
+            if (typeName.equals(ParameterElementImpl.encode(typeName))) {
+                retval.add(new TypeResolverImpl(typeName, name.second()));
+            } else {
+                log(String.format("wrong typename: \"%s\"", typeName), Level.FINE); //NOI18N
+            }
         }
         return retval;
     }
 
-    TypeResolverImpl(final String semiTypeName) {
+    TypeResolverImpl(final String semiTypeName, boolean isNullableType) {
         this.typeName = semiTypeName;
+        this.isNullableType = isNullableType;
     }
 
     public String getSignature() {
-        return getRawTypeName();
+        return isNullableType ? CodeUtils.NULLABLE_TYPE_PREFIX + getRawTypeName() : getRawTypeName();
     }
 
     @Override
@@ -130,6 +138,11 @@ public final class TypeResolverImpl implements TypeResolver {
     @Override
     public String getRawTypeName() {
         return typeName;
+    }
+
+    @Override
+    public boolean isNullableType() {
+        return isNullableType;
     }
 
     private static void log(final String message, final Level level) {

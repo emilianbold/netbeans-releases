@@ -410,6 +410,7 @@ Contributor(s):
                     <file name="org-netbeans-modules-php-editor-verification-AddUseImportSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-ArraySyntaxSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-AssignVariableSuggestion.instance"/>
+                    <file name="org-netbeans-modules-php-editor-verification-DeclareStrictTypesSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-IdenticalComparisonSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-InitializeFieldSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-IntroduceSuggestion.instance"/>
@@ -422,7 +423,9 @@ Contributor(s):
                     <file name="org-netbeans-modules-php-editor-verification-EmptyGroupUseHintError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-FieldRedeclarationHintError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-ImplementAbstractMethodsHintError.instance"/>
+                    <file name="org-netbeans-modules-php-editor-verification-IncorrectListUnhandledError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-IncorrectMixedGroupUseHintError.instance"/>
+                    <file name="org-netbeans-modules-php-editor-verification-IncorrectNonAbstractMethodHintError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-LoopOnlyKeywordsUnhandledError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-MethodRedeclarationHintError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-ModifiersCheckHintError.instance"/>
@@ -431,6 +434,8 @@ Contributor(s):
                     <file name="org-netbeans-modules-php-editor-verification-PHP55UnhandledError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-PHP56UnhandledError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-PHP70UnhandledError.instance"/>
+                    <file name="org-netbeans-modules-php-editor-verification-PHP71UnhandledError.instance"/>
+                    <file name="org-netbeans-modules-php-editor-verification-ReturnTypeHintError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-TypeRedeclarationHintError.instance"/>
                 </folder>
             </folder>

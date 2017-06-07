@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.remote.ui.impl.RemoteSyncNotifierImpl;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.openide.util.NbBundle;
 
+@SuppressWarnings("rawtypes") // UI editor produces code with tons of rawtypes warnings
 /*package*/ final class CreateHostVisualPanel3 extends CreateHostVisualPanelBase {
 
     public CreateHostVisualPanel3(CreateHostData data) {
@@ -79,6 +80,7 @@ import org.openide.util.NbBundle;
     private final CreateHostData data;
     private CompilerSetManager compilerSetManager;
 
+    @SuppressWarnings("unchecked")
     void init() {
         textHostDisplayName.setText(data.getExecutionEnvironment().getDisplayName());
         // here we know for sure that it is created and initialized

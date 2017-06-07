@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
         </goals>
         <properties>
             <jpda.listen>true</jpda.listen>
-            <maven.surefire.debug>-Xdebug -Xrunjdwp:transport=dt_socket,suspend=n,server=n,address=${jpda.address}</maven.surefire.debug>
+            <maven.surefire.debug>-agentlib:jdwp=transport=dt_socket,suspend=n,server=n,address=${jpda.address}</maven.surefire.debug>
         </properties>
     </action>
 </actions>

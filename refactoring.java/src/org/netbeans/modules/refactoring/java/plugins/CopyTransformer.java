@@ -139,7 +139,7 @@ public class CopyTransformer extends RefactoringVisitor {
     }
     
     private void renameUsageIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
+        if (JavaPluginUtils.isSyntheticPath(workingCopy, path)) {
             return;
         }
         Element el = workingCopy.getTrees().getElement(path);

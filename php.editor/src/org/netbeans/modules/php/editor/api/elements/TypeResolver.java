@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 public interface TypeResolver {
     boolean isResolved();
     boolean canBeResolved();
+    boolean isNullableType();
 
     @CheckForNull
     String getRawTypeName();

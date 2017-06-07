@@ -44,7 +44,8 @@
 
 package org.netbeans.modules.hibernate.hyperlink;
 
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 
 /**
  *
@@ -54,7 +55,7 @@ public abstract class HyperlinkProcessor {
     public abstract void process(HyperlinkEnv env);
     
     public int[] getSpan(HyperlinkEnv env) {
-        TokenItem item = env.getToken();
-        return new int[] { item.getOffset() + 1, item.getOffset() + item.getImage().length() - 1 };
+        Token<XMLTokenId> item = env.getToken();
+        return new int[] { env.getTokenOffset() + 1, env.getTokenOffset() + item.text().length() - 1 };
     }
 }

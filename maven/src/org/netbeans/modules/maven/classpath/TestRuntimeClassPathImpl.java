@@ -59,24 +59,31 @@ import org.openide.util.Utilities;
  */
 public class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
     
+    private final boolean testScoped;
+    
     /**
      * Creates a new instance of TestRuntimeClassPathImpl
      */
-    public TestRuntimeClassPathImpl(NbMavenProjectImpl proj) {
+    public TestRuntimeClassPathImpl(NbMavenProjectImpl proj, boolean testScoped) {
         super(proj);
+        this.testScoped = testScoped;
     }
 
     @Override
-   URI[] createPath() {
-        List<URI> lst = createPath(getMavenProject().getOriginalMavenProject());
+    URI[] createPath() {
+        List<URI> lst = createPath(getMavenProject().getOriginalMavenProject(), testScoped);
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);
         return uris;
-   }
+    }
     
-   public static List<URI>createPath(MavenProject prj) {
-       assert prj != null;
-        List<URI> lst = new ArrayList<URI>();
+    public static List<URI>createPath(MavenProject prj) {
+        return createPath(prj, false);
+    }
+   
+    private static List<URI>createPath(MavenProject prj, boolean testScoped) {
+        assert prj != null;
+        List<URI> lst = new ArrayList<>();
         Build build = prj.getBuild();
         if (build != null) {
             String testOutputDirectory = build.getTestOutputDirectory();
@@ -93,8 +100,12 @@ public class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             if (art.getFile() != null) {
                 lst.add(Utilities.toURI(art.getFile()));
             } else {
-              //NOPMD   //null means dependencies were not resolved..
+                //NOPMD   //null means dependencies were not resolved..
             }
+        }
+        if(testScoped) {
+            List<URI> cmplst = RuntimeClassPathImpl.createPath(prj);
+            lst.removeAll(cmplst);
         }
         return lst;
     }    

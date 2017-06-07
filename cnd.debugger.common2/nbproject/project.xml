@@ -516,6 +516,7 @@ Contributor(s):
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.options</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.remote</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.spi</package>
+                <package>org.netbeans.modules.cnd.debugger.common2.ui</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.utils</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.utils.masterdetail</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.utils.options</package>

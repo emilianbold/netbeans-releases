@@ -104,6 +104,8 @@ public class FmtOptions {
     public static final String redundantWhileBraces = "redundantWhileBraces"; //NOI18N
     public static final String redundantDoWhileBraces = "redundantDoWhileBraces"; //NOI18N
     public static final String alignMultilineExports = "alignMultilineExports"; //NOI18N
+    public static final String alignMultilineOpens = "alignMultilineOpens"; //NOI18N
+    public static final String alignMultilineProvides = "alignMultilineProvides"; //NOI18N
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final String alignMultilineLambdaParams = "alignMultilineLambdaParams"; //NOI18N
     public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
@@ -125,8 +127,11 @@ public class FmtOptions {
     public static final String placeNewLineAfterModifiers = "placeNewLineAfterModifiers"; //NOI18N
     
     public static final String wrapProvidesWithKeyword = "wrapProvidesWithKeyword"; //NOI18N
+    public static final String wrapProvidesWithList = "wrapProvidesWithList"; //NOI18N
     public static final String wrapExportsToKeyword = "wrapExportsToKeyword"; //NOI18N
     public static final String wrapExportsToList = "wrapExportsToList"; //NOI18N
+    public static final String wrapOpensToKeyword = "wrapOpensToKeyword"; //NOI18N
+    public static final String wrapOpensToList = "wrapOpensToList"; //NOI18N
     public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
     public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
@@ -403,6 +408,8 @@ public class FmtOptions {
             { redundantWhileBraces, BGS_GENERATE}, //NOI18N
             { redundantDoWhileBraces, BGS_GENERATE}, //NOI18N
             { alignMultilineExports, FALSE}, //NOI18N
+            { alignMultilineOpens, FALSE}, //NOI18N
+            { alignMultilineProvides, FALSE}, //NOI18N
             { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineLambdaParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N
@@ -424,8 +431,11 @@ public class FmtOptions {
             { placeNewLineAfterModifiers, FALSE}, //NOI18N
 
             { wrapProvidesWithKeyword, WRAP_NEVER}, //NOI18N
+            { wrapProvidesWithList, WRAP_NEVER}, //NOI18N
             { wrapExportsToKeyword, WRAP_NEVER}, //NOI18N
             { wrapExportsToList, WRAP_NEVER}, //NOI18N
+            { wrapOpensToKeyword, WRAP_NEVER}, //NOI18N
+            { wrapOpensToList, WRAP_NEVER}, //NOI18N
             { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
             { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
             { wrapMethodParams, WRAP_NEVER}, //NOI18N

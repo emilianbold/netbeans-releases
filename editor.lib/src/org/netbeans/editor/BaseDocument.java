@@ -1127,26 +1127,32 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
         fixLineSyntaxState = null;
 
-        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
-            listener.insertUpdate(chng);
-        }
+        firePreInsertUpdate(chng);
     }
 
     protected void preInsertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
         fixLineSyntaxState = new FixLineSyntaxState(chng);
         chng.addEdit(fixLineSyntaxState.createBeforeLineUndo());
     }
-
-    protected @Override void removeUpdate(DefaultDocumentEvent chng) {
-        super.removeUpdate(chng);
-
+    
+    void firePreRemoveUpdate(DefaultDocumentEvent chng) {
         // Notify the remove update listeners - before the actual remove happens
         // so that it adheres to removeUpdate() logic; also the listeners can check
         // positions' offsets before the actual removal happens.
         for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
             listener.removeUpdate(chng);
         }
+    }
 
+    void firePreInsertUpdate(DefaultDocumentEvent chng) {
+        for (DocumentListener listener: updateDocumentListenerList.getListeners()) {
+            listener.insertUpdate(chng);
+        }
+    }
+
+    protected @Override void removeUpdate(DefaultDocumentEvent chng) {
+        super.removeUpdate(chng);
+        firePreRemoveUpdate(chng);
         // Remember the line changes here but add them to chng during postRemoveUpdate()
         // in order to satisfy the legacy syntax update mechanism
         removeUpdateLineUndo = lineRootElement.legacyRemoveUpdate(chng);
@@ -1440,19 +1446,26 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     * all the document modifications are rolled back automatically.
     */
     public void runAtomicAsUser(Runnable r) {
-        boolean completed = false;
         atomicLockImpl ();
         try {
             r.run();
-            completed = true;
-        } finally {
+        // Only attempt to recover (undo the document modifications) from runtime exceptions.
+        // Do not attempt to recover from java.lang.Error or other Throwable subclasses.
+        } catch (RuntimeException ex) {
+            boolean completed = false;
             try {
-                if (!completed) {
-                    breakAtomicLock();
-                }
+                breakAtomicLock();
+                completed = true;
             } finally {
-                atomicUnlockImpl ();
+                if (completed) {
+                    throw ex;
+                } else {
+                    // Log thrown exception in case breakAtomicLock() throws an exception by itself.
+                    LOG.log(Level.INFO, "Runtime exception thrown in BaseDocument.runAtomicAsUser() leading to breakAtomicLock():", ex);
+                }
             }
+        } finally {
+            atomicUnlockImpl ();
         }
     }
 

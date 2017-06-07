@@ -1217,7 +1217,7 @@ public class CssCompletion implements CodeCompletionHandler {
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
         } else if (nodeType == NodeType.elementName) {
             //@mixin mymixin() { co| div { } } 
-            if (NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) != null) {
+            if (NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) != null || NodeUtil.getAncestorByType(node, NodeType.declarations) != null ) {
                 //in mixin block
                 Collection<PropertyDefinition> possibleProps = filterProperties(defs, prefix);
                 completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));

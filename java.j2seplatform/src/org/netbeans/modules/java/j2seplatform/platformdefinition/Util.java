@@ -51,8 +51,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -61,6 +63,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -79,7 +82,7 @@ public class Util {
     private static final String MODULES_FOLDER = "modules";      //NOI18N
     private static final String MODULE_INFO = "module-info.class";  //NOI18N
     private static final SpecificationVersion OLD_JDK9 = new SpecificationVersion("1.9");   //NOI18N
-    private static final SpecificationVersion NEW_JDK9 = new SpecificationVersion("9");     //NOI18N
+    public static final SpecificationVersion JDK9 = new SpecificationVersion("9");     //NOI18N
 
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
     //Properties used by IDE which should be fixed not to use resolved symlink
@@ -93,6 +96,13 @@ public class Util {
         p.add ("java.home");              //NOI18N
         p.add ("java.endorsed.dirs");     //NOI18N
         propertiesToFix = Collections.unmodifiableSet(p);
+    }
+    private static final List<Function<FileObject,FileObject>> TOOLS_VARIANTS;
+    static {
+        final List<Function<FileObject,FileObject>> l = new ArrayList<>();
+        jdk: l.add((installFolder) -> installFolder.getFileObject("bin"));       //NOI18N
+        graalvm: l.add((installFolder) -> installFolder.getFileObject("jdk/bin"));   //NOI18N
+        TOOLS_VARIANTS = Collections.unmodifiableList(l);
     }
 
     private Util () {
@@ -210,23 +220,15 @@ public class Util {
 
     public static FileObject findTool (String toolName, Collection<FileObject> installFolders, String archFolderName) {
         assert toolName != null;
-        for (FileObject root : installFolders) {
-            FileObject bin = root.getFileObject("bin");             //NOI18N
-            if (bin == null) {
-                continue;
-            }
-            if (archFolderName != null) {
-                bin = bin.getFileObject(archFolderName);
-                if (bin == null) {
-                    continue;
-                }
-            }
-            FileObject tool = bin.getFileObject(toolName, Utilities.isWindows() ? "exe" : null);    //NOI18N
-            if (tool!= null) {
-                return tool;
-            }
-        }
-        return null;
+        return installFolders.stream()
+                .flatMap((f) -> TOOLS_VARIANTS.stream().map((p) -> p.apply(f)))
+                .filter((f) -> f != null)
+                .map((f) -> archFolderName != null ? f.getFileObject(archFolderName) : f)
+                .filter((f) -> f != null)
+                .map((f) -> f.getFileObject(toolName, Utilities.isWindows() ? "exe" : null))    //NOI18N
+                .filter((f) -> f != null)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -353,6 +355,31 @@ public class Util {
         return value;
     }
 
+    public static String removeNBArtifacts(
+            @NonNull final String key,
+            @NullAllowed String value) {
+        if (value != null && "java.class.path".equals(key)) {   //NOI18N
+            String nbHome = System.getProperty("netbeans.home");    //NOI18N
+            if (nbHome != null) {
+                if (!nbHome.endsWith(File.separator)) {
+                    nbHome = nbHome + File.separatorChar;
+                }
+                final String[] elements = PropertyUtils.tokenizePath(value);
+                final List<String> newElements = new ArrayList<>(elements.length);
+                for (String element : elements) {
+                    if (!element.startsWith(nbHome)) {
+                        newElements.add(element);
+                    }
+                }
+                if (elements.length != newElements.size()) {
+                    value = newElements.stream()
+                            .collect(Collectors.joining(File.pathSeparator));
+                }
+            }
+        }
+        return value;
+    }
+
     @NonNull
     public static Collection<FileObject> toFileObjects(Collection<? extends URL> urls) {
         if (urls.isEmpty()) {
@@ -366,6 +393,40 @@ public class Util {
             }
         }
         return result;
+    }
+
+    @NullUnknown
+    public static Map<String,String> filterProbe (
+            @NullAllowed final Map<String,String> p,
+            @NullAllowed final String probePath) {
+        if (p != null) {
+            final String val = p.get(J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH);
+            if (val != null) {
+                p.put(J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH, filterProbe(val, null));
+            }
+        }
+        return p;
+    }
+
+    private static String filterProbe (String v, final String probePath) {
+        if (v != null) {
+            final String[] pes = PropertyUtils.tokenizePath(v);
+            final StringBuilder sb = new StringBuilder ();
+            for (String pe : pes) {
+                if (probePath != null ?  probePath.equals(pe) : (pe != null &&
+                pe.endsWith("org-netbeans-modules-java-j2seplatform-probe.jar"))) { //NOI18N
+                    //Skeep
+                }
+                else {
+                    if (sb.length() > 0) {
+                        sb.append(File.pathSeparatorChar);
+                    }
+                    sb.append(pe);
+                }
+            }
+            v = sb.toString();
+        }
+        return v;
     }
 
     // copy pasted from org.openide.modules.Dependency:
@@ -395,7 +456,7 @@ public class Util {
 
     private static SpecificationVersion fixJDK9SpecVersion(@NonNull final SpecificationVersion version) {
         return  OLD_JDK9.equals(version) ?
-                NEW_JDK9 :
+                JDK9 :
                 version;
     }
 

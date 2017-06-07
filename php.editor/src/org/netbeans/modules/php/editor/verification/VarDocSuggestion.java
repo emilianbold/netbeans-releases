@@ -113,8 +113,8 @@ public class VarDocSuggestion extends SuggestionRule {
                     Model model = parseResult.getModel();
                     VariableScope variableScope = model.getVariableScope(caretOffset);
                     if (variableScope != null) {
-                        int wordStart = Utilities.getWordStart(doc, caretOffset);
-                        int wordEnd = Utilities.getWordEnd(doc, caretOffset);
+                        int wordStart = LineDocumentUtils.getWordStart(doc, caretOffset);
+                        int wordEnd = LineDocumentUtils.getWordEnd(doc, caretOffset);
                         VariableName variable = ModelUtils.getFirst(variableScope.getDeclaredVariables(), identifier);
                         if (variable != null && (wordEnd - wordStart) == identifier.length()) {
                             final OffsetRange identifierRange = new OffsetRange(wordStart, wordEnd);

@@ -199,7 +199,7 @@ public class JPDACodeEvaluator extends CodeEvaluator.EvaluatorService {
             } catch (InvalidExpressionException ieex) {
                 String message = ieex.getLocalizedMessage();
                 Throwable t = ieex.getTargetException();
-                if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+                if (t != null && ieex.hasApplicationTarget()) {
                     java.io.StringWriter s = new java.io.StringWriter();
                     java.io.PrintWriter p = new java.io.PrintWriter(s);
                     t.printStackTrace(p);

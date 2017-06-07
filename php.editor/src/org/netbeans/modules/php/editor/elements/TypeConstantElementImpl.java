@@ -49,12 +49,14 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.openide.util.Parameters;
 
@@ -67,16 +69,18 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     private final TypeElement enclosingType;
     private final String value;
     private final boolean isMagic;
+    private final PhpModifiers modifiers;
 
     private TypeConstantElementImpl(
             final TypeElement enclosingType,
             final String constantName,
             final String value,
             final int offset,
+            final int flags,
             final String fileUrl,
             final ElementQuery elementQuery,
             final boolean isDeprecated) {
-        this(enclosingType, constantName, value, offset, fileUrl, elementQuery, isDeprecated, false);
+        this(enclosingType, constantName, value, offset, flags, fileUrl, elementQuery, isDeprecated, false);
     }
 
     private TypeConstantElementImpl(
@@ -84,6 +88,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
             final String constantName,
             final String value,
             final int offset,
+            final int flags,
             final String fileUrl,
             final ElementQuery elementQuery,
             final boolean isDeprecated,
@@ -92,6 +97,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         this.enclosingType = enclosingType;
         this.value = value;
         this.isMagic = isMagic;
+        this.modifiers = PhpModifiers.fromBitMask(flags);
     }
 
     public static Set<TypeConstantElement> getMagicConstants(TypeElement type) {
@@ -106,6 +112,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
                 constantName,
                 type.getFullyQualifiedName().toString(),
                 0,
+                BodyDeclaration.Modifier.PUBLIC,
                 type.getFilenameUrl(),
                 null,
                 type.isDeprecated(),
@@ -122,7 +129,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
             final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<TypeConstantElement> retval = values.length > 0
-                ? new HashSet<TypeConstantElement>() : Collections.<TypeConstantElement>emptySet();
+                ? new HashSet<>() : Collections.<TypeConstantElement>emptySet();
         for (final String val : values) {
             final TypeConstantElement constant = fromSignature(type, query, indexScopeQuery, Signature.get(val));
             if (constant != null) {
@@ -142,6 +149,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
                     signParser.getConstantName(),
                     signParser.getValue(),
                     signParser.getOffset(),
+                    signParser.getFlags(),
                     signParser.getFileUrl(),
                     indexScopeQuery,
                     signParser.isDeprecated());
@@ -158,7 +166,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         for (ClassConstantDeclarationInfo info : consts) {
             retval.add(new TypeConstantElementImpl(
                     type, info.getName(), info.getValue(), info.getRange().getStart(),
-                    fileQuery.getURL().toExternalForm(), fileQuery,
+                    info.getAccessModifiers().toFlags(), fileQuery.getURL().toExternalForm(), fileQuery,
                     VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node)));
         }
         return retval;
@@ -179,8 +187,14 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         sb.append(getValue()).append(Separator.SEMICOLON);
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
+        sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
+    }
+
+    @Override
+    public PhpModifiers getPhpModifiers() {
+        return modifiers;
     }
 
     @Override
@@ -201,6 +215,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
             ConstantSignatureParser parser = new ConstantSignatureParser(Signature.get(retval));
             assert getName().equals(parser.getConstantName());
             assert getOffset() == parser.getOffset();
+            assert getPhpModifiers().toFlags() == parser.getFlags();
         }
     }
 
@@ -271,5 +286,10 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         String getFileUrl() {
             return signature.string(5);
         }
+
+        int getFlags() {
+            return signature.integer(6);
+        }
+
     }
 }

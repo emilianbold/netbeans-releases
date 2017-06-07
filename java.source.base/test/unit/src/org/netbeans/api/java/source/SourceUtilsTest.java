@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -73,6 +74,7 @@ import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -295,6 +297,8 @@ public class SourceUtilsTest extends ClassIndexTestCase {
         CPProvider.getDefault().register(url5, ClassPath.SOURCE, cp5);
         
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cps);
+        final Future<Void> f = RunWhenScanFinishedSupport.runWhenScanFinished(() -> null, Collections.emptySet());
+        f.get();    //Wait for scan to finish
         IndexingManager.getDefault().refreshIndexAndWait(url1.toURL(), null, true);
         IndexingManager.getDefault().refreshIndexAndWait(url2.toURL(), null, true);
         IndexingManager.getDefault().refreshIndexAndWait(url3.toURL(), null, true);

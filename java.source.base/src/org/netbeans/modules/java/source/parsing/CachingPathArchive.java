@@ -69,14 +69,10 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
  *
  * @author Tomas Zezula
  */
-public class CachingPathArchive implements Archive {
-
+public class CachingPathArchive extends AbstractPathArchive {
     private static final int[] EMPTY_FOLDER = new int[0];
     private static final byte[] EMPTY_NAMES = new byte[0];
 
-    private final Path root;
-    private final String rootURI;
-    private final char separator;
     //@GuardedBy("this")
     private Map<String,int[]> data;
     //@GuardedBy("this")
@@ -87,14 +83,7 @@ public class CachingPathArchive implements Archive {
     CachingPathArchive(
             @NonNull final Path root,
             @NullAllowed final URI rootURI) {
-        assert root != null;
-        this.root = root;
-        this.rootURI = rootURI == null ? null : rootURI.toString();
-        final String sep = root.getFileSystem().getSeparator();
-        if (sep.length() != 1) {
-            throw new IllegalArgumentException("Multi character separators are unsupported");   //NOI18N
-        }
-        this.separator = sep.charAt(0);
+        super(root, rootURI);
         this.packedNames = EMPTY_NAMES;
     }
 
@@ -154,6 +143,7 @@ public class CachingPathArchive implements Archive {
 
     @Override
     public synchronized void clear() {
+        super.clear();
         data = null;
         packedNames = EMPTY_NAMES;
         nameIndex = 0;

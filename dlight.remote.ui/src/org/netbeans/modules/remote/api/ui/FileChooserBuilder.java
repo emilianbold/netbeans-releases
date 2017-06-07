@@ -79,7 +79,7 @@ import org.openide.util.Utilities;
  *
  * @author ak119685
  */
-public final class FileChooserBuilder {
+public final class FileChooserBuilder extends org.openide.filesystems.FileChooserBuilder {
 
     // TODO: think of a better name
     public abstract static class JFileChooserEx extends JFileChooser {
@@ -164,6 +164,11 @@ public final class FileChooserBuilder {
     private Preferences forModule;
 
     public FileChooserBuilder(ExecutionEnvironment env) {
+        this(env, ExecutionEnvironmentFactory.toUniqueID(env));
+    }
+    
+    public FileChooserBuilder(ExecutionEnvironment env, String dirKey) {
+        super(dirKey);
         this.env = env;
     }
 

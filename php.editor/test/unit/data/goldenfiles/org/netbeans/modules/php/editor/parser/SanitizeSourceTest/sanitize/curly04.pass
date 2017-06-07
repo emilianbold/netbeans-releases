@@ -7,6 +7,9 @@
             <FormalParameters>
             </FormalParameters>
             <Block start='22' end='44' isCurly='true'>
+                <ReturnStatement start='28' end='42'>
+                    <Scalar start='35' end='41' type='STRING' value='"ahoj"'/>
+                </ReturnStatement>
             </Block>
         </FunctionDeclaration>
         <FunctionDeclaration start='46' end='122' isReference='false'>

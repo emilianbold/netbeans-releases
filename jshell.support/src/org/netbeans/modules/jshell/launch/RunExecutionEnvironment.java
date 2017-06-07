@@ -44,10 +44,9 @@ package org.netbeans.modules.jshell.launch;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -118,11 +117,17 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
         int id = this.shellConnection.getRemoteAgentId();
         Map<String, OutputStream> io = new HashMap<>();
         LOG.log(Level.FINE, "Creating agent connection for STOP command");
-        try (JShellConnection stopConnection = agent.createConnection();
-            ObjectOutputStream out = new ObjectOutputStream(stopConnection.getAgentInput());
-            ObjectInput cmdin = Util.remoteInput(stopConnection.getAgentOutput(), io);
-        ) {
-            StreamingExecutionControl stopStream = new StreamingExecutionControl(out, cmdin);
+        
+        try (JShellConnection stopConnection = agent.createConnection()) {
+            StreamingExecutionControl stopStream = (StreamingExecutionControl)
+                    Util.remoteInputOutput(
+                        stopConnection.getAgentOutput(),
+                        stopConnection.getAgentInput(),
+                        io,
+                        Collections.emptyMap(), 
+                        (ObjectInput cmdIn, ObjectOutput cmdOut) ->
+                                new StreamingExecutionControl(cmdOut, cmdIn)
+                    );
             Object o = stopStream.extensionCommand("nb_stop", id);
             LOG.log(Level.FINE, "Sending STOP command for agent ID: " + id);
             int success = (o instanceof Integer) ? (Integer)o : -1;
@@ -139,13 +144,6 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
     public boolean requestShutdown() {
         agent.closeConnection(shellConnection);
         return false;
-    }
-
-    @Override
-    public void setClasspath(String path) throws EngineTerminationException, InternalException {
-        if (!suppressClasspath) {
-            super.setClasspath(path);
-        }
     }
 
     @Override
@@ -214,4 +212,10 @@ public class RunExecutionEnvironment extends NbExecutionControlBase implements R
     public void suppressClasspathChanges(boolean b) {
         this.suppressClasspath = b;
     }
+
+    @Override
+    public ExecutionControlException getBrokenException() {
+        return null;
+    }
+
 }

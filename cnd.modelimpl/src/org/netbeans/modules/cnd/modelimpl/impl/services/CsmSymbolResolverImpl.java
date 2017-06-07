@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -130,6 +131,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
                     if (ast != null) {
                         // The most complex case - declText should be template function signature.
                         switch (ast.getType()) {
+                            case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_TEMPLATE_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
@@ -501,7 +503,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
     }    
     
     private static CPPParserEx createParser(CharSequence sequence) {
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), APTLanguageSupport.GNU_CPP);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), APTFile.Kind.C_CPP);
         if (ts != null) {
             int flags = CPPParserEx.CPP_CPLUSPLUS;
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;            

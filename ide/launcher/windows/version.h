@@ -42,10 +42,10 @@
 
 #define COMPANY "Oracle Corporation"
 #define COMPONENT "NetBeans IDE"
-#define VER "8.2.0.0"
-#define FVER 8,2,0,0
-#define BUILD_ID "04152016"
+#define VER "9.0.0.0"
+#define FVER 9,0,0,0
+#define BUILD_ID "04012017"
 #define INTERNAL_NAME "netbeans"
-#define COPYRIGHT "\xA9 2007, 2016 Oracle and/or its affiliates. All rights reserved."
-#define NAME "NetBeans IDE 8.2"
+#define COPYRIGHT "\xA9 2007, 2017 Oracle and/or its affiliates. All rights reserved."
+#define NAME "NetBeans IDE 9.0"
 

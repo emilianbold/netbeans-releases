@@ -67,10 +67,13 @@ import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
@@ -259,13 +262,19 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                     lexerAttrs = new InputAttributes();
                     doc.putProperty(InputAttributes.class, lexerAttrs);
                 }
-                Filter<?> filter = getDefaultFilter(language, doc);
+                Filter<?> filter = CndLexerUtilities.getDefaultFilter(language, doc);
                 if (filter != null) {
                     lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
                 } else {
                     CndUtils.assertUnconditional("no language filter for " + doc + " with language " + language);
                 }
             } else {
+                String mimeType = DocumentUtilities.getMimeType(doc);
+                if (mimeType == null || !MIMENames.isHeaderOrCppOrC(mimeType)) {
+                    // #255684 - Exception: no language for
+                    // it's not our mime-type (may be deserialization of unknown extension)                    
+                    return doc;
+                }
                 CndUtils.assertUnconditional("no language for " + doc);
             }
             // try to setup document's extra properties during non-EDT load if needed
@@ -316,21 +325,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                 provider.addProperty(dobj, doc);
             }
         }
-    }
-
-    private static Filter<?> getDefaultFilter(Language<?> language, Document doc) {
-        if (language == CppTokenId.languageHeader()) {
-            return CndLexerUtilities.getHeaderCppFilter();
-        } else if (language == CppTokenId.languageC()) {
-            return CndLexerUtilities.getGccCFilter();
-        } else if (language == CppTokenId.languagePreproc()) {
-            return CndLexerUtilities.getPreprocFilter();
-        } else if (language == FortranTokenId.languageFortran()) {
-            return CndLexerUtilities.getFortranFilter();
-        } else if (language == CppTokenId.languageCpp()) {
-            return CndLexerUtilities.getGccCppFilter();
-        }
-        return null;
     }
 
     private static class GuardedEditorSupportImpl implements GuardedEditorSupport {

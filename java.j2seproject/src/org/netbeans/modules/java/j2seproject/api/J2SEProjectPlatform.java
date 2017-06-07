@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.java.j2seproject.api;
 
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.api.common.project.ProjectPlatformProvider;
 
 /**
  * Active {@link JavaPlatform} for J2SE project extensions.
@@ -53,39 +50,5 @@ import org.netbeans.api.java.platform.JavaPlatform;
  * @author Tomas Zezula
  * @since 1.63
  */
-public interface J2SEProjectPlatform {
-
-    /**
-     * Name of the "projectPlatform" property.
-     */
-    String PROP_PROJECT_PLATFORM = "projectPlatform";   //NOI18N
-
-    /**
-     * Return the active project platform.
-     * @return the active {@link JavaPlatform} or null if the
-     * active platform cannot be resolved (it's broken)
-     */
-    @CheckForNull
-    JavaPlatform getProjectPlatform();
-
-    /**
-     * Sets active project platform.
-     * @param platform the platform to become active project active platform
-     * @throws IOException in case of IO error.
-     * @throws IllegalArgumentException if the platform is not a valid J2SE platform.
-     */
-    void setProjectPlatform(@NonNull JavaPlatform platform) throws IOException;
-
-    /**
-     * Adds {@link PropertyChangeListener} for listening on project platform changes.
-     * @param listener the listener to be added
-     */
-    void addPropertyChangeListener(@NonNull PropertyChangeListener listener);
-
-    /**
-     * Removes {@link PropertyChangeListener} for listening on project platform changes.
-     * @param listener the listener to be removed
-     */
-    void removePropertyChangeListener(@NonNull PropertyChangeListener listener);
-
+public interface J2SEProjectPlatform extends ProjectPlatformProvider {
 }

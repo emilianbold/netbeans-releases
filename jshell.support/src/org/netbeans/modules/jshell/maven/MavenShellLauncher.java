@@ -43,11 +43,13 @@ package org.netbeans.modules.jshell.maven;
 
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.launch.ShellAgent;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.launch.PropertyNames;
 import org.netbeans.modules.jshell.project.LaunchedProjectOpener;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
@@ -116,8 +118,9 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
             return false;
         }
         agent.setIO(con.getInputOutput(), config.getTaskDisplayName());
-        
+        JavaPlatform platform = ShellProjectUtils.findPlatform(project);
         List<String> args = ShellLaunchManager.buildLocalJVMAgentArgs(
+                platform,
                 agent, 
                 config.getProperties()::get
         );

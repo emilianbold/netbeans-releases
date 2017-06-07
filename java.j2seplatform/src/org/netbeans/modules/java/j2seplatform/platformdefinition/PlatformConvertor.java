@@ -220,7 +220,13 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             p = DefaultPlatformImpl.create (handler.properties, handler.sources, handler.javadoc);
             defaultPlatform = true;
         } else {
-            p = new J2SEPlatformImpl(handler.name,handler.installFolders, handler.properties, handler.sysProperties,handler.sources, handler.javadoc);
+            p = new J2SEPlatformImpl(
+                    handler.name,
+                    handler.installFolders,
+                    handler.properties,
+                    Util.filterProbe(handler.sysProperties, null),
+                    handler.sources,
+                    handler.javadoc);
             defaultPlatform = false;
         }
         validate(p);

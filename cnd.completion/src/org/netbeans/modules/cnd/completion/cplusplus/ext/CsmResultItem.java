@@ -70,6 +70,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -394,8 +395,19 @@ public abstract class CsmResultItem implements CompletionItem {
     // Checks that include directive have not been already included
     // It needs in case if some files have not been parsed yet
     private boolean isAlreadyIncluded(JTextComponent component, String include) {
+        Document doc = component.getDocument();
+        if (doc == null) {
+            return false;
+        }
+        boolean out[] = new boolean[] {false};
+        doc.render(()->{
+            out[0] = isAlreadyIncluded(doc, include);
+        });      
+        return out[0];
+    }
+    private boolean isAlreadyIncluded(Document doc, String include) {
         TokenSequence<TokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
+        ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
         ts.moveStart();
         while (ts.moveNext()) {
             if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
@@ -426,8 +438,20 @@ public abstract class CsmResultItem implements CompletionItem {
 
     // Says is it forward declarartion or not
     private boolean isForwardDeclaration(JTextComponent component) {
+        Document doc = component.getDocument();
+        if (doc == null) {
+            return false;
+        }
+        boolean out[] = new boolean[] {false};
+        doc.render(()->{
+            out[0] = isForwardDeclaration(doc);
+        });
+        return out[0];        
+    }
+    
+    private boolean isForwardDeclaration(Document doc) {
         TokenSequence<TokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0, false, false);
+        ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
         ts.moveStart();
         if (!ts.moveNext()) {
             return false;
@@ -487,6 +511,13 @@ public abstract class CsmResultItem implements CompletionItem {
         }
         final CsmInclude lastInclude2 = lastInclude;
         final boolean isLastIncludeTypeMatch2 = isLastIncludeTypeMatch;
+        final CsmOffsetable guardOffset;
+        if (lastInclude == null) {
+            CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+            guardOffset = fiq.getGuardOffset(currentFile);
+        } else {
+            guardOffset = null;
+        }
         doc.runAtomic(new Runnable() {
 
             @Override
@@ -501,8 +532,6 @@ public abstract class CsmResultItem implements CompletionItem {
                             doc.insertString(lastInclude2.getStartOffset(), include + "\n\n", null); // NOI18N
                         }
                     } else {
-                        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
-                        CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
                         TokenSequence<TokenId> ts;
                         if (guardOffset != null) {
                             ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset(), false, false);
@@ -591,6 +620,13 @@ public abstract class CsmResultItem implements CompletionItem {
      */
     protected String decorateReplaceTextIfTemplate(String replaceText, CsmObject csmObj) {
         if (CsmKindUtilities.isTemplate(csmObj)) {                
+            if (CsmKindUtilities.isSpecialization(csmObj)) {
+                List<CsmTemplateParameter> templateParameters = ((CsmTemplate)csmObj).getTemplateParameters();
+                if (templateParameters != null && templateParameters.isEmpty()) {
+                    // full specialization
+                    return ((CsmTemplate)csmObj).getDisplayName().toString();
+                }
+            }
             selectionStartOffset = replaceText.length() + 1;
             selectionEndOffset = replaceText.length() + 1;
             return replaceText + "<>"; // NOI18N
@@ -867,7 +903,20 @@ public abstract class CsmResultItem implements CompletionItem {
         }
 
         private boolean isAfterShiftOperator(JTextComponent c) {
-            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
+            Document doc = c.getDocument();
+            if (doc == null) {
+                return false;
+            }
+            boolean out[] = new boolean[] {false};
+            doc.render(()->{
+                out[0] = isAfterShiftOperator(doc);
+            });
+            return out[0];
+        }
+        
+        private boolean isAfterShiftOperator(Document doc) {
+            
+            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, 0, true, false);
             ts.moveStart();
             if (!ts.moveNext()) {
                 return false;
@@ -1514,6 +1563,9 @@ public abstract class CsmResultItem implements CompletionItem {
             String text;
             if (CsmBaseUtilitiesProvider.getDefault().isDummyForwardClass(cls)) {
                 text = CsmBaseUtilitiesProvider.getDefault().getDummyForwardSimpleQualifiedName(cls).toString();
+                if (text.lastIndexOf(':')>0) {
+                    text = text.substring(text.lastIndexOf(':')+1);
+                }
             } else {
                 text = cls.getName().toString();
             }

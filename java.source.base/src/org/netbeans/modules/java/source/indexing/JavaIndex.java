@@ -82,6 +82,7 @@ public final class JavaIndex {
 
     public static final String NAME = "java"; //NOI18N
     public static final int VERSION = 15;
+    public static final String ATTR_MODULE_NAME = "moduleName"; //NOI18N
     static final Logger LOG = Logger.getLogger(JavaIndex.class.getName());
     private static final String CLASSES = "classes"; //NOI18N
     private static final String APT_SOURCES = "sources";    //NOI18N

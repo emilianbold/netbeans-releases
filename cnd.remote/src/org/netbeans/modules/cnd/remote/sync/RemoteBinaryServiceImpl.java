@@ -153,7 +153,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
         }
 
         public RemoteBinaryResult ensureSync() throws InterruptedException, IOException, ExecutionException {
-            String localPath = RemotePathMap.getPathMap(execEnv).getLocalPath(remotePath, false);
+            String localPath = RemotePathMap.getPathMap(execEnv).getLocalPath(remotePath);
 
             RemoteBinaryResult result = null;
 

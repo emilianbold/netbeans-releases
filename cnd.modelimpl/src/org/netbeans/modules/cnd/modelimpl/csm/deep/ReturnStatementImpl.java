@@ -49,11 +49,13 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -82,6 +84,21 @@ public final class ReturnStatementImpl extends StatementBase implements CsmRetur
         if (returnExprAST != null) {
             // Lambda function
             shouldCreateReturnExpression |= AstUtil.findChildOfType(returnExprAST, CPPTokenTypes.CSM_DECLARATION_STATEMENT) != null;
+            
+            if (!shouldCreateReturnExpression) {
+                CsmScope current = scope;
+                while (CsmKindUtilities.isScopeElement(current) && !CsmKindUtilities.isFunction(current)) {
+                    current = ((CsmScopeElement) current).getScope();
+                }
+                if (CsmKindUtilities.isFunction(current)) {
+                    CsmFunction func = (CsmFunction) current;
+                    if (CsmUtilities.isAutoType(func.getReturnType())) {
+                        shouldCreateReturnExpression = true;
+                    } else if (CsmUtilities.isDecltypeAutoType(func.getReturnType())) {
+                        shouldCreateReturnExpression = true;
+                    }
+                }
+            }
             
             // TODO: check if scope is a function and it is annotated with constexpr.
             // In such case we should store return expression too.            

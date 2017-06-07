@@ -44,19 +44,35 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.w3c.dom.Node;
 
 /**
  * CDATA section representation.
  */
-public class CDATASection extends Text {
+public class CDATASection extends TextImpl implements org.w3c.dom.CDATASection {
 
     /**
      * Create content text node.
      */
-    CDATASection(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+    public CDATASection(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
         super( support, from, start, end);
+    }
+
+    @Override
+    public String getNodeValue() {
+        String text = first().text().toString();
+        int start = 0;
+        int end = text.length();
+        if (text.startsWith("<![CDATA[")) {
+            start = 9;
+        }
+        if (text.endsWith("]]>")) {
+            end = text.length() - 3;
+        }
+        return text.substring(start, end);
     }
 
 //    /**
@@ -65,6 +81,11 @@ public class CDATASection extends Text {
 //    CDATASection(XMLSyntaxSupport syntax, Token from, Attr parent) {
 //        super( syntax, from, parent);
 //    }
+
+    @Override
+    public short getNodeType() {
+        return Node.CDATA_SECTION_NODE;
+    }
     
 }
 

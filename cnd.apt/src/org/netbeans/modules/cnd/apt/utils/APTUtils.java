@@ -219,7 +219,7 @@ public class APTUtils {
     public static APTDefine createAPTDefineOnce(CharSequence filePath) {
         APTDefineNode defNode = null;
         String text = DEFINE_PREFIX + filePath;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(text, APTLanguageSupport.UNKNOWN);
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(text, APTFile.Kind.C_CPP);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream
@@ -234,7 +234,7 @@ public class APTUtils {
     public static APTDefine createAPTDefine(String macroText) {
         APTNodeBuilder nodeBuilder = null;
         macroText = DEFINE_PREFIX + macroText;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTFile.Kind.C_CPP);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream

@@ -42,53 +42,62 @@
 
 package org.netbeans.modules.maven.classpath;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.TestJavaPlatform;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.indexer.ResultImpl;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
-import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
-import org.netbeans.modules.maven.indexer.spi.BaseQueries;
-import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
-import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
-import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
-import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
-import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
-import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexQueryProvider;
-import org.netbeans.modules.maven.indexer.spi.ResultImplementation;
-import org.netbeans.modules.maven.indexer.spi.impl.Redo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
+@SuppressWarnings("AssignmentToMethodParameter")
 public class ClassPathProviderImplTest extends NbTestCase {
 
     public ClassPathProviderImplTest(String n) {
         super(n);
     }
 
+    private ClassPath systemModules;    
     private FileObject d;
+    
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         d = FileUtil.toFileObject(getWorkDir());
         System.setProperty("test.reload.sync", "true");
+        
+        MockLookup.setInstances(new MockJPProvider());
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification("j2se", new SpecificationVersion("9")));            
+        if(platforms != null && platforms.length > 0) {
+            systemModules = platforms[0].getBootstrapLibraries();
+        }        
     }
 
     public void testClassPath() throws Exception {
@@ -145,35 +154,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertRoots(ClassPath.getClassPath(itsrc, ClassPath.SOURCE), itsrc);
     }
 
-    public void testEndorsedClassPath() throws Exception {
-        MockLookup.setInstances(new RepositoryIndexQueryProvider() {
-            @Override
-            public boolean handlesRepository(RepositoryInfo repo) {
-                return true;
-            }
-            @Override
-            public ChecksumQueries getChecksumQueries() {
-                return new ChecksumQueries() {
-                    @Override
-                    public ResultImplementation<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
-                        return new ResultImpl<>(new Redo<NBVersionInfo>() {
-                            @Override
-                            public void run(ResultImpl<NBVersionInfo> result) {
-                            }
-                        });
-                    }
-                };
-            }
-            @Override public ArchetypeQueries getArchetypeQueries() { 
-                return null; 
-            }
-            @Override public BaseQueries getBaseQueries() { return null; }
-            @Override public ClassUsageQuery getClassUsageQuery() { return null; }
-            @Override public ClassesQuery getClassesQuery() { return null; }
-            @Override public ContextLoadedQuery getContextLoadedQuery() { return null; }
-            @Override public DependencyInfoQueries getDependencyInfoQueries() { return null; }
-            @Override public GenericFindQuery getGenericFindQuery() { return null; }
-        });
+    public void testCompileClassPath() throws Exception {
         TestFileUtils.writeFile(d,
                 "pom.xml",
                 "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
@@ -185,114 +166,89 @@ public class ClassPathProviderImplTest extends NbTestCase {
                 "<name>Test</name>" +
                 "</project>");
         FileObject src = FileUtil.createFolder(d, "src/main/java");
-        ClassPath cp = ClassPath.getClassPath(src, ClassPathSupport.ENDORSED);
+        ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull(cp);
-        MockPropertyChangeListener pcl = new MockPropertyChangeListener();
-        cp.addPropertyChangeListener(pcl);
-        assertRoots(cp);
-        ClassPath bcp = ClassPath.getClassPath(src, ClassPath.BOOT);
-        assertNotNull(bcp);
-        MockPropertyChangeListener pcl2 = new MockPropertyChangeListener();
-        bcp.addPropertyChangeListener(pcl2);
-        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));        
-        TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
-        EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
-        pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
+        List<ClassPath.Entry> entries = cp.entries();
+        assertFalse(entries.isEmpty());
+    }
+    
+    public void testCompileClassPathWithModuleInfo() throws Exception {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        FileObject mi = FileUtil.createData(src, "module-info.java");
+        ClassPath cp = ClassPath.getClassPath(src, JavaClassPathConstants.MODULE_COMPILE_PATH);
+        assertNotNull(cp);
+        List<ClassPath.Entry> entries = cp.entries();
+        assertFalse(entries.isEmpty());
+        assertRoots(entries, "target/classes");
+    }
+    
+    public void testCompileClassPathWithModuleInfoAddedLater() throws Exception {
+        if (systemModules == null) {
+            System.out.println("No jdk 9 home configured.");    //NOI18N
+            return;
+        }
+                
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        Project prj = FileOwnerQuery.getOwner(src);
+        // trigger FSL on source groups
+        prj.getLookup().lookup(Sources.class).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
-        String cs = RepositoryUtil.calculateSHA1Checksum(new File(FileUtil.toFile(d), "target/endorsed/override.jar"));
-        assertTrue(cp.toString(), cp.toString().contains(cs + ".jar"));
-        pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertTrue(bcp.toString(), bcp.toString().contains(cs + ".jar"));
-        d.getFileObject("target").delete();
-        pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertRoots(cp);
-        assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
-    }
-    
-    public void testDontIncludeJDK() throws Exception {
-        TestFileUtils.writeFile(d,
-                "pom.xml",
-                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
-                "<modelVersion>4.0.0</modelVersion>" +
-                "<groupId>grp</groupId>" +
-                "<artifactId>art</artifactId>" +
-                "<packaging>jar</packaging>" +
-                "<version>1.0-SNAPSHOT</version>" +
-                "<name>Test</name>" +
-                "<build>\n" +
-                "  <plugins>\n" +
-                "    <plugin>\n" +
-                "      <groupId>org.apache.maven.plugins</groupId>\n" +
-                "      <artifactId>maven-compiler-plugin</artifactId>\n" +
-                "      <version>2.3.2</version>\n" +
-                "      <configuration>\n" +
-                "        <compilerArguments>\n" +
-                "          <bootclasspath>netbeans.ignore.jdk.bootclasspath</bootclasspath>\n" +
-                "        </compilerArguments>\n" +
-                "      </configuration>\n" +
-                "    </plugin>\n" +
-                "  </plugins>\n" +
-                "</build>\n" +
-                "</project>"
-        );
-        FileObject src = FileUtil.createFolder(d, "src/main/java");
-        ClassPath cp = ClassPath.getClassPath(src, ClassPath.BOOT);
+        ClassPath cp = ClassPath.getClassPath(src, JavaClassPathConstants.MODULE_COMPILE_PATH);
         assertNotNull(cp);
-        assertRtJar(cp, false);
-    }
-    
-    public void testDontIncludeJDKFromProfile() throws Exception {
-        TestFileUtils.writeFile(d,
-                "pom.xml",
-                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
-                "<modelVersion>4.0.0</modelVersion>" +
-                "<groupId>grp</groupId>" +
-                "<artifactId>art</artifactId>" +
-                "<packaging>jar</packaging>" +
-                "<version>1.0-SNAPSHOT</version>" +
-                "<name>Test</name>" +
-                "<build>\n" +
-                "  <plugins>\n" +
-                "    <plugin>\n" +
-                "      <groupId>org.apache.maven.plugins</groupId>\n" +
-                "      <artifactId>maven-compiler-plugin</artifactId>\n" +
-                "      <version>2.3.2</version>\n" +
-                "      <configuration>\n" +
-                "      </configuration>\n" +
-                "    </plugin>\n" +
-                "  </plugins>\n" +
-                "</build>\n" +
-                "<profiles>\n" +
-                " <profile>\n" +
-                "  <id>bck2brwsr</id>\n" +
-                "  <build>\n" +
-                "  <plugins>\n" +
-                "    <plugin>\n" +
-                "      <groupId>org.apache.maven.plugins</groupId>\n" +
-                "      <artifactId>maven-compiler-plugin</artifactId>\n" +
-                "      <version>2.3.2</version>\n" +
-                "      <configuration>\n" +
-                "        <compilerArguments>\n" +
-                "          <bootclasspath>netbeans.ignore.jdk.bootclasspath</bootclasspath>\n" +
-                "        </compilerArguments>\n" +
-                "      </configuration>\n" +
-                "    </plugin>\n" +
-                "  </plugins>\n" +
-                "  </build>\n" +
-                " </profile>" +
-                "</profiles>" +
-                "</project>"
-        );
-        FileObject src = FileUtil.createFolder(d, "src/main/java");
-        ClassPath cp = ClassPath.getClassPath(src, ClassPath.BOOT);
+        List<ClassPath.Entry> entries = cp.entries();
+        assertTrue(entries.isEmpty());
+        
+        FileObject mi = FileUtil.createData(src, "module-info.java");
+        cp = ClassPath.getClassPath(src, JavaClassPathConstants.MODULE_COMPILE_PATH);
         assertNotNull(cp);
-        assertRtJar(cp, true);
-        selectProfile(d, "bck2brwsr");
-        ClassPath cp2 = ClassPath.getClassPath(src, ClassPath.BOOT);
-        assertSame("Supposedly same", cp, cp2);
-        assertRtJar(cp2, false);
-    }
+        entries = cp.entries();
+        assertFalse(entries.isEmpty());
+        assertRoots(entries, "target/classes");
+    }        
 
+    private void assertRoots(List<ClassPath.Entry> entries, String rootPath) throws URISyntaxException {
+        for (ClassPath.Entry entry : entries) {
+            URL url = entry.getURL();
+            if(url == null) {
+                continue;
+            }            
+            String entryPath = trimPath(Utilities.toFile(url.toURI()).getAbsolutePath());
+            rootPath = trimPath(d.getPath() + File.separator + rootPath);
+            if(entryPath.equals(rootPath)) {
+                return;
+            }
+        }
+        fail("classpath entries did not contain the expected root '" + d.getPath() + File.separator + rootPath + "'");
+    }
+    
+    private String trimPath(String path) {
+        path = path.trim();
+        return path.endsWith(File.separator) ? path.substring(0, path.length() - 1) : path;
+    }
     private static void assertRoots(ClassPath cp, FileObject... files) {
         assertNotNull(cp);
         Set<FileObject> roots = new LinkedHashSet<FileObject>();
@@ -421,4 +377,33 @@ public class ClassPathProviderImplTest extends NbTestCase {
         fail("Configuration " + cfgName + " not found!");
     }
 
+    private static final class MockJPProvider implements JavaPlatformProvider {
+        private JavaPlatform jp;
+
+        MockJPProvider() throws IOException {
+            jp = Optional.ofNullable(TestUtilities.getJava9Home())
+                .map((jh) -> TestJavaPlatform.createModularPlatform(jh))
+                .orElse(null);
+        }
+
+        @Override
+        public JavaPlatform[] getInstalledPlatforms() {
+            return jp != null ?
+                    new JavaPlatform[] {jp} :
+                    new JavaPlatform[0];
+        }
+
+        @Override
+        public JavaPlatform getDefaultPlatform() {
+            return jp;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+    }
 }

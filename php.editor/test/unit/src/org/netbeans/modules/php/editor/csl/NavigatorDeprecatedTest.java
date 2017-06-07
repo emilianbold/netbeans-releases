@@ -68,6 +68,14 @@ public class NavigatorDeprecatedTest extends PhpNavigatorTestBase {
         performTest("structure/deprecatedTypes");
     }
 
+    public void testDeprecatedTypesForNullableTypes_01() throws Exception {
+        performTest("structure/deprecatedTypesForNullableTypes_01");
+    }
+
+    public void testDeprecatedTypesForNullableTypes_02() throws Exception {
+        performTest("structure/deprecatedTypesForNullableTypes_02");
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

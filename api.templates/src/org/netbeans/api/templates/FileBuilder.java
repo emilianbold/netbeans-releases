@@ -62,15 +62,15 @@ import org.openide.util.Parameters;
  * Fluent interface for file creation. The Builder is first parametrized. After
  * everything is set up, call {@link #build} to materialize the template using
  * the supplied parameters/settings.
- * <p/>
+ * <p>
  * The create file(s) get names derived from the template and the existing target folder
  * contents (so that the filenames do not conflict with existing files). A desired
  * filename can be set up by {@link #name}.
- * <p/>
+ * <p>
  * The file build request will be forwarded to {@link CreateFromTemplateHandler}s; if none
  * {@link CreateFromTemplateHandler#accept}s the request, the default procedure takes place,
  * depending on the {@link #defaultMode} setting (default: {@link Mode#COPY}).
- * <p/>
+ * <p>
  * There are several values predefined:<ul>
  * <li>name - the created filename without extension
  * <li>nameAndExt - the created filename including the extension
@@ -107,7 +107,7 @@ public final class FileBuilder {
      * The method may be useful when creating secondary files; for example target and all attributes
      * are retained. During {@link #build()}, attributes may be redefined as needed for the 
      * additional file, just like in normal Builder operation.
-     * <p/>
+     * <p>
      * The new FileBuilder instance is completely indepenent of the original Descriptor. If the CreateDescriptor
      * supports additional properties in the future, using this method guarantees that they will be
      * transferred to the FileBuilder copy.
@@ -261,7 +261,7 @@ public final class FileBuilder {
      * the caller must process the providers, if it wishes to get additional attributes.
      * The Descriptor can be used to collect information from attribute providers or manually
      * trigger file creation in template handler.
-     * <p/>
+     * <p>
      * The operation changes the FileBuilder state.
      * 
      * @param collectAttributes if true, attribute providers are asked to add their attributes
@@ -294,21 +294,22 @@ public final class FileBuilder {
      * and will try to locate a willing {@link CreateFromTemplateHandler} that will create
      * the target file. If no such handler exists, and the {@code defaultCopy} parameter is true,
      * the file contents is just copied to the target location.
-     * <p/>
+     * <p>
      * If the {@code name} parameter is null, the function attempts to compute a suitable name
      * from the file.
-     * <p/>
+     * <p>
      * The default copy algorithm uses the supplied {@link Mode#FORMAT} to
      * process tokens.
-     * <p/>
+     * <p>
      * If the passed {@code name} is {@code null}, the implementation will pick a free name based on
      * the template's own name (see {@link FileUtil#findFreeFileName}).
      * @param f the template file
      * @param folder the target folder, must exist
      * @param name the desired name. If {@code null}, the implementation will choose the name.
      * @param attributes values to apply on the template. May be {@code null} = no values.
+     * @param defaultMode the mode of operations to use
      * @return The created file, or {@code null} if no creation handler is located.
-     * @throws IOException 
+     * @throws IOException when an I/O operation fails
      */
     @SuppressWarnings("AssignmentToMethodParameter")
     @CheckForNull

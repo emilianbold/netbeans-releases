@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
@@ -59,10 +60,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
  */
 public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
     private final String value;
+    private final ConstantDeclaration constantDeclaration;
 
-    ClassConstantDeclarationInfo(Identifier node, final String value) {
+    ClassConstantDeclarationInfo(Identifier node, final String value, ConstantDeclaration constantDeclaration) {
         super(node);
         this.value = value;
+        this.constantDeclaration = constantDeclaration;
     }
 
     public static List<? extends ClassConstantDeclarationInfo> create(ConstantDeclaration constantDeclaration) {
@@ -83,7 +86,7 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
                     value = unaryOperation.getOperator() + ((Scalar) expression).getStringValue();
                 }
             }
-            retval.add(new ClassConstantDeclarationInfo(name, value));
+            retval.add(new ClassConstantDeclarationInfo(name, value, constantDeclaration));
         }
         return retval;
     }
@@ -112,4 +115,9 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
     public String getValue() {
         return value;
     }
+
+    public PhpModifiers getAccessModifiers() {
+        return PhpModifiers.fromBitMask(constantDeclaration.getModifier());
+    }
+
 }

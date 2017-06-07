@@ -61,7 +61,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
-import org.sonatype.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.Artifact;
 
 /**
  * #189442: tries to associate (usually snapshot) artifacts with their owners.

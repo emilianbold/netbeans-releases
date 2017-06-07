@@ -118,6 +118,7 @@ import org.netbeans.swing.plaf.LFCustoms;
 public abstract class JavaCompletionItem implements CompletionItem {
 
     protected static int SMART_TYPE = 1000;
+    protected static int DEPRECATED = 10;
     private static final String GENERATE_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "generate_Lbl");
     private static final Logger LOGGER = Logger.getLogger(JavaCompletionItem.class.getName());
 
@@ -993,7 +994,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return smartType ? 800 - SMART_TYPE : 800;
+            int p = 800;
+            if (smartType)
+                p -= SMART_TYPE;
+            if (isDeprecated)
+                p += DEPRECATED;
+            return p;
         }
 
         @Override
@@ -1204,6 +1210,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                         TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
                                         sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                     } else {
+                                        TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
+                                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.IMPORT) {
+                                            ClassItem.super.substituteText(c, offset, length, elem.getQualifiedName(), toAdd);
+                                            return;
+                                        }
                                         sb.append("${PAR#0"); //NOI18N
                                         if ((type == null || type.getKind() != TypeKind.ERROR) &&
                                                 EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
@@ -1524,7 +1535,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return smartType ? 300 - SMART_TYPE : 300;
+            int p = 300;
+            if (smartType)
+                p -= SMART_TYPE;
+            if (isDeprecated)
+                p += DEPRECATED;
+            return p;
         }
 
         @Override
@@ -1819,7 +1835,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return smartType ? 500 - SMART_TYPE : 500;
+            int p = 500;
+            if (smartType)
+                p -= SMART_TYPE;
+            if (isDeprecated)
+                p += DEPRECATED;
+            return p;
         }
 
         @Override
@@ -2444,7 +2465,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return insertName ? 550 : smartType ? 650 - SMART_TYPE : 650;
+            int p = insertName ? 550 : 650;
+            if (smartType)
+                p -= SMART_TYPE;
+            if (isDeprecated)
+                p += DEPRECATED;
+            return p;
         }
 
         @Override
@@ -2815,7 +2841,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return 100 - SMART_TYPE;
+            return isDeprecated ? 100 - SMART_TYPE + DEPRECATED : 100 - SMART_TYPE;
         }
 
         @Override
@@ -3034,7 +3060,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return 100;
+            return isDeprecated ? 100 + DEPRECATED : 100;
         }
 
         @Override
@@ -3297,7 +3323,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return (getElementHandle().getKind().isField() ? 720 : 750) - SMART_TYPE;
+            int p = (getElementHandle().getKind().isField() ? 720 : 750) - SMART_TYPE;
+            return isDeprecated ? p + DEPRECATED : p;
         }
 
         @Override
@@ -3674,7 +3701,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         i += 3;
                 }                
             }
-            return 700 + Math.min(i, 99) - SMART_TYPE;
+            int p = 700 + Math.min(i, 99) - SMART_TYPE;
+            return isDeprecated ? p + DEPRECATED : p;
         }
 
         @Override

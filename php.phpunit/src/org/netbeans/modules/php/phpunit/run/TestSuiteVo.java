@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phpunit.run;
 
@@ -45,20 +45,26 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 public final class TestSuiteVo {
 
     private final List<TestCaseVo> testCases = new ArrayList<>();
     private final String name;
+    private final String file;
+    private final long time;
 
 
-    public TestSuiteVo(String name) {
+    @NbBundle.Messages("TestSuiteVo.name.empty=&lt;no suite name>")
+    public TestSuiteVo(String name, String file, long time) {
         assert name != null;
-        this.name = name;
+        assert file != null;
+        this.name = StringUtils.hasText(name) ? name : Bundle.TestSuiteVo_name_empty();
+        this.file = file;
+        this.time = time;
     }
 
     void addTestCase(TestCaseVo testCase) {
@@ -69,15 +75,19 @@ public final class TestSuiteVo {
         return name;
     }
 
-    @CheckForNull
+    public String getFile() {
+        return file;
+    }
+
     public FileObject getLocation() {
-        for (TestCaseVo testCase : testCases) {
-            String file = testCase.getFile();
-            if (StringUtils.hasText(file)) {
-                return FileUtil.toFileObject(new File(file));
-            }
+        if (file == null) {
+            return null;
         }
-        return null;
+        File f = new File(file);
+        if (!f.isFile()) {
+            return null;
+        }
+        return FileUtil.toFileObject(f);
     }
 
     public List<TestCaseVo> getPureTestCases() {
@@ -89,10 +99,6 @@ public final class TestSuiteVo {
     }
 
     public long getTime() {
-        long time = 0;
-        for (TestCaseVo testCase : testCases) {
-            time += testCase.getTime();
-        }
         return time;
     }
 
@@ -105,7 +111,7 @@ public final class TestSuiteVo {
 
     @Override
     public String toString() {
-        return String.format("TestSuiteVo{name: %s, location: %s, time: %d, cases: %d}", name, getLocation(), getTime(), testCases.size()); // NOI18N
+        return String.format("TestSuiteVo{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size()); // NOI18N
     }
 
 }

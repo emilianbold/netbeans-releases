@@ -325,9 +325,9 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         //FileBufferDoc.ChangedSegment changedSegment = null;
         try {
             if (full) {
-                fileAPT = APTDriver.findAPT(file.getBuffer(), file.getFileLanguage(), file.getFileLanguageFlavor());
+                fileAPT = APTDriver.findAPT(file.getBuffer(), file.getAPTFileKind());
             } else {
-                fileAPT = APTDriver.findAPTLight(file.getBuffer());
+                fileAPT = APTDriver.findAPTLight(file.getBuffer(), file.getAPTFileKind());
             }
             //if (file.getBuffer() instanceof FileBufferDoc) {
             //    changedSegment = ((FileBufferDoc) file.getBuffer()).getLastChangedSegment();

@@ -147,7 +147,14 @@ public final class NBJRTUtil {
 
     @CheckForNull
     static File getNIOProvider(@NonNull final File jdkHome) {
-        final File jrtFsJar = new File(jdkHome, NIO_PROVIDER);
+        File jrtFsJar = new File(jdkHome, String.format(
+                "lib%s%s",   //NOI18N
+                File.separator,
+                NIO_PROVIDER));
+        if (jrtFsJar.exists()) {
+            return jrtFsJar;
+        }
+        jrtFsJar = new File(jdkHome, NIO_PROVIDER);
         return jrtFsJar.exists() ?
             jrtFsJar :
             null;

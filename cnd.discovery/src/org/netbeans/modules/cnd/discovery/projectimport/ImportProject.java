@@ -138,6 +138,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1519,6 +1520,41 @@ public class ImportProject implements PropertyChangeListener {
         MakeConfiguration activeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
         if (activeConfiguration == null) {
             return;
+        }
+        BuildTraceSupport.BuildTrace buldTraceSupport = getBuildTraceSupport();
+        if (buldTraceSupport != null && buldTraceSupport.getKind() == BuildTraceSupport.BuildTraceKind.Wrapper) {
+            Tool wrapperC = buldTraceSupport.getToolsWrapper().getTool(PredefinedToolKind.CCompiler);
+            if (wrapperC != null && cToolPath != null) {
+                if (cToolPath.equals(wrapperC.getPath())) {
+                    return;
+                }
+                if (activeConfiguration.getCompilerSet().getCompilerSet() != null &&
+                    activeConfiguration.getCompilerSet().getCompilerSet().getCompilerFlavor().isCygwinCompiler()) {
+                    String converted = WindowsSupport.getInstance().convertFromCygwinPath(cToolPath);
+                    if (converted != null) {
+                        converted = converted.replace('\\', '/');
+                        if (converted.equals(wrapperC.getPath())) {
+                            return;
+                        }
+                    }
+                }
+            }
+            Tool wrapperCpp = buldTraceSupport.getToolsWrapper().getTool(PredefinedToolKind.CCCompiler);
+            if (wrapperCpp != null && cppToolPath != null) {
+                if (cppToolPath.equals(wrapperCpp.getPath())) {
+                    return;
+                }
+                if (activeConfiguration.getCompilerSet().getCompilerSet() != null &&
+                    activeConfiguration.getCompilerSet().getCompilerSet().getCompilerFlavor().isCygwinCompiler()) {
+                    String converted = WindowsSupport.getInstance().convertFromCygwinPath(cppToolPath);
+                    if (converted != null) {
+                        converted = converted.replace('\\', '/');
+                        if (converted.equals(wrapperCpp.getPath())) {
+                            return;
+                        }
+                    }
+                }
+            }
         }
         String cProjectToolPath = null;
         String cppProjectToolPath = null;

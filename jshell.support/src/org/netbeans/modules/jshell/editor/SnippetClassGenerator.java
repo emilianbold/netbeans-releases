@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import jdk.jshell.JShellAccessor;
+import org.netbeans.lib.nbjshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.SubKind;
 import jdk.jshell.VarSnippet;
@@ -171,7 +171,7 @@ public class SnippetClassGenerator implements Runnable {
         candidates.add(snip);
         while (!candidates.isEmpty()) {
             Snippet c = candidates.poll();
-            Collection<Snippet> deps = JShellAccessor.getDependents(shellSession.getShell(), c);
+            Collection<Snippet> deps = JShellAccessor.getDependents(shellSession.ensureShell(), c);
             for (Snippet s : deps) {
                 if (!s.kind().isPersistent()) {
                     continue;

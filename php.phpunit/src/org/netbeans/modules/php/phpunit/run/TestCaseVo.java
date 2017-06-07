@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phpunit.run;
 
@@ -45,8 +45,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.openide.filesystems.FileUtil;
@@ -64,36 +62,36 @@ public final class TestCaseVo {
     private final List<String> stacktrace = new ArrayList<>();
     private final String className;
     private final String name;
+    private final String file;
+    private final int line;
+    private final long time;
 
-    @NullAllowed
-    private String file;
-    @NullAllowed
-    private Integer line;
-    private long time;
-
-    private TestCase.Status status = null;
+    private TestCase.Status status = TestCase.Status.PASSED;
 
 
-    public TestCaseVo(@NullAllowed String className, String name) {
+    public TestCaseVo(String className, String name, String file, int line, long time) {
         assert name != null;
         this.className = className;
         this.name = name;
+        this.file = file;
+        this.line = line;
+        this.time = time;
     }
 
     @NbBundle.Messages("TestCaseVo.tests.no=No valid test cases found.")
     static TestCaseVo skippedTestCase() {
         // suite with no testcases => create a fake with error message
-        TestCaseVo testCase = new TestCaseVo(null, Bundle.TestCaseVo_tests_no());
-        testCase.setStatus(TestCase.Status.SKIPPED);
+        TestCaseVo testCase = new TestCaseVo(null, Bundle.TestCaseVo_tests_no(), null, -1, -1);
+        testCase.status = TestCase.Status.SKIPPED;
         return testCase;
-    }
-
-    public String getType() {
-        return PHPUNIT_TYPE;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getType() {
+        return PHPUNIT_TYPE;
     }
 
     @CheckForNull
@@ -101,26 +99,14 @@ public final class TestCaseVo {
         return className;
     }
 
-    @CheckForNull
     public String getFile() {
         return file;
     }
 
-    void setFile(@NonNull String file) {
-        assert file != null;
-        this.file = file;
-    }
-
-    @CheckForNull
-    public Integer getLine() {
+    public int getLine() {
         return line;
     }
 
-    void setLine(int line) {
-        this.line = line;
-    }
-
-    @CheckForNull
     public Locations.Line getLocation() {
         if (file == null) {
             return null;
@@ -129,15 +115,11 @@ public final class TestCaseVo {
         if (!f.isFile()) {
             return null;
         }
-        return new Locations.Line(FileUtil.toFileObject(f), line == null ? -1 : line);
+        return new Locations.Line(FileUtil.toFileObject(f), line);
     }
 
     public long getTime() {
         return time;
-    }
-
-    void setTime(long time) {
-        this.time = time;
     }
 
     public String[] getStackTrace() {
@@ -149,8 +131,7 @@ public final class TestCaseVo {
         StringBuilder actual = new StringBuilder(100);
         boolean diffStarted = false;
         for (String row : stacktrace) {
-            if (row.contains(EXPECTED_SECTION_START)
-                    && row.contains(ACTUAL_SECTION_START)) {
+            if (row.contains(EXPECTED_SECTION_START) && row.contains(ACTUAL_SECTION_START)) {
                 for (String part : row.split("\r?\n")) { // NOI18N
                     if (diffStarted) {
                         if (part.startsWith(EXPECTED_ROW_START)) {
@@ -187,26 +168,26 @@ public final class TestCaseVo {
         stacktrace.add(line);
     }
 
-    public TestCase.Status getStatus() {
-        assert status != null;
-        return status;
+    void setErrorStatus() {
+        assert status == TestCase.Status.PASSED;
+        status = TestCase.Status.ERROR;
     }
 
-    void setStatus(TestCase.Status status) {
-        assert status != null;
-        assert this.status == null;
-        this.status = status;
+    public void setFailureStatus() {
+        assert status == TestCase.Status.PASSED;
+        status = TestCase.Status.FAILED;
+    }
+
+    public TestCase.Status getStatus() {
+        return status;
     }
 
     public boolean isError() {
         return status.equals(TestCase.Status.ERROR);
     }
 
-    public boolean hasFailureInfo() {
-        return isError()
-                || status.equals(TestCase.Status.FAILED)
-                || status.equals(TestCase.Status.PENDING)
-                || status.equals(TestCase.Status.SKIPPED);
+    public boolean isFailure() {
+        return status.equals(TestCase.Status.FAILED);
     }
 
     @Override

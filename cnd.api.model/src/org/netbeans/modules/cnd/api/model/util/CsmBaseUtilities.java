@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
@@ -165,6 +166,10 @@ public class CsmBaseUtilities {
             iteration--;
         }
         return null;
+    }
+    
+    public static CsmExpression tryGetDecltypeExpression(CsmType type) {
+        return CsmBaseUtilitiesProvider.getDefault().getDecltypeExpression(type);
     }
 
     /**

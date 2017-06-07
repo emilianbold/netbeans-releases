@@ -60,6 +60,7 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,11 +73,8 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import jdk.jshell.execution.LoaderDelegate;
 import jdk.jshell.execution.RemoteExecutionControl;
 import static jdk.jshell.execution.Util.forwardExecutionControlAndIO;
-import static org.netbeans.lib.jshell.agent.RemoteCodes.RESULT_KILLED;
-import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
 /**
  *
@@ -280,7 +278,7 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             Map<String, Consumer<OutputStream>> chans = new HashMap<>();
             chans.put("out", st -> System.setOut(new PrintStream(st, true)));
             chans.put("err", st -> System.setErr(new PrintStream(st, true)));
-            forwardExecutionControlAndIO(worker, inStream, outStream, chans);
+            forwardExecutionControlAndIO(worker, inStream, outStream, chans, Collections.emptyMap());
         } catch (EOFException ex) {
             // ignore, forcible close by the tool
         }
@@ -322,7 +320,7 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             LOG.fine("Opening input stream from master");
 
             Map<String, Consumer<OutputStream>> chans = new HashMap<>();
-            forwardExecutionControlAndIO(this, ism, osm, chans);
+            forwardExecutionControlAndIO(this, ism, osm, chans, Collections.emptyMap());
         } catch (EOFException ex) {
             // expected.
             LOG.log(Level.FINE, "EOF", ex);
@@ -496,6 +494,8 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
             if (!killed.get()) {
                 throw td;
             }
+        } catch (ExecutionControlException ex) {
+            throw ex; 
         } catch (Throwable t) {
             killed.set(true);
         } finally {
@@ -529,21 +529,6 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
     }
 
     @Override
-    public void setClasspath(String path) throws EngineTerminationException, InternalException {
-        List<URL> savePath = additionalClasspath;
-        additionalClasspath = new ArrayList<>();
-        boolean success = false;
-        try {
-            addToClasspath(path);
-            success = true;
-        } finally {
-            if (!success) {
-                additionalClasspath = savePath;
-            }
-        }
-    }
-
-    @Override
     public void addToClasspath(String cp) throws EngineTerminationException, InternalException {
         for (String cpItem : cp.split(";")) { // NOI18N
             File f = new File(cpItem);
@@ -551,7 +536,11 @@ public class AgentWorker extends RemoteExecutionControl implements Executor, Run
                 throw new InternalException("Relative paths unuspported yet"); // NOI18N
             }
             try {
-                additionalClasspath.add(f.toURI().toURL());
+                URL url = f.toURI().toURL();
+                additionalClasspath.add(url);
+                if (loader != null) {
+                    loader.addURL(url);
+                }
             } catch (MalformedURLException ex) {
                 throw new InternalException("Invalid file url: " + cpItem);
             }

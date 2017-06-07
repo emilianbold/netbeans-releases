@@ -42,12 +42,15 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.support.CsmTypes;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -55,8 +58,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.ShiftedTokenStream;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.spi.model.TypesProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -64,6 +69,15 @@ import org.netbeans.modules.cnd.spi.model.TypesProvider;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.TypesProvider.class)
 public class TypesProviderImpl implements TypesProvider {
+    
+    // Now both decltypes and typeofs are handled as decltypes
+    private static final CharSequence DECLTYPE_ALIASES[] = {
+        CppTokenId.DECLTYPE.fixedText(),
+        CppTokenId.__DECLTYPE.fixedText(),
+        CppTokenId.TYPEOF.fixedText(),
+        CppTokenId.__TYPEOF.fixedText(),
+        CppTokenId.__TYPEOF__.fixedText()
+    };
     
     @Override
     public CsmType createType(CharSequence sequence, CsmScope scope, CsmTypes.SequenceDescriptor descriptor) {
@@ -100,6 +114,21 @@ public class TypesProviderImpl implements TypesProvider {
                 newDescriptor.isVolatile()
         );
     }
+
+    @Override
+    public boolean isDecltype(CharSequence classifierText) {
+        for (CharSequence alias : getDecltypeAliases()) {
+            if (CharSequenceUtils.contentEquals(alias, classifierText)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public CharSequence[] getDecltypeAliases() {
+        return DECLTYPE_ALIASES;
+    }
     
     private static AST tryParseType(CharSequence sequence, String lang, String langFlavour, CsmTypes.OffsetDescriptor offs) {
         CPPParserEx parser = createParser(sequence, lang, langFlavour, offs);
@@ -113,7 +142,8 @@ public class TypesProviderImpl implements TypesProvider {
     }    
     
     private static CPPParserEx createParser(CharSequence sequence, String lang, String langFlavour, CsmTypes.OffsetDescriptor offs) {
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), lang);
+        APTFile.Kind aptKind = APTDriver.langFlavorToAPTFileKind(lang, langFlavour);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), aptKind);
         if (ts != null) {
             if (offs.getStartOffset() != 0) {
                 ts = new ShiftedTokenStream(ts, offs.getStartOffset());
@@ -126,15 +156,6 @@ public class TypesProviderImpl implements TypesProvider {
     }
     
     private static int getParserFlags(String lang, String langFlavour) {
-        int flags = CPPParserEx.CPP_SUPPRESS_ERRORS;
-        if (APTLanguageSupport.GNU_CPP.equals(lang)) {
-            flags |= CPPParserEx.CPP_CPLUSPLUS;
-        } else {
-            flags |= CPPParserEx.CPP_ANSI_C;
-        }
-        if (APTLanguageSupport.FLAVOR_CPP11.equals(langFlavour)) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
-        }
-        return flags;
+        return ParserProviderImpl.adjustAntlr2ParserFlagsForLanguage(CPPParserEx.CPP_SUPPRESS_ERRORS, lang, langFlavour);
     }
 }

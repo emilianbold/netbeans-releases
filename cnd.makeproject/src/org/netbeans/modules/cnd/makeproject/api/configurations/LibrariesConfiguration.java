@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class LibrariesConfiguration extends VectorConfiguration<LibraryItem> implements Cloneable {
@@ -64,7 +65,7 @@ public class LibrariesConfiguration extends VectorConfiguration<LibraryItem> imp
      * @return dependent shared libraries.
      */
     public Set<String> getSharedLibraries() {
-        HashSet<String> paths = new HashSet<>();
+        HashSet<String> paths = new LinkedHashSet<>();
         for (LibraryItem item : getValue()) {
             String path = item.getPath();
             if (path != null && (path.endsWith(".dll") || path.endsWith(".dylib") // NOI18N

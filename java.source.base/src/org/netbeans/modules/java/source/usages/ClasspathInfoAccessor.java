@@ -84,20 +84,22 @@ public abstract class ClasspathInfoAccessor {
     private static volatile ClasspathInfoAccessor INSTANCE;
 
     @NonNull
-    public abstract JavaFileManager createFileManager(@NonNull ClasspathInfo cpInfo);
+    public abstract JavaFileManager createFileManager(@NonNull ClasspathInfo cpInfo, @NullAllowed String sourceLevel);
     
     @NonNull
     public abstract FileManagerTransaction getFileManagerTransaction(@NonNull ClasspathInfo cpInfo);
     
     public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);
         
-    public abstract ClasspathInfo create (ClassPath bootPath,
-            ClassPath moduleBootPath,
-            ClassPath compilePath,
-            ClassPath moduleCompilePath,
-            ClassPath moduleClassPath,
-            ClassPath sourcePath,
-            JavaFileFilterImplementation filter,
+    public abstract ClasspathInfo create (
+            @NonNull final ClassPath bootPath,
+            @NonNull final ClassPath moduleBootPath,
+            @NonNull final ClassPath compilePath,
+            @NonNull final ClassPath moduleCompilePath,
+            @NonNull ClassPath moduleClassPath,
+            @NullAllowed ClassPath sourcePath,
+            @NullAllowed ClassPath moduleSourcePath,
+            @NullAllowed JavaFileFilterImplementation filter,
             boolean backgroundCompilation,
             boolean ignoreExcludes,
             boolean hasMemoryFileManager,

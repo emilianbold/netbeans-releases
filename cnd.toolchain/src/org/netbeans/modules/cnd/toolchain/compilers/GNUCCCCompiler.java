@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
@@ -53,6 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * A common base class for GNU C and C++  compilers
@@ -173,19 +175,40 @@ import org.openide.util.NbBundle;
                        startIncludes = false;
                        continue;
                    }
-                   if (line.length()>2 && line.charAt(1)==':') {
+                   if (line.length() > 2 && line.charAt(1) == ':') {
                        addUnique(pair.systemIncludeDirectoriesList, normalizePath(line));
                    } else {
-                       line = cutIncludePrefix(line);
-                       if (line.endsWith(" (framework directory)")) { // NOI18N
-                           line = line.substring(0, line.lastIndexOf('(')).trim()+Driver.FRAMEWORK;
-                       }
-                       addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line));
-                       
-                       if (getDescriptor() != null && getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
-                           // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems
-                           // we shouldn't add original dir (fix later to avoid regression before release)
-                           addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line.substring(4)));
+                       String compilePath = getPath().replace('\\', '/'); // NOI18N
+                       if ((Utilities.isWindows() || compilePath.length()>1 && compilePath.charAt(1) == ':') && getExecutionEnvironment().isLocal()) {
+                           int i = compilePath.indexOf("/usr/bin/"); // NOI18N
+                           if (i > 0) {
+                               String prefix = compilePath.substring(0,i);
+                               addUnique(pair.systemIncludeDirectoriesList, normalizePath(prefix + line));
+                           } else {
+                               i = compilePath.indexOf("/bin/"); // NOI18N
+                                if (i > 0) {
+                                    String prefix = compilePath.substring(0,i);
+                                    line = line.replace('\\', '/'); // NOI18N
+                                    if (line.startsWith("/usr/lib/")) { // NOI18N
+                                        if (new File(normalizePath(prefix + line)).exists()) {
+                                            addUnique(pair.systemIncludeDirectoriesList, normalizePath(prefix + line));
+                                        }
+                                        addUnique(pair.systemIncludeDirectoriesList, normalizePath(prefix + line.substring(4)));
+                                    } else if (line.startsWith("/mingw/")) { // NOI18N
+                                        addUnique(pair.systemIncludeDirectoriesList, normalizePath(prefix + line.substring(6)));
+                                    } else {
+                                        addUnique(pair.systemIncludeDirectoriesList, normalizePath(prefix + line));
+                                    }
+                                } else {
+                                    // I do not know such compiler
+                                    addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line));
+                                }
+                           }
+                       } else {
+                           if (line.endsWith(" (framework directory)")) { // NOI18N
+                               line = line.substring(0, line.lastIndexOf('(')).trim() + Driver.FRAMEWORK;
+                           }
+                           addUnique(pair.systemIncludeDirectoriesList, normalizePath(line));
                        }
                    }
                    continue;

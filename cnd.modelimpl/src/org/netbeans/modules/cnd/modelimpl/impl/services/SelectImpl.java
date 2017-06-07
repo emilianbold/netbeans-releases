@@ -487,7 +487,7 @@ public class SelectImpl implements CsmSelectProvider {
                     if (allowEmptyName && name.length() == 0) {
                         return true;
                     }
-                    return CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive);
+                    return CsmSortUtilities.startsWith(name.toString(), strPrefix.toString(), match, caseSensitive);
                 }
                 return false;
             }

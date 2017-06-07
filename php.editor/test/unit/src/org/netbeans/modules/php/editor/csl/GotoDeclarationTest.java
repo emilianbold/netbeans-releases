@@ -41,23 +41,14 @@
  */
 package org.netbeans.modules.php.editor.csl;
 
-import java.io.File;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
 /**
  *
  * @author Radek Matous
  */
-public class GotoDeclarationTest extends PHPNavTestBase {
+public class GotoDeclarationTest extends GotoDeclarationTestBase {
 
     public GotoDeclarationTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
     }
 
     public void testConstAccesInFldDecl() throws Exception {
@@ -503,6 +494,35 @@ public class GotoDeclarationTest extends PHPNavTestBase {
 
     public void testConstantArrayAccess_24() throws Exception {
         checkDeclaration(getTestPath(), "ConstantInterface::INTERFACE_CONSTANT1[GLOBAL_CON^STANT1[1]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    // constant array access with namespace
+    public void testIssue268712_01() throws Exception {
+        checkDeclaration(getTestPath(), "const TEST3 = \\TES^T1[0];", "    const ^TEST1 = [0, 1];");
+    }
+
+    public void testIssue268712_02() throws Exception {
+        checkDeclaration(getTestPath(), "\\Issue268712_A\\TEST^2[0][1];", "    const ^TEST2 = [[0, 1], 1];");
+    }
+
+    public void testIssue268712_03() throws Exception {
+        checkDeclaration(getTestPath(), "$const1 = \\TE^ST1[$test];", "    const ^TEST1 = [0, 1];");
+    }
+
+    public void testIssue268712_04() throws Exception {
+        checkDeclaration(getTestPath(), "$const2 = \\Issue268712_A\\TEST2^[1];", "    const ^TEST2 = [[0, 1], 1];");
+    }
+
+    public void testIssue268712_05() throws Exception {
+        checkDeclaration(getTestPath(), "echo \\Issue268712_B\\TES^T6[\"test\"] . PHP_EOL;", "    const ^TEST6 = [\"test\" => \"test\"];");
+    }
+
+    public void testIssue268712_06() throws Exception {
+        checkDeclaration(getTestPath(), "echo Sub\\S^UB[\"sub\"] . PHP_EOL;", "    const ^SUB = [\"sub\" => \"sub\"];");
+    }
+
+    public void testIssue268712_07() throws Exception {
+        checkDeclaration(getTestPath(), "echo namespace\\TEST^6[\"test\"] . PHP_EOL;", "    const ^TEST6 = [\"test\" => \"test\"];");
     }
 
     public void testStaticMethodInvocation_First() throws Exception {
@@ -1378,6 +1398,11 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "            echo self::myTe^stStatic() . PHP_EOL;", "    public static function ^myTestStatic() {");
     }
 
+    // related to #171249
+    public void testIssue270422() throws Exception {
+        checkDeclaration(getTestPath(), " * @method Paren^tClass testMethod()", "class ^ParentClass {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
@@ -2198,25 +2223,4 @@ public class GotoDeclarationTest extends PHPNavTestBase {
 //                                         "}\n" +
 //                                         "?> ");
 
-    @Override
-    protected FileObject[] createSourceClassPathsForTest() {
-        return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
-    }
-
-    private String getTestFolderPath() {
-        return "testfiles/gotodeclaration/" + getTestName();
-    }
-
-    private String getTestPath() {
-        return getTestFolderPath() + "/" + getTestName() + ".php";
-    }
-
-    private String getTestName() {
-        String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
-        return name;
-    }
 }

@@ -107,6 +107,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="BrokenReferencesSupport.createPlatformVersionProblemProvider">
+            <api name="JavaProjectUI"/>
+            <summary>Extended the <code>BrokenReferencesSupport.createPlatformVersionProblemProvider</code> by the mininal source level supported by the project</summary>
+            <version major="1" minor="1.74"/>
+            <date day="20" month="3" year="2017"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Extended the <code>BrokenReferencesSupport.createPlatformVersionProblemProvider</code> by the mininal source level supported by the project
+            </description>
+            <class name="BrokenReferencesSupport" package="org.netbeans.spi.java.project.support.ui"/>
+        </change>
         <change id="JavaRunner-module-path">
             <api name="JavaProjectUI"/>
             <summary>Added a constant for execute module path into <code>JavaRunner</code></summary>

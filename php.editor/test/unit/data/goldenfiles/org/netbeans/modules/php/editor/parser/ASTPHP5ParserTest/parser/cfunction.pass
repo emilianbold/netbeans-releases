@@ -65,6 +65,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='42' end='63' isCurly='true'>
+                                <ReturnStatement start='47' end='60'>
+                                    <Scalar start='54' end='59' type='STRING' value='false'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>

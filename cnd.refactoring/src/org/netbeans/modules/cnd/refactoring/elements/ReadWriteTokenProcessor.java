@@ -156,6 +156,9 @@ public class ReadWriteTokenProcessor {
                             case SCOPE: // x.
                                 rw = CsmRefactoringElementImpl.RW.Read;
                                 return;
+                            case LPAREN: // x(
+                                rw = CsmRefactoringElementImpl.RW.Write;
+                                return;
                             case COLON:
                             case SEMICOLON:
                             case RBRACKET:
@@ -317,7 +320,7 @@ public class ReadWriteTokenProcessor {
             Token<TokenId> token = cppTokenSequence.token();
             TokenId id = token.id();
             if (id instanceof CppTokenId) {
-                switch ((CppTokenId) id) {
+                loop: switch ((CppTokenId) id) {
                     // skip unimportant
                     case WHITESPACE:
                     case ESCAPED_LINE:
@@ -331,7 +334,7 @@ public class ReadWriteTokenProcessor {
                     default:
                         for(CppTokenId t : ignore) {
                             if (t == id) {
-                                break;
+                                break loop;
                             }
                         }
                         return (CppTokenId) id;

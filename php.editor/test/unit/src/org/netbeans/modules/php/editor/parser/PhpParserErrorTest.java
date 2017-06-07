@@ -486,16 +486,17 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/yieldFrom_03.php");
     }
 
-    // XXX
-//    public void testYieldFrom04() throws Exception {
-//        checkErrors("testfiles/parser/yieldFrom_04.php");
-//    }
+    public void testYieldFrom04() throws Exception {
+        checkErrors("testfiles/parser/yieldFrom_04.php");
+    }
 
     public void testYieldFrom05() throws Exception {
+        // it's available since PHP7
         checkErrors("testfiles/parser/yieldFrom_05.php");
     }
 
     public void testYieldFrom06() throws Exception {
+        // it's available since PHP7
         checkErrors("testfiles/parser/yieldFrom_06.php");
     }
 
@@ -655,6 +656,66 @@ public class PhpParserErrorTest extends PHPTestBase {
 
     public void testIssue258959() throws Exception {
         checkErrors("testfiles/parser/issue258959.php");
+    }
+
+    public void testIssue268496_01() throws Exception {
+        checkErrors("testfiles/parser/issue268496_01.php");
+    }
+
+    public void testIssue268496_02() throws Exception {
+        // syntax error : callable
+        checkErrors("testfiles/parser/issue268496_02.php");
+    }
+
+    public void testIssue268496_03() throws Exception {
+        // syntax error : __TRAIT__
+        checkErrors("testfiles/parser/issue268496_03.php");
+    }
+
+    public void testIssue268712() throws Exception {
+        checkErrors("testfiles/parser/issue268712.php");
+    }
+
+    public void testIssue262144() throws Exception {
+        // yeild and yield from expressions for PHP7
+        checkErrors("testfiles/parser/issue262144.php");
+    }
+
+    // PHP7.1
+    public void testNullableTypes_01() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_01.php");
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_02.php");
+    }
+
+    public void testNullableTypes_03() throws Exception {
+        checkErrors("testfiles/parser/nullableTypes_03.php");
+    }
+
+    public void testMultiCatchInFirstCatchClause() throws Exception {
+        checkErrors("testfiles/parser/multiCatchInFirstCatchClause.php");
+    }
+
+    public void testMultiCatchInSecondCatchClause() throws Exception {
+        checkErrors("testfiles/parser/multiCatchInSecondCatchClause.php");
+    }
+
+    public void testMultiCatchWithFinally() throws Exception {
+        checkErrors("testfiles/parser/multiCatchWithFinally.php");
+    }
+
+    public void testClassConstantVisibility_01() throws Exception {
+        checkErrors("testfiles/parser/classConstantVisibility_01.php");
+    }
+
+    public void testKeyedList_01() throws Exception {
+        checkErrors("testfiles/parser/keyedList_01.php");
+    }
+
+    public void testSymmetricArrayDestructuring_01() throws Exception {
+        checkErrors("testfiles/parser/symmetricArrayDestructuring_01.php");
     }
 
 }

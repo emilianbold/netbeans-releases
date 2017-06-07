@@ -43,7 +43,6 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -70,16 +69,12 @@ final class DebuggerVisualizer {
     }
     
     /** &lt;File name&gt;:&lt;line number&gt; */
-    static String getSourceLocation(Node n) {
-        SourceSection ss = n.getSourceSection();
-        if (ss == null) {
-            ss = n.getEncapsulatingSourceSection();
-        }
+    static String getSourceLocation(SourceSection ss) {
         if (ss == null) {
             //System.err.println("No source section for node "+n);
             return "unknown";
         }
-        return ss.getSource().getShortName() + ":" + ss.getStartLine();
+        return ss.getSource().getName() + ":" + ss.getStartLine();
     }
 
 }

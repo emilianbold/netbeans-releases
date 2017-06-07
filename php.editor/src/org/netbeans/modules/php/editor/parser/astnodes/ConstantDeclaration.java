@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2017 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Represents a class or namespace constant declaration
- * <pre>e.g.<pre> const MY_CONST = 5;
+ * Represents a class or namespace constant declaration.
+ *
+ * <pre>e.g.
+ * const MY_CONST = 5;
  * const MY_CONST = 5, YOUR_CONSTANT = 8;
  * const CONSTANT = [0, 1];
+ * private const CONSTANT = 1; // PHP7.1
+ * </pre>
  */
-public class ConstantDeclaration extends Statement {
+public class ConstantDeclaration extends BodyDeclaration {
 
     private final ArrayList<Identifier> names = new ArrayList<>();
     private final ArrayList<Expression> initializers = new ArrayList<>();
+    private final boolean isGlobal;
 
-    private ConstantDeclaration(int start, int end, List<Identifier> names, List<Expression> initializers) {
-        super(start, end);
+    // XXX remove?
+    private ConstantDeclaration(int start, int end, List<Identifier> names, List<Expression> initializers, boolean isGlobal) {
+        super(start, end, BodyDeclaration.Modifier.IMPLICIT_PUBLIC);
 
         if (names == null || initializers == null || names.size() != initializers.size()) {
             throw new IllegalArgumentException();
@@ -72,10 +79,11 @@ public class ConstantDeclaration extends Statement {
             Expression initializer = iteratorInitializers.next();
             this.initializers.add(initializer);
         }
+        this.isGlobal = isGlobal;
     }
 
-    public ConstantDeclaration(int start, int end, List variablesAndDefaults) {
-        super(start, end);
+    public ConstantDeclaration(int start, int end, int modifier, List variablesAndDefaults, boolean isGlobal) {
+        super(start, end, modifier);
         if (variablesAndDefaults == null || variablesAndDefaults.isEmpty()) {
             throw new IllegalArgumentException();
         }
@@ -87,20 +95,25 @@ public class ConstantDeclaration extends Statement {
             this.names.add((Identifier) element[0]);
             this.initializers.add((Expression) element[1]);
         }
+        this.isGlobal = isGlobal;
+    }
+
+    public boolean isGlobal() {
+        return isGlobal;
     }
 
     /**
      * @return constant initializers expressions
      */
     public List<Expression> getInitializers() {
-        return this.initializers;
+        return Collections.unmodifiableList(this.initializers);
     }
 
     /**
      * @return the constant names
      */
     public List<Identifier> getNames() {
-        return this.names;
+        return Collections.unmodifiableList(this.names);
     }
 
     @Override

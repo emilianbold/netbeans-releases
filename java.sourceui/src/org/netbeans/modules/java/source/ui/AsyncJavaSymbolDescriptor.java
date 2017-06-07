@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.ui;
 import com.sun.tools.javac.api.ClientCodeWrapper;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTool;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
@@ -53,6 +54,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -72,8 +74,10 @@ import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
@@ -177,12 +181,9 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
 
     private void initialize() {
         if (initialized.compareAndSet(false, true)) {
-            final Runnable action = new Runnable() {
-                @Override
-                public void run() {
-                    final Collection<? extends SymbolDescriptor> symbols = resolve();
-                    fireDescriptorChange(symbols);
-                }
+            final Runnable action = () -> {
+                final Collection<? extends SymbolDescriptor> symbols = resolve();
+                fireDescriptorChange(symbols);
             };
             WORKER.execute(action);
         }
@@ -230,9 +231,9 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
 //                StandardLocation.CLASS_PATH,
 //                FileObjects.convertFolder2Package(binName),
 //                JavaFileObject.Kind.CLASS);
-            final ClassReader cr = ClassReader.instance(jt.getContext());
-            final Set<?> pkgs = new HashSet<>(getPackages(cr).keySet());
-            final Set<?> clzs = new HashSet<>(getClasses(cr).keySet());
+            final Symtab syms = Symtab.instance(jt.getContext());
+            final Set<?> pkgs = new HashSet<>(getPackages(syms).keySet());
+            final Set<?> clzs = new HashSet<>(getClasses(syms).keySet());
             final JavacElements elements = (JavacElements)jt.getElements();
             final TypeElement te = (TypeElement) elements.getTypeElementByBinaryName(
                     ElementHandleAccessor.getInstance().getJVMSignature(getOwner())[0]);
@@ -271,8 +272,8 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
                     }
                 }
             }
-            getClasses(cr).keySet().retainAll(clzs);
-            getPackages(cr).keySet().retainAll(pkgs);
+            getClasses(syms).keySet().retainAll(clzs);
+            getPackages(syms).keySet().retainAll(pkgs);
             return symbols;
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
@@ -281,7 +282,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
     }
 
     @NonNull
-    private Map<?,?> getPackages(final ClassReader cr) {
+    private Map<?,?> getPackages(final Symtab cr) {
         Map<?,?> res = Collections.emptyMap();
         try {
             final Field fld = ClassReader.class.getDeclaredField("packages");    //NOI18N
@@ -300,7 +301,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
     }
 
     @NonNull
-    private Map<?,?> getClasses(final ClassReader cr) {
+    private Map<?,?> getClasses(final Symtab cr) {
         Map<?,?> res = Collections.emptyMap();
         try {
             final Field fld = ClassReader.class.getDeclaredField("classes");    //NOI18N
@@ -322,17 +323,17 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         JavacTaskImpl javac;
         Reference<JavacTaskImpl> ref = javacRef;
         if (ref == null || (javac = ref.get()) == null) {
-            javac = (JavacTaskImpl)JavacTool.create().getTask(
-                    null,
-                    new RootChange(),
+            String sourceLevel = SourceLevelQuery.getSourceLevel(root);
+            javac = (JavacTaskImpl)JavacTool.create().getTask(null,
+                    new RootChange(root),
                     new Listener(),
-                    Collections.<String>emptySet(),
+                    sourceLevel != null ? Arrays.asList("-source", sourceLevel) : Collections.<String>emptySet(), //NOI18N
                     Collections.<String>emptySet(),
                     Collections.<JavaFileObject>emptySet());
             javacRef = new WeakReference<>(javac);
         }
-        final RootChange rc = (RootChange) javac.getContext().get(JavaFileManager.class);
-        rc.setRoot(root);
+        final JavaFileManager fm = javac.getContext().get(JavaFileManager.class);
+        ((RootChange)fm).setRoot(root);
         return javac;
     }
 
@@ -354,16 +355,25 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
     @ClientCodeWrapper.Trusted
     private static final class RootChange implements JavaFileManager {
 
+        private FileObject currentRoot;
         private JavaFileManager delegate;
 
-        void setRoot(FileObject root) throws IOException {
-            final File classes = JavaIndex.getClassFolder(root.toURL());
-            final CachingFileManager fm = new CachingFileManager(
-                    CachingArchiveProvider.getDefault(),
-                    ClassPathSupport.createClassPath(BaseUtilities.toURI(classes).toURL()),
-                    false,
-                    true);
-            this.delegate = fm;
+        RootChange(@NonNull final FileObject root) throws IOException {
+            setRoot(root);
+        }
+
+        void setRoot(@NonNull final FileObject root) throws IOException {
+            if (root != currentRoot) {
+                final File classes = JavaIndex.getClassFolder(root.toURL());
+                final CachingFileManager fm = new CachingFileManager(
+                        CachingArchiveProvider.getDefault(),
+                        ClassPathSupport.createClassPath(BaseUtilities.toURI(classes).toURL()),
+                        null,
+                        false,
+                        true);
+                this.delegate = fm;
+                this.currentRoot = root;
+            }
         }
 
         @Override
@@ -393,7 +403,7 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
 
         @Override
         public boolean hasLocation(Location location) {
-            return delegate.hasLocation(location);
+            return location == StandardLocation.CLASS_PATH || location == StandardLocation.PLATFORM_CLASS_PATH;
         }
 
         @Override
@@ -429,6 +439,11 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         @Override
         public int isSupportedOption(String option) {
             return delegate.isSupportedOption(option);
+        }
+
+        @Override
+        public Iterable<Set<Location>> listLocationsForModules(Location location) throws IOException {
+            return Collections.emptyList();
         }
     }
 

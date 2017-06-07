@@ -47,8 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.maven.embedder.ArtifactFixer;
 import org.openide.util.Lookup;
-import org.sonatype.aether.repository.WorkspaceReader;
-import org.sonatype.aether.repository.WorkspaceRepository;
+import org.eclipse.aether.repository.WorkspaceReader;
+import org.eclipse.aether.repository.WorkspaceRepository;
 
 /**
  *
@@ -70,7 +70,7 @@ public class NbWorkspaceReader implements WorkspaceReader {
     }
 
     @Override
-    public File findArtifact(org.sonatype.aether.artifact.Artifact artifact) {
+    public File findArtifact(org.eclipse.aether.artifact.Artifact artifact) {
         if (silence) {
             return null;
         }
@@ -85,7 +85,7 @@ public class NbWorkspaceReader implements WorkspaceReader {
     }
 
     @Override
-    public List<String> findVersions(org.sonatype.aether.artifact.Artifact artifact) {
+    public List<String> findVersions(org.eclipse.aether.artifact.Artifact artifact) {
         if (silence) {
             return Collections.emptyList();
         }

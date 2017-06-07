@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -149,10 +150,10 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
 
     private Res checkRoot(File root, File source, File test) {
         if (source != null && source.equals(root)) {
-            return new Res(false, project.getLookup().lookup(NbMavenProject.class));
+            return new Res(false, project.getLookup().lookup(NbMavenProjectImpl.class));
         }
         if (test != null && test.equals(root)) {
-            return new Res(true, project.getLookup().lookup(NbMavenProject.class));
+            return new Res(true, project.getLookup().lookup(NbMavenProjectImpl.class));
         }
         return null;
     }
@@ -166,9 +167,9 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
     
     private static class Res implements BinaryForSourceQuery.Result {
         private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        private NbMavenProject project;
+        private NbMavenProjectImpl project;
         private boolean isTest;
-        Res(boolean test, NbMavenProject prj) {
+        Res(boolean test, NbMavenProjectImpl prj) {
             isTest = test;
             project = prj;
 
@@ -177,12 +178,20 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
         public @Override URL[] getRoots() {
             //#222352 afaik project.getOutputDirectory() is always non null, but apparently
             //FileUtil.urlForArchiveOrDir can return null.
-            URL url = FileUtil.urlForArchiveOrDir(project.getOutputDirectory(isTest));
+            final List<URL> result = new ArrayList<>(2);
+            URL url = FileUtil.urlForArchiveOrDir(project.getProjectWatcher().getOutputDirectory(isTest));
             if (url != null) {
-                return new URL[] {url};
-            } else {
-                return new URL[0];
+                result.add(url);
             }
+            Artifact art = project.getOriginalMavenProject().getArtifact();
+            if(art != null) {
+                File artFile = FileUtilities.convertArtifactToLocalRepositoryFile(art);
+                final URL artUrl = FileUtil.urlForArchiveOrDir(artFile);
+                if (artUrl != null) {
+                    result.add(artUrl);
+                }
+            }
+            return result.toArray(new URL[result.size()]);
         }   
 
         public @Override void addChangeListener(ChangeListener changeListener) {

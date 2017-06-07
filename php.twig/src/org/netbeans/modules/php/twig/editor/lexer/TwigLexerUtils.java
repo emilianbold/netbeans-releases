@@ -45,12 +45,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -216,6 +218,65 @@ public final class TwigLexerUtils {
 
     public static List<OffsetRange> findBackwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
         return findBackwardMatching(topTs, start, end, Collections.<TwigTokenText>emptyList());
+    }
+
+    public static boolean textEquals(CharSequence text1, char... text2) {
+        int len = text1.length();
+        if (len == text2.length) {
+            for (int i = len - 1; i >= 0; i--) {
+                if (text1.charAt(i) != text2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean textStartWith(CharSequence text1, char text2) {
+        int len = text1.length();
+        if (len > 0) {
+            return text1.charAt(0) == text2;
+        }
+        return false;
+    }
+
+    public static int getTokenBalance(BaseDocument doc, char open, char close, int offset) throws BadLocationException {
+        TokenSequence<? extends TokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(doc, offset);
+        if (ts == null) {
+            return 0;
+        }
+
+        int balance = 0;
+        ts.move(offset);
+        // check next tokens
+        while (ts.moveNext()) {
+            TokenId id = ts.token().id();
+            if (id == TwigVariableTokenId.T_TWIG_PUNCTUATION || id == TwigBlockTokenId.T_TWIG_PUNCTUATION) {
+                if (TwigLexerUtils.textEquals(ts.token().text(), close)) {
+                    balance--;
+                } else if (TwigLexerUtils.textEquals(ts.token().text(), open)) {
+                    break;
+                }
+            }
+        }
+
+        // check previous tokens
+        ts.move(offset);
+        while (ts.movePrevious()) {
+            TokenId id = ts.token().id();
+            if (id == TwigVariableTokenId.T_TWIG_PUNCTUATION || id == TwigBlockTokenId.T_TWIG_PUNCTUATION) {
+                if (TwigLexerUtils.textEquals(ts.token().text(), close)) {
+                    balance--;
+                } else if (TwigLexerUtils.textEquals(ts.token().text(), open)) {
+                    balance++;
+                }
+                if (balance > 0) {
+                    break;
+                }
+            }
+        }
+        return balance;
     }
 
     public interface TwigTokenText {

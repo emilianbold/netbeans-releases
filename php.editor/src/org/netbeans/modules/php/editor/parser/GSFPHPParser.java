@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -86,6 +87,13 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private boolean aspTags = false;
     private ParserResult result = null;
     private boolean projectPropertiesListenerAdded = false;
+
+    // it's for testing
+    private static int unitTestCaretPosition = -1;
+
+    static void setUnitTestCaretPosition(int unitTestCaretPosition) {
+        GSFPHPParser.unitTestCaretPosition = unitTestCaretPosition;
+    }
 
     static {
         LOGGER.log(Level.INFO, "Parsing of big PHP files enabled: {0} (max size: {1})", new Object[] {PARSE_BIG_FILES, BIG_FILE_SIZE});
@@ -163,6 +171,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         aspTags = languageProperties.areAspTagsEnabled();
         try {
             int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
+            if (caretOffset < 0 && unitTestCaretPosition >= 0) {
+                caretOffset = unitTestCaretPosition;
+            }
             LOGGER.log(Level.FINE, "caretOffset: {0}", caretOffset); //NOI18N
             Context context = new Context(snapshot, caretOffset);
             result = parseBuffer(context, Sanitize.NONE, null);
@@ -310,7 +321,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 int end = error.getCurrentToken().right;
                 int start = error.getCurrentToken().left;
                 String replace = source.substring(start, end);
-                if ("}".equals(replace)) {
+                if ("}".equals(replace)) { // NOI18N
                     return false;
                 }
                 context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
@@ -324,9 +335,41 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 String source = context.getBaseSource();
                 int end = error.getPreviousToken().right;
                 int start = error.getPreviousToken().left;
-                if (source.substring(start, end).equals("}")) {
+                String replace = source.substring(start, end);
+                if ("}".equals(replace)) { // NOI18N
                     return false;
                 }
+
+                // check "," and "?"
+                // e.g. function method(Class1 , Class2 $class2) {
+                // function method(Class1 $class1,?Class2 Class3 $class3) {
+                int currentEnd = error.getCurrentToken().right;
+                int currentStart = error.getCurrentToken().left;
+                String currentReplace = source.substring(currentStart, currentEnd);
+                boolean removeComma = true;
+                if (currentReplace.equals(",")) { // NOI18N
+                    end = currentEnd;
+                    removeComma = false;
+                } else if (CodeUtils.NULLABLE_TYPE_PREFIX.equals(currentReplace)) {
+                    removeComma = false;
+                }
+
+                // check nullable type prefix(?)
+                if (CodeUtils.NULLABLE_TYPE_PREFIX.equals(replace)) {
+                    start = sanitizingStartPositionForNullableTypes(start, source, removeComma);
+                } else {
+                    for (int i = start - 1; i >= 0; i--) {
+                        char c = source.charAt(i);
+                        if (c != '?' && c != ' ') {
+                            break;
+                        }
+                        if (c == '?') {
+                            start = sanitizingStartPositionForNullableTypes(i, source, removeComma);
+                            break;
+                        }
+                    }
+                }
+
                 context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start, end), Utils.getSpaces(end - start)));
                 return true;
             }
@@ -397,6 +440,43 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             }
         }
         return false;
+    }
+
+    private int sanitizingStartPositionForNullableTypes(int start, String source, boolean removeComma) {
+        // e.g.
+        // function name() : ? {
+        // function name(string $id, ?)
+        int targetPosition = start;
+        boolean found = false;
+        boolean finished = false;
+        int rowStart = Utils.getRowStart(source, start);
+        for (int i = start - 1; i >= rowStart; i--) {
+            char c = source.charAt(i);
+            switch (c) {
+                case ' ': // no break
+                case '\t':
+                    targetPosition--;
+                    break;
+                case ',':
+                    if (!removeComma) {
+                        break;
+                    }
+                case ':':
+                    found = true;
+                    targetPosition--;
+                    break;
+                default:
+                    finished = true;
+                    break;
+            }
+            if (finished) {
+                break;
+            }
+            if (found) {
+                return targetPosition;
+            }
+        }
+        return start;
     }
 
     protected boolean sanitizeRequireAndInclude(Context context, int start, int end) {

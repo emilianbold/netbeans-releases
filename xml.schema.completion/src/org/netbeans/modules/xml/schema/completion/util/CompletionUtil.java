@@ -65,10 +65,15 @@ import org.netbeans.modules.xml.schema.completion.*;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.Import;
+import org.netbeans.modules.xml.schema.model.Include;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.schema.model.visitor.FindSubstitutions;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -88,6 +93,41 @@ public class CompletionUtil {
     public static final Pattern PATTERN_TEXT_TAG_EOLs = Pattern.compile("</?[\\s]+.*");
     
     private static final Logger _logger = Logger.getLogger(CompletionUtil.class.getName());
+
+    public static boolean noCompletion(JTextComponent target) {
+        if (target == null || target.getCaret() == null) {
+            return false;
+        }
+        int offset = target.getCaret().getDot();
+        if (offset < 0) {
+            return false;
+        }
+        //no completion inside CDATA or comment section
+        BaseDocument document = (BaseDocument) target.getDocument();
+        ((AbstractDocument) document).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            if (ts == null) {
+                return false;
+            }
+            ts.move(offset);
+            Token token = ts.token();
+            if (token == null) {
+                ts.moveNext();
+                token = ts.token();
+                if (token == null) {
+                    return false;
+                }
+            }
+            if (token.id() == XMLTokenId.CDATA_SECTION || token.id() == XMLTokenId.BLOCK_COMMENT || token.id() == XMLTokenId.PI_START || token.id() == XMLTokenId.PI_END || token.id() == XMLTokenId.PI_CONTENT || token.id() == XMLTokenId.PI_TARGET) {
+                return true;
+            }
+        } finally {
+            ((AbstractDocument) document).readUnlock();
+        }
+        return false;
+    }
     
     /**
      * No instantiation.
@@ -583,14 +623,31 @@ public class CompletionUtil {
             QName qname) {
         if(parent == null)
             return null;
-        for(AbstractElement element : parent.getChildElements()) {
-            if(!(element instanceof Element))
+        for(AXIComponent element : parent.getChildElements()) {
+            if(!(element instanceof Element)) {
                 continue;
+            }
             Element e = (Element)element;
             if(qname.getLocalPart().equals(e.getName()))
                 return element;
         }
-        
+        for (AXIComponent c : parent.getChildren()) {
+            if (c instanceof SchemaReference) {
+                SchemaReference ref = (SchemaReference)c;
+                SchemaModelReference in = (SchemaModelReference)ref.getPeer();
+                SchemaModel model;
+                try {
+                    model = in.resolveReferencedModel();
+                    AXIModel am = AXIModelFactory.getDefault().getModel(model);
+                    AXIComponent check = findChildElement(am.getRoot(), qname);
+                    if (check != null) {
+                        return check;
+                    }
+                } catch (CatalogModelException ex) {
+                    // ignore
+                }
+            }
+        }
         return null;
     }
         

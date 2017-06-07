@@ -74,10 +74,13 @@ public enum PHPTokenId implements TokenId {
     PHP_NUMBER(null, "number"), //NOI18N
     PHP_GLOBAL(null, "keyword"), //NOI18N
     PHP_ARRAY(null, "keyword"), //NOI18N
+    PHP_CALLABLE(null, "keyword"), //NOI18N
+    PHP_ITERABLE("iterable", "keyword"), //NOI18N
     PHP_TYPE_INT("int", "keyword"), //NOI18N
     PHP_TYPE_FLOAT("float", "keyword"), //NOI18N
     PHP_TYPE_STRING("string", "keyword"), //NOI18N
     PHP_TYPE_BOOL("bool", "keyword"), //NOI18N
+    PHP_TYPE_VOID("void", "keyword"), //NOI18N
     PHP_FINAL(null, "keyword"), //NOI18N
     PHP_PAAMAYIM_NEKUDOTAYIM(null, "operator"), //NOI18N
     PHP_EXTENDS(null, "keyword"), //NOI18N
@@ -176,6 +179,7 @@ public enum PHPTokenId implements TokenId {
     PHP_TEXTUAL_OPERATOR(null, "operator"), //NOI18N
     PHP_PARENT(null, "keyword"), //NOI18N
     PHP__CLASS__(null, "constant"), //NOI18N
+    PHP__TRAIT__(null, "constant"), //NOI18N
     PHP__METHOD__(null, "constant"), //NOI18N
     PHP_TRUE(null, "keyword"), //NOI18N
     PHP_FALSE(null, "keyword"), //NOI18N

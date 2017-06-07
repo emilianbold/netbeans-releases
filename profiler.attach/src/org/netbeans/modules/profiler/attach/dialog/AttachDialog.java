@@ -80,6 +80,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
+import org.netbeans.lib.profiler.filters.GenericFilter;
 import org.netbeans.lib.profiler.jps.JpsProxy;
 import org.netbeans.lib.profiler.jps.RunningVM;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
@@ -442,15 +443,16 @@ public class AttachDialog extends AttachWizard {
             });
             
             FilteringToolbar toolbar = new FilteringToolbar(Bundle.AttachDialog_FilterProcesses()) {
-                private String filter;
+                private GenericFilter _filter;
                 private final RowFilter rowFilter = new RowFilter() {
                     public boolean include(RowFilter.Entry entry) {
-                        return filter == null || entry.getValue(0).toString().toLowerCase().contains(filter);
+                        return _filter.passes(entry.getValue(0).toString());
                     }
                 };
-                protected void filterChanged(String filter) {
-                    this.filter = filter == null ? null : filter.toLowerCase();
-                    processes.addRowFilter(rowFilter);
+                protected void filterChanged() {
+                    _filter = isAll() ? null : getFilter();
+                    if (_filter != null) processes.addRowFilter(rowFilter);
+                    else processes.removeRowFilter(rowFilter);
                 }
             };
             toolbar.add(Box.createHorizontalStrut(2));
@@ -533,7 +535,7 @@ public class AttachDialog extends AttachWizard {
                                                null,
                                                new ModeAction(Bundle.AttachDialog_LocalStartedProcess(), false, true),
                                                new ModeAction(Bundle.AttachDialog_RemoteStartedProcess(), true, true));
-            modeButton.setPopupAlign(SwingConstants.RIGHT);
+            modeButton.setPopupAlign(SwingConstants.EAST);
             profile.setLabelFor(modeButton);
             c = new GridBagConstraints();
             c.gridx = 1;
@@ -598,7 +600,7 @@ public class AttachDialog extends AttachWizard {
                                        new OsAction(IntegrationUtils.PLATFORM_SOLARIS_INTEL_OS),
                                        new OsAction(IntegrationUtils.PLATFORM_SOLARIS_AMD64_OS));
             osJvmLabel.setLabelFor(os);
-            os.setPopupAlign(SwingConstants.RIGHT);
+            os.setPopupAlign(SwingConstants.EAST);
             c = new GridBagConstraints();
             c.gridx = 3;
             c.gridy = 0;

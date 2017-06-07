@@ -47,9 +47,14 @@ import java.io.*;
 
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Syntax;
+import org.netbeans.editor.SyntaxSupport;
 
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.xml.api.EncodingUtil;
+import org.netbeans.modules.xml.text.syntax.bridge.LegacySyntaxBridge;
 
 /**
  * Editor kit implementation for xml content type.
@@ -112,4 +117,25 @@ public class UniKit extends NbEditorKit {
         super.write(out, doc, pos, len);
     }
 
+    @Override
+    public Syntax createSyntax(Document doc) {
+        Syntax syn = null;
+        LegacySyntaxBridge bridge = MimeLookup.getLookup(getContentType()).lookup(LegacySyntaxBridge.class);
+        if (bridge != null) {
+            syn = bridge.createSyntax(this, doc, getContentType());
+        }
+        return syn != null ? syn : super.createSyntax(doc);
+    }
+
+    /** Create syntax support */
+    @Override
+    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
+        SyntaxSupport syn = null;
+        LegacySyntaxBridge bridge = MimeLookup.getLookup(getContentType()).lookup(LegacySyntaxBridge.class);
+        if (bridge != null) {
+            syn = bridge.createSyntaxSupport(this, doc, getContentType());
+        }
+        return syn != null ? syn : super.createSyntaxSupport(doc);
+    }
+    
 }

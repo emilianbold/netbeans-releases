@@ -143,6 +143,40 @@ int main(int argc, char**argv) {
     }
     prependPath(real_binary);
 #ifdef MINGW
+    // It seems MinGW merge arguments in command line
+    // Wrap each argument in quote.
+    char** par = (char**) argv;
+    int len = 0;
+    for (; *par != 0; par++) {
+        len += 3;
+        char *i = *par;
+        while(*i) {
+            if (*i == '"') {
+                len++;
+            }
+            len++;
+            i++;
+        }
+    }
+    char *newpar = malloc(len);
+    char *line = newpar;
+    par = (char**) argv;
+    for (; *par != 0; par++) {
+        *newpar++ = '"';
+        char *i = *par;
+        while(*i) {
+            if (*i == '"') {
+                *newpar++ = '\\';
+            }
+            *newpar++ = *i++;
+        }
+        *newpar++ = '"';
+        *newpar++ = ' ';
+    }
+    *--newpar = 0;
+    argv[0] = line;
+    argv[1] = 0;
+    
     return spawnv(P_WAIT, real_binary, argv);
 #else
     pid_t pid;

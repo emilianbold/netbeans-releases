@@ -56,9 +56,9 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -68,11 +68,9 @@ import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
-import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.netbeans.modules.xml.text.api.dom.TagElement;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -133,7 +131,7 @@ public final class SpringXMLConfigEditorUtils {
         return "set" + String.valueOf(buffer); // NOI18N
     }
 
-    public static String getBeanFactoryMethod(Tag tag) {
+    public static String getBeanFactoryMethod(Node tag) {
         Node bean = getBean(tag);
         if (bean != null) {
             NamedNodeMap attribs = bean.getAttributes();
@@ -184,32 +182,40 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
 
-    public static final Tag getDocumentRoot(Document doc) {
-        Tag retTag = null;
+    public static final Node getDocumentRoot(Document doc) {
+        Node retTag = null;
         //  Temporary fix for IZ#155008 until Lexer migration
         XMLSyntaxSupport syntaxSupport = null;
         try {
-            syntaxSupport = (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
+            syntaxSupport = XMLSyntaxSupport.getSyntaxSupport(doc);
         } catch (ClassCastException cce) {
             LOGGER.log(Level.FINE, cce.getMessage());
-            syntaxSupport = new XMLSyntaxSupport(((BaseDocument)doc));
+            syntaxSupport = XMLSyntaxSupport.createSyntaxSupport(doc);
         }
         if (syntaxSupport == null) return retTag;
         try {
-            TokenItem tok = syntaxSupport.getTokenChain(0,1);
+            Token<XMLTokenId> tok = syntaxSupport.getNextToken(1);
             if(tok != null) {
-                TokenItem prevTok = null;
-                while((!ContextUtilities.isTagToken(tok)) && (tok != prevTok) ) {
-                    prevTok = tok;
-                    if (tok.getNext() != null) {
-                        tok = tok.getNext();
+                int off = syntaxSupport.runWithSequence(0, (TokenSequence s) -> {
+                    s.move(0);
+                    while (s.moveNext()) {
+                        Token<XMLTokenId> t = s.token();
+                        if (ContextUtilities.isTagToken(t)) {
+                            return s.offset() + t.length();
+                        }
                     }
+                    return -1;
+                });
+                if (off == -1) {
+                    return null;
                 }
-                SyntaxElement element = syntaxSupport.getElementChain(tok.getOffset()+tok.getImage().length());
-                if(element instanceof StartTag || element instanceof EmptyTag) {
-                    Tag tag = (Tag) element;
-                    if(tag.getParentNode() instanceof org.w3c.dom.Document) {
-                        return tag;
+                SyntaxElement element = syntaxSupport.getElementChain(off);
+                if (element != null && element.getType() == Node.ELEMENT_NODE) {
+                    TagElement te = (TagElement)element;
+                    if (te.isStart() || te.isSelfClosing()) {
+                        if(te.getNode().getParentNode() instanceof org.w3c.dom.Document) {
+                            return te.getNode();
+                        }
                     }
                 }
             }

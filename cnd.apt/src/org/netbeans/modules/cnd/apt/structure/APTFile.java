@@ -53,6 +53,14 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public interface APTFile extends APT {
+    enum Kind {
+        C_CPP,
+        FORTRAN_FREE,
+        FORTRAN_FIXED
+    }
+    
+    public Kind getKind();
+    
     /**
      * Gets file system
      * @return 

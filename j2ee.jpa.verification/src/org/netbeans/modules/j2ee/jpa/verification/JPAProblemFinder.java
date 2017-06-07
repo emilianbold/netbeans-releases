@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -146,7 +147,8 @@ public abstract class JPAProblemFinder {
         Project project = FileOwnerQuery.getOwner(file);
         
         if (project != null){
-            PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
+            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project, cp != null ? cp.findOwnerRoot(file) : null);
             
             if (scopes != null){
                 PersistenceScopesListener listener = (PersistenceScopesListener) doc.getProperty(PERSISTENCE_SCOPES_LISTENER);

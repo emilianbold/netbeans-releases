@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.actions;
@@ -81,34 +81,7 @@ public class SmartSteppingTruffleImpl extends SmartSteppingCallback {
     @Override
     public StopOrStep stopAt(ContextProvider lookupProvider, CallStackFrame frame, SmartSteppingFilter f) {
         String className = frame.getClassName();
-        boolean isInTruffleClass = false;
         if (className.startsWith(TRUFFLE_PACKAGE)) {
-            isInTruffleClass = true;
-        } else {
-            /* Should not be necessary after https://netbeans.org/bugzilla/show_bug.cgi?id=255974 was fixed:
-            // Debugger can not stop in Proxy class implementation (native),
-            // but we can check whether the previous frame happens to be one:
-            if (frame.getFrameDepth() == 0) {
-                try {
-                    CallStackFrame[] callStack = frame.getThread().getCallStack(0, 2);
-                    if (callStack.length == 2) {
-                        CallStackFrame frame2 = callStack[1];
-                        String className2 = frame2.getClassName();
-                        if (className2.startsWith("com.sun.proxy.$Proxy")) {              // NOI18N
-                            Field hField = frame2.getThisVariable().getField("h");               // NOI18N
-                            if (hField instanceof ObjectVariable) {
-                                String hClassName = ((ObjectVariable) hField).getClassType().getName();
-                                if (hClassName.startsWith(TRUFFLE_PACKAGE)) {
-                                    isInTruffleClass = true;
-                                }
-                            }
-                        }
-                    }
-                } catch (AbsentInformationException aiex) {}
-            }
-            */
-        }
-        if (isInTruffleClass) {
             // Step out from Truffle code
             return StopOrStep.step(JPDAStep.STEP_LINE, JPDAStep.STEP_OUT);
         } else {

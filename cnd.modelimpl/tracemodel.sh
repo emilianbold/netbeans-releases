@@ -275,11 +275,11 @@ function params() {
 		    ;;
 	    -debug|--debug)
 		    echo "debugging on port ${DBGPORT}"
-		    DEBUG_PROFILE="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=${DBGPORT}"
+		    DEBUG_PROFILE="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${DBGPORT}"
 		    ;;
 	    --sdebug|-sdebug)
 		    echo "wait to attach debugger on port ${DBGPORT}"
-		    DEBUG_PROFILE="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=${DBGPORT}"
+		    DEBUG_PROFILE="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=${DBGPORT}"
 		    ;;
 	    --profile|-profile)
 		    echo "profile on port 5140"

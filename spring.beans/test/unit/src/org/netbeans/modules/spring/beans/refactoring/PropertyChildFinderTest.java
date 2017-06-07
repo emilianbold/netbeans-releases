@@ -46,7 +46,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.TestCase;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.beans.TestUtils;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 
 /**
  *
@@ -61,7 +61,7 @@ public class PropertyChildFinderTest extends TestCase {
     public void testFind() throws Exception {
         final String contents = TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'><property name='foobar' value='sample'/></bean>");
         BaseDocument doc = TestUtils.createSpringXMLConfigDocument(contents);
-        final XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport)doc.getSyntaxSupport();
+        final XMLSyntaxSupport syntaxSupport = XMLSyntaxSupport.getSyntaxSupport(doc);
         
         doc.render(new Runnable() {
             public void run() {

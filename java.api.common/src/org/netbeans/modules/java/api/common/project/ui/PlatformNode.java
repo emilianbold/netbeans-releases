@@ -79,9 +79,11 @@ import org.openide.util.WeakListeners;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.project.support.ProjectPlatform;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.loaders.DataFolder;
@@ -141,14 +143,27 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return NbBundle.getMessage(PlatformNode.class, "TXT_UnknownPlatform");
         }
         String name;
-        if (platHolder.second() != null) {
-            name = platHolder.second().getDisplayName();
+        final JavaPlatform jp = platHolder.second();
+        if (jp != null) {
+            if (jp.isValid()) {
+                name = jp.getDisplayName();
+            } else {
+                name = MessageFormat.format(
+                        NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"),
+                        new Object[] {
+                            jp.getDisplayName()
+                        });
+            }
         } else {
             String platformId = platHolder.first();
             if (platformId == null) {
                 name = NbBundle.getMessage(PlatformNode.class,"TXT_BrokenPlatform");
             } else {
-                name = MessageFormat.format(NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"), new Object[] {platformId});
+                name = MessageFormat.format(
+                        NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"),
+                        new Object[] {
+                            platformId
+                        });
             }
         }
         return name;
@@ -160,7 +175,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         if (platHolder == null) {
             return null;
         }
-        if (platHolder.second() == null) {
+        final JavaPlatform jp = platHolder.second();
+        if (jp == null || !jp.isValid()) {
             String displayName = this.getDisplayName();
             try {
                 displayName = XMLUtil.toElementContent(displayName);
@@ -171,7 +187,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             return "<font color=\"#A40000\">" + displayName + "</font>"; //NOI18N
         } else {
             return null;
-        }                                
+        }
     }
 
     @Override
@@ -219,10 +235,11 @@ class PlatformNode extends AbstractNode implements ChangeListener {
      *
      */
     public static PlatformNode create (
+            @NonNull final Project project,
             @NonNull final PropertyEvaluator eval,
             @NonNull final Pair<Pair<String,String>, ClassPath> boot,
             @NonNull final ClassPathSupport cs) {
-        PlatformProvider pp = new PlatformProvider (eval, boot);
+        PlatformProvider pp = new PlatformProvider (project, eval, boot);
         return new PlatformNode (pp, cs);
     }
 
@@ -306,13 +323,18 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
         private static final Pair<String,JavaPlatform> BUSY = Pair.<String,JavaPlatform>of(null,null);
         private static final RequestProcessor RP = new RequestProcessor(PlatformProvider.class);
-        
+
+        private final Project project;
         private final PropertyEvaluator evaluator;
         private final Pair<Pair<String,String>, ClassPath> boot;
         private final AtomicReference<Pair<String,JavaPlatform>> platformCache = new AtomicReference<Pair<String,JavaPlatform>>();
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         
-        public PlatformProvider (PropertyEvaluator evaluator, Pair<Pair<String,String>, ClassPath> boot) {
+        public PlatformProvider (
+                @NonNull final Project project,
+                @NonNull final PropertyEvaluator evaluator,
+                @NonNull final Pair<Pair<String,String>, ClassPath> boot) {
+            this.project = project;
             this.evaluator = evaluator;
             this.boot = boot;
             final JavaPlatformManager jps = JavaPlatformManager.getDefault();
@@ -330,7 +352,13 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                     @Override
                     public void run() {
                         final String platformId = evaluator.getProperty(boot.first().first());
-                        final JavaPlatform platform = CommonProjectUtils.getActivePlatform (platformId, boot.first().second());
+                        JavaPlatform platform = CommonProjectUtils.getActivePlatform (platformId, boot.first().second());
+                        if (platform == null) {
+                            platform = ProjectPlatform.forProject(
+                                    project,
+                                    evaluator,
+                                    CommonProjectUtils.J2SE_PLATFORM_TYPE);
+                        }
                         platformCache.set(Pair.<String,JavaPlatform>of(platformId, platform));
                         changeSupport.fireChange ();
                     }

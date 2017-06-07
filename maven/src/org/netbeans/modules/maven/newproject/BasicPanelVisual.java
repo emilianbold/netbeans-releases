@@ -91,6 +91,8 @@ import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -530,9 +532,17 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
+        final File parentFolder = new File(folder);
         
-        d.putProperty(CommonProjectActions.PROJECT_PARENT_FOLDER, new File(folder)); //NOI18N
+        d.putProperty(CommonProjectActions.PROJECT_PARENT_FOLDER, parentFolder);
+        if (d instanceof TemplateWizard) {
+            parentFolder.mkdirs();
+            ((TemplateWizard) d).setTargetFolder(DataFolder.findFolder(FileUtil.toFileObject(parentFolder)));
+        }
         d.putProperty("name", name); //NOI18N
+        if (d instanceof TemplateWizard) {
+            ((TemplateWizard) d).setTargetName(name);
+        }
         d.putProperty("artifactId", txtArtifactId.getText().trim()); //NOI18N
         d.putProperty("groupId", txtGroupId.getText().trim()); //NOI18N
         MavenSettings.getDefault().setLastArchetypeGroupId(txtGroupId.getText().trim());

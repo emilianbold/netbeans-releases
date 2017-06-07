@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -56,23 +57,23 @@ import java.util.List;
  */
 public class IgnoreFileFilter implements FileFilter {
 
-    private final File buildContext;
+    private final FileObject buildContext;
 
-    private final File dockerfile;
+    private final FileObject dockerfile;
 
-    private final File dockerignore;
+    private final FileObject dockerignore;
 
     private final List<IgnorePattern> patterns = new ArrayList<>();
 
-    public IgnoreFileFilter(File buildContext, File dockerfile, char separator) throws IOException {
+    public IgnoreFileFilter(FileObject buildContext, FileObject dockerfile, char separator) throws IOException {
         this.buildContext = buildContext;
         if (dockerfile != null) {
             this.dockerfile = dockerfile;
         } else {
-            this.dockerfile = new File(buildContext, DockerUtils.DOCKER_FILE);
+            this.dockerfile = buildContext.getFileObject(DockerUtils.DOCKER_FILE);
         }
-        this.dockerignore = new File(buildContext, ".dockerignore");
-        if (dockerignore.isFile()) {
+        this.dockerignore = buildContext.getFileObject(".dockerignore");
+        if (dockerignore != null && dockerignore.isData()) {
             patterns.addAll(load(dockerignore, separator));
         }
     }
@@ -82,9 +83,9 @@ public class IgnoreFileFilter implements FileFilter {
         if (pathname.equals(dockerfile) || pathname.equals(dockerignore)) {
             return true;
         }
-        assert pathname.getAbsolutePath().startsWith(buildContext.getAbsolutePath())
+        assert pathname.getAbsolutePath().startsWith(buildContext.getPath())
                 && !pathname.equals(buildContext);
-        String path = pathname.getAbsolutePath().substring(buildContext.getAbsolutePath().length());
+        String path = pathname.getAbsolutePath().substring(buildContext.getPath().length());
         if (path.startsWith(File.separator)) {
             path = path.substring(1);
         }
@@ -106,9 +107,9 @@ public class IgnoreFileFilter implements FileFilter {
         return include;
     }
 
-    private List<IgnorePattern> load(File dockerignore, char separator) throws IOException {
+    private List<IgnorePattern> load(FileObject dockerignore, char separator) throws IOException {
         List<IgnorePattern> ret = new ArrayList<>();
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(dockerignore), "UTF-8"))) {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(dockerignore.getInputStream(), "UTF-8"))) {
             String line;
             while ((line = r.readLine()) != null) {
                 String trimmed = line.trim();

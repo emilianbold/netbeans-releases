@@ -935,9 +935,11 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
             whileField.getAccessibleContext().setAccessibleDescription(
                 Catalog.get("ACSD_WhileIn") // NOI18N
             );
-            conditionPane.getAccessibleContext().setAccessibleDescription(
-                Catalog.get("ACSD_Condition") // NOI18N
-            );
+            if (conditionPane.getCaret() != null) {
+                conditionPane.getAccessibleContext().setAccessibleDescription(
+                    Catalog.get("ACSD_Condition") // NOI18N
+                );
+            }
             lwpField.getAccessibleContext().setAccessibleDescription(
                 Catalog.get("ACSD_LWP") // NOI18N
             );

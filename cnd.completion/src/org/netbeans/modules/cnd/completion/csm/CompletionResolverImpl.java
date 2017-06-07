@@ -303,7 +303,21 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     private boolean isEnough(String strPrefix, boolean match, Collection<?> collection) {
         if (collection != null && isEnough(strPrefix, match)) {
-            return !collection.isEmpty();
+            if (collection.size() > 1) {
+                return true;
+            } else if (!collection.isEmpty()) {
+                // We have fast lookup if strPrefix denotes the context class name.
+                // Therefore if collection contains only one template class we shouldn't stop
+                // searching, because there might be template parameters after strPrefix.
+                // We need to look for all specializations.
+                Object elem = collection.iterator().next();
+                if (CsmKindUtilities.isCsmObject(elem) 
+                        && CsmKindUtilities.isClass((CsmObject) elem)
+                        && CsmKindUtilities.isTemplate((CsmObject) elem)) {
+                    return false;
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -453,8 +467,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }
 
                 if (clazz != null) {
-
-                    if (resolveCurrentClassInsideType(clazz, resImpl, context, offset, strPrefix, match)) {
+                    if (tryInsertCurrentClass(clazz, resImpl, context, offset, strPrefix, match)) {
                         return true;
                     }
 
@@ -484,7 +497,7 @@ public class CompletionResolverImpl implements CompletionResolver {
 
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
-                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, needClasses(context, offset), inspectOuterClasses, resolveContextMode);
+                        resImpl.classesEnumsTypedefs = append(resImpl.classesEnumsTypedefs, contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, needClasses(context, offset), inspectOuterClasses, resolveContextMode));
                         if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
                             return true;
                         }
@@ -497,7 +510,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (clazz != null) {
                 boolean staticContext = false;
 
-                if (resolveCurrentClassInsideType(clazz, resImpl, context, offset, strPrefix, match)) {
+                if (tryInsertCurrentClass(clazz, resImpl, context, offset, strPrefix, match)) {
                     return true;
                 }
 
@@ -530,7 +543,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                     }
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
-                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, resolveContextMode);
+                        resImpl.classesEnumsTypedefs = append(resImpl.classesEnumsTypedefs, contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, resolveContextMode));
                         if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
                             return true;
                         }
@@ -546,21 +559,16 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         if (needClasses(context, offset) || needContextClasses(context, offset)) {
             // list of classesEnumsTypedefs
-            if (resImpl.classesEnumsTypedefs == null) {
-                resImpl.classesEnumsTypedefs = new LinkedHashSet<CsmClassifier>();
-            } else {
-                resImpl.classesEnumsTypedefs = new LinkedHashSet<CsmClassifier>(resImpl.classesEnumsTypedefs);
-            }
             Collection<CsmClassifier> classesEnums = getClassesEnums(context, prj, strPrefix, match, offset, !needClasses(context, offset));
             Collection<CsmClassifier> visibleClassesEnums = new ArrayList<CsmClassifier>();
             if (isEnoughAfterFilterVisibileObjects(strPrefix, match, classesEnums, visibleClassesEnums)) {
-                resImpl.classesEnumsTypedefs.addAll(visibleClassesEnums);
+                resImpl.classesEnumsTypedefs = append(resImpl.classesEnumsTypedefs, visibleClassesEnums);
                 return true;
             } else {
                 // we need to keep found classes even when they are not visible
                 // i.e. we are in completion mode or
                 // later on it will be checked against lib classes
-                resImpl.classesEnumsTypedefs.addAll(classesEnums);
+                resImpl.classesEnumsTypedefs = append(resImpl.classesEnumsTypedefs, classesEnums);
             }
         }
         if (needFileLocalMacros(context, offset)) {
@@ -675,7 +683,9 @@ public class CompletionResolverImpl implements CompletionResolver {
             Collection<CsmClassifier> visibleClassesEnums = new ArrayList<CsmClassifier>();
             if (isEnoughAfterFilterVisibileObjects(strPrefix, match, libClassesEnums, visibleClassesEnums)) {
                 // we found better classifier in libraries, clear project ones
-                resImpl.classesEnumsTypedefs.clear();
+                if (resImpl.classesEnumsTypedefs != null) {
+                    resImpl.classesEnumsTypedefs.clear();
+                }
                 resImpl.libClasses.addAll(visibleClassesEnums);
                 return true;
             } else {
@@ -712,9 +722,31 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         return false;
     }
+    
+    private static <T> Collection<T> append(Collection<T> current, T elem) {
+        LinkedHashSet<T> result;
+        if (current == null) {
+            result = new LinkedHashSet<>();
+        } else {
+            result = new LinkedHashSet<>(current);
+        }
+        result.add(elem);
+        return result;
+    }
+    
+    private static <T> Collection<T> append(Collection<T> current, Collection<T> toAdd) {
+        LinkedHashSet<T> result;
+        if (current == null) {
+            result = new LinkedHashSet<>();
+        } else {
+            result = new LinkedHashSet<>(current);
+        }
+        result.addAll(toAdd);
+        return result;
+    }
 
     /**
-     * If we are inside class and inside type and class name matches strPrefix,
+     * If we are inside class and class name matches strPrefix,
      * we should add class to the result as elements inside class could
      * not have the same name.
      * The only exception is constructor, but we prefer class in such case
@@ -728,21 +760,16 @@ public class CompletionResolverImpl implements CompletionResolver {
      *
      * @return true if it is enough resolving context
      */
-    private boolean resolveCurrentClassInsideType(CsmClass clazz, ResultImpl resImpl, CsmContext context, int offset, String strPrefix, boolean match) {
-        if (needClasses(context, offset) && CsmContextUtilities.isInType(context, offset)) {
+    private boolean tryInsertCurrentClass(CsmClass clazz, ResultImpl resImpl, CsmContext context, int offset, String strPrefix, boolean match) {
+        if (needClasses(context, offset) && CsmOffsetUtilities.isInObject(clazz, offset)) {
             if (CsmSortUtilities.matchName(clazz.getName(), strPrefix, match, caseSensitive)) {
                 // if inside type and class name matches given string
                 // we should add class to resolve ambiguity class/constructor in favor of class
-
-                if (resImpl.classesEnumsTypedefs == null) {
-                    resImpl.classesEnumsTypedefs = new LinkedHashSet<CsmClassifier>();
-                }
-
-                resImpl.classesEnumsTypedefs.add(clazz);
-
-                if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
-                    return true;
-                }
+                resImpl.classesEnumsTypedefs = append(resImpl.classesEnumsTypedefs, clazz);
+            }
+            
+            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
+                return true;
             }
         }
         return false;

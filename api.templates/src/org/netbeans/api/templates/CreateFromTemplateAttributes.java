@@ -36,17 +36,17 @@ package org.netbeans.api.templates;
 
 import java.util.Map;
 
-/** This is an interface for <q>smart templating</q>.
+/** This is an interface for <em>smart templating</em>.
  * Implementations of this class can be registered in the global {@link org.openide.util.Lookup}
  * and allows anyone provide additional parameters to each {@link CreateFromTemplateHandler}s
  * when a template is instantiating.
- * <p/>
+ * <p>
  * Implementations are called in the order of appearance in Lookup. The positions less than 0 are
  * reserved for the platform. Implementations called later can see and override
  * values defined by earlier CreateFromTemplateAttributes.
- * <p/>
+ * <p>
  * Read more in the <a href="@TOP@/architecture-summary.html#script">howto document</a>.
- * <p/>
+ * <p>
  * This interface supersedes {@code CreateFromTemplateAttributesProvider} in {@code openide.loaders} module.
  * 
  * @author Svata Dedic
@@ -55,7 +55,7 @@ public interface CreateFromTemplateAttributes {
     /** Called when a template is about to be instantiated to provide additional
      * values to the {@link CreateFromTemplateHandler} that will handle the 
      * template instantiation.
-     * <p/>
+     * <p>
      * If the returned Map defines the same value as some {@link CreateFromTemplateAttributes} registered
      * earlier, the Map's value takes precedence. Parameters supplied by the {@link FileBuilder} cannot be
      * overriden.

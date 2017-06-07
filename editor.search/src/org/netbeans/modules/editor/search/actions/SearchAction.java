@@ -97,7 +97,7 @@ public class SearchAction extends AbstractEditorAction {
                 if (replaceBarInstance.isVisible()) {
                     replaceBarInstance.looseFocus();
                 }
-                searchBarInstance.gainFocus();
+                searchBarInstance.gainFocus(false);
                 SearchNbEditorKit.makeSearchAndReplaceBarPersistent();
             }
         }

@@ -49,7 +49,6 @@ import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariableImpl;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -90,7 +89,7 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
                 }
                 TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
                 //return currentPCInfo.getVars();
-                TruffleSlotVariable[] vars = selectedStackFrame.getVars();
+                TruffleVariable[] vars = selectedStackFrame.getVars();
                 ObjectVariable thisObj = selectedStackFrame.getThis();
                 if (false && thisObj != null) {
                     TruffleVariable tThis = TruffleVariableImpl.get(thisObj);

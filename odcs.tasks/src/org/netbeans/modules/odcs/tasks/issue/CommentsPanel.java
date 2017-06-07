@@ -108,8 +108,14 @@ public class CommentsPanel extends JPanel {
     
     static {
         blueBackground = UIManager.getColor( "nb.bugtracking.comment.background" ); //NOI18N
-        if( null == blueBackground )
-            blueBackground = new Color(0xf3f6fd);
+        if( null == blueBackground ) {
+            Color textColor = UIManager.getColor("TextPane.foreground"); // NOI18N
+            if (textColor == null || (textColor.getRed() < 192 && textColor.getGreen() < 192 && textColor.getBlue() < 192)) {
+                blueBackground = new Color(0xf3f6fd);
+            } else { // hack for high-contrast black
+                blueBackground = Color.darkGray;
+            }
+        }
         greyForeground = UIManager.getColor( "nb.bugtracking.comment.foreground" ); //NOI18N
         if( null == greyForeground )
             greyForeground = new Color(0x999999);

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.run;
 
+import org.netbeans.modules.docker.api.PortMapping;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.ArrayList;

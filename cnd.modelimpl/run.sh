@@ -49,7 +49,7 @@ TMP_PREFIX=${TMP_PREFIX-/var/tmp}
 USERDIR="--userdir ${TMP_PREFIX}/${USER}/cnd-userdir"
 PARSERRORS="-J-Dparser.report.errors=true"
 XREF_LOG="-J-Dorg.netbeans.modules.cnd.refactoring.plugins.level=FINE"
-DEBUG="-J-Xdebug -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y"
+DEBUG="-J-agentlib:jdwp=transport=dt_socket,server=y"
 PRG=$0
 NB_COPY="${TMP_PREFIX}/${USER}/nb-copy"
 VERBOSE=true

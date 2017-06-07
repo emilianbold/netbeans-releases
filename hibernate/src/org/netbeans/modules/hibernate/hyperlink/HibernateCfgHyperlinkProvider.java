@@ -50,7 +50,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.hibernate.cfg.HibernateCfgXmlConstants;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 
 /**
  * Provides hyperlinking functionality for HibernateConfiguration files
@@ -86,12 +86,7 @@ public class HibernateCfgHyperlinkProvider implements HyperlinkProvider {
     }
     
     public boolean isHyperlinkPoint(Document document, int offset) {
-        if (!(document instanceof BaseDocument)) {
-            return false;
-        }
-
-        BaseDocument doc = (BaseDocument) document;
-        if (!(doc.getSyntaxSupport() instanceof XMLSyntaxSupport)) {
+        if (XMLSyntaxSupport.getSyntaxSupport(document) == null) {
             return false;
         }
 

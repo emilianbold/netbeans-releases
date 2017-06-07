@@ -562,7 +562,7 @@ public class VariablesTableModel implements TableModel, Constants {
             m = NbBundle.getMessage(VariablesTableModel.class, "MSG_NA");
         }
         Throwable t = e.getTargetException();
-        if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+        if (t != null && e.hasApplicationTarget()) {
             java.io.StringWriter s = new java.io.StringWriter();
             java.io.PrintWriter p = new java.io.PrintWriter(s);
             t.printStackTrace(p);

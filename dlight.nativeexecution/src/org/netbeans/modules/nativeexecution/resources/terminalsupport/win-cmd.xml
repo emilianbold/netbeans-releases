@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     <command stringvalue="cmd.exe"/>
     <arguments>
         <arg>/Q</arg>
-        <arg>/K</arg>
+        <arg>/C</arg>
         <arg>start</arg>
         <arg>"$title"</arg>
         <arg>$shell</arg>

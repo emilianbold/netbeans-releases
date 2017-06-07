@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 
@@ -121,7 +122,7 @@ class ClassDump extends HprofObject implements JavaClass {
     public List /*<Field>*/ getFields() {
         List filedsList = (List) classDumpSegment.fieldsCache.get(this);
         if (filedsList == null) {
-            filedsList = computeFields();
+            filedsList = Collections.unmodifiableList(computeFields());
             classDumpSegment.fieldsCache.put(this,filedsList);
         }
         return filedsList;
@@ -202,6 +203,14 @@ class ClassDump extends HprofObject implements JavaClass {
         return instancesList;
     }
 
+    public Iterator /*<Instance>*/ getInstancesIterator() {
+        int instancesCount = getInstancesCount();
+        if (instancesCount == 0) {
+            return Collections.EMPTY_LIST.iterator();
+        }
+        return new InstancesIterator(instancesCount);
+    }
+
     public int getInstancesCount() {
         if (instances == 0) {
             getHprof().computeInstances();
@@ -223,7 +232,7 @@ class ClassDump extends HprofObject implements JavaClass {
     }
 
     public Collection /*<JavaClass>*/ getSubClasses() {
-        List classes = classDumpSegment.hprofHeap.getAllClasses();
+        List classes = getHprof().getAllClasses();
         List subclasses = new ArrayList(classes.size() / 10);
         Map subclassesMap = new HashMap((classes.size() * 4) / 3);
 
@@ -479,5 +488,42 @@ class ClassDump extends HprofObject implements JavaClass {
         subclassesMap.put(jcls, b);
 
         return b;
+    }
+    
+    private class InstancesIterator implements Iterator {
+        
+        private long instancesCount;
+        private long[] offset;
+        TagBounds allInstanceDumpBounds;
+        HprofHeap heap;
+        long classId;
+        
+        InstancesIterator(long ic) {
+            instancesCount = ic;
+            allInstanceDumpBounds = getHprof().getAllInstanceDumpBounds();
+            offset = new long[] { firstInstanceOffset };
+            heap = getHprof();
+            classId = getJavaClassId();
+
+        }
+
+        
+        public boolean hasNext() {
+            if (instancesCount>0 && offset[0] < allInstanceDumpBounds.endOffset) {
+                return true;
+            }
+            return false;
+        }
+
+        public Object next() {
+            while (hasNext()) {
+                Instance i = heap.getInstanceByOffset(offset, classId);
+                if (i != null) {
+                    instancesCount--;
+                    return i;
+                }
+            }
+            throw new NoSuchElementException();
+        } 
     }
 }

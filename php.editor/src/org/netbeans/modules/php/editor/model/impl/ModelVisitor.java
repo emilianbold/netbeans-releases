@@ -128,6 +128,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -608,9 +609,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         ClassName className = node.getClassName();
         Expression expression = node.getExpression();
         if (className.getName() instanceof Variable) {
-            occurencesBuilder.prepare((Variable) className.getName(), modelBuilder.getCurrentScope());
+            prepareVariable((Variable) className.getName(), modelBuilder.getCurrentScope());
             if (expression instanceof Variable) {
-                occurencesBuilder.prepare((Variable) expression, modelBuilder.getCurrentScope());
+                prepareVariable((Variable) expression, modelBuilder.getCurrentScope());
             }
         } else {
             if (className.getName() instanceof NamespaceName) {
@@ -748,6 +749,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(ExpressionArrayAccess node) {
         // CONSTANT[0], "String"[0], [1][0]
+        // \NamespaceA\CONSTANT[0], Sub\CONSTANT[0], namespace\CONSTANT[1]
         scan(node.getDimension());
         Expression expression = node.getExpression();
         while (expression instanceof ExpressionArrayAccess) {
@@ -757,12 +759,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
 
         if (expression instanceof Identifier) {
-            // global const
             Identifier identifier = (Identifier) expression;
             String name = identifier.getName();
             if(!NavUtils.isQuoted(name)) {
                 occurencesBuilder.prepare(Kind.CONSTANT, expression, modelBuilder.getCurrentScope());
             }
+        } else {
+            scan(expression);
         }
     }
 
@@ -773,11 +776,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             return;
         }
         Scope scope = modelBuilder.getCurrentScope();
-        if (previousScope != null && isLexicalVariable(node)) {
-            occurencesBuilder.prepare(node, previousScope);
-        } else {
-            occurencesBuilder.prepare(node, scope);
-        }
+        prepareVariable(node, scope);
         if (scope instanceof VariableNameFactory) {
             ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
             if (scope instanceof MethodScope && "$this".equals(varInfo.getName())) { //NOI18N
@@ -790,6 +789,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             assert scope instanceof TypeScope : scope;
         }
         super.visit(node);
+    }
+
+    private void prepareVariable(Variable node, Scope scope) {
+        if (previousScope != null && isLexicalVariable(node)) {
+            occurencesBuilder.prepare(node, previousScope);
+        } else {
+            occurencesBuilder.prepare(node, scope);
+        }
     }
 
     private boolean isLexicalVariable(final Variable variable) {
@@ -918,7 +925,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             allAssignments);
                     varN.addElement(varAssignment);
                 }
-                occurencesBuilder.prepare((Variable) leftHandSide, scope);
+
+                // #269672 also check the scope if the variable is added
+                // otherwise, the behavior for GotoDeclaration may be different
+                prepareVariable((Variable) leftHandSide, scope);
             }
         } else if (leftHandSide instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) leftHandSide;
@@ -1010,7 +1020,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (typeResolver.isResolved()) {
                             QualifiedName typeQualifiedName = typeResolver.getTypeName(false);
                             if (typeQualifiedName != null) {
-                                typeName = typeQualifiedName.toString();
+                                typeName = typeResolver.isNullableType()
+                                        ? CodeUtils.NULLABLE_TYPE_PREFIX + typeQualifiedName.toString()
+                                        : typeQualifiedName.toString();
                             }
                         }
                     }
@@ -1022,11 +1034,17 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
             }
             if (parameterName instanceof Variable) {
+                if (parameterType instanceof NullableType) {
+                    NullableType nullableType = (NullableType) parameterType;
+                    if (nullableType.getType() instanceof NamespaceName) {
+                        parameterType = (NamespaceName) nullableType.getType();
+                    }
+                }
                 if (parameterType instanceof NamespaceName) {
                     Kind[] kinds = {Kind.CLASS, Kind.IFACE};
                     occurencesBuilder.prepare(kinds, (NamespaceName) parameterType, fncScope);
                 }
-                occurencesBuilder.prepare((Variable) parameterName, fncScope);
+                prepareVariable((Variable) parameterName, fncScope);
             }
             super.visit(node);
         }
@@ -1036,25 +1054,32 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(CatchClause node) {
         Variable variable = node.getVariable();
         Scope scope = modelBuilder.getCurrentScope();
+        List<Expression> classNames = node.getClassNames();
         if (scope instanceof VariableNameFactory) {
+            // add variable assignments
             VariableNameImpl varNameImpl = createVariable((VariableNameFactory) scope, variable);
             if (varNameImpl != null) {
-                VarAssignmentImpl varAssignment = varNameImpl.createAssignment(
-                        scope,
-                        true,
-                        new OffsetRange(node.getStartOffset(), node.getEndOffset()),
-                        VariableNameImpl.toOffsetRange(variable),
-                        CodeUtils.extractQualifiedName(node.getClassName()));
-                varNameImpl.addElement(varAssignment);
+                for (Expression className : classNames) {
+                    VarAssignmentImpl varAssignment = varNameImpl.createAssignment(
+                            scope,
+                            true,
+                            new OffsetRange(node.getStartOffset(), node.getEndOffset()),
+                            VariableNameImpl.toOffsetRange(variable),
+                            CodeUtils.extractQualifiedName(className));
+                    varAssignment.setCatchClause(true);
+                    varNameImpl.addElement(varAssignment);
+                }
             }
         }
-        Expression className = node.getClassName();
-        if (className instanceof NamespaceName) {
-            occurencesBuilder.prepare((NamespaceName) className, scope);
-        } else {
-            occurencesBuilder.prepare(Kind.CLASS, className, scope);
+
+        for (Expression className : classNames) {
+            if (className instanceof NamespaceName) {
+                occurencesBuilder.prepare((NamespaceName) className, scope);
+            } else {
+                occurencesBuilder.prepare(Kind.CLASS, className, scope);
+            }
         }
-        occurencesBuilder.prepare(variable, scope);
+        prepareVariable(variable, scope);
         scan(node.getBody());
     }
 
@@ -1064,8 +1089,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         FunctionScopeImpl fncScope = FunctionScopeImpl.createElement(scope, node);
         List<Expression> lexicalVariables = node.getLexicalVariables();
         for (Expression expression : lexicalVariables) {
-            if (expression instanceof Variable) {
-                Variable variable = (Variable) expression;
+            Expression expr = expression;
+            // #269672 also check the reference: &$variable
+            if (expr instanceof Reference) {
+                expr = ((Reference) expr).getExpression();
+            }
+            if (expr instanceof Variable) {
+                Variable variable = (Variable) expr;
                 currentLexicalVariables.add(CodeUtils.extractVariableName(variable));
                 VariableNameImpl varNameImpl = createVariable((VariableNameFactory) fncScope, variable);
                 varNameImpl.setGloballyVisible(true);

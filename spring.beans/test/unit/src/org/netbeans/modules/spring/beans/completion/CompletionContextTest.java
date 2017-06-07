@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
-import junit.framework.TestCase;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
 import org.netbeans.modules.spring.beans.completion.CompletionContext.CompletionType;
 import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE;
@@ -54,7 +57,17 @@ import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_Q
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class CompletionContextTest extends TestCase {
+public class CompletionContextTest extends NbTestCase {
+
+    public CompletionContextTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        MockMimeLookup.setInstances(MimePath.parse("text/xml"), XMLTokenId.language());
+        super.setUp();
+    }
 
     public void testAttributeValueCompletion() throws Exception {
         String config = TestUtils.createXMLConfigText("<bean id='petStore' " +

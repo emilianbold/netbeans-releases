@@ -207,8 +207,11 @@ public enum JsTokenId implements TokenId {
     KEYWORD_FALSE("false", "keyword"), // NOI18N
     KEYWORD_NULL("null", "keyword"), // NOI18N
     
+    JSX_EXP_BEGIN(null, "separator"), // NOI18N
+    JSX_EXP_END(null, "separator"), // NOI18N
+    
     JSX_TEXT(null, "jsx_text"); //NOI18N
-
+    
     // JavaScript mimetypes
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
     public static final String GULP_MIME_TYPE = "text/gulp+javascript"; // NOI18N
@@ -284,7 +287,7 @@ public enum JsTokenId implements TokenId {
 
                     if (id == DOC_COMMENT || id == BLOCK_COMMENT) {
                         return LanguageEmbedding.create(JsDocumentationTokenId.language(), 0, 0);
-                    } else if (id == JSX_TEXT) {
+                    } else if (id == JSX_TEXT || id == JSX_EXP_BEGIN || id == JSX_EXP_END) {
                         return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                     }
 

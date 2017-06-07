@@ -49,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
@@ -66,6 +67,59 @@ public class NbinstURLStreamHandler extends URLStreamHandler {
 
     protected URLConnection openConnection(URL u) throws IOException {
         return new NbinstURLConnection(u);
+    }
+
+    @Override
+    protected InetAddress getHostAddress(URL u) {
+        return null;
+    }
+
+    @Override
+    protected int hashCode(URL u) {
+        int h = 0;
+
+        // Generate the host part.
+        String host = u.getHost();
+        if (host != null)
+            h += host.toLowerCase().hashCode();
+
+        // Generate the file part.
+        String file = u.getFile();
+        if (file != null)
+            h += file.hashCode();
+
+        return h;        
+    }
+
+    @Override
+    protected boolean sameFile(URL u1, URL u2) {
+        // Compare the protocols.
+        if (!((u1.getProtocol() == u2.getProtocol()) ||
+              (u1.getProtocol() != null &&
+               u1.getProtocol().equalsIgnoreCase(u2.getProtocol()))))
+            return false;
+
+        // Compare the files.
+        if (!(u1.getFile() == u2.getFile() ||
+              (u1.getFile() != null && u1.getFile().equals(u2.getFile()))))
+            return false;
+
+        // Compare the hosts.
+        if (!hostsEqual(u1, u2))
+            return false;
+
+        return true;
+    }
+
+    @Override
+    protected boolean hostsEqual(URL u1, URL u2) {
+        final String host1 = u1.getHost();
+        final String host2 = u2.getHost();
+        
+        if (host1 != null && host2 != null)
+            return host1.equalsIgnoreCase(host2);
+         else
+            return host1 == null && host2 == null;
     }
 
     /** URLConnection for URL with nbinst protocol.

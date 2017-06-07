@@ -47,7 +47,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,13 +63,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.Popup;
-import javax.swing.SwingUtilities;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.lib.profiler.ui.swing.ProfilerPopupFactory;
+import org.netbeans.lib.profiler.ui.swing.ProfilerPopup;
 import org.netbeans.lib.profiler.ui.swing.SmallButton;
 import org.netbeans.lib.profiler.ui.swing.renderer.JavaNameRenderer;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatter;
@@ -112,9 +110,7 @@ public final class ClassMethodList {
     
     private static class UI {
         
-        private Popup popup;
         private JPanel panel;
-        private Component invoker;
         
         static UI forClasses(ProfilerSession session, Set<ClientUtils.SourceCodeSelection> selection) {
             return new UI(session, selection, false);
@@ -126,28 +122,19 @@ public final class ClassMethodList {
         
         
         void show(Component invoker) {
-            this.invoker = invoker;
-            showPopup();
-        }
-        
-        private void showPopup() {
-            popup = ProfilerPopupFactory.getPopup(invoker, panel, -5, invoker.getHeight() - 1);
-            popup.show();
-        }
-        
-        private void hidePopup() {
-            if (popup != null) popup.hide();
+            int resizeMode = ProfilerPopup.RESIZE_BOTTOM | ProfilerPopup.RESIZE_RIGHT;
+            ProfilerPopup.createRelative(invoker, panel, SwingConstants.SOUTH_WEST, resizeMode).show();
         }
         
         
         private UI(final ProfilerSession session, final Set<ClientUtils.SourceCodeSelection> selection, final boolean methods) {
             
-            JPanel content = new JPanel(new BorderLayout(8, 3));
-            content.setBorder(BorderFactory.createEmptyBorder(6, 8, 8, 8));
+            JPanel content = new JPanel(new BorderLayout());
             
-            JLabel caption = new JLabel(methods ? Bundle.ClassMethodList_selectedMethods() :
+            JLabel hint = new JLabel(methods ? Bundle.ClassMethodList_selectedMethods() :
                                                   Bundle.ClassMethodList_selectedClasses(), JLabel.LEADING);
-            content.add(caption, BorderLayout.NORTH);
+            hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+            content.add(hint, BorderLayout.NORTH);
             
             class XListModel extends AbstractListModel<ClientUtils.SourceCodeSelection> {
                 public int getSize() {
@@ -198,17 +185,8 @@ public final class ClassMethodList {
                 protected void fireActionPerformed(ActionEvent e) {
                     Collection<ClientUtils.SourceCodeSelection> sel = null;
                     
-                    Window w1 = SwingUtilities.getWindowAncestor(invoker);
-                    Window w2 = SwingUtilities.getWindowAncestor(panel);
-                    boolean hidePopup = w1 != w2;
-                    
                     if (methods) {
-                        if (hidePopup) hidePopup();
-
                         Collection<SourceMethodInfo> mtd = ClassMethodSelector.selectMethods(session);
-
-                        if (hidePopup) showPopup();
-
                         if (!mtd.isEmpty()) {
                             sel = new HashSet();
                             for (SourceMethodInfo smi : mtd) sel.add(
@@ -216,12 +194,7 @@ public final class ClassMethodList {
                                                                         smi.getName(), smi.getSignature()));
                         }
                     } else {
-                        if (hidePopup) hidePopup();
-
                         Collection<SourceClassInfo> cls = ClassMethodSelector.selectClasses(session);
-
-                        if (hidePopup) showPopup();
-
                         if (!cls.isEmpty()) {
                             sel = new HashSet();
                             for (SourceClassInfo sci : cls) sel.add(new ClientUtils.SourceCodeSelection(
@@ -262,10 +235,11 @@ public final class ClassMethodList {
             });
             
             JScrollPane scroll = new JScrollPane(list);
-            caption.setLabelFor(scroll);
+            hint.setLabelFor(scroll);
             content.add(scroll, BorderLayout.CENTER);
             
             JPanel buttons = new JPanel(null);
+            buttons.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
             buttons.setLayout(new BoxLayout(buttons, BoxLayout.Y_AXIS));
             buttons.add(addB);
             buttons.add(removeB);

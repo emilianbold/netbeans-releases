@@ -65,19 +65,32 @@ public class FortranTTIFactory implements TypedTextInterceptor.Factory {
     }
 
     private static class TypedTextInterceptorImpl implements TypedTextInterceptor {
+        private int caretPosition;
 
         public TypedTextInterceptorImpl() {
         }
 
         @Override
         public boolean beforeInsert(Context context) throws BadLocationException {
+            caretPosition = -1;
             return false;
         }
 
         @Override
         public void insert(MutableContext context) throws BadLocationException {
-            FortranBracketCompletion.INSTANCE.charInserted((BaseDocument) context.getDocument(),
-                    context.getOffset(), context.getComponent().getCaret(), context.getText().charAt(0));
+            BaseDocument doc = (BaseDocument) context.getDocument();
+            if (!FortranBracketCompletion.INSTANCE.completionSettingEnabled()) {
+                return;
+            }
+            char insertedChar = context.getText().charAt(0);
+            switch(insertedChar) {
+                case '(':
+                        FortranBracketCompletion.INSTANCE.completeOpeningBracket(context);
+                    break;
+                case ')':
+                    caretPosition = FortranBracketCompletion.INSTANCE.skipClosingBracket(context);
+                    break;
+            }
         }
 
         @Override
@@ -99,6 +112,16 @@ public class FortranTTIFactory implements TypedTextInterceptor.Factory {
                         } finally {
                             doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
                             indent.unlock();
+                        }
+                    } else if (caretPosition != -1) {
+                        context.getComponent().setCaretPosition(caretPosition);
+                        caretPosition = -1;
+                    } else {
+                        try {
+                            FortranBracketCompletion.INSTANCE.charInserted(doc,
+                                    offset, context.getComponent().getCaret(), context.getText().charAt(0));
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }

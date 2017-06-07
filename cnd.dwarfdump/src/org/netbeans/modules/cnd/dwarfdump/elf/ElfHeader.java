@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.dwarfdump.elf;
 
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
+import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 
 public class ElfHeader {
     public int elfClass = 0;       /* File class */
@@ -97,10 +98,10 @@ public class ElfHeader {
     }
     
     public int getNumberOfSectionHeaders() {
-        return e_shnum & 0xFFFF;
+        return ByteStreamReader.ushortToInt(e_shnum);
     }
     
     public int getELFStringTableSectionIndex() {
-        return e_shstrndx & 0xFFFF;
+        return ByteStreamReader.ushortToInt(e_shstrndx);
     }
 }

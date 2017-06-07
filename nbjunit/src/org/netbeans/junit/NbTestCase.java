@@ -193,8 +193,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         // check if we are debugged
         RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
         List<String> args = runtime.getInputArguments();
-        if (args.contains("-Xdebug")) {
+        if (args.contains("-Xdebug") || args.contains("-agentlib:jdwp")) { //NOI18N
             debugMode = true;
+        } else {
+            for (String arg : args) {
+                if (arg.startsWith("-agentlib:jdwp=")) {
+                    debugMode = true;
+                    break;
+                }
+            }
         }
         Integer vmTimeRemaining = Integer.getInteger("nbjunit.hard.timeout");
         if (vmTimeRemaining != null && !debugMode) {

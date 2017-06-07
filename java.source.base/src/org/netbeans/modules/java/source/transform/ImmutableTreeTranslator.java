@@ -492,7 +492,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
                 el = overlay.resolve(model, elements, qit.getFQN());
             } else {
                 if (el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == ElementKind.PACKAGE) {
-                    el = overlay.resolve(model, elements, ((QualifiedNameable) el).getQualifiedName().toString());
+                    el = overlay.resolve(model, elements, ((QualifiedNameable) el).getQualifiedName().toString(), elements.getModuleOf(el));
                 }
             }
 
@@ -538,6 +538,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         return rewriteChildren(tree);
     }
     public Tree visitExports(ExportsTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+    public Tree visitOpens(OpensTree tree, Object p) {
         return rewriteChildren(tree);
     }
     public Tree visitProvides(ProvidesTree tree, Object p) {
@@ -1316,9 +1319,11 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 
     private Tree rewriteChildren(ModuleTree tree) {
         ExpressionTree name = (ExpressionTree) translate(tree.getName());
+        List<? extends AnnotationTree> annotations = translate(tree.getAnnotations());
         List<? extends DirectiveTree> directives = translate(tree.getDirectives());
-    	if (name != tree.getName() || !directives.equals(tree.getDirectives())) {
-	    ModuleTree n = make.Module(name, directives);
+    	if (name != tree.getName() || !Objects.equals(annotations, tree.getAnnotations())
+                || !Objects.equals(directives, tree.getDirectives())) {
+	    ModuleTree n = make.Module(make.Modifiers(0, annotations), tree.getModuleType(), name, directives);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);
@@ -1328,10 +1333,23 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     }
 
     private Tree rewriteChildren(ExportsTree tree) {
-        ExpressionTree name = (ExpressionTree) translate(tree.getExportName());
+        ExpressionTree name = (ExpressionTree) translate(tree.getPackageName());
         List<? extends ExpressionTree> moduleNames = translate(tree.getModuleNames());
-    	if (name != tree.getExportName()|| !Objects.equals(moduleNames,tree.getModuleNames())) {
+    	if (name != tree.getPackageName() || !Objects.equals(moduleNames, tree.getModuleNames())) {
 	    ExportsTree n = make.Exports(name, moduleNames);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+
+    private Tree rewriteChildren(OpensTree tree) {
+        ExpressionTree name = (ExpressionTree) translate(tree.getPackageName());
+        List<? extends ExpressionTree> moduleNames = translate(tree.getModuleNames());
+    	if (name != tree.getPackageName() || !Objects.equals(moduleNames, tree.getModuleNames())) {
+	    OpensTree n = make.Opens(name, moduleNames);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);
@@ -1342,9 +1360,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 
     private Tree rewriteChildren(ProvidesTree tree) {
         ExpressionTree serviceName = (ExpressionTree) translate(tree.getServiceName());
-        ExpressionTree implName = (ExpressionTree) translate(tree.getImplementationName());
-    	if (serviceName != tree.getServiceName()|| implName != tree.getImplementationName()) {
-	    ProvidesTree n = make.Provides(serviceName, implName);
+        List<? extends ExpressionTree> implNames = translate(tree.getImplementationNames());
+    	if (serviceName != tree.getServiceName() || !Objects.equals(implNames, tree.getImplementationNames())) {
+	    ProvidesTree n = make.Provides(serviceName, implNames);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);
@@ -1356,7 +1374,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     private Tree rewriteChildren(RequiresTree tree) {
         ExpressionTree name = (ExpressionTree) translate(tree.getModuleName());
     	if (name != tree.getModuleName()) {
-	    RequiresTree n = make.Requires(tree.isPublic(), name);
+	    RequiresTree n = make.Requires(tree.isTransitive(), tree.isStatic(), name);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
             copyPosTo(tree,n);

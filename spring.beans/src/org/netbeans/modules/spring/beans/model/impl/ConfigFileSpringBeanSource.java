@@ -67,7 +67,7 @@ import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.NamedNodeMap;
@@ -145,6 +145,8 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         
         private static final String REF_SUFFIX = "-ref"; // NOI18N
         private static final String NULL_PREFIX = "null_prefix";
+        
+        private XMLSyntaxSupport support;
 
         public DocumentParser(File file, Document document) {
             this.file = file;
@@ -160,6 +162,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             if (rootNode == null) {
                 return;
             }
+            support = XMLSyntaxSupport.getSyntaxSupport(document);
             NodeList childNodes = rootNode.getChildNodes();
 
             // prefixesMap caches the prefixes for tag nemes
@@ -198,8 +201,8 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             String parent = getTrimmedAttr(node, BeansAttributes.PARENT); 
             String factoryBean = getTrimmedAttr(node, BeansAttributes.FACTORY_BEAN); 
             String factoryMethod = getTrimmedAttr(node, BeansAttributes.FACTORY_METHOD); 
-            Tag tag = (Tag)node;
-            Location location = new ConfigFileLocation(FileUtil.toFileObject(file), tag.getElementOffset());
+            Location location = new ConfigFileLocation(FileUtil.toFileObject(file), 
+                    support.getNodeOffset(node));
             Set<SpringBeanProperty> properties = parseBeanProperties(node, prefixesMap);
             ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, parent, factoryBean, factoryMethod, properties, location);
             if (id != null) {
@@ -227,10 +230,11 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             }
             
             // P Namespace items
-            String tagName = ((Tag)node).getTagName();
+            String tagName = node.getNodeName();
             String prefix = prefixesMap.get(tagName);
             if (prefix == null) {
-                prefix = SpringXMLConfigEditorUtils.getPNamespacePrefix(document, ((Tag)node).getElementOffset());
+                prefix = SpringXMLConfigEditorUtils.getPNamespacePrefix(document, 
+                        support.getNodeOffset(node));
                 if (prefix == null) {
                     // this is caching the case when prefix declaration is missing
                     prefixesMap.put(tagName, NULL_PREFIX);

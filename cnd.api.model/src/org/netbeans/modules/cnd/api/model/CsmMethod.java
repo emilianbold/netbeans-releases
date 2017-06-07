@@ -65,4 +65,9 @@ public interface CsmMethod extends CsmMember, CsmFunction {
 
     boolean isConst();
 
+    boolean isVolatile();
+
+    boolean isLValue();
+
+    boolean isRValue();
 }

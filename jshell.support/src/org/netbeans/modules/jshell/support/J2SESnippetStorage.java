@@ -50,7 +50,10 @@ import org.openide.filesystems.FileObject;
  * @author sdedic
  */
 @ProjectServiceProvider(service = SnippetStorage.class,
-        projectType = "org-netbeans-modules-java-j2seproject")
+        projectType = {
+            "org-netbeans-modules-java-j2seproject",
+            "org.netbeans.modules.java.j2semodule"
+        })
 public class J2SESnippetStorage implements SnippetStorage {
     private final Project project;
 

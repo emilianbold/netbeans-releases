@@ -71,11 +71,11 @@ public final class APTBuilderImpl {
     public APTBuilderImpl() {
     }
 
-    public APTFile buildAPT(FileSystem fileSystem, CharSequence path, TokenStream ts) {
+    public APTFile buildAPT(FileSystem fileSystem, CharSequence path, TokenStream ts, APTFile.Kind aptKind) {
         if (ts == null) {
             return null;
         }
-        APTFileNode aptFile = new APTFileNode(fileSystem, path);
+        APTFileNode aptFile = new APTFileNode(fileSystem, path, aptKind);
         try {
             buildFileAPT(aptFile, ts);
         } catch (TokenStreamRecognitionException ex) {

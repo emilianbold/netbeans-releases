@@ -41,11 +41,16 @@
  */
 package org.netbeans.lib.nbjavac.services;
 
+import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import java.util.HashMap;
+import java.util.Map;
+import javax.lang.model.element.Element;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 
 /**
@@ -54,6 +59,8 @@ import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
  */
 public class NBJavacTrees extends JavacTrees {
 
+    private final Map<Element, TreePath> element2paths = new HashMap<>();
+    
     public static void preRegister(Context context) {
         context.put(JavacTrees.class, new Context.Factory<JavacTrees>() {
             public JavacTrees make(Context c) {
@@ -80,4 +87,13 @@ public class NBJavacTrees extends JavacTrees {
         };
     }
 
+    @Override
+    public TreePath getPath(Element e) {
+        TreePath path = super.getPath(e);
+        return path != null ? path : element2paths.get(e);
+    }
+    
+    void addPathForElement(Element elem, TreePath path) {
+        element2paths.put(elem, path);
+    }
 }

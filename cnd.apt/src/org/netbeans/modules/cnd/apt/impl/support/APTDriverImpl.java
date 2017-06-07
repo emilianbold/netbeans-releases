@@ -81,7 +81,7 @@ public class APTDriverImpl {
     public APTDriverImpl() {
     }
 
-    public APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang, String flavor) throws IOException {
+    public APTFile findAPT(APTFileBuffer buffer, boolean withTokens, APTFile.Kind aptKind) throws IOException {
         CharSequence path = buffer.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
@@ -97,7 +97,7 @@ public class APTDriverImpl {
             assert (creator != null);
             // use instance synchronized method to prevent
             // multiple apt creating for the same file
-            apt = creator.findAPT(buffer, withTokens, lang, flavor);
+            apt = creator.findAPT(buffer, withTokens, aptKind);
             file2creator.remove(path);
         }
         return apt;
@@ -126,19 +126,19 @@ public class APTDriverImpl {
         public APTSyncCreator() {
         }
 
-        private TokenStream getTokenStream(APTFileBuffer buffer, String lang, String flavor, boolean isLight) throws IOException {
+        private TokenStream getTokenStream(APTFileBuffer buffer, APTFile.Kind aptKind, boolean isLight) throws IOException {
             String bufName = buffer.getAbsolutePath().toString();
             char[] charBuffer = buffer.getCharBuffer();
             trackActivity(bufName, charBuffer.length, isLight);
             if (isLight) {
-                return APTTokenStreamBuilder.buildLightTokenStream(bufName, charBuffer, lang, flavor);
+                return APTTokenStreamBuilder.buildLightTokenStream(bufName, charBuffer, aptKind);
             } else {
-                return APTTokenStreamBuilder.buildTokenStream(bufName, charBuffer, lang, flavor);
+                return APTTokenStreamBuilder.buildTokenStream(bufName, charBuffer, aptKind);
             }
         }
 
         /** synchronized on instance */
-        public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang, String flavor) throws IOException {
+        public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens, APTFile.Kind aptKind) throws IOException {
             CharSequence path = buffer.getAbsolutePath();
             // quick exit: check if already was added by another creator
             // during wait
@@ -150,9 +150,9 @@ public class APTDriverImpl {
             APTFile apt = _getAPTFile(path, withTokens);
             if (apt == null) {
                 // ok, create new apt
-                TokenStream ts = getTokenStream(buffer, lang, flavor, !withTokens);
+                TokenStream ts = getTokenStream(buffer, aptKind, !withTokens);
                 // build apt from light token stream
-                apt = APTBuilder.buildAPT(buffer.getFileSystem(), path, ts);
+                apt = APTBuilder.buildAPT(buffer.getFileSystem(), path, ts, aptKind);
                 BufferType type = buffer.getType();
                 if (!withTokens) {
                     fullAPT = null;

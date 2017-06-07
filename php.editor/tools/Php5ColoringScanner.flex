@@ -267,6 +267,9 @@ PHP_TYPE_INT=[i][n][t]
 PHP_TYPE_FLOAT=[f][l][o][a][t]
 PHP_TYPE_STRING=[s][t][r][i][n][g]
 PHP_TYPE_BOOL=[b][o][o][l]
+// PHP7.1: These may be used as type names in PHP7.0 or older
+PHP_TYPE_VOID=[v][o][i][d]
+PHP_ITERABLE=[i][t][e][r][a][b][l][e]
 
 
 
@@ -517,6 +520,10 @@ PHP_TYPE_BOOL=[b][o][o][l]
     return PHPTokenId.PHP_TYPE_BOOL;
 }
 
+<ST_PHP_IN_SCRIPTING>{PHP_TYPE_VOID} {
+    return PHPTokenId.PHP_TYPE_VOID;
+}
+
 <ST_PHP_IN_SCRIPTING>"->" {
     pushState(ST_PHP_LOOKING_FOR_PROPERTY);
     return PHPTokenId.PHP_OBJECT_OPERATOR;
@@ -705,6 +712,14 @@ PHP_TYPE_BOOL=[b][o][o][l]
     return PHPTokenId.PHP_ARRAY;
 }
 
+<ST_PHP_IN_SCRIPTING>"callable" {
+    return PHPTokenId.PHP_CALLABLE;
+}
+
+<ST_PHP_IN_SCRIPTING>{PHP_ITERABLE} {
+    return PHPTokenId.PHP_ITERABLE;
+}
+
 <ST_PHP_IN_SCRIPTING>"parent" {
     return PHPTokenId.PHP_PARENT;
 }
@@ -781,6 +796,10 @@ PHP_TYPE_BOOL=[b][o][o][l]
 
 <ST_PHP_IN_SCRIPTING>"__CLASS__" {
     return PHPTokenId.PHP__CLASS__;
+}
+
+<ST_PHP_IN_SCRIPTING>"__TRAIT__" {
+    return PHPTokenId.PHP__TRAIT__;
 }
 
 <ST_PHP_IN_SCRIPTING>"__FUNCTION__" {

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.vars;
 
+import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
+
 /**
  *
  * @author Martin
@@ -53,6 +55,10 @@ public interface TruffleVariable {
     String getType();
     
     Object getValue();
+    
+    SourcePosition getValueSource();
+    
+    SourcePosition getTypeSource();
     
     boolean isLeaf();
     

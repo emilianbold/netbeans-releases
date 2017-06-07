@@ -79,7 +79,8 @@ class ShellDebuggerUtils {
     }
     
     static ObjectReference getWorkerHandle(Session debuggerSession, int remotePortAddress) {
-        if (debuggerSession == null) {
+        // Until issue #269235 is resolved, we cannot get a handle on the target agent.
+        if (debuggerSession == null || true) {
             return null;
         }
         JPDADebugger debugger = debuggerSession.lookupFirst(null, JPDADebugger.class);
@@ -91,7 +92,7 @@ class ShellDebuggerUtils {
             return null;
         }
         JPDAClassType ct = classes.get(0);
-        List<ObjectVariable> list = ct.getInstances(0);
+        List<ObjectVariable> list = ct.getInstances(1);
         for (ObjectVariable inst : list) {
             Field f = inst.getField("socketPort");
             if (f == null) {

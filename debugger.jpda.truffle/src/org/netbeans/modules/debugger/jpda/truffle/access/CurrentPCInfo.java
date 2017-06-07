@@ -46,13 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Map;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
-import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 
 /**
  * Container of information about the current program counter.
@@ -63,20 +62,20 @@ public class CurrentPCInfo {
     
     public static final String PROP_SELECTED_FRAME = "selectedFrame";           // NOI18N
     
-    private final Variable suspendedInfo;
+    private final LocalVariable stepCmd;
     private final Reference<JPDAThread> threadRef;
     private final SourcePosition sp;
-    private final TruffleSlotVariable[] vars;
+    private final TruffleVariable[] vars;
     private final TruffleStackFrame topFrame;
     private final TruffleStackInfo stack;
     private volatile TruffleStackFrame selectedStackFrame; // the top frame initially
     
     private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     
-    public CurrentPCInfo(Variable suspendedInfo, JPDAThread thread, SourcePosition sp,
-                         TruffleSlotVariable[] vars, TruffleStackFrame topFrame,
+    public CurrentPCInfo(LocalVariable stepCmd, JPDAThread thread, SourcePosition sp,
+                         TruffleVariable[] vars, TruffleStackFrame topFrame,
                          TruffleStackInfo stack) {
-        this.suspendedInfo = suspendedInfo;
+        this.stepCmd = stepCmd;
         this.threadRef = new WeakReference<>(thread);
         this.sp = sp;
         this.vars = vars;
@@ -85,8 +84,8 @@ public class CurrentPCInfo {
         selectedStackFrame = topFrame;
     }
     
-    public Variable getSuspendedInfo() {
-        return suspendedInfo;
+    public LocalVariable getStepCommandVar() {
+        return stepCmd;
     }
     
     public JPDAThread getThread() {
@@ -97,7 +96,7 @@ public class CurrentPCInfo {
         return sp;
     }
 
-    public TruffleSlotVariable[] getVars() {
+    public TruffleVariable[] getVars() {
         return vars;
     }
     

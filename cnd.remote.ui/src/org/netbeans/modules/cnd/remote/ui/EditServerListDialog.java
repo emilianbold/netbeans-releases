@@ -82,9 +82,10 @@ import org.openide.util.RequestProcessor;
  * 
  * @author  gordonp
  */
+@SuppressWarnings("rawtypes") // UI editor produces code with tons of rawtypes warnings
 public class EditServerListDialog extends JPanel implements ActionListener, PropertyChangeListener, ListSelectionListener, Save {
 
-    private DefaultListModel model;
+    private DefaultListModel<ServerRecord> model;
     private DialogDescriptor desc;
     private ServerRecord defaultRecord;
     private ProgressHandle phandle;
@@ -148,8 +149,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         valueChanged(null);
     }
 
+    @SuppressWarnings("unchecked")
     private void initServerList(ServerUpdateCache cache) {
-        model = new DefaultListModel();
+        model = new DefaultListModel<>();
 
         if (cache == null) {
             for (ServerRecord rec : ServerList.getRecords()) {
@@ -267,7 +269,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     public List<ServerRecord> getHosts() {
         List<ServerRecord> result = new ArrayList<>(model.getSize());
         for (int i = 0; i < model.getSize(); i++) {
-            result.add((ServerRecord) model.get(i));
+            result.add(model.get(i));
         }
         return result;
     }

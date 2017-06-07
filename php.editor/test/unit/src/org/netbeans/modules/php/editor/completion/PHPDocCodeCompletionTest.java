@@ -69,6 +69,22 @@ public class PHPDocCodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/phpdoc/testIssue245356/issue.php", "* @see Name\\Space\\Bar::^", false);
     }
 
+    public void testIssue269104_01() throws Exception {
+        checkCompletion("testfiles/completion/phpdoc/testIssue269104/issue269104.php", " * @param ^callable $callable", false);
+    }
+
+    public void testIssue269104_02() throws Exception {
+        checkCompletion("testfiles/completion/phpdoc/testIssue269104/issue269104.php", " * @param calla^ble $callable", false);
+    }
+
+    public void testIssue269104_03() throws Exception {
+        checkCompletion("testfiles/completion/phpdoc/testIssue269104/issue269104.php", " * @return ^callable", false);
+    }
+
+    public void testIssue269104_04() throws Exception {
+        checkCompletion("testfiles/completion/phpdoc/testIssue269104/issue269104.php", " * @return callab^le", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

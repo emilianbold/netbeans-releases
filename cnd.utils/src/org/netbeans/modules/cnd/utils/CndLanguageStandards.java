@@ -56,7 +56,8 @@ public final class CndLanguageStandards {
         C11("C11"), //NOI18N
         CPP98("C++98"), //NOI18N
         CPP11("C++11"), //NOI18N
-        CPP14("C++14"); //NOI18N
+        CPP14("C++14"), //NOI18N
+        UNKNOWN("Unknown"); // NOI18N
         
         private final String id;
         CndLanguageStandard(String id) {
@@ -75,7 +76,7 @@ public final class CndLanguageStandards {
     
     public static CndLanguageStandard StringToLanguageStandard(String st) {
         for(CndLanguageStandard standard : CndLanguageStandard.values()) {
-            if (standard.id.equals(st)) {
+            if (standard.id.equalsIgnoreCase(st)) {
                 return standard;
             }
         }

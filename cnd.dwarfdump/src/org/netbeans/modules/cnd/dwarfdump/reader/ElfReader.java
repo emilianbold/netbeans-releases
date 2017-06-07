@@ -94,12 +94,12 @@ public class ElfReader extends ByteStreamReader {
         sections = new ElfSection[sectionHeadersTable.length];
         
         if (!isCoffFormat) {
-            // Before reading all sections need to read ElfStringTable section.
-            int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
-            if (sections.length > elfStringTableIdx) {
-                stringTableSection = new StringTableSection(this, elfStringTableIdx);
-                sections[elfStringTableIdx] = stringTableSection;
-            }
+              // Before reading all sections need to read ElfStringTable section.
+              int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
+              if (sections.length > elfStringTableIdx) {
+                  stringTableSection = new StringTableSection(this, elfStringTableIdx);
+                  sections[elfStringTableIdx] = stringTableSection;
+              }
         }
         
         // Initialize Name-To-Idx map
@@ -252,8 +252,12 @@ public class ElfReader extends ByteStreamReader {
             sharedLibraries = new SharedLibraries();
             for(String string : stringTableSection.getStrings()){
                 //_libhello4lib_dll_iname
-                if (string.endsWith("_dll_iname") && string.startsWith("_")) { //NOI18N
-                    String lib = string.substring(1,string.length()-10)+".dll"; //NOI18N
+                //libhello3lib_dll_iname (mingw and cygwin start to use without _)
+                if (string.endsWith("_dll_iname")) { //NOI18N
+                    String lib = string.substring(0,string.length()-10)+".dll"; //NOI18N
+                    if (string.startsWith("_")) { //NOI18N
+                        lib = lib.substring(1);
+                    }
                     sharedLibraries.addDll(lib);
                 }
             }
@@ -395,8 +399,11 @@ public class ElfReader extends ByteStreamReader {
         sectionHeadersTable = new SectionHeader[headers.size()];
         for(int i = 0; i < headers.size(); i++){
             sectionHeadersTable[i] = headers.get(i);
+            if (SECTIONS.DEBUG_STR.equals(sectionHeadersTable[i].name)) {
+                elfHeader.e_shstrndx = (short)i;
+            }
         }
-        elfHeader.e_shstrndx = (short)(headers.size()-1);
+        //elfHeader.e_shstrndx = (short)(headers.size()-1);
         return true;
     }
     
@@ -577,14 +584,14 @@ public class ElfReader extends ByteStreamReader {
     private SectionHeader readSectionHeader() throws IOException {
         SectionHeader h = new SectionHeader();
         
-        h.sh_name      = 0xFFFFFFFFL & readInt();
-        h.sh_type      = 0xFFFFFFFFL & readInt();
+        h.sh_name      = ByteStreamReader.uintToLong(readInt());
+        h.sh_type      = ByteStreamReader.uintToLong(readInt());
         h.sh_flags     = read3264();
         h.sh_addr      = read3264();
         h.sh_offset    = read3264()+shiftIvArchive;
         h.sh_size      = read3264();
-        h.sh_link      = 0xFFFFFFFFL & readInt();
-        h.sh_info      = 0xFFFFFFFFL & readInt();
+        h.sh_link      = ByteStreamReader.uintToLong(readInt());
+        h.sh_info      = ByteStreamReader.uintToLong(readInt());
         h.sh_addralign = read3264();
         h.sh_entsize   = read3264();
         
@@ -652,8 +659,8 @@ public class ElfReader extends ByteStreamReader {
     }
 
     public static final class SharedLibraries {
-        private List<String> dlls = new ArrayList<String>();
-        private List<String> searchPaths = new ArrayList<String>();
+        private final List<String> dlls = new ArrayList<String>();
+        private final List<String> searchPaths = new ArrayList<String>();
         public void addDll(String dll) {
             dlls.add(dll);
         }

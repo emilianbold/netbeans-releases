@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -330,6 +331,17 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         System.err.printf("### Standalone provider:  %s%n", String.format(pattern, args)); //NOI18N
     }
 
+    private static CndLanguageStandard getStandardFromFileAttrs(FileObject fo) {
+        if (fo == null) {
+            return null;
+        }
+        String mimeType = FileUtil.getMIMEType(fo);
+        if (mimeType == null) {
+            return null;
+        }
+        return CndLanguageStandards.StringToLanguageStandard((String) fo.getAttribute(PROP_LANG_STANDARD));
+    }
+    
     /*package*/ static final class NativeProjectImpl implements NativeProject, ChangeListener, FileChangeListener {
 
         private final List<IncludePath> sysIncludes;
@@ -416,6 +428,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 fs = CndFileUtils.getLocalFileSystem();
             }
             NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysIncludeHeaders, usrFiles, sysMacros, usrMacros, undefinedMacros);
+            LanguageFlavor resultingFlavor = flavorExt.first();
+            CndLanguageStandard standard = getStandardFromFileAttrs(file);
+            if (standard != null) {
+                LanguageFlavor standardToFlavor = NativeProjectSupport.cndStandardToItemFlavor(standard);
+                if (standardToFlavor != LanguageFlavor.UNKNOWN) {
+                    resultingFlavor = standardToFlavor;
+                }
+            }
             if (itemPrototype != null) {
                 sysIncludes.addAll(itemPrototype.getSystemIncludePaths());
                 sysMacros.addAll(itemPrototype.getSystemMacroDefinitions());
@@ -431,19 +451,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 usrFiles.addAll(prototype.getIncludeFiles());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
             } else  {
-                sysIncludes.addAll(IncludePath.toIncludePathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, impl)));
-                sysIncludeHeaders.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludeHeaders(lang, impl)));
-                sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang, impl));
+                sysIncludes.addAll(IncludePath.toIncludePathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, resultingFlavor, impl)));
+                sysIncludeHeaders.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludeHeaders(lang, resultingFlavor, impl)));
+                sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang, resultingFlavor, impl));
             }
             impl.checkPaths();
-            LanguageFlavor resultingFlavor = flavorExt.first();
-            CndLanguageStandard standard = impl.getStandard(file);
-            if (standard != null) {
-                LanguageFlavor standardToFlavor = standardToFlavor(standard);
-                if (standardToFlavor != LanguageFlavor.UNKNOWN) {
-                    resultingFlavor = standardToFlavor;
-                }
-            }
             impl.addFile(file, lang, resultingFlavor);
             set.add(impl.findFileItem(file));
             MIMEExtensions me = flavorExt.second();
@@ -471,7 +483,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (me != null) {
                 CndLanguageStandard defaultStandard = me.getDefaultStandard();
                 if (defaultStandard != null) {
-                    flavor = standardToFlavor(defaultStandard);
+                    flavor = NativeProjectSupport.cndStandardToItemFlavor(defaultStandard);
                 }
             }
             if (LanguageFlavor.UNKNOWN.equals(flavor)) {
@@ -490,31 +502,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 }
             }
             return Pair.of(flavor, me);
-        }
-
-        private static LanguageFlavor standardToFlavor(CndLanguageStandard defaultStandard) {
-            LanguageFlavor flavor = LanguageFlavor.UNKNOWN;
-            switch (defaultStandard) {
-                case C89:
-                    flavor =LanguageFlavor.C89;
-                    break;
-                case C99:
-                    flavor =LanguageFlavor.C99;
-                    break;
-                case C11:
-                    flavor =LanguageFlavor.C11;
-                    break;
-                case CPP98:
-                    flavor =LanguageFlavor.CPP;
-                    break;
-                case CPP11:
-                    flavor =LanguageFlavor.CPP11;
-                    break;
-                case CPP14:
-                    flavor =LanguageFlavor.CPP14;
-                    break;
-            }
-            return flavor;
         }
 
         private NativeProjectImpl(FileObject projectRoot,
@@ -634,7 +621,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 MIMEExtensions me = (MIMEExtensions) source;
                 CndLanguageStandard defaultStandard = me.getDefaultStandard();
                 for(NativeFileItemImpl nfi : files) {
-                    NativeFileItem.LanguageFlavor flavor = standardToFlavor(defaultStandard);
+                    NativeFileItem.LanguageFlavor flavor = NativeProjectSupport.cndStandardToItemFlavor(defaultStandard);
                     if (flavor != LanguageFlavor.UNKNOWN) {
                         nfi.setLanguageFlavor(flavor);
                     }
@@ -720,17 +707,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public void fileRenamed(FileRenameEvent fe) {
         }
 
-        private CndLanguageStandard getStandard(FileObject fo) {
-            if (fo == null) {
-                return null;
-            }
-            String mimeType = FileUtil.getMIMEType(fo);
-            if (mimeType == null) {
-                return null;
-            }
-            return CndLanguageStandards.StringToLanguageStandard((String) fo.getAttribute(PROP_LANG_STANDARD));
-        }
-
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             String name = fe.getName();
@@ -741,7 +717,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (fo == null) {
                 return;
             }
-            CndLanguageStandard standard = getStandard(fo);
+            CndLanguageStandard standard = getStandardFromFileAttrs(fo);
             if (standard == null) {
                 String mimeType = FileUtil.getMIMEType(fo);
                 if (mimeType == null) {
@@ -756,7 +732,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 return;
             }
             for(NativeFileItemImpl nfi : files) {
-                NativeFileItem.LanguageFlavor flavor = standardToFlavor(standard);
+                NativeFileItem.LanguageFlavor flavor = NativeProjectSupport.cndStandardToItemFlavor(standard);
                 if (flavor != LanguageFlavor.UNKNOWN) {
                     nfi.setLanguageFlavor(flavor);
                 }

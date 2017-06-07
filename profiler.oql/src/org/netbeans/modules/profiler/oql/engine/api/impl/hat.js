@@ -269,7 +269,7 @@ function wrapJavaValue(thing) {
     }
 
     //    printStackTrace();
-    //    println(thing);
+    //    print(thing);
 
     if (thing instanceof Packages.org.netbeans.lib.profiler.heap.FieldValue) {
         var type = thing.field.type;
@@ -299,278 +299,285 @@ function wrapJavaValue(thing) {
     }
 }
 
+// HAT Java model object wrapper. Handles all cases 
+// (instance, object/primitive array and Class objects)	
+function javaObject(jobject) {		
+    //        // FIXME: Do I need this? or can I assume that these would
+    //        // have been resolved already?
+    //        if (jobject instanceof hatPkg.model.JavaObjectRef) {
+    //            jobject = jobject.dereference();
+    //            if (jobject instanceof hatPkg.model.HackJavaValue) {
+    //                print(jobject);
+    //                return null;
+    //            }
+    //        }
+
+    //        print(jobject.getClass());
+    if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.JavaClass) {
+        //            print("wrapping as Class");
+        return new JavaClassWrapper(jobject);
+    } else if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.ObjectArrayInstance) {
+        //            print("wrapping as ObjectArray");
+        return new JavaObjectArrayWrapper(jobject);
+    } else if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.PrimitiveArrayInstance) {
+        // print("wrapping as ValueArray");
+        return new JavaValueArrayWrapper(jobject);
+    } else if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.Instance) {
+        //            print("wrapping as Instance");
+        return new JavaObjectWrapper(jobject);
+    } else {
+        //            print("unknown heap object type: " + jobject.getClass());
+        return jobject;
+    }
+}
+
+// returns wrapper for Java instances
+function JavaObjectWrapper(instance) {
+    var things = instance.fieldValues;
+    var fldValueCache = new Array();
+
+    // instance fields can be accessed in natural syntax
+    return new JSAdapter() {
+        __getIds__ : function() {
+            var res = new Array(things.size());
+            for(var j=0;j<things.size();j++) {
+                res[j] = things.get(j).field.name;
+            }
+            return res;
+        },
+        __has__ : function(name) {
+            for (var i=0;i<things.size();i++) {
+                if (name == things.get(i).field.name) return true;
+            }
+            return name == 'clazz' || name == 'toString' ||
+            name == 'id' || name == 'wrapped-object' || name == 'statics';
+        },
+        __get__ : function(name) {
+            if (name == 'clazz') {
+                if (fldValueCache[name] == undefined) {
+                    fldValueCache[name] = wrapJavaObject(instance.javaClass);
+                }
+                return fldValueCache[name];
+            } else if (name == 'statics') {
+                if (fldValueCache[name] == undefined) {
+                    var clz = wrapJavaObject(instance.javaClass);
+                    if (clz != undefined) {
+                        fldValueCache[name] = clz.statics;
+                    } else {
+                        fldValueCache[name] = null;
+                    }
+                }
+                return fldValueCache[name];
+            } else if (name == 'id') {
+                if (fldValueCache[name] == undefined) {
+                    fldValueCache[name] = instance.instanceId;
+                }
+                return fldValueCache[name];
+            } else if (name == 'wrapped-object') {
+                return instance;
+            } else {
+                if (fldValueCache["_$"+name] == undefined) {
+                    fldValueCache["_$"+name] = wrapJavaObject(instance.getValueOfField(name));
+                }
+                return fldValueCache["_$"+name];
+            }
+        },
+        __call__: function(name) {
+            if (name == 'toString') {
+                if (instance.javaClass.name == "java.lang.String") {
+                    return snapshot.valueString(instance);
+                }
+                return instance.toString();
+            } else {
+                return undefined;
+            }
+        }
+    }				
+}
+
+// return wrapper for Java Class objects
+function JavaClassWrapper(jclass) {
+    var static_fields = jclass.staticFieldValues;
+    var fldValueCache = new Array();
+
+    // to access static fields of given Class cl, use 
+    // cl.statics.<static-field-name> syntax
+    this.statics = new JSAdapter() {
+        __getIds__ : function() {
+            var res = new Array(static_fields.size());
+            for (var i=0;i<static_fields.size();i++) {
+                res[i] = static_fields.get(i).field.name;
+            }
+
+            return res;
+        },
+        __has__ : function(name) {
+            for (var i=0;i<static_fields.size();i++) {
+                if (name == static_fields.get(i).field.name) {
+                    return true;
+                }					
+            }
+        },
+        __get__ : function(name) {
+            if (fldValueCache["_$"+name] == undefined) {
+                var result;
+                result = wrapJavaObject(jclass.getValueOfStaticField(name));
+                fldValueCache["_$"+name] = result;
+            }
+            return fldValueCache["_$"+name];
+        },
+        __call__: function(name) {
+            if (name == 'toString') {
+                return jclass.toString();
+            } else {
+                return undefined;
+            }
+        }
+    }
+
+    if (jclass.superClass != null) {
+        this.superclass = wrapJavaValue(jclass.superClass);
+    } else {
+        this.superclass = null;
+    }
+
+    this.loader = wrapJavaObject(jclass.classLoader);
+    this.signers = undefined; //TODO wrapJavaValue(jclass.getSigners());
+    this.protectionDomain = undefined; //TODO wrapJavaValue(jclass.getProtectionDomain());
+    this.fields = wrapIterator(jclass.fields.iterator(), true);
+    this.instanceSize = jclass.instanceSize;
+    this.name = jclass.name;
+    this.id = jclass.javaClassId;
+    this['wrapped-object'] = jclass;
+}
+
+for (var i in theJavaClassProto) {
+    if (typeof theJavaClassProto[i] == 'function') {
+       JavaClassWrapper.prototype[i] = theJavaClassProto[i];
+    }
+}
+
+// returns wrapper for Java object arrays
+function JavaObjectArrayWrapper(array) {
+    var elements = array.values;
+    var fldValueCache = new Array();
+    // array elements can be accessed in natural syntax
+    // also, 'length' property is supported.
+    return new JSAdapter() {
+        __getIds__ : function() {
+            var res = new Array(elements.size());
+            for (var i = 0; i < elements.size(); i++) {
+                res[i] = String(i);
+            }
+            return res;
+        },
+        __has__: function(name) {
+            return (name >= 0 && name < elements.size())  ||
+            name == 'length' || name == 'clazz' ||
+            name == 'toString' || name == 'wrapped-object';
+        },
+        __get__ : function(name) {
+            if (name >= 0 && name < elements.size()) {
+                return wrapJavaValue(elements.get(name));
+            } else if (name == 'id') {
+                if (fldValueCache[name] == undefined) {
+                    fldValueCache[name] = array.instanceId;
+                }
+                return fldValueCache[name];
+            } else if (name == 'length') {
+                if (fldValueCache["len"] == undefined) {
+                    fldValueCache["len"] = elements.size();
+                }
+                return fldValueCache["len"];
+            } else if (name == 'clazz') {
+                if (fldValueCache[name] == undefined) {
+                    fldValueCache[name] = wrapJavaObject(array.javaClass);
+                }
+                return fldValueCache[name];
+            } else if (name == 'wrapped-object') {
+                return array;
+            } else {
+                return undefined;
+            }				
+        },
+        __call__: function(name) {
+            if (name == 'toString') {
+                return array.toString();
+            } else {
+                return undefined;
+            }
+        }
+    }		
+}
+
+// returns wrapper for Java primitive arrays
+function JavaValueArrayWrapper(array) {
+    var elements = array.values;
+    var fldValueCache = new Array();
+    // array elements can be accessed in natural syntax
+    // also, 'length' property is supported.
+    return new JSAdapter() {
+        __getIds__ : function() {
+            var r = new Array(elements.size());
+            for (var i = 0; i < elements.size(); i++) {
+                r[i] = String(i);
+            }
+            return r;
+        },
+        __has__: function(name) {
+            return (name >= 0 && name < elements.size()) ||
+            name == 'length' || name == 'clazz' ||
+            name == 'toString' || name == 'wrapped-object';
+        },
+        __get__: function(name) {
+            if (name >= 0 && name < elements.size()) {
+                return elements.get(name);
+            }
+
+            if (name == 'length') {
+                if (fldValueCache["len"] == undefined) {
+                    fldValueCache["len"] = elements.size();
+                }
+                return fldValueCache["len"];
+            } else if (name == 'wrapped-object') {
+                return array;
+            } else if (name == 'clazz') {
+                if (fldValueCache[name] == undefined) {
+                    fldValueCache[name] = wrapJavaObject(array.javaClass);
+                }
+                return fldValueCache[name];
+            } else {
+                return undefined;
+            }
+        },
+        __call__: function(name) {
+            if (name == 'toString') {
+                if (array.javaClass.name == 'char[]') {
+                        return snapshot.valueString(array);
+                    }
+                return array.toString();
+            } else {
+                return undefined;
+            }
+        }
+    }
+}
+
 // wrap Java object with appropriate script object
 function wrapJavaObject(thing) {
     if (thing == null) return null;
     
-    // HAT Java model object wrapper. Handles all cases 
-    // (instance, object/primitive array and Class objects)	
-    function javaObject(jobject) {		
-        //        // FIXME: Do I need this? or can I assume that these would
-        //        // have been resolved already?
-        //        if (jobject instanceof hatPkg.model.JavaObjectRef) {
-        //            jobject = jobject.dereference();
-        //            if (jobject instanceof hatPkg.model.HackJavaValue) {
-        //                print(jobject);
-        //                return null;
-        //            }
-        //        }
-
-        //        print(jobject.getClass());
-        if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.JavaClass) {
-            //            println("wrapping as Class");
-            return new JavaClassWrapper(jobject);
-        } else if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.ObjectArrayInstance) {
-            //            println("wrapping as ObjectArray");
-            return new JavaObjectArrayWrapper(jobject);
-        } else if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.PrimitiveArrayInstance) {
-            // println("wrapping as ValueArray");
-            return new JavaValueArrayWrapper(jobject);
-        } else if (jobject instanceof Packages.org.netbeans.lib.profiler.heap.Instance) {
-            //            println("wrapping as Instance");
-            return new JavaObjectWrapper(jobject);
-        } else {
-            //            println("unknown heap object type: " + jobject.getClass());
-            return jobject;
-        }
-    }
-    
-    // returns wrapper for Java instances
-    function JavaObjectWrapper(instance) {
-        var things = instance.fieldValues;
-        var fldValueCache = new Array();
-
-        // instance fields can be accessed in natural syntax
-        return new JSAdapter() {
-            __getIds__ : function() {
-                var res = new Array(things.size());
-                for(var j=0;j<things.size();j++) {
-                    res[j] = things.get(j).field.name;
-                }
-                return res;
-            },
-            __has__ : function(name) {
-                for (var i=0;i<things.size();i++) {
-                    if (name == things.get(i).field.name) return true;
-                }
-                return name == 'clazz' || name == 'toString' ||
-                name == 'id' || name == 'wrapped-object' || name == 'statics';
-            },
-            __get__ : function(name) {
-                if (name == 'clazz') {
-                    if (fldValueCache[name] == undefined) {
-                        fldValueCache[name] = wrapJavaObject(instance.javaClass);
-                    }
-                    return fldValueCache[name];
-                } else if (name == 'statics') {
-                    if (fldValueCache[name] == undefined) {
-                        var clz = wrapJavaObject(instance.javaClass);
-                        if (clz != undefined) {
-                            fldValueCache[name] = clz.statics;
-                        } else {
-                            fldValueCache[name] = null;
-                        }
-                    }
-                    return fldValueCache[name];
-                } else if (name == 'id') {
-                    if (fldValueCache[name] == undefined) {
-                        fldValueCache[name] = instance.instanceId;
-                    }
-                    return fldValueCache[name];
-                } else if (name == 'toString') {
-                    return function() {
-                        if (instance.javaClass.name == "java.lang.String") {
-                            return snapshot.valueString(instance);
-                        }
-                        return instance.toString();
-                    }
-                } else if (name == 'wrapped-object') {
-                    return instance;
-                } else {
-                    if (fldValueCache["_$"+name] == undefined) {
-                        fldValueCache["_$"+name] = wrapJavaObject(instance.getValueOfField(name));
-                    }
-                    return fldValueCache["_$"+name];
-                }
-            }
-        }				
-    }
-
-    // return wrapper for Java Class objects
-    function JavaClassWrapper(jclass) {
-        var static_fields = jclass.staticFieldValues;
-        var fldValueCache = new Array();
-
-        // to access static fields of given Class cl, use 
-        // cl.statics.<static-field-name> syntax
-        this.statics = new JSAdapter() {
-            __getIds__ : function() {
-                var res = new Array(static_fields.size());
-                for (var i=0;i<static_fields.size();i++) {
-                    res[i] = static_fields.get(i).field.name;
-                }
-
-                return res;
-            },
-            __has__ : function(name) {
-                for (var i=0;i<static_fields.size();i++) {
-                    if (name == static_fields.get(i).field.name) {
-                        return true;
-                    }					
-                }
-                return name == 'id' || theJavaClassProto[name] != undefined;
-            },
-            __get__ : function(name) {
-                if (name == "toString") {
-                    return jclass.toString();
-                } else {
-                    if (fldValueCache["_$"+name] == undefined) {
-                        var result;
-                        if (name == 'id') {
-                            result = jclass.javaClassId;
-                        } else {
-                            result = theJavaClassProto[name];
-                            if (result == null) {
-                                result = wrapJavaObject(jclass.getValueOfStaticField(name));
-                            }
-                        }
-                        fldValueCache["_$"+name] = result;
-                    }
-                    return fldValueCache["_$"+name];
-                }
-            }
-        }
-
-        if (jclass.superClass != null) {
-            this.superclass = wrapJavaValue(jclass.superClass);
-        } else {
-            this.superclass = null;
-        }
-
-        this.loader = wrapJavaObject(jclass.classLoader);
-        this.signers = undefined; //TODO wrapJavaValue(jclass.getSigners());
-        this.protectionDomain = undefined; //TODO wrapJavaValue(jclass.getProtectionDomain());
-        this.fields = wrapIterator(jclass.fields.iterator(), true);
-        this.instanceSize = jclass.instanceSize;
-        this.name = jclass.name; 
-        this['wrapped-object'] = jclass;
-        this.__proto__ = this.statics;
-    }
-    
-    // returns wrapper for Java object arrays
-    function JavaObjectArrayWrapper(array) {
-        var elements = array.values;
-        var fldValueCache = new Array();
-        // array elements can be accessed in natural syntax
-        // also, 'length' property is supported.
-        return new JSAdapter() {
-            __getIds__ : function() {
-                var res = new Array(elements.size());
-                for (var i = 0; i < elements.size(); i++) {
-                    res[i] = i;
-                }
-                return res;
-            },
-            __has__: function(name) {
-                return (typeof(name) == 'number' &&
-                    name >= 0 && name < elements.size())  ||
-                name == 'length' || name == 'clazz' ||
-                name == 'toString' || name == 'wrapped-object';
-            },
-            __get__ : function(name) {
-                if (typeof(name) == 'number' &&
-                    name >= 0 && name < elements.size()) {
-                    return wrapJavaValue(elements.get(name));
-                } else if (name == 'id') {
-                    if (fldValueCache[name] == undefined) {
-                        fldValueCache[name] = array.instanceId;
-                    }
-                    return fldValueCache[name];
-                } else if (name == 'length') {
-                    if (fldValueCache["len"] == undefined) {
-                        fldValueCache["len"] = elements.size();
-                    }
-                    return fldValueCache["len"];
-                } else if (name == 'clazz') {
-                    if (fldValueCache[name] == undefined) {
-                        fldValueCache[name] = wrapJavaObject(array.javaClass);
-                    }
-                    return fldValueCache[name];
-                } else if (name == 'toString') {
-                    return function() { 
-                        return array.toString();
-                    }
-                } else if (name == 'wrapped-object') {
-                    return array;
-                } else {
-                    return undefined;
-                }				
-            }
-        }			
-    }
-    
-    // returns wrapper for Java primitive arrays
-    function JavaValueArrayWrapper(array) {
-        var elements = array.values;
-        var fldValueCache = new Array();
-        // array elements can be accessed in natural syntax
-        // also, 'length' property is supported.
-        return new JSAdapter() {
-            __getIds__ : function() {
-                var r = new Array(elements.size());
-                for (var i = 0; i < elements.size(); i++) {
-                    r[i] = i;
-                }
-                return r;
-            },
-            __has__: function(name) {
-                return (typeof(name) == 'number' &&
-                    name >= 0 && name < elements.size()) ||
-                name == 'length' || name == 'clazz' ||
-                name == 'toString' || name == 'wrapped-object';
-            },
-            __get__: function(name) {
-                if (typeof(name) == 'number' &&
-                    name >= 0 && name < elements.size()) {
-                    return elements.get(name);
-                }
-    
-                if (name == 'length') {
-                    if (fldValueCache["len"] == undefined) {
-                        fldValueCache["len"] = elements.size();
-                    }
-                    return fldValueCache["len"];
-                } else if (name == 'toString') {
-                    return function() { 
-                        if (array.javaClass.name == 'char[]') {
-                            return snapshot.valueString(array);
-                        }
-                        return array.toString();
-                    }
-                } else if (name == 'wrapped-object') {
-                    return array;
-                } else if (name == 'clazz') {
-                    if (fldValueCache[name] == undefined) {
-                        fldValueCache[name] = wrapJavaObject(array.javaClass);
-                    }
-                    return fldValueCache[name];
-                } else {
-                    return undefined;
-                }
-            }
-        }
-    }
     return javaObject(thing);
 }
 
 // unwrap a script object to corresponding HAT object
 function unwrapJavaObject(jobject) {
-    //    println("Unwrapping object");
-    //    println(typeof(jobject));
+    //    print("Unwrapping object");
+    //    print(typeof(jobject));
     
     if (!(jobject instanceof Packages.org.netbeans.lib.profiler.heap.Instance)) {
         if (jobject instanceof Array) {
-            //            println("Object is array");
+            //            print("Object is array");
             var arr = new java.util.ArrayList(jobject.length);
 
             for (var index in jobject) {
@@ -580,7 +587,7 @@ function unwrapJavaObject(jobject) {
         }
         
         try {
-            //            println(typeof(jobject));
+            //            print(typeof(jobject));
             var orig = jobject;
             jobject = orig["wrapped-object"];
             if (jobject == undefined) {
@@ -590,7 +597,7 @@ function unwrapJavaObject(jobject) {
                 jobject = orig;
             }
         } catch (e) {
-            println("unwrapJavaObject: " + jobject + ", " + e);
+            //print("unwrapJavaObject: " + jobject + ", " + e);
             jobject = undefined;
         }
     } 
@@ -600,7 +607,7 @@ function unwrapJavaObject(jobject) {
 function unwrapMap(jobject) {
     var map = new java.util.HashMap();
     for(var prop in jobject) {
-        //        println("adding " + prop + " = " + unwrapJavaObject(jobject[prop]));
+        //        print("adding " + prop + " = " + unwrapJavaObject(jobject[prop]));
         map.put(prop, unwrapJavaObject(jobject[prop]));
     }
     return map;
@@ -836,33 +843,32 @@ function wrapHeapSnapshot(heap) {
                     __getIds__ : function() {
                         var res = new Array(path.length);
                         for (var i = 0; i < path.length; i++) {
-                            res[i] = i;
+                            res[i] = String(i);
                         }
                         return res;
                     },
                     __has__ : function (name) {
-                        return (typeof(name) == 'number' &&
-                            name >= 0 && name < path.length) ||
+                        return (name >= 0 && name < path.length) ||
                         name == 'length' || name == 'toHtml' ||
                         name == 'toString' || name == 'wrapped-object';
                     },
                     __get__ : function(name) {
-                        if (typeof(name) == 'number' &&
-                            name >= 0 && name < path.length) {
+                        if (name >= 0 && name < path.length) {
                             return path[name];
                         } else if (name == 'length') {
                             return path.length;
-                        } else if (name == 'toHtml') {
-                            return function() { 
-                                return computeDescription(true);
-                            }
-                        } else if (name == 'toString') {
-                            return function() {
-                                return computeDescription(false);
-                            }
                         } else if (name == 'wrapped-object') {
                             return refChain;
                         } else {
+                            return undefined;
+                        }
+                    },
+                    __call__: function(name) {
+                        if (name == 'toString') {
+                            return computeDescription(false);
+                        } else if (name == 'toHtml') {
+                            return computeDescription(true);
+                        }else {
                             return undefined;
                         }
                     }
@@ -1022,7 +1028,7 @@ function referrers(jobject, weak) {
         jobject = unwrapJavaObject(jobject);
         return wrapIterator(this.snapshot.getReferrers(jobject, weak));
     } catch (e) {
-        println("referrers: " + jobject + ", " + e);
+        print("referrers: " + jobject + ", " + e);
         return emptyEnumeration;
     }
 }
@@ -1042,7 +1048,7 @@ function referees(jobject, weak) {
         jobject = unwrapJavaObject(jobject);
         return wrapIterator(this.snapshot.getReferees(jobject, weak));
     } catch (e) {
-        println("referees: " + jobject + ", " + e);
+        print("referees: " + jobject + ", " + e);
         return emptyEnumeration;
     }
 }
@@ -1111,7 +1117,7 @@ function refers(from, to) {
             }
         }
     } catch (e) {
-        println("refers: " + from + ", " + e);
+        print("refers: " + from + ", " + e);
     }
     return false;
 }
@@ -1170,37 +1176,29 @@ function toHtml(obj) {
     if (obj == undefined) {
         return "undefined";
     } 
-
+    //print("tohtml "+typeof(obj));
     var tmp = unwrapJavaObject(obj);
     if (tmp != undefined) {
+        //print("1");
         if (tmp instanceof Packages.org.netbeans.lib.profiler.heap.JavaClass) {
+            //print("2");
             var id = tmp.javaClassId;
             var name = tmp.name;
             return "<a href='file://class/" + name + "'>class " + name + "</a>";
         }else if (tmp instanceof Packages.org.netbeans.lib.profiler.heap.Instance) {
+            //print("3");
             var id = tmp.instanceId;
             var number = tmp.instanceNumber;
             var name = tmp.javaClass.name;
             return "<a href='file://instance/" + name +"@" + id + "'>" +
             name + "#" + number + "</a>";
         }
+        //print("31 "+typeof(tmp));
     }
-    if ((typeof(obj) == 'object') || (obj instanceof JSAdapter)) {
-        if (obj instanceof java.lang.Object) {
-            // script wrapped Java object
-            obj = wrapIterator(obj);
-            // special case for enumeration
-            if (obj instanceof java.util.Enumeration) {
-                var res = "[ ";
-                while (obj.hasMoreElements() && !cancelled.get()) {
-                    res += toHtml(obj.nextElement()) + ", ";
-                }
-                res += "]";
-                return res; 
-            } else {
-                return obj;
-            }
-        } else if (obj instanceof Array) {
+    if (obj instanceof Object) {
+        //print("4");
+        if (Array.isArray(obj)) {
+            //print("5");
             // script array
             var res = "[ ";
             for (var i in obj) {
@@ -1213,11 +1211,14 @@ function toHtml(obj) {
             res += " ]";
             return res;
         } else {
+            //print("6");
             // if the object has a toHtml function property
             // just use that...
             if (typeof(obj.toHtml) == 'function') {
+                //print("7");
                 return obj.toHtml();
             } else {
+                //print("8");
                 // script object
                 var res = "{ ";
                 for (var i in obj) {
@@ -1228,8 +1229,22 @@ function toHtml(obj) {
             }
         }
     } else {
-        // JavaScript primitive value
-        return obj.toString().replace("<", "&lt;").replace(">", "&gt;");
+        //print("9");
+        // script wrapped Java object
+        obj = wrapIterator(obj);
+        // special case for enumeration
+        if (obj instanceof java.util.Enumeration) {
+            //print("A");
+            var res = "[ ";
+            while (obj.hasMoreElements() && !cancelled.get()) {
+                res += toHtml(obj.nextElement()) + ", ";
+            }
+            res += "]";
+            return res; 
+        } else {
+            //print("B");
+            return obj.toString().replace("<", "&lt;").replace(">", "&gt;");
+        }
     }
 }
 

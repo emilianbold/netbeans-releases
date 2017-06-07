@@ -122,209 +122,6 @@ public final class SemanticEntitiesProvider {
     }
     
     @ServiceProviders({
-        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=300),
-        @ServiceProvider(service = SemanticEntity.class, position=300)
-    })
-    public static final class FastFieldCodeProvider extends AbstractSemanticEntity {
-        public FastFieldCodeProvider() {
-            super(FontColorProvider.Entity.CLASS_FIELD);
-        }
-        @Override
-        public String getName() {
-            return "fast-class-fields"; // NOI18N
-        }
-        @Override
-        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
-            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
-            List<CsmOffsetable> res = new ArrayList<>();
-            for(CsmReference ref : references) {
-                if (interrupter.cancelled()) {
-                    break;
-                }
-                if (CsmKindUtilities.isField(ref.getReferencedObject())){
-                    res.add(ref);
-                }
-            }
-            return res;
-        }
-        @Override
-        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-class-fields"); //NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-class-fields-AD"); //NOI18N
-        }
-
-        @Override
-        public boolean isCsmFileBased() {
-            return true;
-        }
-    }
-
-    @ServiceProviders({
-        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=400),
-        @ServiceProvider(service = SemanticEntity.class, position=400)
-    })
-    public static final class FieldCodeProvider extends AbstractSemanticEntity {
-        public FieldCodeProvider(){
-            super(FontColorProvider.Entity.CLASS_FIELD);
-        }
-        @Override
-        public String getName() {
-            return "class-fields"; // NOI18N
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-class-fields"); //NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-class-fields-AD"); //NOI18N
-        }
-        @Override
-        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
-            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
-        }
-        @Override
-        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
-            return new ModelUtils.FieldReferenceCollector(interrupter);
-        }
-        @Override
-        public boolean isCsmFileBased() {
-            return false;
-        }
-    }
-
-    @ServiceProviders({
-        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=500),
-        @ServiceProvider(service = SemanticEntity.class, position=500)
-    })
-    public static final class FastFunctionsCodeProvider extends AbstractSemanticEntity {
-        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
-        
-        public FastFunctionsCodeProvider(){
-            super(FontColorProvider.Entity.FUNCTION);
-        }
-        @Override
-        public String getName() {
-            return "fast-functions-names"; // NOI18N
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-functions-names"); //NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-functions-names-AD"); //NOI18N
-        }
-        @Override
-        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
-            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
-            List<CsmOffsetable> res = new ArrayList<>();
-            for(CsmReference ref : references) {
-                if (interrupter.cancelled()) {
-                    break;
-                }
-                if (CsmKindUtilities.isFunction(ref.getReferencedObject())){
-                    res.add(ref);
-                }
-            }
-            return res;
-        }
-
-        @Override
-        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
-            return null;
-        }
-
-        @Override
-        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
-            CsmReference ref = (CsmReference) obj;
-            // check if we are in the function declaration
-            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
-                return getColor(mimePath);
-            } else {
-                return funUsageColors.get(mimePath);
-            }
-        }
-
-        @Override
-        public void updateFontColors(FontColorProvider provider) {
-            super.updateFontColors(provider);
-            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
-        }
-        
-        @Override
-        public boolean isCsmFileBased() {
-            return true;
-        }
-    }
-    
-    @ServiceProviders({
-        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=600),
-        @ServiceProvider(service = SemanticEntity.class, position=600)
-    })
-    public static final class FunctionsCodeProvider extends AbstractSemanticEntity {
-        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
-        
-        public FunctionsCodeProvider() {
-            super(FontColorProvider.Entity.FUNCTION);
-        }
-        @Override
-        public String getName() {
-            return "functions-names"; // NOI18N
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-functions-names"); //NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-functions-names-AD"); //NOI18N
-        }
-        @Override
-        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
-            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
-        }
-        @Override
-        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
-            return new ModelUtils.FunctionReferenceCollector(interrupter);
-        }
-
-        @Override
-        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
-            CsmReference ref = (CsmReference) obj;
-            // check if we are in the function declaration
-            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
-                return getColor(mimePath);
-            } else {
-                return funUsageColors.get(mimePath);
-            }
-        }
-
-        @Override
-        public void updateFontColors(FontColorProvider provider) {
-            super.updateFontColors(provider);
-            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
-        }
-        
-        @Override
-        public boolean isCsmFileBased() {
-            return false;
-        }
-    }
-
-    @ServiceProviders({
         @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=200),
         @ServiceProvider(service = SemanticEntity.class, position=200)
     })
@@ -389,8 +186,8 @@ public final class SemanticEntitiesProvider {
     }
 
     @ServiceProviders({
-        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=700),
-        @ServiceProvider(service = SemanticEntity.class, position=700)
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=300),
+        @ServiceProvider(service = SemanticEntity.class, position=300)
     })
     public static final class TypedefsCodeProvider extends AbstractSemanticEntity {
         public TypedefsCodeProvider() {
@@ -424,8 +221,574 @@ public final class SemanticEntitiesProvider {
     }
 
     @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=400),
+        @ServiceProvider(service = SemanticEntity.class, position=400)
+    })
+    public static final class FastClassesCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public FastClassesCodeProvider(){
+            super(FontColorProvider.Entity.CLASS);
+        }
+        @Override
+        public String getName() {
+            return "fast-calasses-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-classes-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-classes-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
+            List<CsmOffsetable> res = new ArrayList<>();
+            for(CsmReference ref : references) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
+                if (CsmKindUtilities.isClass(ref.getReferencedObject())){
+                    res.add(ref);
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return null;
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }
+    }
+    
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=500),
+        @ServiceProvider(service = SemanticEntity.class, position=500)
+    })
+    public static final class ClassesCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public ClassesCodeProvider() {
+            super(FontColorProvider.Entity.CLASS);
+        }
+        @Override
+        public String getName() {
+            return "classes-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-classes-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-classes-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
+        }
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return new ModelUtils.ClassReferenceCollector(interrupter);
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.CLASS_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
+        }
+    }
+
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=600),
+        @ServiceProvider(service = SemanticEntity.class, position=600)
+    })
+    public static final class FastFieldCodeProvider extends AbstractSemanticEntity {
+        public FastFieldCodeProvider() {
+            super(FontColorProvider.Entity.CLASS_FIELD);
+        }
+        @Override
+        public String getName() {
+            return "fast-class-fields"; // NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
+            List<CsmOffsetable> res = new ArrayList<>();
+            for(CsmReference ref : references) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
+                if (CsmKindUtilities.isField(ref.getReferencedObject())){
+                    res.add(ref);
+                }
+            }
+            return res;
+        }
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-class-fields"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-class-fields-AD"); //NOI18N
+        }
+
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }
+    }
+
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=700),
+        @ServiceProvider(service = SemanticEntity.class, position=700)
+    })
+    public static final class FieldCodeProvider extends AbstractSemanticEntity {
+        public FieldCodeProvider(){
+            super(FontColorProvider.Entity.CLASS_FIELD);
+        }
+        @Override
+        public String getName() {
+            return "class-fields"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-class-fields"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-class-fields-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
+        }
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return new ModelUtils.FieldReferenceCollector(interrupter);
+        }
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
+        }
+    }
+
+    @ServiceProviders({
         @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=800),
         @ServiceProvider(service = SemanticEntity.class, position=800)
+    })
+    public static final class FastFunctionsCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public FastFunctionsCodeProvider(){
+            super(FontColorProvider.Entity.FUNCTION);
+        }
+        @Override
+        public String getName() {
+            return "fast-functions-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-functions-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-functions-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
+            List<CsmOffsetable> res = new ArrayList<>();
+            for(CsmReference ref : references) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
+                if (CsmKindUtilities.isFunction(ref.getReferencedObject())){
+                    res.add(ref);
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return null;
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }
+    }
+    
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=900),
+        @ServiceProvider(service = SemanticEntity.class, position=900)
+    })
+    public static final class FunctionsCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public FunctionsCodeProvider() {
+            super(FontColorProvider.Entity.FUNCTION);
+        }
+        @Override
+        public String getName() {
+            return "functions-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-functions-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-functions-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
+        }
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return new ModelUtils.FunctionReferenceCollector(interrupter);
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
+        }
+    }
+
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1000),
+        @ServiceProvider(service = SemanticEntity.class, position=1000)
+    })
+    public static final class FastEnumsCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public FastEnumsCodeProvider(){
+            super(FontColorProvider.Entity.ENUM);
+        }
+        @Override
+        public String getName() {
+            return "fast-enums-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-enums-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-enums-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
+            List<CsmOffsetable> res = new ArrayList<>();
+            for(CsmReference ref : references) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
+                if (CsmKindUtilities.isEnum(ref.getReferencedObject())){
+                    res.add(ref);
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return null;
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.ENUM_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }
+    }
+    
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1100),
+        @ServiceProvider(service = SemanticEntity.class, position=1100)
+    })
+    public static final class EnumsCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public EnumsCodeProvider() {
+            super(FontColorProvider.Entity.ENUM);
+        }
+        @Override
+        public String getName() {
+            return "enums-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-enums-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-enums-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
+        }
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return new ModelUtils.EnumReferenceCollector(interrupter);
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.ENUM_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
+        }
+    }
+
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1200),
+        @ServiceProvider(service = SemanticEntity.class, position=1200)
+    })
+    public static final class FastEnumeratorsCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public FastEnumeratorsCodeProvider(){
+            super(FontColorProvider.Entity.ENUMERATOR);
+        }
+        @Override
+        public String getName() {
+            return "fast-enumerators-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-enumerators-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-fast-enumerators-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
+            List<CsmOffsetable> res = new ArrayList<>();
+            for(CsmReference ref : references) {
+                if (interrupter.cancelled()) {
+                    break;
+                }
+                if (CsmKindUtilities.isEnumerator(ref.getReferencedObject())){
+                    res.add(ref);
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return null;
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.ENUMERATOR_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return true;
+        }
+    }
+    
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1300),
+        @ServiceProvider(service = SemanticEntity.class, position=1300)
+    })
+    public static final class EnumerarorsCodeProvider extends AbstractSemanticEntity {
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
+        
+        public EnumerarorsCodeProvider() {
+            super(FontColorProvider.Entity.ENUMERATOR);
+        }
+        @Override
+        public String getName() {
+            return "enumerators-names"; // NOI18N
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-enumerators-names"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-enumerators-names-AD"); //NOI18N
+        }
+        @Override
+        public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
+            return ModelUtils.collect(csmFile, doc, getCollector(doc, interrupter), interrupter);
+        }
+        @Override
+        public ReferenceCollector getCollector(Document doc, Interrupter interrupter) {
+            return new ModelUtils.EnumeratorReferenceCollector(interrupter);
+        }
+
+        @Override
+        public AttributeSet getAttributes(CsmOffsetable obj, String mimePath) {
+            CsmReference ref = (CsmReference) obj;
+            // check if we are in the function declaration
+            if (ref == null || CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                return getColor(mimePath);
+            } else {
+                return funUsageColors.get(mimePath);
+            }
+        }
+
+        @Override
+        public void updateFontColors(FontColorProvider provider) {
+            super.updateFontColors(provider);
+            funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.ENUMERATOR_USAGE));
+        }
+        
+        @Override
+        public boolean isCsmFileBased() {
+            return false;
+        }
+    }
+
+    @ServiceProviders({
+        @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1400),
+        @ServiceProvider(service = SemanticEntity.class, position=1400)
     })
     public static final class UnusedVariablesCodeProvider extends AbstractSemanticEntity {
         private final ConcurrentHashMap<String, AttributeSet> unusedToolTipColors= new ConcurrentHashMap<>();
@@ -478,7 +841,7 @@ public final class SemanticEntitiesProvider {
             return false;
         }
     }
-    
+
     private SemanticEntitiesProvider() {
         if (HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
             list = new ArrayList<>();

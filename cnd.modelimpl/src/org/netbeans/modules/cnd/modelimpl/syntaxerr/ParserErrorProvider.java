@@ -62,7 +62,7 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
 @ServiceProvider(service=CsmErrorProvider.class, position=10),
-@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=900)
+@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1500)
 })
 public final class ParserErrorProvider extends CsmErrorProvider {
 

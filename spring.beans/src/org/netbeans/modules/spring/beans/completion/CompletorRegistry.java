@@ -55,7 +55,8 @@ import org.netbeans.modules.spring.beans.completion.completors.BeansRefCompletor
 import org.netbeans.modules.spring.beans.completion.completors.AttributeValueCompletorFactory;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.completion.completors.BeanDependsOnCompletor;
@@ -177,8 +178,8 @@ public final class CompletorRegistry {
     
     private Completor getAttributeValueCompletor(CompletionContext context) {
         String tagName = extractVanilaTagName(context.getTag().getNodeName());
-        TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
-        String attribName = attrib != null ? attrib.getImage() : null;
+        Token<XMLTokenId> attrib = ContextUtilities.getAttributeToken(context.getDocumentContext());
+        String attribName = attrib != null ? attrib.text().toString(): null;
         CompletorFactory completorFactory = locateCompletorFactory(tagName, attribName);
         if (completorFactory != null) {
             Completor completor = completorFactory.createCompletor(context.getCaretOffset());

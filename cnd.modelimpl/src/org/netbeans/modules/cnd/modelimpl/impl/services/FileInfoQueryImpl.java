@@ -475,7 +475,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 return 3;
             case C11:
                 return 4;
-            case CPP:
+            case CPP98:
                 return 5;
             case CPP11:
                 return 6;
@@ -514,10 +514,14 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 aptFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
                 break;
                 
-            case CPP:
+            case CPP98:
+                aptFlavor = APTLanguageSupport.FLAVOR_CPP98;
+                break;
             case CPP11:
-            case CPP14:
                 aptFlavor = APTLanguageSupport.FLAVOR_CPP11;
+                break;
+            case CPP14:
+                aptFlavor = APTLanguageSupport.FLAVOR_CPP14;
                 break;
                 
             case F77:

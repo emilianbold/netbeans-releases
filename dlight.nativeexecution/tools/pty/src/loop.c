@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "stdio.h"
 
 #ifndef INFTIM
 #define INFTIM  -1
@@ -69,7 +70,7 @@ int loop(int master_fd) {
         if (select_result == -1 && errno == EINTR) {
             continue;
         }
-        
+
         if (select_result == -1) {
             err_sys("poll failed\n");
         }
@@ -109,10 +110,16 @@ int loop(int master_fd) {
 
 #else
 
+#define FRAGSIZ 1000
+
 int loop(int master_fd) {
     ssize_t n;
-    char buf[BUFSIZ];
+    char buf[FRAGSIZ];
     struct pollfd fds[2];
+    
+    struct buffer to_master;
+    to_master.offset = 0;
+    to_master.length = 0;
 
     fds[0].fd = STDIN_FILENO;
     fds[0].events = POLLIN;
@@ -135,29 +142,8 @@ int loop(int master_fd) {
             err_sys("poll() failed in main_loop");
         }
 
-        if (fds[0].revents & POLLIN) {
-            if ((n = read(STDIN_FILENO, buf, BUFSIZ)) == -1) {
-                err_sys("read from stdin failed");
-            }
-
-            if (n == 0) {
-#ifdef __CYGWIN__
-                // On Windows when calling process is killed,
-                // POLLIN flag is set, not POLLHUP.
-                // So behave as if we have received POLLHUP in this case...
-                close(master_fd);
-                return 1;
-#endif
-                break;
-            }
-
-            if (writen(master_fd, buf, n) == -1) {
-                err_sys("write to master failed\n");
-            }
-        }
-
         if (fds[1].revents & POLLIN) {
-            if ((n = read(master_fd, buf, BUFSIZ)) == -1) {
+            if ((n = read(master_fd, buf, FRAGSIZ)) == -1) {
 #ifdef __CYGWIN__
                 // On Windows master_fd is invalid here
                 // (bug #252202)
@@ -174,6 +160,36 @@ int loop(int master_fd) {
 
             if (writen(STDOUT_FILENO, buf, n) == -1) {
                 err_sys("write to stdout failed\n");
+            }
+        }
+
+        if (to_master.offset != to_master.length) {
+            int nwritten = writen_no_block(master_fd, &to_master);
+            if (nwritten == -1) {
+                err_sys("write to master failed\n");
+            }
+        } else if (fds[0].revents & POLLIN) {
+            if ((n = read(STDIN_FILENO, to_master.buf, FRAGSIZ)) == -1) {
+                err_sys("read from stdin failed");
+            }
+
+            if (n == 0) {
+#ifdef __CYGWIN__
+                // On Windows when calling process is killed,
+                // POLLIN flag is set, not POLLHUP.
+                // So behave as if we have received POLLHUP in this case...
+                close(master_fd);
+                return 1;
+#endif
+                break;
+            }
+
+            to_master.offset = 0;
+            to_master.length = n;
+
+            int nwritten = writen_no_block(master_fd, &to_master);
+            if (nwritten == -1) {
+                err_sys("write to master failed\n");
             }
         }
 

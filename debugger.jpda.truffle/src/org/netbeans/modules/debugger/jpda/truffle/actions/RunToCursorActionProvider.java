@@ -77,6 +77,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.breakpoints.TruffleBreakpointsHandler;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -210,11 +211,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         try {
             final Method removeLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
                     debugAccessor,
-                    //ACCESSOR_REMOVE_LINE_BREAKPOINT,
-                    //ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT);
-                    "removeBreakpoint",
-                    //"(Lcom/oracle/truffle/debug/Breakpoint;)V");
-                    "(Ljava/lang/Object;)V");
+                    TruffleBreakpointsHandler.ACCESSOR_REMOVE_BREAKPOINT,
+                    TruffleBreakpointsHandler.ACCESSOR_REMOVE_BREAKPOINT_SIGNAT);
             TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
                 @Override
                 public void callMethods(JPDAThread thread) {

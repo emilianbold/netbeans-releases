@@ -41,9 +41,14 @@
  */
 package org.netbeans.modules.docker.api;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -70,8 +75,15 @@ public final class DockerImage implements DockerEntity {
         this.created = created;
         this.size = size;
         this.virtualSize = virtualSize;
-        for (String tag : tags) {
-            this.tags.add(new DockerTag(this, tag));
+        // See #268513
+        // I'm not quite sure HOW to reproduce this situation, but it happens
+        // if we have image named as "something:<none>".
+        if (tags != null) {
+            for (String tag : tags) {
+                this.tags.add(new DockerTag(this, tag));
+            }
+        } else {
+             Logger.getLogger(DockerImage.class.getName()).log(Level.INFO, "Null tags for {0}", id);
         }
     }
 

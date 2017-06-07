@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.openide.util.Parameters;
 
 /**
@@ -147,10 +148,18 @@ public final class QualifiedName {
 
     @CheckForNull
     public static QualifiedName create(Expression expression) {
-        if (expression instanceof NamespaceName) {
-            return create((NamespaceName) expression);
-        } else if (expression instanceof Identifier) {
-            return createUnqualifiedName((Identifier) expression);
+        Expression e;
+        if (expression instanceof NullableType) {
+            e = ((NullableType) expression).getType();
+            assert e instanceof NamespaceName || e instanceof Identifier;
+        } else {
+            e = expression;
+        }
+
+        if (e instanceof NamespaceName) {
+            return create((NamespaceName) e);
+        } else if (e instanceof Identifier) {
+            return createUnqualifiedName((Identifier) e);
         }
         return null;
     }

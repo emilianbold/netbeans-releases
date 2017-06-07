@@ -505,6 +505,16 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/yield_04");
     }
 
+    public void testYield_05() throws Exception {
+        // it's available since PHP7
+        performTest("parser/yield_05");
+    }
+
+    public void testYield_06() throws Exception {
+        // it's available since PHP7
+        performTest("parser/yield_06");
+    }
+
     public void testYield_07() throws Exception {
         performTest("parser/yield_07");
     }
@@ -586,10 +596,9 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/yieldFrom_03");
     }
 
-    // XXX
-//    public void testYieldFrom04() throws Exception {
-//        performTest("parser/yieldFrom_04");
-//    }
+    public void testYieldFrom04() throws Exception {
+        performTest("parser/yieldFrom_04");
+    }
 
     public void testYieldFrom05() throws Exception {
         performTest("parser/yieldFrom_05");
@@ -757,6 +766,60 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 
     public void testIssue258959() throws Exception {
         performTest("parser/issue258959");
+    }
+
+    public void testIssue268496_01() throws Exception {
+        performTest("parser/issue268496_01");
+    }
+
+    public void testIssue268712() throws Exception {
+        performTest("parser/issue268712");
+    }
+
+    public void testIssue262144() throws Exception {
+        // yeild and yield from expressions for PHP7
+        performTest("parser/issue262144");
+    }
+
+    // PHP7.1
+    public void testNullableTypes_01() throws Exception {
+        performTest("parser/nullableTypes_01");
+    }
+
+    public void testNullableTypes_02() throws Exception {
+        performTest("parser/nullableTypes_02");
+    }
+
+    public void testNullableTypes_03() throws Exception {
+        performTest("parser/nullableTypes_03");
+    }
+
+    public void testMultiCatchInFirstCatchClause() throws Exception {
+        performTest("parser/multiCatchInFirstCatchClause");
+    }
+
+    public void testMultiCatchInSecondCatchClause() throws Exception {
+        performTest("parser/multiCatchInSecondCatchClause");
+    }
+
+    public void testMultiCatchWithFinally() throws Exception {
+        performTest("parser/multiCatchWithFinally");
+    }
+
+    public void testClassConstantVisibility_01() throws Exception {
+        performTest("parser/classConstantVisibility_01");
+    }
+
+    public void testKeyedList_01() throws Exception {
+        performTest("parser/keyedList_01");
+    }
+
+    public void testSymmetricArrayDestructuring_01() throws Exception {
+        performTest("parser/symmetricArrayDestructuring_01");
+    }
+
+    public void testIssue269707() throws Exception {
+        performTest("parser/issue269707");
     }
 
     @Override

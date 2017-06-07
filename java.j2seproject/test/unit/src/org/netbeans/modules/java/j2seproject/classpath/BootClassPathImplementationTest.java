@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -62,9 +63,11 @@ import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.test.MockLookup;
 
@@ -84,7 +87,7 @@ public class BootClassPathImplementationTest extends NbTestCase {
     private FileObject defaultPlatformBootRoot;
     private FileObject explicitPlatformBootRoot;
     private ProjectManager pm;
-    private Project pp;
+    private J2SEProject pp;
     private TestPlatformProvider tp;
     
     protected void setUp() throws Exception {
@@ -111,14 +114,18 @@ public class BootClassPathImplementationTest extends NbTestCase {
     
     private void prepareProject (String platformName) throws IOException {
         projdir = scratch.createFolder("proj");
-        AntProjectHelper helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject");
+        final JavaPlatform[] jps = JavaPlatformManager.getDefault().getPlatforms(platformName, null);
+        assertEquals(1, jps.length);
+        final JavaPlatform jp = jps[0];
+        AntProjectHelper helper = new J2SEProjectBuilder(FileUtil.toFile(projdir), "Test Project")  //NOI18N
+                .addDefaultSourceRoots()
+                .setJavaPlatform(jp)
+                .build();
         pm = ProjectManager.getDefault();
-        pp = pm.findProject(projdir);
-        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.setProperty ("platform.active",platformName);
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-        sources = projdir.createFolder("src");
-        tests = projdir.createFolder("test");
+        final Project p = pm.findProject(projdir);
+        pp = p.getLookup().lookup(J2SEProject.class);
+        sources = FileUtil.createFolder(projdir, "src");    //NOI18N
+        tests = FileUtil.createFolder(projdir, "test");     //NOI18N
     }
     
     public void testBootClassPathImplementation () throws Exception {
@@ -127,7 +134,7 @@ public class BootClassPathImplementationTest extends NbTestCase {
         ClassPath bootCP = ClassPath.getClassPath(file, ClassPath.BOOT);
         assertNotNull("Boot ClassPath exists",bootCP);
         FileObject[] roots = bootCP.getRoots();
-        assertEquals("Boot classpath size",1, roots.length);        
+        assertEquals("Boot classpath size",1, roots.length);
         assertEquals("Boot classpath",explicitPlatformBootRoot, roots[0]);
         
         tp.setExplicitPlatformVisible(false);
@@ -145,9 +152,23 @@ public class BootClassPathImplementationTest extends NbTestCase {
         roots = bootCP.getRoots();
         assertEquals("Boot classpath size",1, roots.length);        
         assertEquals("Boot classpath",explicitPlatformBootRoot, roots[0]);
-    }        
-    
-    
+    }
+
+    public void testSrcTestSplitBootCp() throws IOException {
+        this.prepareProject("ExplicitPlatform");
+        final ClassPathProviderImpl cpProvider = ClassPathProviderImpl.Builder.create(
+                pp.getAntProjectHelper(),
+                pp.evaluator(),
+                pp.getSourceRoots(),
+                pp.getTestSourceRoots())
+                .setProject(pp)
+                .build();
+        final ClassPath bcpSrc = cpProvider.findClassPath(sources, ClassPath.BOOT);
+        assertNotNull(bcpSrc);
+        final ClassPath bcpTests = cpProvider.findClassPath(tests, ClassPath.BOOT);
+        assertNotNull(bcpTests);
+        assertNotSame(bcpSrc, bcpTests);
+    }
     
     private static class TestPlatformProvider implements JavaPlatformProvider {
         

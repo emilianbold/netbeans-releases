@@ -44,22 +44,23 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import java.util.*;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.xml.spi.dom.NodeListImpl;
+import org.netbeans.modules.xml.text.api.dom.TagElement;
 import org.w3c.dom.*;
 
 public class StartTag extends Tag {
 
-    StartTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
-        super( support, from, start, end);
-        this.name = from.text().toString();
+    public StartTag(XMLSyntaxSupport support, Token<XMLTokenId> from, int start, int end) {
+        super( support, from, start, end, from.text().toString().substring(1));
     }
 
     public boolean hasChildNodes() {
-        SyntaxElement next = getNext();
+        BaseSyntaxElement next = getNext();
         if (next == null) return false;
         // if not well-formed
         if (next instanceof StartTag && ((StartTag)next).getEndTag() == null) return false;
@@ -80,11 +81,11 @@ public class StartTag extends Tag {
         return new NodeListImpl(list);
     }
     
-    protected Tag getStartTag() {
+    public Tag getStartTag() {
         return this;
     }
     
-    protected Tag getEndTag() {
+    public Tag getEndTag() {
         
         SyntaxNode next = findNext();
         
@@ -116,5 +117,16 @@ public class StartTag extends Tag {
         return ret.toString() + " " + first() + ")";
     }
     
+    public boolean isStart() {
+        return true;
+    }
+    
+    public boolean isEnd() {
+        return false;
+    }
+    
+    public boolean isSelfClosing() {
+        return false;
+    }
 }
 

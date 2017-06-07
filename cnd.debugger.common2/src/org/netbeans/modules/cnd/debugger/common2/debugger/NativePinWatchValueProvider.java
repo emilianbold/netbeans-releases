@@ -78,7 +78,9 @@ public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvi
     @Override
     public String getValue(Watch watch) {
         for (WatchVariable watchVar : debugger.getWatches()) {
-            if (watchVar.getNativeWatch().watch().getExpression().equals(watch.getExpression())) {
+            //if (watchVar.getNativeWatch().watch().getExpression().equals(watch.getExpression())) {
+            //see bz#270230, the watches should be equal (otherwise update will not come anyway)
+            if (watchVar.getNativeWatch().watch().equals(watch)) {
                 Variable v = ((Variable) watchVar);
                 VariableValue value = new VariableValue(v.getAsText(), v.getDelta());
                 return value.toString();

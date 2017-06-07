@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.spi.java.platform.support.ForwardingJavaPlatform;
 import java.lang.ref.Reference;
 import java.net.URL;
@@ -61,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,10 +75,8 @@ import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultJavadoc;
 import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultSources;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -89,7 +90,7 @@ import org.openide.util.lookup.Lookups;
  * Implementation of the JavaPlatform API class, which serves proper
  * bootstrap classpath information.
  */
-public class J2SEPlatformImpl extends JavaPlatform {
+public class J2SEPlatformImpl extends JavaPlatform implements PropertyChangeListener {
 
     public static final String PROP_ANT_NAME = "antName";                   //NOI18N
     public static final String PLATFORM_J2SE = "j2se";                      //NOI18N
@@ -170,6 +171,15 @@ public class J2SEPlatformImpl extends JavaPlatform {
     //@GuardedBy("this")
     private LookupListener[] jdocListener;
 
+    /**
+     * Cache for {@link JavaPlatform} validity.
+     */
+    private final AtomicReference<Boolean> bootValidCache = new AtomicReference<>();
+    /**
+     * Validity cache listens on boot classpath.
+     */
+    private final AtomicBoolean bootValidListens = new AtomicBoolean();
+
     J2SEPlatformImpl (String dispName, List<URL> installFolders, Map<String,String> initialProperties, Map<String,String> sysProperties, List<URL> sources, List<URL> javadoc) {
         super();
         this.displayName = dispName;
@@ -202,7 +212,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
         if (javadoc != null) {
             this.javadoc = Collections.unmodifiableList(javadoc);   //No copy needed, called from this module => safe
         }
-        setSystemProperties(filterProbe(sysProperties));
+        setSystemProperties(sysProperties);
     }
 
     protected J2SEPlatformImpl (String dispName, String antName, List<URL> installFolders, Map<String,String> initialProperties,
@@ -267,7 +277,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
             if (cp != null) {
                 return cp;
             }
-            if (new SpecificationVersion("9").compareTo(getSpecification().getVersion())<=0) {    //NOI18N
+            if (Util.JDK9.compareTo(getSpecification().getVersion())<=0) {    //NOI18N
                 cp = Util.createModulePath(getInstallFolders());
             }
             if (cp == null) {
@@ -430,38 +440,6 @@ public class J2SEPlatformImpl extends JavaPlatform {
         return Collections.unmodifiableList(this.installFolders);
     }
 
-    protected static String filterProbe (String v, final String probePath) {
-        if (v != null) {
-            final String[] pes = PropertyUtils.tokenizePath(v);
-            final StringBuilder sb = new StringBuilder ();
-            for (String pe : pes) {
-                if (probePath != null ?  probePath.equals(pe) : (pe != null &&
-                pe.endsWith("org-netbeans-modules-java-j2seplatform-probe.jar"))) { //NOI18N
-                    //Skeep
-                }
-                else {
-                    if (sb.length() > 0) {
-                        sb.append(File.pathSeparatorChar);
-                    }
-                    sb.append(pe);
-                }
-            }
-            v = sb.toString();
-        }
-        return v;
-    }
-
-    private static Map<String,String> filterProbe (final Map<String,String> p) {
-        if (p!=null) {
-            final String val = p.get(SYSPROP_JAVA_CLASS_PATH);
-            if (val != null) {
-                p.put(SYSPROP_JAVA_CLASS_PATH, filterProbe(val, null));
-            }
-        }
-        return p;
-    }
-
-
     private static ClassPath createClassPath (final List<? extends URL> urls) {
         List<PathResourceImplementation> resources = new ArrayList<> ();
         if (urls != null) {
@@ -586,16 +564,33 @@ public class J2SEPlatformImpl extends JavaPlatform {
         return Collections.unmodifiableList(result);
     }
 
-    boolean isBroken () {
-        if (getInstallFolders().isEmpty()) {
-            return true;
+    @Override
+    public boolean isValid() {
+        if (!super.isValid()) {
+            return false;
         }
         for (String tool : PlatformConvertor.IMPORTANT_TOOLS) {
             if (findTool(tool) == null) {
-                return true;
+                return false;
             }
         }
-        return false;
+        Boolean valid = bootValidCache.get();
+        if (valid == null) {
+            final ClassPath boot = getBootstrapLibraries();
+            if (!bootValidListens.get() && bootValidListens.compareAndSet(false, true)) {
+                boot.addPropertyChangeListener(this);
+            }
+            valid = boot.findResource("java/lang/Object.class") != null; //NOI18N
+            bootValidCache.set(valid);
+        }
+        return valid;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())) {
+            bootValidCache.set(null);
+        }
     }
 
     @NonNull

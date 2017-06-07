@@ -1146,6 +1146,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             setDefault(cs);
         }
         completeCompilerSets();
+        this.state = State.STATE_COMPLETE;
     }
 
     private void addUnsafe(CompilerSet cs) {

@@ -64,12 +64,14 @@ import org.openide.util.Lookup;
 public final class DefaultProcessor extends OptionProcessor {
     private static final Option defArgs = Option.defaultArguments();
     private final String clazz;
+    private final Object instance;
     private final Set<Option> options;
 
     private DefaultProcessor(
-        String clazz, Set<Option> arr
+        String clazz, Object instance, Set<Option> arr
     ) {
         this.clazz = clazz;
+        this.instance = instance;
         this.options = Collections.unmodifiableSet(arr);
     }
 
@@ -96,9 +98,12 @@ public final class DefaultProcessor extends OptionProcessor {
         return o;
     }
     
-    public static OptionProcessor create(Class<?> clazz) {
+    public static OptionProcessor create(Class<?> clazz, Object instance) {
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("class", clazz.getName());
+        if (instance != null) {
+            map.put("instance", instance);
+        }
         int cnt = 1;
         for (Field e : clazz.getFields()) {
             Arg o = e.getAnnotation(Arg.class);
@@ -156,7 +161,8 @@ public final class DefaultProcessor extends OptionProcessor {
                 arr.add(defArgs);
             }
         }
-        return new DefaultProcessor(c, arr);
+        Object instance = map.get("instance"); // NOI18N
+        return new DefaultProcessor(c, instance, arr);
     }
     
 
@@ -169,8 +175,15 @@ public final class DefaultProcessor extends OptionProcessor {
     protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
         try {
             ClassLoader l = findClassLoader();
-            Class<?> realClazz = Class.forName(clazz, true, l);
-            Object instance = realClazz.newInstance();
+            Class<?> realClazz;
+            Object inst;
+            if (instance == null) {
+                realClazz = Class.forName(clazz, true, l);
+                inst = realClazz.newInstance();
+            } else {
+                realClazz = instance.getClass();
+                inst = instance;
+            }
             Map<Option,Field> map = processFields(realClazz, options);
             for (Map.Entry<Option, String[]> entry : optionValues.entrySet()) {
                 final Option option = entry.getKey();
@@ -179,27 +192,27 @@ public final class DefaultProcessor extends OptionProcessor {
                 assert f != null : "No field for option: " + option;
                 switch (type) {
                     case withoutArgument:
-                        f.setBoolean(instance, true); break;
+                        f.setBoolean(inst, true); break;
                     case requiredArgument:
-                        f.set(instance, entry.getValue()[0]); break;
+                        f.set(inst, entry.getValue()[0]); break;
                     case optionalArgument:
                         if (entry.getValue().length == 1) {
-                            f.set(instance, entry.getValue()[0]);
+                            f.set(inst, entry.getValue()[0]);
                         } else {
-                            f.set(instance, f.getAnnotation(Arg.class).defaultValue());
+                            f.set(inst, f.getAnnotation(Arg.class).defaultValue());
                         }
                         break;
                     case additionalArguments:
-                        f.set(instance, entry.getValue()); break;
+                        f.set(inst, entry.getValue()); break;
                     case defaultArguments:
-                        f.set(instance, entry.getValue()); break;
+                        f.set(inst, entry.getValue()); break;
                 }
             }
-            if (instance instanceof Runnable) {
-                ((Runnable)instance).run();
+            if (inst instanceof Runnable) {
+                ((Runnable)inst).run();
             }
-            if (instance instanceof ArgsProcessor) {
-                ((ArgsProcessor)instance).process(env);
+            if (inst instanceof ArgsProcessor) {
+                ((ArgsProcessor)inst).process(env);
             }
         } catch (Exception exception) {
             throw (CommandException)new CommandException(10, exception.getLocalizedMessage()).initCause(exception);

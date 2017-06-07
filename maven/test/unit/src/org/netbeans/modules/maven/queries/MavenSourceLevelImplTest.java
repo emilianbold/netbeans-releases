@@ -202,7 +202,7 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         assertTrue(MavenSourceLevelImpl.PROFILE.matcher("    -profile compact1    ").find());
         assertFalse(MavenSourceLevelImpl.PROFILE.matcher("-profile compact4").find());
         
-        Matcher m = MavenSourceLevelImpl.PROFILE.matcher("-Xlint -profile compact1 -Xdebug");
+        Matcher m = MavenSourceLevelImpl.PROFILE.matcher("-Xlint -profile compact1 -agentlib:jdwp=something");
         assertTrue(m.find());
         assertEquals("compact1", m.group(1));
     }

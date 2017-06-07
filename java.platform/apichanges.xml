@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="java-platform-valid">
+            <api name="general"/>
+            <summary>Added a <code>isValid</code> method into <code>JavaPlatform</code></summary>
+            <version major="1" minor="43"/>
+            <date day="3" month="4" year="2017"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a <code>isValid</code> method into <code>JavaPlatform</code>
+                    to check platform validity. The platform is non valid when it's deleted
+                    or an platform tool (java, javac) is missing or bootstrap libraries are missing.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.platform" name="JavaPlatform"/>
+        </change>
         <change id="java-platform-factory">
             <api name="general"/>
             <summary>Added a SPI to create new JavaPlatform </summary>

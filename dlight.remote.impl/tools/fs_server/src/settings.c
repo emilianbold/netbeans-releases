@@ -60,7 +60,7 @@ void clone_global_settings(settings_str* dst) {
 
 void change_settings(const char** dirs_forbidden_to_stat, bool *full_access_check) {
     mutex_lock_wrapper(&settings_mutex);
-    settings_str* new_global_settings = malloc(sizeof(settings_str));
+    settings_str* new_global_settings = malloc_wrapper(sizeof(settings_str));
     new_global_settings->full_access_check = full_access_check ? *full_access_check : global_settings->full_access_check;
     new_global_settings->dirs_forbidden_to_stat = dirs_forbidden_to_stat ? dirs_forbidden_to_stat : global_settings->dirs_forbidden_to_stat;
     new_global_settings->prev = global_settings;
@@ -71,11 +71,16 @@ void change_settings(const char** dirs_forbidden_to_stat, bool *full_access_chec
 /// before calling, make sure all threads that might access settings are stopped!
 void free_settings() {
     mutex_lock_wrapper(&settings_mutex);
-    for(settings_str* s = global_settings; s != NULL && s != &default_settings; s = s->prev) {
+    settings_str* s = global_settings;
+    // Previously the below loop was a "for" loop, but discover found an FMR (reading from freed memory)
+    // Indeed, in the "for" loop, s = s->prev accessed memory that was just freed
+    while (s != NULL && s != &default_settings) {
         if (s->dirs_forbidden_to_stat) {
             free(s->dirs_forbidden_to_stat);
         }
-        free(s);
+        void* to_free = s;
+        s = s->prev;
+        free(to_free);
     }
     global_settings = &default_settings; // since we agreed that global_settings never null
     mutex_unlock_wrapper(&settings_mutex);
@@ -116,7 +121,7 @@ void set_dirs_forbidden_to_stat(const char* dir_list) {
     // The memory layout is as follows:
     // first a null-terminated array with pointers to paths;
     // then a buffer that contains paths data the array refers to
-    void* data = malloc(array_mem_size + str_len + 1);
+    void* data = malloc_wrapper(array_mem_size + str_len + 1);
     char* buffer = (char*) data + array_mem_size;
     // copy the entire string to the space that follows path pointers array,
     // then replace ':' separators with nulls and fill the array

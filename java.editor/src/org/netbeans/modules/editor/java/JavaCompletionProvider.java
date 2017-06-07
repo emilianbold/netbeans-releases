@@ -60,11 +60,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.java.completion.JavaCompletionTask;
 import org.netbeans.modules.java.completion.JavaDocumentationTask;
@@ -75,7 +72,6 @@ import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -90,7 +86,7 @@ public class JavaCompletionProvider implements CompletionProvider {
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         if (typedText != null && typedText.length() == 1
                 && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
-                || (Utilities.autoPopupOnJavaIdentifierPart() && JavaCompletionQuery.isJavaIdentifierPart(typedText)))) {
+                || (Utilities.autoPopupOnJavaIdentifierPart() && JavaCompletionQuery.isJavaIdentifierPart(typedText, false)))) {
             if (Utilities.isJavaContext(component, component.getSelectionStart() - 1, true)) {
                 return COMPLETION_QUERY_TYPE;
             }
@@ -158,7 +154,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int newCaretOffset = component.getSelectionStart();
             if (newCaretOffset >= caretOffset) {
                 try {
-                    if (isJavaIdentifierPart(component.getDocument().getText(caretOffset, newCaretOffset - caretOffset))) {
+                    if (isJavaIdentifierPart(component.getDocument().getText(caretOffset, newCaretOffset - caretOffset), false)) {
                         return;
                     }
                 } catch (BadLocationException e) {
@@ -315,26 +311,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (len == 0) {
                                 filterPrefix = EMPTY;
                             } else if (len > 0) {
-                                doc.render(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-                                        if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
-                                            if ((ts.token().id() == JavaTokenId.IDENTIFIER ||
-                                                    ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
-                                                    ts.token().id().primaryCategory().startsWith("string") || //NOI18N
-                                                    ts.token().id().primaryCategory().equals("literal")) //NOI18N
-                                                    && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                                                filterPrefix = ts.token().text().toString().substring(0, len);
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                            if (filterPrefix == null) {
                                 String prefix = doc.getText(offset, newOffset - offset);
                                 if (prefix.length() > 0 && Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0) {
                                     return false;
+                                }
+                                if (isJavaIdentifierPart(prefix, true)) {
+                                    filterPrefix = prefix;
                                 }
                             } else if (filterPrefix.length() == 0) {
                                 anchorOffset = newOffset;
@@ -382,9 +364,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             resultSet.finish();
         }
 
-        private static boolean isJavaIdentifierPart(String text) {
+        private static boolean isJavaIdentifierPart(String text, boolean allowForDor) {
             for (int i = 0; i < text.length(); i++) {
-                if (!(Character.isJavaIdentifierPart(text.charAt(i)))) {
+                if (!(Character.isJavaIdentifierPart(text.charAt(i)) || allowForDor && text.charAt(i) == '.')) {
                     return false;
                 }
             }
@@ -401,11 +383,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                 CompletionItem itm = it.next();
                 CharSequence cs = itm != null ? itm.getInsertPrefix() : null;
                 if (cs != null) {
-                    for (String s : cs.toString().split("\\.")) { //NOI18N
-                        if (org.netbeans.modules.java.completion.Utilities.startsWith(s, prefix)
-                                || (camelCase && org.netbeans.modules.java.completion.Utilities.startsWithCamelCase(s, prefix))) {
-                            ret.add(itm);
-                            break;
+                    if (org.netbeans.modules.java.completion.Utilities.startsWith(cs.toString(), prefix)
+                            || (camelCase && org.netbeans.modules.java.completion.Utilities.startsWithCamelCase(cs.toString(), prefix))) {
+                        ret.add(itm);
+                    } else {
+                        for (String s : cs.toString().split("\\.")) { //NOI18N
+                            if (org.netbeans.modules.java.completion.Utilities.startsWith(s, prefix)
+                                    || (camelCase && org.netbeans.modules.java.completion.Utilities.startsWithCamelCase(s, prefix))) {
+                                ret.add(itm);
+                                break;
+                            }
                         }
                     }
                 }

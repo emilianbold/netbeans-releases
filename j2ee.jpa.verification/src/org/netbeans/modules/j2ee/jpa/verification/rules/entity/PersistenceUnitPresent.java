@@ -93,7 +93,7 @@ public class PersistenceUnitPresent{
             return null;
         }
 
-        PersistenceScope[] scopes = PersistenceUtils.getPersistenceScopes(project);
+        PersistenceScope[] scopes = PersistenceUtils.getPersistenceScopes(project, hc.getInfo().getFileObject());
 
         for (PersistenceScope scope : scopes) {
             if (scope.getClassPath().contains(hc.getInfo().getFileObject())) {

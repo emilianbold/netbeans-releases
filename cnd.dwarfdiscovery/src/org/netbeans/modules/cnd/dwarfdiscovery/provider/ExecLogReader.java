@@ -238,7 +238,9 @@ public final class ExecLogReader {
                     String directory = null;
                     String command = null;
                     String cu = null;
+                    int count = 0;
                     while (true) {
+                        count++;
                         if (isStoped.cancelled()) {
                             break;
                         }
@@ -275,7 +277,11 @@ public final class ExecLogReader {
                             if (line.length() == 0) {
                                 // create new result entry
                                 try {
-                                    addSources(tool, params, storage);
+                                    if (tool == null) {
+                                        DwarfSource.LOG.log(Level.INFO, "Exec log file '"+logFileObject.getPath()+"' is corrupted near line "+count+".");
+                                    } else {
+                                        addSources(tool, params, storage);
+                                    }
                                 } catch (Throwable ex) {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
                                     DwarfSource.LOG.log(Level.INFO, "Tool:" + tool, ex);
@@ -412,10 +418,14 @@ public final class ExecLogReader {
         String compiler;
         ItemProperties.LanguageKind language;
         String compilePath = null;
-        if (tool.lastIndexOf('/') > 0) { //NOI18N
-            compiler = tool.substring(tool.lastIndexOf('/') + 1); //NOI18N
+        int lastPathSeparator = tool.replace('\\', '/').lastIndexOf('/'); //NOI18N
+        if (lastPathSeparator >= 0) {
+            compiler = tool.substring(lastPathSeparator + 1);
         } else {
             compiler = tool;
+        }
+        if (compiler.endsWith(".exe")) { //NOI18N
+            compiler = compiler.substring(0, compiler.length()-4);
         }
         if (C_NAMES.contains(compiler)) {
             language = ItemProperties.LanguageKind.C;

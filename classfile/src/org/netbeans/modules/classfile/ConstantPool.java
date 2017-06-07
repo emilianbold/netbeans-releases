@@ -75,6 +75,8 @@ public final class ConstantPool {
     static final int CONSTANT_MethodHandle = 15;
     static final int CONSTANT_MethodType = 16;
     static final int CONSTANT_InvokeDynamic = 18;
+    static final int CONSTANT_Module = 19;
+    static final int CONSTANT_Package = 20;
 
     CPEntry[] cpEntries;
     
@@ -284,6 +286,18 @@ public final class ConstantPool {
               int bootstrapMethod = cpr.readUnsignedShort();
               int nameAndType = cpr.readUnsignedShort();
               newEntry = new CPInvokeDynamicInfo(this, bootstrapMethod, nameAndType);
+              break;
+          }
+
+          case CONSTANT_Module: {
+              int nameIndex = cpr.readUnsignedShort();
+              newEntry = new CPModuleInfo(this, nameIndex);
+              break;
+          }
+
+          case CONSTANT_Package: {
+              int nameIndex = cpr.readUnsignedShort();
+              newEntry = new CPPackageInfo(this, nameIndex);
               break;
           }
 

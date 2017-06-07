@@ -244,7 +244,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         if (debug || mavenDebug) {
             String key = "Env.MAVEN_OPTS"; //NOI18N
             if (mavenDebug) {
-                String vmargs = "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
+                String vmargs = "-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
                 String orig = config.getProperties().get(key);
                 if (orig == null) {
                     orig = System.getenv("MAVEN_OPTS"); // NOI18N

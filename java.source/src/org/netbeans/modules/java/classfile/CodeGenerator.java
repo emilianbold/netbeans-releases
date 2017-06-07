@@ -33,11 +33,13 @@ package org.netbeans.modules.java.classfile;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.DirectiveTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -48,6 +50,7 @@ import com.sun.tools.classfile.ConstantPoolException;
 import com.sun.tools.classfile.Instruction;
 import com.sun.tools.classfile.Method;
 import com.sun.tools.classfile.Opcode;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javap.ClassWriter;
 import com.sun.tools.javap.CodeWriter;
@@ -63,6 +66,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -82,6 +86,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -89,7 +94,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.AbstractElementVisitor6;
+import javax.lang.model.util.AbstractElementVisitor9;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -114,6 +119,7 @@ import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -136,7 +142,7 @@ public class CodeGenerator {
 	}
 
         try {
-            FileObject file = FileUtil.createMemoryFileSystem().getRoot().createData("test.java");  //NOI18N
+            FileObject file = FileUtil.createMemoryFileSystem().getRoot().createData(toOpenHandle.getKind() == ElementKind.MODULE ? "module-info.java" : "test.java");  //NOI18N
             OutputStream out = file.getOutputStream();
 
             try {
@@ -156,30 +162,46 @@ public class CodeGenerator {
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(Phase.ELEMENTS_RESOLVED);
 
-                    final ClassPath cp = ClassPathSupport.createProxyClassPath(
-                            cpInfo.getClassPath(PathKind.BOOT),
-                            cpInfo.getClassPath(PathKind.COMPILE),
-                            cpInfo.getClassPath(PathKind.SOURCE));
-                    final Element toOpen = toOpenHandle.resolve(wc);
-                    final TypeElement te = toOpen != null ? wc.getElementUtilities().outermostTypeElement(toOpen) : null;
+                    String binName;
+                    FileObject resource;
+                    FileObject root;
+                    Element toOpen = toOpenHandle.resolve(wc);
 
-                    if (te == null) {
-                        LOG.info("Cannot resolve element: " + toOpenHandle.toString() + " on classpath: " + cp.toString()); //NOI18N
-                        return;
-                    }
+                    if (toOpen != null && toOpen.getKind() == ElementKind.MODULE) {
+                        binName = "module-info"; //NOI18N
+                        JavaFileObject jfo = ((Symbol.ModuleSymbol)toOpen).module_info.classfile;
+                        resource = jfo != null ? URLMapper.findFileObject(jfo.toUri().toURL()) : null;
+                        if (resource == null) {
+                            LOG.info("Cannot find resource for module: " + ((ModuleElement)toOpen).getQualifiedName()); //NOI18N
+                            return;
+                        }
+                        root = resource.getParent();
+                    } else {
+                        final ClassPath cp = ClassPathSupport.createProxyClassPath(
+                                cpInfo.getClassPath(PathKind.BOOT),
+                                cpInfo.getClassPath(PathKind.COMPILE),
+                                cpInfo.getClassPath(PathKind.SOURCE));
+                        final TypeElement te = toOpen != null ? wc.getElementUtilities().outermostTypeElement(toOpen) : null;
 
-                    final String binName = te.getQualifiedName().toString().replace('.', '/');  //NOI18N
-                    final String resourceName = binName + ".class";  //NOI18N
-                    final FileObject resource = cp.findResource(resourceName);
-                    if (resource == null) {
-                        LOG.info("Cannot find resource: " + resourceName +" on classpath: " + cp.toString()); //NOI18N
-                        return ;
-                    }
+                        if (te == null) {
+                            LOG.info("Cannot resolve element: " + toOpenHandle.toString() + " on classpath: " + cp.toString()); //NOI18N
+                            return;
+                        }
 
-                    final FileObject root = cp.findOwnerRoot(resource);
-                    if (root == null) {
-                        LOG.info("Cannot find owner of: " + FileUtil.getFileDisplayName(resource) +" on classpath: " + cp.toString()); //NOI18N
-                        return ;
+                        binName = te.getQualifiedName().toString().replace('.', '/');  //NOI18N
+                        final String resourceName = binName + ".class";  //NOI18N
+                        resource = cp.findResource(resourceName);
+                        if (resource == null) {
+                            LOG.info("Cannot find resource: " + resourceName +" on classpath: " + cp.toString()); //NOI18N
+                            return ;
+                        }
+
+                        root = cp.findOwnerRoot(resource);
+                        if (root == null) {
+                            LOG.info("Cannot find owner of: " + FileUtil.getFileDisplayName(resource) +" on classpath: " + cp.toString()); //NOI18N
+                            return ;
+                        }
+                        toOpen = te;
                     }
 
                     classfileRoot[0] = root.getURL();
@@ -215,7 +237,7 @@ public class CodeGenerator {
                             return;
                         }
                     }
-                    final CompilationUnitTree cut = generateCode(wc, te);
+                    final CompilationUnitTree cut = generateCode(wc, toOpen);
                     wc.rewrite(wc.getCompilationUnit(), cut);
                     if (source == null) {
                         result[0] = FileUtil.createData(sourceRootFO, path);
@@ -256,10 +278,11 @@ public class CodeGenerator {
         }
     }
 
-    static CompilationUnitTree generateCode(WorkingCopy wc, TypeElement te) {
+    static CompilationUnitTree generateCode(WorkingCopy wc, Element te) {
         TreeMaker make = wc.getTreeMaker();
         Tree clazz = new TreeBuilder(make, wc).visit(te);
-        CompilationUnitTree cut = make.CompilationUnit(make.Identifier(((PackageElement) te.getEnclosingElement()).getQualifiedName()),
+        CompilationUnitTree cut = make.CompilationUnit(
+                te.getKind() == ElementKind.MODULE ? null : make.Identifier(((PackageElement) te.getEnclosingElement()).getQualifiedName()),
                 Collections.<ImportTree>emptyList(),
                 Collections.singletonList(clazz),
                 wc.getCompilationUnit().getSourceFile());
@@ -267,7 +290,7 @@ public class CodeGenerator {
         return cut;
     }
 
-    private static final class TreeBuilder extends AbstractElementVisitor6<Tree, Void> {
+    private static final class TreeBuilder extends AbstractElementVisitor9<Tree, Void> {
 
         private final TreeMaker make;
         private final WorkingCopy wc;
@@ -282,6 +305,38 @@ public class CodeGenerator {
         @Override
         public Tree visitPackage(PackageElement e, Void p) {
             throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public Tree visitModule(ModuleElement e, Void p) {
+            ModifiersTree mods = make.Modifiers(e.getModifiers());
+            ModuleTree.ModuleKind kind = wc.getElementUtilities().isOpen(e) ? ModuleTree.ModuleKind.OPEN : ModuleTree.ModuleKind.STRONG;
+            List<DirectiveTree> directives = new LinkedList<>();
+            for (ModuleElement.Directive directive : e.getDirectives()) {
+                switch(directive.getKind()) {
+                    case EXPORTS:
+                        ModuleElement.ExportsDirective expDirective = (ModuleElement.ExportsDirective)directive;
+                        directives.add(make.Exports(make.QualIdent(expDirective.getPackage()), constructModuleList(expDirective.getTargetModules())));
+                        break;
+                    case OPENS:
+                        ModuleElement.OpensDirective opensDirective = (ModuleElement.OpensDirective)directive;
+                        directives.add(make.Opens(make.QualIdent(opensDirective.getPackage()), constructModuleList(opensDirective.getTargetModules())));
+                        break;
+                    case PROVIDES:
+                        ModuleElement.ProvidesDirective provDirective = (ModuleElement.ProvidesDirective)directive;
+                        directives.add(make.Provides(make.QualIdent(provDirective.getService()), constructTypeList(provDirective.getImplementations())));
+                        break;
+                    case REQUIRES:
+                        ModuleElement.RequiresDirective reqDirective = (ModuleElement.RequiresDirective)directive;
+                        directives.add(make.Requires(reqDirective.isTransitive(), reqDirective.isStatic(), make.QualIdent(reqDirective.getDependency().getQualifiedName().toString())));
+                        break;
+                    case USES:
+                        ModuleElement.UsesDirective usesDirective = (ModuleElement.UsesDirective)directive;
+                        directives.add(make.Uses(make.QualIdent(usesDirective.getService())));
+                        break;
+                }
+            }
+            return addDeprecated(e, make.Module(mods, kind, make.QualIdent(e.getQualifiedName().toString()), directives));
         }
 
         @Override
@@ -428,6 +483,28 @@ public class CodeGenerator {
 
             for (TypeParameterElement e : params) {
                 result.add((TypeParameterTree) visit(e));
+            }
+
+            return result;
+        }
+
+        private List<? extends ExpressionTree> constructModuleList(List<? extends ModuleElement> params) {
+            List<ExpressionTree> result = new LinkedList<>();
+
+            if (params != null) {
+                for (ModuleElement e : params) {
+                    result.add(make.QualIdent(e.getQualifiedName().toString()));
+                }
+            }
+
+            return result;
+        }
+
+        private List<? extends ExpressionTree> constructTypeList(List<? extends TypeElement> params) {
+            List<ExpressionTree> result = new LinkedList<>();
+
+            for (TypeElement e : params) {
+                result.add(make.QualIdent(e));
             }
 
             return result;

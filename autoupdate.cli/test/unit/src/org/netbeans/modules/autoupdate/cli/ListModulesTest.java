@@ -45,27 +45,24 @@ package org.netbeans.modules.autoupdate.cli;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import junit.framework.*;
-import org.netbeans.api.sendopts.CommandException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.sendopts.CommandLine;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledUpdateProvider;
 import org.openide.modules.ModuleInfo;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Tulach
  */
 public class ListModulesTest extends NbTestCase {
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-    }
+    private static final Logger LOG = Logger.getLogger("TEST-" + ListModulesTest.class.getName());
     
     public ListModulesTest(String testName) {
         super(testName);
@@ -73,132 +70,61 @@ public class ListModulesTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-//        clearWorkDir();
+        clearWorkDir();
         
-//        System.setProperty("netbeans.user", getWorkDirPath() + File.separator + "userdir");
+        System.setProperty("netbeans.user", getWorkDirPath() + File.separator + "userdir");
 
         // initialize whole infra
-        //Lookup.getDefault().lookup(ModuleInfo.class);
-        Lkp.ic.setPairs(Collections.<AbstractLookup.Pair>emptyList());
-        Lkp.ic.add(InstalledUpdateProvider.getDefault());
-        //Lkp.getDefault().lookup(ModuleInfo.class);
-        Lkp.ic.add(new ModuleOptions());
+        Lookup.getDefault().lookup(ModuleInfo.class);
+    }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     @Override
     protected void tearDown() throws Exception {
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ListModulesTest.class);
-        
-        return suite;
-    }
-
-    public void testAModuleIsPrinted() throws CommandException {
-        Lkp.ic.add(new MyModule("my.cnb", 5, new SpecificationVersion("1.3"), true));
-        Lkp.ic.add(new MyModule("my.snd.cnb", -1, new SpecificationVersion("5.3.1"), false));
-
+    public void testAModuleIsPrinted() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ByteArrayOutputStream err = new ByteArrayOutputStream();
 
-        CommandLine.getDefault().process(new String[] { "--modules", "--list" }, System.in, os, err, new File("."));
+        CommandLine.getDefault().process(new String[] { "--modules",  "--list" }, System.in, os, err, new File("."));
 
-        assertEquals("No errors", 0, err.size());
+        assertEquals("No error", 0, err.size());
 
-        String out = os.toString();
-        if (out.indexOf("my.cnb") == -1) {
-            fail("my.cnb should be there: " + out);
+        if (os.toString().indexOf("org.netbeans.bootstrap") < 0) {
+            fail("We want default module to be found: " + os.toString());
         }
-        if (out.indexOf("my.snd.cnb") == -1) {
-            fail("snd should be there: " + out);
-        }
-        if (out.indexOf("disabled") == -1) {
-            fail("disabled should be there: " + out);
-        }
-        if (out.indexOf("enabled") == -1) {
-            fail("enabled should be there: " + out);
-        }
-        if (out.indexOf("/5") == -1) {
-            fail("5 should be there: " + out);
-        }
-        if (out.indexOf("1.3") == -1) {
-            fail("1.3 should be there: " + out);
-        }
-        if (out.indexOf("5.3.1") == -1) {
-            fail("5.3.1 should be there: " + out);
+        if (os.toString().indexOf("org.my.module") != -1) {
+            fail("module not found yet: " + os.toString());
         }
     }
-    
-    public static final class Lkp extends AbstractLookup {
-        public static InstanceContent ic = new InstanceContent();
+
+    protected final File generateJar (String[] content, Manifest manifest) throws IOException {
+        File f;
+        int i = 0;
+        for (;;) {
+            f = new File (this.getWorkDir(), i++ + ".jar");
+            if (!f.exists ()) break;
+        }
         
-        public Lkp() {
-            super(ic);
+        JarOutputStream os;
+        if (manifest != null) {
+            os = new JarOutputStream (new FileOutputStream (f), manifest);
+        } else {
+            os = new JarOutputStream (new FileOutputStream (f));
         }
-    }
-
-    private static class MyModule extends ModuleInfo {
-
-        private boolean enabled;
-        private String cnb;
-        private int r;
-        private SpecificationVersion specV;
-
-        MyModule(String cnb, int r, SpecificationVersion specV, boolean enabled) {
-            this.cnb = cnb;
-            this.r = r;
-            this.specV = specV;
-            this.enabled = enabled;
+        
+        for (i = 0; i < content.length; i++) {
+            os.putNextEntry(new JarEntry (content[i]));
+            os.closeEntry();
         }
-
-        @Override
-        public String getCodeNameBase() {
-            return cnb;
-        }
-
-        @Override
-        public int getCodeNameRelease() {
-            return r;
-        }
-
-        @Override
-        public String getCodeName() {
-            if (r == -1) {
-                return getCodeNameBase();
-            }
-            return getCodeNameBase() + '/' + r;
-        }
-
-        @Override
-        public SpecificationVersion getSpecificationVersion() {
-            return specV;
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        @Override
-        public Object getAttribute(String attr) {
-            return null;
-        }
-
-        @Override
-        public Object getLocalizedAttribute(String attr) {
-            return null;
-        }
-
-        @Override
-        public Set getDependencies() {
-            return new HashSet();
-        }
-
-        @Override
-        public boolean owns(Class clazz) {
-            return false;
-        }
-
+        os.closeEntry ();
+        os.close();
+        
+        return f;
     }
 }

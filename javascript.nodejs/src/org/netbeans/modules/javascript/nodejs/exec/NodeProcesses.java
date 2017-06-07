@@ -47,16 +47,37 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 
 /**
  * Holds information about (maybe) running node.js processes.
  */
+@ProjectServiceProvider(
+        service = NodeProcesses.class,
+        projectType = {
+            "org-netbeans-modules-web-clientproject", // NOI18N
+            "org-netbeans-modules-php-project", // NOI18N
+            "org-netbeans-modules-web-project", // NOI18N
+            "org-netbeans-modules-maven", // NOI18N
+        }
+)
 public final class NodeProcesses {
 
     private final Map<String, RunInfo> npmScripts = new ConcurrentHashMap<>();
 
     private volatile RunInfo projectRun = RunInfo.none();
 
+
+    public NodeProcesses() {
+    }
+
+    public static NodeProcesses forProject(Project project) {
+        NodeProcesses processes = project.getLookup().lookup(NodeProcesses.class);
+        assert processes != null : "NodeProcesses should be found in project " + project.getClass().getName() + " (lookup: " + project.getLookup() + ")";
+        return processes;
+    }
 
     public void stop() {
         if (projectRun.isRunning()) {
@@ -147,6 +168,36 @@ public final class NodeProcesses {
                 return null;
             }
             return currentNodeTask.get();
+        }
+
+    }
+
+    @ProjectServiceProvider(
+            service = ProjectOpenedHook.class,
+            projectType = {
+                "org-netbeans-modules-web-clientproject", // NOI18N
+                "org-netbeans-modules-php-project", // NOI18N
+                "org-netbeans-modules-web-project", // NOI18N
+                "org-netbeans-modules-maven", // NOI18N
+            }
+    )
+    public static class ProjectOpenedHookImpl extends ProjectOpenedHook {
+
+        private final Project project;
+
+
+        public ProjectOpenedHookImpl(Project project) {
+            this.project = project;
+        }
+
+        @Override
+        protected void projectOpened() {
+            // noop
+        }
+
+        @Override
+        protected void projectClosed() {
+            NodeProcesses.forProject(project).stop();
         }
 
     }

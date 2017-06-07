@@ -233,6 +233,23 @@ public class CsmDisplayUtilities {
         return buf.toString();
     }
 
+    public static String addHTMLColor(String string, Color color, boolean bold) {
+        if (color == null) {
+            return string;
+        }
+        if (string.trim().length() == 0) {
+            return string.replace(" ", "&nbsp;").replace("\n", "<br>"); //NOI18N
+        }
+        StringBuilder buf = new StringBuilder(string);
+        if (bold) {
+            buf.insert(0, "<b>"); //NOI18N
+            buf.append("</b>"); //NOI18N
+        }
+        buf.insert(0, "<font color=" + getHTMLColor(color) + ">"); //NOI18N
+        buf.append("</font>"); //NOI18N
+        return buf.toString();
+    }
+
     public static String getHTMLColor(Color c) {
         String colorR = "0" + Integer.toHexString(c.getRed()); //NOI18N
         colorR = colorR.substring(colorR.length() - 2);

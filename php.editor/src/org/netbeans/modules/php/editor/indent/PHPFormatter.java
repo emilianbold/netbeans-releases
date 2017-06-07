@@ -78,7 +78,8 @@ public class PHPFormatter implements Formatter {
     @Override
     public void reindent(final Context context) {
         String mimeType = getMimeTypeAtOffset(context.document(), context.startOffset());
-        if (FileUtils.PHP_MIME_TYPE.equals(mimeType)) {
+        String mimePath = context.mimePath(); // avoid to call twice
+        if (FileUtils.PHP_MIME_TYPE.equals(mimeType) && FileUtils.PHP_MIME_TYPE.equals(mimePath)) {
             Indentation indent = new IndentationCounter((BaseDocument) context.document()).count(context.caretOffset());
             indent.modify(context);
         }

@@ -70,6 +70,10 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
     private static final String JDK_13 = "1.3";     //NOI18N
     private static final String JDK_14 = "1.4";     //NOI18N
     private static final String JDK_15 = "1.5";     //NOI18N
+    private static final String JDK_16 = "1.6";     //NOI18N
+    private static final String JDK_17 = "1.7";     //NOI18N
+    private static final String JDK_18 = "1.8";     //NOI18N
+    private static final String JDK_9  = "9";       //NOI18N
     private static final String JDK_UNKNOWN = "";   //NOI18N
     private static final String CLASS = "class";    //NOI18N
     private static final int CF_MAGIC = 0xCAFEBABE;
@@ -79,7 +83,11 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
     private static final int CF_13 = 0x2f;
     private static final int CF_14 = 0x30;
     private static final int CF_15 = 0x31;
-    
+    private static final int CF_16 = 0x32;
+    private static final int CF_17 = 0x33;
+    private static final int CF_18 = 0x34;
+    private static final int CF_19 = 0x35;
+
     //Cache for source level
     private Map<Library,String> sourceLevelCache = new WeakHashMap<Library,String>();
     
@@ -131,19 +139,27 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
             return JDK_UNKNOWN;
         }
         int version = getClassFileMajorVersion (classFile);
-        if (version == CF_11 || version == CF_12) {
-            return JDK_12;
+        switch (version) {
+            case CF_11:
+            case CF_12:
+                return JDK_12;
+            case CF_13:
+                return JDK_13;
+            case CF_14:
+                return JDK_14;
+            case CF_15:
+                return JDK_15;
+            case CF_16:
+                return JDK_16;
+            case CF_17:
+                return JDK_17;
+            case CF_18:
+                return JDK_18;
+            case CF_19:
+                return JDK_9;
+            default:
+                return JDK_UNKNOWN;
         }
-        else if (version == CF_13) {
-            return JDK_13;
-        }
-        else if (version == CF_14) {
-            return JDK_14;
-        }
-        else if (version >= CF_15) {
-            return JDK_15;
-        }        
-        return JDK_UNKNOWN;
     }
     
     private FileObject getClassFile (List cpRoots) {

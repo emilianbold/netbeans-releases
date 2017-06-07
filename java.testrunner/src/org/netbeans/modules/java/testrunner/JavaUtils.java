@@ -241,7 +241,7 @@ public final class JavaUtils {
                         hint = rootProvider.getProjectTestsHint();
                     }
                 }
-                final SourceGroup grp = SourceGroupModifier.createSourceGroup(owner, type, hint);
+                final SourceGroup grp = SourceGroupModifier.createAssociatedSourceGroup(owner, findSourceGroup(fileObject), type, hint);
                 if (grp != null) {
                     createdSourceRoots.add(grp);
                     targetFolders = CommonTestUtil.getTestTargets(fileObject);

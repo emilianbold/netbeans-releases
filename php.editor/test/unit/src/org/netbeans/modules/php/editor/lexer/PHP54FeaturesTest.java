@@ -116,4 +116,13 @@ public class PHP54FeaturesTest extends PHPLexerTestBase {
     public void testBinaryNotation_04() throws Exception {
         performTest("lexer/binaryNotation_04");
     }
+
+    // #268496
+    public void testCallableKeyword() throws Exception {
+        performTest("lexer/callableKeyword");
+    }
+
+    public void testTraitConst() throws Exception {
+        performTest("lexer/traitConst");
+    }
 }

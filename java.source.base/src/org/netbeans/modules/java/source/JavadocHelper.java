@@ -339,6 +339,18 @@ public class JavadocHelper {
         public List<? extends URL> getLocations() {
             return urls;
         }
+        
+        @CheckForNull
+        public URL getDocRoot() {
+            try {
+                if (jdocRoot != null) {
+                    return jdocRoot.toURL();
+                }
+            } catch (MalformedURLException ex) {
+            }
+            return null;
+        }
+
         /**
          * Close any preopened stream without reading it.
          */

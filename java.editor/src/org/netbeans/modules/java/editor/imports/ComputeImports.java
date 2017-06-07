@@ -46,6 +46,7 @@ package org.netbeans.modules.java.editor.imports;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -78,6 +79,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -201,11 +203,13 @@ public final class ComputeImports {
     }
     
     Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(Set<String> forcedUnresolved) {
-        TreeVisitorImpl v = new TreeVisitorImpl(info);
-
+        final CompilationUnitTree cut = info.getCompilationUnit();
+        Element el = info.getTrees().getElement(new TreePath(cut));
+        ModuleElement modle = el != null ? info.getElements().getModuleOf(el) : null;
+        final TreeVisitorImpl v = new TreeVisitorImpl(info);
         setVisitor(v);
         try {
-            v.scan(info.getCompilationUnit(), new HashMap<String, Object>());
+            v.scan(cut, new HashMap<String, Object>());
         } finally {
             setVisitor(null);
         }
@@ -230,7 +234,7 @@ public final class ComputeImports {
                 if (isCancelled())
                     return null;
 
-                TypeElement te = info.getElements().getTypeElement(typeName.getQualifiedName());
+                TypeElement te = modle != null ? info.getElements().getTypeElement(modle, typeName.getQualifiedName()) : info.getElements().getTypeElement(typeName.getQualifiedName());
                 
                 if (te == null) {
                     Logger.getLogger(ComputeImports.class.getName()).log(Level.INFO, "Cannot resolve type element \"" + typeName + "\".");

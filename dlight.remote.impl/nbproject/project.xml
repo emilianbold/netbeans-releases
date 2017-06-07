@@ -58,7 +58,7 @@ Contributor(s):
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.19</specification-version>
+                        <specification-version>1.37.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

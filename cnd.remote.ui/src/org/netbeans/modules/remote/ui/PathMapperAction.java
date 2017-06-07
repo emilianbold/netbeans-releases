@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.PathMapperAction", category = "NativeRemote")
-@ActionRegistration(displayName = "RemoveHostMenuItem")
+@ActionRegistration(displayName = "#PathMapperMenuItem", lazy = false)
 @ActionReference(path = "Remote/Host/Actions", name = "PathMapperAction", position = 550)
 public class PathMapperAction extends SingleHostAction {
 

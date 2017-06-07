@@ -75,6 +75,7 @@ public class SessionId {
     private String id;
     private final FileObject sessionFileObject;
     private final Project sessionProject;
+    private volatile boolean isCanceled = false;
 
     public SessionId(FileObject fileObject, Project project) {
         id = getSessionPrefix();
@@ -107,6 +108,9 @@ public class SessionId {
     public synchronized boolean isInitialized(boolean waitForInitialization) {
         boolean isInitialized = uriMapper != null;
         while (!isInitialized && waitForInitialization) {
+            if (isCanceled) {
+                break;
+            }
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -175,4 +179,7 @@ public class SessionId {
         return PhpOptions.getInstance().getDebuggerSessionId();
     }
 
+    void cancel() {
+        isCanceled = true;
+    }
 }

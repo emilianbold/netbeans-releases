@@ -183,6 +183,11 @@ public final class EditorCaret implements Caret {
     // -J-Dorg.netbeans.api.editor.caret.EditorCaret.blinkRate=800 - Force overrride of a default caret blink rate
     static final Integer overrideCaretBlinkRate = Integer.getInteger("org.netbeans.api.editor.caret.EditorCaret.blinkRate");
     
+    /**
+     * D&D can be turned off in the editor by -J-Dorg.netbeans.editor.dnd.disabled=true
+     */
+    private static final boolean dndDisabled = Boolean.getBoolean("org.netbeans.editor.dnd.disabled");
+    
     static final long serialVersionUID = 0L;
     
     static {
@@ -1643,13 +1648,18 @@ public final class EditorCaret implements Caret {
                                 caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
+                        boolean updateDispatched = false;
                         if (activeTransaction.isDotOrStructuralChange()) {
                             if (!inAtomicSectionL) {
                                 // For now clear the lists and use old way TODO update to selective updating and rendering
                                 fireStateChanged(activeTransaction.getOrigin());
                                 dispatchUpdate(false);
+                                updateDispatched = true;
                                 resetBlink();
                             }
+                        }
+                        if (activeTransaction.isScrollToLastCaret() && !updateDispatched) {
+                            dispatchUpdate(false);
                         }
                         return diffCount;
                     } finally {
@@ -2637,7 +2647,8 @@ public final class EditorCaret implements Caret {
             // but that would break existing tests like TypingCompletionUnitTest wihch expects
             // that even typing modifications do not influence the caret position (not only the non-typing ones).
             boolean typingModification = DocumentUtilities.isTypingModification(evt.getDocument());
-            scrollToLastCaret |= typingModification;
+            JTextComponent c = component;
+            scrollToLastCaret |= typingModification && (c != null && c.hasFocus());
 
             if (!implicitSetDot(evt, setDotOffset)) {
                 // Ensure that a valid atomicSectionImplicitSetDotOffset value
@@ -2706,19 +2717,19 @@ public final class EditorCaret implements Caret {
                 LOG.fine("EditorCaret.mousePressed: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
             }
 
-            JTextComponent c = component;
-            AbstractDocument doc = activeDoc;
+            final JTextComponent c = component;
+            final AbstractDocument doc = activeDoc;
             if (c != null && doc != null && isLeftMouseButtonExt(evt)) {
                 doc.readLock();
                 try {
                     // Expand fold if offset is in collapsed fold
-                    int offset = mouse2Offset(evt);
+                    final int offset = mouse2Offset(evt);
                     switch (evt.getClickCount()) {
                         case 1: // Single press
                             if (c.isEnabled() && !c.hasFocus()) {
                                 c.requestFocus();
                             }
-                            c.setDragEnabled(true);
+                            c.setDragEnabled(!dndDisabled);
                             // Check Add Caret: Cmd+Shift+Click on Mac or Ctrl+Shift+Click on other platforms
                             if ((org.openide.util.Utilities.isMac() ? evt.isMetaDown() : evt.isControlDown()) &&
                                 evt.isShiftDown())
@@ -2741,7 +2752,7 @@ public final class EditorCaret implements Caret {
                                 mouseState = MouseState.CHAR_SELECTION;
                             } else // Regular press
                             // check whether selection drag is possible
-                            if (isDragPossible(evt) && mapDragOperationFromModifiers(evt) != TransferHandler.NONE) {
+                            if (!dndDisabled && isDragPossible(evt) && mapDragOperationFromModifiers(evt) != TransferHandler.NONE) {
                                 mouseState = MouseState.DRAG_SELECTION_POSSIBLE;
                             } else { // Drag not possible
                                 mouseState = MouseState.CHAR_SELECTION;
@@ -2761,9 +2772,56 @@ public final class EditorCaret implements Caret {
                                     foldExpanded = caretFoldExpander.checkExpandFold(c, evt.getPoint());
                                 }
                                 if (!foldExpanded) {
-                                    if (evt.isControlDown() && evt.isShiftDown()) {
-                                        // "Add multicaret" mode only with single click
+                                    if ((org.openide.util.Utilities.isMac() ? evt.isMetaDown() : evt.isControlDown()) && evt.isShiftDown())
+                                    {
                                         mouseState = MouseState.DEFAULT;
+                                        // Check if there's an existing caret at pos (created in single-click handler) and possibly select a word.
+                                        // TBD: Possible unselecting of an existing word.
+                                        final CaretItem[][] updatedCaretsRef = new CaretItem[1][];
+                                        moveCarets(new CaretMoveHandler() {
+                                            @Override
+                                            public void moveCarets(CaretMoveContext context) {
+                                                List<CaretInfo> sortedCarets = context.getOriginalSortedCarets();
+                                                int sortedCaretsSize = sortedCarets.size();
+                                                LineDocument lineDoc = LineDocumentUtils.asRequired(c.getDocument(), LineDocument.class);
+                                                for (int i = 0; i < sortedCaretsSize; i++) {
+                                                    CaretInfo caretInfo = sortedCarets.get(i);
+                                                    int dot = caretInfo.getDot();
+                                                    int mark = caretInfo.getMark();
+                                                    if (dot == offset && mark == offset) { // Fresh caret added in single-click handler
+                                                        try {
+                                                            int wordStartOffset = LineDocumentUtils.getWordStart(lineDoc, offset);
+                                                            int wordEndOffset = LineDocumentUtils.getWordEnd(lineDoc, offset);
+                                                            Position wordStartPos = doc.createPosition(wordStartOffset);
+                                                            Position wordEndPos = doc.createPosition(wordEndOffset);
+                                                            context.setDotAndMark(caretInfo, wordEndPos, Position.Bias.Forward, wordStartPos, Position.Bias.Forward);
+                                                            minSelectionStartOffset = wordStartOffset;
+                                                            minSelectionEndOffset = wordEndOffset;
+                                                        } catch (BadLocationException ex) {
+                                                            // Do nothing
+                                                        }
+                                                        break;
+                                                    } else if ((dot <= offset && offset <= mark) || (mark <= offset && offset <= dot)) {
+                                                        if (sortedCaretsSize > 1) {
+                                                            // Remove caret
+                                                            CaretItem[] updatedCarets = new CaretItem[sortedCaretsSize - 1];
+                                                            for (int j = 0; j < i; j++) {
+                                                                updatedCarets[j] = sortedCarets.get(j).getCaretItem();
+                                                            }
+                                                            for (int j = i + 1, k = i; j < sortedCaretsSize; j++) {
+                                                                updatedCarets[k++] = sortedCarets.get(j).getCaretItem();
+                                                            }
+                                                            updatedCaretsRef[0] = updatedCarets;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                        if (updatedCaretsRef[0] != null) {
+                                            runTransaction(CaretTransaction.RemoveType.REMOVE_ALL_CARETS, 0, updatedCaretsRef[0], null);
+                                        }
+
                                     } else {
                                         if (selectWordAction == null) {
                                             selectWordAction = EditorActionUtilities.getAction(

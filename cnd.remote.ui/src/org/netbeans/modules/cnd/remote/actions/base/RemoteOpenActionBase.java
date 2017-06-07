@@ -78,13 +78,13 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
     @Override
     public JComponent[] getMenuPresenters() {
         initPerformer();
-        return ((DynamicMenuContent)peformer).getMenuPresenters();
+        return ((DynamicMenuContent)getPerformer()).getMenuPresenters();
     }
 
     @Override
     public JComponent[] synchMenuPresenters(JComponent[] jcs) {
         initPerformer();
-        return ((DynamicMenuContent)peformer).synchMenuPresenters(jcs);
+        return ((DynamicMenuContent)getPerformer()).synchMenuPresenters(jcs);
     }
     
     @Override
@@ -116,6 +116,13 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
         return lastToolbarPresenter;
     }
 
+    private ActionListener getPerformer() {
+        if (peformer == null) {
+            initPerformer();
+        }
+        return peformer;
+    }
+
     private void initPerformer() {
         assert SwingUtilities.isEventDispatchThread();
         if (peformer == null) {
@@ -140,10 +147,10 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
             if (env == null) {
                 ServerListUI.showServerListDialog();
             } else {
-                peformer.actionPerformed(e);
+                getPerformer().actionPerformed(e);
             }
         } else {
-            peformer.actionPerformed(e);
+            getPerformer().actionPerformed(e);
         }
     }
 

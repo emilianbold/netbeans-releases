@@ -52,6 +52,13 @@ Contributor(s):
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.dbx.support</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -147,6 +154,13 @@ Contributor(s):
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>3.0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.debugger.dbx</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

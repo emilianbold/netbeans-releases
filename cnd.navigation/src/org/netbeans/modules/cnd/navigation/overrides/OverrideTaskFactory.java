@@ -236,7 +236,7 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
         }
     }
 
-    @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1300)
+    @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=2000)
     public static final class OverrideOptions extends NamedOption {
         private static final String NAME = "overrides-annotations"; //NOI18N
 

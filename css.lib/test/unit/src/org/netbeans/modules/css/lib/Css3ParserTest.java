@@ -1426,4 +1426,10 @@ public class Css3ParserTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
+    
+    public void testClassNameStartingWithNumber() {
+        assertParses(".5hallo {\n"
+                + "	color: #ff3366;\n"
+                + "}");
+    }
 }

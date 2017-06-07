@@ -49,7 +49,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -72,7 +71,7 @@ public class BuildActionListener implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         Logger.getLogger(BuildActionListener.class.getName()).log(Level.INFO, "Building {0}", fo.getPath());
         BuildImageWizard wizard = new BuildImageWizard();
-        wizard.setDockerfile(FileUtil.toFile(fo));
+        wizard.setDockerfile(fo);
         wizard.show();
     }
 

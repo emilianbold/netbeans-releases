@@ -75,14 +75,15 @@ final class SelectionModel {
         };
     }
 
-    void add( SelectionList sl ) {
+    boolean add( SelectionList sl ) {
         synchronized( lists ) {
             if( lists.contains( sl ) )
-                return;
+                return false;
             boolean hasSelection = null != getSelectedItem();
             lists.add( sl );
             if( hasSelection )
                 sl.clearSelection();
+            boolean res = false;
             if( null != initialSelection ) {
                 ListModel<ListNode> model = sl.getModel();
                 for( int i=0; i<model.getSize(); i++ ) {
@@ -90,11 +91,13 @@ final class SelectionModel {
                         sl.setSelectedValue( initialSelection, true );
                         initialSelection = null;
                         currentSelection = initialSelection;
+                        res = true;
                         break;
                     }
                 }
             }
             sl.getSelectionModel().addListSelectionListener( selectionListener );
+            return res;
         }
     }
 
@@ -187,6 +190,10 @@ final class SelectionModel {
 
             initialSelection = selNode;
         }
+    }
+
+    ListNode getInitialSelection() {
+        return initialSelection;
     }
 
     private boolean ignoreSelectionEvents = false;

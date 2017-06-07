@@ -62,6 +62,15 @@ public interface FontColorProvider {
         SYSTEM_MACRO("cc-highlighting-macros-system"), // NOI18N
         //Macro Defined in Project (in comand line -D)
         USER_MACRO("cc-highlighting-macros-user"), // NOI18N
+        // enum
+        ENUM("cc-highlighting-enum"), // NOI18N
+        ENUM_USAGE("cc-highlighting-enum-usage"), // NOI18N
+        // enumerator
+        ENUMERATOR("cc-highlighting-enumerator"), // NOI18N
+        ENUMERATOR_USAGE("cc-highlighting-enumerator-usage"), // NOI18N
+        // class
+        CLASS("cc-highlighting-class"), // NOI18N
+        CLASS_USAGE("cc-highlighting-class-usage"), // NOI18N
         //function
         FUNCTION("cc-highlighting-function"), // NOI18N
         FUNCTION_USAGE("cc-highlighting-function-usage"), // NOI18N

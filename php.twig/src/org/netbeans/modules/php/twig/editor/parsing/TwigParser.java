@@ -111,6 +111,9 @@ public class TwigParser extends Parser {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme) throws ParseException {
         result = new TwigParserResult(snapshot);
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
+        if (tokenHierarchy == null) {
+            return;
+        }
         LanguagePath twigPath = null;
         for (LanguagePath path : tokenHierarchy.languagePaths()) {
             if (path.mimePath().endsWith(TwigBlockTokenId.language().mimeType())) {
@@ -177,6 +180,9 @@ public class TwigParser extends Parser {
                                 do {
 
                                     moved = sequence.moveNext();
+                                    if (!moved) { // #247434
+                                        break;
+                                    }
                                     token = (Token<TwigBlockTokenId>) sequence.token();
 
                                     if (token.id() == TwigBlockTokenId.T_TWIG_NAME || token.id() == TwigBlockTokenId.T_TWIG_STRING) {

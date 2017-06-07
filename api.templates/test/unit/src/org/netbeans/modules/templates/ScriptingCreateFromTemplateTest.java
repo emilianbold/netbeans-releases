@@ -101,8 +101,12 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         
         Charset targetEnc = FileEncodingQuery.getEncoding(instFO);
         assertNotNull("Template encoding is null", targetEnc);
-        String instText = IndentEngineIntTest.stripNewLines(instFO.asText());
+        String instText = stripNewLines(instFO.asText());
         assertEquals("Encoding in template doesn't match", targetEnc.name(), instText);
+    }
+
+    static String stripNewLines(String str) {
+        return str.replace("\n", "").replace("\r", "");
     }
 
     public void testFreeFileExtension() throws Exception {

@@ -97,7 +97,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public int getCppStandardExternal() {
         switch(getCppStandard().getValue()) {
             case STANDARD_DEFAULT: return LanguageFlavor.DEFAULT.toExternal();
-            case STANDARD_CPP98: return LanguageFlavor.CPP.toExternal();
+            case STANDARD_CPP98: return LanguageFlavor.CPP98.toExternal();
             case STANDARD_CPP11: return LanguageFlavor.CPP11.toExternal();
             case STANDARD_CPP14: return LanguageFlavor.CPP14.toExternal();
             case STANDARD_INHERITED:  return LanguageFlavor.UNKNOWN.toExternal();
@@ -112,7 +112,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public void setCppStandardExternal(int cppStandard) {
         if (cppStandard == LanguageFlavor.DEFAULT.toExternal()) {
             this.cppStandard.setValue(STANDARD_DEFAULT);
-        } else if (cppStandard == LanguageFlavor.CPP.toExternal()) {
+        } else if (cppStandard == LanguageFlavor.CPP98.toExternal()) {
             this.cppStandard.setValue(STANDARD_CPP98);
         } else if (cppStandard == LanguageFlavor.CPP11.toExternal()) {
             this.cppStandard.setValue(STANDARD_CPP11);

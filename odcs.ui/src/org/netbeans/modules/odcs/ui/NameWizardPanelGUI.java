@@ -602,7 +602,7 @@ public class NameWizardPanelGUI extends JPanel {
             usernameLabel.setEnabled(true);
         } else {
             usernameLabel.setText(NbBundle.getMessage(NameWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn")); //NOI18N
-            usernameLabel.setForeground(Color.BLACK);
+            usernameLabel.setForeground(developerServerLabel.getForeground());
             usernameLabel.setEnabled(false);
         }
     }

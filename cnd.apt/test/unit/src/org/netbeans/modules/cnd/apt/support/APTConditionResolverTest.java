@@ -127,8 +127,9 @@ public class APTConditionResolverTest {
         APTFileMacroMap mmap = new APTFileMacroMap(null, Arrays.asList(macroName+"="+maxValue));
         APTMacro macro__INT_MAX__ = mmap.getMacro(APTUtils.createIDENT(CharSequences.create(macroName)));
         assertNotNull(macro__INT_MAX__);
-        TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(src, APTLanguageSupport.GNU_CPP);
-        APTFile apt = APTBuilder.buildAPT(new DummyFileSystem(), "SIZEOF_CHECKER", lexer);
+        APTFile.Kind aptKind = APTFile.Kind.C_CPP;
+        TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(src, aptKind);
+        APTFile apt = APTBuilder.buildAPT(new DummyFileSystem(), "SIZEOF_CHECKER", lexer, aptKind);
         APTWalker walker = new TestWalker(apt, mmap);
         walker.visit();
         assertFalse("failed to evaluate " + testMacro + " for " + macroName + "=" + maxValue, walker.isStopped());
@@ -150,8 +151,9 @@ public class APTConditionResolverTest {
         }
         // #229008 - inaccuracy tests: MySQL project has unresolved includes (#error zzzz)
         APTFileMacroMap mmap = new APTFileMacroMap(null, Collections.<String>emptyList());
-        TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(LONG_VS_UNIT_CHECK_CODE, APTLanguageSupport.GNU_CPP);
-        APTFile apt = APTBuilder.buildAPT(new DummyFileSystem(), "testLongVsUint", lexer);
+        APTFile.Kind aptKind = APTFile.Kind.C_CPP;
+        TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(LONG_VS_UNIT_CHECK_CODE, aptKind);
+        APTFile apt = APTBuilder.buildAPT(new DummyFileSystem(), "testLongVsUint", lexer, aptKind);
         APTWalker walker = new TestWalker(apt, mmap);
         walker.visit();
         assertFalse("failed to evaluate " + LONG_VS_UNIT_CHECK_CODE, walker.isStopped());

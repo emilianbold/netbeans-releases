@@ -262,7 +262,12 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             if (conf.isMakefileConfiguration() && !CompileConfiguration.AUTO_COMPILE.equals(conf.getCompileConfiguration().getCompileCommand().getValue())) {
                 commandLine = pae.getRunCommandAsString();
             }
-
+            
+            Map lookup = pae.getContext().lookup(Map.class);
+            if (lookup != null && lookup.containsKey("UseCommandLine")) { // NOI18N
+                commandLine = pae.getRunCommandAsString();
+            }
+            
             // See bug #228730
             if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows() 
                     && CompilerSetUtils.isMsysBased(cs)) {

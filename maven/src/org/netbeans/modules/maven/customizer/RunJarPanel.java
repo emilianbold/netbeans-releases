@@ -100,7 +100,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private boolean isCurrentProfile = true;
     private static final String RUN_PARAMS = "exec.args"; //NOI18N
     private static final String RUN_WORKDIR = "exec.workingdir"; //NOI18N
-    private static final String DEFAULT_DEBUG_PARAMS = "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
+    private static final String DEFAULT_DEBUG_PARAMS = "-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
     private static final String PROFILE_CMD = "profile"; // NOI18N
     
     private ModelHandle2 handle;
@@ -201,6 +201,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         txtWorkDir.getDocument().removeDocumentListener(docListener);
     }
     
+    @NbBundle.Messages({"MsgModifiedAction=One of Run/Debug/Profile Project actions has been modified and the Run panel cannot be safely edited"})
     private void initValues() {
         run = null;
         debug = null;
@@ -267,6 +268,8 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             txtWorkDir.setEnabled(true);
             btnWorkDir.setEnabled(true);
             category.setErrorMessage(null);
+            customizeOptionsButton.setEnabled(true);
+            wrapCheckBox.setEnabled(true);
         } else {
             txtMainClass.setEnabled(false);
             txtArguments.setEnabled(false);
@@ -274,7 +277,9 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             txtWorkDir.setEnabled(false);
             btnWorkDir.setEnabled(false);
             btnMainClass.setEnabled(false);
-            category.setErrorMessage("One of Run/Debug/Profile Project actions has been modified and the Run panel cannot be safely edited");
+            customizeOptionsButton.setEnabled(false);
+            wrapCheckBox.setEnabled(false);
+            category.setErrorMessage(Bundle.MsgModifiedAction());
         }
         
         if (oldMainClass == null) {

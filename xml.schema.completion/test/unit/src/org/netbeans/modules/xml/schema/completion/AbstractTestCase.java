@@ -50,15 +50,16 @@ import junit.framework.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Samaresh
  */
-public abstract class AbstractTestCase extends TestCase {
+public abstract class AbstractTestCase extends NbTestCase {
     
     protected String instanceResourcePath;
     protected FileObject instanceFileObject;
@@ -71,6 +72,7 @@ public abstract class AbstractTestCase extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
+        
     }
 
     @Override
@@ -97,7 +99,7 @@ public abstract class AbstractTestCase extends TestCase {
         this.instanceResourcePath = path;
         this.instanceFileObject = Util.getResourceAsFileObject(path);
         this.instanceDocument = Util.getResourceAsDocument(path);
-        this.support = ((XMLSyntaxSupport)instanceDocument.getSyntaxSupport());
+        this.support = XMLSyntaxSupport.getSyntaxSupport(instanceDocument);
         if(content != null) {
             instanceDocument.remove(0, instanceDocument.getLength());
             instanceDocument.insertString(0, content.toString(), null);

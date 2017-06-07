@@ -138,7 +138,8 @@ class NbRemoteLoader extends RemoteClassLoader {
         
         return new CompoundEnumeration<URL>(new Enumeration[] {
                 origResources,
-                deleResources
+                deleResources,
+                super.findResources(name)
         });
     }
 

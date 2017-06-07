@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -201,6 +202,9 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
                     // e.g. CONSTANT[0][1]
                     createError(node);
                 }
+            } else if (expression instanceof NamespaceName) {
+                // \CONSTANT[0], namespace\CONSTANT[0]
+                createError(node);
             }
             scan(node.getDimension());
         }

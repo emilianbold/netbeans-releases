@@ -48,12 +48,12 @@ import java.io.File;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -67,7 +67,6 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -78,6 +77,8 @@ import org.openide.util.WeakListeners;
  */
 @ProjectServiceProvider(service=SourceLevelQueryImplementation2.class, projectType="org-netbeans-modules-maven")
 public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
+    
+    private static final Logger LOGGER = Logger.getLogger(MavenSourceLevelImpl.class.getName());
     
     static final Pattern PROFILE = Pattern.compile("-profile (compact1|compact2|compact3){1}?");
     private final Project project;
@@ -247,6 +248,9 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
                 if (cachedLevel == null) {
                     cachedLevel = getSourceLevelString(javaFile);
                 }
+                if(LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "MavenSourceLevelQuery: {0} level {1}", new Object[] {javaFile.getPath(), cachedLevel}); // NOI18N
+                }
                 return cachedLevel;
             }
         }
@@ -269,6 +273,9 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
                     cachedLevel = null;
                     cachedProfile = null;
                 }
+                if(LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "MavenSourceLevelQuery: {0} fire change", javaFile.getPath()); // NOI18N
+                }
                 cs.fireChange();
             }
         }
@@ -278,6 +285,9 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
             synchronized (CACHE_LOCK) {
                 if (cachedProfile == null) {
                     cachedProfile = getSourceProfile(javaFile);
+                }
+                if(LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "MavenSourceLevelQuery: {0} profile {1}", new Object[] {javaFile.getPath(), cachedProfile});
                 }
                 return cachedProfile;
             }

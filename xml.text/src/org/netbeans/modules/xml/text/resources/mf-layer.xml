@@ -283,7 +283,7 @@ made subject to such option by the copyright holder.
                 
             </folder> <!-- xml-external-parsed-entity -->
         </folder> <!-- text -->
-
+        
         <folder name="application">
             <folder name="xml-dtd">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>

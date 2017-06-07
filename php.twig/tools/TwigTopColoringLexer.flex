@@ -82,6 +82,7 @@ import org.netbeans.modules.web.common.api.ByteStack;
     private Lexing lexing;
     private boolean probablyInDString;
     private boolean probablyInSString;
+    private int curlyBalance;
 
     public TwigTopColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
@@ -91,11 +92,13 @@ import org.netbeans.modules.web.common.api.ByteStack;
             this.lexing = ((LexerState) info.state()).lexing;
             probablyInDString = ((LexerState) info.state()).probablyInDString;
             probablyInSString = ((LexerState) info.state()).probablyInSString;
+            curlyBalance = ((LexerState) info.state()).curlyBalance;
         } else {
             zzState = zzLexicalState = YYINITIAL;
             this.lexing = Lexing.NORMAL;
             probablyInDString = false;
             probablyInSString = false;
+            curlyBalance = 0;
             stack.clear();
         }
 
@@ -116,30 +119,36 @@ import org.netbeans.modules.web.common.api.ByteStack;
         private final Lexing lexing;
         private final boolean probablyInDString;
         private final boolean probablyInSString;
+        private final int curlyBalance;
 
-        LexerState(ByteStack stack, int zzState, int zzLexicalState, Lexing lexing, boolean probablyInDString, boolean probablyInSString) {
+        LexerState(ByteStack stack, int zzState, int zzLexicalState, Lexing lexing, boolean probablyInDString, boolean probablyInSString, int curlyBalance) {
             this.stack = stack;
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.lexing = lexing;
             this.probablyInDString = probablyInDString;
             this.probablyInSString = probablyInSString;
+            this.curlyBalance = curlyBalance;
         }
 
         @Override
         public int hashCode() {
-            int hash = 7;
-            hash = 71 * hash + Objects.hashCode(this.stack);
-            hash = 71 * hash + this.zzState;
-            hash = 71 * hash + this.zzLexicalState;
-            hash = 71 * hash + Objects.hashCode(this.lexing);
-            hash = 71 * hash + (this.probablyInDString ? 1 : 0);
-            hash = 71 * hash + (this.probablyInSString ? 1 : 0);
+            int hash = 3;
+            hash = 17 * hash + Objects.hashCode(this.stack);
+            hash = 17 * hash + this.zzState;
+            hash = 17 * hash + this.zzLexicalState;
+            hash = 17 * hash + Objects.hashCode(this.lexing);
+            hash = 17 * hash + (this.probablyInDString ? 1 : 0);
+            hash = 17 * hash + (this.probablyInSString ? 1 : 0);
+            hash = 17 * hash + this.curlyBalance;
             return hash;
         }
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (obj == null) {
                 return false;
             }
@@ -147,16 +156,10 @@ import org.netbeans.modules.web.common.api.ByteStack;
                 return false;
             }
             final LexerState other = (LexerState) obj;
-            if (!Objects.equals(this.stack, other.stack)) {
-                return false;
-            }
             if (this.zzState != other.zzState) {
                 return false;
             }
             if (this.zzLexicalState != other.zzLexicalState) {
-                return false;
-            }
-            if (this.lexing != other.lexing) {
                 return false;
             }
             if (this.probablyInDString != other.probablyInDString) {
@@ -165,12 +168,21 @@ import org.netbeans.modules.web.common.api.ByteStack;
             if (this.probablyInSString != other.probablyInSString) {
                 return false;
             }
+            if (this.curlyBalance != other.curlyBalance) {
+                return false;
+            }
+            if (!Objects.equals(this.stack, other.stack)) {
+                return false;
+            }
+            if (this.lexing != other.lexing) {
+                return false;
+            }
             return true;
         }
     }
 
     public LexerState getState() {
-        return new LexerState(stack.copyOf(), zzState, zzLexicalState, lexing, probablyInDString, probablyInSString);
+        return new LexerState(stack.copyOf(), zzState, zzLexicalState, lexing, probablyInDString, probablyInSString, curlyBalance);
     }
 
     public void setState(LexerState state) {
@@ -180,6 +192,7 @@ import org.netbeans.modules.web.common.api.ByteStack;
         this.lexing = state.lexing;
         this.probablyInDString = state.probablyInDString;
         this.probablyInSString = state.probablyInSString;
+        this.curlyBalance = state.curlyBalance;
     }
 
     protected int getZZLexicalState() {
@@ -213,6 +226,9 @@ COMMENT_START="{#"
 COMMENT_END=([^#] | #[^}])*"#}"
 D_STRING_DELIM=\"
 S_STRING_DELIM='
+PRECEDED_STRING="\\\'"|"\\\""|"\\\\"
+OPEN_CURLY="{"
+CLOSE_CURLY="}"
 
 %state ST_RAW_START
 %state ST_RAW_END
@@ -282,6 +298,7 @@ S_STRING_DELIM='
                 return TwigTopTokenId.T_HTML;
             }
             pushState(ST_VAR);
+            curlyBalance = 0;
             return TwigTopTokenId.T_TWIG_VAR_START;
         }
     }
@@ -363,6 +380,8 @@ S_STRING_DELIM='
 }
 
 <ST_VAR> {
+    {PRECEDED_STRING} {
+    }
     {D_STRING_DELIM} {
         if (!probablyInSString) {
             probablyInDString = !probablyInDString;
@@ -373,14 +392,49 @@ S_STRING_DELIM='
             probablyInSString = !probablyInSString;
         }
     }
+    {OPEN_CURLY} {
+        if (!probablyInDString && !probablyInSString) {
+            curlyBalance++;
+        }
+    }
+    {CLOSE_CURLY} {
+        if (!probablyInDString && !probablyInSString) {
+            curlyBalance--;
+        }
+    }
+    "}}}" { // {{{}}}
+        if (!probablyInDString && !probablyInSString) {
+            if (curlyBalance >= 0 && curlyBalance <= 2) {
+                curlyBalance--;
+                yypushback(2);
+            } else {
+                curlyBalance -= 3;
+            }
+        }
+    }
     {VAR_END} {
         if (!probablyInDString && !probablyInSString) {
             if (yylength() > 2) {
-                yypushback(2);
-                return TwigTopTokenId.T_TWIG_VAR;
+                if (curlyBalance == 0 || curlyBalance == 1) {
+                    if (zzInput == YYEOF) {
+                        yypushback(3);
+                    } else {
+                        yypushback(2);
+                    }
+                    return TwigTopTokenId.T_TWIG_VAR;
+                }
             }
-            popState();
-            return TwigTopTokenId.T_TWIG_VAR_END;
+            if (curlyBalance == 0) {
+                popState();
+                return TwigTopTokenId.T_TWIG_VAR_END;
+            } else if (curlyBalance == 1) {
+                // missing closing curly "}"
+                popState();
+                curlyBalance = 0;
+                return TwigTopTokenId.T_TWIG_VAR_END;
+            } else {
+                curlyBalance -= 2;
+            }
         }
     }
     . {}

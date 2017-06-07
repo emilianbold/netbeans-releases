@@ -101,7 +101,7 @@ public class TestKit {
         SVNUrl repoUrl;
         if(!repoDir.exists()) {
             VCSFileProxySupport.mkdirs(repoDir);
-            ProcessUtils.ExitStatus status = ProcessUtils.executeInDir(repoDir.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(repoDir),
+            ProcessUtils.ExitStatus status = ProcessUtils.executeInDir(repoDir.getPath(), null, false, new ProcessUtils.Canceler(), repoDir,
                     "svnadmin", "create", repoDir.getPath());
         } else {
             repoUrl = new SVNUrl(TestUtilities.formatFileURL(repoDir));

@@ -355,8 +355,8 @@ public final class Model {
         }
             
         boolean hasOuter = with.getOuterWith() != null;
-        Collection<? extends JsObject> variables = ModelUtils.getVariables(ModelUtils.getDeclarationScope(with));
         List<JsObject> withProperties = new ArrayList(with.getProperties().values());
+        DeclarationScope withDS = ModelUtils.getDeclarationScope(with);
         for (JsObject jsWithProperty : withProperties) {
             if (!(jsWithProperty instanceof JsWith)) {
                 String name = jsWithProperty.getName();
@@ -366,12 +366,10 @@ public final class Model {
                     moveProperty(with.getOuterWith(), jsWithProperty);
                     moved = true;
                 } else {
-                    for (JsObject variable : variables) {
-                        if (variable.getParent() != null && variable.getName().equals(name)) {
-                            moveProperty(variable.getParent(), jsWithProperty);
-                            moved = true;
-                            break;
-                        }
+                    JsObject variable = ModelUtils.getScopeVariable(withDS, name);
+                    if (variable != null  && variable.getParent() != null) {
+                        moveProperty(variable.getParent(), jsWithProperty);
+                        moved = true;
                     }
                 }
                 if (!moved) {

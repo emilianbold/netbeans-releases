@@ -65,11 +65,18 @@ final class EstimatorFactory {
         return new PositionEstimator.ThrowsEstimator(oldL, newL, diffContext);
     }
     
-    static PositionEstimator exportsTo(List<? extends ExpressionTree> oldL, 
+    static PositionEstimator exportsOpensTo(List<? extends ExpressionTree> oldL, 
                                     List<? extends ExpressionTree> newL,
                                     DiffContext diffContext)
     {
-        return new PositionEstimator.ExportsToEstimator(oldL, newL, diffContext);
+        return new PositionEstimator.ExportsOpensToEstimator(oldL, newL, diffContext);
+    }
+    
+    static PositionEstimator providesWith(List<? extends ExpressionTree> oldL, 
+                                    List<? extends ExpressionTree> newL,
+                                    DiffContext diffContext)
+    {
+        return new PositionEstimator.ProvidesWithEstimator(oldL, newL, diffContext);
     }
     
     static PositionEstimator implementz(List<? extends Tree> oldL, 

@@ -112,6 +112,7 @@ public final class ClasspathInfo {
     }
 
     private final ClassPath srcClassPath;
+    private final ClassPath moduleSrcPath;
     private final ClassPath bootClassPath;
     private final ClassPath moduleBootPath;
     private final ClassPath compileClassPath;
@@ -146,6 +147,7 @@ public final class ClasspathInfo {
                           final @NonNull ClassPath moduleCompileP,
                           final @NonNull ClassPath moduleClassP,
                           final @NullAllowed ClassPath srcCp,
+                          final @NullAllowed ClassPath moduleSrcCp,
                           final @NullAllowed JavaFileFilterImplementation filter,
                           final boolean backgroundCompilation,
                           final boolean ignoreExcludes,
@@ -169,7 +171,7 @@ public final class ClasspathInfo {
             this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
             this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         }
-        if (srcCp == null) {
+        if (srcCp == null || srcCp == ClassPath.EMPTY) {
             this.cachedSrcClassPath = this.srcClassPath = this.outputClassPath = this.cachedAptSrcClassPath = ClassPath.EMPTY;
         } else {
             this.srcClassPath = srcCp;
@@ -181,6 +183,11 @@ public final class ClasspathInfo {
             if (!backgroundCompilation) {
                 this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
             }
+        }
+        if (moduleSrcCp == null) {
+            this.moduleSrcPath = ClassPath.EMPTY;
+        } else {
+            this.moduleSrcPath = moduleSrcCp;
         }
         this.ignoreExcludes = ignoreExcludes;
         this.useModifiedFiles = useModifiedFiles;
@@ -399,6 +406,7 @@ public final class ClasspathInfo {
                     moduleCompilePath,
                     moduleClassPath,
                     sourcePath,
+                    moduleSourcePath,
                     null,
                     false,
                     false,
@@ -423,7 +431,7 @@ public final class ClasspathInfo {
         }
         ClassPath moduleBootPath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_BOOT_PATH);
         if (moduleBootPath == null) {
-            moduleBootPath = bootPath;
+            moduleBootPath = ClassPath.EMPTY;
         }
         ClassPath compilePath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         if (compilePath == null) {
@@ -438,7 +446,8 @@ public final class ClasspathInfo {
             moduleClassPath = ClassPath.EMPTY;
         }
         ClassPath srcPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        return create (bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, srcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles, null);
+        ClassPath moduleSrcPath = ClassPath.getClassPath(fo, JavaClassPathConstants.MODULE_SOURCE_PATH);
+        return create (bootPath, moduleBootPath, compilePath, moduleCompilePath, moduleClassPath, srcPath, moduleSrcPath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles, null);
     }
 
     @NonNull
@@ -449,13 +458,14 @@ public final class ClasspathInfo {
             @NonNull final ClassPath moduleCompilePath,
             @NonNull final ClassPath moduleClassPath,
             @NullAllowed final ClassPath sourcePath,
+            @NullAllowed final ClassPath moduleSourcePath,
             @NullAllowed final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation,
             final boolean ignoreExcludes,
             final boolean hasMemoryFileManager,
             final boolean useModifiedFiles,
             @NullAllowed final Function<JavaFileManager.Location, JavaFileManager> jfmProvider) {
-        return new ClasspathInfo(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath,
+        return new ClasspathInfo(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath, moduleSourcePath,
                 filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles, jfmProvider);
     }
 
@@ -489,6 +499,8 @@ public final class ClasspathInfo {
 		return this.moduleClassPath;
 	    case SOURCE:
 		return this.srcClassPath;
+	    case MODULE_SOURCE:
+		return this.moduleSrcPath;
 	    default:
 		assert false : "Unknown path type";     //NOI18N
 		return null;
@@ -529,7 +541,7 @@ public final class ClasspathInfo {
     // Package private methods -------------------------------------------------
 
     @NonNull
-    private synchronized JavaFileManager createFileManager() {
+    private synchronized JavaFileManager createFileManager(@NullAllowed final String sourceLevel) {
         final SiblingSource siblings = SiblingSupport.create();
         final ProxyFileManager.Configuration cfg = ProxyFileManager.Configuration.create(
             moduleBootPath,
@@ -537,6 +549,7 @@ public final class ClasspathInfo {
             cachedBootClassPath,
             moduleCompilePath.entries().isEmpty() ? cachedCompileClassPath : cachedModuleClassPath,
             cachedSrcClassPath,
+            moduleSrcPath,
             outputClassPath,
             cachedAptSrcClassPath,
             siblings,
@@ -549,6 +562,7 @@ public final class ClasspathInfo {
         for (Map.Entry<ClassPath,Function<URL,Collection<? extends URL>>> e : peerProviders.entrySet()) {
             cfg.setPeers(e.getKey(), e.getValue());
         }
+        cfg.setSourceLevel(sourceLevel);
         return new ProxyFileManager(cfg);
     }
 
@@ -590,6 +604,7 @@ public final class ClasspathInfo {
         MODULE_COMPILE,
         MODULE_CLASS,
 	SOURCE,
+	MODULE_SOURCE,
 	OUTPUT,
 
     }
@@ -661,8 +676,10 @@ public final class ClasspathInfo {
 
         @Override
         @NonNull
-        public JavaFileManager createFileManager(@NonNull final ClasspathInfo cpInfo) {
-            return cpInfo.createFileManager();
+        public JavaFileManager createFileManager(
+                @NonNull final ClasspathInfo cpInfo,
+                @NullAllowed final String sourceLevel) {
+            return cpInfo.createFileManager(sourceLevel);
         }
 
         @Override
@@ -677,19 +694,21 @@ public final class ClasspathInfo {
         }
 
         @Override
-        public ClasspathInfo create (final ClassPath bootPath,
-                final ClassPath moduleBootPath,
-                final ClassPath classPath,
-                final ClassPath moduleCompilePath,
-                final ClassPath moduleClassPath,
-                final ClassPath sourcePath,
-                final JavaFileFilterImplementation filter,
+        public ClasspathInfo create (
+                @NonNull final ClassPath bootPath,
+                @NonNull final ClassPath moduleBootPath,
+                @NonNull final ClassPath classPath,
+                @NonNull final ClassPath moduleCompilePath,
+                @NonNull final ClassPath moduleClassPath,
+                @NullAllowed final ClassPath sourcePath,
+                @NullAllowed final ClassPath moduleSourcePath,
+                @NullAllowed final JavaFileFilterImplementation filter,
                 final boolean backgroundCompilation,
                 final boolean ignoreExcludes,
                 final boolean hasMemoryFileManager,
                 final boolean useModifiedFiles,
                 @NullAllowed final Function<JavaFileManager.Location, JavaFileManager> jfmProvider) {
-            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles, jfmProvider);
+            return ClasspathInfo.create(bootPath, moduleBootPath, classPath, moduleCompilePath, moduleClassPath, sourcePath, moduleSourcePath, filter, backgroundCompilation, ignoreExcludes, hasMemoryFileManager, useModifiedFiles, jfmProvider);
         }
 
         @Override

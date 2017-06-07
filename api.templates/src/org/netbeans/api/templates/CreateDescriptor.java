@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
  * {@link FileBuilder} and is sent out to
  * {@link CreateFromTemplateAttributes} and {@link CreateFromTemplateHandler} 
  * SPIs as the context for their work.
- * <p/>
+ * <p>
  * The class is not thread-safe. Do not access the descriptor from a thread other
  * than executing the {@link CreateFromTemplateHandler} callbacks.
  * 
@@ -66,7 +66,7 @@ public final class CreateDescriptor {
      * from the template. But if {@link FileBuilder#createFromTemplate(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, java.lang.String, java.util.Map, org.netbeans.api.templates.FileBuilder.Mode)} is called with this
      * parameter set to {@link Boolean#TRUE}
      * and the file name already seems to
-     * include an extension (<samp>*.*</samp>), the handler should not append
+     * include an extension (<code>*.*</code>), the handler should not append
      * any extension from the template.
      * @since org.openide.loaders 7.16
      * @see <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/templates/support/Templates.SimpleTargetChooserBuilder.html#freeFileExtension--"><code>Templates.SimpleTargetChooserBuilder.freeFileExtension</code></a>
@@ -78,7 +78,7 @@ public final class CreateDescriptor {
      * The parameter can be specified as parameter to the template (possibly through layer registration
      * of the template. Value is kept for backwards compatibility, but the attribute does not apply
      * just to java templates.
-     * <p/>
+     * <p>
      * It's responsibility of {@link CreateFromTemplateHandler} to pay attention to this value.
      */
     public static final String PREFORMATTED_TEMPLATE = "org-netbeans-modules-java-preformattedSource"; // NOI18N

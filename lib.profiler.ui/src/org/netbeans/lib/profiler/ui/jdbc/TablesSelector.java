@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -57,10 +56,11 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.lib.profiler.ui.swing.FilteringToolbar;
-import org.netbeans.lib.profiler.ui.swing.ProfilerPopupFactory;
+import org.netbeans.lib.profiler.ui.swing.ProfilerPopup;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.lib.profiler.ui.swing.SmallButton;
@@ -118,16 +118,15 @@ abstract class TablesSelector {
         }
         
         void show(Component invoker) {
-            Dimension panelSize = panel.getPreferredSize();
-            ProfilerPopupFactory.getPopup(invoker, panel, invoker.getWidth() - panelSize.width - 6, -panelSize.height - 6).show();
+            int resizeMode = ProfilerPopup.RESIZE_TOP | ProfilerPopup.RESIZE_LEFT;
+            ProfilerPopup.createRelative(invoker, panel, SwingConstants.NORTH_EAST, resizeMode).show();
         }
         
         private void populatePopup() {
             JPanel content = new JPanel(new BorderLayout());
-            content.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
             
             JLabel hint = new JLabel(SELECT_TABLES, JLabel.LEADING);
-            hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+            hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
             content.add(hint, BorderLayout.NORTH);
 
             final SelectedTablesModel tablesModel = new SelectedTablesModel();
@@ -139,6 +138,7 @@ abstract class TablesSelector {
             tablesTable.setFitWidthColumn(1);
             tablesTable.setDefaultSortOrder(1, SortOrder.ASCENDING);
             tablesTable.setSortColumn(1);
+            tablesTable.setFixedColumnSelection(0); // #268298 - make sure SPACE always hits the Boolean column
             tablesTable.setColumnRenderer(0, new CheckBoxRenderer());
             LabelRenderer projectRenderer = new LabelRenderer();
             tablesTable.setColumnRenderer(1, projectRenderer);
@@ -150,14 +150,17 @@ abstract class TablesSelector {
             Dimension prefSize = new Dimension(w + projectRenderer.getPreferredSize().width, h);
             tablesTable.setPreferredScrollableViewportSize(prefSize);
             ProfilerTableContainer tableContainer = new ProfilerTableContainer(tablesTable, true, null);
-            content.add(tableContainer, BorderLayout.CENTER);
+            JPanel tableContent = new JPanel(new BorderLayout());
+            tableContent.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+            tableContent.add(tableContainer, BorderLayout.CENTER);
+            content.add(tableContent, BorderLayout.CENTER);
 
             JToolBar controls = new FilteringToolbar(FILTER_TABLES) {
-                protected void filterChanged(final String filter) {
-                    if (filter == null) tablesTable.setRowFilter(null);
+                protected void filterChanged() {
+                    if (isAll()) tablesTable.setRowFilter(null);
                     else tablesTable.setRowFilter(new RowFilter() {
                         public boolean include(RowFilter.Entry entry) {
-                            return entry.getStringValue(1).toLowerCase(Locale.ENGLISH).contains(filter.toLowerCase(Locale.ENGLISH));
+                            return passes(entry.getStringValue(1));
                         }
                     });
                 }

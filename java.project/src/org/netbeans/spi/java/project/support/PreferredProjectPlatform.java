@@ -79,7 +79,8 @@ public final  class PreferredProjectPlatform {
         if (platformId != null) {
             for (JavaPlatform jp : jpm.getInstalledPlatforms()) {
                 if (platformId.equals(jp.getProperties().get(PLATFORM_ANT_NAME)) &&
-                    platformType.equals(jp.getSpecification().getName())) {
+                    platformType.equals(jp.getSpecification().getName()) &&
+                    jp.isValid()) {
                     return jp;
                 }
             }

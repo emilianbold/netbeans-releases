@@ -63,6 +63,7 @@ public class CsmHyperlink2Test extends CndBaseTestSuite {
         this.addTestSuite(Cpp11TestCase.class);
         this.addTestSuite(Cpp11TemplatesTestCase.class);
         this.addTestSuite(Cpp11TooltipsTestCase.class);
+        this.addTestSuite(Cpp14TestCase.class);
     }
 
     public static Test suite() {

@@ -44,12 +44,13 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2.actions;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.actions.AttachPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.gdb2.GdbEngineCapabilityProvider;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.AttachPanel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.AttachPanelProvider;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 
@@ -80,7 +81,7 @@ public final class GdbAttachType extends AttachType {
     @Override
     public JComponent getCustomizer() {
         EngineType et = GdbEngineCapabilityProvider.getGdbEngineType();
-        AttachPanel panel = AttachPanel.getInstance(null, null, et);
+        AttachPanel panel = AttachPanelProvider.getAttachPanel(null, null, et);
         customizerRef = new WeakReference<AttachPanel>(panel);
         return panel;
     }

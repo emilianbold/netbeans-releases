@@ -376,4 +376,161 @@ public class CsmStatementResolver {
         }
         return false;        
     }
+    
+    public static <T extends CsmStatement> T findStatement(CsmStatement root, Class<T> stmtClass) {
+        final MutableObject<T> result = new MutableObject<>();
+        walkImpl(root, (stmt) -> {
+            if (stmtClass.isAssignableFrom(stmt.getClass())) {
+                result.value = (T) stmt;
+                return StatementsWalker.Action.STOP;
+            }
+            return StatementsWalker.Action.CONTINUE;
+        });
+        return result.value;
+    }
+
+    private static StatementsWalker.Action walkImpl(CsmStatement stmt, StatementsWalker walker) {
+        if (stmt == null) {
+            return StatementsWalker.Action.CONTINUE;
+        }
+        CsmStatement.Kind kind = stmt.getKind();
+        StatementsWalker.Action act = walker.visit(stmt);
+        if (needStop(act)) {
+            return act;
+        }
+        act = StatementsWalker.Action.CONTINUE;
+        switch (kind) {
+            case COMPOUND:
+                act = walkCompound((CsmCompoundStatement) stmt, walker);
+                break;
+            case IF:
+                act = walkIf((CsmIfStatement) stmt, walker);
+                break;
+            case TRY_CATCH:
+                act = walkTry((CsmTryCatchStatement) stmt, walker);
+                break;
+            case CATCH:
+                act = walkCatch((CsmExceptionHandler) stmt, walker);
+                break;
+            case DECLARATION:
+                act = walkDeclaration((CsmDeclarationStatement) stmt, walker);
+                break;
+            case WHILE:
+            case DO_WHILE:
+                act = walkWhile((CsmLoopStatement) stmt, walker);
+                break;
+            case FOR:
+                act = walkFor((CsmForStatement) stmt, walker);
+                break;
+            case RANGE_FOR:
+                act = walkRange((CsmRangeForStatement) stmt, walker);
+                break;
+            case SWITCH:
+                act = walkSwitch((CsmSwitchStatement) stmt, walker);
+                break;
+            case EXPRESSION:
+            case RETURN:
+            case BREAK:
+            case CASE:
+            case CONTINUE:
+            case DEFAULT:
+            case GOTO:
+            case LABEL:
+                break;
+            default:
+                if (CsmUtilities.DEBUG) {
+                    System.out.println("unexpected statement kind"); //NOI18N
+                }
+                break;
+        }
+        // Stop on 'full stop'
+        if (act == StatementsWalker.Action.STOP) {
+            return act;
+        }
+        // Continue on 'stop branch' or 'continue'
+        return StatementsWalker.Action.CONTINUE;
+    }
+    
+    private static StatementsWalker.Action walkCompound(CsmCompoundStatement stmt, StatementsWalker walker) {
+        if (stmt != null) {
+            for (CsmStatement curSt : stmt.getStatements()) {
+                StatementsWalker.Action act = walkImpl(curSt, walker);
+                if (needStop(act)) {
+                    return act;
+                }
+            }
+        }
+        return StatementsWalker.Action.CONTINUE;
+    }
+
+    private static StatementsWalker.Action walkTry(CsmTryCatchStatement stmt, StatementsWalker walker) {
+        StatementsWalker.Action act = walkImpl(stmt.getTryStatement(), walker);
+        if (needStop(act)) {
+            return act;
+        }
+        for (CsmExceptionHandler handler : stmt.getHandlers()) {
+            act = walkImpl(handler, walker);
+            if (needStop(act)) {
+                return act;
+            }
+        }
+        return StatementsWalker.Action.CONTINUE;
+    }
+
+    private static StatementsWalker.Action walkCatch(CsmExceptionHandler stmt, StatementsWalker walker) {
+        return walkCompound((CsmCompoundStatement) stmt, walker);
+    }
+
+    private static StatementsWalker.Action walkIf(CsmIfStatement stmt, StatementsWalker walker) {
+        StatementsWalker.Action act = walkImpl(stmt.getThen(), walker);
+        if (needStop(act)) {
+            return act;
+        }
+        return walkImpl(stmt.getElse(), walker);
+    }
+
+    private static StatementsWalker.Action walkDeclaration(CsmDeclarationStatement stmt, StatementsWalker walker) {
+        return StatementsWalker.Action.CONTINUE;
+    }
+
+    private static StatementsWalker.Action walkWhile(CsmLoopStatement stmt, StatementsWalker walker) {
+        return walkImpl(stmt.getBody(), walker);
+    }
+
+    private static StatementsWalker.Action walkFor(CsmForStatement stmt, StatementsWalker walker) {
+        StatementsWalker.Action act = walkImpl(stmt.getInitStatement(), walker);
+        if (needStop(act)) {
+            return act;
+        }
+        return walkImpl(stmt.getBody(), walker);
+    }
+
+    private static StatementsWalker.Action walkRange(CsmRangeForStatement stmt, StatementsWalker walker) {
+        StatementsWalker.Action act = walkImpl(stmt.getDeclaration(), walker);
+        if (needStop(act)) {
+            return act;
+        }
+        return walkImpl(stmt.getBody(), walker);
+    }
+    
+    private static StatementsWalker.Action walkSwitch(CsmSwitchStatement stmt, StatementsWalker walker) {
+        return walkImpl(stmt.getBody(), walker);
+    }
+    
+    private static boolean needStop(StatementsWalker.Action act) {
+        return act == StatementsWalker.Action.STOP_BRANCH
+                || act == StatementsWalker.Action.STOP;
+    }
+    
+    @FunctionalInterface
+    private static interface StatementsWalker {
+        
+        Action visit(CsmStatement stmt);
+        
+        public static enum Action {
+            CONTINUE,
+            STOP_BRANCH,
+            STOP
+        }
+    }
 }

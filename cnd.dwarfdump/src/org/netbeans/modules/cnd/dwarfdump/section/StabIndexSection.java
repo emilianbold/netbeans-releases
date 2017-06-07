@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnitStab;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
+import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
 import org.netbeans.modules.cnd.dwarfdump.source.DefaultDriver;
@@ -99,8 +100,8 @@ public class StabIndexSection extends ElfSection {
         int lang = 0;
         while(reader.getFilePointer() < sectionEnd) {
             int offset = reader.readInt();
-            int type = reader.readByte() & 0xFF;
-            int other = reader.readByte() & 0xFF;
+            int type = ByteStreamReader.ubyteToInt(reader.readByte());
+            int other = ByteStreamReader.ubyteToInt(reader.readByte());
             int desc = reader.readShort();
             int value = reader.readInt();
             //System.err.println(" "+offset+" "+type+" "+other+" "+desc+" "+value );

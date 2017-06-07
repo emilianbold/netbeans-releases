@@ -44,8 +44,12 @@ package org.netbeans.modules.xml.text.syntax;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.AbstractTestCase;
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
 
 /**
  *
@@ -85,11 +89,11 @@ public class XMLSyntaxSupportTest extends AbstractTestCase {
 
     public void testTokens() throws Exception {
         XMLSyntaxSupport support = getSyntaxSupport("syntax/test.xml");
-        TokenItem token = support.getPreviousToken(30);
-        System.out.println("Token: " + token.getTokenID().getName() + " Text: " + token.getImage());
+        Token<XMLTokenId> token = support.getPreviousToken(30);
+        System.out.println("Token: " + token.id().name() + " Text: " + token.text());
         token = support.getPreviousToken(31);
-        System.out.println("Token: " + token.getTokenID().getName() + " Text: " + token.getImage());
+        System.out.println("Token: " + token.id().name() + " Text: " + token.text());
         token = support.getPreviousToken(32);
-        System.out.println("Token: " + token.getTokenID().getName() + " Text: " + token.getImage());
+        System.out.println("Token: " + token.id().name() + " Text: " + token.text());
     }
 }

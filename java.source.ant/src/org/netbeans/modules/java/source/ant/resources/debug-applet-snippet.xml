@@ -45,18 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <project name="{0} (debug)" default="debug" basedir=".">
     <target name="-init-debug-args">
-        <property name="version-output" value="java version &quot;${ant.java.version}"/>
-        <condition property="have-jdk-older-than-1.4">
-            <or>
-                <contains string="${version-output}" substring="java version &quot;1.0"/>
-                <contains string="${version-output}" substring="java version &quot;1.1"/>
-                <contains string="${version-output}" substring="java version &quot;1.2"/>
-                <contains string="${version-output}" substring="java version &quot;1.3"/>
-            </or>
-        </condition>
-        <condition else="-Xdebug" property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none">
-            <istrue value="${have-jdk-older-than-1.4}"/>
-        </condition>
         <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
             <os family="windows"/>
         </condition>
@@ -79,8 +67,7 @@ made subject to such option by the copyright holder.
             </bootclasspath>
         </nbjpdastart>
         <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}" jvm="${platform.java}" fork="true" failonerror="${java.failonerror}">
-            <jvmarg line="${debug-args-line}"/>
-            <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+            <jvmarg value="-agentlib:jdwp=transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />
             <arg value="${applet.url}"/>
             <syspropertyset>

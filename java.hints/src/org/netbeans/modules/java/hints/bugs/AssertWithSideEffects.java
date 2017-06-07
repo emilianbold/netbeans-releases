@@ -100,7 +100,7 @@ public final class AssertWithSideEffects {
             return null;
         }
         
-        SideEffectVisitor visitor = new SideEffectVisitor(ci);
+        SideEffectVisitor visitor = new SideEffectVisitor(ctx);
         Tree culprit;
         try {
             visitor.scan(new TreePath(ctx.getPath(), at.getCondition()), null);

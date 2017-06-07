@@ -603,4 +603,14 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 267668 - Accuracy regression in LLVM since Aug 19.
         performTest("bug267668Enums.cpp");
     }
+    
+    public void testBug269245() throws Exception {
+        // Bug 269245 - Static array indices in parameter declarations not recognized
+        performTest("bug269245.c");
+    }
+    
+    public void testBug268930() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performTest("bug268930.c");
+    }
 }

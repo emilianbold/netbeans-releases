@@ -77,6 +77,16 @@
                     </FormalParameter>
                 </FormalParameters>
                 <Block start='34' end='59' isCurly='true'>
+                    <ReturnStatement start='40' end='57'>
+                        <InfixExpression start='47' end='56' operator='SPACESHIP'>
+                            <Variable start='47' end='49' isDollared='true'>
+                                <Identifier start='48' end='49' name='a'/>
+                            </Variable>
+                            <Variable start='54' end='56' isDollared='true'>
+                                <Identifier start='55' end='56' name='b'/>
+                            </Variable>
+                        </InfixExpression>
+                    </ReturnStatement>
                 </Block>
             </FunctionDeclaration>
         </Statements>

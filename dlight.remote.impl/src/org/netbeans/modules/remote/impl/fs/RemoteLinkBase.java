@@ -54,7 +54,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -257,7 +256,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     @Override
     protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, 
         boolean expected, RefreshMode refreshMode, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         // TODO: this dummy implementation is far from optimal in terms of performance. It needs to be improved.
         if (getParent() != null) {
             getParent().refreshImpl(false, antiLoop, expected, refreshMode, timeoutMillis);
@@ -266,7 +265,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     
     @Override
     public final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode, int timeoutMillis)
-            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
         if (antiLoop == null) {
             antiLoop = new HashSet<>();
         }
@@ -289,7 +288,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     
     @Override
     protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig) 
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, ExecutionException {
         // all work in it's wrapped delegate
         RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
     }

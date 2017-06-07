@@ -83,7 +83,7 @@ public final class DriverFactory {
                         res = ItemProperties.LanguageStandard.C11;
                         break;
                     case "c++98": //NOI18N
-                        res = ItemProperties.LanguageStandard.CPP;
+                        res = ItemProperties.LanguageStandard.CPP98;
                         break;
                     case "c++11": //NOI18N
                         res = ItemProperties.LanguageStandard.CPP11;

@@ -107,6 +107,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="associatedRoots">
+            <api name="general"/>
+            <summary>Support for source root grouping</summary>
+            <version major="1" minor="68"/>
+            <date day="20" month="3" year="2017"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    A <code>SourceRootConfig</code> can be identifier by a structured "identifier" so when a new SourceGroup should be created as an
+                    associcate to existing sources, it is created in appropriate "sibling" location. See <code>SourceGroupModifier</code> for more details.
+                </p>
+            </description>
+        </change>
         <change id="server.is.free">
             <api name="general"/>
             <summary>Desktop dependent Ant Based Project Support UI extracted</summary>

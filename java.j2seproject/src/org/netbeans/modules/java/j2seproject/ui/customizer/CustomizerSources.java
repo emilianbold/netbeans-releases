@@ -709,7 +709,6 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
 
     private static final class ProfileMediator implements TableModelListener, ListDataListener {
         private static final SpecificationVersion JDK8 = new SpecificationVersion("1.8"); //NOI18N
-        private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
         private final TableModel sourcesModel;
         private final ComboBoxModel<?> sourceLevelModel;
         private final Collection<? extends Component> profileComponents;
@@ -751,7 +750,7 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
             final Object key = sourceLevelModel.getSelectedItem();
             final SpecificationVersion sl = key == null ? null : PlatformUiSupport.getSourceLevel(key);
             if (sl != null) {
-                if (JDK9.compareTo(PlatformUiSupport.getSourceLevel(key)) <= 0) {
+                if (J2SEProjectProperties.JDK9.compareTo(PlatformUiSupport.getSourceLevel(key)) <= 0) {
                     boolean hasModuleInfo = false;
                     for (int i = 0; i < sourcesModel.getRowCount(); i++) {
                         final File root = (File) sourcesModel.getValueAt(i, 0);

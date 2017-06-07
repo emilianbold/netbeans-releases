@@ -113,7 +113,7 @@ import org.openide.util.RequestProcessor;
         this.fileData = FileData.get(privProjectStorageDir, executionEnvironment);
         this.logger = new RemoteUtil.PrefixedLogger("LC[" + executionEnvironment + "]"); //NOI18N
         this.filter = new SharabilityFilter();
-        this.fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, execEnv, err);
+        this.fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, execEnv, err, false);
     }
 
     private void respond_ok() {
@@ -156,7 +156,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private final AtomicReference<CountDownLatch> shutDownLatch = new AtomicReference();
+    private final AtomicReference<CountDownLatch> shutDownLatch = new AtomicReference<>();
 
     /*package*/ void waitShutDownFinished() {
         CountDownLatch latch = shutDownLatch.get();
@@ -192,10 +192,14 @@ import org.openide.util.RequestProcessor;
                 if (kind == RequestKind.KILLED){
                     //there is something wrong with the process
                     //print to error that remote process is killed
-                    err.append("\nRemote process is killed");//NOI18N
+                    if (err != null) {
+                        err.append("\nRemote process is killed");//NOI18N
+                    }
                     break;
                 }else if (kind == RequestKind.UNKNOWN){
-                    err.append("\nProtocol error: " + request);//NOI18N
+                    if (err != null) {
+                        err.append("\nProtocol error: " + request);//NOI18N
+                    }
                 }else   if (kind == RequestKind.PING) {
                     logger.log(Level.FINEST, "PING from remote controller");
                     // no response needed
@@ -267,7 +271,7 @@ import org.openide.util.RequestProcessor;
     private void shutdown() {
         logger.log(Level.FINEST, "shutdown");
         try {
-            fileCollector.runNewFilesDiscovery(true);
+            fileCollector.runNewFilesDiscovery();
             fileCollector.shutDownNewFilesDiscovery();
             fileData.store();
         } catch (Throwable thr) {

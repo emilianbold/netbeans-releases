@@ -62,7 +62,15 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private boolean canFollowKeyword = true;
 
-    private LinkedList<Integer> templateBalances = new LinkedList<Integer>();
+    private JsTokenId lastNonWhiteToken = null;
+
+    private LinkedList<Brace> braceBalances = new LinkedList<>();
+
+    private enum Brace {
+            EXP,
+            JSX,
+            TEMPLATE
+    }
 
     private LinkedList<Integer> jsxBalances = new LinkedList<Integer>();
 
@@ -84,7 +92,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 && canFollowLiteral && canFollowKeyword) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, templateBalances, jsxBalances);
+        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, braceBalances, jsxBalances, lastNonWhiteToken);
     }
 
     public void setState(LexerState state) {
@@ -92,8 +100,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzLexicalState = state.zzLexicalState;
         this.canFollowLiteral = state.canFollowLiteral;
         this.canFollowKeyword = state.canFollowKeyword;
-        this.templateBalances = new LinkedList<Integer>(state.templateBalances);
+        this.braceBalances = new LinkedList<>(state.braceBalances);
         this.jsxBalances = new LinkedList<Integer>(state.jsxBalances);
+        this.lastNonWhiteToken = state.lastNonWhiteToken;
     }
 
     public JsTokenId nextToken() throws java.io.IOException {
@@ -107,6 +116,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             canFollowLiteral = canFollowLiteral(token);
             if (!JsTokenId.EOL.equals(token)) {
                 canFollowKeyword = canFollowKeyword(token);
+                lastNonWhiteToken = token;
             }
         }
         return token;
@@ -123,11 +133,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     private static boolean canFollowLiteral(JsTokenId token) {
-        if ("operator".equals(token.primaryCategory())) {
-            return true;
-        }
-
         switch (token) {
+            case OPERATOR_INCREMENT:
+            case OPERATOR_DECREMENT:
+                return false;
             case BRACKET_LEFT_CURLY:
             case BRACKET_LEFT_PAREN:
             case BRACKET_LEFT_BRACKET:
@@ -143,6 +152,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             case OPERATOR_DOT:
             case OPERATOR_COLON:
                 return true;
+        }
+
+        if ("operator".equals(token.primaryCategory())) {
+            return true;
         }
         return false;
     }
@@ -163,18 +176,21 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         final boolean canFollowLiteral;
         /** can be the literal used here */
         final boolean canFollowKeyword;
-        /** are we in template expression */
-        final LinkedList<Integer> templateBalances;
+        /** where we are in Brace Type */
+        final LinkedList<Brace> braceBalances;
         /** are we in jsx primary expression */
         final LinkedList<Integer> jsxBalances;
+        /** remember last non white token */
+        final JsTokenId lastNonWhiteToken;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, LinkedList<Integer> templateBalances, LinkedList<Integer> jsxBalances) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, LinkedList<Brace> braceBalances, LinkedList<Integer> jsxBalances, JsTokenId lastNonWhiteToken) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowLiteral = canFollowLiteral;
             this.canFollowKeyword = canFollowKeyword;
-            this.templateBalances = new LinkedList<Integer>(templateBalances);
+            this.braceBalances = new LinkedList<>(braceBalances);
             this.jsxBalances = new LinkedList<Integer>(jsxBalances);
+            this.lastNonWhiteToken = lastNonWhiteToken;
         }
 
         @Override
@@ -198,11 +214,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.canFollowKeyword != other.canFollowKeyword) {
                 return false;
             }
-            if (this.templateBalances.size() != other.templateBalances.size()) {
+            if (this.braceBalances.size() != other.braceBalances.size()) {
                 return false;
             }
-            for (int i = 0; i < this.templateBalances.size(); i++) {
-                if (this.templateBalances.get(i).equals(other.templateBalances.get(i))) {
+            for (int i = 0; i < this.braceBalances.size(); i++) {
+                if (this.braceBalances.get(i).equals(other.braceBalances.get(i))) {
                     return false;
                 }
             }
@@ -214,6 +230,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                     return false;
                 }
             }
+            if (this.lastNonWhiteToken != other.lastNonWhiteToken) {
+                return false;
+            }
             return true;
         }
 
@@ -224,20 +243,20 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             hash = 29 * hash + this.zzLexicalState;
             hash = 29 * hash + (this.canFollowLiteral ? 1 : 0);
             hash = 29 * hash + (this.canFollowKeyword ? 1 : 0);
-            for (int i = 0; i < this.templateBalances.size(); i++) {
-                hash = 29 * hash + this.templateBalances.get(i);
+            for (int i = 0; i < this.braceBalances.size(); i++) {
+                hash = 29 * hash + this.braceBalances.get(i).ordinal();
             }
             for (int i = 0; i < this.jsxBalances.size(); i++) {
                 hash = 29 * hash + this.jsxBalances.get(i);
             }
+            hash = 29 * hash + this.lastNonWhiteToken.ordinal();
             return hash;
         }
 
         @Override
         public String toString() {
             return "LexerState{canFollowLiteral=" + canFollowLiteral + ", canFollowKeyword=" + canFollowKeyword
-                + ", templateBalances=" + templateBalances
-                + ", jsxBalances=" + jsxBalances + '}';
+                + ", braceBalances=" + braceBalances + ", jsxBalances=" + jsxBalances + '}';
         }
     }
 
@@ -311,6 +330,8 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 %state REGEXPEND
 %state LCOMMENTEND
 %state JSX
+%state JSXEXP
+%state JSXEXPEND
 %state ERROR
 
 %%
@@ -411,36 +432,27 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   ")"                            { return JsTokenId.BRACKET_RIGHT_PAREN; }
   "{"                            { 
                                      // we are checking if we are in template expression
-                                     if (!templateBalances.isEmpty()) {
-                                        Integer balance = templateBalances.pop();
-                                        templateBalances.push(balance + 1);
+                                     if (!braceBalances.isEmpty()) {
+                                        braceBalances.push(Brace.EXP);
                                      }
 
                                      return JsTokenId.BRACKET_LEFT_CURLY;
                                  }
   "}"                            { 
                                      // we are checking if we are in template expression
-                                     if (!templateBalances.isEmpty()) {
-                                        Integer balance = templateBalances.pop();
-                                        if (balance == 0) {
+                                     if (!braceBalances.isEmpty()) {
+                                        Brace braceType = braceBalances.pop();
+                                        if (braceType == Brace.TEMPLATE) {
                                             yypushback(1);
                                             yybegin(TEMPLATEEXPEND);
-                                        } else {
-                                            templateBalances.push(balance - 1);
-                                            if (!jsxBalances.isEmpty()) {
-                                                yypushback(1);
-                                                yybegin(JSX);
-                                            } else {
-                                                return JsTokenId.BRACKET_RIGHT_CURLY;
-                                            }
-                                        }
-                                     } else {
-                                        if (!jsxBalances.isEmpty()) {
+                                        } else if (braceType == Brace.JSX) {
                                             yypushback(1);
-                                            yybegin(JSX);
+                                            yybegin(JSXEXPEND);
                                         } else {
                                             return JsTokenId.BRACKET_RIGHT_CURLY;
                                         }
+                                     } else {
+                                        return JsTokenId.BRACKET_RIGHT_CURLY;
                                      }
                                  }
   "["                            { return JsTokenId.BRACKET_LEFT_BRACKET; }
@@ -451,7 +463,9 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "..."                          { return JsTokenId.OPERATOR_REST; }
   "="                            { return JsTokenId.OPERATOR_ASSIGNMENT; }
   ">"                            { return JsTokenId.OPERATOR_GREATER; }
-  "<"                            { if (!canFollowLiteral) {
+  "<"                            { if (!canFollowLiteral || (lastNonWhiteToken != null 
+                  && (lastNonWhiteToken == JsTokenId.IDENTIFIER
+                  || lastNonWhiteToken == JsTokenId.NUMBER))) {
                                         return JsTokenId.OPERATOR_LOWER; 
                                    } else {
                                         jsxBalances.push(0);
@@ -650,7 +664,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
 <TEMPLATEEXP> {
   "$"\{                          {
-                                     templateBalances.push(0);
+                                     braceBalances.push(Brace.TEMPLATE);
                                      yybegin(INITIAL);
                                      return JsTokenId.TEMPLATE_EXP_BEGIN;
                                  }
@@ -708,43 +722,52 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 }
 
 <JSX> {
-  "<"                           { 
-                                  jsxBalances.push(jsxBalances.pop() + 1);
+   "/>" | "</"{JSXCharacter}+">"       
+                                {
+                                     Integer balance = jsxBalances.isEmpty() ? 0 : jsxBalances.pop() - 1;
+                                     if (balance <= 0) {
+                                        yybegin(INITIAL);
+                                        return JsTokenId.JSX_TEXT;
+                                     } else {
+                                        jsxBalances.push(balance);
+                                     }
                                 }
-  ">"                           { 
-                                  Integer jsxBalance = jsxBalances.pop();  
-                                  if(jsxBalance == 0) {
-                                    yybegin(INITIAL);
-                                    return JsTokenId.JSX_TEXT;
-                                  }
-                                  jsxBalances.push(jsxBalance);
+  "{"                           
+                                { 
+                                     yypushback(1);
+                                     yybegin(JSXEXP);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.JSX_TEXT;
+                                     }
                                 }
-  "/>"                          { 
-                                  Integer jsxBalance = jsxBalances.pop();
-                                  jsxBalance--;
-                                  if(jsxBalance == 0) {
-                                    yybegin(INITIAL);
-                                    return JsTokenId.JSX_TEXT;
-                                  } else {
-                                    jsxBalances.push(jsxBalance);
-                                  }
+
+    "<"                         
+                                { 
+                                    Integer balance = jsxBalances.isEmpty() ? 0 : jsxBalances.pop();
+                                    jsxBalances.push(balance+1);
                                 }
-  "</"                          { jsxBalances.push(jsxBalances.pop() - 1);}
-  "{"                           {  //yypushback(1);
-                                   yybegin(INITIAL);
-                                   // we are checking if we are in template expression
-                                   if (!templateBalances.isEmpty()) {
-                                     Integer balance = templateBalances.pop();
-                                     templateBalances.push(balance + 1);
-                                   }
-                                   if (yylength() > 0) {
-                                     return JsTokenId.JSX_TEXT;
-                                   }
-                                }
-  {JSXCharacter}|"/"            {}
-  
+
+  {JSXCharacter} | ">" | "/"    
+                                { }
+
+  \\.                           { }
 }
 
+
+<JSXEXP> {
+  "{"                          {
+                                     braceBalances.push(Brace.JSX);
+                                     yybegin(INITIAL);
+                                     return JsTokenId.JSX_EXP_BEGIN;
+                                 }
+}
+
+<JSXEXPEND> {
+  "}"                           {
+                                    yybegin(JSX);
+                                    return JsTokenId.JSX_EXP_END;
+                                }
+}
 /* error fallback */
 .|\n                             { return getErrorToken(); }
 <<EOF>>                          {

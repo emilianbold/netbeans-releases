@@ -47,7 +47,8 @@ import org.netbeans.modules.hibernate.editor.ContextUtilities;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.hibernate.reveng.HibernateRevengXmlConstants;
 import org.openide.util.NbBundle;
 
@@ -160,8 +161,8 @@ public final class HibernateRevengCompletionManager {
             return anchorOffset;
         
         String tagName = context.getTag().getNodeName();
-        TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
-        String attribName = attrib != null ? attrib.getImage() : null;
+        Token<XMLTokenId> attrib = ContextUtilities.getAttributeToken(context.getDocumentContext());
+        String attribName = attrib != null ? attrib.text().toString(): null;
 
         Completor completor = locateCompletor(tagName, attribName);
         if (completor != null) {

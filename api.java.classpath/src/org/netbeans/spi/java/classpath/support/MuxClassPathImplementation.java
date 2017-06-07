@@ -45,10 +45,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
@@ -57,11 +59,15 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-final class MuxClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+final class MuxClassPathImplementation implements FlaggedClassPathImplementation, PropertyChangeListener {
     private final ClassPathSupport.Selector selector;
     private final PropertyChangeSupport listeners;
     //@GuardedBy("this")
     private List<PathResourceImplementation> cache;
+    //@GuardedBy("this")
+    private Set<ClassPath.Flag> flagsCache;
+    //GuardedBy("this")
+    private boolean activeClassPathValid;
     //GuardedBy("this")
     private ClassPath activeClassPath;
     //@GuardedBy("this")
@@ -76,43 +82,42 @@ final class MuxClassPathImplementation implements ClassPathImplementation, Prope
 
     @Override
     @NonNull
-    public List<? extends PathResourceImplementation> getResources() {
-        List<PathResourceImplementation> res;
-        ClassPath activeCp = null;
-        PropertyChangeListener activeLst = null;
+    public Set<ClassPath.Flag> getFlags() {
+        Set<ClassPath.Flag> res;
         synchronized (this) {
-            res = cache;
-            if (res == null) {
-                activeCp = activeClassPath;
-                activeClassPath = null;
-                activeLst = activeListener;
-                activeListener = null;
-            }
+            res = flagsCache;
         }
         if (res == null) {
-            if (activeCp != null) {
-                assert activeLst != null;
-                activeCp.removePropertyChangeListener(activeLst);
+            res = getActiveClassPath().getFlags();
+            assert res != null;
+            synchronized (this) {
+                if (flagsCache == null) {
+                    flagsCache = res;
+                } else {
+                    res = flagsCache;
+                }
             }
-            final ClassPath newCp = selector.getActiveClassPath();
-            assert newCp != null : String.format(
-                    "Selector: %s (%s) returned null ClassPath",    //NOI18N
-                    selector,
-                    selector.getClass());
-            final List<ClassPath.Entry> entries = newCp.entries();
+        }
+        return res;
+    }
+
+    @Override
+    @NonNull
+    public List<? extends PathResourceImplementation> getResources() {
+        List<PathResourceImplementation> res;
+        synchronized (this) {
+            res = cache;
+        }
+        if (res == null) {
+            final ClassPath cp = getActiveClassPath();
+            final List<ClassPath.Entry> entries = cp.entries();
             res = new ArrayList<>(entries.size());
             for (ClassPath.Entry entry : entries) {
                 res.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(entry.getURL()));
             }
             synchronized (this) {
                 if (cache == null) {
-                    if (activeClassPath == null) {
-                        assert activeListener == null;
-                        activeClassPath = newCp;
-                        activeListener = WeakListeners.propertyChange(this, activeClassPath);
-                        activeClassPath.addPropertyChangeListener(activeListener);
-                        cache = res;
-                    }
+                    cache = Collections.unmodifiableList(res);
                 } else {
                     res = cache;
                 }
@@ -136,12 +141,55 @@ final class MuxClassPathImplementation implements ClassPathImplementation, Prope
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         final String propName = evt.getPropertyName();
-        if (ClassPathSupport.Selector.PROP_ACTIVE_CLASS_PATH.equals(propName) ||
-                ClassPath.PROP_ENTRIES.equals(propName)) {
+        if (ClassPathSupport.Selector.PROP_ACTIVE_CLASS_PATH.equals(propName)) {
+            synchronized (this) {
+                cache = null;
+                flagsCache = null;
+                activeClassPathValid = false;
+            }
+            this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
+            this.listeners.firePropertyChange(PROP_FLAGS, null, null);
+        } else if (ClassPath.PROP_ENTRIES.equals(propName)) {
             synchronized (this) {
                 cache = null;
             }
             this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
+        } else if (ClassPath.PROP_FLAGS.equals(propName)) {
+            synchronized (this) {
+                flagsCache = null;
+            }
+            this.listeners.firePropertyChange(PROP_FLAGS, null, null);
+        }
+    }
+
+    @NonNull
+    private ClassPath getActiveClassPath() {
+        synchronized (this) {
+            if (activeClassPathValid) {
+                assert activeClassPath != null;
+                return activeClassPath;
+            }
+            if (activeClassPath != null) {
+                assert activeListener != null;
+                activeClassPath.removePropertyChangeListener(activeListener);
+                activeClassPath = null;
+                activeListener = null;
+            }
+        }
+        final ClassPath newCp = selector.getActiveClassPath();
+        assert newCp != null : String.format(
+                "Selector: %s (%s) returned null ClassPath",    //NOI18N
+                selector,
+                selector.getClass());
+        synchronized (this) {
+            if (activeClassPath == null) {
+                assert activeListener == null;
+                activeClassPath = newCp;
+                activeListener = WeakListeners.propertyChange(this, activeClassPath);
+                activeClassPath.addPropertyChangeListener(activeListener);
+                activeClassPathValid = true;
+            }
+            return activeClassPath;
         }
     }
 }

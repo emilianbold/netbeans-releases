@@ -195,6 +195,9 @@ public final class TypeUtilities {
             return types.createErrorType(inType);
         }
         Type t = types.upward(inType, types.captures(inType));
+        if (t == null) {
+            return types.createErrorType(inType);
+        }
         if (!t.isErroneous()) {
             if (!checkDenotable(t)) {
                 return types.createErrorType(t);

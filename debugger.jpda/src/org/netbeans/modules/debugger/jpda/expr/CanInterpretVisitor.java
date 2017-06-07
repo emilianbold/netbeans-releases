@@ -62,7 +62,7 @@ import com.sun.source.util.TreePathScanner;
  * 
  * @author Martin
  */
-public class CanInterpretVisitor extends TreePathScanner<Boolean, EvaluationContext> {
+class CanInterpretVisitor extends TreePathScanner<Boolean, EvaluationContext> {
 
     @Override
     public Boolean reduce(Boolean r1, Boolean r2) {

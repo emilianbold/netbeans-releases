@@ -142,7 +142,7 @@ public class JsParser extends SanitizingParser<JsParserResult> {
         if (hasCorretSheBang) {
             int lineOffsetBegin = firstLine.length() + 1;
             int lineOffsetEnd = text.indexOf('\n', lineOffsetBegin);
-            while (lineOffsetEnd > lineOffsetBegin) {
+            while (lineOffsetEnd >= lineOffsetBegin) {
                 String line = text.substring(lineOffsetBegin, lineOffsetEnd).trim();
                 if (line.startsWith(IMPORT) || line.startsWith(EXPORT)) {
                     // if contains import or exports, it's module

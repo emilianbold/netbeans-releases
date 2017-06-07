@@ -80,4 +80,5 @@ public abstract class RootsAccessor {
 
     public abstract String getHint(Roots roots);
 
+    public abstract String[] getRootPathProperties(Roots roots);
 }

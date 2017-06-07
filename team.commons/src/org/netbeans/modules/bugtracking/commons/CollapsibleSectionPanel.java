@@ -160,10 +160,19 @@ public final class CollapsibleSectionPanel extends javax.swing.JPanel implements
                 }
                 return new Color(defBk.getRed() - 10, defBk.getGreen() - 10, defBk.getBlue() - 10);
             }
+            Color bkColor;
             if (isGTK || isNimbus) {
-                return new Color(UIManager.getColor("Menu.background").getRGB());//NOI18N
+                bkColor = new Color(UIManager.getColor("Menu.background").getRGB());//NOI18N
+            } else {
+                bkColor = UIManager.getColor("PropSheet.setBackground"); //NOI18N
             }
-            return UIManager.getColor("PropSheet.setBackground"); //NOI18N
+            // hack for high-contrast black
+            Color c = sectionButton1.getForeground();
+            if (c != null && (c.getRed() >= 240 || c.getGreen() >= 240 || c.getBlue() >= 240)
+                    && bkColor != null && (bkColor.getRed() >= 192 || bkColor.getGreen() >= 192 || bkColor.getBlue() >= 192)) {
+                bkColor = Color.darkGray;
+            }
+            return bkColor;
         }
     }    
 

@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
@@ -120,6 +121,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
@@ -481,6 +483,10 @@ public final class FileImpl implements CsmFile,
         }
     }
 
+    public APTFile.Kind getAPTFileKind() {
+        return APTDriver.langFlavorToAPTFileKind(getFileLanguage(), getFileLanguageFlavor());
+    }
+    
     // Returns language for current context (compilation unit)
     public String getContextLanguage(PreprocHandler.State ppState) {
         FileImpl startFile = ppState == null ? null : Utils.getStartFile(ppState);
@@ -516,6 +522,8 @@ public final class FileImpl implements CsmFile,
         } else {
             if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
                 return APTLanguageSupport.FLAVOR_CPP11;
+            } else if (CndTraceFlags.LANGUAGE_FLAVOR_CPP14) {
+                return APTLanguageSupport.FLAVOR_CPP14;
             }
             NativeFileItem nativeFileItem = getNativeFileItem();
             if(nativeFileItem != null) {
@@ -587,8 +595,28 @@ public final class FileImpl implements CsmFile,
         }
         Collection<PreprocessorStatePair> preprocStatePairs = projectImpl.getPreprocessorStatePairs(this);
         // select the best based on context offsets
-        for (PreprocessorStatePair statePair : preprocStatePairs) {
-            if (statePair.pcState.isInActiveBlock(startContext, endContext)) {
+        if (preprocStatePairs.size() > 1) {
+            int bestCoverage = -1;
+            PreprocessorStatePair bestStatePair = null;
+            for (PreprocessorStatePair pair : preprocStatePairs) {
+                if (pair.pcState != null) {
+                    int coverage = pair.pcState.getActiveCoverage(startContext, endContext);
+                    if (coverage > bestCoverage) {
+                        bestCoverage = coverage;
+                        bestStatePair = pair;
+                        if (coverage == (endContext - startContext)) {
+                            // max coverage is found
+                            break;
+                        }
+                    }
+                }
+            }
+            if (bestStatePair != null) {
+                return bestStatePair;
+            }
+        } else if (!preprocStatePairs.isEmpty()) {
+            PreprocessorStatePair statePair = preprocStatePairs.iterator().next();
+            if (statePair.pcState != null && statePair.pcState.isInActiveBlock(startContext, endContext)) {
                 return statePair;
             }
         }
@@ -1440,13 +1468,10 @@ public final class FileImpl implements CsmFile,
             System.err.printf("%n%n>>> Start parsing (getting errors) %s %n", getName());
         }
         long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
-        int flags = APTLanguageSupport.getInstance().isLanguageC(getFileLanguage()) ? CPPParserEx.CPP_ANSI_C : CPPParserEx.CPP_CPLUSPLUS;
-        if (!TraceFlags.TRACE_ERROR_PROVIDER) {
-            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-        }
-        if (APTLanguageSupport.FLAVOR_CPP11.equals(getFileLanguageFlavor())) {
-            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
-        }
+        int flags = TraceFlags.TRACE_ERROR_PROVIDER ? 0 : CPPParserEx.CPP_SUPPRESS_ERRORS;
+        String fileLanguage = getFileLanguage();
+        String fileLanguageFlavor = getFileLanguageFlavor();
+        flags = ParserProviderImpl.adjustAntlr2ParserFlagsForLanguage(flags, fileLanguage, fileLanguageFlavor);
         try {
             // use cached TS
             TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
@@ -1468,6 +1493,7 @@ public final class FileImpl implements CsmFile,
             }
         } catch (Throwable ex) {
             System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getAbsolutePath()); // NOI18N
+            CndUtils.printStackTraceOnce(ex);
         } finally {
             if (TraceFlags.TRACE_ERROR_PROVIDER) {
                 System.err.printf("<<< Done parsing (getting errors) %s %d ms%n%n%n", getName(), System.currentTimeMillis() - time);
@@ -2362,6 +2388,12 @@ public final class FileImpl implements CsmFile,
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s%n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d%n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N
+        String fileLanguage = this.getFileLanguage();
+        String fileLanguageFlavor = this.getFileLanguageFlavor();
+        if (fileLanguageFlavor.isEmpty()) {
+            fileLanguageFlavor = "FLAVOR_UNKNOWN"; // NOI18N
+        }
+        printOut.printf("\tfileImplLanguage=%s fileImplLanguageFlavor=%s%n", fileLanguage, fileLanguageFlavor);// NOI18N
     }
 
     public void dumpIndex(PrintWriter printOut) {

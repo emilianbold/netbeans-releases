@@ -55,26 +55,23 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.ref.WeakReference;
 import java.net.ConnectException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.actions.FastPasteAction;
 import org.netbeans.modules.remote.api.ConnectionNotifier;
@@ -118,6 +115,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     // TODO: consider moving cache names to RemoteDirectory
     protected static final String CACHE_ZIP_FILE_NAME = ".rfs_zip.zip"; // NOI18N
     protected static final String CACHE_ZIP_PART_NAME = ".rfs_zip.part"; // NOI18N
+    protected static final String TEMP_ZIP_PREFIX = ".rfs_tmp_"; // NOI18N
     public static final String RESERVED_PREFIX = ".rfs_"; // NOI18N
     public static final String RESERVED_PREFIX_ESCAPED = "._rfs_"; // NOI18N
     
@@ -140,12 +138,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final List<FileSystemProblemListener> problemListeners =
             new ArrayList<>(globalProblemListeners);
     transient private final StatusImpl status = new StatusImpl();
-    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<>();
+    private final DeleteOnExitSupport deleteOnExitSupport;
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<>();
-    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<>();
+    private final ThreadLocal<FileInfo> beingCreated = new ThreadLocal<>();
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<>();
     private final RemoteFileZipper remoteFileZipper;
     private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
+    private final ThreadLocal<Boolean> isGettingDirectoryStorage = new ThreadLocal<>();
+
+    private final Map<RemoteDirectory, SuspendInfo> suspendInfo = new HashMap<>();
 
     private final RequestProcessor.Task connectionTask;
 
@@ -169,6 +170,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
      * @guarded by autoMounts 
      */
     private boolean autoMountsAnalyzed = false;
+    private volatile boolean disposed = false;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -186,6 +188,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (!cache.exists() && !cache.mkdirs()) {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); // new IOException sic! (ctor)
         }
+        deleteOnExitSupport = new DeleteOnExitSupport(execEnv, cache);
         this.rootDelegate = new RootFileObject(this.root = new RemoteFileObject(this), this, execEnv, cache); // NOI18N
         factory.register(rootDelegate);
 
@@ -214,26 +217,18 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         });
-        autoMounts = getFixedAutoMounts(); // before adding connection listeners and schdulling connectionTask!
+        autoMounts = AutoMountsProvider.restoreAutoMounts(); // before adding connection listeners and schdulling connectionTask!
+        if (RemoteLogger.isLoggable(Level.FINE)) {
+            RemoteLogger.fine("Restored automount list for {0}:", execEnv);//NOI18N
+            for (String path : autoMounts) {
+                RemoteLogger.fine("\t{0}", path);
+            }
+        }
         connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
         connectionChanged = false; // volatile
         connectionTask.schedule(0);
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
-        remoteFileZipper = new RemoteFileZipper(execEnv);
-    }
-
-    private List<String> getFixedAutoMounts() {
-        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/ws", "/workspace")); //NOI18N
-        String t = System.getProperty("remote.autofs.list"); //NOI18N
-        if (t != null) {
-            String[] paths = t.split(","); //NOI18N
-            for (String p : paths) {
-                if (p.startsWith("/")) { //NOI18N
-                    list.add(p);
-                }
-            }
-        }
-        return list;
+        remoteFileZipper = new RemoteFileZipper(execEnv, this);
     }
 
     public boolean isAutoMount(String path) {
@@ -298,6 +293,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         int newValue = ((currValue == null) ? 0 : currValue.intValue()) + (value ? +1 : -1);
         isInsideVCS.set(newValue);
     }
+    
+    public boolean isGettingDirectoryStorage() {
+        Boolean inside = isGettingDirectoryStorage.get();
+        return inside != null && inside.booleanValue();
+    }
+
+    public void setGettingDirectoryStorage(boolean inside) {
+        isGettingDirectoryStorage.set(inside);
+    }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
@@ -326,6 +330,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
     
     /*package*/ void dispose() {
+        disposed = true; 
+        //RemoteFileSystemTransport.shutdown(execEnv);
         ConnectionManager.getInstance().removeConnectionListener(this);
     }
 
@@ -339,13 +345,16 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 maintainAutoMounts();
             }
-            if (connectionChanged) {
+            if (connectionChanged && !disposed) {
                 if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                     refreshManager.scheduleRefreshOnConnect();
                 }
                 for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
                     fo.connectionChanged();
                 }
+            }
+            if (!disposed) {
+                deleteOnExitSupport.processConnectionChange();
             }
         }
 
@@ -359,8 +368,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             try {
                 RemoteLogger.fine("Getting automount list for {0}...", execEnv); //NOI18N
                 AutoMountsProvider amp = new AutoMountsProvider(execEnv);
-                if (amp.analyze()) {
-                    List<String> newAutoMounts = amp.getAutoMounts();
+                List<String> newAutoMounts = amp.analyze();
+                if (newAutoMounts != null) {
                     synchronized (autoMounts) {
                         autoMounts.clear();
                         autoMounts.addAll(newAutoMounts);
@@ -405,6 +414,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
             connectionChanged = true; // volatile
+            deleteOnExitSupport.notifyConnected();
             connectionTask.schedule(0);
         }
     }
@@ -420,6 +430,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (COLLECT_STATSISTICS) {
             lockSupport.printStatistics(this);
         }
+        deleteOnExitSupport.notifyDisconnected();
     }
     
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -540,7 +551,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                     FileObject fo = parent.createData(tmpName);
                     if (fo != null && fo.isData() && fo.isValid()) {
                         if (deleteOnExit) {
-                            addDeleteOnExit(fo.getPath());
+                            deleteOnDisconnect(fo.getPath());
                         }
                         return fo;
                     }
@@ -949,46 +960,29 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return status;
     }
     
-    private void addDeleteOnExit(String path) {
-        synchronized(deleteOnExitFiles) {
-            if (deleteOnExitFiles.isEmpty()) {
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-
-                    @Override
-                    public void run() {
-                        releaseResources();
-                    }
-
-                });
+    public void deleteOnDisconnect(String... paths) {
+        if (RemoteFileSystemTransport.canDeleteOnDisconnect(execEnv)) {
+            try {
+                RemoteFileSystemTransport.deleteOnDisconnect(execEnv, paths);
+                return;
             }
-            deleteOnExitFiles.add(path);
-        }
-    }
-    
-    private void releaseResources() {
-    	ArrayList<String> toBeDeleted;
-        synchronized(deleteOnExitFiles) {
-        	toBeDeleted = new ArrayList<>(deleteOnExitFiles);
-        }
-    	Collections.reverse(toBeDeleted);
-        for (String filename : toBeDeleted) {
-            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                 return;
+            catch (IOException | InterruptedException | ExecutionException ex) {
+                ex.printStackTrace(System.err);
             }
-            CommonTasksSupport.rmFile(execEnv, filename, null);
         }
+        deleteOnExitSupport.deleteOnExit(paths);
     }
-    
+
     /*package*/ void setBeingRemoved(RemoteFileObjectBase fo) {
         beingRemoved.set(fo);
     }
 
-    /*package*/ void setBeingCreated(RemoteFileObjectBase fo) {
+    /*package*/ void setBeingCreated(FileInfo fo) {
         beingCreated.set(fo);
     }
     
     /** Be very CAUCIOUS when using this FO - it can be in process of VCS operations  */
-    public RemoteFileObjectBase getBeingCreated() {
+    public FileInfo getBeingCreated() {
         return beingCreated.get();
     }
 
@@ -1148,6 +1142,34 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             return fo.lastModified().getTime();
         }
     }
+    
+    /**
+     * Gets suspend info for this directory or one of its parents
+     */
+    /*package*/ SuspendInfo getSuspendInfo(RemoteDirectory dir) {
+        for(RemoteDirectory d = dir; d != null; d = d.getParentImpl()) {
+            if (d.getFlag(RemoteFileObjectBase.MASK_SUSPEND_WRITES)) {
+                synchronized (suspendInfo) {
+                    SuspendInfo info = suspendInfo.get(d);
+                    if (info == null) {
+                        info = new SuspendInfo(d);
+                        suspendInfo.put(d, info);
+                    }
+                    return info;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets and removes suspend info for exactly this directory
+     */
+    /*package*/ SuspendInfo removeSuspendInfo(RemoteDirectory dir) {
+        synchronized(suspendInfo) {
+            return suspendInfo.remove(dir);
+        }
+    }
 
     private final class StatusImpl implements StatusDecorator, ImageDecorator, LookupListener, FileStatusListener {
 
@@ -1280,6 +1302,29 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
+    public static final class FileInfo {
+        private final String path;
+        private final FileType type;
+
+        public FileInfo(RemoteFileObjectBase fo) {
+            this.path = fo.getPath();
+            this.type = fo.getType();
+        }
+
+        public FileInfo(String path, FileType type) {
+            this.path = path;
+            this.type = type;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public FileType getType() {
+            return type;
+        }        
+    }
+
     private class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
 
         public RemoteFileSupport() {

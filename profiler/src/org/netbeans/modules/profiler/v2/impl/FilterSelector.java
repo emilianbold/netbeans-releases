@@ -65,12 +65,13 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.lib.profiler.ui.results.ColoredFilter;
 import org.netbeans.lib.profiler.ui.results.PackageColorer;
 import org.netbeans.lib.profiler.ui.swing.PopupButton;
-import org.netbeans.lib.profiler.ui.swing.ProfilerPopupFactory;
+import org.netbeans.lib.profiler.ui.swing.ProfilerPopup;
 import org.netbeans.lib.profiler.ui.swing.TextArea;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -140,12 +141,12 @@ public abstract class FilterSelector {
         }
         
         void show(Component invoker) {
-            ProfilerPopupFactory.getPopup(invoker, panel, invoker.getWidth() - panel.getPreferredSize().width, invoker.getHeight()).show();
+            int resizeMode = ProfilerPopup.RESIZE_LEFT | ProfilerPopup.RESIZE_BOTTOM;
+            ProfilerPopup.createRelative(invoker, panel, SwingConstants.SOUTH_EAST, resizeMode).show();
         }
         
         private void populatePopup(FilterName filterName, String filterValue) {
             JPanel content = new JPanel(new BorderLayout());
-            content.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
             
             JLabel hint = new JLabel(Bundle.FilterSelector_outgoingCalls(), JLabel.LEADING);
             hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 7, 0));
@@ -163,7 +164,10 @@ public abstract class FilterSelector {
             noFilterChoice = new JRadioButton(Bundle.FilterSelector_noFilter(),
                                 FilterName.NO_FILTER.equals(filterName));
             bg.add(noFilterChoice);
-            filters.add(noFilterChoice);
+            JPanel noFilter = new JPanel(null);
+            noFilter.setLayout(new BoxLayout(noFilter, BoxLayout.LINE_AXIS));
+            noFilter.add(noFilterChoice);
+            filters.add(noFilter);
             
             javaClassesChoice = new JRadioButton(Bundle.FilterSelector_excludeCoreJava(),
                                 FilterName.EXCLUDE_JAVA_FILTER.equals(filterName));

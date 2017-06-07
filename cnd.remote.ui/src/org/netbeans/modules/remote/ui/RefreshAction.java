@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.RefreshAction", category = "NativeRemote")
-@ActionRegistration(displayName = "RefreshMenuItem")
+@ActionRegistration(displayName = "#RefreshMenuItem", lazy = false)
 @ActionReference(path = "Remote/Host/Actions", name = "RefreshAction", position = 99999)
 public class RefreshAction extends SingleHostAction {
     private static final RequestProcessor RP = new RequestProcessor("RefreshAction", 1); // NOI18N

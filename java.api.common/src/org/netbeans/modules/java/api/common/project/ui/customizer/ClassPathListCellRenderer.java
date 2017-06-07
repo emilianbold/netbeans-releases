@@ -113,6 +113,8 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_RunTestClasspath_DisplayName" ) );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_BuildClassesDir_DisplayName" ) );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (ClassPathListCellRenderer.class,"LBL_BuildTestClassesDir_DisplayName") );
+        WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_MODULES_DIR, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_BuildModulesDir_DisplayName" ) );
+        WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_TEST_MODULES_DIR, NbBundle.getMessage (ClassPathListCellRenderer.class,"LBL_BuildTestModulesDir_DisplayName") );
     };
 
     private  ClassPathListCellRenderer( PropertyEvaluator evaluator, FileObject projectFolder) {

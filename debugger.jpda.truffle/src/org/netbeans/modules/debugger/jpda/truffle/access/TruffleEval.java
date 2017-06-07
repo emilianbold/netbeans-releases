@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.truffle.access;
@@ -49,8 +49,8 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
-import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,27 +59,25 @@ import org.openide.util.Exceptions;
 public class TruffleEval {
     
     private static final String METHOD_EVALUATE = "evaluate";                   // NOI18N
-    private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
+    private static final String METHOD_EVALUATE_ON_FRAME_SIG =
+            "(Lcom/oracle/truffle/api/debug/DebugStackFrame;Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
     
     private TruffleEval() {}
 
+    @NbBundle.Messages("MSG_NoSuspend=No current suspend location.")
     public static Variable evaluate(JPDADebugger debugger, String expression) throws InvalidExpressionException {
         CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
-        ObjectVariable stackFrameInstance = null;
-        if (currentPCInfo != null) {
-            TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
-            if (selectedStackFrame != currentPCInfo.getTopFrame()) {
-                stackFrameInstance = selectedStackFrame.getStackFrameInstance();
-            }
+        if (currentPCInfo == null) {
+            throw new InvalidExpressionException(Bundle.MSG_NoSuspend());
         }
+        ObjectVariable stackFrameInstance = currentPCInfo.getSelectedStackFrame().getStackFrameInstance();
         JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
         try {
             Variable mirrorExpression = debugger.createMirrorVar(expression);
             Variable valueVar = debugAccessor.invokeMethod(
                     METHOD_EVALUATE,
                     METHOD_EVALUATE_ON_FRAME_SIG,
-                    new Variable[] { currentPCInfo.getSuspendedInfo(),
-                                     stackFrameInstance,
+                    new Variable[] { stackFrameInstance,
                                      mirrorExpression });
             return valueVar;
         } catch (InvalidObjectException | NoSuchMethodException ex) {

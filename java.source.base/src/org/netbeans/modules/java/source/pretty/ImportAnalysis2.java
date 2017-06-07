@@ -53,10 +53,9 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.comp.Modules;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Context;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,12 +66,12 @@ import java.util.Stack;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -105,6 +104,7 @@ public class ImportAnalysis2 {
     private Set<String> implicitlyImportedClassNames;
     private Element javaLang;
     private CodeStyle cs;
+    private ModuleElement modle;
 
     public ImportAnalysis2(CompilationInfo info) {
         this(JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext());
@@ -115,8 +115,9 @@ public class ImportAnalysis2 {
         elements = JavacElements.instance(env);
         make = TreeFactory.instance(env);
         model = ASTService.instance(env);
+        modle = Modules.instance(env).getDefaultModule();
         overlay = env.get(ElementOverlay.class);
-        unnamedPackage = overlay != null ? overlay.unnamedPackage(model, elements) : elements.getPackageElement("");
+        unnamedPackage = overlay != null ? overlay.unnamedPackage(model, elements, modle) : modle != null ? elements.getPackageElement(modle, "") : elements.getPackageElement("");
     }
 
     public void setCompilationUnit(CompilationUnitTree cut) {
@@ -187,7 +188,7 @@ public class ImportAnalysis2 {
 
     public void enterVisibleThroughClasses(ClassTree clazz) {
         Set<Element> visible = visibleThroughClasses.peek();
-        visible.addAll(overlay.getAllVisibleThrough(model, elements, currentFQN.getFQN(), clazz));
+        visible.addAll(overlay.getAllVisibleThrough(model, elements, currentFQN.getFQN(), clazz, modle));
     }
 
     public void classLeft() {

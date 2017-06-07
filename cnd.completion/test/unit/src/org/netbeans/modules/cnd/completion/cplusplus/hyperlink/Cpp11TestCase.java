@@ -79,6 +79,12 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         super.setUp();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        System.setProperty("cnd.language.flavor.cpp11", "false");
+    }
+
     public void test229025() throws Exception {
         // #229025 - Editor cannot find static member of rvalue reference specialized template        
         performTest("bug229025.cpp", 8, 20, "bug229025.cpp", 3, 36);
@@ -475,5 +481,41 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug247031.cpp", 55, 41, "bug247031.cpp", 11, 9);
         performTest("bug247031.cpp", 56, 48, "bug247031.cpp", 25, 9);
         performTest("bug247031.cpp", 57, 32, "bug247031.cpp", 5, 9);
+    }
+    
+    public void testBug269199() throws Exception {
+        // Bug 269199 - Editor ignore C++11 standard in standard headers
+        performTest("bug269199.cpp", 10, 18, "bug269199.cpp", 3, 9);
+        performTest("bug269199.cpp", 11, 21, "bug269199.cpp", 3, 9);
+    }
+    
+    public void testBug268930() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performTest("bug268930_hyperlink.cpp", 46, 13, "bug268930_hyperlink.cpp", 34, 5);
+        performTest("bug268930_hyperlink.cpp", 47, 15, "bug268930_hyperlink.cpp", 38, 5);
+        performTest("bug268930_hyperlink.cpp", 49, 20, "bug268930_hyperlink.cpp", 13, 5);
+        performTest("bug268930_hyperlink.cpp", 50, 20, "bug268930_hyperlink.cpp", 17, 5);
+        performTest("bug268930_hyperlink.cpp", 51, 20, "bug268930_hyperlink.cpp", 22, 5);
+        performTest("bug268930_hyperlink.cpp", 53, 28, "bug268930_hyperlink.cpp", 26, 5);
+        performTest("bug268930_hyperlink.cpp", 54, 28, "bug268930_hyperlink.cpp", 30, 5);
+        performTest("bug268930_hyperlink.cpp", 55, 13, "bug268930_hyperlink.cpp", 42, 5);
+        performTest("bug268930_hyperlink.cpp", 56, 13, "bug268930_hyperlink.cpp", 43, 5);
+        performTest("bug268930_hyperlink.cpp", 57, 13, "bug268930_hyperlink.cpp", 42, 5);
+        performTest("bug268930_hyperlink.cpp", 56, 27, "bug268930_hyperlink.cpp", 9, 5);
+        performTest("bug268930_hyperlink.cpp", 57, 27, "bug268930_hyperlink.cpp", 9, 5);
+        performTest("bug268930_hyperlink.cpp", 57, 35, "bug268930_hyperlink.cpp", 6, 9);
+        
+        performTest("bug268930_hyperlink.cpp", 65, 13, "bug268930_hyperlink.cpp", 43, 5);
+        performTest("bug268930_hyperlink.cpp", 66, 13, "bug268930_hyperlink.cpp", 42, 5);
+        
+        performTest("bug268930_hyperlink.cpp", 49, 11, "bug268930_hyperlink.cpp", 48, 9);
+        performTest("bug268930_hyperlink.cpp", 50, 11, "bug268930_hyperlink.cpp", 48, 9);
+        performTest("bug268930_hyperlink.cpp", 51, 11, "bug268930_hyperlink.cpp", 48, 9);
+        performTest("bug268930_hyperlink.cpp", 54, 13, "bug268930_hyperlink.cpp", 52, 9);
+    }
+    
+    public void testBug268930_adjacent() throws Exception {
+        // Bug 268930 - C++11: user-defined literals
+        performTest("bug268930_adjacent.cpp", 3, 20, "bug268930_adjacent.cpp", 1, 1);
     }
 }

@@ -189,7 +189,7 @@ public class DevelopmentHostConfiguration implements Cloneable {
     }
 
     private void fireHostChanged() {
-        ExecutionEnvironment env = (0 < value && value < servers.size()) ? servers.get(value) : null;
+        ExecutionEnvironment env = (0 <= value && value < servers.size()) ? servers.get(value) : null;
         if (env != null) {
             pcs.firePropertyChange(PROP_DEV_HOST, ExecutionEnvironmentFactory.toUniqueID(env), DevelopmentHostConfiguration.this);
         }

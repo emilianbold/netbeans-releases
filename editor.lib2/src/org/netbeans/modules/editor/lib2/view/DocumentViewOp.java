@@ -1482,17 +1482,13 @@ public final class DocumentViewOp
         textZoom = (textZoomInteger != null) ? textZoomInteger : 0;
     }
     
-    public void mouseWheelMoved(MouseWheelEvent evt, MouseWheelListener delegateListener) {
-        if (delegateListener == null) {
-            return;
-        }
-
+    public void mouseWheelMoved(MouseWheelEvent evt, MouseWheelDelegator delegator) {
         // Since consume() idoes not prevent BasicScrollPaneUI.Handler from operation
         // the code in DocumentView.setParent() removes BasicScrollPaneUI.Handler and stores it
         // in origMouseWheelListener and installs "this" as MouseWheelListener instead.
         // This method only calls origMouseWheelListener if Ctrl is not pressed (zooming in/out).
         if (evt.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-            delegateListener.mouseWheelMoved(evt);
+            delegator.delegateToOriginalListener(evt, activeScrollPane);
 //          evt.consume(); // consuming the event has no effect
             return;
         }
@@ -1520,7 +1516,7 @@ public final class DocumentViewOp
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
                 textComponent.repaint(); // Consider repaint triggering elsewhere
             } else {
-                delegateListener.mouseWheelMoved(evt);
+                delegator.delegateToOriginalListener(evt, activeScrollPane);
             }
         } else if (wheelRotation > 0) {
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x291, modifiers)); //WHEEL_DOWN constant
@@ -1528,7 +1524,7 @@ public final class DocumentViewOp
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
                 textComponent.repaint(); // Consider repaint triggering elsewhere
             } else {
-                delegateListener.mouseWheelMoved(evt);
+                delegator.delegateToOriginalListener(evt, activeScrollPane);
             }
         } // else: wheelRotation == 0 => do nothing
     }
@@ -1645,16 +1641,34 @@ public final class DocumentViewOp
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if ("ui".equals(evt.getPropertyName())) {
+            if ("ui".equals(evt.getPropertyName()) || "UI".equals(evt.getPropertyName())) {
                 updateListeners();
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Scrollpane changed with property name: {0}",
+                                new Object[]{evt.getPropertyName()});
             }
         }
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             DocumentViewOp op = op();
-            if (op != null) {
-                op.mouseWheelMoved(e, delegateListener);
+            if (op != null && scrollPane != null ) {
+                op.mouseWheelMoved(e, this);
+            }
+        }
+        
+        void delegateToOriginalListener(MouseWheelEvent e, JScrollPane activeScrollPane) {
+            // Only delegate if the updated scrollpane is still actively used by the DocumentViewOp
+            // and when it still uses the overriden listener (this)
+            if (activeScrollPane == scrollPane) {
+                MouseWheelListener[] mwls = scrollPane.getListeners(MouseWheelListener.class);
+                for (int i = 0; i < mwls.length; i++) {
+                    if (mwls[i] == this) {
+                        delegateListener.mouseWheelMoved(e);
+                        return;
+                    }
+                }
             }
         }
         

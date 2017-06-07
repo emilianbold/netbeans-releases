@@ -236,15 +236,15 @@
         <Comments>
         </Comments>
         <Statements>
-            <ClassConstantDeclaration start='6' end='20'>
+            <GlobalConstantDeclaration start='6' end='20'>
                 <Names>
                     <Identifier start='12' end='15' name='ONE'/>
                 </Names>
                 <Initializers>
                     <Scalar start='18' end='19' type='INT' value='1'/>
                 </Initializers>
-            </ClassConstantDeclaration>
-            <ClassConstantDeclaration start='21' end='41'>
+            </GlobalConstantDeclaration>
+            <GlobalConstantDeclaration start='21' end='41'>
                 <Names>
                     <Identifier start='27' end='30' name='TWO'/>
                 </Names>
@@ -256,7 +256,7 @@
                         <Scalar start='39' end='40' type='INT' value='2'/>
                     </InfixExpression>
                 </Initializers>
-            </ClassConstantDeclaration>
+            </GlobalConstantDeclaration>
             <ClassDeclaration start='43' end='255' modifier='NONE'>
                 <ClassName>
                     <Identifier start='49' end='50' name='C'/>
@@ -266,7 +266,7 @@
                 <Interfaces>
                 </Interfaces>
                 <Block start='51' end='255' isCurly='true'>
-                    <ClassConstantDeclaration start='57' end='79'>
+                    <ClassConstantDeclaration start='57' end='79' modifier='public'>
                         <Names>
                             <Identifier start='63' end='68' name='THREE'/>
                         </Names>
@@ -279,7 +279,7 @@
                             </InfixExpression>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='84' end='120'>
+                    <ClassConstantDeclaration start='84' end='120' modifier='public'>
                         <Names>
                             <Identifier start='90' end='99' name='ONE_THIRD'/>
                         </Names>
@@ -302,7 +302,7 @@
                             </InfixExpression>
                         </Initializers>
                     </ClassConstantDeclaration>
-                    <ClassConstantDeclaration start='125' end='179'>
+                    <ClassConstantDeclaration start='125' end='179' modifier='public'>
                         <Names>
                             <Identifier start='131' end='139' name='SENTENCE'/>
                         </Names>
@@ -356,6 +356,11 @@
                                 </FormalParameter>
                             </FormalParameters>
                             <Block start='227' end='253' isCurly='true'>
+                                <ReturnStatement start='237' end='247'>
+                                    <Variable start='244' end='246' isDollared='true'>
+                                        <Identifier start='245' end='246' name='a'/>
+                                    </Variable>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>

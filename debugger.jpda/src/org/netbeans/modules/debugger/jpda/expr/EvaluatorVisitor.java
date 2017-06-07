@@ -131,6 +131,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -195,10 +196,8 @@ import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InterfaceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
@@ -362,11 +361,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             argTypes = new ArrayList<Type>(argVals.size());
             for (Value value : argVals) {
                 if (value == null) {
-                    VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
-                    if (vm == null) {
+                    ClassType objectClass = (ClassType) evaluationContext.getVMCache()
+                            .getClass(Object.class.getName());
+                    if (objectClass == null) {
                         return null;
                     }
-                    argTypes.add(vm.classesByName("java.lang.Object").get(0));
+                    argTypes.add(objectClass);
                 } else {
                     argTypes.add(value.type());
                 }
@@ -404,7 +404,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             } else {
                 type = evaluationContext.getFrame().location().declaringType();
                 if (enclosingClass != null) {
-                    ReferenceType dt = findEnclosingType(type, enclosingClass);
+                    ReferenceType dt = findEnclosingType(type, enclosingClass,
+                                                         evaluationContext.getVMCache());
                     if (dt != null) {
                         type = dt;
                     }
@@ -427,7 +428,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         type = objectReference.referenceType();
                         if (enclosingClass != null) {
                             Method[] methodPtr = new Method[] { null };
-                            ReferenceType enclType = findEnclosingTypeWithMethod(type, enclosingClass, methodName, paramTypes, argTypes, methodPtr);
+                            ReferenceType enclType = findEnclosingTypeWithMethod(
+                                    type, enclosingClass, methodName, paramTypes,
+                                    argTypes, methodPtr, evaluationContext.getVMCache());
                             if (enclType != null) {
                                 method = methodPtr[0];
                                 type = enclType;
@@ -440,7 +443,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (objectReference != null) {
                     type = objectReference.referenceType();
                     if (enclosingClass != null) {
-                        ReferenceType enclType = findEnclosingType(type, enclosingClass);
+                        ReferenceType enclType = findEnclosingType(type, enclosingClass,
+                                                                   evaluationContext.getVMCache());
                         if (enclType != null) {
                             ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
                             if (enclObject != null) {
@@ -570,8 +574,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                                                       String methodName,
                                                       List<? extends TypeMirror> paramTypes,
                                                       List<? extends Type> argTypes,
-                                                      Method[] methodPtr) {
-        ReferenceType etype = findEnclosingType(type, enclosingClass);
+                                                      Method[] methodPtr,
+                                                      VMCache vmCache) {
+        ReferenceType etype = findEnclosingType(type, enclosingClass, vmCache);
         if (etype == null) {
             return null;
         }
@@ -1586,6 +1591,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             String s2 = (right instanceof StringReference) ? ((StringReference) right).value() : toString(arg0, right, evaluationContext);
             return createStringMirrorWithDisabledCollection(s1 + s2, vm, evaluationContext);
         }
+        if (left == null && right instanceof PrimitiveValue ||
+            right == null && left instanceof PrimitiveValue) {
+            Throwable ex = new NullPointerException("");
+            ex.setStackTrace(new StackTraceElement[] {});
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
+            throw new IllegalStateException(ex.getLocalizedMessage(), ieex);
+        }
         switch (kind) {
             case EQUAL_TO:
                 return mirrorOf(vm, left == right || (left != null && left.equals(right)));
@@ -1719,11 +1731,14 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             ObjectReference objRef = (ObjectReference)exprValue;
             ReferenceType objType = objRef.referenceType();
-            VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
-            if (vm == null) {
-                return null;
+            ReferenceType collType = evaluationContext.getVMCache().getClass("java.util.Collection");
+            if (collType == null) {
+                VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+                if (vm == null) {
+                    return null;
+                }
+                collType = getOrLoadClass(vm, "java.util.Collection", evaluationContext);
             }
-            ReferenceType collType = getOrLoadClass(vm, "java.util.Collection", evaluationContext);
             if (!instanceOf(objRef.type(), collType)) {
                 Assert.error(arg0, "forEachNotApplicable");
             }
@@ -2071,7 +2086,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 ReferenceType declaringType = evaluationContext.getFrame().location().declaringType();
                 if (enclosingClass != null) {
-                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass);
+                    ReferenceType dt = findEnclosingType(declaringType, enclosingClass, evaluationContext.getVMCache());
                     if (dt != null) {
                         declaringType = dt;
                     }
@@ -2220,20 +2235,30 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
     }
 
-    private ReferenceType findEnclosingType(ReferenceType type, String name) {
+    private ReferenceType findEnclosingType(ReferenceType type, String name, VMCache cache) {
         if (type.name().equals(name)) {
             return type;
         }
-        List<ReferenceType> classes = type.virtualMachine().classesByName(name);
-        if (classes.size() == 1) {
-            return classes.get(0);
-        }
-        for (ReferenceType clazz : classes) {
-            if (isNestedOf(clazz, type)) {
-                return clazz;
+        ReferenceType enclosingType;
+        enclosingType = cache.getEnclosingType(type, name);
+        if (enclosingType == null) {
+            List<ReferenceType> classes = type.virtualMachine().classesByName(name);
+            if (classes.size() == 1) {
+                enclosingType = classes.get(0);
+            } else {
+                for (ReferenceType clazz : classes) {
+                    if (isNestedOf(clazz, type)) {
+                        enclosingType = clazz;
+                        break;
+                    }
+                }
+            }
+            if (enclosingType != null) {
+                cache.setEnclosingType(type, name, enclosingType);
             }
         }
-        return null;
+        long end = System.nanoTime();
+        return enclosingType;
     }
 
     private boolean isNestedOf(ReferenceType nested, ReferenceType type) {
@@ -2371,7 +2396,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (value instanceof String) {
             StringReference str = createStringMirrorWithDisabledCollection((String) value, vm, evaluationContext);
-            ClassType strClass = (ClassType) vm.classesByName("java.lang.String").get(0);
+            VMCache cache = evaluationContext.getVMCache();
+            ClassType strClass = (ClassType) cache.getClass(String.class.getName());
+            if (strClass == null) {
+                return str;
+            }
             try {
                 List<Value> args = Collections.emptyList();
                 return invokeMethod(arg0, strClass.methodsByName("intern").get(0),
@@ -2629,7 +2658,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     // 1) If 'this' is an instance of the outer class, use it directly.
                     // 2) If 'this' is an instance of the inner class, use this$0 (this$1,...)
                     ClassType thisClass = (ClassType) thisObject.type();
-                    ReferenceType outerClass = findEnclosingType(classType, className.substring(0, className.lastIndexOf('$')));
+                    ReferenceType outerClass = findEnclosingType(classType,
+                                                                 className.substring(0, className.lastIndexOf('$')),
+                                                                 evaluationContext.getVMCache());
                     if (outerClass != null) {
                         if (instanceOf(thisClass, outerClass)) {
                             // 'this' is an instance of the outer class, use it directly.
@@ -2680,11 +2711,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             argTypes = new ArrayList<Type>(argVals.size());
             for (Value value : argVals) {
                 if (value == null) {
-                    VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
-                    if (vm == null) {
+                    ClassType objectClass = (ClassType) evaluationContext.getVMCache().getClass(Object.class.getName());
+                    if (objectClass == null) {
                         return null;
                     }
-                    argTypes.add(vm.classesByName("java.lang.Object").get(0));
+                    argTypes.add(objectClass);
                 } else {
                     argTypes.add(value.type());
                 }
@@ -2712,7 +2743,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     // 1) If 'this' is an instance of the outer class, use it directly.
                     // 2) If 'this' is an instance of the inner class, use this$0 (this$1,...)
                     ClassType thisClass = (ClassType) thisObject.type();
-                    ReferenceType outerClass = findEnclosingType(classType, className.substring(0, className.lastIndexOf('$')));
+                    ReferenceType outerClass = findEnclosingType(classType,
+                                                                 className.substring(0, className.lastIndexOf('$')),
+                                                                 evaluationContext.getVMCache());
                     if (outerClass != null) {
                         if (instanceOf(thisClass, outerClass)) {
                             // 'this' is an instance of the outer class, use it directly.
@@ -2765,7 +2798,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
             Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
             throw new IllegalStateException(ieex);
         } finally {
             try {
@@ -3722,6 +3755,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     }
 
     @Override
+    public Mirror visitOpens(OpensTree node, EvaluationContext p) {
+        Assert.error(node, "noModules");
+        return super.visitOpens(node, p);
+    }
+
+    @Override
     public Mirror visitProvides(ProvidesTree node, EvaluationContext p) {
         Assert.error(node, "noModules");
         return super.visitProvides(node, p);
@@ -3820,7 +3859,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             InvalidExpressionException ieex = new InvalidExpressionException (isfex);
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
-            loggerMethod.info("InvocationException has occured when there were following VMs:\n"+
+            loggerMethod.info("InvocationException ("+iex.getLocalizedMessage()+") has occured when there were following VMs:\n"+
                     "evaluationThread VM: "+InvocationExceptionTranslated.printVM(evaluationThread.virtualMachine())+"\n"+
                     ((objectReference != null) ?
                      ("objectReference VM: "+InvocationExceptionTranslated.printVM(objectReference.virtualMachine())) :
@@ -3835,7 +3874,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             }
             Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
             throw new IllegalStateException(iex.getLocalizedMessage(), ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
@@ -3912,7 +3951,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             }
             Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
             throw new IllegalStateException(iex.getLocalizedMessage(), ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
@@ -4015,7 +4054,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
             Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
             throw new IllegalStateException(ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
@@ -4099,7 +4138,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
             Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex, true);
             throw new IllegalStateException(ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
@@ -4178,29 +4217,33 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     public static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType,
                                                   EvaluationContext evaluationContext) {
+        Class typeClass = null;
         if (primitiveType instanceof BooleanType) {
-            type = getOrLoadClass(type.virtualMachine(), Boolean.class.getName(), evaluationContext);
+            typeClass = Boolean.class;
         } else
         if (primitiveType instanceof ByteType) {
-            type = getOrLoadClass(type.virtualMachine(), Byte.class.getName(), evaluationContext);
+            typeClass = Byte.class;
         } else
         if (primitiveType instanceof CharType) {
-            type = getOrLoadClass(type.virtualMachine(), Character.class.getName(), evaluationContext);
+            typeClass = Character.class;
         } else
         if (primitiveType instanceof ShortType) {
-            type = getOrLoadClass(type.virtualMachine(), Short.class.getName(), evaluationContext);
+            typeClass = Short.class;
         } else
         if (primitiveType instanceof IntegerType) {
-            type = getOrLoadClass(type.virtualMachine(), Integer.class.getName(), evaluationContext);
+            typeClass = Integer.class;
         } else
         if (primitiveType instanceof LongType) {
-            type = getOrLoadClass(type.virtualMachine(), Long.class.getName(), evaluationContext);
+            typeClass = Long.class;
         } else
         if (primitiveType instanceof FloatType) {
-            type = getOrLoadClass(type.virtualMachine(), Float.class.getName(), evaluationContext);
+            typeClass = Float.class;
         } else
         if (primitiveType instanceof DoubleType) {
-            type = getOrLoadClass(type.virtualMachine(), Double.class.getName(), evaluationContext);
+            typeClass = Double.class;
+        }
+        if (typeClass != null) {
+            type = evaluationContext.getVMCache().getClass(typeClass.getName());
         }
         return type;
     }
@@ -4492,9 +4535,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return null;
         }
 
+        ClassType clazz = (ClassType) evaluationContext.getVMCache().getClass(Class.class.getName());
+        if (clazz == null) {
+            return null;
+        }
         evaluationContext.methodToBeInvoked();
         try {
-            ClassType clazz = (ClassType) vm.classesByName(Class.class.getName()).get(0);
             com.sun.jdi.Method forName = clazz.concreteMethodByName("forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
             StackFrame frame = evaluationContext.getFrame();
             ClassLoaderReference executingClassloader = frame.location().declaringType().classLoader();

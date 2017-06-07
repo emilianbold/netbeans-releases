@@ -66,7 +66,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
@@ -343,7 +342,7 @@ public class NpmExecutable {
     }
 
     private void stopRunningScript(String script) {
-        NodeProcesses.RunInfo npmScript = NodeJsSupport.forProject(project).getNodeProcesses().getNpmScript(script);
+        NodeProcesses.RunInfo npmScript = NodeProcesses.forProject(project).getNpmScript(script);
         if (!npmScript.isRunning()) {
             return;
         }
@@ -354,7 +353,7 @@ public class NpmExecutable {
     }
 
     private void setRunningScript(String script, AtomicReference<Future<Integer>> taskRef) {
-        NodeJsSupport.forProject(project).getNodeProcesses().setNpmScript(script, NodeProcesses.RunInfo.run(taskRef));
+        NodeProcesses.forProject(project).setNpmScript(script, NodeProcesses.RunInfo.run(taskRef));
     }
 
     @CheckForNull

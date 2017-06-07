@@ -45,11 +45,17 @@ import org.netbeans.modules.jshell.model.ConsoleModel;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.modules.jshell.model.ConsoleContents;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -74,13 +80,26 @@ public class ConsoleEmbeddingProvider extends EmbeddingProvider {
         if (session == null) {
             return Collections.emptyList();
         }
-        ConsoleModel model = session.getModel();
-        if (model == null) {
-            return Collections.emptyList();
+        List[] res = new List[1];
+        try {
+            ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ConsoleContents cts = ConsoleContents.get(resultIterator);
+                    if (cts == null) {
+                        res[0] = Collections.emptyList();
+                        return;
+                    }
+                    ConsoleSection inputSection = cts.getInputSection();
+                    EmbeddingProcessor p = new EmbeddingProcessor(session, cts, snapshot, inputSection);
+                    res[0] = p.process();
+                }
+                
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        ConsoleSection inputSection = model.parseInputSection(snapshot);
-        EmbeddingProcessor p = new EmbeddingProcessor(session, model, snapshot, inputSection);
-        return p.process();
+        return (List<Embedding>)res[0];
     }
     
     @Override

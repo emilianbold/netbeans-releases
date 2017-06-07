@@ -1551,7 +1551,7 @@ public final class CsmProjectContentResolver {
     }
 
     private boolean matchName(CharSequence name, String strPrefix, boolean match) {
-        return CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive);
+        return CsmSortUtilities.startsWith(name.toString(), strPrefix, match, caseSensitive);
     }
 
     public boolean matchVisibility(CsmMember member, CsmVisibility minVisibility) {

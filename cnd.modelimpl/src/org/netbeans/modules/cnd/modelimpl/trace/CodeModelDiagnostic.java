@@ -47,6 +47,13 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -132,13 +139,23 @@ public final class CodeModelDiagnostic {
                     printOut.printf("UNKNOWN FOR ME [%s] %s%n", csmFile.getClass().getName(), csmFile.toString());// NOI18N
                 }
             }
+            Collection<? extends Document> docs = context.lookupAll(Document.class); 
+            for (Document doc : docs) {
+                Language language = (Language) doc.getProperty(Language.class);
+                printOut.printf("DocLanguage: %s%n", language); // NOI18N
+                InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+                if (lexerAttrs != null && language != null) {
+                    Filter<?> filter = (Filter<?>) lexerAttrs.getValue(LanguagePath.get(language), CndLexerUtilities.LEXER_FILTER);
+                    printOut.printf("\tDocLanguageFilter: %s%n", filter); // NOI18N
+                }
+            }
             Collection<? extends DataObject> dobs = context.lookupAll(DataObject.class);
             if (!dobs.isEmpty()) {
-                boolean foundItem = false;
+                boolean foundItemSet = false;
                 for(DataObject dob : dobs) {
                     NativeFileItemSet nfis = dob.getLookup().lookup(NativeFileItemSet.class);
                     if (nfis != null) {
-                        foundItem = true;
+                        foundItemSet = true;
                         printOut.printf("NativeFileItemSet has %d elements%n", nfis.getItems().size());// NOI18N
                         int ind = 0;
                         for (NativeFileItem item : nfis.getItems()) {
@@ -197,7 +214,7 @@ public final class CodeModelDiagnostic {
                         }
                     }
                 }
-                if(!foundItem) {
+                if(!foundItemSet) {
                     printOut.printf("no NativeFileItemSet in %s%n", context);// NOI18N
                 }
             } else {

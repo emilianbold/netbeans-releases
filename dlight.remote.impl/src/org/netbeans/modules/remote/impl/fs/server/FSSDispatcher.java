@@ -61,7 +61,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -108,12 +107,10 @@ import org.openide.util.RequestProcessor;
     private final Map<Integer, FSSResponse> responses = new LinkedHashMap<>();
     private final Object responseLock = new Object();
 
-    private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
+    private static final String USER_DEFINED_REMOTE_SERVER_PATH = System.getProperty("remote.fs_server.path");
+    private static final String USER_DEFINED_LOCAL_SERVER_PATH = System.getProperty("local.fs_server.path");
     private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0); // NOI18N
-    private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
-    private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
     private static final String SERVER_CACHE = System.getProperty("remote.fs_server.remote.cache");
-    private static final int SERVER_THREADS = Integer.getInteger("remote.fs_server.threads", 0); // NOI18N
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -136,16 +133,7 @@ import org.openide.util.RequestProcessor;
     private volatile FileSystemProvider.AccessCheckType accessCheckType;
     
     private String getMinServerVersion() {
-        if (HostInfoUtils.isHostInfoAvailable(env)) {
-            try {
-                if (HostInfoUtils.getHostInfo(env).getCpuFamily() == HostInfo.CpuFamily.ARM) {
-                    return "1.7.0"; // NOI18N
-                }
-            } catch (IOException | ConnectionManager.CancellationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return "1.10.2"; // NOI18N
+        return "1.12.0"; // NOI18N
     }
     
     private FSSDispatcher(ExecutionEnvironment env) {
@@ -202,8 +190,6 @@ import org.openide.util.RequestProcessor;
             // nothing to report: no connection => no refresh
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
-        } catch (CancellationException ex) {
-            // don't report CancellationException
         } catch (InterruptedException ex) {
             // don't report InterruptedException
         } catch (ExecutionException ex) {
@@ -395,7 +381,7 @@ import org.openide.util.RequestProcessor;
      * Otherwise it should just return true or false.
      */
     public boolean isValidSlow()
-            throws ConnectException, ConnectionManager.CancellationException, InterruptedException {
+            throws ConnectException, InterruptedException {
         FsServer srv = null;
         try {
             srv = getOrCreateServer();
@@ -446,12 +432,12 @@ import org.openide.util.RequestProcessor;
     }
 
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
-            CancellationException, InterruptedException, ExecutionException {
+            InterruptedException, ExecutionException {
         return dispatch(request, null);
     }
     
     public FSSResponse dispatch(FSSRequest request, FSSResponse.Listener listener) throws IOException, ConnectException, 
-            CancellationException, InterruptedException, ExecutionException {
+            InterruptedException, ExecutionException {
         FSSResponse response = null;
         if (request.needsResponse()) {
             response = new FSSResponse(request, this, listener, env);
@@ -464,8 +450,6 @@ import org.openide.util.RequestProcessor;
         FsServer srv;
         try {
             srv = getOrCreateServer();
-        } catch (ConnectionManager.CancellationException ex) {
-            throw new java.util.concurrent.CancellationException(ex.getMessage());
         } catch (ConnectException ex) {
             throw ex; // that's normal, transport still valid, just disconnect occurred
         } catch (IOException ex) {
@@ -500,6 +484,21 @@ import org.openide.util.RequestProcessor;
         RemoteLogger.finest("### sending request {0}", buffer);
         writer.print(buffer);
         writer.flush();   
+    }
+
+    void shutdown() {
+        FsServer server = getServer();
+        if (server != null) {            
+            NativeProcess process = server.getProcess();
+            if (process.isAlive()) {
+                FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_QUIT, "", true); //NOI18N
+                try {
+                    dispatch(req);
+                } catch (IOException | InterruptedException | ExecutionException ex) {
+                    RemoteLogger.fine(ex);
+                }
+            }
+        }
     }
 
     private FsServer getServer() {        
@@ -552,7 +551,7 @@ import org.openide.util.RequestProcessor;
     }
     
     private String checkServerSetup() throws ConnectException, IOException, 
-            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
+            InterruptedException, ExecutionException {
 
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
@@ -564,17 +563,32 @@ import org.openide.util.RequestProcessor;
         } catch (IOException ioe) {
             setInvalid(true);
             throw ioe;
+        } catch (ConnectionManager.CancellationException ex) {
+            // we can never get here since we already checked isConnectedTo above
+            Exceptions.printStackTrace(ex);
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
         }
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+        HostInfo hostInfo;
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(env);
+        } catch (ConnectionManager.CancellationException ex) {
+            Exceptions.printStackTrace(ex); // can never happen as we checked isConnected() above
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+        }
 
-        String remotePath = USER_DEFINED_SERVER_PATH;
+        String remotePath = USER_DEFINED_REMOTE_SERVER_PATH;
         if (remotePath == null) {
             remotePath = hostInfo.getTempDir() + "/" + toolPath; // NOI18N
         }
         String remoteBase = PathUtilities.getDirName(remotePath);
         
-        File localFile = InstalledFileLocator.getDefault().locate(
-                toolPath, "org.netbeans.modules.remote.impl", false); // NOI18N
+        File localFile;
+        if (USER_DEFINED_LOCAL_SERVER_PATH != null) {
+            localFile = new File(USER_DEFINED_LOCAL_SERVER_PATH);
+        } else {
+            localFile = InstalledFileLocator.getDefault().locate(
+                    toolPath, "org.netbeans.modules.remote.impl", false); // NOI18N
+        }
         if (localFile != null && localFile.exists()) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/mkdir").setArguments("-p", remoteBase); // NOI18N
@@ -596,8 +610,7 @@ import org.openide.util.RequestProcessor;
     }
     
     private FsServer getOrCreateServer() throws IOException, ConnectException, 
-            ConnectionManager.CancellationException, InterruptedException, 
-            ExecutionException, InitializationException {
+            InterruptedException, ExecutionException, InitializationException {
         synchronized (serverLock) {
             if (server != null) {
                 if (!ProcessUtils.isAlive(server.getProcess())) {
@@ -609,7 +622,13 @@ import org.openide.util.RequestProcessor;
                     throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                 }
                 String path = checkServerSetup();
-                server = new FsServer(path);
+                try {
+                    server = new FsServer(path);
+                } catch (ConnectionManager.CancellationException ex) {
+                    // we can never get here since we checked isConnectedTo above
+                    Exceptions.printStackTrace(ex);
+                    throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+                }
                 RP.post(new ErrorReader(server.getProcess().getErrorStream()));
                 try {
                     handShake();
@@ -796,12 +815,21 @@ import org.openide.util.RequestProcessor;
                 argsList.add("-r"); // NOI18N
                 argsList.add("" + REFRESH_INTERVAL);
             }
+            final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
             if (VERBOSE > 0) {
                 argsList.add("-v"); // NOI18N
                 argsList.add("" + VERBOSE); // NOI18N
             }
-            if (LOG) {
+            if (Boolean.getBoolean("remote.fs_server.log")) {
                 argsList.add("-l"); // NOI18N
+            }
+            // the "remote.fs_server.redirect.err" property can contain either "true" or "false" or file name
+            String redirectErr = System.getProperty("remote.fs_server.redirect.err");
+            if (redirectErr != null && !redirectErr.equalsIgnoreCase("false")) { //NOI18N
+                argsList.add("-e"); // NOI18N
+                if (!redirectErr.equalsIgnoreCase("true")) { // NOI18N
+                    argsList.add(redirectErr);
+                }
             }
             if (cleanupUponStart) {
                 argsList.add("-c"); // NOI18N
@@ -811,6 +839,7 @@ import org.openide.util.RequestProcessor;
                     argsList.add("-c"); // NOI18N
                 }
             }
+            final int SERVER_THREADS = Integer.getInteger("remote.fs_server.threads", 0); // NOI18N
             if (SERVER_THREADS > 0 ) {
                 argsList.add("-t"); // NOI18N
                 argsList.add(Integer.toString(SERVER_THREADS));
@@ -855,7 +884,8 @@ import org.openide.util.RequestProcessor;
 
 
             reader = new BufferedReader(new InputStreamReader(inputStream, charset));
-            StringBuilder sb = new StringBuilder("Started remote agent ").append(path).append(' '); // NOI18N
+            StringBuilder sb = new StringBuilder("[").append(env.getDisplayName()).append("] "). // NOI18N
+                    append("Started remote agent ").append(path).append(' '); // NOI18N
             for (String p : args) {
                 sb.append(p).append(' ');
             }
@@ -869,6 +899,7 @@ import org.openide.util.RequestProcessor;
         }
         
         private String getCacheDirectory() throws IOException, ConnectionManager.CancellationException {
+            final String SERVER_CACHE = System.getProperty("remote.fs_server.remote.cache");
             if (SERVER_CACHE != null) {
                 return SERVER_CACHE;
             } else {

@@ -50,6 +50,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -105,8 +106,12 @@ public class EntityAssociationResolverTest extends SourceTestSupport {
         IndexingManager.getDefault().refreshIndexAndWait(src.getURL(), null);
         return  EntityMappingsMetadataModelFactory.createMetadataModel(
                 ClassPath.getClassPath(src, ClassPath.BOOT),
+                ClassPath.getClassPath(src, JavaClassPathConstants.MODULE_BOOT_PATH),
                 ClassPath.getClassPath(src, ClassPath.COMPILE),
-                ClassPath.getClassPath(src, ClassPath.SOURCE));
+                ClassPath.getClassPath(src, JavaClassPathConstants.MODULE_COMPILE_PATH),
+                ClassPath.getClassPath(src, JavaClassPathConstants.MODULE_CLASS_PATH),
+                ClassPath.getClassPath(src, ClassPath.SOURCE),
+                ClassPath.getClassPath(src, JavaClassPathConstants.MODULE_SOURCE_PATH));
     }
 
     /**

@@ -48,7 +48,9 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.openide.util.Lookup;
 
 /**
@@ -77,6 +79,8 @@ public abstract class CsmBaseUtilitiesProvider {
     public abstract boolean isDummyForwardClass(CsmDeclaration decl);
 
     public abstract CharSequence getDummyForwardSimpleQualifiedName(CsmDeclaration decl);
+    
+    public abstract CsmExpression getDecltypeExpression(CsmType type);
 
     /**
      * Implementation of the compound provider
@@ -176,6 +180,15 @@ public abstract class CsmBaseUtilitiesProvider {
                 qname = provider.getDummyForwardSimpleQualifiedName(decl);
             }
             return (qname == null) ? decl.getName() : qname;
+        }
+
+        @Override
+        public CsmExpression getDecltypeExpression(CsmType type) {
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
+                return provider.getDecltypeExpression(type);
+            }
+            return null;
         }
     }
 }

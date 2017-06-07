@@ -95,7 +95,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         super(name, kind, file, start, end);
     }
     
-    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, MutableDeclarationsContainer container) throws AstRendererException {
+    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, String languageFlavor, FileContent fileContent, boolean register, MutableDeclarationsContainer container) throws AstRendererException {
         assert !APTLanguageSupport.getInstance().isLanguageC(language) : "Function specialization is not allowed in C"; // NOI18N
         
         NameHolder nameHolder = NameHolder.createName(getClassName(ast));
@@ -105,7 +105,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         if (clsImpl != null) {
             impl = clsImpl;
         } else {
-            impl.init(scope, ast, file, fileContent, language, register, container);
+            impl.init(scope, ast, file, fileContent, language, languageFlavor, register, container);
             container.addDeclaration(impl);
         }
         nameHolder.addReference(fileContent, impl);

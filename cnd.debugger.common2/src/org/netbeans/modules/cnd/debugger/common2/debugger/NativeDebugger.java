@@ -94,6 +94,7 @@ public interface NativeDebugger extends BreakpointProvider {
     public State state();
 
     public FileMapper fmap();
+    public void setVisitedLocation(Location loc, boolean changeFocus);
     public void setVisitedLocation(Location visitingLocation);
     public Location getVisitedLocation();
 

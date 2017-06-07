@@ -762,7 +762,7 @@ public class BinaryAnalyser {
             this.classFile = classFile;
             final ClassName name = classFile.getName ();
             if (classFile.isModule()) {
-                this.className = FileObjects.getPackageAndName(CONVERTOR.convert(name))[0];
+                this.className = classFile.getModule().getName();
                 final String simpleName = name.getSimpleName();
                 assert FileObjects.MODULE_INFO.equals(simpleName);
                 this.fileName = String.format("%s.%s", simpleName, FileObjects.CLASS);    //NOI18N

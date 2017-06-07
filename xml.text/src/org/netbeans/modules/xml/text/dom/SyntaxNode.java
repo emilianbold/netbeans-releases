@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.xml.text.dom;
 
+import org.netbeans.modules.xml.text.api.dom.XMLSyntaxSupport;
 import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
@@ -67,13 +70,22 @@ import org.w3c.dom.UserDataHandler;
  * @version 1.0
  */
 
-public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.Node {
+public abstract class SyntaxNode extends BaseSyntaxElement implements org.w3c.dom.Node {
 
     /** Creates new SyntaxNode */
     SyntaxNode(XMLSyntaxSupport support, Token first, int start, int end)  {
         super( support, first, start, end);
     }
 
+    @Override
+    public int getType() {
+        return getNodeType();
+    }
+
+    @Override
+    public Node getNode() {
+        return this;
+    }
     /**
      * Default implementation returning first previous <code>SyntaxNode</code>
      * or <code>null</code>. It is <code>StartTag</code> aware.
@@ -92,8 +104,8 @@ public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.No
     /**
      * Find previous SyntaxNode instance or <code>null</code>.
      */
-    static SyntaxNode findPrevious(SyntaxElement el) {
-        SyntaxElement prev = el.getPrevious();
+    static SyntaxNode findPrevious(BaseSyntaxElement el) {
+        BaseSyntaxElement prev = el.getPrevious();
         while ((prev instanceof SyntaxNode) == false) {
             if (prev == null) return null;            
             prev = prev.getPrevious();
@@ -125,8 +137,8 @@ public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.No
     /**
      * Find previous SyntaxNode instance or <code>null</code>.
      */
-    static SyntaxNode findNext(SyntaxElement el) {
-        SyntaxElement next = el.getNext();
+    static SyntaxNode findNext(BaseSyntaxElement el) {
+        BaseSyntaxElement next = el.getNext();
         while ((next instanceof SyntaxNode) == false) {
             if (next == null) return null;            
             next = next.getNext();
@@ -139,6 +151,11 @@ public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.No
      */
     SyntaxNode findNext() {
         return findNext(this);
+    }
+    
+    public SyntaxElement getParentElement() {
+        Node n = getParentNode();
+        return n instanceof SyntaxElement ? (SyntaxElement)n : null;
     }
     
     /**
@@ -338,5 +355,4 @@ public abstract class SyntaxNode extends SyntaxElement implements org.w3c.dom.No
     public void setIdAttributeNode(org.w3c.dom.Attr a, boolean b) {
         throw new UOException ();
     }
-    
 }

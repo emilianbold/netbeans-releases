@@ -80,7 +80,7 @@ public class LogFormatterTest extends NbTestCase {
         rec.setThrown(thrown);
         String result = new LogFormatter().format(rec);
         assertTrue(result.contains("java.lang.NullPointerException: TESTING"));
-        assertTrue(result.contains("<level>SEVERE</level>"));
+        assertTrue(result.contains("<level>1000</level>"));
         assertTrue(result.contains("<method>testFormat</method>"));
         assertTrue(result.contains("<message>java.lang.AssertionError: CAUSE PROBLEM</message>"));
         assertTrue(result.contains("<more>"));
@@ -125,14 +125,14 @@ public class LogFormatterTest extends NbTestCase {
         LogRecord rec = new LogRecord(Level.SEVERE, "PROBLEM");
         LogFormatter logFormatter = new LogFormatter();
         XMLFormatter xmlFormatter = new XMLFormatter();
-        String logResult = logFormatter.format(rec);
+        String logResult = logFormatter.format(rec).replace("1000", "SEVERE");
         String xmlResult = xmlFormatter.format(rec);
         assertEquals("WITHOUT THROWABLE", xmlResult, logResult);
         rec.setThrown(new NullPointerException("TESTING EXCEPTION"));
         rec.setResourceBundleName("MUJ BUNDLE");
         logResult = logFormatter.format(rec);
         //remove file names
-        logResult = logResult.replaceAll("      <file>.*</file>\n", "");
+        logResult = logResult.replaceAll("      <file>.*</file>\n", "").replace("1000", "SEVERE");
         xmlResult = xmlFormatter.format(rec);
         assertEquals("WITH THROWABLE", xmlResult, logResult);
     }

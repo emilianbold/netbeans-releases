@@ -95,8 +95,7 @@ public final class OpenInEditorAction implements Runnable {
 
     private void doEDT() {
         if (lc != null) {
-            // XXX opens +-1 line
-            Line l = lc.getLineSet().getOriginal(lineNumber);
+            Line l = lc.getLineSet().getOriginal(lineNumber - 1);
             l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         }
     }

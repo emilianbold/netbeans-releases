@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainValidator;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -195,7 +196,15 @@ public final class ToolchainUtilities {
         return name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
     }
     
-    
+    /**
+     * Modify path env variable according tool collection rules.
+     * 
+     * @param execEnv
+     * @param env
+     * @param cs tool collection
+     * @param type of action. Supported "run" or "build" action.
+     * @return 
+     */
     public static Pair<String,String> modifyPathEnvVariable(final ExecutionEnvironment execEnv, final Map<String, String> env, final CompilerSet cs, final String type) {
         String macro;
         if ("run".equals(type)) { //NOI18N
@@ -221,6 +230,21 @@ public final class ToolchainUtilities {
             converter.updateUtilitiesPath(path);
         }
         converter.updateToolPath(cs.getDirectory());
+        String expandedPath = converter.expand(macro);
+        env.put(converter.pathName, expandedPath);
+        return Pair.of(converter.pathName, expandedPath);
+    }
+
+    /**
+     * Returns original path env variable.
+     * 
+     * @param execEnv
+     * @param env
+     * @return 
+     */
+    public static Pair<String,String> defaultPathEnvVariable(final ExecutionEnvironment execEnv, final Map<String, String> env) {
+        String macro = CompilerSetPreferences.DEFAULT_TRIVIAL_PATH;
+        MacroConverter converter = new MacroConverter(execEnv, env);
         String expandedPath = converter.expand(macro);
         env.put(converter.pathName, expandedPath);
         return Pair.of(converter.pathName, expandedPath);
@@ -290,7 +314,7 @@ public final class ToolchainUtilities {
                 }
                 if (pathName != null) {
                     if (!"PATH".equals(pathName)) { //NOI18N
-                        in = in.replace("${PATH}", "${"+pathName+"}"); //NOI18N
+                        in = in.replace(CompilerSetPreferences.DEFAULT_TRIVIAL_PATH, "${"+pathName+"}"); //NOI18N
                     }
                 }
                 if (pathSeparator != null) {

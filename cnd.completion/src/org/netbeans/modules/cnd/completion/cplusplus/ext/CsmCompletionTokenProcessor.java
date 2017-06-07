@@ -88,6 +88,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     private int endScanOffset;
     private boolean supportTemplates;
     private boolean supportLambdas;
+    private boolean supportUserDefinedLiterals;
     private boolean supportUniformInitialization;
     private int nrQuestions = 0;
 
@@ -126,6 +127,15 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
      */
     void enableLambdaSupport(boolean supportLambdas) {
         this.supportLambdas = supportLambdas;
+    }
+    
+    /**
+     * Set whether user defined literals should be enabled.
+     *
+     * @param supportLambdas true to parse expression as being in syntax with lambdas
+     */
+    void enableUserDefinedLiteralsSupport(boolean supportUserDefinedLiterals) {
+        this.supportUserDefinedLiterals = supportUserDefinedLiterals;
     }
     
     /**
@@ -1185,11 +1195,16 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 || tokenID == CppTokenId.TYPEID
                 || tokenID == CppTokenId.ALIGNOF
                 || tokenID == CppTokenId.__ALIGNOF
-                || tokenID == CppTokenId.__ALIGNOF__) {
+                || tokenID == CppTokenId.__ALIGNOF__
+                || tokenID == CppTokenId.FINAL
+                || tokenID == CppTokenId.OVERRIDE) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
         }
+        
+        CppTokenId prevLastValidTokenID = lastValidTokenID;
+        
         // assign helper variables
         if (tokenID != null) {
             if (lastValidTokenID == CppTokenId.COLON) {
@@ -1487,6 +1502,18 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             top.setExpID(PREPROC_DIRECTIVE);
                             top.addParameter(createTokenExp(VARIABLE));
                             break;
+                        case CONSTANT:
+                            if (supportUserDefinedLiterals && isCurrentTokenAdjacent(prevLastValidTokenID)) { 
+                                popExp(); // top
+                                constExp = createTokenExp(USER_DEFINED_LITERAL);
+                                constExp.addParameter(top);
+                                top = peekExp();
+                                topID = getValidExpID(top);
+                                break;
+                            } else {
+                                errorState = true;
+                                break;
+                            }
                         default:
                             errorState = true;
                             break;
@@ -1499,6 +1526,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 CsmCompletionExpression ternary = new CsmCompletionExpression(TERNARY_OPERATOR);
                 switch (topID) {
                     case CONSTANT:
+                    case USER_DEFINED_LITERAL:
                     case VARIABLE:
                     case METHOD:
                     case CONSTRUCTOR:
@@ -1613,6 +1641,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 // Operator handling
                 switch (topID) {
                     case CONSTANT:
+                    case USER_DEFINED_LITERAL:
                     case VARIABLE:
                     case METHOD:
                     case CONSTRUCTOR:
@@ -1664,6 +1693,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     // Operator handling
                     switch (topID) {
                         case CONSTANT:
+                        case USER_DEFINED_LITERAL:
                         case VARIABLE:
                         case METHOD:
                         case CONSTRUCTOR:
@@ -1693,6 +1723,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 if (supportTemplates) { // special treatment of Java 1.5 features
                     switch (topID) {
                         case CONSTANT: // check for "List<const" plus ">" case
+                        case USER_DEFINED_LITERAL: // check for List<123_km> case
                         case VARIABLE: // check for "List<var" plus ">" case
                         case TYPE: // check for "List<int" plus ">" case
                         case TYPE_REFERENCE: // check for "List<int*" plus ">" case
@@ -1799,6 +1830,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     // Operator handling
                     switch (topID) {
                         case CONSTANT:
+                        case USER_DEFINED_LITERAL:
                         case VARIABLE: // List<String
                         case METHOD:
                         case CONSTRUCTOR:
@@ -1827,6 +1859,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 if (supportTemplates) { // special treatment of C++ template features
                     switch (topID) {
                         case CONSTANT: // check for "List<const" plus ">" case
+                        case USER_DEFINED_LITERAL: // check for "List<123_km>" case
                         case VARIABLE: // check for "List<var" plus ">" case
                         case TYPE: // check for "List<int" plus ">" case
                         case TYPE_REFERENCE: // check for "List<int*" plus ">" case
@@ -1869,6 +1902,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     // Operator handling
                     switch (topID) {
                         case CONSTANT:
+                        case USER_DEFINED_LITERAL:
                         case VARIABLE: // List<String
                         case METHOD:
                         case CONSTRUCTOR:
@@ -2036,6 +2070,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             case MINUS:
                 switch (topID) {
                     case CONSTANT:
+                    case USER_DEFINED_LITERAL:
                     case VARIABLE:
                     case METHOD:
                     case CONSTRUCTOR:
@@ -2121,6 +2156,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             case SCOPE: // '::' found
                 switch (topID) {
                     case CONSTANT:
+                    case USER_DEFINED_LITERAL:
                     case VARIABLE:
                     case ARRAY:
                     case METHOD:
@@ -2209,6 +2245,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case TYPE:
                     case TYPE_REFERENCE:
                     case CONSTANT:
+                    case USER_DEFINED_LITERAL:
                     case VARIABLE: // can be "List<String" plus "," state
                     case CONSTRUCTOR:
                     case CONVERSION:
@@ -2412,6 +2449,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 boolean mtd = false;
                 switch (topID) {
                     case CONSTANT:
+                    case USER_DEFINED_LITERAL:
                     case VARIABLE:
                     case ARRAY:
                     case DOT:
@@ -2725,6 +2763,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case ARRAY:
                     case PARENTHESIS:
                     case CONSTANT:
+                    case USER_DEFINED_LITERAL:
                     case OPERATOR:
                     case UNARY_OPERATOR:
                     case MEMBER_POINTER:
@@ -2820,6 +2859,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             break;
                             
                         case CONSTANT:
+                        case USER_DEFINED_LITERAL:
                         case VARIABLE:
                         case ARRAY:
                         case DOT:
@@ -2880,7 +2920,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
             case CHAR_LITERAL:
                 constExp = createTokenExp(CONSTANT);
-                constExp.setType("char"); // NOI18N
+                constExp.setType(curTokenText.startsWith("L") ? // NOI18N
+                        CsmCompletion.WCHAR_CLASS.getName().toString()
+                        : CsmCompletion.CHAR_CLASS.getName().toString()); 
                 break;
 
             case RAW_STRING_LITERAL:
@@ -3484,6 +3526,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     @Override
     public boolean isStopped() {
         return false;
+    }
+    
+    private boolean isCurrentTokenAdjacent(CppTokenId prevLastValidTokenID) {
+        if (prevLastValidTokenID == null) {
+            return false;
+        }
+        switch (prevLastValidTokenID) {
+            case WHITESPACE:
+            case BLOCK_COMMENT:
+            case DOXYGEN_COMMENT:
+            case DOXYGEN_LINE_COMMENT:
+            case LINE_COMMENT:
+            case ESCAPED_LINE:
+            case ESCAPED_WHITESPACE:
+            case NEW_LINE:
+            case EOF:
+                return false;
+        }
+        return true;
     }
 
     private int findNextExpr(int from, int targetId, int ... restrictedIds) {

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -54,7 +55,7 @@ import org.openide.util.Lookup;
 public abstract class PkgConfigManager {
     private static final PkgConfigManager DEFAULT = new Default();
 
-    public abstract PkgConfig getPkgConfig(ExecutionEnvironment env);
+    public abstract PkgConfig getPkgConfig(ExecutionEnvironment env, MakeConfiguration conf);
 
     protected PkgConfigManager() {
     }
@@ -113,10 +114,10 @@ public abstract class PkgConfigManager {
         }
 
         @Override
-        public PkgConfig getPkgConfig(ExecutionEnvironment env) {
+        public PkgConfig getPkgConfig(ExecutionEnvironment env, MakeConfiguration conf) {
             PkgConfigManager service = getService();
             if (service != null) {
-                return service.getPkgConfig(env);
+                return service.getPkgConfig(env, conf);
             }
             return null;
         }

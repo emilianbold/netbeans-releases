@@ -162,12 +162,12 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 // we should try searching not only in namespace resolved found,
                 // but in numspaces with the same name in required projects
                 // iz #140787 cout, endl unresolved in some Loki files
-                Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<>();
-                namespacesToSearch.add(namespace);
-                namespacesToSearch.addAll(namespace.getInlinedNamespaces());
-                CharSequence nspQName = namespace.getQualifiedName();
                 final Collection<CsmProject> libraries;
                 libraries = Resolver3.getSearchLibraries(prjBase);
+                Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<>();
+                namespacesToSearch.add(namespace);
+                namespacesToSearch.addAll(CsmBaseUtilities.getInlinedNamespaces(namespace, libraries));
+                CharSequence nspQName = namespace.getQualifiedName();
                 for (CsmProject lib : libraries) {
                     CsmNamespace libNs = lib.findNamespace(nspQName);
                     if (libNs != null) {

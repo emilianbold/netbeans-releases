@@ -51,6 +51,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.Permission;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileLock;
@@ -78,8 +79,10 @@ public class RemoteFileURLConnection extends URLConnection {
         if (! RemoteFileURLStreamHandler.PROTOCOL.equals(url.getProtocol())) {
             throw new IllegalArgumentException("Illegal url protocol: " + url.getProtocol()); //NOI18N
         }
-        execEnv = ExecutionEnvironmentFactory.createNew(url.getUserInfo(), url.getHost(), url.getPort());
-        path = url.getFile();
+        String user = PathUtilities.unescapePath(url.getUserInfo());
+        String host = PathUtilities.unescapePath(url.getHost());
+        execEnv = ExecutionEnvironmentFactory.createNew(user, host, url.getPort());
+        path = PathUtilities.unescapePath(url.getFile());
     }
 
     @Override

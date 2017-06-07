@@ -56,9 +56,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -71,7 +74,8 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
             new HashSet<String>(Arrays.asList(new String[]{
                 ClassPath.SOURCE,
                 ClassPath.BOOT,
-                ClassPath.COMPILE
+                ClassPath.COMPILE,
+                JavaClassPathConstants.MODULE_BOOT_PATH
             }));
 
     public ClassPath findClassPath(
@@ -109,6 +113,7 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
             try {                
                 FileObject root = getOwnerRoot(file,resources);
                 if (root != null) {
+                    final JavaPlatform defPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
                     setLastUsedLibrary(root, lib);
                     if (ClassPath.SOURCE.equals(type)) {
                         return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
@@ -116,7 +121,10 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
                         resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
                         return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
                     } else if (ClassPath.BOOT.equals(type)) {
-                        return new ClassPath[] {JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries()};
+                        return new ClassPath[] {defPlatform.getBootstrapLibraries()};
+                    } else if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type) &&
+                            Util.JDK9.compareTo(defPlatform.getSpecification().getVersion()) <= 0) {
+                        return new ClassPath[] {defPlatform.getBootstrapLibraries()};
                     } else {
                         return new ClassPath[] {null};
                     }

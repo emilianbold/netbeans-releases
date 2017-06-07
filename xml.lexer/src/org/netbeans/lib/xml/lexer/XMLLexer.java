@@ -361,10 +361,13 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                             // note: it would be more correct to raise an error here,
                             // and return TAG PartType=Start, BUT some code already expects
                             // unfinished tags to be reported as TEXT.
-                            state = INIT;
+                            state = ISI_TEXT;
                             input.backup(1);
+                            break;
+                            /*
                             return tokenFactory.createToken(
                                     XMLTokenId.TEXT, input.readLength());
+                            */
                     }
                     break;
                     

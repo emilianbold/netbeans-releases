@@ -1003,6 +1003,18 @@
                                 <Identifier start='271' end='277' name='Logger'/>
                             </NamespaceName>
                             <Block start='278' end='316' isCurly='true'>
+                                <ReturnStatement start='289' end='310'>
+                                    <FieldAccess start='296' end='309'>
+                                        <Variable start='296' end='301' isDollared='true'>
+                                            <Identifier start='297' end='301' name='this'/>
+                                        </Variable>
+                                        <Field>
+                                            <Variable start='303' end='309' isDollared='false'>
+                                                <Identifier start='303' end='309' name='logger'/>
+                                            </Variable>
+                                        </Field>
+                                    </FieldAccess>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -1307,6 +1319,9 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='1132' end='1157' isCurly='true'>
+                                <ReturnStatement start='1142' end='1151'>
+                                    <Scalar start='1149' end='1150' type='INT' value='3'/>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>
@@ -1316,6 +1331,128 @@
                             <FormalParameters>
                             </FormalParameters>
                             <Block start='1191' end='1539' isCurly='true'>
+                                <ReturnStatement start='1201' end='1533'>
+                                    <ClassInstanceCreation start='1208' end='1532' anonymous='true'>
+                                        <Parameters>
+                                            <FieldAccess start='1218' end='1229'>
+                                                <Variable start='1218' end='1223' isDollared='true'>
+                                                    <Identifier start='1219' end='1223' name='this'/>
+                                                </Variable>
+                                                <Field>
+                                                    <Variable start='1225' end='1229' isDollared='false'>
+                                                        <Identifier start='1225' end='1229' name='prop'/>
+                                                    </Variable>
+                                                </Field>
+                                            </FieldAccess>
+                                        </Parameters>
+                                        <Superclass>
+                                            <NamespaceName start='1239' end='1244' isCurrent='false' isGlobal='false'>
+                                                <Identifier start='1239' end='1244' name='Outer'/>
+                                            </NamespaceName>
+                                        </Superclass>
+                                        <Interfaces>
+                                        </Interfaces>
+                                        <Block start='1245' end='1532' isCurly='true'>
+                                            <FieldsDeclaration start='1259' end='1274' modifier='private'>
+                                                <VariableNames>
+                                                    <Variable start='1267' end='1273' isDollared='true'>
+                                                        <Identifier start='1268' end='1273' name='prop3'/>
+                                                    </Variable>
+                                                </VariableNames>
+                                                <InitialValues>
+                                                </InitialValues>
+                                            </FieldsDeclaration>
+                                            <MethodDeclaration start='1288' end='1388' modifiers='public'>
+                                                <FunctionDeclaration start='1295' end='1388' isReference='false'>
+                                                    <Identifier start='1304' end='1315' name='__construct'/>
+                                                    <FormalParameters>
+                                                        <FormalParameter start='1316' end='1321' isMandatory='true' isVariadic='false'>
+                                                            <ParametrType>
+                                                            </ParametrType>
+                                                            <ParametrName>
+                                                                <Variable start='1316' end='1321' isDollared='true'>
+                                                                    <Identifier start='1317' end='1321' name='prop'/>
+                                                                </Variable>
+                                                            </ParametrName>
+                                                            <DefaultValue>
+                                                            </DefaultValue>
+                                                        </FormalParameter>
+                                                    </FormalParameters>
+                                                    <Block start='1335' end='1388' isCurly='true'>
+                                                        <ExpressionStatement start='1353' end='1374'>
+                                                            <Assignment start='1353' end='1373' operator='EQUAL'>
+                                                                <FieldAccess start='1353' end='1365'>
+                                                                    <Variable start='1353' end='1358' isDollared='true'>
+                                                                        <Identifier start='1354' end='1358' name='this'/>
+                                                                    </Variable>
+                                                                    <Field>
+                                                                        <Variable start='1360' end='1365' isDollared='false'>
+                                                                            <Identifier start='1360' end='1365' name='prop3'/>
+                                                                        </Variable>
+                                                                    </Field>
+                                                                </FieldAccess>
+                                                                <Variable start='1368' end='1373' isDollared='true'>
+                                                                    <Identifier start='1369' end='1373' name='prop'/>
+                                                                </Variable>
+                                                            </Assignment>
+                                                        </ExpressionStatement>
+                                                    </Block>
+                                                </FunctionDeclaration>
+                                            </MethodDeclaration>
+                                            <MethodDeclaration start='1402' end='1522' modifiers='public'>
+                                                <FunctionDeclaration start='1409' end='1522' isReference='false'>
+                                                    <Identifier start='1418' end='1423' name='func3'/>
+                                                    <FormalParameters>
+                                                    </FormalParameters>
+                                                    <Block start='1438' end='1522' isCurly='true'>
+                                                        <ReturnStatement start='1456' end='1508'>
+                                                            <InfixExpression start='1463' end='1507' operator='PLUS'>
+                                                                <InfixExpression start='1463' end='1490' operator='PLUS'>
+                                                                    <FieldAccess start='1463' end='1475'>
+                                                                        <Variable start='1463' end='1468' isDollared='true'>
+                                                                            <Identifier start='1464' end='1468' name='this'/>
+                                                                        </Variable>
+                                                                        <Field>
+                                                                            <Variable start='1470' end='1475' isDollared='false'>
+                                                                                <Identifier start='1470' end='1475' name='prop2'/>
+                                                                            </Variable>
+                                                                        </Field>
+                                                                    </FieldAccess>
+                                                                    <FieldAccess start='1478' end='1490'>
+                                                                        <Variable start='1478' end='1483' isDollared='true'>
+                                                                            <Identifier start='1479' end='1483' name='this'/>
+                                                                        </Variable>
+                                                                        <Field>
+                                                                            <Variable start='1485' end='1490' isDollared='false'>
+                                                                                <Identifier start='1485' end='1490' name='prop3'/>
+                                                                            </Variable>
+                                                                        </Field>
+                                                                    </FieldAccess>
+                                                                </InfixExpression>
+                                                                <MethodInvocation start='1493' end='1507'>
+                                                                    <Variable start='1493' end='1498' isDollared='true'>
+                                                                        <Identifier start='1494' end='1498' name='this'/>
+                                                                    </Variable>
+                                                                    <Method>
+                                                                        <FunctionInvocation start='1500' end='1507'>
+                                                                            <FucntionName start='1500' end='1505'>
+                                                                                <Variable start='1500' end='1505' isDollared='false'>
+                                                                                    <Identifier start='1500' end='1505' name='func1'/>
+                                                                                </Variable>
+                                                                            </FucntionName>
+                                                                            <Parameters>
+                                                                            </Parameters>
+                                                                        </FunctionInvocation>
+                                                                    </Method>
+                                                                </MethodInvocation>
+                                                            </InfixExpression>
+                                                        </ReturnStatement>
+                                                    </Block>
+                                                </FunctionDeclaration>
+                                            </MethodDeclaration>
+                                        </Block>
+                                    </ClassInstanceCreation>
+                                </ReturnStatement>
                             </Block>
                         </FunctionDeclaration>
                     </MethodDeclaration>

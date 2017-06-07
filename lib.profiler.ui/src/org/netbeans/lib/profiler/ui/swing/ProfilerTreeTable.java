@@ -72,6 +72,7 @@ import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -105,6 +106,8 @@ import org.netbeans.lib.profiler.ui.swing.renderer.ProfilerRenderer;
  * @author Jiri Sedlacek
  */
 public class ProfilerTreeTable extends ProfilerTable {
+    
+    private static final boolean DISABLE_TREEUI_FIX = Boolean.getBoolean("ProfilerTreeTable.disableTreeUIFix"); // NOI18N
     
     private final TableModelImpl model;
     private final ProfilerTreeTableTree tree;
@@ -143,7 +146,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         return getNextPath(path, true);
     }
     
-    private TreePath getNextPath(TreePath path, boolean down) {
+    TreePath getNextPath(TreePath path, boolean down) {
         TreeModel _model = model.treeModel;
         TreeNode node = (TreeNode)path.getLastPathComponent();
         if (down && _model.getChildCount(node) > 0)
@@ -167,6 +170,10 @@ public class ProfilerTreeTable extends ProfilerTable {
     }
     
     TreePath getPreviousPath(TreePath path) {
+        return getPreviousPath(path, true);
+    }
+    
+    TreePath getPreviousPath(TreePath path, boolean down) { // TODO: optimize the algorithm to use 'down'
         TreeModel _model = model.treeModel;
         TreeNode node = (TreeNode)path.getLastPathComponent();
         TreePath parentPath = path.getParentPath();
@@ -182,7 +189,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         node = (TreeNode)_model.getChild(parent, idx - 1);
         path = parentPath.pathByAddingChild(node);
 
-        while (_model.getChildCount(node) != 0) {
+        if (down) while (_model.getChildCount(node) != 0) {
             node = (TreeNode)_model.getChild(node, _model.getChildCount(node) - 1);
             path = path.pathByAddingChild(node);
         }
@@ -192,14 +199,17 @@ public class ProfilerTreeTable extends ProfilerTable {
     
     void selectPath(TreePath path, boolean scrollToVisible) {
         internal = true;
+        markExpansionTransaction();
         try {
-            tree.expandPath(path);
+//            tree.expandPath(path); // actually should not be needed, automatically expands the node further down
             tree.setSelectionPath(path);
             // Clear and select again to make sure the underlying tree is ready
             tree.setSelectionPath(null);
             tree.setSelectionPath(path);
+        } finally {
+            clearExpansionTransaction();
+            internal = false;
         }
-        finally { internal = false; }
         
         if (scrollToVisible) {
             Rectangle bounds = tree.getPathBounds(path);
@@ -232,6 +242,110 @@ public class ProfilerTreeTable extends ProfilerTable {
     
     public void setRootVisible(boolean rootVisible) {
         if (tree != null) tree.setRootVisible(rootVisible);
+    }
+    
+    
+    private void markExpansionTransaction() {
+        tree.putClientProperty(UIUtils.PROP_EXPANSION_TRANSACTION, Boolean.TRUE);
+    }
+    
+    private void clearExpansionTransaction() {
+        tree.putClientProperty(UIUtils.PROP_EXPANSION_TRANSACTION, null);
+        
+        TreePath[] selectedPaths = tree.getSelectionPaths();
+        model.fireTableDataChanged();
+        tree.setSelectionPaths(selectedPaths);
+    }
+    
+    public void collapseChildren(int row) {
+        if (tree != null) try {
+            markExpansionTransaction();
+            
+            TreePath tpath = tree.getPathForRow(row);
+            if (tpath == null || tree.isCollapsed(tpath)) return;
+            
+            TreeModel tmodel = tree.getModel();
+            Object selected = tpath.getLastPathComponent();
+            
+            int nchildren = tmodel.getChildCount(selected);
+            for (int i = 0; i < nchildren; i++)
+                tree.collapsePath(tpath.pathByAddingChild(tmodel.getChild(selected, i)));
+        
+        } finally {
+            clearExpansionTransaction();
+        }
+    }
+    
+    public void collapseAll() {
+        if (tree != null) try {
+            markExpansionTransaction();
+            
+            TreePath selected = tree.getSelectionPath();
+            if (selected != null && selected.getPathCount() > 2) {
+                tree.setSelectionPath(new TreePath(new Object[] {
+                    selected.getPathComponent(0), selected.getPathComponent(1)
+                }));
+            }
+            
+            TreeModel tmodel = tree.getModel();
+            Object root = tmodel.getRoot();
+            
+            int nchildren = tmodel.getChildCount(root);
+            for (int i = 0; i < nchildren; i++)
+                tree.collapsePath(new TreePath(new Object[] {
+                    root, tmodel.getChild(root, i)
+                }));
+            
+            tree.resetExpandedNodes();
+        
+        } finally {
+            clearExpansionTransaction();
+        }
+    }
+    
+    public void expandPlainPath(int row, int maxChildren) {
+        if (tree != null) try {
+            markExpansionTransaction();
+            
+            TreePath tpath = tree.getPathForRow(row);
+            if (tpath == null) return;
+            
+            TreeModel tmodel = tree.getModel();            
+            int childCount = tmodel.getChildCount(tpath.getLastPathComponent());
+        
+            while (childCount > 0 && childCount <= maxChildren) {
+                tpath = tpath.pathByAddingChild(tmodel.getChild(tpath.getLastPathComponent(), 0));
+                childCount = tmodel.getChildCount(tpath.getLastPathComponent());
+            }
+
+            tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, Boolean.TRUE);
+            try { tree.expandPath(tpath); selectPath(tpath, true); }
+            finally { tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, null); }
+            
+        } finally {
+            clearExpansionTransaction();
+        }
+    }
+    
+    public void expandFirstPath(int row) {
+        if (tree != null) try {
+            markExpansionTransaction();
+
+            TreePath tpath = tree.getPathForRow(row);
+            if (tpath == null) return;
+
+            TreeModel tmodel = tree.getModel();    
+
+            while (tmodel.getChildCount(tpath.getLastPathComponent()) > 0)
+                tpath = tpath.pathByAddingChild(tmodel.getChild(tpath.getLastPathComponent(), 0));
+
+            tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, Boolean.TRUE);
+            try { selectPath(tpath, true); }
+            finally { tree.putClientProperty(UIUtils.PROP_AUTO_EXPANDING, null); }
+
+        } finally {
+            clearExpansionTransaction();
+        }
     }
     
     public void makeTreeAutoExpandable(int maxChildToExpand) {
@@ -568,15 +682,18 @@ public class ProfilerTreeTable extends ProfilerTable {
         }
         
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return treeTableModel.isCellEditable(nodeForRow(rowIndex), columnIndex);
+            TreeNode node = nodeForRow(rowIndex);
+            return node == null ? false : treeTableModel.isCellEditable(node, columnIndex);
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return treeTableModel.getValueAt(nodeForRow(rowIndex), columnIndex);
+            TreeNode node = nodeForRow(rowIndex);
+            return node == null ? null : treeTableModel.getValueAt(node, columnIndex);
         }
         
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            treeTableModel.setValueAt(aValue, nodeForRow(rowIndex), columnIndex);
+            TreeNode node = nodeForRow(rowIndex);
+            if (node != null) treeTableModel.setValueAt(aValue, node, columnIndex);
         }
         
         Object getValueAt(TreeNode node, int column) {
@@ -922,6 +1039,7 @@ public class ProfilerTreeTable extends ProfilerTable {
         private boolean customRendering;
         
         private SynthLikeTreeUI synthLikeUI;
+        private boolean workaroundVerticalLines;
 
         
         ProfilerTreeTableTree(SortedFilteredTreeModel model) {
@@ -955,6 +1073,10 @@ public class ProfilerTreeTable extends ProfilerTable {
                 }
             } else {
                 super.setUI(ui);
+                
+                // #269500 - performance workaround for BasicTreeUI
+                if (!DISABLE_TREEUI_FIX && ui instanceof BasicTreeUI)
+                    workaroundVerticalLines = UIManager.getBoolean("Tree.paintLines"); // NOI18N
             }
         }
 
@@ -1000,13 +1122,31 @@ public class ProfilerTreeTable extends ProfilerTable {
             g.fillRect(rectX, 0, getWidth() - rectX, rowHeight);
             
             g.translate(customRendering ? -currentX : 0, -currentRowOffset);
-            super.paint(g);
+
+            // #269500 - performance workaround for BasicTreeUI
+            if (workaroundVerticalLines && !rootVisible && currentRowOffset > 0) {
+                rootVisible = true;
+                super.paint(g);
+                rootVisible = false;
+            } else {
+                super.paint(g);
+            }
         }
         
         private boolean isFirstColumn(TableColumnModel columns, int column) {
             int x = 0;
             for (int i = 0; i < column; i++) x += columns.getColumn(i).getWidth();
             return x == 0;
+        }
+        
+        void resetExpandedNodes() {
+            clearToggledPaths();
+            updateUI();
+        }
+        
+        public Enumeration<TreePath> getExpandedDescendants(TreePath parent) {
+            return Boolean.TRUE.equals(getClientProperty(UIUtils.PROP_AUTO_EXPANDING)) ?
+                   null : super.getExpandedDescendants(parent);
         }
         
         public void expandPath(TreePath path) {

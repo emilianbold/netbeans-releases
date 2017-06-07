@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -116,6 +117,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmRangeForStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.support.CsmClassifierResolver;
@@ -146,7 +148,9 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
+import org.netbeans.modules.cnd.completion.csm.CsmStatementResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -160,6 +164,8 @@ import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.ConstantPredicate;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
 import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.isDecltypeAutoType;
+import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
  *
@@ -736,6 +742,7 @@ abstract public class CsmCompletionQuery {
         }
         boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
         tp.enableLambdaSupport(isCpp11OrLater);
+        tp.enableUserDefinedLiteralsSupport(isCpp11OrLater);
         tp.enableUniformInitializationSupport(isCpp11OrLater);
         tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
         doc.render(new Runnable() {
@@ -803,6 +810,7 @@ abstract public class CsmCompletionQuery {
                 CsmFile csmFile = expression.getContainingFile();
                 boolean isCpp11OrLater = CsmFileInfoQuery.getDefault().isCpp11OrLater(csmFile);
                 tp.enableLambdaSupport(isCpp11OrLater);
+                tp.enableUserDefinedLiteralsSupport(isCpp11OrLater);
                 tp.enableUniformInitializationSupport(isCpp11OrLater);
                 tp.enableTemplateSupport(areTemplatesEnabled(csmFile));
                 CndTokenUtilities.processTokens(tp, cppTokenSequence, exprStartOffset, exprEndOffset, exprStartOffset);
@@ -1398,12 +1406,65 @@ abstract public class CsmCompletionQuery {
             return resolveType;
         }
 
-        private CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
+        /*package*/ CsmType getObjectType(CsmObject obj, boolean _constIfClassifier) {
             CsmType objType = CsmCompletion.getObjectType(obj, _constIfClassifier);
-            if (CsmKindUtilities.isVariable(obj) && isAutoType(objType)) {
-                objType = findAutoVariableType((CsmVariable) obj, objType);
+            if (isAutoType(objType) || isDecltypeAutoType(objType)) {
+                CsmType funAutoType = findAutoOrDecltypeAutoType(obj, null);
+                if (funAutoType != null) {
+                    objType = funAutoType;
+                }
             }
             return objType;
+        }
+        
+        private CsmType findAutoOrDecltypeAutoType(CsmFile file, int startOffset, MutableObject<Boolean> wasDeduced) {
+            FileReferencesContext fileRefs = (file == contextFile) ? getFileReferencesContext() : null;
+            CsmContext ctx = CsmOffsetResolver.findContext(file, startOffset, fileRefs);
+            CsmObject contextObject = ctx.getLastObject();
+            if (CsmKindUtilities.isType(contextObject)) {
+                contextObject = ctx.getLastOwner();
+            }
+            return findAutoOrDecltypeAutoType(contextObject, wasDeduced);
+        }
+        
+        private CsmType findAutoOrDecltypeAutoType(CsmObject contextObject, MutableObject<Boolean> wasDeduced) {
+            if (wasDeduced != null) {
+                wasDeduced.value = true;
+            }
+            if (CsmKindUtilities.isVariable(contextObject)) {
+                CsmVariable contextVar = (CsmVariable) contextObject;
+                if (isAutoType(contextVar.getType())) {
+                    return findAutoVariableType(contextVar, contextVar.getType());
+                } else if (isDecltypeAutoType(contextVar.getType())) {
+                    return findExpressionType(contextVar.getInitialValue());
+                } else {
+                    if (wasDeduced != null) {
+                        wasDeduced.value = false;
+                    }
+                    contextVar.getType();
+                }
+            } else if (CsmKindUtilities.isFunction(contextObject)) {
+                CsmFunction contextFunc  = (CsmFunction) contextObject;
+                if (isAutoType(contextFunc.getReturnType())) {
+                    // C++14 auto function without trailing type specifier
+                    CsmReturnStatement retStmt = CsmStatementResolver.findStatement(contextFunc.getDefinition().getBody(), CsmReturnStatement.class);
+                    if (retStmt != null) {
+                        return findExpressionType(retStmt.getReturnExpression());
+                    }
+                } else if (isDecltypeAutoType(contextFunc.getReturnType())) {
+                    // C++14 decltype(auto) function 
+                    CsmReturnStatement retStmt = CsmStatementResolver.findStatement(contextFunc.getDefinition().getBody(), CsmReturnStatement.class);
+                    if (retStmt != null) {
+                        return findExpressionType(retStmt.getReturnExpression());
+                    }
+                } else {
+                    if (wasDeduced != null) {
+                        wasDeduced.value = false;
+                    }
+                    return contextFunc.getReturnType();
+                }
+            }
+            return null;
         }
 
         private CsmType findAutoVariableType(CsmVariable var, CsmType varType) {
@@ -1644,19 +1705,18 @@ abstract public class CsmCompletionQuery {
         }
 
         List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp) {
-            return resolveObj(exp, new ContextCloneStrategy());
+            return resolveObj(exp, true, new ContextCloneStrategy());
         }
 
-        private List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp, ContextCloneStrategy cloneStrategy) {
+        private List<? extends CompletionItem> resolveObj(CsmCompletionExpression exp, boolean first, ContextCloneStrategy cloneStrategy) {
             Context ctx = cloneStrategy.cloneContext(this);
             ctx.setFindType(false);
             // when resolve type use full scope of search
             QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
             try {
-                if (ctx.resolveExp(exp, true)) {
-                    if (ctx.result != null && !ctx.result.getItems().isEmpty()) {
-                        return ctx.result.getItems();
-                    }
+                ctx.resolveExp(exp, first);
+                if (ctx.result != null && !ctx.result.getItems().isEmpty()) {
+                    return ctx.result.getItems();
                 }
             } finally {
                 // restore old
@@ -1942,6 +2002,48 @@ abstract public class CsmCompletionQuery {
             boolean methodOpen = false; // helper flag for unclosed methods
             boolean skipConstructors = (kind != ExprKind.NONE && kind != ExprKind.SCOPE);
             switch (item.getExpID()) {
+                case CsmCompletionExpression.USER_DEFINED_LITERAL: // Constant item with ud-suffix
+                    if (first) {
+                        Collection<CsmFunction> mtdList = new LinkedHashSet<CsmFunction>();
+                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
+                        //String operatorPrefix = "operator " + item.getTokenText(0);  // NOI18N
+                        if (resolve(item.getTokenOffset(0), item.getTokenText(0), openingSource)) {
+                            CompletionResolver.Result res = compResolver.getResult();
+                            res.addResulItemsToCol(mtdList);
+                        }
+                        if (!mtdList.isEmpty()) {
+                            List<CsmType> typeList = getTypeList(item, 0);
+                            if (typeList.size() == 1) {
+                                List<CsmFunction> filtered = CompletionSupport.filterUserDefinedLiterals(typeList.get(0), mtdList, openingSource);
+                                if (filtered.size() > 0) { // do we need this check?
+                                    mtdList = filtered;
+                                }
+                                if (last && !findType) {
+                                    String parmStr = formatTypeList(typeList, methodOpen);
+                                    result = new CsmCompletionResult(component, getBaseDocument(), mtdList,
+                                                formatType(lastType, true, true, false) + item.getTokenText(0) + '(' + parmStr + ')',
+                                                item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                } else {
+                                    lastType = CompletionSupport.extractFunctionType(this, mtdList, null, typeList);
+                                    staticOnly = false;
+                                }
+                            }
+                        } else {
+                            // Fallback
+                            if (last && !findType) {
+                                cont = false;
+                                lastType = null;
+                            } else { 
+                                // pretend that this is usual constant
+                                lastType = getPredefinedType(item); // Get the constant type
+                                staticOnly = false;
+                            }
+                        }
+                    } else { // Not the first item in a dot exp
+                        cont = false; // impossible to have constant inside the expression
+                    }
+                    break;
+                
                 case CsmCompletionExpression.CONSTANT: // Constant item
                     if (first) {
                         lastType = getPredefinedType(item); // Get the constant type
@@ -2003,6 +2105,27 @@ abstract public class CsmCompletionQuery {
                                                 }
                                             }
                                             result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                        } else if (openingSource) {
+                                            Result lookupSet = compResolver.getResult();
+                                            if (!lookupSet.getFileLocalFunctions().isEmpty()
+                                                    || !lookupSet.getLibFunctions().isEmpty()
+                                                    || !lookupSet.getGlobalProjectFunctions().isEmpty()
+                                                    || !lookupSet.getClassMethods().isEmpty()) {
+                                                List<CsmObject> filtered = new ArrayList<>();
+                                                lookupSet.addResulItemsToCol(filtered);
+                                                Iterator<CsmObject> iter = filtered.iterator();
+                                                while (iter.hasNext()) {
+                                                    CsmObject obj = iter.next();
+                                                    if (CsmKindUtilities.isFunction(obj)) {
+                                                        iter.remove();
+                                                    }
+                                                }
+                                                if (!filtered.isEmpty()) {
+                                                    result = new CsmCompletionResult(component, getBaseDocument(), filtered, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                                    break;
+                                                }
+                                            }
+                                            result = new CsmCompletionResult(component, getBaseDocument(), compResolver.getResult(), var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                         } else {
                                             result = new CsmCompletionResult(component, getBaseDocument(), compResolver.getResult(), var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                         }
@@ -2266,7 +2389,11 @@ abstract public class CsmCompletionQuery {
                     boolean outsiderTypeAlias = false;
                     CsmType typ = null;
                     CsmType contextType = lastType;
-                    if(first) {
+                    if (resolveTemplateVariable(item, first, last, kind)) {
+                        break;
+                    }
+                    if (first) {
+                        // TODO: in case of cpp 14 it is worth to reuse resolved object!
                         typ = resolveType(item.getParameter(0));
                     }
                     if(typ == null) {
@@ -2617,45 +2744,22 @@ abstract public class CsmCompletionQuery {
                             int varPos = item.getTokenOffset(nrTokens - 1);
                             if (item.getTokenID(nrTokens - 1) == CppTokenId.AUTO) {
                                 if (CsmFileInfoQuery.getDefault().isCpp11OrLater(contextFile)) {
-                                    CsmObject contextObject = CsmOffsetResolver.findObject(contextFile, item.getTokenOffset(0), getFileReferencesContext());
-                                    if (CsmKindUtilities.isVariable(contextObject)) {
-                                        CsmVariable contextVar = (CsmVariable) contextObject;
-                                        if (isAutoType(contextVar.getType())) {
-                                            CsmType autoVarType = findAutoVariableType(contextVar, contextVar.getType());
-                                            if (findType) {
-                                                lastType = autoVarType;
-                                            } else if (autoVarType != null) {
-                                                CsmType userFriendlyType = CsmUtilities.iterateTypeChain(autoVarType, new CsmUtilities.SmartTypeUnrollPredicate());
-                                                CsmClassifier autoVarCls = userFriendlyType.getClassifier();
-                                                if (CsmBaseUtilities.isValid(autoVarCls) && !CsmKindUtilities.isBuiltIn(autoVarCls)) {
-                                                    result = new CsmCompletionResult(
-                                                            component,
-                                                            getBaseDocument(),
-                                                            Arrays.asList(autoVarCls),
-                                                            varName,
-                                                            item,
-                                                            varPos,
-                                                            0,
-                                                            0,
-                                                            isProjectBeeingParsed(),
-                                                            contextElement,
-                                                            instantiateTypes
-                                                    );
-                                                }
-                                            }
-                                        }
-                                    } else if (CsmKindUtilities.isFunction(contextObject)) {
-                                        CsmFunction contextFunc  = (CsmFunction) contextObject;
-                                        CsmType returnType = contextFunc.getReturnType();
+                                    MutableObject<Boolean> wasDeduced = new MutableObject<>();
+                                    CsmType autoType = findAutoOrDecltypeAutoType(contextFile, item.getTokenOffset(0), wasDeduced);
+                                    if (autoType != null) {
                                         if (findType) {
-                                            lastType = returnType;
-                                        } else if (returnType != null) {
-                                            CsmClassifier returnCls = returnType.getClassifier();
-                                            if (CsmBaseUtilities.isValid(returnCls)) {
+                                            lastType = autoType;
+                                        } else {
+                                            CsmType userFriendlyType = autoType;
+                                            if (wasDeduced.value) {
+                                                userFriendlyType = CsmUtilities.iterateTypeChain(autoType, new CsmUtilities.SmartTypeUnrollPredicate());
+                                            }
+                                            CsmClassifier autoVarCls = userFriendlyType.getClassifier();
+                                            if (CsmBaseUtilities.isValid(autoVarCls) && !CsmKindUtilities.isBuiltIn(autoVarCls)) {
                                                 result = new CsmCompletionResult(
                                                         component,
                                                         getBaseDocument(),
-                                                        Arrays.asList(returnCls),
+                                                        Arrays.asList(autoVarCls),
                                                         varName,
                                                         item,
                                                         varPos,
@@ -3193,6 +3297,44 @@ abstract public class CsmCompletionQuery {
                 cont = false;
             }
             return cont;
+        }
+        
+        // Returns true if resolved (even if resolved with an error)
+        private boolean resolveTemplateVariable(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
+            if (!last || findType) {
+                if (CsmFileInfoQuery.getDefault().isCpp14OrLater(getContextFile())) {
+                    // Check if it is variable
+                    ContextCloneStrategy strategy;
+                    if (first) {
+                        strategy = new ContextCloneStrategy();
+                    } else {
+                        strategy = new ContextCloneStrategy(
+                                new ContextPropertyChanger()
+                                        .setStaticOnly(kind == ExprKind.SCOPE)
+                                        .setLastNamespace(lastNamespace)
+                                        .setLastType(lastType)
+                        );
+                    }
+                    List<? extends CompletionItem> candidates = resolveObj(item.getParameter(0), first, strategy);
+                    if (candidates != null && !candidates.isEmpty() && candidates.get(0) instanceof CsmResultItem) {
+                        CsmResultItem resItem = (CsmResultItem) candidates.get(0);
+                        if (CsmKindUtilities.isCsmObject(resItem.getAssociatedObject()) && CsmKindUtilities.isVariable((CsmObject) resItem.getAssociatedObject())) {
+                            CsmVariable var = (CsmVariable) resItem.getAssociatedObject();
+                            if (CsmKindUtilities.isTemplate(var)) {
+                                CsmObject inst = CompletionSupport.createInstantiation(this, (CsmTemplate) var, item, Collections.emptyList());
+                                if (CsmKindUtilities.isVariable(inst)) {
+                                    lastType = ((CsmVariable) inst).getType();
+                                    return true;
+                                }
+                            }
+                            // Error! Trying to instantiate non-template variable
+                            lastType = null;
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         private CsmFunctionDefinition getCsmLambda(CsmCompletionExpression lambdaFunction) {

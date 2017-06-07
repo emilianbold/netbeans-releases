@@ -80,24 +80,24 @@ public class BadgeProvider {
             boolean oldState = storage.contains(project);
             CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
             ProjectFiles: for( CsmFile file : project.getAllFiles() ) {
+                if (CsmFileInfoQuery.getDefault().isStandardHeadersIndexer(file)) {
+                    continue;
+                }
                 if (!file.getErrors().isEmpty()) {
-                    if (!storage.contains(file)) {
-                        storage.add(file);
+                    if (storage.add(file)) {
                         badgeStateChanged = true;
                     }
                     continue ProjectFiles;
                 }
                 for (CsmInclude incl : fiq.getBrokenIncludes(file)) {
                     if (incl.getIncludeFile() == null) {
-                        if (!storage.contains(file)) {
-                            storage.add(file);
+                        if (storage.add(file)) {
                             badgeStateChanged = true;
                         }
                         continue ProjectFiles;
                     }
                 }
-                if (storage.contains(file)) {
-                    storage.remove(file);
+                if (storage.remove(file)) {
                     badgeStateChanged = true;
                 }
             }
@@ -113,6 +113,9 @@ public class BadgeProvider {
     }
 
     public void invalidateFile(CsmFile file){
+        if (CsmFileInfoQuery.getDefault().isStandardHeadersIndexer(file)) {
+            return;
+        }
         boolean badgeStateChanged = false;
         CsmProject project = file.getProject();
         synchronized (listLock){
@@ -120,13 +123,11 @@ public class BadgeProvider {
             boolean badFile = false;
             if (CsmFileInfoQuery.getDefault().hasBrokenIncludes(file) || !file.getErrors().isEmpty()) {
                 badFile = true;
-                if (!storage.contains(file)) {
-                    storage.add(file);
+                if (storage.add(file)) {
                     badgeStateChanged = true;
                 }
             }
-            if (!badFile && storage.contains(file)){
-                storage.remove(file);
+            if (!badFile && storage.remove(file)){
                 badgeStateChanged = true;
             }
             boolean newState = storage.contains(project);
@@ -153,8 +154,7 @@ public class BadgeProvider {
         CsmProject project = file.getProject();
         synchronized (listLock){
             boolean oldState = storage.contains(project);
-            if (storage.contains(file)){
-                storage.remove(file);
+            if (storage.remove(file)){
                 badgeStateChanged = true;
             }
             boolean newState = storage.contains(project);
@@ -252,21 +252,22 @@ public class BadgeProvider {
             nativeProjects.remove(project);
         }
 
-        public void remove(CsmFile file) {
+        public boolean remove(CsmFile file) {
             CsmProject project = file.getProject();
             if (project != null) {
                 Set<CsmUID<CsmFile>> set = getFiles(project);
                 if (set != null && set.size()>0){
-                    set.remove(UIDs.get(file));
+                    return set.remove(UIDs.get(file));
                 }
             }
+            return false;
         }
 
-        public void add(CsmFile file) {
+        public boolean add(CsmFile file) {
             CsmProject project = file.getProject();
             if (project != null) {
                 Set<CsmUID<CsmFile>> set = getFiles(project);
-                if (set == null){
+                if (set == null) {
                     Object id = project.getPlatformProject();
                     if (id instanceof NativeProject) {
                         nativeProjects.put(project, (NativeProject) id);
@@ -274,8 +275,9 @@ public class BadgeProvider {
                     set = new HashSet<>();
                     wrongFiles.put(project,set);
                 }
-                set.add(UIDs.get(file));
+                return set.add(UIDs.get(file));
             }
+            return false;
         }
 
         public boolean contains(CsmProject project){
@@ -286,17 +288,6 @@ public class BadgeProvider {
         public boolean contains(NativeProject project){
             Set<CsmUID<CsmFile>> set = getFiles(project);
             return set != null && set.size() > 0;
-        }
-
-        public boolean contains(CsmFile file){
-            CsmProject project = file.getProject();
-            if (project != null) {
-                Set<CsmUID<CsmFile>> set = getFiles(project);
-                if (set != null){
-                    return set.contains(UIDs.get(file));
-                }
-            }
-            return false;
         }
     }
 }

@@ -46,9 +46,11 @@ package org.netbeans.modules.web.beans.completion;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.text.syntax.dom.StartTag;
+import org.netbeans.modules.xml.text.api.dom.SyntaxElement;
+import org.w3c.dom.Node;
 
 /**
  * This class figures out the completion items for various attributes
@@ -88,8 +90,8 @@ public final class BeansCompletionManager {
         }
         
         String tagName = context.getTag().getNodeName();
-        TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
-        String attribName = attrib != null ? attrib.getImage() : null;
+        Token<XMLTokenId> attrib = ContextUtilities.getAttributeToken(context.getDocumentContext());
+        String attribName = attrib != null ? attrib.text().toString(): null;
 
         BeansCompletor completor = locateCompletor(tagName, attribName);
         if (completor != null) {
@@ -108,7 +110,7 @@ public final class BeansCompletionManager {
         SyntaxElement curElem = docContext.getCurrentElement();
         SyntaxElement prevElem = docContext.getCurrentElement().getPrevious();
 
-        String tagName = (curElem instanceof StartTag) ? ((StartTag) curElem).getTagName() : ((prevElem instanceof StartTag) ? ((StartTag) prevElem).getTagName() : null);
+        String tagName = curElem.getType() == Node.ELEMENT_NODE ? curElem.getNode().getNodeName() : null;
         BeansCompletor completor = locateCompletor(tagName, null);
         if (completor != null) {
             valueItems.addAll(completor.doCompletion(context));

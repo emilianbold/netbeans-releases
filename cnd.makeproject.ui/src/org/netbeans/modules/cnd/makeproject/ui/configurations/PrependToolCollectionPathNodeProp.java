@@ -83,7 +83,9 @@ public class PrependToolCollectionPathNodeProp extends BooleanNodeProp {
 
         @Override
         public Component getCustomEditor() {
-            return new CustomEditorPanel(env);
+            CustomEditorPanel component = new CustomEditorPanel(env);
+            component.putClientProperty("title", getDisplayName()); //NOI18N
+            return component;
         }
 
         @Override

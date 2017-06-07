@@ -60,6 +60,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -74,11 +75,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PathMatcher;
-import org.netbeans.spi.project.support.ant.PathMatcher;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.SourceGroupRelativeModifierImplementation;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -142,8 +139,9 @@ public final class SourcesHelper {
         private final String excludes;
         private final String hint;
         private boolean removed;    // just for sanity checking
-
-        public SourceRoot(String location, String includes, String excludes, String hint, String displayName, Icon icon, Icon openedIcon) {
+        private final String[] projectParts;
+        
+        public SourceRoot(String location, String includes, String excludes, String hint, String displayName, Icon icon, Icon openedIcon, String[] parts) {
             super(location);
             this.displayName = displayName;
             this.icon = icon;
@@ -151,6 +149,7 @@ public final class SourcesHelper {
             this.includes = includes;
             this.excludes = excludes;
             this.hint = hint;
+            this.projectParts = parts;
             removed = false;
         }
 
@@ -322,8 +321,8 @@ public final class SourcesHelper {
     
     private final class TypedSourceRoot extends SourceRoot {
         private final String type;
-        public TypedSourceRoot(String type, String hint, String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon) {
-            super(location, includes, excludes, hint, displayName, icon, openedIcon);
+        public TypedSourceRoot(String type, String hint, String location, String includes, String excludes, String displayName, Icon icon, Icon openedIcon, String[] parts) {
+            super(location, includes, excludes, hint, displayName, icon, openedIcon, parts);
             this.type = type;
         }
         public final String getType() {
@@ -404,6 +403,7 @@ public final class SourcesHelper {
         private String excludes;
         private String type;
         private String hint;
+        private String[] parts;
 
         private SourceRootConfig(String location) {
             this.location = location;
@@ -505,6 +505,19 @@ public final class SourcesHelper {
             openedIcon = value;
             return this;
         }
+        
+        /**
+         * Declares that the source root resides in some (hierarchical) project part.
+         * The project can be partitioned on multiple levels, each source root may represent some
+         * part of the project. Partitioning can be used to identify "sibling" roots
+         * @param parts abstract location of this root 
+         * @return {@code this}
+         * @since 1.68
+         */
+        public SourceRootConfig inParts(String... parts) {
+            this.parts = parts;
+            return this;
+        }
 
         /**
          * Adds configured source root to <code>SourcesHelper</code>.
@@ -519,9 +532,9 @@ public final class SourcesHelper {
                 throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
             }
             if (type != null) {
-                typedSourceRoots.add(new TypedSourceRoot(type, hint, location, includes, excludes, displayName, icon, openedIcon));
+                typedSourceRoots.add(new TypedSourceRoot(type, hint, location, includes, excludes, displayName, icon, openedIcon, parts));
             } else {
-                principalSourceRoots.add(new SourceRoot(location, includes, excludes, hint, displayName, icon, openedIcon));
+                principalSourceRoots.add(new SourceRoot(location, includes, excludes, hint, displayName, icon, openedIcon, parts));
             }
             return this;
         }
@@ -951,7 +964,7 @@ public final class SourcesHelper {
             if (type.equals(Sources.TYPE_GENERIC)) {
                 List<SourceRoot> roots = new ArrayList<SourceRoot>(principalSourceRoots);
                 // Always include the project directory itself as a default:
-                roots.add(new SourceRoot("", null, null, null, ProjectUtils.getInformation(getProject()).getDisplayName(), null, null));
+                roots.add(new SourceRoot("", null, null, null, ProjectUtils.getInformation(getProject()).getDisplayName(), null, null, null));
                 Map<FileObject,SourceRoot> rootsByDir = new LinkedHashMap<FileObject,SourceRoot>();
                 // First collect all non-redundant existing roots.
                 for (SourceRoot r : roots) {
@@ -1120,11 +1133,56 @@ public final class SourcesHelper {
     public SourceGroupModifierImplementation createSourceGroupModifierImplementation() {
         return new SourceGroupModifierImpl();
     }
+    
+    private static final class Key implements Function<SourceRoot, Integer> {
+        private SourceRoot  root;
+        private String[]    parts;
+        
+        public Key(SourceRoot root, String[] parts) {
+            this.root = root;
+            this.parts = parts;
+        }
+        
+        public Integer apply(SourceRoot r) {
+            int result = 0;
+            int start = 0;
+            if (this.root != null) {
+                if (root.projectParts != null && r.projectParts != null) {
+                    for (int i = 0; i < root.projectParts.length && i < r.projectParts.length; i++) {
+                        if (root.projectParts[i].equals(r.projectParts[i])) {
+                            start++;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (parts != null && r.projectParts != null) {
+                for (int i = start; i < parts.length && i < r.projectParts.length; i++) {
+                    if (parts[i].equals(r.projectParts[i])) {
+                        result++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            return result + start;
+        }
+    }
+    
+    private class SourceGroupModifierImpl implements SourceGroupModifierImplementation, SourceGroupRelativeModifierImplementation {
+        private final Function<SourceRoot, Integer>  similarity;
 
-    private class SourceGroupModifierImpl implements SourceGroupModifierImplementation {
-
+        public SourceGroupModifierImpl() {
+            this(null);
+        }
+        
+        public SourceGroupModifierImpl(Function<SourceRoot, Integer> similarity) {
+            this.similarity = similarity;
+        }
+        
         public SourceGroup createSourceGroup(String type, String hint) {
-            SourceRoot root = findRoot(type, hint);
+            SourceRoot root = findRoot(type, hint, similarity);
             if (root == null)
                 return null;
             if (root.isRemoved())
@@ -1151,25 +1209,63 @@ public final class SourcesHelper {
         }
 
         public boolean canCreateSourceGroup(String type, String hint) {
-            return findRoot(type, hint) != null;
+            return findRoot(type, hint, similarity) != null;
         }
-        private SourceRoot findRoot(String type, String hint) {
+        
+        private SourceRoot findRoot(String type, String hint, Function<SourceRoot, Integer> similarity) {
+            int maxSimilarity = -1;
+            SourceRoot candidate = null;
+            
             if (Sources.TYPE_GENERIC.equals(type)) {
                 for (SourceRoot root : principalSourceRoots) {
                     if (root.getHint() != null
                             && root.getHint().equals(hint)
-                            && ! root.isRemoved())
-                        return root;
+                            && ! root.isRemoved()) {
+                        if (similarity == null) {
+                            return root;
+                        } else {
+                            int sim = similarity.apply(root);
+                            if (sim > maxSimilarity) {
+                                candidate = root;
+                                maxSimilarity = sim;
+                            }
+                        }
+                    }
                 }
             } else {
                 for (TypedSourceRoot root : typedSourceRoots) {
                     if (root.getHint() != null
                             && root.getType().equals(type)
-                            && root.getHint().equals(hint))
-                        return root;
+                            && root.getHint().equals(hint)) {
+                        if (similarity == null) {
+                            return root;
+                        } else {
+                            int sim = similarity.apply(root);
+                            if (sim > maxSimilarity) {
+                                candidate = root;
+                                maxSimilarity = sim;
+                            }
+                        }
+                    }
                 }
             }
-            return null;
+            return candidate;
+        }
+
+        public SourceGroupModifierImplementation relativeTo(SourceGroup existingGroup, String... projectPart) {
+            SourceRoot origin = null;
+            if (existingGroup != null) {
+                FileObject fo = existingGroup.getRootFolder();
+                File f = FileUtil.toFile(fo);
+                for (SourceRoot r : principalSourceRoots) {
+                    File loc = r.getActualLocation();
+                    if (loc != null && loc.equals(f)) {
+                        origin = r;
+                        break;
+                    }
+                }
+            }
+            return new SourceGroupModifierImpl(new Key(origin, projectPart));
         }
     }
 

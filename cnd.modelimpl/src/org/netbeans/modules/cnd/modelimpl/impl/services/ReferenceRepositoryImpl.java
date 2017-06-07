@@ -382,6 +382,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return false;
     }
     
+    // FIXME: resolving is done using CndLexer. Therefore here we have inconsistency:
+    // if tokens from APTToken do not match exactly tokens from CndLexer then
+    // nothing is resolved!
     private Collection<APTToken> getTokensToResolve(FileImpl file, CharSequence name, int startOffset, int endOffset) {
         TokenStream ts = getTokenStream(file);
         Collection<APTToken> tokens = new ArrayList<>(100);
@@ -426,7 +429,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             if (file.isValid()) {
                 FileBuffer buffer = file.getBuffer();
                 if (buffer != null){
-                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), buffer.getCharBuffer(), file.getFileLanguage(), file.getFileLanguageFlavor());
+                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), buffer.getCharBuffer(), file.getAPTFileKind());
                 }
             }
         } catch (IOException ex) {

@@ -93,7 +93,7 @@ public class GuardDetectorTestCase extends NbTestCase {
                   "#pragma once\n"
                 + INNER_BODY
                 +"\n";
-        String golden = APTUtils.getFileOnceMacroName(new APTFileNode(new FileSystemImpl(), getName())).toString();
+        String golden = APTUtils.getFileOnceMacroName(new APTFileNode(new FileSystemImpl(), getName(), APTFile.Kind.C_CPP)).toString();
         for (String content : createEqualContents(base)) {
             CharSequence guardMacro = getAPTGuardMacro(content);
             assertEquals("pragma once is not detected:\n" + content, golden, guardMacro);
@@ -225,13 +225,14 @@ public class GuardDetectorTestCase extends NbTestCase {
     }
 
     private String getAPTGuardMacro(String content) throws Exception {
-        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(this.getName(), content.toCharArray(), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
-        APTFile apt = APTBuilder.buildAPT(new FileSystemImpl(), this.getName(), ts);
+        APTFile.Kind aptKind = APTFile.Kind.C_CPP;
+        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(this.getName(), content.toCharArray(), aptKind);
+        APTFile apt = APTBuilder.buildAPT(new FileSystemImpl(), this.getName(), ts, aptKind);
         assertNotNull("failed to build APT Light", apt);
         CharSequence guardMacro = apt.getGuardMacro();
         assertNotNull("macro can not be null", guardMacro);
-        ts = APTTokenStreamBuilder.buildTokenStream(this.getName(), content.toCharArray(), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
-        apt = APTBuilder.buildAPT(new FileSystemImpl(), this.getName(), ts);
+        ts = APTTokenStreamBuilder.buildTokenStream(this.getName(), content.toCharArray(), aptKind);
+        apt = APTBuilder.buildAPT(new FileSystemImpl(), this.getName(), ts, aptKind);
         assertNotNull("failed to build APT", apt);
         assertEquals("different guards in APT Light and full APT", guardMacro, apt.getGuardMacro());
         return guardMacro.toString();

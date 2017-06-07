@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -64,13 +65,11 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import javax.swing.BorderFactory;
 import javax.swing.CellRendererPane;
-import javax.swing.JApplet;
 import javax.swing.JComponent;
-import javax.swing.JInternalFrame;
-import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
 import javax.swing.JWindow;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -162,7 +161,7 @@ final class ProfilerTableHovers {
 //                if (windows[POPUP_RIGHT] != null) windows[POPUP_RIGHT].setVisible(false);
 //            }
 
-            if (isLwPopupOpen(table)) {
+            if (!isInFocusedWindow(table) || isPopupOpen()) {
                 // Do not show value hovers when a lightweight popup is showing,
                 // might be drawn on top of it - overlap it.
                 hidePopups();
@@ -175,25 +174,37 @@ final class ProfilerTableHovers {
         }
     }
     
-    private static boolean isLwPopupOpen(Component c) {
-        Container cc = c.getParent();
-        
-        for (Container p = cc; p != null; p = p.getParent()) {
-            if (p instanceof JRootPane) {
-                if (p.getParent() instanceof JInternalFrame) continue;
-                cc = ((JRootPane)p).getLayeredPane();
-                if (cc instanceof JLayeredPane)
-                    return ((JLayeredPane)cc).getComponentsInLayer(
-                             JLayeredPane.POPUP_LAYER).length > 0;
-            } else if (p instanceof Window) {
-                break;
-            } else if (p instanceof JApplet) {
-                break;
-            }
-        }
-        
-        return false;
+    private static boolean isInFocusedWindow(Component c) {
+        Window w = SwingUtilities.getWindowAncestor(c);
+        return w != null && w.isFocused();
     }
+    
+    private static boolean isPopupOpen() {
+        MenuElement[] menuSel = MenuSelectionManager.defaultManager().getSelectedPath();
+        return menuSel != null && menuSel.length > 0;
+//        // Doesn't work reliably, hovering to a sliding window (Palette) changes the focus owner
+//        return KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() instanceof JRootPane;
+    }
+    
+//    private static boolean isLwPopupOpen(Component c) {
+//        Container cc = c.getParent();
+//        
+//        for (Container p = cc; p != null; p = p.getParent()) {
+//            if (p instanceof JRootPane) {
+//                if (p.getParent() instanceof JInternalFrame) continue;
+//                cc = ((JRootPane)p).getLayeredPane();
+//                if (cc instanceof JLayeredPane)
+//                    return ((JLayeredPane)cc).getComponentsInLayer(
+//                             JLayeredPane.POPUP_LAYER).length > 0;
+//            } else if (p instanceof Window) {
+//                break;
+//            } else if (p instanceof JApplet) {
+//                break;
+//            }
+//        }
+//        
+//        return false;
+//    }
     
     private void showPopups(Component renderer, Rectangle[] popups) {
         Image img = createPopupImage(renderer);
@@ -285,7 +296,7 @@ final class ProfilerTableHovers {
             win.getContentPane().add(l);
             
             // Make sure there's no shadow behind the native window
-            win.setBackground(new Color(255, 255, 255, 0)); // Linux
+            safeSetBackground(win, new Color(255, 255, 255, 0)); // Linux // #269737
             win.getRootPane().putClientProperty("Window.shadow", Boolean.FALSE.toString()); // Mac OS X // NOI18N
             
             win.setVisible(true);
@@ -307,6 +318,16 @@ final class ProfilerTableHovers {
         windows[index].setVisible(false);
         windows[index].dispose();
         windows[index] = null;
+    }
+    
+    // See Window.setBackground() documentation
+    private static void safeSetBackground(JWindow window, Color background) {
+        GraphicsConfiguration gc = window.getGraphicsConfiguration();
+        
+        if (!gc.isTranslucencyCapable()) return; // PERPIXEL_TRANSLUCENT not supported
+        if (gc.getDevice().getFullScreenWindow() == window) return; // fullscreen windows not supported
+        
+        window.setBackground(background);
     }
     
     
@@ -407,6 +428,11 @@ final class ProfilerTableHovers {
             updatePopups(e.getPoint(), false);
         }
         
+        public void mouseExited(MouseEvent e) {
+            hidePopups();
+            currentScreenPoint = null;
+        }
+        
         // ComponentListener
         public void componentResized(ComponentEvent e) {} // Lines added/removed to/from table
         public void componentMoved(ComponentEvent e) { updatePopups(null, false); } // Table scrolled (mouse wheel, gesture)
@@ -465,7 +491,7 @@ final class ProfilerTableHovers {
         }
         
         // MouseAdapter
-        public void mouseExited(MouseEvent e) { hidePopups(); currentScreenPoint = null; }
+//        public void mouseExited(MouseEvent e) { hidePopups(); currentScreenPoint = null; }
 //        public void mouseDragged(MouseEvent e) { updatePopups(e.getPoint(), false); }
 //        public void mouseDragged(MouseEvent e) { hidePopups(); }
 //        public void mousePressed(MouseEvent e) { hidePopups(); }

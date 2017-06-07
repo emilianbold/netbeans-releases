@@ -44,9 +44,11 @@
 
 package org.openide.explorer.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
@@ -251,8 +253,18 @@ class CustomPopupFactory extends PopupFactory {
     }
     
     private static void disableShadow(JWindow win) {
-        win.setBackground (new java.awt.Color (255, 255, 255, 0)); // Linux
+        safeSetBackground(win, new Color(255, 255, 255, 0)); // Linux // #262670
         win.getRootPane().putClientProperty("Window.shadow", Boolean.FALSE.toString()); // Mac OS X // NOI18N
+    }
+    
+    // See Window.setBackground() documentation
+    private static void safeSetBackground(JWindow window, Color background) {
+        GraphicsConfiguration gc = window.getGraphicsConfiguration();
+        
+        if (!gc.isTranslucencyCapable()) return; // PERPIXEL_TRANSLUCENT not supported
+        if (gc.getDevice().getFullScreenWindow() == window) return; // fullscreen windows not supported
+        
+        window.setBackground(background);
     }
     
 }

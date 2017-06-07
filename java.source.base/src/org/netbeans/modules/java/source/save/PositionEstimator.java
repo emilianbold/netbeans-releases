@@ -199,13 +199,23 @@ public abstract class PositionEstimator {
         }
     }
     
-    static class ExportsToEstimator extends BaseEstimator {
+    static class ExportsOpensToEstimator extends BaseEstimator {
         
-        ExportsToEstimator(List<? extends ExpressionTree> oldL,
+        ExportsOpensToEstimator(List<? extends ExpressionTree> oldL,
                            List<? extends ExpressionTree> newL,
                            DiffContext diffContext)
         {
             super(TO, oldL, newL, diffContext);
+        }        
+    }
+
+    static class ProvidesWithEstimator extends BaseEstimator {
+        
+        ProvidesWithEstimator(List<? extends ExpressionTree> oldL,
+                           List<? extends ExpressionTree> newL,
+                           DiffContext diffContext)
+        {
+            super(WITH, oldL, newL, diffContext);
         }        
     }
 

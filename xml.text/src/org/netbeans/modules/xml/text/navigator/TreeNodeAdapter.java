@@ -47,21 +47,17 @@ package org.netbeans.modules.xml.text.navigator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.JTree;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentElementEvent;
 import org.netbeans.modules.editor.structure.api.DocumentElementListener;
-import org.netbeans.modules.xml.text.folding.XmlFoldTypes;
-import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
+import static org.netbeans.modules.xml.text.structure.XMLConstants.*;
 import org.openide.ErrorManager;
 
 /**
@@ -181,8 +177,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     }
     
     public String getText(boolean html) {
-        if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
-                || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
+        if(de.getType().equals(XML_TAG)
+                || de.getType().equals(XML_EMPTY_TAG)) {
             //XML TAG text
             String attribsVisibleText = "";
             AttributeSet attribs = getDocumentElement().getAttributes();
@@ -220,17 +216,17 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             
             return text.toString();
             
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
+        } else if(de.getType().equals(XML_PI)) {
             //PI text
             String documentText = getPIText();
             documentText = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
             return documentText;
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
+        } else if(de.getType().equals(XML_DOCTYPE)) {
             //limit the text length
             String documentText = getDoctypeText();
             String visibleText  = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
             return visibleText;
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+        } else if(de.getType().equals(XML_CDATA)) {
             //limit the text length
             String documentText = getCDATAText();
             String visibleText  = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
@@ -241,14 +237,14 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     }
     
     public String getToolTipText() {
-        if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
-                || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
+        if(de.getType().equals(XML_TAG)
+                || de.getType().equals(XML_EMPTY_TAG)) {
             return getAttribsText() + " " + getDocumentContent();
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
+        } else if(de.getType().equals(XML_PI)) {
             return getPIText();
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
+        } else if(de.getType().equals(XML_DOCTYPE)) {
             return getDoctypeText();
-        } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+        } else if(de.getType().equals(XML_CDATA)) {
             return getCDATAText();
         }
         return "";
@@ -323,15 +319,15 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         DocumentElement ade = e.getChangedChild();
         
         if(debug) System.out.println(">>> +EVENT called on " + hashCode() + " - " + de + ": element " + ade + " is going to be added");
-        if(ade.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+        if(ade.getType().equals(XML_CONTENT)) {
             //create a text node listener
             textElements.add(new TextElementWrapper(ade));
             //update text text content of the node
             childTextElementChanged();
-        } else if(ade.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
+        } else if(ade.getType().equals(XML_ERROR)) {
             //handle error element
             markNodeAsError(this);
-        } else if(ade.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+        } else if(ade.getType().equals(XML_COMMENT)) {
             //do nothing for comments
         } else {
             TreeNode tn = new TreeNodeAdapter(ade, tm, tree, this);
@@ -416,9 +412,9 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             if(child.equals(de)) return index;
             
             //skip text and error tokens
-            if(!child.getType().equals(XMLDocumentModelProvider.XML_CONTENT)
-                    && !child.getType().equals(XMLDocumentModelProvider.XML_ERROR)
-                    && !child.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) index++;
+            if(!child.getType().equals(XML_CONTENT)
+                    && !child.getType().equals(XML_ERROR)
+                    && !child.getType().equals(XML_COMMENT)) index++;
         }
         return -1;
     }
@@ -428,7 +424,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         
         if(debug) System.out.println(">>> -EVENT on " + hashCode() + " - " + de + ": element " + rde + " is going to be removed ");
         
-        if(rde.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+        if(rde.getType().equals(XML_CONTENT)) {
             if(debug) System.out.println(">>> removing CONTENT element");
             //remove the text eleemnt listener
             Iterator i = textElements.iterator();
@@ -440,9 +436,9 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             textElements.removeAll(toRemove);
             //update text text content of the node
             childTextElementChanged();
-        } else if(rde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
+        } else if(rde.getType().equals(XML_ERROR)) {
             unmarkNodeAsError(this);
-        } else if(rde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+        } else if(rde.getType().equals(XML_COMMENT)) {
             //do nothing for comments
         } else {
             if(debug) System.out.println(">>> removing tag element");
@@ -494,13 +490,13 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             boolean textElementAdded = false;
             while(i.hasNext()) {
                 DocumentElement chde = (DocumentElement)i.next();
-                if(chde.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+                if(chde.getType().equals(XML_CONTENT)) {
                     //create a text node listener
                     textElements.add(new TextElementWrapper(chde));
                     textElementAdded = true;
-                } else if(chde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
+                } else if(chde.getType().equals(XML_ERROR)) {
                     markNodeAsError(this);
-                } else if(chde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+                } else if(chde.getType().equals(XML_COMMENT)) {
                     //do nothing for comments
                 } else {
                     //add the adapter only when there isn't any
@@ -529,7 +525,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             //System.out.println("childTextElementChanged(): " + getDocumentElement() + " has these children:");
             while(children.hasNext()) {
                 DocumentElement del = (DocumentElement)children.next();
-                if(del.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+                if(del.getType().equals(XML_CONTENT)) {
                     try {
                         //the endoffset if increased by +1 due to still not yet resolved issue with element boundaries
                         //should be removed once it is properly fixed. On the other hand the issue has no user impact now.

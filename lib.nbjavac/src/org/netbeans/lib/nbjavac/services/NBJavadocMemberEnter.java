@@ -37,6 +37,8 @@
  */
 package org.netbeans.lib.nbjavac.services;
 
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.comp.MemberEnter;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCImport;
@@ -60,10 +62,12 @@ public class NBJavadocMemberEnter extends JavadocMemberEnter {
     }
 
     private final CancelService cancelService;
+    private final JavacTrees trees;
 
     public NBJavadocMemberEnter(Context context) {
         super(context);
         cancelService = CancelService.instance(context);
+        trees = NBJavacTrees.instance(context);
     }
 
     @Override
@@ -82,6 +86,9 @@ public class NBJavadocMemberEnter extends JavadocMemberEnter {
     public void visitMethodDef(JCMethodDecl tree) {
         cancelService.abortIfCanceled();
         super.visitMethodDef(tree);
+        if (trees instanceof NBJavacTrees && !env.enclClass.defs.contains(tree)) {
+            ((NBJavacTrees)trees).addPathForElement(tree.sym, new TreePath(trees.getPath(env.toplevel, env.enclClass), tree));
+        }
     }
 
     @Override

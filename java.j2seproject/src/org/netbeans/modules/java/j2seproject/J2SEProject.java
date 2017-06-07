@@ -74,6 +74,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -340,6 +341,7 @@ public final class J2SEProject implements Project {
                         addClassPathType(ClassPath.BOOT).
                         addClassPathType(ClassPath.COMPILE).
                         addClassPathType(ClassPath.SOURCE).
+                        addClassPathType(JavaClassPathConstants.MODULE_COMPILE_PATH).   //For DefaultClassPathProvider
                         setBuildImplTemplate(J2SEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2SEProject.class.getResource("resources/build.xsl")).             //NOI18N
                         addOpenPostAction(newStartMainUpdaterAction()).
@@ -360,9 +362,11 @@ public final class J2SEProject implements Project {
             ProjectOperations.createBuilder(this, eval, updateHelper, refHelper, sourceRoots, testRoots).
                     addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
                     addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
-                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
+                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE, ProjectProperties.DO_JLINK, ProjectProperties.JLINK_STRIP).
                     addUpdatedNameProperty(ProjectProperties.DIST_JAR, "$'{'dist.dir'}'/{0}.jar", true).    //NOI18N
                     addUpdatedNameProperty(J2SEProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
+                    addUpdatedNameProperty(ProjectProperties.DIST_JLINK_OUTPUT, "$'{'"+ProjectProperties.DIST_JLINK_DIR+"'}'/{0}", true).    //NOI18N
+                    addUpdatedNameProperty(ProjectProperties.JLINK_LAUNCHER_NAME, "{0}", true).    //NOI18N
                     setCallback(opsCallback).
                     build(),
             ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).

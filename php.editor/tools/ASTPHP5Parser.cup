@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
+ * Portions Copyrighted 2017 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
 
@@ -48,6 +48,7 @@ import org.openide.util.Pair;
 parser code {:
     private static short[][] getActionTable() {}
 
+	protected final static Integer IMPLICIT_PUBLIC = Integer.valueOf(BodyDeclaration.Modifier.IMPLICIT_PUBLIC);
 	protected final static Integer PUBLIC = Integer.valueOf(BodyDeclaration.Modifier.PUBLIC);
 	protected final static Integer PRIVATE = Integer.valueOf(BodyDeclaration.Modifier.PRIVATE);
 	protected final static Integer PROTECTED = Integer.valueOf(BodyDeclaration.Modifier.PROTECTED);
@@ -306,7 +307,9 @@ terminal  T_OBJECT_OPERATOR;
 terminal  T_DOUBLE_ARROW;
 terminal  T_LIST;
 terminal  T_ARRAY;
+terminal  T_CALLABLE;
 terminal  T_CLASS_C;
+terminal  T_TRAIT_C;
 terminal  T_METHOD_C;
 terminal  T_FUNC_C;
 terminal  T_LINE;
@@ -374,6 +377,7 @@ terminal T_COALESCE;
 
 non terminal Program thestart;
 non terminal List namespace_name;
+non terminal NamespaceName namespace_name_access;
 non terminal List group_namespace_parts;
 non terminal List non_empty_group_namespace_parts;
 non terminal SingleUseStatementPart group_namespace_part;
@@ -434,6 +438,7 @@ non terminal List static_array_pair_list;
 non terminal possible_comma;
 non terminal List non_empty_static_array_pair_list;
 non terminal Expression expr;
+non terminal Expression expr_with_yields;
 non terminal Expression expr_without_class_instance;
 non terminal Expression yield_expr;
 non terminal Expression yield_from_expr;
@@ -447,9 +452,9 @@ non terminal VariableBase object_property;
 non terminal VariableBase object_dim_list;
 non terminal VariableBase variable_name;
 non terminal Integer simple_indirect_reference;
-non terminal List assignment_list;
-non terminal VariableBase assignment_list_element;
 non terminal List array_pair_list;
+non terminal ArrayElement possible_array_pair;
+non terminal ArrayElement array_pair;
 non terminal List non_empty_array_pair_list;
 non terminal List encaps_list;
 non terminal VariableBase encaps_var;
@@ -483,6 +488,7 @@ non terminal Expression class_name;
 non terminal NamespaceName fully_qualified_class_name;
 non terminal List class_variable_declaration;
 non terminal List constant_declaration;
+non terminal Integer constant_modifiers;
 non terminal Integer method_modifiers;
 non terminal Block method_body;
 non terminal List method_or_not;
@@ -493,6 +499,10 @@ non terminal VariableBase variable;
 non terminal List additional_catches;
 non terminal List non_empty_additional_catches;
 non terminal CatchClause additional_catch;
+non terminal List catch_class_names;
+non terminal List additional_catch_class_names;
+non terminal List non_empty_additional_catch_class_names;
+non terminal Expression additional_catch_class_name;
 non terminal FinallyClause additional_finally;
 non terminal FunctionDeclaration unticked_function_declaration_statement;
 non terminal Statement unticked_class_declaration_statement;
@@ -539,6 +549,7 @@ precedence left T_LOGICAL_XOR;
 precedence left T_LOGICAL_AND;
 precedence right T_PRINT;
 precedence right T_YIELD;
+precedence right T_DOUBLE_ARROW;
 precedence right T_YIELD_FROM;
 precedence left T_EQUAL, T_PLUS_EQUAL,T_MINUS_EQUAL,T_MUL_EQUAL,T_DIV_EQUAL,T_CONCAT_EQUAL,T_MOD_EQUAL,T_AND_EQUAL,T_OR_EQUAL,T_XOR_EQUAL,T_SL_EQUAL,T_SR_EQUAL,T_POW_EQUAL;
 precedence right T_POW;
@@ -602,6 +613,22 @@ namespace_name:list T_NS_SEPARATOR T_STRING:n
 :}
 ;
 
+namespace_name_access ::=
+namespace_name:list
+{:
+	RESULT = new NamespaceName(listleft, listright, list, false, false);
+:}
+
+| T_NAMESPACE:s T_NS_SEPARATOR namespace_name:list
+{:
+	RESULT = new NamespaceName(sleft, listright, list, false, true);
+:}
+
+| T_NS_SEPARATOR:s namespace_name:list
+{:
+	RESULT = new NamespaceName(sleft, listright, list, true, false);
+:}
+;
 
 top_statement_list ::=
 top_statement_list:sList top_statement:statement
@@ -689,7 +716,7 @@ statement:statement
 
 | constant_declaration:list T_SEMICOLON:e
 {:
-	RESULT = new ConstantDeclaration(listleft, eright, list);
+	RESULT = new ConstantDeclaration(listleft, eright, ASTPHP5Parser.IMPLICIT_PUBLIC, list, true);
 :}
 ;
 
@@ -957,18 +984,6 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = new ReturnStatement(tokenleft, endright, expr);
 :}
 
-| yield_expr:expr T_SEMICOLON:end
-{:
-    ExpressionStatement expressionStatement = new ExpressionStatement(exprleft, endright, expr);
-	RESULT = expressionStatement;
-:}
-
-| yield_from_expr:expr T_SEMICOLON:end
-{:
-    ExpressionStatement expressionStatement = new ExpressionStatement(exprleft, endright, expr);
-	RESULT = expressionStatement;
-:}
-
 | T_GLOBAL:start global_var_list:list T_SEMICOLON:end
 {:
 	GlobalStatement  global = new GlobalStatement(startleft, endright, list);
@@ -992,7 +1007,7 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = inLineHtml;
 :}
 
-| expr:expr T_SEMICOLON:end
+| expr_with_yields:expr T_SEMICOLON:end
 {:
 	ExpressionStatement expressionStatement = new ExpressionStatement(exprleft, endright, expr);
 	RESULT = expressionStatement;
@@ -1060,14 +1075,14 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = tryStatement;
 :}
 
-| T_TRY:start T_CURLY_OPEN:tryBlockStart inner_statement_list:tryList T_CURLY_CLOSE:tryBlockEnd T_CATCH:catch_word T_OPEN_PARENTHESE fully_qualified_class_name:className tracked_variable:var T_CLOSE_PARENTHESE
+| T_TRY:start T_CURLY_OPEN:tryBlockStart inner_statement_list:tryList T_CURLY_CLOSE:tryBlockEnd T_CATCH:catch_word T_OPEN_PARENTHESE catch_class_names:classNames tracked_variable:var T_CLOSE_PARENTHESE
 T_CURLY_OPEN:catchBlockStart inner_statement_list:catchList T_CURLY_CLOSE:catchBlockEnd additional_catches:catchesList additional_finally:finallyBlock
 {:
 	Block tryBlock = new Block(tryBlockStartleft, tryBlockEndright, tryList);
 	Block catchBlock = new Block(catchBlockStartleft, catchBlockEndright, catchList);
-	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, className, var, catchBlock);
+	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, classNames, var, catchBlock);
 	((LinkedList) catchesList).addFirst(catchClause);
-    int end = finallyBlock == null ? catchesListright : finallyBlockright;
+	int end = finallyBlock == null ? catchesListright : finallyBlockright;
 	TryStatement tryStatement = new TryStatement(startleft, end, tryBlock, catchesList, finallyBlock);
 	RESULT = tryStatement;
 :}
@@ -1122,12 +1137,12 @@ additional_catch:catch_statement
 ;
 
 additional_catch ::=
-T_CATCH:catch_word T_OPEN_PARENTHESE fully_qualified_class_name:className T_VARIABLE:var T_CLOSE_PARENTHESE
+T_CATCH:catch_word T_OPEN_PARENTHESE catch_class_names:classNames T_VARIABLE:var T_CLOSE_PARENTHESE
  T_CURLY_OPEN:catchBlockStart inner_statement_list:catchList T_CURLY_CLOSE:catchBlockEnd
 {:
 	Block catchBlock = new Block(catchBlockStartleft, catchBlockEndright, catchList);
 	Variable variable = new Variable(varleft, varright, var);
-	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, className, variable, catchBlock);
+	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, classNames, variable, catchBlock);
 	RESULT = catchClause;
 :}
 ;
@@ -1143,6 +1158,49 @@ additional_finally ::=
     Block finallyBlock = new Block(finallyBlockStartleft, finallyBlockEndright, finallyList);
 	FinallyClause finallyClause = new FinallyClause(finally_wordleft, finallyBlockEndright, finallyBlock);
 	RESULT = finallyClause;
+:}
+;
+
+catch_class_names ::=
+fully_qualified_class_name:className additional_catch_class_names:list
+{:
+	((LinkedList) list).addFirst(className);
+	RESULT = list;
+:}
+;
+
+additional_catch_class_names ::=
+non_empty_additional_catch_class_names:list
+{:
+	RESULT = list;
+:}
+
+| /* empty */
+{:
+	List list = new LinkedList();
+	RESULT = list;
+:}
+;
+
+non_empty_additional_catch_class_names ::=
+additional_catch_class_name:className
+{:
+	List list = new LinkedList();
+	list.add(className);
+	RESULT = list;
+:}
+
+| non_empty_additional_catch_class_names:list additional_catch_class_name:className
+{:
+	list.add(className);
+	RESULT = list;
+:}
+;
+
+additional_catch_class_name ::=
+T_OR fully_qualified_class_name:className
+{:
+	RESULT = className;
 :}
 ;
 
@@ -1281,9 +1339,11 @@ interface_statement_list:list interface_statement:interfaceStatement
 ;
 
 interface_statement ::=
-constant_declaration:list T_SEMICOLON:end
+constant_modifiers:modifier constant_declaration:list T_SEMICOLON:end
 {:
-	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(listleft, endright, list);
+	int constantStart = modifier == null ? listleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.IMPLICIT_PUBLIC : modifier;
+	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(constantStart, endright, modifier, list, false);
 	RESULT = classConstantDeclaration;
 :}
 
@@ -1451,9 +1511,15 @@ variable:var
 	RESULT = reference;
 :}
 
-| T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:end
+| T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:end
 {:
-	ListVariable vars = new ListVariable(startleft, endright, varList);
+	ListVariable vars = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.OLD);
+	RESULT = vars;
+:}
+
+| T_OPEN_RECT:start array_pair_list:varList T_CLOSE_RECT:end
+{:
+	ListVariable vars = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.NEW);
 	RESULT = vars;
 :}
 ;
@@ -1755,6 +1821,11 @@ optional_return_type ::=
 {:
 	RESULT = className;
 :}
+
+| T_NEKUDOTAIM:e T_QUESTION_MARK:nullable class_type:className
+{:
+	RESULT = new NullableType(nullableleft, classNameright, className);
+:}
 ;
 
 optional_class_type ::=
@@ -1766,6 +1837,11 @@ optional_class_type ::=
 | class_type:className
 {:
 	RESULT = className;
+:}
+
+| T_QUESTION_MARK:start class_type:className
+{:
+	RESULT = new NullableType(startleft, classNameright, className);
 :}
 ;
 
@@ -1780,6 +1856,13 @@ fully_qualified_class_name:className
 	Identifier classId = new Identifier(arrayleft, arrayright, "array");
 	RESULT = classId;
 :}
+
+| T_CALLABLE:callable
+{:
+	Identifier classId = new Identifier(callableleft, callableright, "callable");
+	RESULT = classId;
+:}
+
 ;
 
 function_call_parameter_list ::=
@@ -1943,9 +2026,11 @@ variable_modifiers:modifier class_variable_declaration:decList T_SEMICOLON:end
 	RESULT = fieldsDeclaration;
 :}
 
-| constant_declaration:list T_SEMICOLON:end
+| constant_modifiers:modifier constant_declaration:list T_SEMICOLON:end
 {:
-	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(listleft, endright, list);
+	int constantStart = modifier == null ? listleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.IMPLICIT_PUBLIC : modifier;
+	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(constantStart, endright, modifier, list, false);
 	RESULT = classConstantDeclaration;
 :}
 
@@ -2127,6 +2212,18 @@ T_SEMICOLON /* abstract method */
 {:
 	Block block = new Block(startleft, endright, statementList);
 	RESULT = block;
+:}
+;
+
+constant_modifiers ::=
+/* empty */
+{:
+	RESULT = null;
+:}
+
+| ppp_modifiers:modifier
+{:
+	RESULT = modifier;
 :}
 ;
 
@@ -2432,14 +2529,21 @@ expr_without_variable_and_class_instance:ex
 ;
 
 expr_without_variable_and_class_instance ::=
-T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close T_EQUAL expr:expr
+T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:close T_EQUAL expr:expr
 {:
-	ListVariable vars = new ListVariable(startleft, closeright, varList);
+	ListVariable vars = new ListVariable(startleft, closeright, varList, ListVariable.SyntaxType.OLD);
 	Assignment list = new Assignment(startleft, exprright, vars, Assignment.Type.EQUAL, expr);
 	RESULT = list;
 :}
 
-| variable:var T_EQUAL expr:expr
+| T_OPEN_RECT:start array_pair_list:varList T_CLOSE_RECT:close T_EQUAL expr:expr
+{:
+	ListVariable vars = new ListVariable(startleft, closeright, varList, ListVariable.SyntaxType.NEW);
+	Assignment list = new Assignment(startleft, exprright, vars, Assignment.Type.EQUAL, expr);
+	RESULT = list;
+:}
+
+| variable:var T_EQUAL expr_with_yields:expr
 {:
 	RESULT = new Assignment(varleft, exprright, var, Assignment.Type.EQUAL, expr);
 :}
@@ -2804,11 +2908,6 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = result;
 :}
 
-| T_YIELD:s
-{:
-    RESULT = new YieldExpression(sleft, sright, null);
-:}
-
 | T_FUNCTION:s is_reference:isReference
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
 lexical_vars:varsList
@@ -3170,6 +3269,12 @@ T_LNUMBER:scalar
 	RESULT = s;
 :}
 
+| T_TRAIT_C:scalar
+{:
+	Scalar s = new Scalar(scalarleft, scalarright, "__TRAIT__", Scalar.Type.SYSTEM);
+	RESULT = s;
+:}
+
 | T_METHOD_C:scalar
 {:
 	Scalar s = new Scalar(scalarleft, scalarright, "__METHOD__", Scalar.Type.SYSTEM);
@@ -3489,6 +3594,11 @@ static_constant_array_access:arrayAccess T_OPEN_RECT:o static_scalar_value:index
 {:
 	RESULT = new ExpressionArrayAccess(constantNameleft, endright, new Identifier(constantNameleft, constantNameright, constantName), new ArrayDimension(oleft, endright, index));
 :}
+
+| namespace_name_access:namespace T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+	RESULT = new ExpressionArrayAccess(namespaceleft, endright, namespace, new ArrayDimension(oleft, endright, index));
+:}
 ;
 
 static_array_creation_with_access ::=
@@ -3635,6 +3745,33 @@ T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
     ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
     RESULT = parenthesisExpression;
 :}
+;
+
+yield_expr ::=
+T_YIELD:s
+{:
+    RESULT = new YieldExpression(sleft, sright, null);
+:}
+
+| T_YIELD:s yield_expr:expr
+{:
+    RESULT = new YieldExpression(sleft, exprright, expr);
+:}
+
+| T_YIELD:s yield_from_expr:expr
+{:
+    RESULT = new YieldExpression(sleft, exprright, expr);
+:}
+
+| T_YIELD:s expr:expr
+{:
+    RESULT = new YieldExpression(sleft, exprright, expr);
+:}
+
+| T_YIELD:s expr:expr1 T_DOUBLE_ARROW expr:expr2
+{:
+    RESULT = new YieldExpression(sleft, expr2right, expr1, expr2);
+:}
 
 | T_OPEN_PARENTHESE:start yield_expr:expr T_CLOSE_PARENTHESE:end
 {:
@@ -3643,37 +3780,16 @@ T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
 :}
 ;
 
-yield_expr ::=
-T_YIELD:s expr_without_variable:ewv
-{:
-    RESULT = new YieldExpression(sleft, ewvright, ewv);
-:}
-
-| T_YIELD:s variable:var
-{:
-    RESULT = new YieldExpression(sleft, varright, var);
-:}
-
-| T_YIELD:s expr:e T_DOUBLE_ARROW expr_without_variable:ewv
-{:
-    RESULT = new YieldExpression(sleft, ewvright, e, ewv);
-:}
-
-| T_YIELD:s expr:e T_DOUBLE_ARROW variable:var
-{:
-    RESULT = new YieldExpression(sleft, varright, e, var);
-:}
-;
-
 yield_from_expr ::=
-T_YIELD_FROM:s variable:var
+T_YIELD_FROM:s expr:expr
 {:
-    RESULT = new YieldFromExpression(sleft, varright, var);
+    RESULT = new YieldFromExpression(sleft, exprright, expr);
 :}
 
-| T_YIELD_FROM:s expr_without_variable:ewv
+| T_OPEN_PARENTHESE:start yield_from_expr:expr T_CLOSE_PARENTHESE:end
 {:
-    RESULT = new YieldFromExpression(sleft, ewvright, ewv);
+    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
+    RESULT = parenthesisExpression;
 :}
 ;
 
@@ -3691,6 +3807,23 @@ r_variable:var
 
 | expr_without_variable:ewv
 {: RESULT = ewv; :}
+;
+
+expr_with_yields ::=
+expr:expr
+{:
+	RESULT = expr;
+:}
+
+| yield_expr:expr
+{:
+	RESULT = expr;
+:}
+
+| yield_from_expr:expr
+{:
+	RESULT = expr;
+:}
 ;
 
 r_variable ::=
@@ -3874,6 +4007,11 @@ constant_array_access:arrayAccess T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:en
 {:
     RESULT = new ExpressionArrayAccess(constantNameleft, endright, new Identifier(constantNameleft, constantNameright, constantName), new ArrayDimension(oleft, endright, index));
 :}
+
+| namespace_name_access:namespace T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+	RESULT = new ExpressionArrayAccess(namespaceleft, endright, namespace, new ArrayDimension(oleft, endright, index));
+:}
 ;
 
 array_creation_with_access ::=
@@ -4029,120 +4167,84 @@ T_DOLLAR
 :}
 ;
 
-assignment_list ::=
-assignment_list:listElements T_COMMA assignment_list_element:element
-{:
-	if (element != null) {
-		listElements.add(element);
-	}
-	RESULT = listElements;
-:}
-
-| assignment_list_element:var
-{:
-	List listElements = new LinkedList();
-	if (var != null) {
-		listElements.add(var);
-	}
-	RESULT = listElements;
-	;
-:}
-;
-
-assignment_list_element ::=
-variable:var
-{:
-	RESULT = var;
-:}
-
-| T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:end
-{:
-	ListVariable vars = new ListVariable(startleft, endright, varList);
-	RESULT = vars;
-:}
-
-| /* empty */
-{:
-	RESULT = null;
-:}
-;
-
 array_pair_list ::=
-/* empty */
-{:
-	List list = new LinkedList();
-	RESULT = list;
-:}
-
-| non_empty_array_pair_list:list possible_comma
+non_empty_array_pair_list:list
 {:
 	RESULT = list;
 :}
 ;
 
 non_empty_array_pair_list ::=
-non_empty_array_pair_list:list T_COMMA expr:key T_DOUBLE_ARROW expr:value
+non_empty_array_pair_list:list T_COMMA possible_array_pair:pair
 {:
-	ArrayElement element = new ArrayElement(keyleft, valueright, key, value);
-	list.add(element);
+	if(pair != null) {
+		list.add(pair);
+	}
 	RESULT = list;
 :}
 
-| non_empty_array_pair_list:list T_COMMA expr:expr
-{:
-	ArrayElement element = new ArrayElement(exprleft, exprright, expr);
-	list.add(element);
-	RESULT = list;
-:}
-
-| expr:key T_DOUBLE_ARROW expr:value
+| possible_array_pair:pair
 {:
 	List list = new LinkedList();
-	ArrayElement element = new ArrayElement(keyleft, valueright, key, value);
-	list.add(element);
+	if(pair != null) {
+		list.add(pair);
+	}
 	RESULT = list;
+:}
+;
+
+possible_array_pair ::=
+/* empty */
+{:
+	RESULT = null;
+:}
+
+| array_pair:pair
+{:
+	RESULT = pair;
+:}
+;
+
+array_pair ::=
+expr:key T_DOUBLE_ARROW expr:value
+{:
+	ArrayElement element = new ArrayElement(keyleft, valueright, key, value);
+	RESULT = element;
 :}
 
 | expr:expr
 {:
-	List list = new LinkedList();
 	ArrayElement element = new ArrayElement(exprleft, exprright, expr);
-	list.add(element);
-	RESULT = list;
+	RESULT = element;
 :}
 
-| non_empty_array_pair_list:list T_COMMA expr:key T_DOUBLE_ARROW T_REFERENCE:start w_variable:var
+| expr:expr T_DOUBLE_ARROW T_REFERENCE:start w_variable:var
 {:
 	Reference value = new Reference(startleft, varright, var);
-	ArrayElement element = new ArrayElement(keyleft, varright, key, value);
-	list.add(element);
-	RESULT = list;
+	ArrayElement element = new ArrayElement(exprleft, varright, expr, value);
+	RESULT = element;
 :}
 
-| non_empty_array_pair_list:list T_COMMA T_REFERENCE:start w_variable:var
-{:
-	Reference ref = new Reference(startleft, varright, var);
-	ArrayElement element = new ArrayElement(startleft, varright, ref);
-	list.add(element);
-	RESULT = list;
-:}
-
-| expr:key T_DOUBLE_ARROW T_REFERENCE:start w_variable:var
-{:
-	List list = new LinkedList();
-	Reference value = new Reference(startleft, varright, var);
-	ArrayElement element = new ArrayElement(keyleft, varright, key, value);
-	list.add(element);
-	RESULT = list;
-:}
 
 | T_REFERENCE:start w_variable:var
 {:
-	List list = new LinkedList();
 	Reference ref = new Reference(startleft, varright, var);
 	ArrayElement element = new ArrayElement(startleft, varright, ref);
-	list.add(element);
-	RESULT = list;
+	RESULT = element;
+:}
+
+| expr:expr T_DOUBLE_ARROW T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:end
+{:
+	ListVariable value = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.OLD);
+	ArrayElement element = new ArrayElement(exprleft, endright, expr, value);
+	RESULT = element;
+:}
+
+| T_LIST:start T_OPEN_PARENTHESE array_pair_list:varList T_CLOSE_PARENTHESE:end
+{:
+	ListVariable vars = new ListVariable(startleft, endright, varList, ListVariable.SyntaxType.OLD);
+        ArrayElement element = new ArrayElement(startleft, endright, vars);
+	RESULT = element;
 :}
 ;
 

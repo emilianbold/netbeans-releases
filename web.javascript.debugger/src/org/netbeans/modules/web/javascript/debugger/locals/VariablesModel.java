@@ -73,6 +73,7 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Scope;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import static org.netbeans.spi.debugger.ui.Constants.*;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -88,7 +89,12 @@ import org.openide.util.datatransfer.PasteType;
     "VariablesModel_Name=Name",
     "VariablesModel_Desc=Description"
 })
-@DebuggerServiceRegistration(path="javascript-debuggerengine/LocalsView", types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="javascript-debuggerengine/LocalsView",
+                                 types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class }),
+    @DebuggerServiceRegistration(path="javascript-debuggerengine/ToolTipView",
+                                 types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
+})
 public class VariablesModel extends ViewModelSupport implements TreeModel, ExtendedNodeModel,
         TableModel, Debugger.Listener, PropertyChangeListener {
 

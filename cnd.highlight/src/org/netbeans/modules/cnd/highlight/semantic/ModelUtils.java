@@ -209,6 +209,93 @@ public class ModelUtils {
         }
     }
 
+    /*package*/ static class EnumReferenceCollector extends AbstractReferenceCollector {
+        private final Interrupter interrupter;
+
+        public EnumReferenceCollector(Interrupter interrupter) {
+            this.interrupter = interrupter;
+        }
+        
+        public String getEntityName() {
+            return "enums-names"; // NOI18N
+        }
+        @Override
+        public void visit(CsmReference ref, CsmFile file) {
+            if (!cancelled()) {
+                if (isWanted(ref, file)) {
+                    list.add(ref);
+                }
+            }
+        }
+        private boolean isWanted(CsmReference ref, CsmFile file) {
+            CsmObject csmObject = ref.getReferencedObject();
+            return CsmKindUtilities.isEnum(csmObject);
+        }
+
+        @Override
+        public boolean cancelled() {
+            return interrupter.cancelled();
+        }
+    }
+
+    /*package*/ static class EnumeratorReferenceCollector extends AbstractReferenceCollector {
+        private final Interrupter interrupter;
+
+        public EnumeratorReferenceCollector(Interrupter interrupter) {
+            this.interrupter = interrupter;
+        }
+        
+        public String getEntityName() {
+            return "enumerators-names"; // NOI18N
+        }
+        @Override
+        public void visit(CsmReference ref, CsmFile file) {
+            if (!cancelled()) {
+                if (isWanted(ref, file)) {
+                    list.add(ref);
+                }
+            }
+        }
+        private boolean isWanted(CsmReference ref, CsmFile file) {
+            CsmObject csmObject = ref.getReferencedObject();
+            return CsmKindUtilities.isEnumerator(csmObject);
+        }
+
+        @Override
+        public boolean cancelled() {
+            return interrupter.cancelled();
+        }
+    }
+
+    /*package*/ static class ClassReferenceCollector extends AbstractReferenceCollector {
+        private final Interrupter interrupter;
+
+        public ClassReferenceCollector(Interrupter interrupter) {
+            this.interrupter = interrupter;
+        }
+        
+        public String getEntityName() {
+            return "classes-names"; // NOI18N
+        }
+        @Override
+        public void visit(CsmReference ref, CsmFile file) {
+            if (!cancelled()) {
+                if (isWanted(ref, file)) {
+                    list.add(ref);
+                }
+            }
+        }
+        private boolean isWanted(CsmReference ref, CsmFile file) {
+            CsmObject csmObject = ref.getReferencedObject();
+            return CsmKindUtilities.isClass(csmObject);
+        }
+
+        @Override
+        public boolean cancelled() {
+            return interrupter.cancelled();
+        }
+    }
+
     /*package*/ static class UnusedVariableCollector implements ReferenceCollector {
         private final Map<CsmVariable, ReferenceCounter> counters;
         private Set<CsmParameter> parameters;

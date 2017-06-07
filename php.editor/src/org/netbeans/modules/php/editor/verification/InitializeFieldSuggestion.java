@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NullableType;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
@@ -299,14 +300,27 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         public FieldDeclarationInitializer(int offset, FormalParameter node) {
             super(offset);
+
             Expression parameterType = node.getParameterType();
-            String typeName = parameterType == null ? null : CodeUtils.extractQualifiedName(parameterType);
-            String typePart = ""; //NOI18N
-            if (typeName != null) {
-                typePart = "/**\n * @var " + typeName + "\n */\n"; //NOI18N
+            if (parameterType instanceof NullableType) {
+                parameterType = ((NullableType) parameterType).getType();
             }
+            String typeName = parameterType == null ? null : CodeUtils.extractQualifiedName(parameterType);
             String parameterName = extractParameterName(node.getParameterName());
-            initString = "\n" + typePart + "private " + parameterName + ";\n"; //NOI18N
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("\n"); // NOI18N
+            if (typeName != null) {
+                // type part
+                sb.append("/**\n * @var "); // NOI18N
+                sb.append(typeName);
+                if (node.isNullableType()) {
+                    sb.append("|null"); // NOI18N
+                }
+                sb.append("\n */\n"); // NOI18N
+            }
+            sb.append("private ").append(parameterName).append(";\n"); // NOI18N
+            initString = sb.toString();
         }
 
         @Override

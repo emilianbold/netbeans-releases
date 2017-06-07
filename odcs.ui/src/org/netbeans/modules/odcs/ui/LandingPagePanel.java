@@ -66,7 +66,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
         "# {0} - icon url", "# {1} - server name",
         "LandingPagePanel.creatingSCMRepository.failed=<p><img src=''{0}''>&nbsp;Failed to create a SCM repository. Please use the {1} web interface.</p>",
         "# {0} - project name", "# {1} - detailed message", "# {2} - server name",
-        "LandingPagePanel.messageEditorPane.message=<html>\n<body>\n<p style=\"margin-top: 20\">\n<b>Project {0} was successfully created on {2}</b></p>\n{1}\n<p>To add or remove features go to {2}</p>\n<p>To <b>create a new source code project</b> (such as Java, C/C++, PHP, etc.) in the local repository, click the Create New Project button.</p>\n<p>To <b>import existing source code projects</b> into repository on {2}, just copy them into your local repository folder.</p>\n</body>\n</html>\n"})
+        "LandingPagePanel.messageEditorPane.message=<p><b>Project {0} was successfully created on {2}</b></p>\n{1}\n<p>To add or remove features go to {2}</p>\n<p>To <b>create a new source code project</b> (such as Java, C/C++, PHP, etc.) in the local repository, click the Create New Project button.</p>\n<p>To <b>import existing source code projects</b> into repository on {2}, just copy them into your local repository folder.</p>"})
     public LandingPagePanel(String prjName, String path, String serverName) {
 
         projectName = prjName;
@@ -82,9 +82,12 @@ public class LandingPagePanel extends javax.swing.JPanel {
         }
 
         initComponents();
-        String message = LandingPagePanel_messageEditorPane_message(projectName, repoMessage, serverName);
-        messageEditorPane.setText(message);        
-        
+
+        String message = "<html>\n<body>\n<font color=\"" // NOI18N
+                + Integer.toHexString(messageEditorPane.getForeground().getRGB() & 0xFFFFFF) + "\">" // NOI18N
+                + LandingPagePanel_messageEditorPane_message(projectName, repoMessage, serverName)
+                + "</font>\n</body>\n</html>\n"; // NOI18N
+        messageEditorPane.setText(message);
     }
 
     /** This method is called from within the constructor to
@@ -105,7 +108,6 @@ public class LandingPagePanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         iconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/ui/resources/odcs_logo.png"))); // NOI18N
-        iconLabel.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.iconLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 24, 20, 30);
@@ -119,8 +121,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
 
         messageEditorPane.setEditable(false);
         messageEditorPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        messageEditorPane.setContentType(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.contentType")); // NOI18N
-        messageEditorPane.setText(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.text")); // NOI18N
+        messageEditorPane.setContentType("text/html"); // NOI18N
         messageEditorPane.setOpaque(false);
         jScrollPane1.setViewportView(messageEditorPane);
         messageEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.messageEditorPane.AccessibleContext.accessibleName")); // NOI18N
@@ -132,6 +133,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LandingPagePanel.class, "LandingPagePanel.AccessibleContext.accessibleName")); // NOI18N

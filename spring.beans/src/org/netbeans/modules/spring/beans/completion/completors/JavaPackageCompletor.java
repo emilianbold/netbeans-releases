@@ -71,7 +71,7 @@ public class JavaPackageCompletor extends Completor {
 
     @Override
     protected int initAnchorOffset(CompletionContext context) {
-        int idx = context.getCurrentToken().getOffset() + 1;
+        int idx = context.getCurrentTokenOffset() + 1;
         String typedChars = context.getTypedPrefix();
         if (typedChars.contains(".") || typedChars.equals("")) {
             int dotIndex = typedChars.lastIndexOf(".");
@@ -89,7 +89,7 @@ public class JavaPackageCompletor extends Completor {
             return;
         }
 
-        doPackageCompletion(js, typedChars, context.getCurrentToken().getOffset() + 1);
+        doPackageCompletion(js, typedChars, context.getCurrentTokenOffset() + 1);
     }
 
     private void doPackageCompletion(JavaSource js, final String typedPrefix, final int substitutionOffset) throws IOException {

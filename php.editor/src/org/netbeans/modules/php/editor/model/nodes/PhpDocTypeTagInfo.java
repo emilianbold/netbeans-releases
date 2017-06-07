@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -124,6 +125,11 @@ public final class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         return kind;
     }
 
+    /**
+     * Get the type name.
+     *
+     * @return the type name (it can be contained the nullable type prefix("?"))
+     */
     public String getTypeName() {
         return typeName != null ? typeName : null;
     }
@@ -152,7 +158,8 @@ public final class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         if (Kind.VARIABLE.equals(getKind()) || Kind.FIELD.equals(getKind())) {
             QualifiedName.createUnqualifiedName(getName());
         }
-        return QualifiedName.create(getTypeName());
+        String type = CodeUtils.removeNullableTypePrefix(getTypeName());
+        return QualifiedName.create(type);
     }
 
     @Override
@@ -166,10 +173,14 @@ public final class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         if (Kind.USE_ALIAS.equals(getKind())) {
             return new OffsetRange(node.getStartOffset(), node.getStartOffset() + getName().length());
         }
-        QualifiedName typeQN = QualifiedName.create(typeName);
+        String type = CodeUtils.removeNullableTypePrefix(getTypeName());
+        QualifiedName typeQN = QualifiedName.create(type);
         final QualifiedName namespaceName = typeQN.toNamespaceName(typeQN.getKind().isFullyQualified());
         final int nsNameLength = namespaceName.toString().length();
         int startOffset = node.getStartOffset();
+        if (CodeUtils.isNullableType(getTypeName())) {
+            startOffset++;
+        }
         if (nsNameLength > 0) {
             startOffset += nsNameLength;
             if (namespaceName.getSegments().size() > 0 && !namespaceName.isDefaultNamespace()) {

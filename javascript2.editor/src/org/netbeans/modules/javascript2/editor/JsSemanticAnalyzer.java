@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -132,7 +133,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         for (Identifier iden: definedGlobal) {
             globalJsHintInlines.add(iden.getOffsetRange());
         }
-        highlights = count(result, global, highlights, new ArrayList<String>());
+        highlights = count(result, global, highlights, new HashSet<String>());
         highlights = processSemanticKeywords(result, highlights);
         highlights = processNumbers(result, highlights);
         
@@ -143,7 +144,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         }
     }
 
-    private Map<OffsetRange, Set<ColoringAttributes>> count (JsParserResult result, JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> processedObjects) {
+    private Map<OffsetRange, Set<ColoringAttributes>> count (JsParserResult result, JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights, Set<String> processedObjects) {
         if (ModelUtils.wasProcessed(parent, processedObjects)) {
             return highlights;
         }

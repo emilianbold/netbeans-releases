@@ -20,11 +20,11 @@ Cannot start REPL, see IDE log for more details.
 |  s integration
 |               ^
 
--> System.err.println("");
-
+-> System.err.println("x");
+| x
 
 -> System.err.println("ahoj");
-ahoj
+| ahoj
 
 -> System
 |  Error:

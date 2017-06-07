@@ -48,6 +48,7 @@ import java.awt.event.MouseListener;
 import java.text.DateFormat;
 import java.util.Date;
 import javax.swing.JComponent;
+import org.netbeans.modules.team.commons.ColorManager;
 
 /**
  *
@@ -87,8 +88,6 @@ public class DateSeparatorPanel extends javax.swing.JPanel implements Expandable
 
         setBorder(javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, new java.awt.Color(153, 153, 153)));
         setOpaque(false);
-
-        pnlTitle.setBackground(new java.awt.Color(230, 230, 230));
 
         org.openide.awt.Mnemonics.setLocalizedText(lblDate, getDateText());
 
@@ -151,14 +150,14 @@ public class DateSeparatorPanel extends javax.swing.JPanel implements Expandable
     @Override
     public void mouseEnteredExpandable() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        lblDate.setForeground(Color.BLUE);
+        lblDate.setForeground(ColorManager.getDefault().getLinkColor());
         lblExpand.setEnabled(true);
     }
 
     @Override
     public void mouseExitedExpandable() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        lblDate.setForeground(Color.BLACK);
+        lblDate.setForeground(lblExpand.getForeground());
         lblExpand.setEnabled(false);
     }
 

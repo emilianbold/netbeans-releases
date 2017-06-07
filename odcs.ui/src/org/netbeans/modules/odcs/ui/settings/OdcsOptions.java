@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -62,6 +63,7 @@ public class OdcsOptions extends javax.swing.JPanel implements DocumentListener 
      */
     public OdcsOptions() {
         initComponents();
+        lblError.setForeground(ColorManager.getDefault().getErrorColor());
         lblError.setVisible(false);
     }
 
@@ -92,7 +94,6 @@ public class OdcsOptions extends javax.swing.JPanel implements DocumentListener 
         txtSync.setMinimumSize(new java.awt.Dimension(30, 20));
         txtSync.setPreferredSize(new java.awt.Dimension(40, 20));
 
-        lblError.setForeground(new java.awt.Color(255, 0, 0));
         lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/ui/resources/error.png"))); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

@@ -54,18 +54,20 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.RowFilter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.lib.profiler.results.cpu.CPUResultsSnapshot;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.swing.FilteringToolbar;
 import org.netbeans.lib.profiler.ui.swing.PopupButton;
-import org.netbeans.lib.profiler.ui.swing.ProfilerPopupFactory;
+import org.netbeans.lib.profiler.ui.swing.ProfilerPopup;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.lib.profiler.ui.swing.renderer.CheckBoxRenderer;
@@ -128,6 +130,41 @@ public abstract class ThreadsSelector extends PopupButton {
         });
     }
     
+    void addThread(final int id, final boolean exclusive) {
+        UIUtils.runInEventDispatchThread(new Runnable() {
+            public void run() {
+                if (exclusive) selection.clear();
+                if (selection.add(id)) {
+                    displayAllThreads = false;
+                    fireSelectionChanged();
+                }
+            }
+        });
+    }
+    
+    void removeThread(final int id) {
+        UIUtils.runInEventDispatchThread(new Runnable() {
+            public void run() {
+                if (displayAllThreads) {
+                    Set<Integer> threads = new HashSet();
+                    CPUResultsSnapshot snapshot = getSnapshot();
+                    if (snapshot != null)
+                        for (int i = 0; i < snapshot.getNThreads(); i++)
+                            threads.add(snapshot.getThreadIds()[i]);
+                    
+                    if (!threads.remove(id)) return;
+                    selection.clear();
+                    selection.addAll(threads);
+                } else {
+                    if (!selection.remove(id)) return;
+                }
+                
+                displayAllThreads = false;
+                fireSelectionChanged();
+            }
+        });
+    }
+    
     
     public String getToolTipText() {
         return displayAllThreads ? SELECTED_THREADS_ALL :
@@ -140,16 +177,18 @@ public abstract class ThreadsSelector extends PopupButton {
         int[] threadIDs = snapshot == null ? null : snapshot.getThreadIds();
 //        String[] threadNames = snapshot == null ? null : snapshot.getThreadNames();
         
-        JPanel content = new JPanel(new BorderLayout());
-        content.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        int resizeMode;
+        JComponent content;
         
         if (threadIDs == null || threadIDs.length == 0) {
-            JLabel noThreads = new JLabel(NO_THREADS);
-            noThreads.setOpaque(false);
-            content.add(noThreads, BorderLayout.CENTER);
+            content = new JLabel(NO_THREADS);
+            content.setBorder(BorderFactory.createEmptyBorder(9, 6, 9, 6));
+            resizeMode = ProfilerPopup.RESIZE_NONE;
         } else {
+            content = new JPanel(new BorderLayout());
+            
             JLabel hint = new JLabel(SELECT_THREADS, JLabel.LEADING);
-            hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+            hint.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
             content.add(hint, BorderLayout.NORTH);
             
             final SelectedThreadsModel threadsModel = new SelectedThreadsModel();
@@ -159,6 +198,7 @@ public abstract class ThreadsSelector extends PopupButton {
             threadsTable.setFitWidthColumn(1);
             threadsTable.setDefaultSortOrder(1, SortOrder.ASCENDING);
             threadsTable.setSortColumn(1);
+            threadsTable.setFixedColumnSelection(0); // #268298 - make sure SPACE always hits the Boolean column
             threadsTable.setColumnRenderer(0, new CheckBoxRenderer());
             LabelRenderer threadsRenderer = new LabelRenderer();
             threadsRenderer.setIcon(Icons.getIcon(ProfilerIcons.THREAD));
@@ -172,14 +212,17 @@ public abstract class ThreadsSelector extends PopupButton {
             Dimension prefSize = new Dimension(threadsRenderer.getPreferredSize().width, h);
             threadsTable.setPreferredScrollableViewportSize(prefSize);
             ProfilerTableContainer tableContainer = new ProfilerTableContainer(threadsTable, true, null);
-            content.add(tableContainer, BorderLayout.CENTER);
+            JPanel tableContent = new JPanel(new BorderLayout());
+            tableContent.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+            tableContent.add(tableContainer, BorderLayout.CENTER);
+            content.add(tableContent, BorderLayout.CENTER);
             
             JToolBar controls = new FilteringToolbar(FILTER_THREADS) {
-                protected void filterChanged(final String filter) {
-                    if (filter == null) threadsTable.setRowFilter(null);
+                protected void filterChanged() {
+                    if (isAll()) threadsTable.setRowFilter(null);
                     else threadsTable.setRowFilter(new RowFilter() {
                         public boolean include(RowFilter.Entry entry) {
-                            return entry.getStringValue(1).contains(filter);
+                            return passes(entry.getStringValue(1));
                         }
                     });
                 }
@@ -237,9 +280,11 @@ public abstract class ThreadsSelector extends PopupButton {
             controls.add(Box.createHorizontalStrut(20));
             
             content.add(controls, BorderLayout.SOUTH);
+            
+            resizeMode = ProfilerPopup.RESIZE_BOTTOM | ProfilerPopup.RESIZE_RIGHT;
         }
 
-        ProfilerPopupFactory.Listener listener = new ProfilerPopupFactory.Listener() {
+        ProfilerPopup.Listener listener = new ProfilerPopup.Listener() {
             protected void popupHidden() {
                 if (!displayAllThreads && selection.isEmpty()) {
                     displayAllThreads = true;
@@ -249,7 +294,8 @@ public abstract class ThreadsSelector extends PopupButton {
                 allThreadsResetter = null;
             }
         };
-        ProfilerPopupFactory.getPopup(this, content, -5, getHeight() - 1, listener).show();
+        
+        ProfilerPopup.createRelative(this, content, SwingConstants.SOUTH_WEST, resizeMode, listener).show();
     }
     
     

@@ -89,4 +89,9 @@ public interface Archive {
      */
     public JavaFileObject getFile(final @NonNull String name) throws IOException;
 
+    /**
+     * Checks if the {@link Archive} is represents a multi release archive.
+     * @return true if the {@link Archive} is supports multiple releases.
+     */
+    public boolean isMultiRelease();
 }
