@@ -216,13 +216,13 @@ Contributor(s):
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>com.sun.tools.ide.analysis.modernize</friend>
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.java.analysis.parfait</friend>
                 <friend>org.netbeans.modules.cnd.analysis.impl</friend>
                 <friend>org.netbeans.modules.cnd.diagnostics.clank</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.ide.analysis.modernize</friend>
                 <package>org.netbeans.modules.cnd.analysis.api</package>
                 <package>org.netbeans.modules.cnd.analysis.api.options</package>
             </friend-packages>
