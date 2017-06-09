@@ -137,6 +137,7 @@ made subject to such option by the copyright holder.
                 <package>org.clang.tooling.core</package>
                 <package>org.clang.tools.driver</package>
                 <package>org.clang.tools.services</package>
+                <package>org.clang.tools.services.checkers.api</package>
                 <package>org.clang.tools.services.spi</package>
                 <package>org.clang.tools.services.support</package>
                 <package>org.clank.java</package>
