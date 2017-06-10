@@ -56,6 +56,8 @@ import org.clang.tools.services.ClankDiagnosticInfo;
 import org.clang.tools.services.ClankDiagnosticResponse;
 import org.clang.tools.services.ClankDiagnosticServices;
 import org.clang.tools.services.ClankRunDiagnosticsSettings;
+import org.clang.tools.services.checkers.api.ClankChecker;
+import org.clang.tools.services.checkers.api.ClankCheckersProvider;
 import org.clang.tools.services.spi.ClankFileSystemProvider;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -195,8 +197,14 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
             }
         };
-        settings.showAllWarning = clankShowAllWarning.isEnabled();
-        settings.turnOnAnalysis = clankStaticAnalyzer.isEnabled();
+        settings.showAllWarning = false;
+        settings.checkers.clear();
+        //and fill in
+        for (CodeAudit audit :  audits) {
+            if (audit.isEnabled()) {
+                settings.checkers.add(((ClankDiagnosticAudit)audit).clankChecker);
+            }
+        }
         try {
             ClankDiagnosticServices.verify(entry, settings);
         } catch (Throwable ex) {
@@ -326,16 +334,17 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null || audits.isEmpty()) {
             audits = new ArrayList<>();
-            audits.add(clankShowAllWarning);
-            audits.add(clankStaticAnalyzer);
+            for (ClankChecker checker : ClankCheckersProvider.getAllCheckers()) {
+                audits.add(new ClankDiagnosticAudit(checker));
+            }
         }
         return audits;
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    private final ClankDiagnosticAudit clankShowAllWarning
-            = new ClankDiagnosticAudit("clank.diagnostic.show.all.warnings", "Show All Warning", "Show All Warning");//NOI18N
-    private final ClankDiagnosticAudit clankStaticAnalyzer
-            = new ClankDiagnosticAudit("clank.diagnostic.static.analyzer", "Static Analyzer", "Static Analyzer");//NOI18N    
+//    private final ClankDiagnosticAudit clankShowAllWarning
+//            = new ClankDiagnosticAudit("clank.diagnostic.show.all.warnings", "Show All Warning", "Show All Warning");//NOI18N
+//    private final ClankDiagnosticAudit clankStaticAnalyzer
+//            = new ClankDiagnosticAudit("clank.diagnostic.static.analyzer", "Static Analyzer", "Static Analyzer");//NOI18N    
 
     @Override
     public AuditPreferences getPreferences() {
@@ -347,33 +356,29 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
     private class ClankDiagnosticAudit implements CodeAudit {
+        private final ClankChecker clankChecker;
 
-        private final String id;
-        private final String name;
-        private final String description;
         //private final AuditPreferences myPreferences;
         //private static final String CLANK_SHOW_ALL_WARNINGS = "clank.diagnostic.show.all.warnings";
 
-        private ClankDiagnosticAudit(String id, String name, String description) {
+        private ClankDiagnosticAudit(ClankChecker checker) {
             //myPreferences = new AuditPreferences()
-            this.id = id;
-            this.name = name;
-            this.description = description;
+            this.clankChecker = checker;
         }
 
         @Override
         public String getID() {
-            return id;
+            return clankChecker.getName();
         }
 
         @Override
         public String getName() {
-            return name;
+            return clankChecker.getName();
         }
 
         @Override
         public String getDescription() {
-            return description;
+            return clankChecker.getDescription();
         }
 
         @Override
@@ -434,10 +439,10 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
     public final static class ClankHintProvider extends CsmErrorInfoHintProvider {
 
         @Override
-        protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
+        protected List<Fix> doGetFixes(final CsmErrorInfo info, List<Fix> alreadyFound) {
             if (info instanceof ClankCsmErrorInfo) {
-                final ClankDiagnosticInfo fix = ((ClankCsmErrorInfo) info).getDelegate();
-                for (ClankDiagnosticEnhancedFix nextElement : fix.fixes()) {
+                final ClankDiagnosticInfo errorInfo = ((ClankCsmErrorInfo) info).getDelegate();
+                for (ClankDiagnosticEnhancedFix nextElement : errorInfo.fixes()) {
                     try {
                         EnhancedFixImpl fixImpl = new EnhancedFixImpl(((ClankCsmErrorInfo) info).getCsmFile(), nextElement);
                         alreadyFound.add(fixImpl);
@@ -445,6 +450,23 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
                         Exceptions.printStackTrace(ex);
                     }
 
+                }
+                if (errorInfo.hasNotes()) {
+                    //add action "Show Details"
+                    Fix fixImpl = new Fix() {
+                        @Override
+                        public String getText() {
+                            return "Error Path for " + errorInfo.getMessage();//NOI18N
+                        }
+
+                        @Override
+                        public ChangeInfo implement() throws Exception {
+                            ClankErrorPathDetailsProvider provider = Lookup.getDefault().lookup(ClankErrorPathDetailsProvider.class);
+                            provider.implement((ClankCsmErrorInfo)info);
+                            return null;
+                        }
+                    };
+                    alreadyFound.add(fixImpl);
                 }
             }
             return alreadyFound;
@@ -507,47 +529,6 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
             return null;
         }
 
-    }
-
-    /*package*/ class ClankCsmErrorInfo implements CsmErrorInfo {
-
-        private final ClankDiagnosticInfo errorInfo;
-        private final CsmFile csmFile;
-
-        ClankCsmErrorInfo(CsmFile csmFile, ClankDiagnosticInfo info) {
-            this.errorInfo = info;
-            this.csmFile = csmFile;
-        }
-
-        CsmFile getCsmFile() {
-            return csmFile;
-        }
-
-        @Override
-        public String getMessage() {
-            return errorInfo.getMessage();
-        }
-
-        @Override
-        public CsmErrorInfo.Severity getSeverity() {
-            return errorInfo.getSeverity() == ClankDiagnosticInfo.Severity.ERROR
-                    ? CsmErrorInfo.Severity.ERROR : CsmErrorInfo.Severity.WARNING;
-        }
-
-        @Override
-        public int getStartOffset() {
-            return errorInfo.getStartOffset();
-        }
-
-        @Override
-        public int getEndOffset() {
-            //return (int) CsmFileInfoQuery.getDefault().getOffset(file, errorInfo.getLine(), errorInfo.getColumn() + 1);
-            return errorInfo.getEndOffset();
-        }
-
-        /*package*/ ClankDiagnosticInfo getDelegate() {
-            return errorInfo;
-        }
     }
 
 }

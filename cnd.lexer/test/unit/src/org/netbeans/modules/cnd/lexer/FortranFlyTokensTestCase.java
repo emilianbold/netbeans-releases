@@ -108,9 +108,9 @@ public class FortranFlyTokensTestCase extends NbTestCase {
         );
         ts.moveIndex(0);
 
-        assertEquals(141, LexerTestUtilities.flyweightTokenCount(ts));
-        assertEquals(807, LexerTestUtilities.flyweightTextLength(ts));
-        assertEquals(561, ts.tokenCount());
+        assertEquals(140, LexerTestUtilities.flyweightTokenCount(ts));
+        assertEquals(806, LexerTestUtilities.flyweightTextLength(ts));
+        assertEquals(559, ts.tokenCount());
     }
 
 }
