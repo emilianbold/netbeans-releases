@@ -63,6 +63,8 @@ import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 
 public final class HostInfoFactory {
 
@@ -410,11 +412,13 @@ public final class HostInfoFactory {
     }
 
     /**
-     * @return unique key of the current NB instance, introduced to fix bug #176526
+     * @return unique key of the current NB instance, introduced to fix bug
+     * #176526
      */
     /*package-local*/ static String getNBKey() {
         // use NB userdir to prevent local collisions
-        int hashCode = System.getProperty("netbeans.user", "").hashCode();
+        File userDirectory = Places.getUserDirectory();
+        int hashCode = (userDirectory == null) ? "".hashCode() : userDirectory.getAbsolutePath().hashCode();
         try {
             // use host name to prevent remote collisions
             InetAddress localhost = InetAddress.getLocalHost();

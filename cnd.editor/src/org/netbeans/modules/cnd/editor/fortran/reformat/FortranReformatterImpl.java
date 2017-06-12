@@ -1070,6 +1070,10 @@ public class FortranReformatterImpl {
                         return;
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens());
+            } else if (p != null && (p.id() == KW_ASSIGNMENT || p.id() == KW_OPERATOR)) {
+              //interface assignment( = )
+              //interface operator( // )
+              // do not remove space before
             } else {
                 spaceBefore(previous, codeStyle.spaceWithinParens());
             }
