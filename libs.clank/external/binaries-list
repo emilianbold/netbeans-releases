@@ -1,7 +1,7 @@
-#changeset:   31870:12f2dbd183e8
+#changeset:   32297:88c28bbd20fe
 #branch:      jclank
 #tag:         tip
-#user:        Maria Dalmatova <maria.tishkova@oracle.com>
-#date:        Thu May 25 18:53:19 2017 +0300
-#summary:     Clank provider of error provider, hint provider and analyzer provider for the IDE
-E2387993DB3B6658AC3E7BDFDCEC5F5EB5248CEB clank_0.3.9.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Tue Jun 06 19:54:27 2017 +0300
+#summary:     Clank: use FINE level
+20BE53F1A18456B1355CE1D02A1A2B8BF308A344 clank_0.3.9.zip

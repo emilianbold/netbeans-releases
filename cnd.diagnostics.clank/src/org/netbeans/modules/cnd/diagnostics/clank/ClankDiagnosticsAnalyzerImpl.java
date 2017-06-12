@@ -115,21 +115,21 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
         
         @Override
         protected ErrorDescription addErrorImpl(CsmErrorInfo errorInfo, FileObject fo) {
-            if (!(errorInfo instanceof ClankDiagnoticsErrorProvider.ClankCsmErrorInfo)) {
+            if (!(errorInfo instanceof ClankCsmErrorInfo)) {
                 return null;
             }
-            final ClankDiagnoticsErrorProvider.ClankCsmErrorInfo info
-                    = (ClankDiagnoticsErrorProvider.ClankCsmErrorInfo) errorInfo;
+            final ClankCsmErrorInfo info
+                    = (ClankCsmErrorInfo) errorInfo;
             String message = info.getMessage();
             // String messages[] = errorInfo.getMessage().split("\n");
 //            if (messages.length >=3 ) {
 //                String abbr = messages[0];
             final List<Fix> fixes = new ArrayList<>();
-            final ClankDiagnosticInfo fix = ((ClankDiagnoticsErrorProvider.ClankCsmErrorInfo) info).getDelegate();
+            final ClankDiagnosticInfo fix = ((ClankCsmErrorInfo) info).getDelegate();
             for (ClankDiagnosticEnhancedFix nextElement : fix.fixes()) {
                 try {
                     ClankDiagnoticsErrorProvider.EnhancedFixImpl fixImpl
-                            = new ClankDiagnoticsErrorProvider.EnhancedFixImpl(((ClankDiagnoticsErrorProvider.ClankCsmErrorInfo) info).getCsmFile(), nextElement);
+                            = new ClankDiagnoticsErrorProvider.EnhancedFixImpl(((ClankCsmErrorInfo) info).getCsmFile(), nextElement);
                     fixes.add(fixImpl);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
