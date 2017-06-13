@@ -68,16 +68,16 @@ import org.openide.windows.InputOutput;
  */
 public final class IOConnector {
 
-    private static final RequestProcessor rp = new RequestProcessor("IOConnectorImpl", 2); // NOI18N
-    private static final IOConnector instance = new IOConnector();
+    private static final RequestProcessor RP = new RequestProcessor("IOConnectorImpl", 2); // NOI18N
+    private static final IOConnector INSTANCE = new IOConnector();
 
     private IOConnector() {
     }
 
     public static IOConnector getInstance() {
-        return instance;
+        return INSTANCE;
     }
-    
+
     public boolean connect(InputOutput io, NativeProcess process, Runnable postConnectRunnabel) {
         if (!IOTerm.isSupported(io)) {
             return false;
@@ -94,9 +94,9 @@ public final class IOConnector {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        }        
+        }
 
-        IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), 
+        IOTerm.connect(io, process.getOutputStream(), process.getInputStream(),
                 process.getErrorStream(), NativeProcessInfo.getCharset(process), postConnectRunnabel);
         return true;
     }
@@ -131,6 +131,8 @@ public final class IOConnector {
 
     private static class ResizeListener implements PropertyChangeListener {
 
+        private final Object lock = new Object();
+
         private Task task = null;
         private Dimension cells;
         private Dimension pixels;
@@ -144,12 +146,10 @@ public final class IOConnector {
 
                 // See IZ 192063  - Input is duplicated in internal terminal
                 // See CR 7009510 - Changing winsize (SIGWINCH) of pts causes entered text duplication
-
                 // In case OpenSolaris/Solaris 11 will not react on window size
                 // change... This causes 'problems' with, say, vi started
                 // in the internal terminal... But 'solves' problems with input
                 // duplication, which is more important...
-
                 String version = hinfo.getOS().getVersion();
                 if (version.contains("Solaris 11.")) { // NOI18N
                     // update for IZ 236261: in Solaris 11+ this seems to work, so
@@ -164,13 +164,13 @@ public final class IOConnector {
                 pxlsAware = false;
             }
 
-            this.task = rp.create(new Runnable() {
+            this.task = RP.create(new Runnable() {
 
                 @Override
                 public void run() {
                     Dimension c, p;
 
-                    synchronized (ResizeListener.this) {
+                    synchronized (lock) {
                         c = new Dimension(cells);
                         p = new Dimension(pixels);
                     }
@@ -178,7 +178,7 @@ public final class IOConnector {
                     String cmd = pxlsAware
                             ? String.format("cols %d rows %d xpixels %d ypixels %d", c.width, c.height, p.width, p.height) // NOI18N
                             : String.format("cols %d rows %d", c.width, c.height); // NOI18N
-                    
+
                     SttySupport.apply(env, tty, cmd);
                 }
             }, true);
@@ -199,9 +199,12 @@ public final class IOConnector {
                         return;
                     }
 
-                    this.cells = new Dimension(newCells);
-                    this.pixels = new Dimension(newPixels);
-                    task.schedule(1000);
+                    synchronized (lock) {
+                        this.cells = new Dimension(newCells);
+                        this.pixels = new Dimension(newPixels);
+                    }
+
+                    task.schedule(0);
                 }
             }
         }
