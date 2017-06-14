@@ -1,7 +1,7 @@
-#changeset:   32524:e80120963154
+#changeset:   32582:4b3b76f916cf
 #branch:      jclank
 #tag:         tip
-#user:        Maria Dalmatova <maria.tishkova@oracle.com>
-#date:        Tue Jun 13 12:56:49 2017 +0300
-#summary:     small changes to provide next/prev functionality in the client (use ordered collection) and temporary fix for sending data to client as ClankDiagnosticConsumerImpl.EndSourceFile is never invoked
-8CFB4547DDFD93816003B4335959C751FE06519D clank_0.3.9.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Wed Jun 14 20:03:35 2017 +0300
+#summary:     AUTO: <stdin> is absolute for in-memory-fs - backout
+471C9F6115460554D9B1A9AF630AF01DD62A44B5 clank_0.3.9.zip
