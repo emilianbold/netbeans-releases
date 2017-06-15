@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide;
 
+import static java.io.File.pathSeparatorChar;
 import static java.io.File.separatorChar;
 
 import java.io.BufferedReader;
@@ -76,6 +77,7 @@ import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -157,8 +159,13 @@ class WildflyStartRunnable implements Runnable {
         if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
             String logManagerJar = findLogManager(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
             if (!logManagerJar.isEmpty()) {
-                javaOptsBuilder.append(" -Xbootclasspath/p:").append(logManagerJar)
-                        .append(" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+                javaOptsBuilder.append(" -Xverify:none");
+                javaOptsBuilder.append(" -Xbootclasspath/p:\"").append(logManagerJar);
+                String jfluid = getJFluidPath();
+                if(jfluid != null) {
+                    javaOptsBuilder.append(pathSeparatorChar).append(jfluid);
+                }
+                javaOptsBuilder.append("\" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
                 FileObject loggingProperties = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR) 
                         + separatorChar + "standalone" + separatorChar + "configuration", "logging.properties")); // NOI18N
                 
@@ -221,7 +228,7 @@ class WildflyStartRunnable implements Runnable {
 
         }
         if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
-            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman,org.jboss.logmanager -Djava.awt.headless=true");
+            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman,org.jboss.logmanager,org.netbeans.lib.profiler.server -Djava.awt.headless=true");
         } else {
             javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
         }
@@ -289,6 +296,19 @@ class WildflyStartRunnable implements Runnable {
         return StartupExtender.StartMode.NORMAL;
     }
 
+    private String getJFluidPath() {
+        File bootJar = InstalledFileLocator.getDefault().locate("core/core.jar", "org.netbeans.core.startup", false); // NOI18N
+        if (bootJar == null) {
+            Logger.getLogger("global").warning("no core/core.jar");
+            return null;
+        }
+        File platformCluster = bootJar.getParentFile().getParentFile();
+        if (!platformCluster.getName().startsWith("platform")) { // NOI18N
+            Logger.getLogger("global").log(Level.WARNING, "{0} found in unexpected cluster", bootJar);
+            return null;
+        }
+        return platformCluster.toPath().getParent().resolve("profiler").resolve("lib").resolve("jfluid-server.jar").toAbsolutePath().normalize().toString();
+    }
     private boolean checkPorts(final InstanceProperties ip) {
         try {
             String strHTTPConnectorPort = ip.getProperty(WildflyPluginProperties.PROPERTY_PORT);
