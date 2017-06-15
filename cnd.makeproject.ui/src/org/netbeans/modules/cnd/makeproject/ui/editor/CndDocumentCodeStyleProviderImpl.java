@@ -39,12 +39,15 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.editor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -69,11 +72,28 @@ final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProv
 
     @Override
     public String getCurrentCodeStyle(String mimeType, Document doc) {
-        if (project.isProjectFormattingStyle()) {
+        if (project.isProjectFormattingStyle() == MakeProject.FormattingStyle.Project) {
             CodeStyleWrapper style = project.getProjectFormattingStyle(mimeType);
             if (style != null) {
                 return style.getStyleId();
             }
+        } else if (project.isProjectFormattingStyle() == MakeProject.FormattingStyle.ClangFormat) {
+            CodeStyleWrapper style = project.getProjectFormattingStyle(null);
+            if (style != null) {
+                String res = style.getStyleId();
+                if (res.startsWith("@")) { //NOI18N
+                    FileObject styleFO = project.getHelper().resolveFileObject(res.substring(1));
+                    if (styleFO != null && styleFO.isValid()) {
+                        try {
+                            return styleFO.asText();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } else {
+                    return res;
+                }
+            }   
         }
         return null;
     }

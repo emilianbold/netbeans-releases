@@ -41,18 +41,34 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.configurations;
 
+import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -139,12 +155,23 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         if (def != null) {
             headerComboBox.setSelectedItem(def);
         }
-        if (((MakeProject)project).isProjectFormattingStyle()) {
-            projectRadioButton.setSelected(true);
-            projectRadioButtonActionPerformed(null);
-        } else {
-            globalRadioButton.setSelected(true);
-            globalRadioButtonActionPerformed(null);
+        style = ((MakeProject)project).getProjectFormattingStyle(null);
+        if (style != null) {
+            ((MyComboBox)styleField).setText(style.getStyleId());
+        }
+        switch (((MakeProject)project).isProjectFormattingStyle()) {
+            case Global:
+                globalRadioButton.setSelected(true);
+                globalRadioButtonActionPerformed(null);
+                break;
+            case Project:
+                projectRadioButton.setSelected(true);
+                projectRadioButtonActionPerformed(null);
+                break;
+            case ClangFormat:
+                useClangFormatRadioButton.setSelected(true);
+                useClangFormatRadioButtonActionPerformed(null);
+                break;
         }
     }
 
@@ -189,7 +216,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         while(st.hasMoreTokens()) {
             String nextToken = st.nextToken();
             String styleDisplayName = getStyleDisplayName(pref, myProvider, nextToken);
-            res.put(styleDisplayName, new CodeStyleWrapper(nextToken, styleDisplayName));
+            res.put(styleDisplayName, CodeStyleWrapper.createProjectStyle(nextToken, styleDisplayName));
         }
         return res;
     }
@@ -255,10 +282,27 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
 
     @Override
     public void save() {
-        ((MakeProject)project).setProjectFormattingStyle(projectRadioButton.isSelected());
-        ((MakeProject)project).setProjectFormattingStyle(MIMENames.C_MIME_TYPE, ((StylePresentation) cComboBox.getSelectedItem()).key);
-        ((MakeProject)project).setProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE, ((StylePresentation) cppComboBox.getSelectedItem()).key);
-        ((MakeProject)project).setProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE, ((StylePresentation) headerComboBox.getSelectedItem()).key);
+        MakeProject.FormattingStyle style = MakeProject.FormattingStyle.Global;
+        if (projectRadioButton.isSelected()) {
+            style = MakeProject.FormattingStyle.Project;
+        } else if (globalRadioButton.isSelected()) {
+            style = MakeProject.FormattingStyle.Global;
+        } else if (useClangFormatRadioButton.isSelected()) {
+            style = MakeProject.FormattingStyle.ClangFormat;
+        }
+        ((MakeProject)project).setProjectFormattingStyle(style);
+        switch (style) {
+            case Global:
+                break;
+            case Project:
+                ((MakeProject)project).setProjectFormattingStyle(MIMENames.C_MIME_TYPE, ((StylePresentation) cComboBox.getSelectedItem()).key);
+                ((MakeProject)project).setProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE, ((StylePresentation) cppComboBox.getSelectedItem()).key);
+                ((MakeProject)project).setProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE, ((StylePresentation) headerComboBox.getSelectedItem()).key);
+                break;
+            case ClangFormat:
+                ((MakeProject)project).setProjectFormattingStyle(null, CodeStyleWrapper.createClangFormatStyle(((MyComboBox)styleField).getText().trim()));
+                break;
+        }
     }
 
     /**
@@ -280,7 +324,11 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         cComboBox = new javax.swing.JComboBox();
         cppComboBox = new javax.swing.JComboBox();
         headerComboBox = new javax.swing.JComboBox();
+        useClangFormatRadioButton = new javax.swing.JRadioButton();
+        clangFormatLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
+        clangStyleButton = new javax.swing.JButton();
+        styleField = new MyComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -292,7 +340,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
@@ -308,7 +356,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
@@ -343,6 +391,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
@@ -351,6 +400,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
@@ -359,49 +409,127 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
         add(headerComboBox, gridBagConstraints);
 
+        buttonGroup1.add(useClangFormatRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(useClangFormatRadioButton, org.openide.util.NbBundle.getMessage(FormattingPropPanel.class, "FormattingPropPanel.useClangFormatRadioButton.text")); // NOI18N
+        useClangFormatRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useClangFormatRadioButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(useClangFormatRadioButton, gridBagConstraints);
+
+        clangFormatLabel.setLabelFor(styleField);
+        org.openide.awt.Mnemonics.setLocalizedText(clangFormatLabel, org.openide.util.NbBundle.getMessage(FormattingPropPanel.class, "FormattingPropPanel.clangFormatLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 6);
+        add(clangFormatLabel, gridBagConstraints);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 403, Short.MAX_VALUE)
+            .addGap(0, 451, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 132, Short.MAX_VALUE)
+            .addGap(0, 66, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(clangStyleButton, org.openide.util.NbBundle.getMessage(FormattingPropPanel.class, "FormattingPropPanel.clangStyleButton.text")); // NOI18N
+        clangStyleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clangStyleButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(clangStyleButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(styleField, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void globalRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalRadioButtonActionPerformed
         cComboBox.setEnabled(false);
         cppComboBox.setEnabled(false);
         headerComboBox.setEnabled(false);
+        styleField.setEnabled(false);
+        clangStyleButton.setEnabled(false);
     }//GEN-LAST:event_globalRadioButtonActionPerformed
 
     private void projectRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectRadioButtonActionPerformed
         cComboBox.setEnabled(true);
         cppComboBox.setEnabled(true);
         headerComboBox.setEnabled(true);
+        styleField.setEnabled(false);
+        clangStyleButton.setEnabled(false);
     }//GEN-LAST:event_projectRadioButtonActionPerformed
+
+    private void useClangFormatRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useClangFormatRadioButtonActionPerformed
+        cComboBox.setEnabled(false);
+        cppComboBox.setEnabled(false);
+        headerComboBox.setEnabled(false);
+        styleField.setEnabled(true);
+        clangStyleButton.setEnabled(true);
+    }//GEN-LAST:event_useClangFormatRadioButtonActionPerformed
+
+    private void clangStyleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clangStyleButtonActionPerformed
+        FileObject baseDirFileObject = makeConfigurationDescriptor.getBaseDirFileObject();
+        final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(makeConfigurationDescriptor.getBaseDirFileSystem());
+        String seed = baseDirFileObject.getPath();
+        String title = NbBundle.getMessage(FormattingPropPanel.class, "FormattingPropPanel.SelectClangFormat"); //NOI18N
+        String approve = NbBundle.getMessage(FormattingPropPanel.class, "FormattingPropPanel.Select"); //NOI18N
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env, title, approve,
+                JFileChooser.FILES_ONLY, null, seed, true);
+        int ret = fileChooser.showOpenDialog(null);
+        if (ret == JFileChooser.CANCEL_OPTION) {
+            return;
+        }
+        final File selectedFile = fileChooser.getSelectedFile();
+        String path = CndPathUtilities.normalizeSlashes(selectedFile.getPath());
+        String toRelativePath = CndPathUtilities.toRelativePath(baseDirFileObject, path);
+        ((MyComboBox)styleField).setText("@"+toRelativePath); //NOI18N
+    }//GEN-LAST:event_clangStyleButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox cComboBox;
     private javax.swing.JLabel cLabel;
+    private javax.swing.JLabel clangFormatLabel;
+    private javax.swing.JButton clangStyleButton;
     private javax.swing.JComboBox cppComboBox;
     private javax.swing.JLabel cppLabel;
     private javax.swing.JRadioButton globalRadioButton;
@@ -409,6 +537,8 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     private javax.swing.JLabel headerLabel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton projectRadioButton;
+    private javax.swing.JComboBox<String> styleField;
+    private javax.swing.JRadioButton useClangFormatRadioButton;
     // End of variables declaration//GEN-END:variables
 
     private static final class StylePresentation {
@@ -424,4 +554,100 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
             return name;
         }
     }
+    
+    public static class MyComboBox extends JComboBox {
+
+        public MyComboBox() {
+            setEditable(true);
+            init();
+        }
+
+        /**
+         * Read combo box state from storage
+         *
+         * @param path is initial combo box value
+         */
+        private void init() {
+            List<String> list = new ArrayList<>();
+            list.add("@.clang-format"); //NOI18N
+            list.add("BasedOnStyle: Chromium"); //NOI18N
+            list.add("BasedOnStyle: GNU"); //NOI18N
+            list.add("BasedOnStyle: Google"); //NOI18N
+            list.add("BasedOnStyle: LLVM"); //NOI18N
+            list.add("BasedOnStyle: Mozilla"); //NOI18N
+            list.add("BasedOnStyle: WebKit"); //NOI18N
+            DefaultComboBoxModel rootModel = new DefaultComboBoxModel(list.toArray());
+            setModel(rootModel);
+            StringBuilder buf = new StringBuilder();
+            for (int i = 0; i < 30; i++) {
+                buf.append("w"); // NOI18N
+            }
+            setPrototypeDisplayValue(buf.toString());
+        }
+
+        /**
+         * Get field text. Override this method to add additional expansion possibilities.
+         *
+         * @return field text
+         */
+        public String getText() {
+            return getTextImpl();
+        }
+
+        /**
+         * Get original field text.
+         *
+         * @return field text
+         */
+        protected final String getTextImpl() {
+            if (editor != null) {
+                Component component = editor.getEditorComponent();
+                if (component instanceof JTextField) {
+                    return ((JTextField) component).getText();
+                }
+            }
+            if (getSelectedItem() != null) {
+                return getSelectedItem().toString();
+            }
+            return null;
+        }
+
+        /**
+         * Set current text
+         *
+         * @param path update field
+         */
+        public void setText(String path) {
+            setSelectedItem(path);
+        }
+
+        /**
+         * Add action and document listeners
+         *
+         * @param listener
+         */
+        public void addChangeListener(final ActionListener listener) {
+            //addActionListener(listener);
+            Component component = editor.getEditorComponent();
+            if (component instanceof JTextField) {
+                ((JTextField) component).getDocument().addDocumentListener(new DocumentListener() {
+                    @Override
+                    public void insertUpdate(DocumentEvent e) {
+                        listener.actionPerformed(null);
+                    }
+
+                    @Override
+                    public void removeUpdate(DocumentEvent e) {
+                        listener.actionPerformed(null);
+                    }
+
+                    @Override
+                    public void changedUpdate(DocumentEvent e) {
+                        listener.actionPerformed(null);
+                    }
+                });
+            }
+        }
+    }
+
 }
