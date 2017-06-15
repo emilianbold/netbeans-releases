@@ -166,7 +166,19 @@ public class Reformatter implements ReformatTask {
     }
 
     private void reformat(FormatStyle clangFormatStyle, int startOffset, int endOffset) throws BadLocationException {
-        StringRef stringRef = new StringRef(doc.getText(0, doc.getLength()));
+        final String text = doc.getText(0, doc.getLength());
+        final byte[] byteText = new byte[text.length()+1];
+        for(int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c <= 255) {
+                byteText[i] = (byte)(c & 0xFF);
+            } else {
+                byteText[i] = (byte)(0xFF);
+            }
+        }
+        byteText[text.length()] = 0;
+        //StringRef stringRef = new StringRef(text);
+        StringRef stringRef = new StringRef(byteText);
         ArrayRef<Range> Ranges = new ArrayRef(new Range[]{new Range(startOffset, endOffset - startOffset)});
         String title = (String) doc.getProperty("title"); //NOI18N
         StringRef file = new StringRef(/*KEEP_STR*/title/*"<stdin>"*/); //NOI18N
