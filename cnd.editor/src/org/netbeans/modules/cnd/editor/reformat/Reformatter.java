@@ -181,7 +181,10 @@ public class Reformatter implements ReformatTask {
         StringRef stringRef = new StringRef(byteText);
         ArrayRef<Range> Ranges = new ArrayRef(new Range[]{new Range(startOffset, endOffset - startOffset)});
         String title = (String) doc.getProperty("title"); //NOI18N
-        StringRef file = new StringRef(/*KEEP_STR*/title/*"<stdin>"*/); //NOI18N
+        if (title == null) {
+          title = "<stdin>"; //NOI18N
+        }
+        StringRef file = new StringRef(/*KEEP_STR*/title); //NOI18N
         std.set<Replacement> replaces = FormatGlobals.reformat(clangFormatStyle, stringRef, Ranges, file);
         LinkedList<Replacement> diffs = new LinkedList<Replacement>();
         for(Replacement r : replaces){
