@@ -240,7 +240,7 @@ public final class CodeStyle {
 
     public VisibilityIndent indentVisibility(){
         if (delegate != null) {
-            //Is there analog?
+            //Partly fit
             if (-delegate.AccessModifierOffset == delegate.IndentWidth) {
                 return VisibilityIndent.NO_INDENT;
             } else {
@@ -253,7 +253,7 @@ public final class CodeStyle {
     
     public boolean indentNamespace() {
         if (delegate != null) {
-            //Is there analog?
+            //Partly fit
             return delegate.NamespaceIndentation != FormatStyle.NamespaceIndentationKind.NI_None;
         }
         return getOption(EditorOptions.indentNamespace,
@@ -271,7 +271,7 @@ public final class CodeStyle {
     public boolean absoluteLabelIndent() {
         if (delegate != null) {
             //Is there analog?
-            return EditorOptions.absoluteLabelIndentDefault;
+            return false;
         }
         return getOption(EditorOptions.absoluteLabelIndent,
                          EditorOptions.absoluteLabelIndentDefault);
@@ -280,7 +280,7 @@ public final class CodeStyle {
     public boolean sharpAtStartLine(){
         if (delegate != null) {
             //Is there analog?
-            return EditorOptions.sharpAtStartLineDefault;
+            return true;
         }
         return getOption(EditorOptions.sharpAtStartLine,
                          EditorOptions.sharpAtStartLineDefault);
@@ -297,64 +297,64 @@ public final class CodeStyle {
     // indents ------------------------------------------------
     public boolean spaceBeforeMethodDeclParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeMethodDeclParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens == FormatStyle.SpaceBeforeParensOptions.SBPO_Always;
         }
         return getOption(EditorOptions.spaceBeforeMethodDeclParen,
                          EditorOptions.spaceBeforeMethodDeclParenDefault);
     }
     public boolean spaceBeforeMethodCallParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeMethodCallParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens == FormatStyle.SpaceBeforeParensOptions.SBPO_Always;
         }
         return getOption(EditorOptions.spaceBeforeMethodCallParen,
                          EditorOptions.spaceBeforeMethodCallParenDefault);
     }
     public boolean spaceBeforeIfParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeIfParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens != FormatStyle.SpaceBeforeParensOptions.SBPO_Never;
         }
         return getOption(EditorOptions.spaceBeforeIfParen,
                          EditorOptions.spaceBeforeIfParenDefault);
     }
     public boolean spaceBeforeForParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeForParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens != FormatStyle.SpaceBeforeParensOptions.SBPO_Never;
         }
         return getOption(EditorOptions.spaceBeforeForParen,
                          EditorOptions.spaceBeforeForParenDefault);
     }
     public boolean spaceBeforeWhileParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeWhileParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens != FormatStyle.SpaceBeforeParensOptions.SBPO_Never;
         }
         return getOption(EditorOptions.spaceBeforeWhileParen,
                          EditorOptions.spaceBeforeWhileParenDefault);
     }
     public boolean spaceBeforeCatchParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeCatchParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens != FormatStyle.SpaceBeforeParensOptions.SBPO_Never;
         }
         return getOption(EditorOptions.spaceBeforeCatchParen,
                          EditorOptions.spaceBeforeCatchParenDefault);
     }
     public boolean spaceBeforeSwitchParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeSwitchParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens != FormatStyle.SpaceBeforeParensOptions.SBPO_Never;
         }
         return getOption(EditorOptions.spaceBeforeSwitchParen,
                          EditorOptions.spaceBeforeSwitchParenDefault);
     }
     public boolean spaceBeforeKeywordParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeKeywordParenDefault;
+            //Partly fit
+            return delegate.SpaceBeforeParens == FormatStyle.SpaceBeforeParensOptions.SBPO_Always;
         }
         return getOption(EditorOptions.spaceBeforeKeywordParen,
                          EditorOptions.spaceBeforeKeywordParenDefault);
@@ -362,8 +362,25 @@ public final class CodeStyle {
 
     public BracePlacement getFormatNewlineBeforeBraceNamespace() {
         if (delegate != null) {
-            //Is there analog?
-            return BracePlacement.SAME_LINE;
+          switch(delegate.BreakBeforeBraces) {
+            case BS_Attach:
+              return BracePlacement.SAME_LINE;
+            case BS_Linux:
+              return BracePlacement.NEW_LINE;
+            case BS_Mozilla:
+              return BracePlacement.SAME_LINE;
+            case BS_Stroustrup:
+              return BracePlacement.SAME_LINE;
+            case BS_Allman:
+              return BracePlacement.NEW_LINE;
+            case BS_GNU:
+              return BracePlacement.NEW_LINE_HALF_INDENTED;
+            case BS_WebKit:
+              return BracePlacement.SAME_LINE;
+            case BS_Custom:
+            default:
+              return BracePlacement.SAME_LINE;
+          }
         }
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceNamespace,
                                       EditorOptions.newLineBeforeBraceNamespaceDefault));
@@ -371,8 +388,25 @@ public final class CodeStyle {
 
     public BracePlacement getFormatNewlineBeforeBraceClass() {
         if (delegate != null) {
-            //Is there analog?
-            return BracePlacement.SAME_LINE;
+          switch(delegate.BreakBeforeBraces) {
+            case BS_Attach:
+              return BracePlacement.SAME_LINE;
+            case BS_Linux:
+              return BracePlacement.NEW_LINE;
+            case BS_Mozilla:
+              return BracePlacement.NEW_LINE;
+            case BS_Stroustrup:
+              return BracePlacement.SAME_LINE;
+            case BS_Allman:
+              return BracePlacement.NEW_LINE;
+            case BS_GNU:
+              return BracePlacement.NEW_LINE_HALF_INDENTED;
+            case BS_WebKit:
+              return BracePlacement.SAME_LINE;
+            case BS_Custom:
+            default:
+              return BracePlacement.SAME_LINE;
+          }
         }
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceClass,
                                       EditorOptions.newLineBeforeBraceClassDefault));
@@ -380,8 +414,25 @@ public final class CodeStyle {
 
     public BracePlacement getFormatNewlineBeforeBraceDeclaration() {
         if (delegate != null) {
-            //Is there analog?
-            return BracePlacement.SAME_LINE;
+          switch(delegate.BreakBeforeBraces) {
+            case BS_Attach:
+              return BracePlacement.SAME_LINE;
+            case BS_Linux:
+              return BracePlacement.NEW_LINE;
+            case BS_Mozilla:
+              return BracePlacement.NEW_LINE;
+            case BS_Stroustrup:
+              return BracePlacement.NEW_LINE;
+            case BS_Allman:
+              return BracePlacement.NEW_LINE;
+            case BS_GNU:
+              return BracePlacement.NEW_LINE_HALF_INDENTED;
+            case BS_WebKit:
+              return BracePlacement.NEW_LINE;
+            case BS_Custom:
+            default:
+              return BracePlacement.SAME_LINE;
+          }
         }
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceDeclaration,
                                       EditorOptions.newLineBeforeBraceDeclarationDefault));
@@ -397,7 +448,7 @@ public final class CodeStyle {
     public BracePlacement getFormatNewlineBeforeBraceLambda() {
         if (delegate != null) {
             //Is there analog?
-            return BracePlacement.SAME_LINE;
+            return getFormatNewlineBeforeBraceDeclaration();
         }
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceLambda,
                                       EditorOptions.newLineBeforeBraceLambdaDefault));
@@ -405,8 +456,25 @@ public final class CodeStyle {
 
     public BracePlacement getFormatNewLineBeforeBraceSwitch() {
         if (delegate != null) {
-            //Is there analog?
-            return BracePlacement.SAME_LINE;
+          switch(delegate.BreakBeforeBraces) {
+            case BS_Attach:
+              return BracePlacement.SAME_LINE;
+            case BS_Linux:
+              return BracePlacement.SAME_LINE;
+            case BS_Mozilla:
+              return BracePlacement.SAME_LINE;
+            case BS_Stroustrup:
+              return BracePlacement.SAME_LINE;
+            case BS_Allman:
+              return BracePlacement.NEW_LINE;
+            case BS_GNU:
+              return BracePlacement.NEW_LINE_HALF_INDENTED;
+            case BS_WebKit:
+              return BracePlacement.SAME_LINE;
+            case BS_Custom:
+            default:
+              return BracePlacement.SAME_LINE;
+          }
         }
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceSwitch,
                                       EditorOptions.newLineBeforeBraceSwitchDefault));
@@ -414,8 +482,7 @@ public final class CodeStyle {
 
     public BracePlacement getFormatNewlineBeforeBrace() {
         if (delegate != null) {
-            //Is there analog?
-            return BracePlacement.SAME_LINE;
+            return getFormatNewLineBeforeBraceSwitch();
         }
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBrace,
                                       EditorOptions.newLineBeforeBraceDefault));
@@ -424,16 +491,14 @@ public final class CodeStyle {
     //NewLine
     public boolean newLineCatch(){
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.newLineCatchDefault;
+          return delegate.BreakBeforeBraces == FormatStyle.BraceBreakingStyle.BS_Mozilla;
         }
         return getOption(EditorOptions.newLineCatch,
                          EditorOptions.newLineCatchDefault);
     }
     public boolean newLineElse(){
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.newLineElseDefault;
+          return delegate.BreakBeforeBraces == FormatStyle.BraceBreakingStyle.BS_Mozilla;
         }
         return getOption(EditorOptions.newLineElse,
                          EditorOptions.newLineElseDefault);
@@ -448,8 +513,7 @@ public final class CodeStyle {
     }
     public boolean newLineFunctionDefinitionName(){
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.newLineFunctionDefinitionNameDefault;
+          return delegate.AlwaysBreakAfterDefinitionReturnType != FormatStyle.DefinitionReturnTypeBreakingStyle.DRTBS_None;
         }
         return getOption(EditorOptions.newLineFunctionDefinitionName,
                          EditorOptions.newLineFunctionDefinitionNameDefault);
@@ -485,8 +549,7 @@ public final class CodeStyle {
     //MultilineAlignment
     public boolean alignMultilineCallArgs() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.alignMultilineCallArgsDefault;
+          return delegate.AlignOperands;
         }
         return getOption(EditorOptions.alignMultilineCallArgs,
                          EditorOptions.alignMultilineCallArgsDefault);
@@ -494,8 +557,7 @@ public final class CodeStyle {
 
     public boolean alignMultilineMethodParams() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.alignMultilineMethodParamsDefault;
+          return delegate.AlignOperands;
         }
         return getOption(EditorOptions.alignMultilineMethodParams,
                          EditorOptions.alignMultilineMethodParamsDefault);
@@ -503,40 +565,35 @@ public final class CodeStyle {
 
     public boolean alignMultilineFor() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.alignMultilineForDefault;
+          return delegate.AlignOperands;
         }
         return getOption(EditorOptions.alignMultilineFor,
                          EditorOptions.alignMultilineForDefault);
     }
     public boolean alignMultilineIfCondition() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.alignMultilineIfConditionDefault;
+          return delegate.AlignOperands;
         }
         return getOption(EditorOptions.alignMultilineIfCondition,
                          EditorOptions.alignMultilineIfConditionDefault);
     }
     public boolean alignMultilineWhileCondition() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.alignMultilineWhileConditionDefault;
+          return delegate.AlignOperands;
         }
         return getOption(EditorOptions.alignMultilineWhileCondition,
                          EditorOptions.alignMultilineWhileConditionDefault);
     }
     public boolean alignMultilineParen() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.alignMultilineParenDefault;
+          return delegate.AlignOperands;
         }
         return getOption(EditorOptions.alignMultilineParen,
                          EditorOptions.alignMultilineParenDefault);
     }
     public boolean alignMultilineArrayInit() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.alignMultilineArrayInitDefault;
+          return delegate.AlignOperands;
         }
         return getOption(EditorOptions.alignMultilineArrayInit,
                          EditorOptions.alignMultilineArrayInitDefault);
@@ -578,8 +635,15 @@ public final class CodeStyle {
             
     public boolean spaceBeforeWhile() {
         if (delegate != null) {
-            //Is there analog?
-            return EditorOptions.spaceBeforeWhileDefault;
+          switch(delegate.SpaceBeforeParens){
+            case SBPO_Never:
+              return false;
+            case SBPO_ControlStatements:
+              return true;
+            case SBPO_Always:
+            default:
+              return true;
+          }
         }
         return getOption(EditorOptions.spaceBeforeWhile,
                          EditorOptions.spaceBeforeWhileDefault);
