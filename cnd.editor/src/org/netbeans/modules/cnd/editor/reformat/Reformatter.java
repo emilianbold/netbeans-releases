@@ -170,10 +170,12 @@ public class Reformatter implements ReformatTask {
         final byte[] byteText = new byte[text.length()+1];
         for(int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (c <= 255) {
+            if (c <= 127) {
                 byteText[i] = (byte)(c & 0xFF);
             } else {
-                byteText[i] = (byte)(0xFF);
+                // Assumption: formatter never copied non-white text in replacment.
+                // Replace all wide chars to keep parity between char and byte offsets.
+                byteText[i] = (byte)(0xD3);
             }
         }
         byteText[text.length()] = 0;
