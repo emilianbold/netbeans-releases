@@ -102,6 +102,7 @@ public final class CodeStyle {
                 if (error.$bool()) {
                     fs = FormatGlobals.getLLVMStyle();
                 }
+                fs.Language = FormatStyle.LanguageKind.LK_Cpp;
                 c = new CodeStyle(fs, true);
                 CLANG_FORMAT.put(profileId, c);
             }
