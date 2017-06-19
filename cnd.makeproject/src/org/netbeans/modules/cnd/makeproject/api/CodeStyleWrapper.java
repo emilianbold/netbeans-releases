@@ -55,11 +55,11 @@ public final class CodeStyleWrapper {
         return new CodeStyleWrapper(MakeProject.FormattingStyle.Project, styleId, displayName);
     }
 
-    public static CodeStyleWrapper createClangFormatStyle(String file) {
-        if (file.startsWith("@")) { //NOI18N
-            return new CodeStyleWrapper(MakeProject.FormattingStyle.ClangFormat, file, "file"); //NOI18N
+    public static CodeStyleWrapper createClangFormatStyle(String fileOrStyle, boolean isFile) {
+        if (isFile) { //NOI18N
+            return new CodeStyleWrapper(MakeProject.FormattingStyle.ClangFormat, fileOrStyle, "file"); //NOI18N
         } else {
-            return new CodeStyleWrapper(MakeProject.FormattingStyle.ClangFormat, file, "style"); //NOI18N
+            return new CodeStyleWrapper(MakeProject.FormattingStyle.ClangFormat, fileOrStyle, "style"); //NOI18N
         }
     }
 

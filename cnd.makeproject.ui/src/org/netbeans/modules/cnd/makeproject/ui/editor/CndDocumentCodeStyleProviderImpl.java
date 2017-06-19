@@ -42,10 +42,13 @@ package org.netbeans.modules.cnd.makeproject.ui.editor;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -81,8 +84,15 @@ final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProv
             CodeStyleWrapper style = project.getProjectFormattingStyle(null);
             if (style != null) {
                 String res = style.getStyleId();
-                if (res.startsWith("@")) { //NOI18N
-                    FileObject styleFO = project.getHelper().resolveFileObject(res.substring(1));
+                String displayName = style.getDisplayName();
+                if ("file".equals(displayName)) { //NOI18N
+                    MakeConfigurationDescriptor cd = (MakeConfigurationDescriptor)project.getConfigurationDescriptorProvider().getConfigurationDescriptor();
+                    FileObject styleFO;
+                    if (!CndPathUtilities.isPathAbsolute(cd.getBaseDirFileSystem(), res)) {
+                      styleFO = RemoteFileUtil.getFileObject(cd.getBaseDirFileObject(), "/"+res); //NOI18N
+                    } else {
+                      styleFO = RemoteFileUtil.getFileObject(res, project);
+                    }
                     if (styleFO != null && styleFO.isValid()) {
                         try {
                             return styleFO.asText();
