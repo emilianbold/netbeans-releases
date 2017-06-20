@@ -184,7 +184,11 @@ public final class CodeStyle {
     public int indentSize() {
         if (isOverideTabIndents()){
             if (delegate != null) {
+              if (delegate.BreakBeforeBraces == FormatStyle.BraceBreakingStyle.BS_GNU) {
+                return delegate.IndentWidth*2;
+              } else {
                 return delegate.IndentWidth;
+              }
             }
             return getOption(EditorOptions.indentSize,
                              EditorOptions.indentSizeDefault);
