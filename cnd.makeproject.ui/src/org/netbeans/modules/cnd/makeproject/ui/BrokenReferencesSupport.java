@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -221,7 +222,7 @@ public final class BrokenReferencesSupport {
         
     
     private static List<Style> getUndefinedFormattingStyles(MakeProject project) {
-        if (!project.isProjectFormattingStyle()) {
+        if (project.isProjectFormattingStyle() == MakeProject.FormattingStyle.Project) {
             return null;
         }
         List<Style> list = new ArrayList<>();

@@ -49,7 +49,9 @@
  */
 package org.netbeans.lib.terminalemulator;
 
+import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 /**
  * The Buffer used by Term is _not_ related to javax.swing.text.Document.
@@ -198,6 +200,10 @@ class Buffer {
         Line l = lines.remove(from);
         lines.add(to, l);
         return l;
+    }
+    
+    private List<String> getContent() {
+        return lines.stream().map(line -> line.stringBuffer().toString()).collect(Collectors.toList());
     }
 
     /**
