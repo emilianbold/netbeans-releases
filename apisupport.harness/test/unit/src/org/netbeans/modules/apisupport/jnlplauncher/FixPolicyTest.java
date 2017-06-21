@@ -26,8 +26,6 @@
  *
  * Contributor(s):
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Nokia. Portions Copyright 2006 Nokia. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding

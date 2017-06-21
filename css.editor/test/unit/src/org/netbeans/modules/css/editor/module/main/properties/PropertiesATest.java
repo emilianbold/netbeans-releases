@@ -1140,7 +1140,7 @@ public class PropertiesATest extends CssModuleTestBase {
     }
 
     public void testCaseMin208() throws ParseException {
-        String code = "/*!* Many thanks to Sorin Stefan and Nicole Sullivan!*(Refers to section A. Libraries) * Copyright(c) 2007,Yahoo!Inc. All rights reserved. * Code licensed under the BSD License:* http://developer.yahoo.net/yui/license.txt * version:2.2.1 */";
+        String code = "/*!* Many thanks to Sorin Stefan and Nicole Sullivan!*(Refers to section A. Libraries)*/";
         assertCssCode(code);
     }
 
