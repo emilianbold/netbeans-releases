@@ -44,4 +44,9 @@ made subject to such option by the copyright holder.
 -->
 <project name="j2ee.sun.dd" default="netbeans" basedir=".">
   <import file="../nbbuild/templates/projectized.xml"/>
+
+  <property name="j2ee.sun.dd.resources.dir" value="./src/org/netbeans/modules/j2ee/sun/dd/impl/"/>
+   <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/j2ee.sun.dd-external-resources.zip" dest="${j2ee.sun.dd.resources.dir}"/>
+   </target>
 </project>
