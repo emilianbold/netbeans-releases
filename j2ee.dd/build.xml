@@ -66,8 +66,11 @@ made subject to such option by the copyright holder.
   <property name="s2b_root_client_5_0" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_5_0"/>
   <property name="s2b_root_client_6_0" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_6_0"/>
   <property name="s2b_root_client_7_0" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_7_0"/>
+  <property name="j2ee.dd.resources.dir" value="src/org/netbeans/modules/j2ee/dd/impl/"/>
 
-  <target name="build-init" depends="projectized.build-init"/>
+  <target name="build-init" depends="projectized.build-init">
+  <unzip src="external/j2ee.dd-external-resources.zip" dest="${j2ee.dd.resources.dir}"/>
+    </target>
 
   <target name="s2binit" depends="build-init">
       <!-- XXX do not know how to replace with @Schema2Beans; see issue #178426 for discussion -->

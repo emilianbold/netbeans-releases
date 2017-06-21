@@ -45,4 +45,10 @@ made subject to such option by the copyright holder.
 -->
 <project name="j2ee.ddloaders" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <property name="catalog.resources.dir" value="./src/org/netbeans/modules/j2ee/ddloaders/catalog/resources/"/>
+
+    <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/j2ee.ddloaders-external-resources.zip" dest="${catalog.resources.dir}"/>
+    </target>
 </project>
