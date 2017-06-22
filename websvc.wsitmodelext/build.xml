@@ -45,4 +45,8 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="websvc.wsitmodelext">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <property name="resources.dir" value="./src/org/netbeans/modules/websvc/wsitmodelext/catalog/resources/"/>
+    <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/websvc.wsitmodelext-external-resources.zip" dest="${resources.dir}"/>
+   </target>
 </project>
