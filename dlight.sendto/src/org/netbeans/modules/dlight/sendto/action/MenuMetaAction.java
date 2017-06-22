@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.dlight.sendto.api.Configuration;
@@ -73,10 +72,8 @@ import org.openide.util.actions.SystemAction;
 @ActionID(id = "org.netbeans.modules.dlight.sendto.action.MenuMetaAction", category = "Tools/SendTo")
 @ActionRegistration(displayName = "#SendToMenuName", lazy = false)
 @ActionReferences(value = {
-    @ActionReference(path = "Editors/Popup", name = "sendToAction", position = 1917)
-    ,
-    @ActionReference(path = "Editors/TabActions", name = "sendToAction", position = 1917)
-    ,
+    @ActionReference(path = "Editors/Popup", name = "sendToAction", position = 1917),
+    @ActionReference(path = "Editors/TabActions", name = "sendToAction", position = 1917),
     @ActionReference(path = "UI/ToolActions", name = "sendToAction"/*, position = 1917*/)
 })
 public class MenuMetaAction extends SystemAction implements ContextAwareAction {

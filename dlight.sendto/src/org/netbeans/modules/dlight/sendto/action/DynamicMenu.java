@@ -65,12 +65,11 @@ public class DynamicMenu extends JMenu {
     private static final Action validating;
     private static final Action emptyAction;
     private final Object countersLock = new Object();
-    private final List<Action> actions = new ArrayList<Action>();
+    private final List<Action> actions = new ArrayList<>();
     private int vcount = 0;
 
-    public DynamicMenu(String name/*, Lookup actionContext*/) {
+    public DynamicMenu(String name) {
         super(name);
-//        this.actionContext = actionContext;
         add(validating);
     }
 
@@ -109,7 +108,7 @@ public class DynamicMenu extends JMenu {
                     if (isPopupMenuVisible()) {
                         setPopupMenuVisible(false);
                         setPopupMenuVisible(true);
-                }
+                    }
                 }
             });
         } catch (InterruptedException ex) {
@@ -155,9 +154,8 @@ public class DynamicMenu extends JMenu {
             public void actionPerformed(ActionEvent e) {
             }
         };
-        validating
-                = new AbstractAction(NbBundle.getMessage(DynamicMenu.class, "ValidatingAction.text"), // NOI18N
-                        ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/sendto/resources/wait.png", false)) { // NOI18N
+        validating = new AbstractAction(NbBundle.getMessage(DynamicMenu.class, "ValidatingAction.text"), // NOI18N
+                ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/sendto/resources/wait.png", false)) { // NOI18N
 
             @Override
             public void actionPerformed(ActionEvent e) {
