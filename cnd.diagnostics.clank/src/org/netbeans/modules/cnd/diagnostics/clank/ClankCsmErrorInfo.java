@@ -74,13 +74,20 @@ public final class ClankCsmErrorInfo implements CsmErrorInfo {
 
     @Override
     public int getStartOffset() {
-        return errorInfo.getStartOffset();
+        return errorInfo.getStartOffsets()[0];
+    }
+
+    @Override
+    public String getCustomType() {
+        String warningString = getSeverity() == CsmErrorInfo.Severity.WARNING ? "-warning" : "";//NOI18N
+        return this.errorInfo.hasFixes() || this.errorInfo.hasNotes() ? "clank-diagnostics-annotations" + warningString + "-fixable" ://NOI18N
+        "clank-diagnostics-annotations" + warningString;//NOI18N
     }
 
     @Override
     public int getEndOffset() {
         //return (int) CsmFileInfoQuery.getDefault().getOffset(file, errorInfo.getLine(), errorInfo.getColumn() + 1);
-        return errorInfo.getEndOffset();
+        return errorInfo.getEndOffsets()[0];
     }
 
     ClankDiagnosticInfo getDelegate() {

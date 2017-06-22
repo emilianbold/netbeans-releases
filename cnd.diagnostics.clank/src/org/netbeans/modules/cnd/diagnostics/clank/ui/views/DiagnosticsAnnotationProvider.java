@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.cnd.diagnostics.clank.ui.views;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -66,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -89,7 +91,6 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.diagnostics.clank.ui.Utilities;
-import org.netbeans.modules.cnd.diagnostics.clank.ui.tooltip.ToolTipUI;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.awt.StatusDisplayer;
@@ -113,9 +114,10 @@ import org.openide.util.RequestProcessor;
  */
 public class DiagnosticsAnnotationProvider {
     public static final String DIAGNOSTIC_CHANGED = "diagnostic_changed";//NOI18N
-
-    private static final Map<ClankDiagnosticInfo, ArrayList<Annotation>> parentDiagnosticToAnnotations = new IdentityHashMap<>();
-    private static final Map<ClankDiagnosticInfo, ArrayList<StickyPanel>> parentDiagnosticToWindow = new IdentityHashMap<>();
+    private static final AtomicReference<ClankDiagnosticInfo> currentDiagnostic = new AtomicReference<>();
+    private static final Map<ClankDiagnosticInfo, Annotation> diagnosticToAnnotations = new IdentityHashMap<>();
+    private static final Map<ClankDiagnosticInfo, StickyPanel> diagnosticToWindow = new IdentityHashMap<>();
+    private static final Color CURRENT_PIN_BACKGROUND_COLOR = new Color(233, 239, 248);
 
     public static void pin(ClankDiagnosticInfo diagnosticInfo, final EditorPin pin, PropertyChangeListener l) {
         try {
@@ -147,20 +149,16 @@ public class DiagnosticsAnnotationProvider {
     }
 
     public static void clearAll(){
-        Collection<ArrayList<Annotation>> annotations = parentDiagnosticToAnnotations.values();
-        for (ArrayList<Annotation> annotation : annotations) {
-            for (Annotation an : annotation) {
-                an.detach();
-            }
+        for (Annotation annotaion : diagnosticToAnnotations.values()) {
+            annotaion.detach();
         }
-        parentDiagnosticToAnnotations.clear();
-        Collection<ArrayList<StickyPanel>> windows = parentDiagnosticToWindow.values();
-        for (ArrayList<StickyPanel> window : windows) {
-            for (StickyPanel stickyPanel : window) {
+        diagnosticToAnnotations.clear();
+        Collection<StickyPanel> windows = diagnosticToWindow.values();
+        for (StickyPanel stickyPanel : diagnosticToWindow.values()) {
                 stickyPanel.close();
-            }
         }
-        parentDiagnosticToWindow.clear();
+        diagnosticToWindow.clear();
+        currentDiagnostic.set(null);
     }
     
     private static JEditorPane getMostRecentEditor() {
@@ -169,6 +167,20 @@ public class DiagnosticsAnnotationProvider {
             return ((JEditorPane) ctc);
         } else {
             return null;
+        }
+    }
+    
+    public static void setCurrentDiagnostic(ClankDiagnosticInfo info) {
+        currentDiagnostic.set(info);
+        if (diagnosticToWindow.isEmpty()) {
+            return;
+        }
+        StickyPanel panel = diagnosticToWindow.get(info);
+        if (panel == null) {
+            return;
+        }
+        for (StickyPanel value : diagnosticToWindow.values()) {
+            value.setCurrent(panel == value);
         }
     }
 
@@ -196,16 +208,7 @@ public class DiagnosticsAnnotationProvider {
 
         final DiagnosticsAnnotation annotation = new DiagnosticsAnnotation(DiagnosticsAnnotation.DIAGNOSTIC_ANNOTATION_TYPE, line);
         annotation.setDiagnostic(diagnosticInfo);
-        //parentDiagnosticToAnnotations.ge
-        ArrayList<Annotation> annotations = parentDiagnosticToAnnotations.get(diagnosticInfo.getParent());
-        if (annotations == null) {
-            annotations = new ArrayList<>();
-            ArrayList<Annotation> prev = parentDiagnosticToAnnotations.putIfAbsent(diagnosticInfo.getParent(), annotations);
-            if (prev != null) {
-                annotations = prev;
-            }
-        }        
-        annotations.add(annotation);
+        diagnosticToAnnotations.put(diagnosticInfo, annotation);
         annotation.attach(line);
         pin.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -221,15 +224,8 @@ public class DiagnosticsAnnotationProvider {
         StickyPanel window = new StickyPanel(diagnosticInfo, pin, eui, l);
         stickyWindowSupport.addWindow(window);
         window.setLocation(pin.getLocation());
-        ArrayList<StickyPanel> windows = parentDiagnosticToWindow.get(diagnosticInfo.getParent());
-        if (windows == null) {
-            windows = new ArrayList<>();
-            ArrayList<StickyPanel> prev = parentDiagnosticToWindow.putIfAbsent(diagnosticInfo.getParent(), windows);
-            if (prev != null) {
-                windows = prev;
-            }
-        }  
-        windows.add(window);
+        //need to calculate correct location
+        diagnosticToWindow.put(diagnosticInfo, window);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -268,8 +264,71 @@ public class DiagnosticsAnnotationProvider {
         }
         return null;
     }
+    
+   
+    public static void goTo(final ClankDiagnosticInfo diagnosticInfo, FileSystem fSystem, PropertyChangeListener listener) {
+        final FileObject fo = CndFileUtils.toFileObject(fSystem, diagnosticInfo.getSourceFileName());
+        CsmFile csmNoteFile = CsmUtilities.getCsmFile(fo, false, false);
+        final int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, diagnosticInfo.getStartOffsets()[0]);
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DiagnosticsAnnotationProvider.class, "OpeningFile"));//NOI18N
+        setCurrentDiagnostic(diagnosticInfo);
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                if (fo == null) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DiagnosticsAnnotationProvider.class, "CannotOpen", diagnosticInfo.getSourceFileName()));//NOI18N
+                } else {
+                    Utilities.show(fo, lineColumnByOffset[0]);
+                    if (listener != null) {
+                        listener.propertyChange(new PropertyChangeEvent(this, DIAGNOSTIC_CHANGED, null, diagnosticInfo));
+                    }
+                }
+            }
+        });
 
-    private static JTextComponent createNonEditableSelectableLabel(String text) {
+    }    
+    
+    public static void next(FileSystem fSystem, PropertyChangeListener listener) {
+        if (!isNextActionEnabled()) {
+            return;
+        }
+        final  ClankDiagnosticInfo diagnosticInfo = currentDiagnostic.get();
+        final ArrayList<ClankDiagnosticInfo> notes = diagnosticInfo.getParent() == null ? diagnosticInfo.notes() : diagnosticInfo.getParent().notes();
+        int currentDiagnosticIndex = diagnosticInfo.getParent() == null ? - 1 : notes.indexOf(diagnosticInfo);
+        currentDiagnosticIndex++;
+        goTo(notes.get(currentDiagnosticIndex), fSystem, listener);
+    }
+    
+    public static void prev(FileSystem fSystem, PropertyChangeListener listener) {
+        if (!isPrevActionEnabled()) {
+            return;
+        }
+        final  ClankDiagnosticInfo diagnosticInfo = currentDiagnostic.get();
+        final ArrayList<ClankDiagnosticInfo> notes = diagnosticInfo.getParent() == null ? diagnosticInfo.notes() : diagnosticInfo.getParent().notes();
+        int currentDiagnosticIndex = diagnosticInfo.getParent() == null ? - 1 : notes.indexOf(diagnosticInfo);
+        currentDiagnosticIndex--;
+        if (currentDiagnosticIndex == -1) {
+            goTo(diagnosticInfo.getParent(), fSystem, listener);
+        } else {
+            goTo(notes.get(currentDiagnosticIndex), fSystem, listener);
+        }
+    }   
+    
+    public static boolean isNextActionEnabled() {
+        final  ClankDiagnosticInfo diagnosticInfo = currentDiagnostic.get();
+        final ArrayList<ClankDiagnosticInfo> notes = diagnosticInfo.getParent() == null ? diagnosticInfo.notes() : diagnosticInfo.getParent().notes();
+        final int currentDiagnosticIndex = diagnosticInfo.getParent() == null ? - 1 : notes.indexOf(diagnosticInfo);
+        return currentDiagnosticIndex < notes.size() -1 ;
+    }
+
+    public static boolean isPrevActionEnabled() {
+        final  ClankDiagnosticInfo diagnosticInfo = currentDiagnostic.get();
+        final ArrayList<ClankDiagnosticInfo> notes = diagnosticInfo.getParent() == null ? diagnosticInfo.notes() : diagnosticInfo.getParent().notes();
+        final int currentDiagnosticIndex = diagnosticInfo.getParent() == null ? - 1 : notes.indexOf(diagnosticInfo);
+        return currentDiagnosticIndex > -1 ;        
+    }
+
+    private static JTextComponent createNonEditableSelectableLabel(ClankDiagnosticInfo  info) {
         JTextPane tf = new JTextPane() {
             @Override
             public void setText(String text) {
@@ -281,9 +340,9 @@ public class DiagnosticsAnnotationProvider {
         tf.setEditable(false);
         tf.setBorder(null);
         tf.setForeground(UIManager.getColor("Label.foreground"));               // NOI18N
-        tf.setBackground(UIManager.getColor("Label.background"));               // NOI18N
+        tf.setBackground(info == currentDiagnostic.get() ? CURRENT_PIN_BACKGROUND_COLOR : UIManager.getColor("Label.background"));//NOI18N
         tf.setFont(UIManager.getFont("Label.font"));                            // NOI18N
-        tf.setText(text);
+        tf.setText(info.getMessage());
         tf.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         return tf;
     }
@@ -296,17 +355,17 @@ public class DiagnosticsAnnotationProvider {
         private final ClankDiagnosticInfo diagnosticInfo;
         private final EditorUI eui;
         private final JTextComponent textComponent;
-        private final JTextField valueField;
+        //private final JTextField valueField;
         private final JToolBar headActions;
         private final JToolBar tailActions;
         private JTextField commentField;
 //        private final ValueProvider valueProvider;
-        private final String evaluatingValue;
-        private String lastValue;
         private int minPreferredHeight = 0;
         private final EditorPin pin;
         private final PropertyChangeListener listener;
-
+        private final Action nextAction;
+        private final Action prevAction;
+        
         @SuppressWarnings("OverridableMethodCallInConstructor")
         public StickyPanel(final ClankDiagnosticInfo diagnosticInfo, EditorPin pin, final EditorUI eui, PropertyChangeListener l) {
             this.diagnosticInfo = diagnosticInfo;
@@ -329,12 +388,9 @@ public class DiagnosticsAnnotationProvider {
             add(headActions, gridConstraints);
             //Action[] actions = valueProvider.getHeadActions(watch);
             addActions(headActions, new Action[0]);
-            evaluatingValue = diagnosticInfo.getMessage();//valueProvider.getEvaluatingText();
-            //final String expressionText = watch.getExpression() + " = ";
-            final String value = evaluatingValue;
-            valueField = new JTextField();
-            valueField.setVisible(false);
-            valueField.setText(value);
+//            valueField = new JTextField();
+//            valueField.setVisible(false);
+//            valueField.setText(value);
             Dimension size = getPreferredSize();
             Point loc = getLocation();
             setBounds(loc.x, loc.y, size.width, size.height);
@@ -365,7 +421,7 @@ public class DiagnosticsAnnotationProvider {
 //                }
 //            });
 
-            textComponent = createNonEditableSelectableLabel(value);
+            textComponent = createNonEditableSelectableLabel(diagnosticInfo);
 
             if (font != null) {
                 textComponent.setFont(font);
@@ -373,91 +429,38 @@ public class DiagnosticsAnnotationProvider {
             textComponent.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
             gridConstraints.gridx++;
             add(textComponent, gridConstraints);
-            final int expressionTextPositionEnd = textComponent.getFontMetrics(textComponent.getFont()).stringWidth(value);
-            {
-                Insets lastInsets = gridConstraints.insets;
-                gridConstraints.insets = new Insets(0, expressionTextPositionEnd, 0, 0);
-                add(valueField, gridConstraints);
-                gridConstraints.insets = lastInsets;
-            }
             setComponentZOrder(textComponent, 1);
-            setComponentZOrder(valueField, 0);
-            TextKeysMouseListener textKeysMouseListener = new TextKeysMouseListener(expressionTextPositionEnd);
-            textComponent.addMouseListener(textKeysMouseListener);
-            textComponent.addKeyListener(textKeysMouseListener);
-            textComponent.addFocusListener(textKeysMouseListener);
-//            valueField.addActionListener(new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    String newValue = valueField.getText();
-//                    if (valueProvider.setValue(watch, newValue)) {
-//                        boolean[] isEvaluating = new boolean[]{false};
-//                        textComponent.setText(expressionText + getWatchValueText(watch, valueProvider, isEvaluating));
-//                        if (!isEvaluating[0]) {
-//                            adjustSize();
-//                        }
-//                    }
-//                    hideValueField();
-//                }
-//            });
-            valueField.addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                }
-
-                @Override
-                public void focusLost(FocusEvent e) {
-                    hideValueField();
-                }
-            });
-            valueField.addKeyListener(new KeyListener() {
-                @Override
-                public void keyTyped(KeyEvent e) {
-                    if (KeyEvent.VK_ESCAPE == e.getKeyChar()) {
-                        hideValueField();
-                    }
-                }
-
-                @Override
-                public void keyPressed(KeyEvent e) {
-                }
-
-                @Override
-                public void keyReleased(KeyEvent e) {
-                }
-            });
-
             tailActions = createActionsToolbar();
             gridConstraints.gridx++;
             gridConstraints.weighty = 1;
             gridConstraints.fill = GridBagConstraints.VERTICAL;
             add(tailActions, gridConstraints);
             //actions = valueProvider.getTailActions(watch);
-            final ArrayList<ClankDiagnosticInfo> notes = diagnosticInfo.getParent().notes();
-            final int currentDiagnosticIndex = notes.indexOf(diagnosticInfo);
-            Action nextAction = new AbstractAction("next", ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/diagnostics/clank/resources/nextmatch.png", false)) {//NOI18N
+            //the list is diagnostic itself + notes
+            
+            nextAction = new AbstractAction("next", ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/diagnostics/clank/resources/nextmatch.png", false)) {//NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        goTo(notes.get(currentDiagnosticIndex + 1), pin.getFile().getFileSystem());                        
+                        next( pin.getFile().getFileSystem(), listener);
                     } catch (FileStateInvalidException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 };                    
             };            
-            
-            nextAction.setEnabled(currentDiagnosticIndex < notes.size() -1);
-            Action prevAction = new AbstractAction("prev", ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/diagnostics/clank/resources/prevmatch.png", false)) {//NOI18N
+            nextAction.setEnabled(isNextActionEnabled());
+            //nextAction.setEnabled(currentDiagnosticIndex < notes.size() -1);
+            prevAction = new AbstractAction("prev", ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/diagnostics/clank/resources/prevmatch.png", false)) {//NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        goTo(notes.get(currentDiagnosticIndex - 1), pin.getFile().getFileSystem());
+                        prev(pin.getFile().getFileSystem(), listener);
                     } catch (FileStateInvalidException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
             };
-            prevAction.setEnabled(currentDiagnosticIndex > 0);
+            prevAction.setEnabled(isPrevActionEnabled());
             addActions(tailActions, new Action[]{nextAction, prevAction});
             JSeparator iconsSeparator = new JSeparator(JSeparator.VERTICAL);
             gridConstraints.gridx++;
@@ -487,31 +490,11 @@ public class DiagnosticsAnnotationProvider {
             });
             gridConstraints.gridx++;
             add(closeButton, gridConstraints);
-//            
-//            JButton nextMatchButton = createNextMatchButton();
-//            nextMatchButton.addActionListener(new java.awt.event.ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    //removeAll();
-//                    //StickyPanel.this.close();   
-//                    //and all
-//                    //watch.remove();
-//                }
-//            });
-//            gridConstraints.gridx++;
-//            add(nextMatchButton, gridConstraints);            
 
             final int gridwidth = gridConstraints.gridx + 1;
             if (pin.getComment() != null) {
                 addCommentField(pin.getComment(), gridwidth);
             }
-//            commentButton.addActionListener(new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    addCommentListener(gridwidth);
-//                }
-//            });
-
             MouseAdapter mouseAdapter = new java.awt.event.MouseAdapter() {
                 private Point orig;
                 private Cursor lastCursor;
@@ -600,30 +583,19 @@ public class DiagnosticsAnnotationProvider {
             });
             adjustSize();
         }
-        
-        private void goTo(final ClankDiagnosticInfo diagnosticInfo, FileSystem fSystem) {
-                final FileObject fo = CndFileUtils.toFileObject(fSystem, diagnosticInfo.getSourceFileName());
-                CsmFile csmNoteFile = CsmUtilities.getCsmFile(fo, false, false);
-                final int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, diagnosticInfo.getStartOffset());            
-
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DiagnosticsAnnotationProvider.class, "OpeningFile"));//NOI18N
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (fo == null) {
-                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DiagnosticsAnnotationProvider.class, "CannotOpen", diagnosticInfo.getSourceFileName()));//NOI18N
-                        } else {
-                            Utilities.show(fo, lineColumnByOffset[0]);
-                            listener.propertyChange(new PropertyChangeEvent(this, DIAGNOSTIC_CHANGED, null, diagnosticInfo));
-                        }
-                    }                    
-                });
-            
-        }
+                
         
         private void close() {
             eui.getStickyWindowSupport().removeWindow(this);
         }
+        
+        private void setCurrent(boolean isCurrent) {
+            textComponent.setBackground(isCurrent ? CURRENT_PIN_BACKGROUND_COLOR : UIManager.getColor("Label.background"));//NOI18N
+            nextAction.setEnabled(isNextActionEnabled());
+            prevAction.setEnabled(isPrevActionEnabled());
+            doRepaint();
+        }        
+
 
         private boolean canDrag(MouseEvent e) {
             return (e.getModifiersEx() & (MouseEvent.ALT_DOWN_MASK
@@ -710,15 +682,15 @@ public class DiagnosticsAnnotationProvider {
             // No op, this component should not change scrolling.
         }
 
-        private void hideValueField() {
-            valueField.setVisible(false);
-            Dimension size = getPreferredSize();
-            Point loc = getLocation();
-            setBounds(loc.x, loc.y, size.width, size.height);
-            GridBagConstraints constraints = ((GridBagLayout) getLayout()).getConstraints(textComponent);
-            constraints.insets = new Insets(0, 0, 0, 0);
-            ((GridBagLayout) getLayout()).setConstraints(textComponent, constraints);
-        }
+//        private void hideValueField() {
+//            valueField.setVisible(false);
+//            Dimension size = getPreferredSize();
+//            Point loc = getLocation();
+//            setBounds(loc.x, loc.y, size.width, size.height);
+//            GridBagConstraints constraints = ((GridBagLayout) getLayout()).getConstraints(textComponent);
+//            constraints.insets = new Insets(0, 0, 0, 0);
+//            ((GridBagLayout) getLayout()).setConstraints(textComponent, constraints);
+//        }
 
         private static JToolBar createActionsToolbar() {
             JToolBar jt = new JToolBar(JToolBar.HORIZONTAL);
@@ -826,134 +798,7 @@ public class DiagnosticsAnnotationProvider {
 //            //System.err.println("  return: "+"<html>" + watch.getExpression() + " = " + s1 + value + s2 + "</html>");
 //            return "<html>" + s1 + value + s2 + "</html>";
 //        }
-
-        private class TextKeysMouseListener implements KeyListener, MouseListener, FocusListener {
-
-            private final Cursor selectCursor = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
-            private Cursor lastCursor;
-            private boolean lastCursorUnset;
-            private final int expressionTextPositionEnd;
-            private Component lastFocusOwner;
-
-            TextKeysMouseListener(int expressionTextPositionEnd) {
-                this.expressionTextPositionEnd = expressionTextPositionEnd;
-            }
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.isAltDown() || e.isAltGraphDown()
-                        || e.isControlDown() || e.isMetaDown()
-                        || e.isShiftDown()) {
-
-                    setSelectCursor();
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (!(e.isAltDown() || e.isAltGraphDown()
-                        || e.isControlDown() || e.isMetaDown()
-                        || e.isShiftDown())) {
-
-                    unsetSelectCursor();
-                }
-            }
-
-            private void setSelectCursor() {
-                if (lastCursor == null && !lastCursorUnset) {
-                    lastCursorUnset = !textComponent.isCursorSet();
-                    if (!lastCursorUnset) {
-                        lastCursor = textComponent.getCursor();
-                    }
-                    textComponent.setCursor(selectCursor);
-                }
-            }
-
-            private void unsetSelectCursor() {
-                if (lastCursor != null || lastCursorUnset) {
-                    textComponent.setCursor(lastCursor);
-                    lastCursor = null;
-                    lastCursorUnset = false;
-                }
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                String editableValue = null;//alueProvider.getEditableValue(watch);
-                if (editableValue != null) {
-                    if (e.getX() < expressionTextPositionEnd) {
-                        return;
-                    }
-                    valueField.setVisible(true);
-                    valueField.setPreferredSize(null);
-                    valueField.setText(editableValue);
-                    Dimension fieldSize = valueField.getPreferredSize();
-                    fieldSize.width = textComponent.getSize().width - expressionTextPositionEnd;
-                    int minWidth = 2 * fieldSize.height;  // Have some reasonable minimum width
-                    if (fieldSize.width < minWidth) {
-                        int extendedBy = minWidth - fieldSize.width;
-                        fieldSize.width = minWidth;
-                        GridBagConstraints constraints = ((GridBagLayout) getLayout()).getConstraints(textComponent);
-                        constraints.insets = new Insets(0, 0, 0, extendedBy);
-                        ((GridBagLayout) getLayout()).setConstraints(textComponent, constraints);
-                    }
-                    valueField.setPreferredSize(fieldSize);
-                    valueField.requestFocusInWindow();
-                    Dimension size = getPreferredSize();
-                    Point loc = getLocation();
-                    setBounds(loc.x, loc.y, size.width, size.height);
-                    doRepaint();
-                    e.consume();
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-                lastFocusOwner = kfm.getFocusOwner();
-                if (lastFocusOwner != null) {
-                    lastFocusOwner.addKeyListener(this);
-                }
-                if (!canDrag(e)) {
-                    setSelectCursor();
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (lastFocusOwner != null) {
-                    lastFocusOwner.removeKeyListener(this);
-                    lastFocusOwner = null;
-                }
-                unsetSelectCursor();
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (lastFocusOwner != null) {
-                    lastFocusOwner.removeKeyListener(this);
-                    lastFocusOwner = null;
-                }
-                unsetSelectCursor();
-            }
-
-        }
+        
 
         /*
         private static JTextArea createMultiLineToolTip(String toolTipText, boolean wrapLines) {

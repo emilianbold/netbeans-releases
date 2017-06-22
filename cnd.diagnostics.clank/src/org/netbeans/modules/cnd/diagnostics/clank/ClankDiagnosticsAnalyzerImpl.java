@@ -182,7 +182,7 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
         public AnalyzerFactoryImpl() {
             super(ClankDiagnoticsErrorProvider.NAME,
                   NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "Clank_DESCRIPTION"), //NOI18N
-                  ImageUtilities.loadImage("org/netbeans/modules/cnd/highlight/resources/bugs.png")); //NOI18N
+                  ImageUtilities.loadImage("org/netbeans/modules/cnd/diagnostics/clank/resources/bugs.png")); //NOI18N
         }
 
         @Override

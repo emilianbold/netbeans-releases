@@ -28,24 +28,24 @@ public final class CodeSnippet {
     private final int line;
 //    private final int column;
     private final String path;
-    private final int[] startLineColumn;
-    private final int[] endLineColumn;
+    private final int[][] startLineColumns;
+    private final int[][] endLineColumns;
 
-    public CodeSnippet(FileObject fo, String path, int[] startLineColumn, int[] endLineColumn) {
-        this(fo, null, path, startLineColumn, endLineColumn);//, descr);
+    public CodeSnippet(FileObject fo, String path, int[][] startLineColumns, int[][] endLineColumns) {
+        this(fo, null, path, startLineColumns, endLineColumns);//, descr);
     }
 
-    public CodeSnippet(String fileURI, String path,  int[] startLineColumn, int[] endLineColumn) {
-        this(null, fileURI, path, startLineColumn, endLineColumn);//, descr);
+    public CodeSnippet(String fileURI, String path,  int[][] startLineColumns, int[][] endLineColumns) {
+        this(null, fileURI, path, startLineColumns, endLineColumns);//, descr);
     }
 
-    private CodeSnippet(FileObject fo, String fileURI, String path, int[] startLineColumn, int[] endLineColumn) {
+    private CodeSnippet(FileObject fo, String fileURI, String path, int[][] startLineColumns, int[][] endLineColumns) {
         this.fo = fo;
-        this.line = startLineColumn[0];
+        this.line = startLineColumns[0][0];
         this.path = path;
         this.fileURI = fileURI;
-        this.startLineColumn = startLineColumn;
-        this.endLineColumn = endLineColumn;     
+        this.startLineColumns = startLineColumns;
+        this.endLineColumns = endLineColumns;     
         assert fileURI != null || fo != null : "fo or fileURI should be not null: fo = " + fo + "\n uri = " + fileURI; //NOI18N
     }
 
@@ -159,8 +159,14 @@ public final class CodeSnippet {
                     final LineInfo lineInfo = new LineInfo(LineType.ANNOTATION, lineWithIssueText, toLineNumber(line), line);
                     //start column in this line
                     lines.add(lineInfo);
-                    lineInfo.startColumn = codeSnippet.startLineColumn[1];
-                    lineInfo.endColumn = codeSnippet.endLineColumn[1];
+                    int size = codeSnippet.startLineColumns.length;
+                    lineInfo.startColumns = new int[size];
+                    lineInfo.endColumns = new int[size];
+                    for (int i = 0; i < size; i++) {
+                        lineInfo.startColumns[i] = codeSnippet.startLineColumns[i][1];
+                        lineInfo.endColumns[i] = codeSnippet.endLineColumns[i][1];
+                    }
+
                     
                     int nextLineIndex = line + 1;
                     int addedAfterIssueLines = 0;
@@ -198,8 +204,8 @@ public final class CodeSnippet {
             private final String lineNumberPrefix;
             private final int line;
             private final LineType type;
-            private int startColumn;
-            private int endColumn;
+            private int[] startColumns;
+            private int[] endColumns;
 
             public LineInfo(LineType type, String lineText, String lineNumberPrefix, int line) {
                 this.lineText = lineText;
@@ -221,12 +227,12 @@ public final class CodeSnippet {
                 return line;
             }
             
-            int getStartColumn() {
-                return startColumn;
+            int[] getStartColumns() {
+                return startColumns;
             }
             
-            int getEndColumn() {
-                return endColumn;
+            int[] getEndColumns() {
+                return endColumns;
             }            
 
             public String getPrefix() {

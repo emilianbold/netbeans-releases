@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+Copyright 2015 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -38,18 +38,18 @@ made subject to such option by the copyright holder.
 
 Contributor(s):
 
-Portions Copyrighted 2016 Sun Microsystems, Inc.
+Portions Copyrighted 2015 Sun Microsystems, Inc.
 -->
-
-<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
-<type
-    name='PinnedDiagnostic'
-    description_key='HINT_DIAGNOSTIC_PIN'
-    localizing_bundle='org.netbeans.modules.cnd.diagnostics.clank.resources.Bundle'
-    visible='true'
-    glyph='nbresloc:/org/netbeans/modules/cnd/diagnostics/clank/resources/bugs-warning.png'
-    type='line'
-    severity='ok'
-    priority='0'
-    custom_sidebar_color='0xFF8FD5'
-/>
+        <!DOCTYPE type PUBLIC
+                 "-//NetBeans//DTD annotation type 1.1//EN"
+                 "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
+        <type name="clank-diagnostics-annotations"
+              visible="true"
+              description_key="LAB_diagnostics-error"
+              localizing_bundle="org.netbeans.modules.cnd.diagnostics.clank.Bundle"
+              glyph="nbresloc:/org/netbeans/modules/cnd/diagnostics/clank/resources/bugs-error.png"
+              custom_sidebar_color="0xFF0000"
+              type="linepart"
+              browseable="true"
+              severity="error"
+        />

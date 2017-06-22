@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.diagnostics.clank.ClankCsmErrorInfo;
 import org.netbeans.modules.cnd.diagnostics.clank.impl.ClankCsmErrorInfoAccessor;
 import org.netbeans.modules.cnd.diagnostics.clank.ui.Utilities;
+import org.netbeans.modules.cnd.diagnostics.clank.ui.views.DiagnosticsAnnotationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -110,7 +112,7 @@ import org.openide.windows.WindowManager;
     "CTL_ClankDiagnosticsDetailsTopComponent=ClankDiagnosticsDetails Window",
     "HINT_ClankDiagnosticsDetailsTopComponent=This is a ClankDiagnosticsDetails window"
 })
-public final class ClankDiagnosticsDetailsTopComponent extends TopComponent implements ExplorerManager.Provider {
+public final class ClankDiagnosticsDetailsTopComponent extends TopComponent implements ExplorerManager.Provider, PropertyChangeListener {
 
     static final String PREFERRED_ID = "ClankDiagnosticsDetailsTopComponent";//NOI18N
     private final ExplorerManager manager = new ExplorerManager();
@@ -121,51 +123,71 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
         setName(Bundle.CTL_ClankDiagnosticsDetailsTopComponent());
         setToolTipText(Bundle.HINT_ClankDiagnosticsDetailsTopComponent());
         btv = new BeanTreeView();
-
-        errorsPanel.setLayout(new BorderLayout());
-        errorsPanel.add(btv, BorderLayout.CENTER);
+        jSplitPane2.setLeftComponent(btv);
         btv.setRootVisible(false);
         previousError.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Node[] selectedNodes = manager.getSelectedNodes();
-                if (selectedNodes.length == 1 && selectedNodes[0] instanceof ClankDiagnosticInfoNode) {
-                    ClankDiagnosticInfoNode selectedNode = (ClankDiagnosticInfoNode) selectedNodes[0];                
+                try {
                     ClankDiagnosticChildren children = (ClankDiagnosticChildren) manager.getRootContext().getChildren();
-                    final int nodesCount = children.getNodesCount();
-                    for (int i = 0; i < nodesCount; i++) {
-                        ClankDiagnosticInfoNode nodeAt = (ClankDiagnosticInfoNode) children.getNodeAt(i);
-                        if (nodeAt.note == selectedNode.note) { 
-                            setSelectedNode(((ClankDiagnosticInfoNode)children.getNodeAt(i -1 )).note);
-                            return;
-                        }
-                    }
-                    
+                    CsmFile csmErrorFile = ClankCsmErrorInfoAccessor.getDefault().getCsmFile(children.error);
+                    FileSystem fSystem = csmErrorFile.getFileObject().getFileSystem();                
+                    DiagnosticsAnnotationProvider.prev(fSystem, ClankDiagnosticsDetailsTopComponent.this);
+//                Node[] selectedNodes = manager.getSelectedNodes();
+//                if (selectedNodes.length == 1 && selectedNodes[0] instanceof ClankDiagnosticInfoNode) {
+//                    ClankDiagnosticInfoNode selectedNode = (ClankDiagnosticInfoNode) selectedNodes[0];                
+//                    ClankDiagnosticChildren children = (ClankDiagnosticChildren) manager.getRootContext().getChildren();
+//                    final int nodesCount = children.getNodesCount();
+//                    for (int i = 0; i < nodesCount; i++) {
+//                        ClankDiagnosticInfoNode nodeAt = (ClankDiagnosticInfoNode) children.getNodeAt(i);
+//                        if (nodeAt.note == selectedNode.note) { 
+//                            final ClankDiagnosticInfo problem = ((ClankDiagnosticInfoNode)children.getNodeAt(i -1 )).note;
+//                            setSelectedNode(problem);
+//                            return;
+//                        }
+//                    }
+//                    
+//                }
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         });
         nextError.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Node[] selectedNodes = manager.getSelectedNodes();
-                if (selectedNodes.length == 1 && selectedNodes[0] instanceof ClankDiagnosticInfoNode) {
-                    ClankDiagnosticInfoNode selectedNode = (ClankDiagnosticInfoNode) selectedNodes[0];                
+                try {                
                     ClankDiagnosticChildren children = (ClankDiagnosticChildren) manager.getRootContext().getChildren();
-                    final int nodesCount = children.getNodesCount();
-                    for (int i = 0; i < nodesCount; i++) {
-                        ClankDiagnosticInfoNode nodeAt = (ClankDiagnosticInfoNode) children.getNodeAt(i);
-                        if (nodeAt.note == selectedNode.note) { 
-                            setSelectedNode(((ClankDiagnosticInfoNode)children.getNodeAt(i + 1)).note);
-                            return;
-                        }
-                    }
-                    
+                    CsmFile csmErrorFile = ClankCsmErrorInfoAccessor.getDefault().getCsmFile(children.error);
+                    FileSystem fSystem = csmErrorFile.getFileObject().getFileSystem();
+                    DiagnosticsAnnotationProvider.next(fSystem, ClankDiagnosticsDetailsTopComponent.this);
+//                    Node[] selectedNodes = manager.getSelectedNodes();
+//                    if (selectedNodes.length == 1 && selectedNodes[0] instanceof ClankDiagnosticInfoNode) {
+//                        ClankDiagnosticInfoNode selectedNode = (ClankDiagnosticInfoNode) selectedNodes[0];
+//                        ClankDiagnosticChildren children = (ClankDiagnosticChildren) manager.getRootContext().getChildren();
+//                        final int nodesCount = children.getNodesCount();
+//                        for (int i = 0; i < nodesCount; i++) {
+//                            ClankDiagnosticInfoNode nodeAt = (ClankDiagnosticInfoNode) children.getNodeAt(i);
+//                            if (nodeAt.note == selectedNode.note) {
+//                                final ClankDiagnosticInfo problem = ((ClankDiagnosticInfoNode)children.getNodeAt(i + 1)).note;
+//                                setSelectedNode(problem);
+//                                return;
+//                            }
+//                        }
+//                        
+//                    }
+                } catch (FileStateInvalidException ex) {                    
+                    Exceptions.printStackTrace(ex);
                 }
             }
         });
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
+                //follow selected node changes only
+                if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())){
+                    return;
+                }
                 Node[] selectedNodes = manager.getSelectedNodes();
 
                 if (selectedNodes.length == 1 && selectedNodes[0] instanceof ClankDiagnosticInfoNode) {
@@ -177,19 +199,29 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
 
     private void nodeChanged(ClankDiagnosticInfoNode node) {
         try {
+            DiagnosticsAnnotationProvider.setCurrentDiagnostic(node.note);            
             CsmFile csmErrorFile = ClankCsmErrorInfoAccessor.getDefault().getCsmFile(node.error);
             FileSystem fSystem = csmErrorFile.getFileObject().getFileSystem();
             FileObject fo = CndFileUtils.toFileObject(fSystem, node.note.getSourceFileName());
             CsmFile csmNoteFile = CsmUtilities.getCsmFile(fo, false, false);
-            int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getStartOffset());
-            int[] endlineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getEndOffset());
-            CodeSnippet codeSnippet = new CodeSnippet(fo, "filePath", lineColumnByOffset, endlineColumnByOffset);//NOI18N
+            int size = node.note.getStartOffsets().length;
+            int[][] startLineColumnByOffset = new int[size][];
+            int[][] endlineColumnByOffset = new int[size][];
+            for (int i = 0; i < size; i++) {
+                startLineColumnByOffset[i] = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getStartOffsets()[i]);
+                endlineColumnByOffset[i] = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getEndOffsets()[i]);
+            }
+//            int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getStartOffset());
+//            int[] endlineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getEndOffset());
+            CodeSnippet codeSnippet = new CodeSnippet(fo, "filePath", startLineColumnByOffset, endlineColumnByOffset);//NOI18N
             descriptionPanel.removeAll();
             descriptionPanel.setLayout(new BorderLayout());
             final CodeSnippetPanel codeSnippetPanel = new CodeSnippetPanel(codeSnippet, true);
             descriptionPanel.add(codeSnippetPanel);
 
             descriptionPanel.revalidate();
+            nextError.setEnabled(DiagnosticsAnnotationProvider.isNextActionEnabled());
+            previousError.setEnabled(DiagnosticsAnnotationProvider.isPrevActionEnabled());
             //and go to
             goTo(node);
         } catch (FileStateInvalidException ex) {
@@ -201,9 +233,21 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
         final ClankDiagnosticChildren rootChildren = new ClankDiagnosticChildren(info);
         final AbstractNode rootContext = new AbstractNode(rootChildren);
         manager.setRootContext(rootContext);
-        ClankDiagnosticInfoNode node = (ClankDiagnosticInfoNode) rootChildren.getNodes()[rootChildren.getNodesCount() - 1];
+        ClankDiagnosticInfoNode node = (ClankDiagnosticInfoNode) rootChildren.getNodes()[0];
         setSelectedNode(node.note);
         btv.revalidate();
+    }
+    
+    private int indexOf(ClankDiagnosticInfo note) {
+        ClankDiagnosticChildren children = (ClankDiagnosticChildren) manager.getRootContext().getChildren();
+        final int nodesCount = children.getNodesCount();
+        for (int i = 0; i < nodesCount; i++) {
+            ClankDiagnosticInfoNode nodeAt = (ClankDiagnosticInfoNode) children.getNodeAt(i);
+            if (nodeAt.note == note) {                
+                return i;
+            }
+        }   
+        return -1;
     }
 
     public void setSelectedNode(ClankDiagnosticInfo note) {
@@ -217,13 +261,10 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
                 } catch (PropertyVetoException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                nextError.setEnabled(i < nodesCount - 1);
-                previousError.setEnabled(i > 0);
+
                 return;
             }
-        }
-        nextError.setEnabled(false);
-        previousError.setEnabled(false);
+        };
     }
 
     public static synchronized ClankDiagnosticsDetailsTopComponent findInstance() {
@@ -261,7 +302,6 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
         previousError = new javax.swing.JButton();
         nextError = new javax.swing.JButton();
         jSplitPane2 = new javax.swing.JSplitPane();
-        errorsPanel = new javax.swing.JPanel();
         descriptionPanel = new javax.swing.JPanel();
 
         jToolBar1.setBorder(new VariableRightBorder());
@@ -294,26 +334,17 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
         jToolBar1.add(nextError);
 
         jSplitPane2.setBorder(null);
-        jSplitPane2.setDividerLocation(300);
-
-        javax.swing.GroupLayout errorsPanelLayout = new javax.swing.GroupLayout(errorsPanel);
-        errorsPanel.setLayout(errorsPanelLayout);
-        errorsPanelLayout.setHorizontalGroup(
-            errorsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 299, Short.MAX_VALUE)
-        );
-        errorsPanelLayout.setVerticalGroup(
-            errorsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 410, Short.MAX_VALUE)
-        );
-
-        jSplitPane2.setLeftComponent(errorsPanel);
+        jSplitPane2.setDividerLocation(200);
+        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setToolTipText(org.openide.util.NbBundle.getMessage(ClankDiagnosticsDetailsTopComponent.class, "ClankDiagnosticsDetailsTopComponent.jSplitPane2.toolTipText")); // NOI18N
+        jSplitPane2.setFocusable(false);
+        jSplitPane2.setOneTouchExpandable(true);
 
         javax.swing.GroupLayout descriptionPanelLayout = new javax.swing.GroupLayout(descriptionPanel);
         descriptionPanel.setLayout(descriptionPanelLayout);
         descriptionPanelLayout.setHorizontalGroup(
             descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 200, Short.MAX_VALUE)
+            .addGap(0, 245, Short.MAX_VALUE)
         );
         descriptionPanelLayout.setVerticalGroup(
             descriptionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -329,7 +360,7 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane2))
+                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -340,7 +371,6 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel descriptionPanel;
-    private javax.swing.JPanel errorsPanel;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton nextError;
@@ -381,25 +411,26 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
                     try {
                         CsmFile csmErrorFile = ClankCsmErrorInfoAccessor.getDefault().getCsmFile(node.error);
                         FileSystem fSystem = csmErrorFile.getFileObject().getFileSystem();
-                        final FileObject fo = CndFileUtils.toFileObject(fSystem, node.note.getSourceFileName());
-                        CsmFile csmNoteFile = CsmUtilities.getCsmFile(fo, false, false);
-                        final int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getStartOffset());
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CodeSnippetPanel.class, "OpeningFile"));//NOI18N
-                                RequestProcessor.getDefault().post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (fo == null) {
-                                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CodeSnippetPanel.class, "CannotOpen", node.note.getSourceFileName()));//NOI18N
-                                        } else {
-                                            Utilities.show(fo, lineColumnByOffset[0]);
-                                        }
-                                    }
-                                });
-                            }
-                        });
+                        DiagnosticsAnnotationProvider.goTo(node.note, fSystem, null);
+//                        final FileObject fo = CndFileUtils.toFileObject(fSystem, node.note.getSourceFileName());
+//                        CsmFile csmNoteFile = CsmUtilities.getCsmFile(fo, false, false);
+//                        final int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, node.note.getStartOffsets()[0]);
+//                        SwingUtilities.invokeLater(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CodeSnippetPanel.class, "OpeningFile"));//NOI18N
+//                                RequestProcessor.getDefault().post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        if (fo == null) {
+//                                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CodeSnippetPanel.class, "CannotOpen", node.note.getSourceFileName()));//NOI18N
+//                                        } else {
+//                                            Utilities.show(fo, lineColumnByOffset[0]);
+//                                        }
+//                                    }
+//                                });
+//                            }
+//                        });
                     } catch (FileStateInvalidException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -408,13 +439,25 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
         });
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (DiagnosticsAnnotationProvider.DIAGNOSTIC_CHANGED.equals(evt.getPropertyName())) {
+            ClankDiagnosticInfo note = (ClankDiagnosticInfo) evt.getNewValue();
+            setSelectedNode(note);
+        }
+    }
+
     private class ClankDiagnosticChildren extends Children.Keys<ClankDiagnosticInfo> {
 
         private final ClankCsmErrorInfo error;
 
         public ClankDiagnosticChildren(ClankCsmErrorInfo info) {
             this.error = info;
-            setKeys(ClankCsmErrorInfoAccessor.getDefault().getDelegate(info).notes());
+            final ArrayList<ClankDiagnosticInfo> notes = ClankCsmErrorInfoAccessor.getDefault().getDelegate(info).notes();
+            ArrayList<ClankDiagnosticInfo> keys = new ArrayList<>();
+            keys.add(ClankCsmErrorInfoAccessor.getDefault().getDelegate(info));
+            keys.addAll(notes);
+            setKeys(keys);
         }
 
         @Override
@@ -452,12 +495,21 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
                 FileSystem fSystem = csmErrorFile.getFileObject().getFileSystem();
                 FileObject fo = CndFileUtils.toFileObject(fSystem, note.getSourceFileName());
                 CsmFile csmNoteFile = CsmUtilities.getCsmFile(fo, false, false);
-                int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, note.getStartOffset());
-                int[] endlineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, note.getEndOffset());
                 StringBuilder htmlName = new StringBuilder("<html>");//NOI18N
                 htmlName.append(note.getMessage()).append(" at <b>").append(CndPathUtilities.getBaseName(note.getSourceFileName())).append(" [");//NOI18N
-                htmlName.append(lineColumnByOffset[0]).append(":").append(lineColumnByOffset[1]).append("-");//NOI18N
-                htmlName.append(endlineColumnByOffset[0]).append(":").append(endlineColumnByOffset[1]).append("]</b>");//NOI18N
+                final int[] startOffsets = note.getStartOffsets();
+                final int[] endOffsets = note.getEndOffsets();
+                for (int i = 0; i < startOffsets.length; i++) {
+                    int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, startOffsets[i]);
+                    int[] endlineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, endOffsets[i]);                
+                    htmlName.append(lineColumnByOffset[0]).append(":").append(lineColumnByOffset[1]).append("-");//NOI18N
+                    htmlName.append(endlineColumnByOffset[0]).append(":").append(endlineColumnByOffset[1]);//NOI18N
+                    if (i < startOffsets.length -1) {
+                        htmlName.append(";");//NOI18N
+                                
+                    }
+                }
+                htmlName.append("]</b>");//NOI18N
                 htmlName.append("</html>");//NOI18N
                 return htmlName.toString();
             } catch (FileStateInvalidException ex) {

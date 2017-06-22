@@ -255,14 +255,28 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
                     int startHL = doc.getLength();
                     doc.insertString(doc.getLength(), line.getPrefix(), null);
                     final String text = line.getText();
-                    doc.insertString(doc.getLength(), text.substring(0, line.getStartColumn()-1), null);  
-                    int startU = doc.getLength();
-                    doc.insertString(doc.getLength(), text.substring(line.getStartColumn()-1, line.getEndColumn()-1), null);
-                    int endU = doc.getLength();
-                    doc.insertString(doc.getLength(), text.substring(line.getEndColumn()-1), null);
+                    //for cycle
+                    int[] startColumns = line.getStartColumns();
+                    int[] endColumns = line.getEndColumns();
+                    int start = 0;
+                    int[] startUs = new int[startColumns.length];
+                    int[] endUs = new int[startColumns.length];
+                    for (int i = 0; i < startColumns.length; i++) {
+                        doc.insertString(doc.getLength(), text.substring(start, startColumns[i] -1), null);  
+                        startUs[i] = doc.getLength();
+                        doc.insertString(doc.getLength(), endColumns[i] - 1 < startColumns[i] ? text.substring( startColumns[i] -1): text.substring( startColumns[i] -1, endColumns[i] - 1), null);
+                        endUs[i] = doc.getLength();
+                        start = endColumns[i] -1;
+                    }
+                    if (endColumns[startColumns.length-1] -1 >=  startColumns[startColumns.length-1]) {
+                        doc.insertString(doc.getLength(), text.substring( endColumns[startColumns.length-1] -1), null); 
+                    }
                     int endHL = doc.getLength();
                     //addAttribute(startHL, endHL, Painter.HIGHLIGHT);
-                    addAttribute(startU, endU, Painter.RECTANGLE);
+                    for (int i = 0; i < startUs.length; i++) {
+                        addAttribute(startUs[i], endUs[i], Painter.RECTANGLE);
+                    }
+                    
                     addAttribute(startHL, endHL, Painter.HIGHLIGHT);
                 } else {
                     doc.insertString(doc.getLength(), line.getPrefix(), null);
