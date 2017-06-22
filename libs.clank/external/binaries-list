@@ -1,7 +1,7 @@
-#changeset:   32582:4b3b76f916cf
+#changeset:   32814:195b41ffd874
 #branch:      jclank
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Jun 14 20:03:35 2017 +0300
-#summary:     AUTO: <stdin> is absolute for in-memory-fs - backout
-471C9F6115460554D9B1A9AF630AF01DD62A44B5 clank_0.3.9.zip
+#user:        Maria Dalmatova <maria.tishkova@oracle.com>
+#date:        Thu Jun 22 11:14:52 2017 +0300
+#summary:     support source ranges
+6EB2765BABF39A5C7F2AAB06F77623216E609B5E clank_0.3.9.zip
