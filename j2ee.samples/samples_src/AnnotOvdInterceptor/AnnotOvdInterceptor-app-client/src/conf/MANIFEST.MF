@@ -1,1 +1,0 @@
-Main-Class: enterprise.annot_ovd_interceptor_appclient.StatelessSessionAppClient
