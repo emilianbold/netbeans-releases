@@ -1,3 +1,0 @@
-# websvc/samples
-read global
-${l10n-module}/src/org/netbeans/modules/websvc/metro/samples/descriptions/*.html
