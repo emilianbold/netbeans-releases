@@ -48,5 +48,10 @@ made subject to such option by the copyright holder.
     <import file="../j2ee.kit/register_server.xml"/> 
     <import file="../nbbuild/templates/projectized.xml"/>
 
+    <property name="xslt.dir" value="./tlddoc/xslt/"/>
+
     <target name="test" depends="test-unit"/>
+    <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/web.core.syntax-external-xsls.zip" dest="${xslt.dir}"/>
+   </target>
 </project>
