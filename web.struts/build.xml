@@ -46,6 +46,12 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
+    <property name="resources.dir" value="./src/org/netbeans/modules/web/struts/resources/"/>
+
+    <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/web.struts-external-resources.zip" dest="${resources.dir}"/>
+    </target>
+
     <target name="release" depends="projectized.release">
         <mkdir dir="${cluster}/modules/ext/struts"/>
         <unzip src="external/struts-1.3.10-lib.zip" dest="${cluster}/modules/ext/struts">
