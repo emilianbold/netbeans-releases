@@ -69,10 +69,17 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
@@ -100,7 +107,7 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
     private static final Logger LOG = Logger.getLogger("cnd.diagnostics.clank.support"); //NOI18N
     private Collection<CodeAudit> audits;
-    public static final String NAME = "Clank Diagnostics"; //NOI18N
+    public static final String NAME = "Clank_Diagnostics"; //NOI18N
     private final AuditPreferences myPreferences;
 
     public static CsmErrorProvider getInstance() {
@@ -216,53 +223,81 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
     private static ClankCompilationDataBase.Entry createEntry(CsmFile file, boolean useURL) {
         NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
-        CharSequence mainFile = useURL ? CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())) : nfi.getAbsolutePath();
-        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);
+        CharSequence mainFile = nfi != null ? (useURL ? 
+                CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())) : 
+                nfi.getAbsolutePath()) : 
+                (useURL ? 
+                CndFileSystemProvider.toUrl(FSPath.toFSPath(file.getFileObject())) : 
+                file.getAbsolutePath());        
+        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);        
+        if (nfi != null) {
+            builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
 
-        builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
-
-        // -I or -F
-        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
-            FileObject fileObject = incPath.getFSPath().getFileObject();
-            if (fileObject != null && fileObject.isFolder()) {
-                CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
-                builder.addUserIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+            // -I or -F
+            for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
+                FileObject fileObject = incPath.getFSPath().getFileObject();
+                if (fileObject != null && fileObject.isFolder()) {
+                    CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
+                    builder.addUserIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+                }
             }
-        }
-        // -isystem
-        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getSystemIncludePaths()) {
-            FileObject fileObject = incPath.getFSPath().getFileObject();
-            if (fileObject != null && fileObject.isFolder()) {
-                CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
-                builder.addPredefinedSystemIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+            // -isystem
+            for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getSystemIncludePaths()) {
+                FileObject fileObject = incPath.getFSPath().getFileObject();
+                if (fileObject != null && fileObject.isFolder()) {
+                    CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
+                    builder.addPredefinedSystemIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+                }
             }
+            // system pre-included headers
+            for (FSPath fSPath : nfi.getSystemIncludeHeaders()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isData()) {
+                    String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
+                    builder.addIncFile(path);
+                }
+            }
+
+            // handle -include
+            for (FSPath fSPath : nfi.getIncludeFiles()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isData()) {
+                    String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
+                    builder.addIncFile(path);
+                }
+            }
+
+            // -D
+            for (String macro : nfi.getSystemMacroDefinitions()) {
+                builder.addPredefinedSystemMacroDef(macro);
+            }
+            for (String macro : nfi.getUserMacroDefinitions()) {
+                builder.addUserMacroDef(macro);
+            }            
+        } else {
+            ExecutionEnvironment execEnv = FileSystemProvider.getExecutionEnvironment(file.getFileObject());
+            //get from default toolcain
+            CompilerSetManager csm = CompilerSetManager.get(execEnv);
+            CompilerSet defaultCompilerSet = csm.getDefaultCompilerSet();
+            List<Tool> tools = defaultCompilerSet.getTools();
+            for (Tool tool : tools) {
+                if (tool instanceof AbstractCompiler) {
+                    if (tool.getKind() == PredefinedToolKind.CCompiler || tool.getKind() == PredefinedToolKind.CCCompiler) {
+                        AbstractCompiler abstractCompiler = (AbstractCompiler) tool;
+                        List<String> systemIncludeDirectories = abstractCompiler.getSystemIncludeDirectories();
+                        for (String systemIncludeDirectory : systemIncludeDirectories) {
+                            builder.addPredefinedSystemIncludePath(systemIncludeDirectory, false, false);
+                        }
+                        List<String> systemPreprocessorSymbols = abstractCompiler.getSystemPreprocessorSymbols();
+                        for (String systemPreprocessorSymbol : systemPreprocessorSymbols) {
+                            builder.addPredefinedSystemMacroDef(systemPreprocessorSymbol);
+                        }
+                    }
+                }
+            }            
+//            tools.get(0).
         }
 
-        // system pre-included headers
-        for (FSPath fSPath : nfi.getSystemIncludeHeaders()) {
-            FileObject fileObject = fSPath.getFileObject();
-            if (fileObject != null && fileObject.isData()) {
-                String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
-                builder.addIncFile(path);
-            }
-        }
-
-        // handle -include
-        for (FSPath fSPath : nfi.getIncludeFiles()) {
-            FileObject fileObject = fSPath.getFileObject();
-            if (fileObject != null && fileObject.isData()) {
-                String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
-                builder.addIncFile(path);
-            }
-        }
-
-        // -D
-        for (String macro : nfi.getSystemMacroDefinitions()) {
-            builder.addPredefinedSystemMacroDef(macro);
-        }
-        for (String macro : nfi.getUserMacroDefinitions()) {
-            builder.addUserMacroDef(macro);
-        }
         builder.setFileSystem(ClankFileSystemProvider.getDefault().getFileSystem());
         try {
             if (CndFileSystemProvider.isRemote(file.getFileObject().getFileSystem())) {
