@@ -76,7 +76,6 @@ public class RectanglePainter extends DefaultHighlighter.DefaultHighlightPainter
         //  Do your custom painting
         Color color = getColor();
         g.setColor(color == null ? c.getSelectionColor() : color);
-        System.out.println("RectandlePainter.offs0=" + offs0 + ";offs1=" + offs1);
 
         //  Code is the same as the default highlighter except we use drawRect(...)
 		//g.fillRect(r.x, r.y, r.width, r.height);

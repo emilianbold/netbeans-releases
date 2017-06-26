@@ -348,7 +348,6 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
         }
         i.startOffset = startOffset;
         i.endOffset = endOffset;       
-        System.out.println("CodeSnippetPanel.addAttribute: painter=" + i.painter + ";startOffset=" + startOffset + ";endOffset=" + endOffset);
         highlights.add(i);
     }
 
