@@ -10,10 +10,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -30,6 +43,7 @@ public final class CodeSnippet {
     private final String path;
     private final int[][] startLineColumns;
     private final int[][] endLineColumns;
+    static boolean COLORIZATION_ENABLED = CndUtils.getBoolean("cnd.clank.diagnostics.colorize.snippets", false); //NOI18N
 
     public CodeSnippet(FileObject fo, String path, int[][] startLineColumns, int[][] endLineColumns) {
         this(fo, null, path, startLineColumns, endLineColumns);//, descr);
@@ -93,6 +107,38 @@ public final class CodeSnippet {
 
     public static final class AnnotatedCode {
 
+        private static void calculateColors(LineInfo lineInfo, TokenSequence<? extends TokenId> ts) {
+            FontColorSettings settings = null;
+            LanguagePath languagePath = ts.languagePath();
+            while ( languagePath != null && settings == null) {
+                String mime = languagePath.mimePath();
+                Lookup lookup = MimeLookup.getLookup(mime);
+                settings = lookup.lookup(FontColorSettings.class);
+            }
+            int offset = 0;
+            while (ts.moveNext()) {
+                Token<?> token = ts.token();
+                TokenSequence<?> es = ts.embedded();
+                if (es != null && es.language() == CppTokenId.languagePreproc()) {
+                    calculateColors(lineInfo, es);
+                } else {
+                    String category = token.id().primaryCategory();
+                    if (category == null) {
+                        category = CppTokenId.WHITESPACE_CATEGORY; //NOI18N
+                    }
+                    String text = token.text().toString();
+                    AttributeSet set = null;
+                    if (settings != null) {
+                        set = settings.getTokenFontColors(category);
+                    } 
+                    if (set != null) {
+                        lineInfo.attrs.add(new LineAttribute(offset, text.length(), set));
+                    }
+                    offset += text.length();
+                }
+            }
+        }
+
         private final String mimeType;
         private final List<LineInfo> lines;        
 
@@ -134,6 +180,8 @@ public final class CodeSnippet {
             CsmFile csmFile = CsmUtilities.getCsmFile(fo, true, false);
             // line is 1-based number
             int line = codeSnippet.getLine();
+            Language<CppTokenId> lang = CndLexerUtilities.getLanguage(codeSnippet.getFileObject().getMIMEType());
+            
             int currentLineNumber = 0;
             if (fo != null) {
                 List<String> asLines = fo.asLines();
@@ -147,7 +195,14 @@ public final class CodeSnippet {
                     while (prevLineIndex > 0) {
                         String lineText = asLines.get(prevLineIndex - 1);
                         if (!lineText.isEmpty()) {
-                            lines.add(0, new LineInfo(LineType.SOURCE, lineText, toLineNumber(prevLineIndex), prevLineIndex));
+                            final LineInfo lineInfo = new LineInfo(LineType.SOURCE, lineText, toLineNumber(prevLineIndex), prevLineIndex);
+                            if (COLORIZATION_ENABLED) {
+                                TokenHierarchy<?> tokenH = TokenHierarchy.create(lineText, lang);
+                                TokenSequence<?> tok = tokenH.tokenSequence();
+                                calculateColors(lineInfo, tok);
+                            }
+                            
+                            lines.add(0, lineInfo);
                             if (addedBeforeIssueLines++ > CONTEXT_LINE_NUM) {
                                 break;
                             }
@@ -156,15 +211,20 @@ public final class CodeSnippet {
                         prevLineIndex--;
                     }
                     String lineWithIssueText = asLines.get(line - 1);
-                    final LineInfo lineInfo = new LineInfo(LineType.ANNOTATION, lineWithIssueText, toLineNumber(line), line);
+                    LineInfo lineInfo = new LineInfo(LineType.ANNOTATION, lineWithIssueText, toLineNumber(line), line);
+                    if (COLORIZATION_ENABLED) {
+                        TokenHierarchy<?> tokenH = TokenHierarchy.create(lineWithIssueText, lang);
+                        TokenSequence<?> tok = tokenH.tokenSequence();                    
+                        calculateColors(lineInfo, tok);
+                    }
                     //start column in this line
                     lines.add(lineInfo);
                     int size = codeSnippet.startLineColumns.length;
-                    lineInfo.startColumns = new int[size];
-                    lineInfo.endColumns = new int[size];
+                    lineInfo.startHLColumn = new int[size];
+                    lineInfo.endHLColumns = new int[size];
                     for (int i = 0; i < size; i++) {
-                        lineInfo.startColumns[i] = codeSnippet.startLineColumns[i][1];
-                        lineInfo.endColumns[i] = codeSnippet.endLineColumns[i][1];
+                        lineInfo.startHLColumn[i] = codeSnippet.startLineColumns[i][1];
+                        lineInfo.endHLColumns[i] = codeSnippet.endLineColumns[i][1];
                     }
 
                     
@@ -174,7 +234,14 @@ public final class CodeSnippet {
                     while (asLines.size() >= nextLineIndex) {
                         String lineText = asLines.get(nextLineIndex - 1);
                         if (!lineText.isEmpty()) {
-                            lines.add( new LineInfo(LineType.SOURCE, lineText, toLineNumber(nextLineIndex), nextLineIndex));
+                            lineInfo = new LineInfo(LineType.SOURCE, lineText, toLineNumber(nextLineIndex), nextLineIndex);
+                            lines.add(lineInfo);
+                            if (COLORIZATION_ENABLED) {
+                                TokenHierarchy<?> tokenH = TokenHierarchy.create(lineText, lang);
+                                TokenSequence<?> tok = tokenH.tokenSequence();                    
+                                calculateColors(lineInfo, tok);
+                            }
+                            
                             if (++addedAfterIssueLines >= CONTEXT_LINE_NUM) {
                                 break;
                             }
@@ -197,6 +264,20 @@ public final class CodeSnippet {
             ANNOTATION,
             ERROR,
         }
+        
+        public static final class LineAttribute {
+            final int column;
+            final int length;
+            final AttributeSet attribute;
+
+            public LineAttribute(int column, int length, AttributeSet attribute) {
+                this.column = column;
+                this.length = length;
+                this.attribute = attribute;
+            }
+            
+            
+        }
 
         public static final class LineInfo {
 
@@ -204,8 +285,10 @@ public final class CodeSnippet {
             private final String lineNumberPrefix;
             private final int line;
             private final LineType type;
-            private int[] startColumns;
-            private int[] endColumns;
+            private int[] startHLColumn;
+            private int[] endHLColumns;
+            //to colorize line
+            final ArrayList<LineAttribute> attrs = new ArrayList<>();
 
             public LineInfo(LineType type, String lineText, String lineNumberPrefix, int line) {
                 this.lineText = lineText;
@@ -227,12 +310,12 @@ public final class CodeSnippet {
                 return line;
             }
             
-            int[] getStartColumns() {
-                return startColumns;
+            int[] getStartHLColumns() {
+                return startHLColumn;
             }
             
-            int[] getEndColumns() {
-                return endColumns;
+            int[] getEndHLColumns() {
+                return endHLColumns;
             }            
 
             public String getPrefix() {
@@ -247,7 +330,7 @@ public final class CodeSnippet {
 
     private static String toLineNumber(int line) {
         int digits = (int) Math.ceil(Math.log10(line + 1.0));
-        String fmt = "%" + digits + "d: ";//NOI18N
+        String fmt = "%" + digits + "d:";//NOI18N
         return String.format(fmt, line);
     }
     

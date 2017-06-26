@@ -52,13 +52,14 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
@@ -66,7 +67,9 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.settings.SimpleValueNames;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.diagnostics.clank.ui.Utilities;
 import org.netbeans.modules.cnd.diagnostics.clank.ui.codesnippet.CodeSnippet.AnnotatedCode;
 import org.netbeans.modules.cnd.diagnostics.clank.ui.codesnippet.CodeSnippet.AnnotatedCode.LineInfo;
@@ -90,7 +93,7 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
     private final CodeSnippet snippet;
     private final ActionListener goToSnippetListener;
     private final boolean annotatedLine;
-    private Vector<HighlightInfo> highlights = new Vector<HighlightInfo>();
+    private ArrayList<HighlightInfo> highlights = new ArrayList<>();
 
     /**
      * Creates new form CodeSnippetPanel
@@ -146,7 +149,8 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         codeNavPanel = new javax.swing.JPanel();
-        codeTextPane = new javax.swing.JEditorPane();
+        scrollPane = new javax.swing.JScrollPane();
+        codeTextPane = createEditorPane();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -166,7 +170,10 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
         add(codeNavPanel, java.awt.BorderLayout.NORTH);
 
         codeTextPane.setEditable(false);
-        add(codeTextPane, java.awt.BorderLayout.CENTER);
+        codeTextPane.setFocusable(false);
+        scrollPane.setViewportView(codeTextPane);
+
+        add(scrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnOpenFileActionPerformed(java.awt.event.ActionEvent evt) {
@@ -174,15 +181,16 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel codeNavPanel;
-    private javax.swing.JEditorPane codeTextPane;
+    private javax.swing.JTextPane codeTextPane;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
     private static final String ANALYTICS_CODESNIPPET_MARKER = "ClankDiagnosticsCodeSnippetMarker";//NOI18N
 
-    public static JEditorPane createEditorPane() {
+    public static JTextPane createEditorPane() {
         initColors();
-        if (true) {
-            final JEditorPane out = new JEditorPane();
+   //     if (true) {
+            final JTextPane out = new JTextPane();
             out.setFont(editorFont);
             out.setBackground(Utilities.getDefaultBackground());
             out.putClientProperty(ANALYTICS_CODESNIPPET_MARKER, Boolean.TRUE);
@@ -190,15 +198,15 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
             out.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
             out.setEditable(false);
             return out;
-        }
-        JComponent[] editor = org.netbeans.editor.Utilities.createSingleLineEditor("text/x-c++");//NOI18N
-        JEditorPane pane = (JEditorPane) editor[1];
-        pane.putClientProperty(ANALYTICS_CODESNIPPET_MARKER, Boolean.TRUE);
-        // not supported yet by editor, but leave it here...
-        pane.putClientProperty(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, Boolean.FALSE);
-        pane.putClientProperty(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE, Boolean.FALSE);
-        pane.getPreferredSize();
-        return pane;
+     //   }
+//        JComponent[] editor = org.netbeans.editor.Utilities.createSingleLineEditor("text/x-c++");//NOI18N
+//        JEditorPane pane = (JEditorPane) editor[1];
+//        pane.putClientProperty(ANALYTICS_CODESNIPPET_MARKER, Boolean.TRUE);
+//        // not supported yet by editor, but leave it here...
+//        pane.putClientProperty(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, Boolean.FALSE);
+//        pane.putClientProperty(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE, Boolean.FALSE);
+//        pane.getPreferredSize();
+//        return pane;
     }
 
     public static boolean isCodeSnippet(JComponent comp) {
@@ -241,7 +249,7 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
         try {
             initColors();
 
-            final Document doc = codeTextPane.getDocument();
+            final StyledDocument doc = codeTextPane.getStyledDocument();
             if (clean) {
                 cleanDocument(codeTextPane);
             }
@@ -249,39 +257,62 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
 //            boolean nextLineIsAnnotated = false;
 //            int startHL = -1;
 //            int endHL = -1;
+            //we will goo through lines to annotate and add highlight attribute
+            //in parallel we will colorize it
+            Language<CppTokenId> languageCpp = CppTokenId.languageCpp();
+            //int docLength = 0;
             while (lines.hasNext()) {
                 CodeSnippet.AnnotatedCode.LineInfo line = lines.next();
                 if (line.getType() == CodeSnippet.AnnotatedCode.LineType.ANNOTATION && annotatedLine) {
                     int startHL = doc.getLength();
                     doc.insertString(doc.getLength(), line.getPrefix(), null);
+                    int lineStartOffsetInDoc = doc.getLength();
                     final String text = line.getText();
                     //for cycle
-                    int[] startColumns = line.getStartColumns();
-                    int[] endColumns = line.getEndColumns();
-                    int start = 0;
-                    int[] startUs = new int[startColumns.length];
-                    int[] endUs = new int[startColumns.length];
+                    int[] startColumns = line.getStartHLColumns();
+                    int[] endColumns = line.getEndHLColumns();
+//                    int start = 0;
+//                    int[] startUs = new int[startColumns.length];
+//                    int[] endUs = new int[startColumns.length];
+                    doc.insertString(doc.getLength(), text, null);
+                    for (AnnotatedCode.LineAttribute attr : line.attrs) {
+                        doc.setCharacterAttributes(lineStartOffsetInDoc + attr.column, attr.length, attr.attribute, true);
+                    }                       
                     for (int i = 0; i < startColumns.length; i++) {
-                        doc.insertString(doc.getLength(), text.substring(start, startColumns[i] -1), null);  
-                        startUs[i] = doc.getLength();
-                        doc.insertString(doc.getLength(), endColumns[i] - 1 < startColumns[i] ? text.substring( startColumns[i] -1): text.substring( startColumns[i] -1, endColumns[i] - 1), null);
-                        endUs[i] = doc.getLength();
-                        start = endColumns[i] -1;
-                    }
-                    if (endColumns[startColumns.length-1] -1 >=  startColumns[startColumns.length-1]) {
-                        doc.insertString(doc.getLength(), text.substring( endColumns[startColumns.length-1] -1), null); 
-                    }
+//                        int start_ = Math.max(start, startColumns[i] - 1);
+                        addAttribute(lineStartOffsetInDoc + startColumns[i] - 1, lineStartOffsetInDoc + endColumns[i] -1, 
+                                CodeSnippet.COLORIZATION_ENABLED ? Painter.FILLED_RECTANGLE : Painter.RECTANGLE);
+                    }                    
+//                        if (start < startColumns[i] -1) {
+//                            doc.insertString(doc.getLength(), text.substring(start, startColumns[i] -1), null);  
+//                        }
+//                        
+//                        startUs[i] = doc.getLength();
+//                        doc.insertString(doc.getLength(), endColumns[i] - 1 < start_ ? 
+//                                text.substring(start_): text.substring(start_, endColumns[i] - 1), null);
+//                        endUs[i] = doc.getLength();
+//                        start = endColumns[i] -1;
+//                    }
+//                    if (endColumns[startColumns.length-1] -1 >=  startColumns[startColumns.length-1]) {
+//                        doc.insertString(doc.getLength(), text.substring( endColumns[startColumns.length-1] -1), null); 
+//                    }
                     int endHL = doc.getLength();
-                    //addAttribute(startHL, endHL, Painter.HIGHLIGHT);
-                    for (int i = 0; i < startUs.length; i++) {
-                        addAttribute(startUs[i], endUs[i], Painter.RECTANGLE);
-                    }
-                    
+//                    //addAttribute(startHL, endHL, Painter.HIGHLIGHT);
+//                    for (int i = 0; i < startUs.length; i++) {
+//                        addAttribute(startUs[i], endUs[i], Painter.RECTANGLE);
+//                    }
                     addAttribute(startHL, endHL, Painter.HIGHLIGHT);
+                 
                 } else {
                     doc.insertString(doc.getLength(), line.getPrefix(), null);
+                    int lineStartOffsetInDoc = doc.getLength();
                     doc.insertString(doc.getLength(), line.getText(), null);
+                    for (AnnotatedCode.LineAttribute attr : line.attrs) {
+                        doc.setCharacterAttributes(lineStartOffsetInDoc + attr.column, attr.length, attr.attribute, true);
+                    }                    
+                    
                 }
+                                
                 if (lines.hasNext()) {
                     doc.insertString(doc.getLength(), "\n", null);//NOI18N
                 }
@@ -311,9 +342,13 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
             case RECTANGLE:
                 i.painter = CodeSnippetPanel.rectanglePainter;
                 break;                
+            case FILLED_RECTANGLE:
+                i.painter = CodeSnippetPanel.filledRectanglePainter;
+                break;                                
         }
         i.startOffset = startOffset;
-        i.endOffset = endOffset;
+        i.endOffset = endOffset;       
+        System.out.println("CodeSnippetPanel.addAttribute: painter=" + i.painter + ";startOffset=" + startOffset + ";endOffset=" + endOffset);
         highlights.add(i);
     }
 
@@ -373,6 +408,7 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
     private static Highlighter.HighlightPainter painter;
     private static SquigglePainter squigglePainter;
     private static RectanglePainter rectanglePainter;
+    private static FillRectanglePainter filledRectanglePainter;
     private static Font editorFont;
 
     private synchronized static void initColors() {
@@ -380,6 +416,10 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
             painter = new DefaultHighlighter.DefaultHighlightPainter(new Color(233, 239, 248));
             squigglePainter = new SquigglePainter(Color.getColor("fef65b"));//NOI18N
             rectanglePainter = new RectanglePainter(Color.RED);
+            filledRectanglePainter = new FillRectanglePainter(new Color(233, 239, 248).darker());
+            String family = "Monospaced";    // NOI18N
+            int defaultEditorFontSize = getDefaultFontSize();
+            editorFont = new Font(family, Font.PLAIN, defaultEditorFontSize);            
         }
     }
 
@@ -398,7 +438,8 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
     static enum Painter {
         HIGHLIGHT,
         WAVE_UNDERLINE,
-        RECTANGLE
+        RECTANGLE,
+        FILLED_RECTANGLE
     }
 
     private class HighlightInfo implements Highlighter.Highlight {
