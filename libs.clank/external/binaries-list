@@ -1,7 +1,7 @@
-#changeset:   32814:195b41ffd874
+#changeset:   32961:5958a99b59a7
 #branch:      jclank
 #tag:         tip
 #user:        Maria Dalmatova <maria.tishkova@oracle.com>
-#date:        Thu Jun 22 11:14:52 2017 +0300
-#summary:     support source ranges
-6EB2765BABF39A5C7F2AAB06F77623216E609B5E clank_0.3.9.zip
+#date:        Mon Jun 26 12:59:07 2017 +0300
+#summary:     clank diagnostics: support for source ranges
+EB4EC4BEF0E52087451C0487517D3A6BE418A972 clank_0.3.9.zip
