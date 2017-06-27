@@ -214,7 +214,7 @@ public final class WindowsSupport {
 
         // if we found some "broken" cygwin - it will be in candidate...
         // or it will be null if nothing found
-        CndUtils.logMessageOnce(log, Level.WARNING, "Can't get a path of cygwin shell, broken or null returned: {0}", candidate);
+        CndUtils.logMessageOnce(log, Level.WARNING, "Can't get a path of cygwin shell, broken or null returned: {0}", candidate); //NOI18N
 
         return null;
     }
