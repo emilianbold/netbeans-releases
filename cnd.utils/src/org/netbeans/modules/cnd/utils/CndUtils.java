@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -339,6 +341,10 @@ public class CndUtils {
         }
     }
 
+    public static void logMessageOnce(Logger logger, Level level, String message, Object... params) {
+        LogOnceSupport.logMessageOnce(logger, level, message, params);
+    }
+
     public static void assertUiThread() {
         assertTrue(SwingUtilities.isEventDispatchThread(), "Should be called only from UI thread"); //NOI18N
     }
@@ -360,8 +366,21 @@ public class CndUtils {
             }
         }
     }
-    
+
     public static Logger getLogger() {
         return LOG;
+    }
+
+    private static class LogOnceSupport {
+
+        private static final Object PRESENT = new Object();
+        private static final Map<String, Object> ALREADY_LOGGED = new ConcurrentHashMap<>();
+
+        public static void logMessageOnce(Logger logger, Level level, String message, Object... params) {
+            ALREADY_LOGGED.computeIfAbsent(message, s -> {
+                logger.log(level, message, params);
+                return PRESENT;
+            });
+        }
     }
 }
