@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -145,7 +144,7 @@ public final class TerminalSupportImpl {
             final long termId) {
         final IOProvider ioProvider = IOProvider.get("Terminal"); // NOI18N
         if (ioProvider != null) {
-            final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
+            final AtomicReference<InputOutput> ioRef = new AtomicReference<>();
             // Create a tab in EDT right after we call the method, don't let this 
             // work to be done in RP in asynchronous manner. We need this to
             // save tab order 
@@ -237,9 +236,7 @@ public final class TerminalSupportImpl {
                                     return;
                                 }
                             }
-                        } catch (ConnectException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (InterruptedException ex) {
+                        } catch (ConnectException | InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
 
@@ -256,10 +253,7 @@ public final class TerminalSupportImpl {
                             }
                             return;
                         }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                        return;
-                    } catch (CancellationException ex) {
+                    } catch (IOException | CancellationException ex) {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
