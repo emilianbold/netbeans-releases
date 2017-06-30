@@ -275,6 +275,18 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
                 builder.addUserMacroDef(macro);
             }            
         } else {
+            //setLang see bz#270971
+            switch (file.getFileType()) {
+                case SOURCE_CPP_FILE:
+                    builder.setLang(InputKind.IK_CXX);
+                    break;
+                case SOURCE_C_FILE:
+                    builder.setLang(InputKind.IK_C);
+                    break;
+                default:
+                    ///set C as default???
+                    builder.setLang(InputKind.IK_C);
+            }
             ExecutionEnvironment execEnv = FileSystemProvider.getExecutionEnvironment(file.getFileObject());
             //get from default toolcain
             CompilerSetManager csm = CompilerSetManager.get(execEnv);
