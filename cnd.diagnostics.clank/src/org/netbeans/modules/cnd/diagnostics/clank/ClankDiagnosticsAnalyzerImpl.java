@@ -126,15 +126,14 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
 //                String abbr = messages[0];
             final List<Fix> fixes = new ArrayList<>();
             final ClankDiagnosticInfo fix = ((ClankCsmErrorInfo) info).getDelegate();
-            for (ClankDiagnosticEnhancedFix nextElement : fix.fixes()) {
+            if (!fix.fixes().isEmpty()) {
                 try {
-                    ClankDiagnoticsErrorProvider.EnhancedFixImpl fixImpl
-                            = new ClankDiagnoticsErrorProvider.EnhancedFixImpl(((ClankCsmErrorInfo) info).getCsmFile(), nextElement);
+                    ClankEnhancedFix fixImpl
+                            = new ClankEnhancedFix(((ClankCsmErrorInfo) info).getCsmFile(),  fix.fixes());
                     fixes.add(fixImpl);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
             }
             LazyFixList list = new LazyFixList() {
                 @Override

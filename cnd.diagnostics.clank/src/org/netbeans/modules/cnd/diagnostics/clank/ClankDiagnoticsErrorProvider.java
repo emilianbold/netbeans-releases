@@ -489,9 +489,9 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
         protected List<Fix> doGetFixes(final CsmErrorInfo info, List<Fix> alreadyFound) {
             if (info instanceof ClankCsmErrorInfo) {
                 final ClankDiagnosticInfo errorInfo = ((ClankCsmErrorInfo) info).getDelegate();
-                for (ClankDiagnosticEnhancedFix nextElement : errorInfo.fixes()) {
+                if (!errorInfo.fixes().isEmpty()) {
                     try {
-                        EnhancedFixImpl fixImpl = new EnhancedFixImpl(((ClankCsmErrorInfo) info).getCsmFile(), nextElement);
+                        ClankEnhancedFix fixImpl = new ClankEnhancedFix(((ClankCsmErrorInfo) info).getCsmFile(), errorInfo.fixes());
                         alreadyFound.add(fixImpl);
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
@@ -518,64 +518,6 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
             }
             return alreadyFound;
         }
-    }
-
-    /*package*/ static class EnhancedFixImpl implements EnhancedFix {
-
-        private final CsmFile file;
-        private final Position insertStartPosition;
-        private final Position insertEndPosition;
-        private final Position removeStartPosition;
-        private final Position removeEndPosition;
-        private final String textToInsert;
-        private final String text;
-
-        EnhancedFixImpl(CsmFile csmFile, ClankDiagnosticEnhancedFix clankFix) throws Exception {
-            this.file = csmFile;
-            textToInsert = clankFix.getInsertionText();
-            text = clankFix.getText();
-            Document document = CsmUtilities.getDocument(file);
-            insertStartPosition = NbDocument.createPosition(document, clankFix.getInsertStartOffset(), Position.Bias.Forward);
-            insertEndPosition = NbDocument.createPosition(document, clankFix.getInsertEndOffset(), Position.Bias.Forward);
-            removeStartPosition = NbDocument.createPosition(document, clankFix.getRemoveStartOffset(), Position.Bias.Forward);
-            removeEndPosition = NbDocument.createPosition(document, clankFix.getRemoveEndOffset(), Position.Bias.Forward);
-        }
-
-        @Override
-        public CharSequence getSortText() {
-            return text;
-        }
-
-        @Override
-        public String getText() {
-            return text;
-        }
-
-        @Override
-        public ChangeInfo implement() throws Exception {
-
-            try {
-                Document document = CsmUtilities.getDocument(file);
-                //document.remove(0, 0);
-                //check insertation range first
-                if (insertStartPosition.getOffset() == 0 && insertEndPosition.getOffset() == 0) {
-                    final int startPos = removeStartPosition.getOffset();
-                    //will do replace
-                    //remove end insert
-                    document.remove(startPos,
-                            removeEndPosition.getOffset() - startPos + 1);
-                    document.insertString(startPos, textToInsert, null);
-                } else {
-                    final int startPos = insertStartPosition.getOffset();
-                    document.insertString(startPos, textToInsert, null);
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            return null;
-        }
-
     }
 
 }

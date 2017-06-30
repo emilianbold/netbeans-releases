@@ -316,6 +316,9 @@ public class DiagnosticsAnnotationProvider {
     
     public static boolean isNextActionEnabled() {
         final  ClankDiagnosticInfo diagnosticInfo = currentDiagnostic.get();
+        if (diagnosticInfo == null) {
+            return false;
+        }
         final ArrayList<ClankDiagnosticInfo> notes = diagnosticInfo.getParent() == null ? diagnosticInfo.notes() : diagnosticInfo.getParent().notes();
         final int currentDiagnosticIndex = diagnosticInfo.getParent() == null ? - 1 : notes.indexOf(diagnosticInfo);
         return currentDiagnosticIndex < notes.size() -1 ;
@@ -323,6 +326,9 @@ public class DiagnosticsAnnotationProvider {
 
     public static boolean isPrevActionEnabled() {
         final  ClankDiagnosticInfo diagnosticInfo = currentDiagnostic.get();
+        if (diagnosticInfo == null) {
+            return false;
+        }        
         final ArrayList<ClankDiagnosticInfo> notes = diagnosticInfo.getParent() == null ? diagnosticInfo.notes() : diagnosticInfo.getParent().notes();
         final int currentDiagnosticIndex = diagnosticInfo.getParent() == null ? - 1 : notes.indexOf(diagnosticInfo);
         return currentDiagnosticIndex > -1 ;        
