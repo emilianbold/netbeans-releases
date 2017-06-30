@@ -3,7 +3,8 @@
 <filesystem>
     <folder name="Editors"> 
         <folder name="AnnotationTypes">
-            <file name="DiagnosticPin.xml" url="DiagnosticPin.xml"/>
+            <file name="ErrorDiagnosticPin.xml" url="ErrorDiagnosticPin.xml"/>
+            <file name="WarningDiagnosticPin.xml" url="WarningDiagnosticPin.xml"/>            
             <file name="clank-diagnostics-annotations" url="clank-diagnostics-annotations.xml"/>
             <file name="clank-diagnostics-annotations-fixable" url="clank-diagnostics-annotations-fixable.xml"/>
             <file name="clank-diagnostics-annotations-warning" url="clank-diagnostics-annotations-warning.xml"/>

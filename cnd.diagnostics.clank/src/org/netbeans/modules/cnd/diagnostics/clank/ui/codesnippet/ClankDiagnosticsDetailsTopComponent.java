@@ -61,6 +61,7 @@ import org.clang.tools.services.ClankDiagnosticInfo;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.diagnostics.clank.ClankCsmErrorInfo;
 import org.netbeans.modules.cnd.diagnostics.clank.impl.ClankCsmErrorInfoAccessor;
 import org.netbeans.modules.cnd.diagnostics.clank.ui.Utilities;
@@ -525,7 +526,10 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/netbeans/modules/cnd/highlight/resources/bugs.png");//NOI18N
+            if (error.getSeverity() == CsmErrorInfo.Severity.ERROR) {
+                return ImageUtilities.loadImage("org/netbeans/modules/cnd/diagnostics/clank/resources/bugs-error24.png");//NOI18N
+            } 
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/diagnostics/clank/resources/bugs-warning24.png");//NOI18N
         }
 
     }

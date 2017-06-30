@@ -205,8 +205,14 @@ public class DiagnosticsAnnotationProvider {
         if (line == null) {
             line = getLine(pin.getFile(), pin.getLine());
         }
-
-        final DiagnosticsAnnotation annotation = new DiagnosticsAnnotation(DiagnosticsAnnotation.DIAGNOSTIC_ANNOTATION_TYPE, line);
+        //the severtry will be the same as parent if any
+        String annotationType = diagnosticInfo.getSeverity() == ClankDiagnosticInfo.Severity.Error ? DiagnosticsAnnotation.DIAGNOSTIC_ERROR_ANNOTATION_TYPE: 
+                DiagnosticsAnnotation.DIAGNOSTIC_WARNING_ANNOTATION_TYPE;
+        if (diagnosticInfo.getParent() != null) {
+            annotationType = diagnosticInfo.getParent().getSeverity() == ClankDiagnosticInfo.Severity.Error ? DiagnosticsAnnotation.DIAGNOSTIC_ERROR_ANNOTATION_TYPE: 
+                DiagnosticsAnnotation.DIAGNOSTIC_WARNING_ANNOTATION_TYPE;
+        }
+        final DiagnosticsAnnotation annotation = new DiagnosticsAnnotation(annotationType, line);
         annotation.setDiagnostic(diagnosticInfo);
         diagnosticToAnnotations.put(diagnosticInfo, annotation);
         annotation.attach(line);

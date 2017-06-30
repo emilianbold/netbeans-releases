@@ -63,7 +63,8 @@ import org.openide.util.lookup.Lookups;
 public class DiagnosticsAnnotation extends Annotation implements Lookup.Provider {
 
     /** Annotation type constant. */
-    static final String DIAGNOSTIC_ANNOTATION_TYPE = "PinnedDiagnostic";//NOI18N
+    static final String DIAGNOSTIC_WARNING_ANNOTATION_TYPE = "PinnedDiagnosticWarning";//NOI18N
+    static final String DIAGNOSTIC_ERROR_ANNOTATION_TYPE = "PinnedDiagnosticError";//NOI18N
 
     private final Line        line;
     private final String      type;
@@ -94,11 +95,10 @@ public class DiagnosticsAnnotation extends Annotation implements Lookup.Provider
         return line;
     }
     
-    @NbBundle.Messages("TOOLTIP_DIAGNOSTIC_PIN=Diagnostic")
     @Override
     public String getShortDescription () {
-        if (type == DIAGNOSTIC_ANNOTATION_TYPE) {
-            return Bundle.TOOLTIP_DIAGNOSTIC_PIN();
+        if (DIAGNOSTIC_WARNING_ANNOTATION_TYPE.equals(type) || DIAGNOSTIC_ERROR_ANNOTATION_TYPE.equals(type) ) {
+            return diagnosticInfo.getMessage();
         }
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown annotation type '"+type+"'."));//NOI18N
         return null;

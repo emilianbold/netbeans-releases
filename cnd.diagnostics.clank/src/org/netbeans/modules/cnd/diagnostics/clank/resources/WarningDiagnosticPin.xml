@@ -43,7 +43,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
 
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
 <type
-    name='PinnedDiagnostic'
+    name='PinnedDiagnosticWarning'
     description_key='HINT_DIAGNOSTIC_PIN'
     localizing_bundle='org.netbeans.modules.cnd.diagnostics.clank.resources.Bundle'
     visible='true'
@@ -51,5 +51,5 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
     type='line'
     severity='ok'
     priority='0'
-    custom_sidebar_color='0xFF8FD5'
+    custom_sidebar_color='0xFFBE00'
 />
