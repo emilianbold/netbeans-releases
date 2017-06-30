@@ -85,6 +85,7 @@ import org.netbeans.modules.debugger.jpda.truffle.source.Source;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -381,14 +382,24 @@ public class TruffleBreakpointsHandler {
     public void breakpointAdded(JSLineBreakpoint jsLineBreakpoint) {
         if (initialBreakpointsSubmitted) {
             // Breakpoints were submitted already, submit this as well.
-            submitBP(jsLineBreakpoint);
+            if (Mutex.EVENT.isReadAccess()) {
+                // Lazy submit when called from UI
+                ((JPDADebuggerImpl) debugger).getRequestProcessor().post(() -> submitBP(jsLineBreakpoint));
+            } else {
+                submitBP(jsLineBreakpoint);
+            }
         }
     }
 
     public void breakpointRemoved(JSLineBreakpoint jsLineBreakpoint) {
         if (initialBreakpointsSubmitted) {
             // Breakpoints were submitted already, remove this.
-            removeBP(jsLineBreakpoint);
+            if (Mutex.EVENT.isReadAccess()) {
+                // Lazy remove when called from UI
+                ((JPDADebuggerImpl) debugger).getRequestProcessor().post(() -> removeBP(jsLineBreakpoint));
+            } else {
+                removeBP(jsLineBreakpoint);
+            }
         }
     }
     

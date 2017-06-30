@@ -60,6 +60,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.graalvm.polyglot.Engine;
 
 /**
  * Truffle accessor for JPDA debugger.
@@ -133,10 +134,16 @@ public class JPDATruffleAccessor extends Object {
         }
     }
     
-    static JPDATruffleDebugManager setUpDebugManagerFor(/*PolyglotEngine*/Object engineObj, boolean doStepInto) {
+    static JPDATruffleDebugManager setUpDebugManagerFor(/*PolyglotEngine or Engine*/Object engineObj, boolean doStepInto) {
         trace("setUpDebugManagerFor("+engineObj+", "+doStepInto+")");
-        PolyglotEngine engine = (PolyglotEngine) engineObj;
-        Debugger debugger = Debugger.find(engine);
+        Debugger debugger;
+        if (engineObj instanceof PolyglotEngine) {
+            PolyglotEngine engine = (PolyglotEngine) engineObj;
+            debugger = Debugger.find(engine);
+        } else { // Engine
+            Engine engine = (Engine) engineObj;
+            debugger = engine.getInstrument("debugger").lookup(Debugger.class);
+        }
         JPDATruffleDebugManager tdm = new JPDATruffleDebugManager(debugger, doStepInto);
         synchronized (debugManagers) {
             debugManagers.put(debugger, tdm);

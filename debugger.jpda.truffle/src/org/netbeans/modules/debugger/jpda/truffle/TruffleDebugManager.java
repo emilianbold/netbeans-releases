@@ -54,8 +54,11 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +72,7 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -103,9 +107,10 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     
     private static final Logger LOG = Logger.getLogger(TruffleDebugManager.class.getName());
     
-    private static final String SESSION_CREATION_BP_CLASS = "com.oracle.truffle.api.vm.PolyglotEngine";
+    private static final String SESSION_CREATION_BP_CLASS[] = new String[] { "com.oracle.truffle.api.vm.PolyglotEngine",
+                                                                             "org.graalvm.polyglot.Engine" };
     
-    private JPDABreakpoint debugManagerLoadBP;
+    private JPDABreakpoint[] debugManagerLoadBPs;
     private static final Map<JPDADebugger, DebugManagerHandler> dmHandlers = new HashMap<>();
     private static final Map<JPDADebugger, JPDABreakpointListener> debugBPListeners = new HashMap<>();
     
@@ -115,21 +120,24 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
     @Override
     public Breakpoint[] initBreakpoints() {
         initLoadBP();
-        return new Breakpoint[] { debugManagerLoadBP };
+        return debugManagerLoadBPs;
     }
     
     private synchronized void initLoadBP() {
-        if (debugManagerLoadBP != null) {
+        if (debugManagerLoadBPs != null) {
             return ;
         }
         /* Must NOT use a method exit breakpoint! I cause a massive degradation of application performance.
         debugManagerLoadBP = MethodBreakpoint.create(SESSION_CREATION_BP_CLASS, SESSION_CREATION_BP_METHOD);
         ((MethodBreakpoint) debugManagerLoadBP).setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
         */
-        debugManagerLoadBP = ClassLoadUnloadBreakpoint.create(SESSION_CREATION_BP_CLASS, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-        debugManagerLoadBP.setHidden(true);
+        debugManagerLoadBPs = new JPDABreakpoint[2];
+        for (int i = 0; i < 2; i++) {
+            debugManagerLoadBPs[i] = ClassLoadUnloadBreakpoint.create(SESSION_CREATION_BP_CLASS[i], false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
+            debugManagerLoadBPs[i].setHidden(true);
+        }
         
-        LOG.log(Level.FINE, "TruffleDebugManager.initBreakpoints(): submitted BP {0}", debugManagerLoadBP);
+        LOG.log(Level.FINE, "TruffleDebugManager.initBreakpoints(): submitted BP {0}, {1}", debugManagerLoadBPs);
         TruffleAccess.init();
     }
 
@@ -147,7 +155,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
         }
         initLoadBP();
         JPDABreakpointListener bpl = addPolyglotEngineCreationBP(debugger);
-        LOG.log(Level.FINE, "TruffleDebugManager.sessionAdded({0}), adding BP listener to {1}", new Object[]{session, debugManagerLoadBP});
+        LOG.log(Level.FINE, "TruffleDebugManager.sessionAdded({0}), adding BP listener to {1} and {2}", new Object[]{session, debugManagerLoadBPs[0], debugManagerLoadBPs[1]});
         synchronized (debugBPListeners) {
             debugBPListeners.put(debugger, bpl);
         }
@@ -164,8 +172,10 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
             bpl = debugBPListeners.remove(debugger);
         }
         if (bpl != null) {
-            LOG.log(Level.FINE, "TruffleDebugManager.engineRemoved({0}), removing BP listener from {1}", new Object[]{session, debugManagerLoadBP});
-            debugManagerLoadBP.removeJPDABreakpointListener(bpl);
+            LOG.log(Level.FINE, "TruffleDebugManager.engineRemoved({0}), removing BP listener from {1} and {2}", new Object[]{session, debugManagerLoadBPs[0], debugManagerLoadBPs[1]});
+            for (int i = 0; i < 2; i++) {
+                debugManagerLoadBPs[i].removeJPDABreakpointListener(bpl);
+            }
         }
         DebugManagerHandler dmh;
         synchronized (dmHandlers) {
@@ -188,12 +198,32 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
                 }
             }
         };
-        debugManagerLoadBP.addJPDABreakpointListener(bpl);
-        List<JPDAClassType> polyglotEngines = debugger.getClassesByName(SESSION_CREATION_BP_CLASS);
-        if (!polyglotEngines.isEmpty()) {
+        debugManagerLoadBPs[0].addJPDABreakpointListener(bpl);
+        debugManagerLoadBPs[1].addJPDABreakpointListener(bpl);
+        // Submit creation BPs for existing engine classes:
+        Runnable submitEngineCreation = () -> {
+            List<JPDAClassType> polyglotEngines = new ArrayList<>();
+            polyglotEngines.addAll(debugger.getClassesByName(SESSION_CREATION_BP_CLASS[0]));
+            polyglotEngines.addAll(debugger.getClassesByName(SESSION_CREATION_BP_CLASS[1]));
             for (JPDAClassType pe : polyglotEngines) {
                 submitPECreationBP(debugger, ((JPDAClassTypeImpl) pe).getType());
+                // TODO: Find possible existing instances of the engine
+                // List<ObjectVariable> engines = pe.getInstances(0);
+                // We have no suspended thread... :-(
             }
+        };
+        if (debugger.getState() > 1) {
+            submitEngineCreation.run();
+        } else {
+            debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (debugger.getState() > 1) {
+                        submitEngineCreation.run();
+                        debugger.removePropertyChangeListener(this);
+                    }
+                }
+            });
         }
         return bpl;
     }
@@ -240,6 +270,7 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
                     try {
                         EventRequestWrapper.enable(bp);
                     } catch (InvalidRequestStateExceptionWrapper irsx) {
+                        Exceptions.printStackTrace(irsx);
                     }
                 }
             }
