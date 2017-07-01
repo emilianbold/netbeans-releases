@@ -289,13 +289,13 @@ public final class HighlightProvider  {
             if (pb != null) {
                 try {
                     List<Fix> fixes = CsmErrorInfoHintProvider.getFixes(info);
-                    if (info instanceof ErrorInfoImpl) {
+//                    if (info instanceof ErrorInfoImpl) {
                         desc = ErrorDescriptionFactory.createErrorDescription(
-                                null, getSeverity(info), ((ErrorInfoImpl) info).getCustomType(), info.getMessage(), null, fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
-                    } else {
-                        desc = ErrorDescriptionFactory.createErrorDescription(
-                                getSeverity(info), info.getMessage(), fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
-                    }
+                                null, getSeverity(info), info.getCustomType(), info.getMessage(), null, fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+//                    } else {
+//                        desc = ErrorDescriptionFactory.createErrorDescription(
+//                                getSeverity(info), info.getMessage(), fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+//                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

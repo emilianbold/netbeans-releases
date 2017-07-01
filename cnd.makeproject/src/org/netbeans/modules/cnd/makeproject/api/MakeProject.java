@@ -55,6 +55,12 @@ import org.netbeans.spi.project.ProjectConfigurationProvider;
  * @author Alexander Simon
  */
 public interface MakeProject extends Project {
+    public enum FormattingStyle {
+        Global,
+        Project,
+        ClangFormat
+    }
+    
     MakeProjectHelper getHelper();
     Properties getProjectProperties(boolean b);
     void saveProjectProperties(Properties projectProperties, boolean b);
@@ -63,8 +69,8 @@ public interface MakeProject extends Project {
     void setSourceEncoding(String encName);
 
     CodeStyleWrapper getProjectFormattingStyle(String mime);
-    boolean isProjectFormattingStyle();
-    void setProjectFormattingStyle(boolean selected);
+    FormattingStyle isProjectFormattingStyle();
+    void setProjectFormattingStyle(FormattingStyle selected);
     void setProjectFormattingStyle(String C_MIME_TYPE, CodeStyleWrapper key);
 
     ExecutionEnvironment getFileSystemHost();

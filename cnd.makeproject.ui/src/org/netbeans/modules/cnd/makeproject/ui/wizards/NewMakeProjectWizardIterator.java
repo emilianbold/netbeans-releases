@@ -518,12 +518,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     @Override
     public void uninitialize(WizardDescriptor wiz) {
+      if (this.wiz != null) {
         WizardConstants.PROPERTY_PROJECT_FOLDER.put(this.wiz, null);
         WizardConstants.PROPERTY_NAME.put(this.wiz, null);
         WizardConstants.MAIN_CLASS.put(this.wiz, null); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) {
             this.wiz.putProperty("sourceRoot", null); // NOI18N
         }
+      }
         this.wiz = null;
         panels = null;
     }

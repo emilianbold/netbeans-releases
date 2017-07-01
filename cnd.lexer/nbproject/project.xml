@@ -135,6 +135,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.codemodel.utils</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
+                <friend>org.netbeans.modules.cnd.diagnostics.clank</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.kit</friend>
