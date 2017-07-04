@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
+import com.sun.istack.internal.logging.Logger;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
@@ -101,7 +103,7 @@ class InternalTerminalPack extends IOPack {
             try {
                 pty.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(InternalTerminalPack.class).log(Level.INFO, "Pty is already closed: ", ex);
             }
         }
     }
