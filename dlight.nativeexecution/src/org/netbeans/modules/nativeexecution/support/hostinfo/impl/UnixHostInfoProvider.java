@@ -278,7 +278,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         }
     }
 
-    private void getRemoteUserEnvironment(ExecutionEnvironment execEnv, HostInfo hostInfo, Map<String, String> environmentToFill) throws InterruptedException {
+    private void getRemoteUserEnvironment(ExecutionEnvironment execEnv, HostInfo hostInfo, Map<String, String> environmentToFill) throws IOException, InterruptedException {
         // If NbStartUtility is available for target host will invoke it for
         // dumping environment to a file ...
         // 
@@ -291,7 +291,6 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             nbstart = NbStartUtility.getInstance().getPath(execEnv, hostInfo);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Failed to get remote path of NbStartUtility", ex); // NOI18N
-            Exceptions.printStackTrace(ex);
         }
 
         String envPath = hostInfo.getEnvironmentFile();
