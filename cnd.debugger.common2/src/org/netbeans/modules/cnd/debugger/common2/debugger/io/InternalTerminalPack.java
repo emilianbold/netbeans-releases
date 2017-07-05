@@ -42,14 +42,13 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
-import com.sun.istack.internal.logging.Logger;
 import java.io.IOException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 
 /**
@@ -103,7 +102,7 @@ class InternalTerminalPack extends IOPack {
             try {
                 pty.close();
             } catch (IOException ex) {
-                Logger.getLogger(InternalTerminalPack.class).log(Level.INFO, "Pty is already closed: ", ex);
+                Logger.getLogger(InternalTerminalPack.class.getName()).log(Level.INFO, "Pty is already closed: ", ex);
             }
         }
     }
