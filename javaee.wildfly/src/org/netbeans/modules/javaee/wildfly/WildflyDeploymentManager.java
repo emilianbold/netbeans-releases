@@ -77,6 +77,7 @@ import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 
 import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties.PROPERTY_ADMIN_PORT;
+import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties.PROPERTY_MANAGEMENT_PROTOCOL;
 
 import org.netbeans.modules.javaee.wildfly.ide.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.ide.WildflyProgressObject;
@@ -130,13 +131,14 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         isWildfly = WildflyPluginUtils.isWildFly(serverPath);
         int controllerPort = CONTROLLER_PORT;
         String adminPort = this.instanceProperties.getProperty(PROPERTY_ADMIN_PORT);
+        String protocol = this.instanceProperties.getProperty(PROPERTY_MANAGEMENT_PROTOCOL);
         if(adminPort != null) {
             controllerPort = Integer.parseInt(this.instanceProperties.getProperty(PROPERTY_ADMIN_PORT));
         }
-        if (username != null && password != null) {
-            this.client = new WildflyClient(instanceProperties, version, getHost(), controllerPort, username, password);
+        if (username != null && !username.isEmpty() && password != null) {
+            this.client = new WildflyClient(instanceProperties, version, protocol, getHost(), controllerPort, username, password);
         } else {
-            this.client = new WildflyClient(instanceProperties, version, getHost(), controllerPort);
+            this.client = new WildflyClient(instanceProperties, version, protocol, getHost(), controllerPort);
         }
         ChangelogWildflyPlugin.showChangelog();
     }

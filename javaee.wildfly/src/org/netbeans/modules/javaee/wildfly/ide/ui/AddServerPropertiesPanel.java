@@ -76,6 +76,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
 
         String host = panel.getHost();
         String port = panel.getPort();
+        String protocol = panel.getManagementPort();
         String adminPort = panel.getManagementPort();
 
         if(panel.isLocalServer()){
@@ -166,6 +167,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
 
         instantiatingIterator.setHost(host);
         instantiatingIterator.setPort(port);
+        instantiatingIterator.setProtocol(protocol);
         instantiatingIterator.setAdminPort(adminPort);
         instantiatingIterator.setServer(panel.getDomain());
         instantiatingIterator.setServerPath(panel.getDomainPath());

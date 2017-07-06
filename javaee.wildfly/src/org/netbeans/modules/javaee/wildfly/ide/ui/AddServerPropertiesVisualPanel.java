@@ -74,7 +74,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
     private final Set listeners = new HashSet();
 
-    private javax.swing.JComboBox  domainField;  // Domain name (list of registered domains) can be edited
+    private javax.swing.JComboBox  domainField; // Domain name (list of registered domains) can be edited
     private javax.swing.JTextField domainPathField;  //
     private javax.swing.JLabel     domainLabel;
     private javax.swing.JLabel     domainPathLabel;
@@ -84,6 +84,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel     portLabel;
     private javax.swing.JTextField portField;
+    private javax.swing.JLabel     managementProtocolLabel;
+    private javax.swing.JComboBox  managementProtocolField;
     private javax.swing.JLabel     managementPortLabel;
     private javax.swing.JTextField managementPortField;
     private javax.swing.JLabel     userLabel;
@@ -138,6 +140,10 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         return portField.getText().trim();
     }
 
+    public String getManagementProtocol(){
+        return (String) managementProtocolField.getSelectedItem();
+    }
+
     public String getManagementPort(){
         return managementPortField.getText().trim();
     }
@@ -163,6 +169,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         String path = model.getCurrentPath();
         domainPathField.setText(path);
         portField.setText(WildflyPluginUtils.getHTTPConnectorPort(path));
+        managementProtocolField.setSelectedItem(WildflyPluginUtils.getManagementProtocol(path));
         managementPortField.setText(WildflyPluginUtils.getManagementConnectorPort(path));
         fireChangeEvent();
     }
@@ -275,6 +282,16 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
         portLabel.setLabelFor(portField);
 
+
+        managementProtocolLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(managementProtocolLabel, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Management_Protocol")); // NOI18N
+
+        managementProtocolField = new JComboBox(new Object[]{"http-remoting", "https-remoting", "remote", "http+remote", "https+remote"});
+        managementProtocolField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Management_Protocol"));
+        managementProtocolField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Management_Protocol"));
+
+        managementProtocolLabel.setLabelFor(managementProtocolField);
+
         managementPortLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(managementPortLabel, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Management_Port")); // NOI18N
 
@@ -384,6 +401,21 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(portField, gridBagConstraints);
 
+//-------------- management protocol ---------------
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(managementProtocolLabel, gridBagConstraints);
+
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(managementProtocolField, gridBagConstraints);
+
         //-------------- management port ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -393,7 +425,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -409,7 +441,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -426,7 +458,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);

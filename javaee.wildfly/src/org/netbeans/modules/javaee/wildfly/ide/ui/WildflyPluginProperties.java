@@ -65,6 +65,8 @@ public final class WildflyPluginProperties {
     public static final String PROPERTY_ROOT_DIR = "root-dir";//NOI18N
     public static final String PROPERTY_HOST = "host";//NOI18N
     public static final String PROPERTY_PORT = "port";//NOI18N
+    public static final String PROPERTY_PROTOCOL = "protocol";//NOI18N
+    public static final String PROPERTY_MANAGEMENT_PROTOCOL = "management-protocol";//NOI18N
     public static final String PROPERTY_ADMIN_PORT = "admin-port";//NOI18N
     public static final String PROPERTY_JAVA_OPTS = "java_opts"; // NOI18N
     public static final String PROPERTY_CONFIG_FILE = "config_file"; // NOI18N
@@ -190,6 +192,14 @@ public final class WildflyPluginProperties {
             return 9999;
         }
         return 9990;
+    }
+
+
+    public String getManagementProtocol() {
+        if(this.installLocation == null || WildflyPluginUtils.WILDFLY_11_0_0.compareTo(serverVersion) >= 0){
+            return "remote+http";
+        }
+        return "http-remoting";
     }
 
 

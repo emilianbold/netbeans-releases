@@ -142,6 +142,7 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagement
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildString;
 import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.WILDFLY_10_0_0;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -189,6 +190,7 @@ public class WildflyClient {
 
     private final String serverAddress;
     private final int serverPort;
+    private final String protocol;
     private final CallbackHandler handler;
     private final InstanceProperties ip;
     private Object client;
@@ -243,7 +245,8 @@ public class WildflyClient {
         return serverAddress;
     }
 
-    public WildflyClient(InstanceProperties ip, Version version, String serverAddress, int serverPort) {
+    public WildflyClient(InstanceProperties ip, Version version, String protocol, String serverAddress, int serverPort) {
+        this.protocol = protocol;
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.ip = ip;
@@ -251,8 +254,9 @@ public class WildflyClient {
         handler = new Authentication().getCallbackHandler();
     }
 
-    public WildflyClient(InstanceProperties ip, Version version, String serverAddress, int serverPort, String login,
+    public WildflyClient(InstanceProperties ip, Version version, String protocol, String serverAddress, int serverPort, String login,
             String password) {
+        this.protocol = protocol;
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.ip = ip;
@@ -264,8 +268,8 @@ public class WildflyClient {
     private synchronized Object getClient(WildflyDeploymentFactory.WildFlyClassLoader cl) {
         if (client == null) {
             try {
-                this.client = createClient(cl, version, serverAddress, serverPort, handler);
-            } catch (Throwable ex) {
+                this.client = createClient(cl, version, protocol, serverAddress, serverPort, handler);
+            } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchAlgorithmException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
                 return null;
             }
@@ -279,7 +283,7 @@ public class WildflyClient {
                 closeClient(WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip), client);
             }
             this.client = null;
-        } catch (Exception ex) {
+        } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
     }
@@ -290,10 +294,15 @@ public class WildflyClient {
             // ModelNode
             Object shutdownOperation = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, shutdownOperation, OP), SHUTDOWN);
+            Future<?> future = executeAsync(cl, shutdownOperation, null);
             try {
-                executeAsync(cl, shutdownOperation, null).get(timeout, TimeUnit.MILLISECONDS);
+               future.get(timeout, TimeUnit.MILLISECONDS);
             } catch (ExecutionException ex) {
                 throw new IOException(ex);
+            } finally {
+                if(!future.isDone()) {
+                    future.cancel(true);
+                }
             }
             close();
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
@@ -310,26 +319,37 @@ public class WildflyClient {
             setModelNodeChildEmptyList(cl, getModelNodeChild(cl, statusOperation, OP_ADDR));
             setModelNodeChildString(cl, getModelNodeChild(cl, statusOperation, NAME), SERVER_STATE);
             // ModelNode
-            Object response = executeAsync(cl, statusOperation, null).get();
-            if (SUCCESS.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, OUTCOME)))
-                    && !CONTROLLER_PROCESS_STATE_STARTING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))
-                    && !CONTROLLER_PROCESS_STATE_STOPPING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))) {
-                Pair<String, String> paths = getServerPaths(cl);
-                if (paths != null) {
-                    String homeDirNorm = homeDir == null ? null : PathUtil.normalizePath(homeDir);
-                    String configFileNorm = configFile == null ? null : PathUtil.normalizePath(configFile);
-                    return paths.first().equals(homeDirNorm) && paths.second().equals(configFileNorm);
+            Future<?> future = executeAsync(cl, statusOperation, null);
+            try {
+                LOGGER.info("Asking the server status");
+                Object response = future.get();
+                if (SUCCESS.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, OUTCOME)))
+                        && !CONTROLLER_PROCESS_STATE_STARTING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))
+                        && !CONTROLLER_PROCESS_STATE_STOPPING.equals(modelNodeAsString(cl, getModelNodeChild(cl, response, RESULT)))) {
+                    Pair<String, String> paths = getServerPaths(cl);
+                    if (paths != null) {
+                        String homeDirNorm = homeDir == null ? null : PathUtil.normalizePath(homeDir);
+                        String configFileNorm = configFile == null ? null : PathUtil.normalizePath(configFile);
+                        LOGGER.log(Level.INFO, "Comparing paths: JBOSS_HOME {0} and {1} , Configuration File {2} and {3}",
+                                new String[]{paths.first(), homeDirNorm, paths.second(), configFileNorm});
+                        return paths.first().equals(homeDirNorm) && paths.second().equals(configFileNorm);
+                    }
+                    return true;
                 }
-                return true;
-            } else {
+
+                LOGGER.log(Level.INFO,"Result from the server {0}", response.toString());
                 return false;
+            } finally {
+                if(!future.isDone()) {
+                    future.cancel(true);
+                }
             }
         } catch (InvocationTargetException ex) {
-            LOGGER.log(Level.FINE, null, ex.getTargetException());
+            LOGGER.log(Level.INFO, null, ex.getTargetException());
             close();
             return false;
         } catch (IllegalAccessException | ClassNotFoundException | InstantiationException | NoSuchMethodException | IOException | InterruptedException | ExecutionException ex) {
-            LOGGER.log(Level.FINE, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
             close();
             return false;
         }
@@ -790,12 +810,12 @@ public class WildflyClient {
     public List<MessageDestination> listDestinations() throws IOException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<MessageDestination> destinations = new ArrayList<MessageDestination>();
+            List<MessageDestination> destinations = new ArrayList<>();
             // ModelNode
             final Object readMessagingServers = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readMessagingServers, OP), READ_CHILDREN_NAMES_OPERATION);
 
-            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
             values.put(SUBSYSTEM, getMessagingSubsystem());
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);

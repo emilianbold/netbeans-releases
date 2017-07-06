@@ -63,24 +63,25 @@ import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
  * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyManagementAPI {
-    
-    private static final String SASL_DISALLOWED_MECHANISMS = "SASL_DISALLOWED_MECHANISMS";
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
 
-    private static final Map<String, String> DISABLED_LOCAL_AUTH = Collections.singletonMap(SASL_DISALLOWED_MECHANISMS, JBOSS_LOCAL_USER);
     private static final Map<String, String> ENABLED_LOCAL_AUTH = Collections.emptyMap();
     private static final int TIMEOUT = 1000;
 
-    static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Version version, final String serverAddress, final int serverPort,
+    static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Version version, final String protocol, final String serverAddress, final int serverPort,
             final CallbackHandler handler) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, NoSuchAlgorithmException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
         if (version.compareTo(WildflyPluginUtils.WILDFLY_9_0_0) >= 0) {
-            Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class, Map.class);
-            return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT, ENABLED_LOCAL_AUTH);
+            Method method = clazz.getDeclaredMethod("create", String.class, String.class, int.class, CallbackHandler.class, SSLContext.class, int.class, Map.class);
+            return method.invoke(null, protocol, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT, ENABLED_LOCAL_AUTH);
         }
-        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class);
-        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT);
+        if(!version.isWidlfy() && version.compareToIgnoreUpdate(WildflyPluginUtils.EAP_6_4_0) <= 0) { //Protocol not supported as a parameter
+            Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class);
+            return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT);
+        }
+        Method method = clazz.getDeclaredMethod("create", String.class, String.class, int.class, CallbackHandler.class, SSLContext.class, int.class);
+        return method.invoke(null, protocol, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT);
     }
 
     static void closeClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,
