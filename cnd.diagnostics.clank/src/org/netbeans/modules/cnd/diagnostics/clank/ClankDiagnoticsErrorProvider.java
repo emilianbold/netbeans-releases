@@ -56,6 +56,8 @@ import org.clang.tools.services.ClankDiagnosticInfo;
 import org.clang.tools.services.ClankDiagnosticResponse;
 import org.clang.tools.services.ClankDiagnosticServices;
 import org.clang.tools.services.ClankRunDiagnosticsSettings;
+import org.clang.tools.services.checkers.api.ClankChecker;
+import org.clang.tools.services.checkers.api.ClankCheckersProvider;
 import org.clang.tools.services.spi.ClankFileSystemProvider;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -67,10 +69,17 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
@@ -98,7 +107,7 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
     private static final Logger LOG = Logger.getLogger("cnd.diagnostics.clank.support"); //NOI18N
     private Collection<CodeAudit> audits;
-    public static final String NAME = "Clank Diagnostics"; //NOI18N
+    public static final String NAME = "Clank_Diagnostics"; //NOI18N
     private final AuditPreferences myPreferences;
 
     public static CsmErrorProvider getInstance() {
@@ -195,8 +204,14 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
             }
         };
-        settings.showAllWarning = clankShowAllWarning.isEnabled();
-        settings.turnOnAnalysis = clankStaticAnalyzer.isEnabled();
+        settings.showAllWarning = false;
+        settings.checkers.clear();
+        //and fill in
+        for (CodeAudit audit :  audits) {
+            if (audit.isEnabled()) {
+                settings.checkers.add(((ClankDiagnosticAudit)audit).clankChecker);
+            }
+        }
         try {
             ClankDiagnosticServices.verify(entry, settings);
         } catch (Throwable ex) {
@@ -208,53 +223,93 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
     private static ClankCompilationDataBase.Entry createEntry(CsmFile file, boolean useURL) {
         NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
-        CharSequence mainFile = useURL ? CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())) : nfi.getAbsolutePath();
-        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);
+        CharSequence mainFile = nfi != null ? (useURL ? 
+                CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())) : 
+                nfi.getAbsolutePath()) : 
+                (useURL ? 
+                CndFileSystemProvider.toUrl(FSPath.toFSPath(file.getFileObject())) : 
+                file.getAbsolutePath());        
+        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);        
+        if (nfi != null) {
+            builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
 
-        builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
-
-        // -I or -F
-        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
-            FileObject fileObject = incPath.getFSPath().getFileObject();
-            if (fileObject != null && fileObject.isFolder()) {
-                CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
-                builder.addUserIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+            // -I or -F
+            for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
+                FileObject fileObject = incPath.getFSPath().getFileObject();
+                if (fileObject != null && fileObject.isFolder()) {
+                    CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
+                    builder.addUserIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+                }
             }
-        }
-        // -isystem
-        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getSystemIncludePaths()) {
-            FileObject fileObject = incPath.getFSPath().getFileObject();
-            if (fileObject != null && fileObject.isFolder()) {
-                CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
-                builder.addPredefinedSystemIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+            // -isystem
+            for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getSystemIncludePaths()) {
+                FileObject fileObject = incPath.getFSPath().getFileObject();
+                if (fileObject != null && fileObject.isFolder()) {
+                    CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
+                    builder.addPredefinedSystemIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
+                }
             }
+            // system pre-included headers
+            for (FSPath fSPath : nfi.getSystemIncludeHeaders()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isData()) {
+                    String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
+                    builder.addIncFile(path);
+                }
+            }
+
+            // handle -include
+            for (FSPath fSPath : nfi.getIncludeFiles()) {
+                FileObject fileObject = fSPath.getFileObject();
+                if (fileObject != null && fileObject.isData()) {
+                    String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
+                    builder.addIncFile(path);
+                }
+            }
+
+            // -D
+            for (String macro : nfi.getSystemMacroDefinitions()) {
+                builder.addPredefinedSystemMacroDef(macro);
+            }
+            for (String macro : nfi.getUserMacroDefinitions()) {
+                builder.addUserMacroDef(macro);
+            }            
+        } else {
+            //setLang see bz#270971
+            switch (file.getFileType()) {
+                case SOURCE_CPP_FILE:
+                    builder.setLang(InputKind.IK_CXX);
+                    break;
+                case SOURCE_C_FILE:
+                    builder.setLang(InputKind.IK_C);
+                    break;
+                default:
+                    ///set C as default???
+                    builder.setLang(InputKind.IK_C);
+            }
+            ExecutionEnvironment execEnv = FileSystemProvider.getExecutionEnvironment(file.getFileObject());
+            //get from default toolcain
+            CompilerSetManager csm = CompilerSetManager.get(execEnv);
+            CompilerSet defaultCompilerSet = csm.getDefaultCompilerSet();
+            List<Tool> tools = defaultCompilerSet.getTools();
+            for (Tool tool : tools) {
+                if (tool instanceof AbstractCompiler) {
+                    if (tool.getKind() == PredefinedToolKind.CCompiler || tool.getKind() == PredefinedToolKind.CCCompiler) {
+                        AbstractCompiler abstractCompiler = (AbstractCompiler) tool;
+                        List<String> systemIncludeDirectories = abstractCompiler.getSystemIncludeDirectories();
+                        for (String systemIncludeDirectory : systemIncludeDirectories) {
+                            builder.addPredefinedSystemIncludePath(systemIncludeDirectory, false, false);
+                        }
+                        List<String> systemPreprocessorSymbols = abstractCompiler.getSystemPreprocessorSymbols();
+                        for (String systemPreprocessorSymbol : systemPreprocessorSymbols) {
+                            builder.addPredefinedSystemMacroDef(systemPreprocessorSymbol);
+                        }
+                    }
+                }
+            }            
+//            tools.get(0).
         }
 
-        // system pre-included headers
-        for (FSPath fSPath : nfi.getSystemIncludeHeaders()) {
-            FileObject fileObject = fSPath.getFileObject();
-            if (fileObject != null && fileObject.isData()) {
-                String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
-                builder.addIncFile(path);
-            }
-        }
-
-        // handle -include
-        for (FSPath fSPath : nfi.getIncludeFiles()) {
-            FileObject fileObject = fSPath.getFileObject();
-            if (fileObject != null && fileObject.isData()) {
-                String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
-                builder.addIncFile(path);
-            }
-        }
-
-        // -D
-        for (String macro : nfi.getSystemMacroDefinitions()) {
-            builder.addPredefinedSystemMacroDef(macro);
-        }
-        for (String macro : nfi.getUserMacroDefinitions()) {
-            builder.addUserMacroDef(macro);
-        }
         builder.setFileSystem(ClankFileSystemProvider.getDefault().getFileSystem());
         try {
             if (CndFileSystemProvider.isRemote(file.getFileObject().getFileSystem())) {
@@ -326,16 +381,17 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null || audits.isEmpty()) {
             audits = new ArrayList<>();
-            audits.add(clankShowAllWarning);
-            audits.add(clankStaticAnalyzer);
+            for (ClankChecker checker : ClankCheckersProvider.getAllCheckers()) {
+                audits.add(new ClankDiagnosticAudit(checker));
+            }
         }
         return audits;
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    private final ClankDiagnosticAudit clankShowAllWarning
-            = new ClankDiagnosticAudit("clank.diagnostic.show.all.warnings", "Show All Warning", "Show All Warning");//NOI18N
-    private final ClankDiagnosticAudit clankStaticAnalyzer
-            = new ClankDiagnosticAudit("clank.diagnostic.static.analyzer", "Static Analyzer", "Static Analyzer");//NOI18N    
+//    private final ClankDiagnosticAudit clankShowAllWarning
+//            = new ClankDiagnosticAudit("clank.diagnostic.show.all.warnings", "Show All Warning", "Show All Warning");//NOI18N
+//    private final ClankDiagnosticAudit clankStaticAnalyzer
+//            = new ClankDiagnosticAudit("clank.diagnostic.static.analyzer", "Static Analyzer", "Static Analyzer");//NOI18N    
 
     @Override
     public AuditPreferences getPreferences() {
@@ -347,33 +403,29 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
     private class ClankDiagnosticAudit implements CodeAudit {
+        private final ClankChecker clankChecker;
 
-        private final String id;
-        private final String name;
-        private final String description;
         //private final AuditPreferences myPreferences;
         //private static final String CLANK_SHOW_ALL_WARNINGS = "clank.diagnostic.show.all.warnings";
 
-        private ClankDiagnosticAudit(String id, String name, String description) {
+        private ClankDiagnosticAudit(ClankChecker checker) {
             //myPreferences = new AuditPreferences()
-            this.id = id;
-            this.name = name;
-            this.description = description;
+            this.clankChecker = checker;
         }
 
         @Override
         public String getID() {
-            return id;
+            return clankChecker.getName();
         }
 
         @Override
         public String getName() {
-            return name;
+            return clankChecker.getName();
         }
 
         @Override
         public String getDescription() {
-            return description;
+            return clankChecker.getDescription();
         }
 
         @Override
@@ -434,119 +486,37 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
     public final static class ClankHintProvider extends CsmErrorInfoHintProvider {
 
         @Override
-        protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
+        protected List<Fix> doGetFixes(final CsmErrorInfo info, List<Fix> alreadyFound) {
             if (info instanceof ClankCsmErrorInfo) {
-                final ClankDiagnosticInfo fix = ((ClankCsmErrorInfo) info).getDelegate();
-                for (ClankDiagnosticEnhancedFix nextElement : fix.fixes()) {
+                final ClankDiagnosticInfo errorInfo = ((ClankCsmErrorInfo) info).getDelegate();
+                if (!errorInfo.fixes().isEmpty()) {
                     try {
-                        EnhancedFixImpl fixImpl = new EnhancedFixImpl(((ClankCsmErrorInfo) info).getCsmFile(), nextElement);
+                        ClankEnhancedFix fixImpl = new ClankEnhancedFix(((ClankCsmErrorInfo) info).getCsmFile(), errorInfo.fixes());
                         alreadyFound.add(fixImpl);
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
 
                 }
+                if (errorInfo.hasNotes()) {
+                    //add action "Show Details"
+                    Fix fixImpl = new Fix() {
+                        @Override
+                        public String getText() {
+                            return "Error Path for " + errorInfo.getMessage();//NOI18N
+                        }
+
+                        @Override
+                        public ChangeInfo implement() throws Exception {
+                            ClankErrorPathDetailsProvider provider = Lookup.getDefault().lookup(ClankErrorPathDetailsProvider.class);
+                            provider.implement((ClankCsmErrorInfo)info);
+                            return null;
+                        }
+                    };
+                    alreadyFound.add(fixImpl);
+                }
             }
             return alreadyFound;
-        }
-    }
-
-    /*package*/ static class EnhancedFixImpl implements EnhancedFix {
-
-        private final CsmFile file;
-        private final Position insertStartPosition;
-        private final Position insertEndPosition;
-        private final Position removeStartPosition;
-        private final Position removeEndPosition;
-        private final String textToInsert;
-        private final String text;
-
-        EnhancedFixImpl(CsmFile csmFile, ClankDiagnosticEnhancedFix clankFix) throws Exception {
-            this.file = csmFile;
-            textToInsert = clankFix.getInsertionText();
-            text = clankFix.getText();
-            Document document = CsmUtilities.getDocument(file);
-            insertStartPosition = NbDocument.createPosition(document, clankFix.getInsertStartOffset(), Position.Bias.Forward);
-            insertEndPosition = NbDocument.createPosition(document, clankFix.getInsertEndOffset(), Position.Bias.Forward);
-            removeStartPosition = NbDocument.createPosition(document, clankFix.getRemoveStartOffset(), Position.Bias.Forward);
-            removeEndPosition = NbDocument.createPosition(document, clankFix.getRemoveEndOffset(), Position.Bias.Forward);
-        }
-
-        @Override
-        public CharSequence getSortText() {
-            return text;
-        }
-
-        @Override
-        public String getText() {
-            return text;
-        }
-
-        @Override
-        public ChangeInfo implement() throws Exception {
-
-            try {
-                Document document = CsmUtilities.getDocument(file);
-                //document.remove(0, 0);
-                //check insertation range first
-                if (insertStartPosition.getOffset() == 0 && insertEndPosition.getOffset() == 0) {
-                    final int startPos = removeStartPosition.getOffset();
-                    //will do replace
-                    //remove end insert
-                    document.remove(startPos,
-                            removeEndPosition.getOffset() - startPos + 1);
-                    document.insertString(startPos, textToInsert, null);
-                } else {
-                    final int startPos = insertStartPosition.getOffset();
-                    document.insertString(startPos, textToInsert, null);
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-            return null;
-        }
-
-    }
-
-    /*package*/ class ClankCsmErrorInfo implements CsmErrorInfo {
-
-        private final ClankDiagnosticInfo errorInfo;
-        private final CsmFile csmFile;
-
-        ClankCsmErrorInfo(CsmFile csmFile, ClankDiagnosticInfo info) {
-            this.errorInfo = info;
-            this.csmFile = csmFile;
-        }
-
-        CsmFile getCsmFile() {
-            return csmFile;
-        }
-
-        @Override
-        public String getMessage() {
-            return errorInfo.getMessage();
-        }
-
-        @Override
-        public CsmErrorInfo.Severity getSeverity() {
-            return errorInfo.getSeverity() == ClankDiagnosticInfo.Severity.ERROR
-                    ? CsmErrorInfo.Severity.ERROR : CsmErrorInfo.Severity.WARNING;
-        }
-
-        @Override
-        public int getStartOffset() {
-            return errorInfo.getStartOffset();
-        }
-
-        @Override
-        public int getEndOffset() {
-            //return (int) CsmFileInfoQuery.getDefault().getOffset(file, errorInfo.getLine(), errorInfo.getColumn() + 1);
-            return errorInfo.getEndOffset();
-        }
-
-        /*package*/ ClankDiagnosticInfo getDelegate() {
-            return errorInfo;
         }
     }
 

@@ -42,7 +42,6 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -122,7 +121,6 @@ public final class WindowsSupport {
         Shell candidate = null;
 
         // 1. Try to find cygwin ...
-
         String[][] cygwinRegKeys = new String[][]{
             new String[]{"SOFTWARE\\cygwin\\setup", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
             new String[]{"SOFTWARE\\Wow6432Node\\cygwin\\setup", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
@@ -143,7 +141,6 @@ public final class WindowsSupport {
 
         // No cygwin in the registry...
         // try msys
-
         String[] msysRegKeys = new String[]{
             "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
             "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
@@ -181,7 +178,7 @@ public final class WindowsSupport {
                     if ("bin".equals(parent.getName())) { // NOI18N
                         // Looks like we have found something...
                         // An attempt to understand what exactly we have found
-                         if (new File(parent, "msysinfo").exists()) { // NOI18N
+                        if (new File(parent, "msysinfo").exists()) { // NOI18N
                             // Looks like this one is msys...
                             // As no valid cygwin was found - use it
                             return new Shell(ShellType.MSYS, sh.getAbsolutePath(), parent);
@@ -216,7 +213,7 @@ public final class WindowsSupport {
 
         // if we found some "broken" cygwin - it will be in candidate...
         // or it will be null if nothing found
-        return candidate;
+        return null;
     }
 
     public int getWinPID(int shellPID) {

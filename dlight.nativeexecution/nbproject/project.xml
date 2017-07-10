@@ -274,6 +274,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
+                <friend>org.netbeans.modules.cnd.diagnostics.clank</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>

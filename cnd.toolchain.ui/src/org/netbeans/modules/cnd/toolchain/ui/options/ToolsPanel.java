@@ -89,6 +89,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -448,35 +449,63 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         update(doInitialize, null, null);
     }
 
-    /** Update the display */
+    /**
+     * Update the display
+     */
     private void update(final boolean doInitialize, final CompilerSet selectedCS, final List<String> errs) {
         updating = true;
         if (!initialized || doInitialize) {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             showHideToolchainInitialization(false);
-            RP.post(new Runnable(){
-                @Override
-                public void run() {
-                    try {
-                     initializeLong();
-                    } finally {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                initializeUI();
-                                updateUI(doInitialize, selectedCS, errs);
-                                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                            }
-                        });
+            RP.post(() -> {
+                try {
+                    initializeLong();
+                    if (areToolsOptionsChanged()) {
+                        updateEnv();
                     }
+                } finally {
+                    SwingUtilities.invokeLater(() -> {
+                        initializeUI();
+                        updateUI(doInitialize, selectedCS, errs);
+                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    });
                 }
             });
         } else {
-            updateUI(doInitialize, selectedCS, errs);
+            RP.post(() -> {
+                if (areToolsOptionsChanged()) {
+                    updateEnv();
+                }
+                SwingUtilities.invokeLater(() -> {
+                    updateUI(doInitialize, selectedCS, errs);
+                });
+            });
         }
     }
 
-    private void updateUI(boolean doInitialize, CompilerSet selectedCS, List<String> errs){
+    private void updateEnv() {
+
+        if (execEnv.isLocal()) {
+            WindowsSupport winSupport = WindowsSupport.getInstance();
+
+            for (CompilerSet compilerSet : csm.getCompilerSets()) {
+                if (winSupport.getActiveShell() == null && !compilerSet.getDirectory().isEmpty()) {
+                    winSupport.init(compilerSet.getDirectory());
+                }
+            }
+        }
+
+        try {
+            if (HostInfoUtils.isHostInfoAvailable(execEnv) && HostInfoUtils.getHostInfo(execEnv).getShell() == null) {
+                HostInfoUtils.updateHostInfo(execEnv);
+            }
+        } catch (IOException | InterruptedException | ConnectionManager.CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+    }
+
+    private void updateUI(boolean doInitialize, CompilerSet selectedCS, List<String> errs) {
         getToolCollectionPanel().updateUI(doInitialize, selectedCS);
 
         if (doInitialize) {

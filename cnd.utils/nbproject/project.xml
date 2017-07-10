@@ -265,6 +265,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.ui</friend>
                 <friend>org.netbeans.modules.cnd.utils.ui</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>

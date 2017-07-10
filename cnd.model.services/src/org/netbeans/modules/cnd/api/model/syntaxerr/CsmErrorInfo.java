@@ -78,4 +78,8 @@ public interface CsmErrorInfo {
      * Gets error end offset 
      */
     public int getEndOffset();
+    
+    default String getCustomType () {
+        return null;
+    }
 }

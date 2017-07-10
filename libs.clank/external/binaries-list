@@ -1,7 +1,7 @@
-#changeset:   31870:12f2dbd183e8
+#changeset:   33239:1ccdf98ec7dd
 #branch:      jclank
 #tag:         tip
 #user:        Maria Dalmatova <maria.tishkova@oracle.com>
-#date:        Thu May 25 18:53:19 2017 +0300
-#summary:     Clank provider of error provider, hint provider and analyzer provider for the IDE
-E2387993DB3B6658AC3E7BDFDCEC5F5EB5248CEB clank_0.3.9.zip
+#date:        Fri Jun 30 16:06:56 2017 +0300
+#summary:     correct fixit implementation
+BAECD8EFA8FA2C474D0FA0A6A96196D8A92CF0D7 clank_0.3.9.zip

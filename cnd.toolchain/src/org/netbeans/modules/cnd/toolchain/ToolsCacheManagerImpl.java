@@ -212,10 +212,6 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
             newCsm.setDefault(newDefault);
         }
 
-        if (execEnv.isLocal()) {
-            WindowsSupport.getInstance().init();
-        }
-
         if (canceled.get()) {
             return null;
         }
