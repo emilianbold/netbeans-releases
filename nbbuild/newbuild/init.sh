@@ -114,16 +114,22 @@ if [ -z ${GLASSFISH_BUILDS_HOST} ]; then
     export GLASSFISH_BUILDS_HOST
 fi
 
-#JDK_BUILDS_HOST=http://jre.us.oracle.com
-if [ -z ${JDK_BUILDS_HOST} ]; then
-    JDK_BUILDS_HOST=http://jre.us.oracle.com
-    export JDK_BUILDS_HOST
+#JRE_BUILDS_HOST=http://jre.us.oracle.com
+if [ -z ${JRE_BUILDS_HOST} ]; then
+    JRE_BUILDS_HOST=http://jre.us.oracle.com
+    export JRE_BUILDS_HOST
 fi
 
-#JDK_BUILDS_HOST=http://jre.us.oracle.com
+#JRE_BUILDS_PATH=http://jre.us.oracle.com
 if [ -z ${JRE_BUILDS_PATH} ]; then
     JRE_BUILDS_PATH=java/re/jdk/8u101/promoted/
     export JRE_BUILDS_PATH
+fi
+
+#JDK_BUILDS_HOST=http://jre.us.oracle.com
+if [ -z ${JDK_BUILDS_HOST} ]; then
+    JDK_BUILDS_HOST=https://java.se.oracle.com/
+    export JDK_BUILDS_HOST
 fi
 
 #JDK7_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/7u75/promoted/all
@@ -134,7 +140,8 @@ fi
 
 #JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u141/promoted/all/
 if [ -z ${JDK8_BUILDS_PATH} ]; then
-    JDK8_BUILDS_PATH=java/re/jdk/8u141/promoted/
+#    JDK8_BUILDS_PATH=java/re/jdk/8u141/promoted/ #for builds before 8u141
+    JDK8_BUILDS_PATH=artifactory/re-release-local/jdk/8u141/b14/bundles/
     export JDK8_BUILDS_PATH
 fi
 
