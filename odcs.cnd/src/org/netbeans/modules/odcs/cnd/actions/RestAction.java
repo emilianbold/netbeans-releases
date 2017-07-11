@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,47 +36,58 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.spi;
+package org.netbeans.modules.odcs.cnd.actions;
 
-import javax.swing.Action;
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
+import org.openide.util.RequestProcessor;
 
 /**
- * Handle for a remote machine.
  *
- *
- * @author Tomas Stupka
+ * @author Ilia Gromov
  */
-public abstract class RemoteMachineHandle {
+public abstract class RestAction extends AbstractAction {
 
-    /**
-     *
-     * @return Display name
-     */
-    public abstract String getDisplayName();
+    private static final Logger LOG = Logger.getLogger(RestAction.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor("REST request to Oracle Cloud", 3); // NOI18N
 
-    /**
-     *
-     * @return Action to invoke when user pressed Enter key on given build line.
-     */
-    public abstract Action getDefaultAction();
+    private final HttpClientAdapter client;
 
-    /**
-     * Action to display properties of this Remote Machine.
-     *
-     * @return an action or null if not applicable.
-     */
-    public Action getPropertiesAction() {
-        return null;
+    public RestAction(String name, HttpClientAdapter client) {
+        super(name);
+        this.client = client;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        RP.submit(() -> {
+            ProgressHandle createHandle = ProgressHandle.createHandle("REST request - " + getValue(NAME)); // NOI18N
+            try {
+                SwingUtilities.invokeLater(createHandle::start);
+
+                actionPerformedImpl(e);
+            } catch (Exception ex) {
+                LOG.log(Level.FINE, "Exception in REST request", ex);
+            } finally {
+                SwingUtilities.invokeLater(createHandle::finish);
+            }
+        });
     }
 
     /**
-     * @return additional Actions applicable to this handles. Shouldn't return
-     * null. Null in array will be treated as a separator.
+     * Will be invoked not from EDT
      */
-    public Action[] getAdditionalActions() {
-        return new Action[]{};
+    public abstract void actionPerformedImpl(ActionEvent e);
+
+    public HttpClientAdapter getClient() {
+        return client;
     }
+
+    public abstract String getRestUrl();
 }

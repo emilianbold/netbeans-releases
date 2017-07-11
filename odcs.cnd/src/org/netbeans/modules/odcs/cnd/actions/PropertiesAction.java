@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,47 +36,58 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.spi;
+package org.netbeans.modules.odcs.cnd.actions;
 
-import javax.swing.Action;
+import java.awt.event.ActionEvent;
+import java.beans.IntrospectionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
- * Handle for a remote machine.
  *
- *
- * @author Tomas Stupka
+ * @author Ilia Gromov
  */
-public abstract class RemoteMachineHandle {
+public class PropertiesAction extends AbstractAction {
 
-    /**
-     *
-     * @return Display name
-     */
-    public abstract String getDisplayName();
+    private static final ImageIcon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/cnd/resources/gear.png", true); // NOI18N
+    private static final Logger LOG = Logger.getLogger(PropertiesAction.class.getName());
 
-    /**
-     *
-     * @return Action to invoke when user pressed Enter key on given build line.
-     */
-    public abstract Action getDefaultAction();
+    private final VMDescriptor desc;
 
-    /**
-     * Action to display properties of this Remote Machine.
-     *
-     * @return an action or null if not applicable.
-     */
-    public Action getPropertiesAction() {
-        return null;
+    @NbBundle.Messages({
+        "remotevm.properties.action.text=Properties"
+    })
+    public PropertiesAction(VMDescriptor desc) {
+        super(Bundle.remotevm_properties_action_text(), ICON);
+        this.desc = desc;
     }
 
-    /**
-     * @return additional Actions applicable to this handles. Shouldn't return
-     * null. Null in array will be treated as a separator.
-     */
-    public Action[] getAdditionalActions() {
-        return new Action[]{};
+    @NbBundle.Messages({
+        "# {0} - vm name",
+        "remotevm.properties.title=Properties for {0}"
+    })
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        try {
+            BeanNode<VMDescriptor> beanNode = new BeanNode<>(desc);
+            PropertySheet propertySheet = new PropertySheet();
+            propertySheet.setNodes(new Node[]{beanNode});
+
+            DialogDescriptor dd = new DialogDescriptor(propertySheet, Bundle.remotevm_properties_title(desc.getHostname()));
+            DialogDisplayer.getDefault().notify(dd);
+        } catch (IntrospectionException ex) {
+            LOG.log(Level.INFO, "Can't show properties", ex);
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,47 +36,40 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.spi;
+package org.netbeans.modules.odcs.cnd.json;
 
-import javax.swing.Action;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Handle for a remote machine.
- *
- *
- * @author Tomas Stupka
- */
-public abstract class RemoteMachineHandle {
+public class Software {
 
-    /**
-     *
-     * @return Display name
-     */
-    public abstract String getDisplayName();
+    private String identifier;
+    private String version;
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     *
-     * @return Action to invoke when user pressed Enter key on given build line.
-     */
-    public abstract Action getDefaultAction();
-
-    /**
-     * Action to display properties of this Remote Machine.
-     *
-     * @return an action or null if not applicable.
-     */
-    public Action getPropertiesAction() {
-        return null;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    /**
-     * @return additional Actions applicable to this handles. Shouldn't return
-     * null. Null in array will be treated as a separator.
-     */
-    public Action[] getAdditionalActions() {
-        return new Action[]{};
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
+
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
+
 }

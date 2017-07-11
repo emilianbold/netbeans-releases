@@ -41,14 +41,14 @@ package org.netbeans.modules.team.server.ui.common;
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-
-
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,6 +56,7 @@ import org.netbeans.modules.team.commons.treelist.LeafNode;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
+import org.openide.util.ImageUtilities;
 
 /**
  * Node representing a remote machine.
@@ -64,23 +65,34 @@ import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
  */
 public class RemoteMachineNode extends LeafNode {
 
+    private static final ImageIcon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/gear.png", true); // NOI18N
+
     private final RemoteMachineHandle remoteMachine;
 
     private JPanel panel;
     private JLabel lblName;
 
-    public RemoteMachineNode( RemoteMachineHandle machine, TreeListNode parent ) {
-        super( parent );
+    public RemoteMachineNode(RemoteMachineHandle machine, TreeListNode parent) {
+        super(parent);
         this.remoteMachine = machine;
     }
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
-        if( null == panel ) {
-            panel = new JPanel( new GridBagLayout() );
+        if (null == panel) {
+            panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
-            lblName = new TreeLabel( remoteMachine.getDisplayName() );
-            panel.add( lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0) );
+            lblName = new TreeLabel(remoteMachine.getDisplayName());
+            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            Action propertyAction = remoteMachine.getPropertiesAction();
+            if (propertyAction != null) {
+                JButton propertiesButton = new JButton(remoteMachine.getPropertiesAction());
+                propertiesButton.setBorderPainted(false);
+                propertiesButton.setBorder(null);
+                propertiesButton.setContentAreaFilled(false);
+                propertiesButton.setHideActionText(true);
+                panel.add(propertiesButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            }
         }
         lblName.setForeground(foreground);
         return panel;
@@ -94,5 +106,17 @@ public class RemoteMachineNode extends LeafNode {
     @Override
     public Action getDefaultAction() {
         return remoteMachine.getDefaultAction();
+    }
+
+    @Override
+    public Action[] getPopupActions() {
+        Action propertiesAction = remoteMachine.getPropertiesAction();
+        Action[] additionalActions = remoteMachine.getAdditionalActions();
+
+        Action[] popupActions = Arrays.copyOf(additionalActions, additionalActions.length + 2);
+        popupActions[additionalActions.length] = null;
+        popupActions[additionalActions.length + 1] = propertiesAction;
+
+        return popupActions;
     }
 }

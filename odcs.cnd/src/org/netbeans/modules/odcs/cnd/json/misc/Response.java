@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,47 +36,23 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.spi;
-
-import javax.swing.Action;
+package org.netbeans.modules.odcs.cnd.json.misc;
 
 /**
- * Handle for a remote machine.
  *
- *
- * @author Tomas Stupka
+ * @author Ilia Gromov
  */
-public abstract class RemoteMachineHandle {
+public class Response {
+    
+    private boolean success;
 
-    /**
-     *
-     * @return Display name
-     */
-    public abstract String getDisplayName();
-
-    /**
-     *
-     * @return Action to invoke when user pressed Enter key on given build line.
-     */
-    public abstract Action getDefaultAction();
-
-    /**
-     * Action to display properties of this Remote Machine.
-     *
-     * @return an action or null if not applicable.
-     */
-    public Action getPropertiesAction() {
-        return null;
+    public boolean isSuccess() {
+        return success;
     }
 
-    /**
-     * @return additional Actions applicable to this handles. Shouldn't return
-     * null. Null in array will be treated as a separator.
-     */
-    public Action[] getAdditionalActions() {
-        return new Action[]{};
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
+    
 }

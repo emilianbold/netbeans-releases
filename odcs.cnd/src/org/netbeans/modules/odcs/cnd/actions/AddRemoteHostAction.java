@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,122 +36,50 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.cnd;
+package org.netbeans.modules.odcs.cnd.actions;
 
-import com.tasktop.c2c.server.common.service.web.ApacheHttpRestClientDelegate;
-import com.tasktop.c2c.server.common.service.web.RestClientDelegate;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.PasswordAuthentication;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.api.ODCSServer;
-import org.netbeans.modules.odcs.cnd.http.HttpUtils;
-import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.server.ui.spi.RemoteMachineAccessor;
-import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ilia Gromov
  */
-@ServiceProvider(service = RemoteMachineAccessor.class)
-public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject> {
+public class AddRemoteHostAction extends AbstractAction {
 
-    private static final Logger LOG = Logger.getLogger(RemoteMachineAccessorImpl.class.getName());
-    private static final String REST_URL = "/api/cc/vms";
+    private static final Logger LOG = Logger.getLogger(AddRemoteHostAction.class.getName());
 
-    private final Map<URL, RestClientDelegate> clients = new ConcurrentHashMap<>();
+    private final String url;
 
-    @Override
-    public Class<ODCSProject> type() {
-        return ODCSProject.class;
+    @NbBundle.Messages({
+        "add_remote_host=Add VM as a remote host"
+    })
+    public AddRemoteHostAction(String url) {
+        super(Bundle.add_remote_host());
+        this.url = url;
     }
 
     @Override
-    public boolean hasRemoteMachines(ProjectHandle<ODCSProject> project) {
-        // XXX should check if there are any for the given project
-        return true;
-    }
-
-    @Override
-    public List<RemoteMachineHandle> getRemoteMachines(ProjectHandle<ODCSProject> project) {
-        if (!hasRemoteMachines(project)) {
-            return null;
-        }
-
-        ODCSServer server = project.getTeamProject().getServer();
-
-        RestClientDelegate client = clients.computeIfAbsent(server.getUrl(), url -> {
-            return HttpUtils.createHttpClient(url, server.getPasswordAuthentication());
-        });
-
-        VMList vms = client.getForObject(server.getUrl() + REST_URL, VMList.class);
-
-        List<RemoteMachineHandle> result = vms.getMapList()
-                .stream()
-                .map(desc -> new RemoteMachineHandleImpl(desc.getDisplayName(), desc.getHostname()))
-                .collect(Collectors.toList());
-
-        return result;
-    }
-
-    private static class RemoteMachineHandleImpl extends RemoteMachineHandle {
-
-        private final String name;
-        private final String url;
-
-        public RemoteMachineHandleImpl(String name, String url) {
-            this.name = name;
-            this.url = url;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return name + ": " + url;
-        }
-
-        @Override
-        public Action getDefaultAction() {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    selectNode(url); // XXX fixme!
-                }
-            };
-        }
+    public void actionPerformed(ActionEvent e) {
+        selectNode(url); // XXX fixme!
     }
 
     /**

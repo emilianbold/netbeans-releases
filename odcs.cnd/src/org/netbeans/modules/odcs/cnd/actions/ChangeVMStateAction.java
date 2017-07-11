@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,47 +36,58 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.server.ui.spi;
+package org.netbeans.modules.odcs.cnd.actions;
 
-import javax.swing.Action;
+import org.netbeans.modules.odcs.cnd.json.misc.State;
+import org.netbeans.modules.odcs.cnd.json.misc.Response;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
+import org.openide.util.NbBundle;
 
 /**
- * Handle for a remote machine.
  *
- *
- * @author Tomas Stupka
+ * @author Ilia Gromov
  */
-public abstract class RemoteMachineHandle {
+public class ChangeVMStateAction extends RestAction implements TemplatedRestAction {
 
-    /**
-     *
-     * @return Display name
-     */
-    public abstract String getDisplayName();
+    private static final String URL_TEMPLATE = "api/cc/vms/{0}/state"; // NOI18N
+    private final String machineId;
+    private final State state;
+    private final String actionName;
 
-    /**
-     *
-     * @return Action to invoke when user pressed Enter key on given build line.
-     */
-    public abstract Action getDefaultAction();
-
-    /**
-     * Action to display properties of this Remote Machine.
-     *
-     * @return an action or null if not applicable.
-     */
-    public Action getPropertiesAction() {
-        return null;
+    public ChangeVMStateAction(HttpClientAdapter client, String machineId, String state, String actionName) {
+        super(actionName, client);
+        this.machineId = machineId;
+        this.state = new State(state);
+        this.actionName = actionName;
     }
 
-    /**
-     * @return additional Actions applicable to this handles. Shouldn't return
-     * null. Null in array will be treated as a separator.
-     */
-    public Action[] getAdditionalActions() {
-        return new Action[]{};
+    @Override
+    public void actionPerformedImpl(ActionEvent e) {
+        HttpClientAdapter client = getClient();
+
+        Response response = client.postForObject(getRestUrl(), Response.class, state);
+
+        System.out.println(response.isSuccess());
+    }
+
+    @Override
+    public String getRestUrl() {
+        return String.join("/", getClient().getBaseUrl(), getUrl(URL_TEMPLATE, machineId));
+    }
+
+    @NbBundle.Messages({
+        "remotevm.startvm.action.text=Start VM"
+    })
+    public static ChangeVMStateAction startedAction(HttpClientAdapter client, String machineId) {
+        return new ChangeVMStateAction(client, machineId, "STARTED", Bundle.remotevm_startvm_action_text()); // NOI18N
+    }
+
+    @NbBundle.Messages({
+        "remotevm.stopvm.action.text=Stop VM"
+    })
+    public static ChangeVMStateAction stoppedAction(HttpClientAdapter client, String machineId) {
+        return new ChangeVMStateAction(client, machineId, "STOPPED", Bundle.remotevm_stopvm_action_text()); // NOI18N
     }
 }
