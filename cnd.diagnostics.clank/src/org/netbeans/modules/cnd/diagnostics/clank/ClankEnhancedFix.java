@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.diagnostics.clank;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -88,45 +89,66 @@ import org.openide.util.Exceptions;
     }
 
     private class EnhancedFixImpl implements EnhancedFix {
-
-        private final CsmFile file;
-        private final Position insertStartPosition;
-        private final Position insertEndPosition;
-        private final Position removeStartPosition;
-        private final Position removeEndPosition;
-        private final boolean isRemoveTokenRange;
-        private final boolean isInsertRangeValid;
-        private final boolean beforePreviousInsertions;
-        private final String textToInsert;
-        private final String text;
+        private final AtomicBoolean isInitialized = new AtomicBoolean(false);
+        private  final CsmFile file;
+        private final ClankDiagnosticEnhancedFix clankFix;
+        private  Position insertStartPosition;
+        private  Position insertEndPosition;
+        private  Position removeStartPosition;
+        private  Position removeEndPosition;
+        private  boolean isRemoveTokenRange;
+        private  boolean isInsertRangeValid;
+        private  boolean beforePreviousInsertions;
+        private  String textToInsert;
+        private  String text;
 
         EnhancedFixImpl(CsmFile csmFile, ClankDiagnosticEnhancedFix clankFix) throws Exception {
-            this.file = csmFile;
-            textToInsert = clankFix.getInsertionText();
-            text = clankFix.getText();
-            Document document = CsmUtilities.getDocument(file);
-            insertStartPosition = NbDocument.createPosition(document, clankFix.getInsertStartOffset(), Position.Bias.Forward);
-            insertEndPosition = NbDocument.createPosition(document, clankFix.getInsertEndOffset(), Position.Bias.Forward);
-            removeStartPosition = NbDocument.createPosition(document, clankFix.getRemoveStartOffset(), Position.Bias.Forward);
-            removeEndPosition = NbDocument.createPosition(document, clankFix.getRemoveEndOffset(), Position.Bias.Forward);
-            isInsertRangeValid = clankFix.isInsertRangeValid();
-            isRemoveTokenRange = clankFix.isRemoveTokenRange();
-            beforePreviousInsertions = clankFix.beforePreviousInsertions();
+            this.file = csmFile; 
+            this.clankFix = clankFix;            
+            try{
+                init();
+            }catch (NullPointerException ex) {
+                
+            }
+        }
+        
+        private void init() {
+            if (isInitialized.get()) {
+                return;
+            }
+            try {
+                textToInsert = clankFix.getInsertionText();
+                text = clankFix.getText();
+                isInsertRangeValid = clankFix.isInsertRangeValid();
+                isRemoveTokenRange = clankFix.isRemoveTokenRange();
+                beforePreviousInsertions = clankFix.beforePreviousInsertions();
+                Document document = CsmUtilities.getDocument(file);                
+                insertStartPosition = NbDocument.createPosition(document, clankFix.getInsertStartOffset(), Position.Bias.Forward);
+                insertEndPosition = NbDocument.createPosition(document, clankFix.getInsertEndOffset(), Position.Bias.Forward);
+                removeStartPosition = NbDocument.createPosition(document, clankFix.getRemoveStartOffset(), Position.Bias.Forward);
+                removeEndPosition = NbDocument.createPosition(document, clankFix.getRemoveEndOffset(), Position.Bias.Forward);
+                isInitialized.set(true);            
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         @Override
         public CharSequence getSortText() {
+            init();
             return text;
         }
 
         @Override
         public String getText() {
+            init();
             return text;
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
+        public ChangeInfo implement() throws Exception {            
             try {
+                init();
                 //see org.clang.rewrite.frontend.FixItRewriter for the logic
                 /*
             if (Hint.CodeToInsert.empty()) {
