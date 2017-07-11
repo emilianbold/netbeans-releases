@@ -101,9 +101,9 @@ import org.openide.windows.WindowManager;
         //iconBase="SET/PATH/TO/ICON/HERE", 
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "output", openAtStartup = false)
+@TopComponent.Registration(mode = "output", openAtStartup = false, position = 357)
 @ActionID(category = "Window", id = "org.netbeans.modules.cnd.diagnostics.clank.ui.ClankDiagnosticsDetailsTopComponent")
-@ActionReference(path = "Menu/Window" /*, position = 333 */)
+@ActionReference(path = "Menu/Window" , position = 337)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_ClankDiagnosticsDetailsAction",//NOI18N
         preferredID = "ClankDiagnosticsDetailsTopComponent"//NOI18N
