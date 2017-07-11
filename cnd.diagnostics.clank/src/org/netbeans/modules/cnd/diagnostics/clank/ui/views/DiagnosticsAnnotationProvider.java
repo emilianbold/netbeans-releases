@@ -115,7 +115,7 @@ import org.openide.util.RequestProcessor;
 public class DiagnosticsAnnotationProvider {
     public static final String DIAGNOSTIC_CHANGED = "diagnostic_changed";//NOI18N
     private static final AtomicReference<ClankDiagnosticInfo> currentDiagnostic = new AtomicReference<>();
-    private static final Map<ClankDiagnosticInfo, Annotation> diagnosticToAnnotations = new IdentityHashMap<>();
+    private static final Map<ClankDiagnosticInfo, DiagnosticsAnnotation> diagnosticToAnnotations = new IdentityHashMap<>();
     private static final Map<ClankDiagnosticInfo, StickyPanel> diagnosticToWindow = new IdentityHashMap<>();
     private static final Color CURRENT_PIN_BACKGROUND_COLOR = new Color(233, 239, 248);
 
@@ -214,6 +214,14 @@ public class DiagnosticsAnnotationProvider {
         }
         final DiagnosticsAnnotation annotation = new DiagnosticsAnnotation(annotationType, line);
         annotation.setDiagnostic(diagnosticInfo);
+        //re-calcluate location
+        ArrayList<DiagnosticsAnnotation> alreadyExistingAnnotations = new ArrayList<>();
+        for (DiagnosticsAnnotation anno : diagnosticToAnnotations.values()) {
+            if (anno.getLine().getLineNumber() == line.getLineNumber()){
+                alreadyExistingAnnotations.add(anno);
+            }
+        }
+        
         diagnosticToAnnotations.put(diagnosticInfo, annotation);
         annotation.attach(line);
         pin.addPropertyChangeListener(new PropertyChangeListener() {
@@ -229,8 +237,29 @@ public class DiagnosticsAnnotationProvider {
 
         StickyPanel window = new StickyPanel(diagnosticInfo, pin, eui, l);
         stickyWindowSupport.addWindow(window);
-        window.setLocation(pin.getLocation());
         //need to calculate correct location
+        int newX = 0;
+        int newY = 0;
+        boolean recalculated = false;
+        for (DiagnosticsAnnotation anno : alreadyExistingAnnotations) {
+            ClankDiagnosticInfo info = anno.getLookup().lookup(ClankDiagnosticInfo.class);
+            if (info == null) {
+                continue;
+            }
+            StickyPanel wind = diagnosticToWindow.get(info);
+            if (wind == null) {
+                continue;
+            }
+            recalculated = true;
+            newX += wind.getLocation().x + (int)wind.getPreferredSize().getWidth();
+            newY = wind.getLocation().y ;//+ (int)wind.getPreferredSize().getHeight();
+        }
+        if (!recalculated) {
+            window.setLocation(pin.getLocation());
+        } else {
+            window.setLocation(newX, newY);
+        }
+        
         diagnosticToWindow.put(diagnosticInfo, window);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
