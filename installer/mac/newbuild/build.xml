@@ -557,5 +557,8 @@
             <arg value="-cv"/>
             <arg value="productbuild --distribution '${pkg.file}/distribution.xml' ${sign.option} --package-path '${pkg.file}/packages' --resources '${pkg.file}/resources/' '${pkg.file}/inst_package/${pkg.name}.pkg'"/>
         </exec>
+        <java jar="${mac.sign.client}" fork="true" maxmemory="2048m">
+            <arg line="sign -user ${mac.sign.user} -global_uid ${mac.sign.guid} -file_to_sign ${basedir}/../../build/baseide-${nb.id}.pkg -signed_location '${pkg.file}/inst_package' -sign_method mac_pkg -server UK" />
+        </java>
     </target>    
 </project>

@@ -150,7 +150,10 @@ TOMCAT_ID="${tomcat.id}"
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.ide.baseide.${nb.id} ${sign.option} --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
-        </exec> 
+        </exec>
+        <java jar="${mac.sign.client}" fork="true" maxmemory="2048m">
+            <arg line="sign -user ${mac.sign.user} -global_uid ${mac.sign.guid} -file_to_sign ${basedir}/../../build/baseide-${nb.id}.pkg -signed_location /${basedir}/../../build/ -sign_method mac_pkg -server UK" />
+        </java>
     </target>
     
     
