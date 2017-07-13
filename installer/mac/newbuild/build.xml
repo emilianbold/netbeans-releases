@@ -266,19 +266,16 @@
         <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
         <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall_generic" overwrite="false"/>
 
-        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
-        
-        <condition property="sign.option" value="--sign '${signing_identity}'" else="">
-            <not>
-                <equals arg1="${signing_identity}" arg2="0"/>
-            </not>
-        </condition>  
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/> 
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}-${nb.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>            
-            <arg value="pkgbuild --root '${module.builddir}/netbeans' --scripts '${scriptsdir}' --identifier org.netbeans.ide.${module.name}.${nb.id} ${sign.option} --install-location '/${app.name}/Contents/Resources/NetBeans' '${basedir}/build/${module.name}-${nb.id}.pkg'"/>
+            <arg value="pkgbuild --root '${module.builddir}/netbeans' --scripts '${scriptsdir}' --identifier org.netbeans.ide.${module.name}.${nb.id} --install-location '/${app.name}/Contents/Resources/NetBeans' '${basedir}/build/${module.name}-${nb.id}.pkg'"/>
         </exec>
+        <java jar="${mac.sign.client}" fork="true" failonerror="true" maxmemory="2048m">
+            <arg line="sign -user ${mac.sign.user} -global_uid ${mac.sign.guid} -file_to_sign '${basedir}/build/${module.name}-${nb.id}.pkg' -signed_location '${basedir}/build' -sign_method mac_pkg -server UK" />
+        </java>
     </target>          
 
 
@@ -521,13 +518,7 @@
         <delete dir="dist_pkg" failonerror="false"/>
     </target>
     
-    <target name="create-postinstallscripts-package">
-        <condition property="sign.option" value="--sign '${signing_identity}'" else="">
-            <not>
-                <equals arg1="${signing_identity}" arg2="0"/>
-            </not>
-        </condition>
-        
+    <target name="create-postinstallscripts-package">        
         <property name="target.scriptsdir" value="${basedir}/build/postinstallscripts/"/>
         
         <mkdir dir="${target.scriptsdir}"/>        
@@ -542,23 +533,21 @@
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>            
-            <arg value="pkgbuild --nopayload --scripts '${target.scriptsdir}' --identifier org.netbeans.postinstallscripts ${sign.option} '${basedir}/build/postinstallscripts.pkg'"/>
+            <arg value="pkgbuild --nopayload --scripts '${target.scriptsdir}' --identifier org.netbeans.postinstallscripts '${basedir}/build/postinstallscripts.pkg'"/>
         </exec>
+        <java jar="${mac.sign.client}" fork="true" failonerror="true" maxmemory="2048m">
+            <arg line="sign -user ${mac.sign.user} -global_uid ${mac.sign.guid} -file_to_sign '${basedir}/build/postinstallscripts.pkg' -signed_location '${basedir}/build' -sign_method mac_pkg -server UK" />
+        </java>
     </target>
 
     <target name="pack-bundle" description="Packs nested packages into the main one">
-        <condition property="sign.option" value="--sign '${signing_identity}'" else="">
-            <not>
-                <equals arg1="${signing_identity}" arg2="0"/>
-            </not>
-        </condition>
         <mkdir dir="${pkg.file}/inst_package"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-cv"/>
-            <arg value="productbuild --distribution '${pkg.file}/distribution.xml' ${sign.option} --package-path '${pkg.file}/packages' --resources '${pkg.file}/resources/' '${pkg.file}/inst_package/${pkg.name}.pkg'"/>
+            <arg value="productbuild --distribution '${pkg.file}/distribution.xml' --package-path '${pkg.file}/packages' --resources '${pkg.file}/resources/' '${pkg.file}/inst_package/${pkg.name}.pkg'"/>
         </exec>
         <java jar="${mac.sign.client}" fork="true" failonerror="true" maxmemory="2048m">
-            <arg line="sign -user ${mac.sign.user} -global_uid ${mac.sign.guid} -file_to_sign ${basedir}/../../build/baseide-${nb.id}.pkg -signed_location '${pkg.file}/inst_package' -sign_method mac_pkg -server UK" />
+            <arg line="sign -user ${mac.sign.user} -global_uid ${mac.sign.guid} -file_to_sign '${pkg.file}/inst_package/${pkg.name}.pkg' -signed_location '${pkg.file}/inst_package' -sign_method mac_pkg -server UK" />
         </java>
     </target>    
 </project>
