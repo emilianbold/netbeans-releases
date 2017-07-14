@@ -57,10 +57,7 @@ then
     #issue 209263
     #run IDE in headless mode
     echo Run IDE in headless mode
-    # issue 270757 - NB C++ Installer prompts for JDK (now in NetBeans 8.2)
-    # Temporarily disabled the update in installer - for all distributions but applied only to C/C++ distro
-    #sh netbeans -J-Dnetbeans.close=true --nosplash -J-Dorg.netbeans.core.WindowSystem.show=false -J-Dorg.netbeans.core.WindowSystem.show=false --userdir /tmp/tmpnb --modules --update-all
-    sh netbeans -J-Dnetbeans.close=true --nosplash -J-Dorg.netbeans.core.WindowSystem.show=false -J-Dorg.netbeans.core.WindowSystem.show=false --userdir /tmp/tmpnb
+    sh netbeans -J-Dnetbeans.close=true --nosplash -J-Dorg.netbeans.core.WindowSystem.show=false -J-Dorg.netbeans.core.WindowSystem.show=false --userdir /tmp/tmpnb --modules --update-all
     exit_code=$?
     echo Run IDE returns exit code: $exit_code
     if [ ! -d /tmp/tmpnb/var/cache ]; then
