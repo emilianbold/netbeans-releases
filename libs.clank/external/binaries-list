@@ -1,7 +1,7 @@
-changeset:   34487:04e648e2ec32
-branch:      jclank
-tag:         tip
-user:        Maria Dalmatova <maria.tishkova@oracle.com>
-date:        Fri Jul 14 15:09:45 2017 +0300
-summary:     fixes according to testing results of JConvert and mysql
+#changeset:   34487:04e648e2ec32
+#branch:      jclank
+#tag:         tip
+#user:        Maria Dalmatova <maria.tishkova@oracle.com>
+#date:        Fri Jul 14 15:09:45 2017 +0300
+#summary:     fixes according to testing results of JConvert and mysql
 A531485A323F5D1328C0569A611851BE77B23104 clank_0.3.9.zip
