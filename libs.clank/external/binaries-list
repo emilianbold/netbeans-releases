@@ -1,7 +1,7 @@
-#changeset:   33239:1ccdf98ec7dd
-#branch:      jclank
-#tag:         tip
-#user:        Maria Dalmatova <maria.tishkova@oracle.com>
-#date:        Fri Jun 30 16:06:56 2017 +0300
-#summary:     correct fixit implementation
-BAECD8EFA8FA2C474D0FA0A6A96196D8A92CF0D7 clank_0.3.9.zip
+changeset:   34487:04e648e2ec32
+branch:      jclank
+tag:         tip
+user:        Maria Dalmatova <maria.tishkova@oracle.com>
+date:        Fri Jul 14 15:09:45 2017 +0300
+summary:     fixes according to testing results of JConvert and mysql
+A531485A323F5D1328C0569A611851BE77B23104 clank_0.3.9.zip
