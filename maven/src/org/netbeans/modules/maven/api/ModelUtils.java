@@ -59,6 +59,7 @@ import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.repository.MavenArtifactMetadata;
 import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.SuppressWarnings;
@@ -135,7 +136,11 @@ public final class ModelUtils {
                 if (acceptNull || scope != null) {
                     dep.setScope(scope);
                 }
-                if (acceptNull || (type != null && !BUNDLE_TYPE.equals(type))) {
+                if (MavenArtifactMetadata.DEFAULT_TYPE.equals(type)) {
+                    dep.setType(null); // #270841: <type>jar</type> is redundant
+                } else if (BUNDLE_TYPE.equals(type)) {
+                    dep.setType(null); // #185628: treat as jar
+                } else if (acceptNull || type != null) {
                     dep.setType(type);
                 }
                 if (acceptNull || classifier != null) {
