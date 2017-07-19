@@ -50,7 +50,7 @@ import javax.swing.Action;
  * @author Tomas Stupka
  */
 public abstract class RemoteMachineHandle {
-    
+
     /**
      *
      * @return Display name
@@ -62,4 +62,21 @@ public abstract class RemoteMachineHandle {
      * @return Action to invoke when user pressed Enter key on given build line.
      */
     public abstract Action getDefaultAction();
+
+    /**
+     * Action to display properties of this Remote Machine.
+     *
+     * @return an action or null if not applicable.
+     */
+    public Action getPropertiesAction() {
+        return null;
+    }
+
+    /**
+     * @return additional Actions applicable to this handles. Shouldn't return
+     * null. Null in array will be treated as a separator.
+     */
+    public Action[] getAdditionalActions() {
+        return new Action[]{};
+    }
 }

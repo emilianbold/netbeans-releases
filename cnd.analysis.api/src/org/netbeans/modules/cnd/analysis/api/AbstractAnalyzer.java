@@ -124,6 +124,7 @@ public abstract class AbstractAnalyzer implements Analyzer {
                 }
             }
         } finally {
+            result.addAll(done());
             ctx.finish();
         }
         return result;
@@ -174,8 +175,16 @@ public abstract class AbstractAnalyzer implements Analyzer {
         }
     }
 
+    /**
+     * This callback notifies analyzer about the end of analysis
+     * and returns errors which can only be computed after analysis.
+     */
+    protected Collection<? extends ErrorDescription> done() {
+        return Collections.<ErrorDescription>emptyList();
+    }
+
     protected abstract boolean isCompileUnitBased();
-    
+
     protected abstract CsmErrorProvider getErrorProvider(final Preferences context);
     
     protected abstract Collection<? extends ErrorDescription> doRunImpl(final FileObject sr, final Context ctx, final CsmErrorProvider provider, final AtomicBoolean cancel);

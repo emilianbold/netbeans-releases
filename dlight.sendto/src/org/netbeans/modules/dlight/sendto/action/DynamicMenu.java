@@ -49,6 +49,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
 import javax.swing.JPopupMenu.Separator;
 import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
@@ -59,12 +60,12 @@ import org.openide.util.NbBundle;
  *
  * @author akrasny
  */
-public final class DynamicMenu extends JMenu {
+public class DynamicMenu extends JMenu {
 
     private static final Action validating;
     private static final Action emptyAction;
     private final Object countersLock = new Object();
-    private final List<Action> actions = new ArrayList<Action>();
+    private final List<Action> actions = new ArrayList<>();
     private int vcount = 0;
 
     public DynamicMenu(String name) {
@@ -153,14 +154,13 @@ public final class DynamicMenu extends JMenu {
             public void actionPerformed(ActionEvent e) {
             }
         };
-        validating =
-                new AbstractAction(NbBundle.getMessage(DynamicMenu.class, "ValidatingAction.text"), // NOI18N
+        validating = new AbstractAction(NbBundle.getMessage(DynamicMenu.class, "ValidatingAction.text"), // NOI18N
                 ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/sendto/resources/wait.png", false)) { // NOI18N
 
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                    }
-                };
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        };
         emptyAction.setEnabled(false);
         validating.setEnabled(false);
     }

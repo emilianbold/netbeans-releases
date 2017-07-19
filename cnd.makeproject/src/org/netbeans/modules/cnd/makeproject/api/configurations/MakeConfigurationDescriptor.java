@@ -1384,16 +1384,20 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         // Create new formatting node
         element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.FORMATTING_STYLE_ELEMENT);
         Node n = doc.createElement(MakeProjectTypeImpl.FORMATTING_STYLE_PROJECT_ELEMENT);
-        boolean isProject;
-        if (((MakeProject) getProject()).isProjectFormattingStyle()) {
-            n.appendChild(doc.createTextNode("true")); //NOI18N
-            isProject = true;
-        } else {
-            n.appendChild(doc.createTextNode("false")); //NOI18N
-            isProject = false;
+        MakeProject.FormattingStyle isProject = ((MakeProject) getProject()).isProjectFormattingStyle();
+        switch (isProject){
+            case Global:
+                n.appendChild(doc.createTextNode("false")); //NOI18N
+                break;
+            case Project:
+                n.appendChild(doc.createTextNode("true")); //NOI18N
+                break;
+            case ClangFormat:
+                n.appendChild(doc.createTextNode("clang-format")); //NOI18N
+                break;
         }
         element.appendChild(n);
-        if (isProject) {
+        if (isProject == MakeProject.FormattingStyle.Project) {
             n = doc.createElement(MakeProjectTypeImpl.C_FORMATTING_STYLE_ELEMENT);
             n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.C_MIME_TYPE).toExternal()));
             element.appendChild(n);
@@ -1404,6 +1408,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
             n = doc.createElement(MakeProjectTypeImpl.HEADER_FORMATTING_STYLE_ELEMENT);
             n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE).toExternal()));
+            element.appendChild(n);
+        } else if (isProject == MakeProject.FormattingStyle.ClangFormat) {
+            n = doc.createElement(MakeProjectTypeImpl.CLANG_FORMAT_STYLE_ELEMENT);
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(null).toExternal()));
             element.appendChild(n);
         }
         data.appendChild(element);

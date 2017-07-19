@@ -115,26 +115,25 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
         
         @Override
         protected ErrorDescription addErrorImpl(CsmErrorInfo errorInfo, FileObject fo) {
-            if (!(errorInfo instanceof ClankDiagnoticsErrorProvider.ClankCsmErrorInfo)) {
+            if (!(errorInfo instanceof ClankCsmErrorInfo)) {
                 return null;
             }
-            final ClankDiagnoticsErrorProvider.ClankCsmErrorInfo info
-                    = (ClankDiagnoticsErrorProvider.ClankCsmErrorInfo) errorInfo;
+            final ClankCsmErrorInfo info
+                    = (ClankCsmErrorInfo) errorInfo;
             String message = info.getMessage();
             // String messages[] = errorInfo.getMessage().split("\n");
 //            if (messages.length >=3 ) {
 //                String abbr = messages[0];
             final List<Fix> fixes = new ArrayList<>();
-            final ClankDiagnosticInfo fix = ((ClankDiagnoticsErrorProvider.ClankCsmErrorInfo) info).getDelegate();
-            for (ClankDiagnosticEnhancedFix nextElement : fix.fixes()) {
+            final ClankDiagnosticInfo fix = ((ClankCsmErrorInfo) info).getDelegate();
+            if (!fix.fixes().isEmpty()) {
                 try {
-                    ClankDiagnoticsErrorProvider.EnhancedFixImpl fixImpl
-                            = new ClankDiagnoticsErrorProvider.EnhancedFixImpl(((ClankDiagnoticsErrorProvider.ClankCsmErrorInfo) info).getCsmFile(), nextElement);
+                    ClankEnhancedFix fixImpl
+                            = new ClankEnhancedFix(((ClankCsmErrorInfo) info).getCsmFile(),  fix.fixes());
                     fixes.add(fixImpl);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
             }
             LazyFixList list = new LazyFixList() {
                 @Override
@@ -182,7 +181,7 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
         public AnalyzerFactoryImpl() {
             super(ClankDiagnoticsErrorProvider.NAME,
                   NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "Clank_DESCRIPTION"), //NOI18N
-                  ImageUtilities.loadImage("org/netbeans/modules/cnd/highlight/resources/bugs.png")); //NOI18N
+                  ImageUtilities.loadImage("org/netbeans/modules/cnd/diagnostics/clank/resources/bugs.png")); //NOI18N
         }
 
         @Override

@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -141,12 +140,11 @@ public final class TerminalSupportImpl {
             final String tabTitle,
             final ExecutionEnvironment env,
             final String dir,
-            final boolean silentMode,
             final boolean pwdFlag,
             final long termId) {
         final IOProvider ioProvider = IOProvider.get("Terminal"); // NOI18N
         if (ioProvider != null) {
-            final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
+            final AtomicReference<InputOutput> ioRef = new AtomicReference<>();
             // Create a tab in EDT right after we call the method, don't let this 
             // work to be done in RP in asynchronous manner. We need this to
             // save tab order 
@@ -155,14 +153,11 @@ public final class TerminalSupportImpl {
             final AtomicBoolean destroyed = new AtomicBoolean(false);
             
             final Runnable runnable = new Runnable() {
-                private final Runnable delegate = new Runnable() {
-                    @Override
-                    public void run() {
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            ioContainer.requestActive();
-                        } else {
-                            doWork();
-                        }
+                private final Runnable delegate = () -> {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        ioContainer.requestActive();
+                    } else {
+                        doWork();
                     }
                 };
 
@@ -241,33 +236,24 @@ public final class TerminalSupportImpl {
                                     return;
                                 }
                             }
-                        } catch (ConnectException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (InterruptedException ex) {
+                        } catch (ConnectException | InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
 
                         hostInfo = HostInfoUtils.getHostInfo(env);
                         boolean isSupported = PtySupport.isSupportedFor(env);
                         if (!isSupported) {
-                            if (!silentMode) {
-                                String message;
-
-                                if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-                                    message = NbBundle.getMessage(TerminalSupportImpl.class, "LocalTerminalNotSupported.error.nocygwin"); // NOI18N
-                                } else {
-                                    message = NbBundle.getMessage(TerminalSupportImpl.class, "LocalTerminalNotSupported.error"); // NOI18N
+                            if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                                // \r\n on Windows
+                                for (String line : NbBundle.getMessage(TerminalSupportImpl.class, "LocalTerminalNotSupported.error.nocygwin").split("\n")) { // NOI18N
+                                    out.println(line); // NOI18N
                                 }
-
-                                NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
-                                DialogDisplayer.getDefault().notify(nd);
+                            } else {
+                                out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LocalTerminalNotSupported.error")); // NOI18N
                             }
                             return;
                         }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                        return;
-                    } catch (CancellationException ex) {
+                    } catch (IOException | CancellationException ex) {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
