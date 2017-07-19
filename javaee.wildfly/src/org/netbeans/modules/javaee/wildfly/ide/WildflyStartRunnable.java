@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide;
 
-import static java.io.File.pathSeparatorChar;
 import static java.io.File.separatorChar;
 
 import java.io.BufferedReader;
@@ -73,7 +72,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -161,10 +159,6 @@ class WildflyStartRunnable implements Runnable {
             if (!logManagerJar.isEmpty()) {
                 javaOptsBuilder.append(" -Xverify:none");
                 javaOptsBuilder.append(" -Xbootclasspath/p:\"").append(logManagerJar);
-                String jfluid = getJFluidPath();
-                if(jfluid != null) {
-                    javaOptsBuilder.append(pathSeparatorChar).append(jfluid);
-                }
                 javaOptsBuilder.append("\" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
                 FileObject loggingProperties = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR) 
                         + separatorChar + "standalone" + separatorChar + "configuration", "logging.properties")); // NOI18N
@@ -230,7 +224,7 @@ class WildflyStartRunnable implements Runnable {
         if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
             javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman,org.jboss.logmanager,org.netbeans.lib.profiler.server -Djava.awt.headless=true");
         } else {
-            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true");
+            javaOptsBuilder.append(" -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman,org.netbeans.lib.profiler.server -Djava.awt.headless=true");
         }
         
         if (ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null) {
@@ -245,8 +239,7 @@ class WildflyStartRunnable implements Runnable {
         if (ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT) != null) {
             try {
                 int adminPort = Integer.parseInt(ip.getProperty(WildflyPluginProperties.PROPERTY_ADMIN_PORT));
-                Version currentVersion = dm.getServerVersion();
-                if (!currentVersion.isWidlfy() || WildflyPluginUtils.WILDFLY_8_2_0.compareTo(currentVersion) <= 0) {
+                if (ip.getProperty(WildflyPluginProperties.PROPERTY_PROTOCOL).contains("http")) {
                     javaOptsBuilder.append(" -Djboss.management.http.port=").append(adminPort);
                 } else {
                     javaOptsBuilder.append(" -Djboss.management.native.port=").append(adminPort);

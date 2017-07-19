@@ -42,6 +42,9 @@
 package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -49,6 +52,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -77,8 +81,13 @@ public class Authentication {
 
             @Override
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+                String realm = null;
+                String username = null;
                 for (Callback current : callbacks) {
-                    if (current instanceof NameCallback) {
+                    if(isOptionalNameCallback(current)) {
+                        NameCallback nameCallback = (NameCallback) current;
+                        nameCallback.setName(nameCallback.getDefaultName());
+                    } else if (current instanceof NameCallback && username != null && !username.isEmpty()) {
                         NameCallback nameCallback = (NameCallback) current;
                         nameCallback.setName(username);
                     } else if (current instanceof PasswordCallback) {
@@ -86,7 +95,10 @@ public class Authentication {
                         pwdCallback.setPassword(password);
                     } else if (current instanceof RealmCallback) {
                         RealmCallback realmCallback = (RealmCallback) current;
+                        realm = realmCallback.getDefaultText();
                         realmCallback.setText(realmCallback.getDefaultText());
+                    } else if (isCredentialCallBack(current)) {
+                        setPassword(current, realm);
                     } else {
                         throw new UnsupportedCallbackException(current);
                     }
@@ -99,4 +111,53 @@ public class Authentication {
         return this.callBackHandler;
     }
 
+    private boolean isOptionalNameCallback(Callback callback) {
+        try {
+            return callback.getClass().getClassLoader().loadClass("org.wildfly.security.auth.callback.OptionalNameCallback").isAssignableFrom(callback.getClass());
+        } catch (ClassNotFoundException ex) {
+           return false;
+        }
+    }
+
+    private boolean isCredentialCallBack(Callback callback) {
+        try {
+            return callback.getClass().getClassLoader().loadClass("org.wildfly.security.auth.callback.CredentialCallback").isAssignableFrom(callback.getClass());
+        } catch (ClassNotFoundException ex) {
+           return false;
+        }
+    }
+
+    private void setPassword(Callback callback, String realm) {
+        try {
+            ClassLoader cl = callback.getClass().getClassLoader();
+            Class passwordCredentialClass = cl.loadClass("org.wildfly.security.credential.PasswordCredential");
+            Method isCredentialTypeSupportedMethod = callback.getClass().getDeclaredMethod("isCredentialTypeSupported", new Class[]{Class.class, String.class});
+            Boolean isCredentialTypeSupported = (Boolean) isCredentialTypeSupportedMethod.invoke(callback, new Object[]{passwordCredentialClass, "clear"});
+            if(isCredentialTypeSupported) {
+                Object clearPassword = cl.loadClass("org.wildfly.security.password.interfaces.ClearPassword").getDeclaredMethod("createRaw", new Class[]{String.class, char[].class}).invoke(null, new Object[]{"clear", password});
+                Constructor passwordCredentialConstructor = passwordCredentialClass.getConstructor( new Class[]{cl.loadClass("org.wildfly.security.password.Password")});
+                Object passwordCredential= passwordCredentialConstructor.newInstance(clearPassword);
+                Class credentialClass = cl.loadClass("org.wildfly.security.credential.Credential");
+                Method setCredentialMethod = callback.getClass().getDeclaredMethod("setCredential", new Class[]{credentialClass});
+                setCredentialMethod.invoke(callback, passwordCredential);
+            } else if (realm != null) {
+                 isCredentialTypeSupported = (Boolean) isCredentialTypeSupportedMethod.invoke(callback, new Object[]{passwordCredentialClass, "digest-md5"});
+                 if(isCredentialTypeSupported) {
+                     Class passwordAlgorithmSpecClass = cl.loadClass("org.wildfly.security.password.spec.DigestPasswordAlgorithmSpec");
+                     Object algoSpec = passwordAlgorithmSpecClass.getConstructor(new Class[]{String.class, String.class}).newInstance(username, realm);
+                     Class encryptPasswordSpecClass = cl.loadClass("org.wildfly.security.password.spec.EncryptablePasswordSpec");
+                     Object passwordSpec = encryptPasswordSpecClass.getConstructor(new Class[]{char[].class, passwordAlgorithmSpecClass}).newInstance(this.password, algoSpec);
+                     Class passwordFactoryClass = cl.loadClass("org.wildfly.security.password.PasswordFactory");
+                     Object passwordFactory = passwordFactoryClass.getDeclaredMethod("getInstance", String.class).invoke(null, "digest-md5");
+                     Object passwordCredential= passwordFactoryClass.getDeclaredMethod("generatePassword", encryptPasswordSpecClass).invoke(passwordFactory, passwordSpec);
+                    Class credentialClass = cl.loadClass("org.wildfly.security.credential.Credential");
+                    Method setCredentialMethod = callback.getClass().getDeclaredMethod("setCredential", new Class[]{credentialClass});
+                    setCredentialMethod.invoke(callback, passwordCredential);
+                 }
+            }
+
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException | InstantiationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }
