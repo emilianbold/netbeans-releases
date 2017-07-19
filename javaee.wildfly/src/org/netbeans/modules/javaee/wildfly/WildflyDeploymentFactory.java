@@ -54,6 +54,8 @@ import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.security.Provider;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -280,12 +282,20 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
 //            addUrl(urlList, as, "cli" + sep + "main", Pattern.compile("wildfly-cli-.*.jar"));
             File serverPath = new File(serverRoot);
             Version version = WildflyPluginUtils.getServerVersion(serverPath);
-            if (WildflyPluginUtils.WILDFLY_10_0_0.compareToIgnoreUpdate(version) >= 0) {
+            if (WildflyPluginUtils.WILDFLY_10_0_0.compareToIgnoreUpdate(version) <= 0) {
                 addUrl(urlList, wildfly, "common" + sep + "main", Pattern.compile("wildfly-common-.*.jar"));
+            }
+            if (WildflyPluginUtils.WILDFLY_11_0_0.compareToIgnoreUpdate(version) <= 0) {  //Elytron
+                addUrl(urlList, wildfly, "security" + sep + "elytron-private" + sep + "main", Pattern.compile("wildfly-elytron-.*.jar"));
+                addUrl(urlList, wildfly, "client" + sep + "config" + sep + "main", Pattern.compile("wildfly-client-config-.*.jar"));
             }
             boolean shouldPatchXnio = WildflyPluginUtils.WILDFLY_8_0_0.compareToIgnoreUpdate(version) <= 0;
             WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}),
                     WildflyDeploymentFactory.class.getClassLoader(), shouldPatchXnio);
+            if (WildflyPluginUtils.WILDFLY_11_0_0.compareToIgnoreUpdate(version) <= 0) {  //Elytron
+                Class<Provider> elytronProvider = (Class<Provider>) loader.findClass("org.wildfly.security.WildFlyElytronProvider");
+                Security.addProvider(elytronProvider.newInstance());
+            }
             return loader;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, null, e);

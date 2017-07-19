@@ -83,8 +83,10 @@ public class WildflyPluginUtils {
     public static final Version EAP_6_3_0 = new Version("7.4.0", false); // NOI18N
 
     public static final Version EAP_6_4_0 = new Version("7.5.0", false); // NOI18N
-    
+
     public static final Version EAP_7_0 = new Version("7.0.0", false); // NOI18N
+
+    public static final Version EAP_7_1 = new Version("7.1.0", false); // NOI18N
 
     public static final Version WILDFLY_8_0_0 = new Version("8.0.0", true); // NOI18N
 
@@ -95,6 +97,8 @@ public class WildflyPluginUtils {
     public static final Version WILDFLY_9_0_0 = new Version("9.0.0", true); // NOI18N
     
     public static final Version WILDFLY_10_0_0 = new Version("10.0.0", true); // NOI18N
+
+    public static final Version WILDFLY_11_0_0 = new Version("11.0.0", true); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WildflyPluginUtils.class.getName());
 
@@ -238,6 +242,12 @@ public class WildflyPluginUtils {
      public static String getManagementConnectorPort(String configFile) {
         String defaultPort = "9990"; // NOI18N
         return defaultPort;
+    }
+
+
+     public static String getManagementProtocol(String configFile) {
+        String defaultProtocol = "http-remoting"; // NOI18N
+        return defaultProtocol;
     }
 
     /**
@@ -459,7 +469,7 @@ public class WildflyPluginUtils {
          * @param version spec version string with the following format:
          * <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>
          */
-        public Version(String version, boolean wildfly) {            
+        public Version(String version, boolean wildfly) {
             assert version != null : "Version can't be null"; // NOI18N
             this.wildfly = wildfly;
             String[] tokens = version.split("\\.");
@@ -612,8 +622,11 @@ public class WildflyPluginUtils {
     
         private Version convertEAP(Version version) {
             if (!version.isWidlfy()) {
-                if (version.compareToIgnoreUpdate(EAP_7_0) >= 0) {
+                if (version.compareToIgnoreUpdate(EAP_7_0) == 0) {
                     return WILDFLY_10_0_0;
+                }
+                if (version.compareToIgnoreUpdate(EAP_7_1) == 0) {
+                    return WILDFLY_11_0_0;
                 }
                 return JBOSS_7_0_0;
             }

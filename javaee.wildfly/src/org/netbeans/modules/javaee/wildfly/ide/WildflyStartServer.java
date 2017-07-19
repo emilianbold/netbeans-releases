@@ -45,8 +45,10 @@ package org.netbeans.modules.javaee.wildfly.ide;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -55,7 +57,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.util.RequestProcessor;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -75,8 +76,9 @@ import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
- *
+ * Create the start command.
  * @author Kirill Sorokin
+ * @author Emmanuel Hugonnet
  */
 public class WildflyStartServer extends StartServer implements ProgressObject {
 
@@ -240,7 +242,7 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
                     result = dm.getClient().isServerRunning(
                             ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),
                             ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE));
-                } catch(Throwable t) {
+                } catch(IllegalStateException t) {
                     LOGGER.log(Level.INFO, null, t);
                 }
             }
@@ -320,7 +322,7 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
     }            
 
     // ----------  Implementation of ProgressObject interface
-    private Vector listeners = new Vector();
+    private List<ProgressListener> listeners = new ArrayList<>();
     private DeploymentStatus deploymentStatus;
 
     @Override
@@ -376,16 +378,15 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
 
         this.deploymentStatus = deploymentStatus;
 
-        java.util.Vector targets = null;
+        java.util.ArrayList<ProgressListener> targets = null;
         synchronized (this) {
             if (listeners != null) {
-                targets = (java.util.Vector) listeners.clone();
+                targets = (java.util.ArrayList<ProgressListener>) ((java.util.ArrayList<ProgressListener>)listeners).clone();
             }
         }
 
         if (targets != null) {
-            for (int i = 0; i < targets.size(); i++) {
-                ProgressListener target = (ProgressListener) targets.elementAt(i);
+            for (ProgressListener target : targets) {
                 target.handleProgressEvent(evt);
             }
         }

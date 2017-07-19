@@ -95,10 +95,10 @@ public final class WildflyOutputSupport {
     private static final Pattern WILDFLY_STARTING_ML = Pattern.compile(".*WFLYSRV0049: WildFly .* \\d+(\\..*)* .* starting");
     private static final Pattern WILDFLY_10_STARTED_ML = Pattern.compile(".*WFLYSRV0025: WildFly .* \\d+(\\..*)* .* started in \\d+ms .*");
 
-    private static final Pattern EAP6_STARTED_ML = Pattern.compile(".*JBAS015874: JBoss EAP 6\\.[0-9]?.[0-9]?\\.GA .* \\d+ms .*");
-    private static final Pattern EAP6_STARTING_ML = Pattern.compile(".*JBAS015899: JBoss EAP 6\\.[0-9]?.[0-9]?\\.GA .*");
-    private static final Pattern EAP7_STARTED_ML = Pattern.compile(".*WFLYSRV0025: JBoss EAP 7\\.[0-9]?.[0-9]?\\.GA .* \\d+ms .*");
-    private static final Pattern EAP7_STARTING_ML = Pattern.compile(".*WFLYSRV0049: JBoss EAP 7\\.[0-9]?.[0-9]?\\.GA .*");
+    private static final Pattern EAP6_STARTED_ML = Pattern.compile(".*JBAS015874: JBoss EAP 6\\.[0-9]?.[0-9]?[0-9]*\\.GA .* \\d+ms .*");
+    private static final Pattern EAP6_STARTING_ML = Pattern.compile(".*JBAS015899: JBoss EAP 6\\.[0-9]?.[0-9]?[0-9]*\\.GA .*");
+    private static final Pattern EAP7_STARTED_ML = Pattern.compile(".*WFLYSRV0025: JBoss EAP 7\\.[0-9]?.[0-9]?[0-9]*\\.GA .* \\d+ms .*");
+    private static final Pattern EAP7_STARTING_ML = Pattern.compile(".*WFLYSRV0049: JBoss EAP 7\\.[0-9]?.[0-9]?[0-9]*\\.GA .*");
 
     private final InstanceProperties props;
 
@@ -149,22 +149,22 @@ public final class WildflyOutputSupport {
         reset();
 
         ExecutionDescriptor descriptor = DESCRIPTOR.inputOutput(io);
-        descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
+        descriptor = descriptor
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
 
-            @Override
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
-            }
-        });
-        descriptor = descriptor.errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
+                    }
+                })
+                .errProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
 
-            @Override
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
-            }
-        });
-
-        descriptor = descriptor.postExecution(new Runnable() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new StartLineProcessor(profiler)));
+                    }
+                })
+                .postExecution(new Runnable() {
 
             @Override
             public void run() {
@@ -372,10 +372,10 @@ public final class WildflyOutputSupport {
             }
 
             if (isStarting(line)) {
-                LOGGER.log(Level.FINER, "STARTING message fired"); // NOI18N
+                LOGGER.log(Level.INFO, "STARTING message fired"); // NOI18N
                 //fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS")); // NOI18N
             } else if (isStarted(line)) {
-                LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
+                LOGGER.log(Level.INFO, "STARTED message fired"); // NOI18N
                 synchronized (WildflyOutputSupport.this) {
                     started = true;
                     WildflyOutputSupport.this.notifyAll();
