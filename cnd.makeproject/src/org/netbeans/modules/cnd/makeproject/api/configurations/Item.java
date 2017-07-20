@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -130,7 +131,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     private final CharSequence path;
     protected Folder folder;
-    protected FileObject file = null;
+    protected FileObject canonicalFileObject = null;
+    private WeakReference<FileObject> fileObjectCache = new WeakReference<>(null);
     protected final FileSystem fileSystem;
     private final CharSequence normalizedPath;
 
@@ -254,7 +256,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public void setFolder(Folder folder) {
-        if (folder == null && file == null) {
+        if (folder == null && canonicalFileObject == null) {
             // store file in field. method getFile() will works after removing item
             ensureFileNotNull();
         }
@@ -318,21 +320,21 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     protected void ensureFileNotNull() {
-        if (file == null) {
+        if (canonicalFileObject == null) {
             try {
-                file = CndFileUtils.getCanonicalFileObject(getFileObject());
+                canonicalFileObject = CndFileUtils.getCanonicalFileObject(getFileObject());
             } catch (IOException ioe) {
-                file = getFSPath().getFileObject();
+                canonicalFileObject = getFSPath().getFileObject();
             }
         }
-        if (file == null) {
+        if (canonicalFileObject == null) {
             LOG.log(Level.SEVERE, "Can not resolve file {0}", getAbsPath());
         }
     }
 
     public FileObject getCanonicalFile() {
         ensureFileNotNull();
-        return file;
+        return canonicalFileObject;
     }
 
     public String getId() {
@@ -415,29 +417,32 @@ public class Item implements NativeFileItem, PropertyChangeListener {
      */
     protected FileObject getFileObjectImpl() {
         PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT, this);
-        FileObject fileObject = null;
-        try {
-            performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
-            if (normalizedPath != null) {
-                fileObject = fileSystem.findResource(normalizedPath.toString());
-            } else {
-                Folder f = getFolder();
-                if (f == null) {
-                    // don't know file system, fall back to the default one
-                    // but do not cache file object
-                    String p = getPath();
-                    if (CndPathUtilities.isPathAbsolute(fileSystem, p)) {// UNIX path
-                        p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
-                        fileObject = fileSystem.findResource(p);
+        FileObject fileObject = fileObjectCache.get();
+        if (fileObject == null || !fileObject.isValid()) {
+            try {
+                performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
+                if (normalizedPath != null) {
+                    fileObject = fileSystem.findResource(normalizedPath.toString());
+                } else {
+                    Folder f = getFolder();
+                    if (f == null) {
+                        // don't know file system, fall back to the default one
+                        // but do not cache file object
+                        String p = getPath();
+                        if (CndPathUtilities.isPathAbsolute(fileSystem, p)) {// UNIX path
+                            p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
+                            fileObject = fileSystem.findResource(p);
+                        }
+                    } else {                    
+                        MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();
+                        FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
+                        fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
                     }
-                } else {                    
-                    MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();
-                    FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
-                    fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
                 }
+            } finally {
+                performanceEvent.log(fileObject);
             }
-        } finally {
-            performanceEvent.log(fileObject);
+            fileObjectCache = new WeakReference<>(fileObject);
         }
         return fileObject;
     }
