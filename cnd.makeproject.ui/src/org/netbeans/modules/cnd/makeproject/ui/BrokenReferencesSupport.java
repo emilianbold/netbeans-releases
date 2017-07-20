@@ -248,7 +248,11 @@ public final class BrokenReferencesSupport {
         if (project.isProjectFormattingStyle() == MakeProject.FormattingStyle.ClangFormat) {
             return null;
         }
-        MakeConfigurationDescriptor cd = (MakeConfigurationDescriptor) project.getConfigurationDescriptorProvider().getConfigurationDescriptor();
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (!pdp.gotDescriptor()) {
+            return null;
+        }
+        MakeConfigurationDescriptor cd = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
         FileObject baseDir = cd.getBaseDirFileObject();
         if (baseDir != null && baseDir.isValid()) {
             FileObject format = baseDir.getFileObject(CodeStyleWrapper.CLANG_FORMAT_FILE);
