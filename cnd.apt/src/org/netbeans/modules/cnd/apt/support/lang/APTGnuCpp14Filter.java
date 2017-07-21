@@ -49,9 +49,11 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  * @author petrk
  */
 public class APTGnuCpp14Filter extends APTBaseLanguageFilter {
+    private final boolean is17;
     
-    public APTGnuCpp14Filter() {
+    public APTGnuCpp14Filter(boolean is17) {
         super(false);
+        this.is17 = is17;
         initialize();
     }
     
@@ -215,7 +217,7 @@ public class APTGnuCpp14Filter extends APTBaseLanguageFilter {
         filter("char16_t", APTTokenTypes.LITERAL_char16_t); // NOI18N
         filter("char32_t", APTTokenTypes.LITERAL_char32_t); // NOI18N
         filter("noexcept", APTTokenTypes.LITERAL_noexcept); // NOI18N
-        if (false) {
+        if (is17) {
             // DO WE NEED NEW FILTER?
             // C++ 17
             filter("concept", APTTokenTypes.LITERAL_concept); // NOI18N

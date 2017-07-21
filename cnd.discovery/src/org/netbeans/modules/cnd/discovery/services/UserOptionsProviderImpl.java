@@ -184,6 +184,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                 switch (languageStandard) {
                     case CPP11: return LanguageFlavor.CPP11;
                     case CPP14: return LanguageFlavor.CPP14;
+                    case CPP17: return LanguageFlavor.CPP17;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO

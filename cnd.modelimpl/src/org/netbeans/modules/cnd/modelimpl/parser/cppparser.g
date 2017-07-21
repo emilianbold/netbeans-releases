@@ -340,6 +340,7 @@ tokens {
     
     public static final int CPP_FLAVOR_CPP11            = 0x40;
     public static final int CPP_FLAVOR_CPP14            = 0x80;
+    public static final int CPP_FLAVOR_CPP17            = 0x100;
 
     /** Switches legacy warnings on */
     protected static final boolean reportOddWarnings = Boolean.getBoolean("cnd.parser.odd.warnings");
@@ -415,7 +416,9 @@ tokens {
             lang = UNKNOWN_LANG;
         }
 
-        if ((flags & CPP_FLAVOR_CPP14) > 0) {
+        if ((flags & CPP_FLAVOR_CPP17) > 0) {
+            langFlavor = FLAVOR_CPP17;
+        } else if ((flags & CPP_FLAVOR_CPP14) > 0) {
             langFlavor = FLAVOR_CPP14;
         } else if ((flags & CPP_FLAVOR_CPP11) > 0) {
             langFlavor = FLAVOR_CPP11;
@@ -429,11 +432,11 @@ tokens {
     }
 
     boolean isCpp11OrLater() {
-        return isCPlusPlus() && (langFlavor == FLAVOR_CPP11 || langFlavor == FLAVOR_CPP14);
+        return isCPlusPlus() && (langFlavor == FLAVOR_CPP11 || langFlavor == FLAVOR_CPP14 || langFlavor == FLAVOR_CPP17);
     }
 
     boolean isCpp14OrLater() {
-        return isCPlusPlus() && (langFlavor == FLAVOR_CPP14);
+        return isCPlusPlus() && (langFlavor == FLAVOR_CPP14 || langFlavor == FLAVOR_CPP17);
     }
 
     boolean isC() {
@@ -514,6 +517,7 @@ tokens {
         protected static final  int FLAVOR_UNKNOWN  = 0x0;
         protected static final  int FLAVOR_CPP11    = 0x1;
         protected static final  int FLAVOR_CPP14    = 0x2;
+        protected static final  int FLAVOR_CPP17    = 0x4;
 
         protected static final int ERROR_LIMIT = 100;
         private int errorCount = 0;

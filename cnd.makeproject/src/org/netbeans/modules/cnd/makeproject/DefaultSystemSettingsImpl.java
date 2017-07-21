@@ -117,6 +117,9 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
             case CPP14:
                 // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
                 return "-std=c++14"; //NOI18N
+            case CPP17:
+                // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP17
+                return "-std=c++17"; //NOI18N
             default:
                 return ""; // NOI18N
         }

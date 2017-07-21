@@ -1092,6 +1092,8 @@ public final class NativeProjectProvider implements NativeProject, PropertyChang
                                 return NativeFileItem.LanguageFlavor.CPP11;
                             case CCCompilerConfiguration.STANDARD_CPP14:
                                 return NativeFileItem.LanguageFlavor.CPP14;
+                            case CCCompilerConfiguration.STANDARD_CPP17:
+                                return NativeFileItem.LanguageFlavor.CPP17;
                             default:
                                 return NativeFileItem.LanguageFlavor.DEFAULT;
                         }

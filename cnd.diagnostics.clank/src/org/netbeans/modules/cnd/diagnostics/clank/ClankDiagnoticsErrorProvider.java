@@ -350,6 +350,10 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
                 // FIXME
                 lang_std = LangStandard.Kind.lang_gnucxx14;
                 break;
+            case CPP17:
+                // FIXME
+                lang_std = LangStandard.Kind.lang_gnucxx1z;
+                break;
             case F77:
             case F90:
             case F95:

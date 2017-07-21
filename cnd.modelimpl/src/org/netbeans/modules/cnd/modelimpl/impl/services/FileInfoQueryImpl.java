@@ -110,6 +110,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 switch (languageFlavor.second()) {
                     case CPP11:
                     case CPP14:
+                    case CPP17:
                         return true;
                 }
             }
@@ -124,6 +125,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             if (NativeFileItem.Language.CPP == languageFlavor.first() || NativeFileItem.Language.C_HEADER == languageFlavor.first()) {
                 switch (languageFlavor.second()) {
                     case CPP14:
+                    case CPP17:
                         return true;
                 }
             }
@@ -481,6 +483,8 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 return 6;
             case CPP14:
                 return 7;
+            case CPP17:
+                return 8;
         }
         return 0;
     }
@@ -522,6 +526,9 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 break;
             case CPP14:
                 aptFlavor = APTLanguageSupport.FLAVOR_CPP14;
+                break;
+            case CPP17:
+                aptFlavor = APTLanguageSupport.FLAVOR_CPP17;
                 break;
                 
             case F77:
