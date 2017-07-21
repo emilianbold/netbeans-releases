@@ -91,6 +91,9 @@ public final class DriverFactory {
                     case "c++14": //NOI18N
                         res = ItemProperties.LanguageStandard.CPP14;
                         break;
+                    case "c++17": //NOI18N
+                        res = ItemProperties.LanguageStandard.CPP17;
+                        break;
                     default:
                         break;
                 }

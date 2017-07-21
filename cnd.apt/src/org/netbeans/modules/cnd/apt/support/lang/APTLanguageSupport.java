@@ -64,6 +64,7 @@ public final class APTLanguageSupport {
     public static final String FORTRAN  = "Fortran Language"; // NOI18N
     public static final String UNKNOWN  = "Unknown Language"; // NOI18N
 
+    public static final String FLAVOR_CPP17  = "C++17"; // NOI18N
     public static final String FLAVOR_CPP14  = "C++14"; // NOI18N
     public static final String FLAVOR_CPP11  = "C++11"; // NOI18N
     public static final String FLAVOR_CPP98  = "C++98"; // NOI18N
@@ -87,11 +88,15 @@ public final class APTLanguageSupport {
     }
     
     public boolean isCppFlavourSufficient(String actualFlavour, String necessaryFlavour) {
-        if (FLAVOR_CPP14.equals(necessaryFlavour)) {
-            return FLAVOR_CPP14.equals(actualFlavour);
+        if (FLAVOR_CPP17.equals(necessaryFlavour)) {
+            return FLAVOR_CPP17.equals(actualFlavour);
+        } else if (FLAVOR_CPP14.equals(necessaryFlavour)) {
+            return FLAVOR_CPP14.equals(actualFlavour) ||
+                   FLAVOR_CPP17.equals(actualFlavour);
         } else if (FLAVOR_CPP11.equals(necessaryFlavour)) {
-            return FLAVOR_CPP11.equals(actualFlavour) 
-                    || FLAVOR_CPP14.equals(actualFlavour);
+            return FLAVOR_CPP11.equals(actualFlavour) ||
+                   FLAVOR_CPP14.equals(actualFlavour) ||
+                   FLAVOR_CPP17.equals(actualFlavour);
         } else if (FLAVOR_CPP98.equals(necessaryFlavour)) {
             return true;
         }
@@ -133,8 +138,10 @@ public final class APTLanguageSupport {
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_C)) {
             filter = new APTGnuCFilter();
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_CPP)) {
-            if (flavor.equalsIgnoreCase(FLAVOR_CPP14)) {
-                filter = new APTGnuCpp14Filter();
+            if (flavor.equalsIgnoreCase(FLAVOR_CPP17)) {
+                filter = new APTGnuCpp14Filter(true);
+            } else if (flavor.equalsIgnoreCase(FLAVOR_CPP14)) {
+                filter = new APTGnuCpp14Filter(false);
             } else if (flavor.equalsIgnoreCase(FLAVOR_CPP11)) {
                 filter = new APTGnuCpp11Filter();
             } else if (flavor.equalsIgnoreCase(FLAVOR_CPP98)) {

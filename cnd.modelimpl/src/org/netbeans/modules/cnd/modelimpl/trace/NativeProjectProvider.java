@@ -159,6 +159,9 @@ public final class NativeProjectProvider {
         if (DebugUtils.getBoolean("cnd.language.flavor.cpp14", false)) { // NOI18N
             return NativeFileItem.LanguageFlavor.CPP14;
         }
+        if (DebugUtils.getBoolean("cnd.language.flavor.cpp17", false)) { // NOI18N
+            return NativeFileItem.LanguageFlavor.CPP17;
+        }
         String cpp11Dirs = System.getProperty("cnd.tests.cpp11directories"); // NOI18N
         if (cpp11Dirs != null && !cpp11Dirs.isEmpty()) {
             String cpp11DirList[] = cpp11Dirs.split(";"); // NOI18N

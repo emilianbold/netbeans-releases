@@ -285,6 +285,11 @@ public class CompileAction extends AbstractExecutorRunAction {
                         argsFlat.append(cppStandardFlags[3]).append(' ');
                     }
                     break;
+                case CPP17:
+                    if (cppStandardFlags != null && cppStandardFlags.length > 4) {
+                        argsFlat.append(cppStandardFlags[4]).append(' ');
+                    }
+                    break;
             }
         }
         argsFlat.append(ces.getCompileFlags()).append(' ');// NOI18N

@@ -858,6 +858,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                     // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
                     res = "-std=c++14"; //NOI18N
                     break;
+                case CPP17:
+                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
+                    res = "-std=c++17"; //NOI18N
+                    break;
                 default:
             }
         } 
@@ -1022,6 +1026,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                             return LanguageFlavor.CPP11;
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
+                        case CCCompilerConfiguration.STANDARD_CPP17:
+                            return LanguageFlavor.CPP17;
                         case CCCompilerConfiguration.STANDARD_CPP98:
                             return LanguageFlavor.CPP98;
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
@@ -1030,7 +1036,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                                     String year = macro.substring(12);
                                     if (year.compareTo("2010") > 0) { //NOI18N
                                         if (year.compareTo("2013") > 0) { //NOI18N
-                                            return LanguageFlavor.CPP14;
+                                            if (year.compareTo("2016") > 0) { //NOI18N
+                                                return LanguageFlavor.CPP17;
+                                            } else {
+                                                return LanguageFlavor.CPP14;
+                                            }
                                         } else {
                                             return LanguageFlavor.CPP11;
                                         }
@@ -1054,6 +1064,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                             return LanguageFlavor.CPP11;
                         case CCCompilerConfiguration.STANDARD_CPP14:
                             return LanguageFlavor.CPP14;
+                        case CCCompilerConfiguration.STANDARD_CPP17:
+                            return LanguageFlavor.CPP17;
                     }
                 }
             }

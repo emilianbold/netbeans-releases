@@ -189,7 +189,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         CPP98(4), CPP11(8),
         F77(5), F90(6), F95(7),
         DEFAULT(9),
-        C11(10), CPP14(11);
+        C11(10), CPP14(11), CPP17(12);
         private final int flavor;
 
         private LanguageFlavor(int flavor) {
@@ -226,6 +226,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                     return C11;
                 case 11:
                     return CPP14;
+                case 12:
+                    return CPP17;
                 default:
                     return UNKNOWN;
             }
@@ -268,6 +270,10 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             case CPP14:
                 // FIXME
                 out_lang_std = LangStandard.Kind.lang_gnucxx14;
+                break;
+            case CPP17:
+                // FIXME
+                out_lang_std = LangStandard.Kind.lang_gnucxx1z;
                 break;
             case F77:
             case F90:

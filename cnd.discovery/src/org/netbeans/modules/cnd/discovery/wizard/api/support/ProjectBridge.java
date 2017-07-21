@@ -775,6 +775,12 @@ public class ProjectBridge {
                         isChanged = true;
                     }
                     break;
+                case CPP17:
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.CPP17) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP17);
+                        isChanged = true;
+                    }
+                    break;
                 case Unknown:
                     if (!isIncrementalMode) {
                         if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
