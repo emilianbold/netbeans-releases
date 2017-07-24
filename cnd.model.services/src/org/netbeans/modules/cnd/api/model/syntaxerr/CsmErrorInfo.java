@@ -82,4 +82,12 @@ public interface CsmErrorInfo {
     default String getCustomType () {
         return null;
     }
+
+    default int[] getStartOffsets() {
+        return new int[]{getStartOffset()};
+    }
+
+    default int[] getEndOffsets() {
+        return new int[]{getEndOffset()};
+    }
 }

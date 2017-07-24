@@ -164,12 +164,13 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
 
             return ErrorDescriptionFactory.createErrorDescription("clank",//NOI18N
                      Severity.ERROR,
+                     list.probablyContainsFixes() ? "clank-diagnostics-annotations-fixable" : "clank-diagnostics-annotations",//NOI18N
                      message,
                      message,
                      list,
                      fo,
-                     errorInfo.getStartOffset(),
-                     errorInfo.getEndOffset());
+                     info.getDelegate().getStartOffsets(),
+                     info.getDelegate().getEndOffsets());
 //            }
 //            return null;
         }
