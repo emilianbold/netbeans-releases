@@ -57,7 +57,7 @@ Contributor(s):
         <mkdir dir="${scriptsdir}"/>
     </target>
 
-    <target name="build-app" depends="do-build-app, sign-app"/>
+    <target name="build-app" depends="do-build-app"/>
     
     <target name="do-build-app" description="Builds Mac OS X application bundle">
         <echo>Creating ${appname}.app bundle using build/netbeans as master</echo>
@@ -93,22 +93,6 @@ Contributor(s):
             <arg value="-c"/>
             <arg value="ln -s '../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
         </exec>
-        <condition property="sign.option" value="--sign '${signing_identity}'" else="">
-            <not>
-                <equals arg1="${signing_identity}" arg2="0"/>
-            </not>
-        </condition>  
-    </target>
-    
-    <target name="sign-app" description="Singing Mac OS X Application" if="do.sign-app">
-        <echo message="Signing application ${appdir}"/>
-        <echo message="Signing doesn't work reliably!!!"/>
-<!--
-        <exec executable="sh" failonerror="yes">
-            <arg value="-cv"/>
-            <arg value="codesign -fs '${signing_identity}' -vvvv '${appdir}'"/>
-        </exec>
--->
     </target>
     
     <target name="build-pkg" depends="init, build-app">
@@ -146,11 +130,14 @@ TOMCAT_ID="${tomcat.id}"
         
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
 
-        <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>        
+        <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.ide.baseide.${nb.id} ${sign.option} --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
+            <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.ide.baseide.${nb.id} --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
         </exec>
+        <java jar="${mac.sign.client}" fork="true" failonerror="true" maxmemory="2048m">
+            <arg line="sign -user ${mac.sign.user} -global_uid ${mac.sign.guid} -file_to_sign ${basedir}/../../build/baseide-${nb.id}.pkg -signed_location /${basedir}/../../build/ -sign_method mac_pkg -server UK" />
+        </java>
     </target>
     
     
