@@ -85,6 +85,16 @@ public final class ClankCsmErrorInfo implements CsmErrorInfo {
     }
 
     @Override
+    public int[] getStartOffsets() {
+        return errorInfo.getStartOffsets(); 
+    }
+
+    @Override
+    public int[] getEndOffsets() {
+        return errorInfo.getEndOffsets(); 
+    }
+
+    @Override
     public int getEndOffset() {
         //return (int) CsmFileInfoQuery.getDefault().getOffset(file, errorInfo.getLine(), errorInfo.getColumn() + 1);
         return errorInfo.getEndOffsets()[0];
