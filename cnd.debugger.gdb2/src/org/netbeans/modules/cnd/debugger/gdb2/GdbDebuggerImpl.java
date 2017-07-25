@@ -2759,7 +2759,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 send("-gdb-set unwindonsignal off"); //NOI18N
             }
         };
-        dataMIEval(lp, expr, dis, postRunnable);
+        dataMIEval(lp, expr, dis, postRunnable, postRunnable);
 
        
     }
@@ -2958,8 +2958,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         return result;
     }
+    
+    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable) { 
+        dataMIEval(lp, expr, dis, postRunnable, null);
+    }
 
-    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable) {
+    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable, final Runnable postRunnableOnError) {
         String expandedExpr = MacroSupport.expandMacro(this, expr);
         String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         MICommand cmd =
@@ -3061,6 +3065,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     @Override
                     public void run() {
                         postRunnable.run();
+                        if (postRunnableOnError != null) {
+                            postRunnableOnError.run();
+                        }
                         //need to execute following code only after the value is update in onDone in createMIVar
                         final String toolTip = expr + "=" + data_value_string;//NOI18N
                         final String expression = expr;
@@ -3101,6 +3108,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             protected void onError(MIRecord record) {
                 // Be silent on balloon eval failures
                 // genericFailure(record);
+                if (postRunnableOnError != null) {
+                    postRunnableOnError.run();
+                }
                 finish();
             }
         };
