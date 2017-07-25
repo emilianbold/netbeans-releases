@@ -94,7 +94,7 @@
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <!-- Nested JRE Properties-->        
-    <property name="jre.builds.path" value="${jdk_builds_host}/${jre_builds_path}/latest/bundles/macosx-x64"/><!-- Change latest to fcs/b{proper buildnumber} -->
+    <property name="jre.builds.path" value="${jre_builds_host}/${jre_builds_path}/latest/bundles/macosx-x64"/><!-- Change latest to fcs/b{proper buildnumber} -->
     <!-- e.g. 1.8.0 - jre-8u31-macosx-x64.tar.gz -->
     <loadresource property="jre.version.number">
           <url url="${jre.builds.path}"/>
@@ -148,7 +148,7 @@
         <equals arg1="${build.jdk7}" arg2="1"/>
     </condition>
     
-    <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk_builds_path}/latest/bundles/macosx-x64"/>
+    <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk_builds_path}/macosx-x64"/>
     <!-- e.g. 1.7.0_55 - jdk-7u55-fcs-bin-b07-macosx-x64-04_feb_2014.dmg -->
     <!-- e.g. 1.8.0 - jdk-8-fcs-bin-b129-macosx-x64-06_feb_2014.dmg -->
     <loadresource property="jdk.version.number">
@@ -223,8 +223,8 @@
                                            else="/Library/Java/JavaVirtualMachines/jdk1.${jdk.version.number}.0_${jdk.update.number}.jdk/Contents/Home">
         <equals arg1="${jdk.update.number}" arg2="0"/>
     </condition>
-    <condition property="jdk_bits_location" value="${jdk_builds_host}/${jdk_builds_path}/all/b${jdk.build.number}/bundles/macosx-x64/jdk-${jdk.version.number}-${jdk.ea.text}macosx-x64.dmg"
-                                           else="${jdk_builds_host}/${jdk_builds_path}/all/b${jdk.build.number}/bundles/macosx-x64/jdk-${jdk.version.number}u${jdk.update.number}-${jdk.ea.text}macosx-x64.dmg">
+    <condition property="jdk_bits_location" value="${jdk_builds_host}/${jdk_builds_path}/macosx-x64/jdk-${jdk.version.number}-${jdk.ea.text}macosx-x64.dmg"
+                                           else="${jdk_builds_host}/${jdk_builds_path}/macosx-x64/jdk-${jdk.version.number}u${jdk.update.number}-${jdk.ea.text}macosx-x64.dmg">
         <equals arg1="${jdk.update.number}" arg2="0"/>
     </condition>
     <condition property="jdk.update.number.long" value="0${jdk.update.number}" else="${jdk.update.number}">
