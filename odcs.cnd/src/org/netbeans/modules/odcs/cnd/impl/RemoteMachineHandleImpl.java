@@ -37,22 +37,55 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.odcs.cnd.actions;
+package org.netbeans.modules.odcs.cnd.impl;
+
+import java.net.URL;
+import javax.swing.Action;
+import org.netbeans.modules.odcs.cnd.actions.AddRemoteHostAction;
+import org.netbeans.modules.odcs.cnd.actions.ChangeVMStateAction;
+import org.netbeans.modules.odcs.cnd.actions.PropertiesAction;
+import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
+import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
+import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
 
 /**
  *
  * @author Ilia Gromov
  */
-public interface TemplatedRestAction {
+public class RemoteMachineHandleImpl extends RemoteMachineHandle {
 
-    default String getUrl(String template, String... params) {
-        String result = template;
+    private final String name;
+    private final String url;
+    private final URL serverUrl;
+    private final VMDescriptor desc;
 
-        for (int i = 0; i < params.length; i++) {
-            String param = params[i];
-            result = result.replace("{" + i + "}", param); // NOI18N
-        }
+    public RemoteMachineHandleImpl(URL serverUrl, VMDescriptor desc) {
+        this.serverUrl = serverUrl;
+        this.desc = desc;
+        this.name = desc.getDisplayName();
+        this.url = desc.getHost();
+    }
 
-        return result;
+    @Override
+    public String getDisplayName() {
+        return name + ": " + url; // NOI18N
+    }
+
+    @Override
+    public Action getDefaultAction() {
+        return new AddRemoteHostAction(serverUrl.toExternalForm(), desc.getMachineId());
+    }
+
+    @Override
+    public Action getPropertiesAction() {
+        return new PropertiesAction(desc);
+    }
+
+    @Override
+    public Action[] getAdditionalActions() {
+        return new Action[]{
+            getDefaultAction(),
+            ChangeVMStateAction.startedAction(serverUrl.toExternalForm(), desc.getMachineId()),
+            ChangeVMStateAction.stoppedAction(serverUrl.toExternalForm(), desc.getMachineId())};
     }
 }

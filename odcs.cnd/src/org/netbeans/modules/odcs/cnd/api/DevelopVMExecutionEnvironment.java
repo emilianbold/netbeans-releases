@@ -37,57 +37,23 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.odcs.cnd.actions;
+package org.netbeans.modules.odcs.cnd.api;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author Ilia Gromov
  */
-public abstract class RestAction extends AbstractAction {
+public abstract class DevelopVMExecutionEnvironment implements ExecutionEnvironment {
 
-    private static final Logger LOG = Logger.getLogger(RestAction.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor("REST request to Oracle Cloud", 3); // NOI18N
+    public static final String CLOUD_PREFIX = "cloud.oracle";
 
-    private final HttpClientAdapter client;
+    public abstract String getServerUrl();
 
-    public RestAction(String name, HttpClientAdapter client) {
-        super(name);
-        this.client = client;
+    public abstract String getMachineId();
+
+    public static String encode(String serverUrl, String machineId) {
+        return String.format("%s://%s@%s", CLOUD_PREFIX, machineId, serverUrl);
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        RP.submit(() -> {
-            ProgressHandle createHandle = ProgressHandle.createHandle("REST request - " + getValue(NAME)); // NOI18N
-            try {
-                SwingUtilities.invokeLater(createHandle::start);
-
-                actionPerformedImpl(e);
-            } catch (Exception ex) {
-                LOG.log(Level.FINE, "Exception in REST request", ex);
-            } finally {
-                SwingUtilities.invokeLater(createHandle::finish);
-            }
-        });
-    }
-
-    /**
-     * Will be invoked not from EDT
-     */
-    public abstract void actionPerformedImpl(ActionEvent e);
-
-    public HttpClientAdapter getClient() {
-        return client;
-    }
-
-    public abstract String getRestUrl();
 }

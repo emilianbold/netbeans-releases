@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.odcs.cnd.api.DevelopVMExecutionEnvironment;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
@@ -67,19 +68,21 @@ public class AddRemoteHostAction extends AbstractAction {
 
     private static final Logger LOG = Logger.getLogger(AddRemoteHostAction.class.getName());
 
-    private final String url;
+    private final String serverUrl;
+    private final String machineId;
 
     @NbBundle.Messages({
         "add_remote_host=Add VM as a remote host"
     })
-    public AddRemoteHostAction(String url) {
+    public AddRemoteHostAction(String serverUrl, String machineId) {
         super(Bundle.add_remote_host());
-        this.url = url;
+        this.serverUrl = serverUrl;
+        this.machineId = machineId;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        selectNode(url); // XXX fixme!
+        selectNode(DevelopVMExecutionEnvironment.encode(serverUrl, machineId));
     }
 
     /**
@@ -116,7 +119,7 @@ public class AddRemoteHostAction extends AbstractAction {
                     LOG.log(Level.FINE, "Could not find subnode", x);
                     ExecutionEnvironment ee = ExecutionEnvironmentFactory.fromUniqueID(path[0]);
                     if (ee != null) {
-                        ServerRecord serverRecord = ServerList.addServer(ee, null, RemoteSyncFactory.getDefault(), false, true);
+                        ServerRecord serverRecord = ServerList.addServer(ee, ee.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
                         if (serverRecord != null) {
                             try {
                                 _selected = NodeOp.findPath(buildHosts, path);

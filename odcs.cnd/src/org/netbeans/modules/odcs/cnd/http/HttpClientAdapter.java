@@ -66,10 +66,10 @@ public class HttpClientAdapter {
     private final HttpClient httpClient;
     private final ApacheHttpRestClientDelegate apacheDelegate;
 
-    private final String baseUrl;
+    private final String serverUrl;
 
-    private HttpClientAdapter(String baseUrl, HttpClient httpClient, ApacheHttpRestClientDelegate apacheDelegate) {
-        this.baseUrl = baseUrl;
+    private HttpClientAdapter(String serverUrl, HttpClient httpClient, ApacheHttpRestClientDelegate apacheDelegate) {
+        this.serverUrl = serverUrl;
         this.httpClient = httpClient;
         this.apacheDelegate = apacheDelegate;
 
@@ -82,9 +82,9 @@ public class HttpClientAdapter {
     public <T> T postForObject(String url, Class<T> responseType, Object request) {
         return apacheDelegate.postForObject(url, request, responseType);
     }
-    
-    public String getBaseUrl() {  
-        return baseUrl;
+
+    public String getServerUrl() {
+        return serverUrl;
     }
 
 //    public boolean postSimple(String url, String requestKey, String requestValue, String responseKey) {

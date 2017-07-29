@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -36,67 +36,69 @@
  * made subject to such option by the copyright holder.
  *
  * Contributor(s):
- *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.cnd.impl;
+package org.netbeans.modules.odcs.cnd.api;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.api.ODCSServer;
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
 import org.netbeans.modules.odcs.cnd.http.HttpClientAdapterFactory;
-import org.netbeans.modules.odcs.cnd.json.VMList;
-import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.server.ui.spi.RemoteMachineAccessor;
-import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Stupka
  * @author Ilia Gromov
  */
-@ServiceProvider(service = RemoteMachineAccessor.class)
-public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject> {
+public abstract class RestAction extends AbstractAction {
 
-    private static final String REST_URL_GET_VMS = "/api/cc/vms"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(RestAction.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor("REST request to Oracle Cloud", 3); // NOI18N
 
-    @Override
-    public Class<ODCSProject> type() {
-        return ODCSProject.class;
+    private final String serverUrl;
+
+    public RestAction(String serverUrl, String name) {
+        super(name);
+        this.serverUrl = serverUrl;
     }
 
     @Override
-    public boolean hasRemoteMachines(ProjectHandle<ODCSProject> project) {
-        // XXX should check if there are any for the given project
-        return true;
+    public void actionPerformed(ActionEvent e) {
+        RP.submit(() -> {
+            ProgressHandle createHandle = ProgressHandle.createHandle("REST request - " + getValue(NAME)); // NOI18N
+            try {
+                SwingUtilities.invokeLater(createHandle::start);
+
+                actionPerformedImpl(HttpClientAdapterFactory.get(serverUrl), e);
+            } catch (Exception ex) {
+                LOG.log(Level.FINE, "Exception in REST request", ex);
+            } finally {
+                SwingUtilities.invokeLater(createHandle::finish);
+            }
+        });
     }
 
-    @Override
-    public List<RemoteMachineHandle> getRemoteMachines(ProjectHandle<ODCSProject> project) {
-        if (!hasRemoteMachines(project)) {
-            return null;
+    public String getServerUrl() {
+        return serverUrl;
+    }
+
+    /**
+     * Will be invoked not from EDT
+     */
+    public abstract void actionPerformedImpl(HttpClientAdapter client, ActionEvent e);
+
+    public abstract String getRestUrl();
+
+    protected String formatUrl(String template, String... params) {
+        String result = template;
+
+        for (int i = 0; i < params.length; i++) {
+            String param = params[i];
+            result = result.replace("{" + i + "}", param); // NOI18N
         }
-
-        ODCSServer server = project.getTeamProject().getServer();
-
-        // TODO clear
-//        server.addPropertyChangeListener(ODCSServer.PROP_LOGIN, (PropertyChangeEvent evt) -> {
-//            if (evt.getNewValue() == null) {
-//                clients.remove(evt.)
-//            }
-//        });
-        HttpClientAdapter client = HttpClientAdapterFactory.create(server.getUrl(), server.getPasswordAuthentication());
-
-        // TODO! IMPORTANT if not initialized getUrl will return null. need to add action listerer for login/ logout
-        VMList vms = client.getForObject(server.getUrl() + REST_URL_GET_VMS, VMList.class);
-
-        List<RemoteMachineHandle> result = vms.getMapList()
-                .stream()
-                .map(desc -> new RemoteMachineHandleImpl(server.getUrl(), desc))
-                .collect(Collectors.toList());
 
         return result;
     }

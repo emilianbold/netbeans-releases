@@ -37,57 +37,27 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.odcs.cnd.actions;
+package org.netbeans.modules.odcs.cnd.http;
 
-import java.awt.event.ActionEvent;
-import java.beans.IntrospectionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.nodes.BeanNode;
-import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import java.net.PasswordAuthentication;
+import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
  * @author Ilia Gromov
  */
-public class PropertiesAction extends AbstractAction {
+public class HttpClientAdapterFactory {
 
-    private static final ImageIcon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/cnd/resources/gear.png", true); // NOI18N
-    private static final Logger LOG = Logger.getLogger(PropertiesAction.class.getName());
+    private static final Map<String, HttpClientAdapter> CLIENTS = new ConcurrentHashMap<>();
 
-    private final VMDescriptor desc;
-
-    @NbBundle.Messages({
-        "remotevm.properties.action.text=Properties"
-    })
-    public PropertiesAction(VMDescriptor desc) {
-        super(Bundle.remotevm_properties_action_text(), ICON);
-        this.desc = desc;
+    // replaces old key
+    public static HttpClientAdapter create(URL base, PasswordAuthentication pa) {
+        return CLIENTS.put(base.toExternalForm(), HttpClientAdapter.create(base, pa));
     }
 
-    @NbBundle.Messages({
-        "# {0} - vm name",
-        "remotevm.properties.title=Properties for {0}"
-    })
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        try {
-            BeanNode<VMDescriptor> beanNode = new BeanNode<>(desc);
-            PropertySheet propertySheet = new PropertySheet();
-            propertySheet.setNodes(new Node[]{beanNode});
-            
-            DialogDescriptor dd = new DialogDescriptor(propertySheet, Bundle.remotevm_properties_title(desc.getHostname()));
-            DialogDisplayer.getDefault().notify(dd);
-        } catch (IntrospectionException ex) {
-            LOG.log(Level.INFO, "Can't show properties", ex);
-        }
+    public static HttpClientAdapter get(String base) {
+        return CLIENTS.get(base);
     }
 }

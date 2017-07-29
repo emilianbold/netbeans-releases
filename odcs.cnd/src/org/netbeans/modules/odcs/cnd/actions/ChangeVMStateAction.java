@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.odcs.cnd.actions;
 
+import org.netbeans.modules.odcs.cnd.api.RestAction;
 import org.netbeans.modules.odcs.cnd.json.misc.State;
 import org.netbeans.modules.odcs.cnd.json.misc.Response;
 import java.awt.event.ActionEvent;
@@ -49,24 +50,22 @@ import org.openide.util.NbBundle;
  *
  * @author Ilia Gromov
  */
-public class ChangeVMStateAction extends RestAction implements TemplatedRestAction {
+public class ChangeVMStateAction extends RestAction {
 
     private static final String URL_TEMPLATE = "api/cc/vms/{0}/state"; // NOI18N
     private final String machineId;
     private final State state;
     private final String actionName;
 
-    public ChangeVMStateAction(HttpClientAdapter client, String machineId, String state, String actionName) {
-        super(actionName, client);
+    public ChangeVMStateAction(String serverUrl, String machineId, String state, String actionName) {
+        super(serverUrl, actionName);
         this.machineId = machineId;
         this.state = new State(state);
         this.actionName = actionName;
     }
 
     @Override
-    public void actionPerformedImpl(ActionEvent e) {
-        HttpClientAdapter client = getClient();
-
+    public void actionPerformedImpl(HttpClientAdapter client, ActionEvent e) {
         Response response = client.postForObject(getRestUrl(), Response.class, state);
 
         System.out.println(response.isSuccess());
@@ -74,20 +73,20 @@ public class ChangeVMStateAction extends RestAction implements TemplatedRestActi
 
     @Override
     public String getRestUrl() {
-        return String.join("/", getClient().getBaseUrl(), getUrl(URL_TEMPLATE, machineId));
+        return String.join("/", getServerUrl(), formatUrl(URL_TEMPLATE, machineId));
     }
 
     @NbBundle.Messages({
         "remotevm.startvm.action.text=Start VM"
     })
-    public static ChangeVMStateAction startedAction(HttpClientAdapter client, String machineId) {
-        return new ChangeVMStateAction(client, machineId, "STARTED", Bundle.remotevm_startvm_action_text()); // NOI18N
+    public static ChangeVMStateAction startedAction(String serverUrl, String machineId) {
+        return new ChangeVMStateAction(serverUrl, machineId, "STARTED", Bundle.remotevm_startvm_action_text()); // NOI18N
     }
 
     @NbBundle.Messages({
         "remotevm.stopvm.action.text=Stop VM"
     })
-    public static ChangeVMStateAction stoppedAction(HttpClientAdapter client, String machineId) {
-        return new ChangeVMStateAction(client, machineId, "STOPPED", Bundle.remotevm_stopvm_action_text()); // NOI18N
+    public static ChangeVMStateAction stoppedAction(String serverUrl, String machineId) {
+        return new ChangeVMStateAction(serverUrl, machineId, "STOPPED", Bundle.remotevm_stopvm_action_text()); // NOI18N
     }
 }
