@@ -68,15 +68,10 @@ public abstract class RestAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         RP.submit(() -> {
-            ProgressHandle createHandle = ProgressHandle.createHandle("REST request - " + getValue(NAME)); // NOI18N
             try {
-                SwingUtilities.invokeLater(createHandle::start);
-
                 actionPerformedImpl(HttpClientAdapterFactory.get(serverUrl), e);
             } catch (Exception ex) {
                 LOG.log(Level.FINE, "Exception in REST request", ex);
-            } finally {
-                SwingUtilities.invokeLater(createHandle::finish);
             }
         });
     }

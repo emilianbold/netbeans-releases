@@ -51,8 +51,11 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static javax.swing.Action.NAME;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NetworkSettings;
 
 /**
@@ -76,11 +79,32 @@ public class HttpClientAdapter {
     }
 
     public <T> T getForObject(String url, Class<T> responseType) {
-        return apacheDelegate.getForObject(url, responseType);
+        return getForObject(url, responseType, "HTTP request");
     }
 
     public <T> T postForObject(String url, Class<T> responseType, Object request) {
-        return apacheDelegate.postForObject(url, request, responseType);
+        return postForObject(url, responseType, request, "HTTP request");
+    }
+
+    public <T> T getForObject(String url, Class<T> responseType, String requestName) {
+        CndUtils.assertNonUiThread();
+
+        ProgressHandle handle = ProgressHandle.createHandle(requestName); // NOI18N
+        try {
+            return apacheDelegate.getForObject(url, responseType);
+        } finally {
+            handle.finish();
+        }
+    }
+
+    public <T> T postForObject(String url, Class<T> responseType, Object request, String requestName) {
+        CndUtils.assertNonUiThread();
+        ProgressHandle handle = ProgressHandle.createHandle(requestName); // NOI18N
+        try {
+            return apacheDelegate.getForObject(url, responseType, request);
+        } finally {
+            handle.finish();
+        }
     }
 
     public String getServerUrl() {

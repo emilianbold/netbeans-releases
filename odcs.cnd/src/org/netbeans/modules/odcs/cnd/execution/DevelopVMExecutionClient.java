@@ -50,7 +50,7 @@ import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
  */
 public final class DevelopVMExecutionClient {
 
-    private static final String VM_DESCRIPTOR_URL = "api2/cc/vms/";
+    private static final String VM_DESCRIPTOR_URL = "/api/cc/vms/";
 
     private final DevelopVMExecutionEnvironment env;
 
@@ -60,14 +60,14 @@ public final class DevelopVMExecutionClient {
 
     public String getHostIP() {
         HttpClientAdapter client = HttpClientAdapterFactory.get(env.getServerUrl());
-        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class);
+        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get IP of " + env.getMachineId());
 
         return descriptor.getHost();
     }
 
     public int getSSHPort() {
         HttpClientAdapter client = HttpClientAdapterFactory.get(env.getServerUrl());
-        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class);
+        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get SSH post of " + env.getMachineId());
 
         return Math.toIntExact(descriptor.getPort());
     }

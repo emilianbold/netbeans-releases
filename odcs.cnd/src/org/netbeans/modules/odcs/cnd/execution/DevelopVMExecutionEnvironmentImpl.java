@@ -27,7 +27,8 @@ public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnviron
 
     @Override
     public String getHost() {
-        throw new UnsupportedOperationException();
+        // TODO ???
+        return machineId;
     }
 
     @Override
@@ -43,7 +44,7 @@ public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnviron
 
     @Override
     public String getUser() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "ilia";
     }
 
     @Override

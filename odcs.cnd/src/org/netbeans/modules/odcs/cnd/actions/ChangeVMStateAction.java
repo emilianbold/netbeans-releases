@@ -66,7 +66,7 @@ public class ChangeVMStateAction extends RestAction {
 
     @Override
     public void actionPerformedImpl(HttpClientAdapter client, ActionEvent e) {
-        Response response = client.postForObject(getRestUrl(), Response.class, state);
+        Response response = client.postForObject(getRestUrl(), Response.class, state, "REST - Change VM state");
 
         System.out.println(response.isSuccess());
     }
