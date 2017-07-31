@@ -48,7 +48,8 @@ made subject to such option by the copyright holder.
     <property name="persistence.resources.dir" value="./src/org/netbeans/modules/j2ee/persistence/dd/resources/"/>
 
     <target name="build-init" depends="projectized.build-init">
-        <unzip src="external/j2ee.persistence-external-resources.zip" dest="${persistence.resources.dir}"/>
+        <unzip src="external/j2ee.persistence-eclipse-resources.zip" dest="${persistence.resources.dir}"/>
+        <unzip src="external/j2ee.persistence-glassfish-resources.zip" dest="${persistence.resources.dir}"/>
     </target>
 
 </project>
