@@ -270,6 +270,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.odcs.cnd</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.spi</package>
                 <package>org.netbeans.modules.cnd.spi.utils</package>
