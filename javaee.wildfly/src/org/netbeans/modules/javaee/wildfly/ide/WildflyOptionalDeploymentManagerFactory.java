@@ -83,7 +83,7 @@ public class WildflyOptionalDeploymentManagerFactory extends OptionalDeploymentM
     @Override
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
         WildflyDeploymentManager wdm = (WildflyDeploymentManager) dm;
-       return new WildflyIncrementalDeployment(wdm);
+       return new WildflyIncrementalRemoteDeployment(wdm);
     }
 
     @Override

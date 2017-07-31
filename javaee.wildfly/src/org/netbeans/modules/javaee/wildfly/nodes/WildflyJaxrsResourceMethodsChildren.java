@@ -56,7 +56,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
+ * @author Emmanuel Hugonnet
  */
 public class WildflyJaxrsResourceMethodsChildren extends Children.Keys {
     private final String serverUrl;
