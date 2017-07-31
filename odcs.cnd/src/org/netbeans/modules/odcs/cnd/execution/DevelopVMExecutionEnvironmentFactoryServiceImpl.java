@@ -28,12 +28,12 @@ public class DevelopVMExecutionEnvironmentFactoryServiceImpl implements Executio
 
     @Override
     public ExecutionEnvironment createNew(String user, String host) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public ExecutionEnvironment createNew(String user, String host, int port) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
@@ -51,13 +51,17 @@ public class DevelopVMExecutionEnvironmentFactoryServiceImpl implements Executio
     }
 
     private static ExecutionEnvironment parseString(String hostKey) {
+        if (!hostKey.startsWith(CLOUD_PREFIX)) {
+            return null;
+        }
+        
         String machineAtHost = hostKey.substring((CLOUD_PREFIX + "://").length());
 
         int delimIdx = machineAtHost.indexOf('@');
 
-        String machine = machineAtHost.substring(0, delimIdx - 1);
+        String machine = machineAtHost.substring(0, delimIdx);
         String host = machineAtHost.substring(delimIdx + 1);
-        
+
         String displayName = String.join("@", machine, host);
 
         return new DevelopVMExecutionEnvironmentImpl(host, machine, displayName);

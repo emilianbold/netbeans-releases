@@ -99,6 +99,7 @@ public class HttpClientAdapter {
 
     public <T> T postForObject(String url, Class<T> responseType, Object request, String requestName) {
         CndUtils.assertNonUiThread();
+
         ProgressHandle handle = ProgressHandle.createHandle(requestName); // NOI18N
         try {
             return apacheDelegate.getForObject(url, responseType, request);

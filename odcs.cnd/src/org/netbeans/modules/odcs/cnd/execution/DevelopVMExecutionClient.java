@@ -62,13 +62,20 @@ public final class DevelopVMExecutionClient {
         HttpClientAdapter client = HttpClientAdapterFactory.get(env.getServerUrl());
         VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get IP of " + env.getMachineId());
 
-        return descriptor.getHost();
+        return descriptor.getHostname();
     }
 
     public int getSSHPort() {
         HttpClientAdapter client = HttpClientAdapterFactory.get(env.getServerUrl());
-        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get SSH post of " + env.getMachineId());
+        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get SSH port of " + env.getMachineId());
 
         return Math.toIntExact(descriptor.getPort());
+    }
+
+    public VMDescriptor getVMDescriptor() {
+        HttpClientAdapter client = HttpClientAdapterFactory.get(env.getServerUrl());
+        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get host info - " + env.getMachineId());
+
+        return descriptor;
     }
 }

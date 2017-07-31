@@ -118,7 +118,8 @@ public class AddRemoteHostAction extends AbstractAction {
                 } catch (NodeNotFoundException x) {
                     LOG.log(Level.FINE, "Could not find subnode", x);
                     ExecutionEnvironment ee = ExecutionEnvironmentFactory.fromUniqueID(path[0]);
-                    if (ee != null) {
+                    if (ee != null && ee instanceof DevelopVMExecutionEnvironment) {
+                        ((DevelopVMExecutionEnvironment) ee).init();
                         ServerRecord serverRecord = ServerList.addServer(ee, ee.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
                         if (serverRecord != null) {
                             try {

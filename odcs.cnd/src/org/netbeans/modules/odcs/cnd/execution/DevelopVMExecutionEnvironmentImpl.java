@@ -5,20 +5,25 @@
 package org.netbeans.modules.odcs.cnd.execution;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.odcs.cnd.api.DevelopVMExecutionEnvironment;
+import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
+import org.openide.util.Exceptions;
 
 public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnvironment {
 
     private final String serverUrl;
     private final String machineId;
     //        return String.format("%s://%s@%s", CLOUD_PREFIX, developEE)
-    private String displayName;
+
+    private final AtomicReference<String> displayName = new AtomicReference<>();
+    private final AtomicReference<String> ip = new AtomicReference<>();
+    private final AtomicReference<Integer> port = new AtomicReference<>();
 
     DevelopVMExecutionEnvironmentImpl(String serverUrl, String machineId, String displayName) {
         this.serverUrl = serverUrl;
         this.machineId = machineId;
-        this.displayName = displayName;
     }
 
     DevelopVMExecutionEnvironmentImpl(String serverUrl, String machineId) {
@@ -28,28 +33,28 @@ public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnviron
     @Override
     public String getHost() {
         // TODO ???
-        return machineId;
+        return ip.get();
     }
 
     @Override
     public String getHostAddress() {
-        return new DevelopVMExecutionClient(this).getHostIP();
+        return ip.get();
     }
 
     // TODO should fetch displayName?
     @Override
     public String getDisplayName() {
-        return displayName;
+        return displayName.get();
     }
 
     @Override
     public String getUser() {
-        return "ilia";
+        return "FIXME-USER";
     }
 
     @Override
     public int getSSHPort() {
-        return new DevelopVMExecutionClient(this).getSSHPort();
+        return port.get();
     }
 
     @Override
@@ -64,7 +69,11 @@ public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnviron
 
     @Override
     public void prepareForConnection() throws IOException, ConnectionManager.CancellationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        VMDescriptor vmDescriptor = new DevelopVMExecutionClient(this).getVMDescriptor();
+
+        ip.set(vmDescriptor.getHostname());
+        port.set(Math.toIntExact(vmDescriptor.getPort()));
+        displayName.set(vmDescriptor.getDisplayName());
     }
 
     @Override
@@ -75,5 +84,14 @@ public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnviron
     @Override
     public String getMachineId() {
         return machineId;
+    }
+
+    @Override
+    public void init() {
+        try {
+            prepareForConnection();
+        } catch (IOException | ConnectionManager.CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

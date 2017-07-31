@@ -56,4 +56,6 @@ public abstract class DevelopVMExecutionEnvironment implements ExecutionEnvironm
     public static String encode(String serverUrl, String machineId) {
         return String.format("%s://%s@%s", CLOUD_PREFIX, machineId, serverUrl);
     }
+
+    public abstract void init();
 }
