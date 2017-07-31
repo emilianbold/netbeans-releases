@@ -237,6 +237,21 @@ public abstract class PsProvider {
             String pid = null;
             for (int columnIdx = 0; columnIdx < length; columnIdx++) {
                 final ProcessInfoDescriptor descriptor = descriptors.get(columnIdx);
+                //see bz#271185
+                if (vals.length == valuesIdx && ProcessInfoDescriptor.COMMAND_COLUMN_ID.equals(descriptor.id)) {
+                    //no value for command
+                    //sova     23486     1 июл28 
+                    //skip?
+                    String s = "";
+                    info.add("");//an empty string
+                    if (Log.Ps.debug) {
+                        System.out.println("----------"); //NOI18N
+                        System.out.println("column=" + descriptor.header); //NOI18N
+                        System.out.println("cx=" + columnIdx); //NOI18N
+                        System.out.println("s=_" + s + "_"); //NOI18N
+                    }
+                    break;
+                }
                 String s = vals[valuesIdx];
                 boolean increaseAndNext = false;
                 //in case previous descriptor was a STIME and on Windows there can be a space

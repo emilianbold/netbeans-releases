@@ -191,6 +191,23 @@ public class PsProviderTest extends CndBaseTestCase {
         return data;
     }
     
+    private PsProvider.PsData prepareLinuxDefaultData() {
+        List<ProcessInfoDescriptor> descriptors = Arrays.<ProcessInfoDescriptor>asList(
+                        descriptor(String.class, true, ProcessInfoDescriptor.UID_COLUMN_ID, "user", "USER"), // NOI18N
+                        descriptor(String.class, true,  ProcessInfoDescriptor.PID_COLUMN_ID, "pid", "PID"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.PPID_COLUMN_ID, "ppid", "PPID"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.STIME_COLUMN_ID, "stime", "STIME"), // NOI18N
+                        descriptor(String.class, true, ProcessInfoDescriptor.COMMAND_COLUMN_ID, "comm", "COMMAND") // NOI18N
+                    );         
+        PsProvider provider = new PsProvider.LinuxPsProvider(ExecutionEnvironmentFactory.getLocal(), descriptors);
+       // provider.parseHeader("USER       PID  PPID  C STIME TT           TIME COMMAND");
+        PsProvider.PsData data = provider.new PsData();
+//        data.setDescriptors(descriptors);
+        
+//        data.setHeader(provider.parseHeader("UID        PID  PPID  C STIME TTY          TIME CMD"));
+        return data;
+    }    
+    
     @Test
     public void testLinuxPs() {
         PsProvider.PsData data = prepareLinuxData();
@@ -207,6 +224,20 @@ public class PsProviderTest extends CndBaseTestCase {
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
         assertEquals("29270", res.get(0).get(1));
+    }
+    
+    @Test
+    public void testLinuxBz271185() {
+        PsProvider.PsData data = prepareLinuxDefaultData();
+        data.addProcess("postfix  22993  2801 17:58 pickup -l -t unix -u");
+        data.addProcess("sova     22997 22947 17:58 /bin/ps -e -o user,pid,ppid,stime,cmd");
+        data.addProcess("sova     23480     1 июл28  /etc/speech-dispatcher/modules//espeak.conf");
+        data.addProcess("sova     23486     1 июл28 ");
+        data.addProcess("sova     23488     1 июл28 /usr/bin/speech-dispatcher --spawn --communication-method unix_socket --socket-path /home/sova/.speech-dispatcher/speechd.sock --port 6560");
+        data.addProcess("root     24972     2 июл29 [kworker/6:1]");
+        Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
+        assertEquals("", res.get(3).get(data.commandColumnIdx()));
+        assertEquals("23488", res.get(4).get(1));
     }
     
     //private static String MAC_HEADER     = "  UID   PID  PPID   C     STIME TTY           TIME CMD";
