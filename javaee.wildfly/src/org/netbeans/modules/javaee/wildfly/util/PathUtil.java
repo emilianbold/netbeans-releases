@@ -47,7 +47,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
+ * @author Emmanuel Hugonnet
  */
 public class PathUtil {
     public static String normalizePath(String path) throws IOException {

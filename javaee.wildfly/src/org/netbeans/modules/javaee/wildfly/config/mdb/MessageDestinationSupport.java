@@ -47,7 +47,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
+ * @author Emmanuel Hugonnet
  */
 public interface MessageDestinationSupport {
 

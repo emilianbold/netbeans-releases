@@ -43,7 +43,7 @@ package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
+ * @author Emmanuel Hugonnet
  */
 public class Constants {
     // KEEP THESE IN ALPHABETICAL ORDER!
