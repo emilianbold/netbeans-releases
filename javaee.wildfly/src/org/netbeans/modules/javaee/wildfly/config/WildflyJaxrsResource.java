@@ -48,7 +48,7 @@ import java.util.Set;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
+ * @author Emmanuel Hugonnet
  */
 public class WildflyJaxrsResource {
 

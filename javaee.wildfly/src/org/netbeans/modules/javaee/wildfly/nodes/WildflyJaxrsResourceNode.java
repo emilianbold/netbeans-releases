@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2015 Red Hat, inc.
+ * @author Emmanuel Hugonnet
  */
 public class WildflyJaxrsResourceNode extends AbstractNode {
 

@@ -43,7 +43,7 @@ package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 /**
  *
- * @author >Emmanuel Hugonnet (c) 2016 Red Hat, inc.
+ * @author Emmanuel Hugonnet
  */
 public enum ResourceType {
     EAR, EJB, CAR, RAR, WAR, QUEUE, TOPIC, DATASOURCE;

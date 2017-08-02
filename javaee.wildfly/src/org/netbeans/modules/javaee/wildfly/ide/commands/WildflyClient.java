@@ -367,7 +367,7 @@ public class WildflyClient {
         return method.invoke(clientLocal, modelNode);
     }
 
-    // ModelNode
+    // Operation
     private synchronized Object executeOnOperation(WildflyDeploymentFactory.WildFlyClassLoader cl, Object operation) throws IOException, ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, IllegalAccessException {
         Class operationClazz = cl.loadClass("org.jboss.as.controller.client.Operation"); // NOI18N
