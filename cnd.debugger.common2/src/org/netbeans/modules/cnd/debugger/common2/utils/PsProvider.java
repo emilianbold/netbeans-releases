@@ -355,15 +355,14 @@ public abstract class PsProvider {
      */
     static class SolarisPsProvider extends PsProvider {
  
-        private final String solarisPsFormat;
+        private final String[] solarisPsFormat;
         
         public SolarisPsProvider(ExecutionEnvironment execEnv, List<ProcessInfoDescriptor> descriptors) {
             super(execEnv, descriptors);
+            solarisPsFormat = new String[2];//we add -o first
+            solarisPsFormat[0] = "-o";//NOI18N
             StringBuilder psCommandBuilder = new StringBuilder();
-            for (int i = 0; i < descriptors.size(); i++) {
-                if (i == 0) {
-                    psCommandBuilder.append(" -o "); //NOI18N
-                }
+            for (int i = 0; i < descriptors.size(); i++) {                
                 psCommandBuilder.append(descriptors.get(i).command);
                 if (i < descriptors.size() - 1) {
                     psCommandBuilder.append(","); //NOI18N
@@ -371,7 +370,7 @@ public abstract class PsProvider {
                     psCommandBuilder.append(" "); //NOI18N
                 }
             };            
-            solarisPsFormat = psCommandBuilder.toString();            
+            solarisPsFormat[1] = psCommandBuilder.toString();            
         }
 
 	public SolarisPsProvider(ExecutionEnvironment execEnv) {
@@ -399,9 +398,14 @@ public abstract class PsProvider {
 	protected String uidCommand() {
 	    return "/usr/xpg4/bin/id -u";	// NOI18N
 	}
-	
+
         @Override
-	protected String psCommand(String uid) {
+        protected String psExecutable() {
+            return "/usr/bin/ps";//NOI18N
+        }
+
+        @Override
+        protected String[] psExecutableArgs(String uid) {
 	    // SHOULD set LC_ALL=C here since we're depending
 	    // on column widths to get to the individual ps items!
             // (moved to getData)
@@ -411,12 +415,21 @@ public abstract class PsProvider {
 
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
-		return "/usr/bin/ps -e " + solarisPsFormat;	// NOI18N
+                List<String> res = new ArrayList<>();
+                res.add("-e");//NOI18N
+                res.addAll(Arrays.asList(solarisPsFormat));
+		return res.toArray(new String[0]);
+                //return "/usr/bin/ps -e " + solarisPsFormat;	// NOI18N
 	    } else {
                  //+ " -z `zonename`";	// NOI18N
-		return "/usr/bin/ps " + solarisPsFormat + " -u " + uid ;//NOI18N
+                List<String> res = new ArrayList<>();                
+                res.addAll(Arrays.asList(solarisPsFormat));
+                res.add("-u");//NOI18N
+                res.add(uid);
+                //return "/usr/bin/ps " + solarisPsFormat + " -u " + uid ;//NOI18N
+		return res.toArray(new String[0]);
 	    }
-	}
+        }
         
         private String zone = null;
         
@@ -481,14 +494,6 @@ public abstract class PsProvider {
             return res;
         }
 
-        @Override
-        protected String psExecutableCommand(String pid) {
-             // SHOULD set LC_ALL=C here since we're depending
-	    // on column widths to get to the individual ps items!
-            // (moved to getData)
-
-		return "/usr/bin/ps -ocmd= " + pid;//NOI18N
-        }
     }
     
     static void updatePargsData(PsData res, String[] pargs_args, List<String> pargsOutput) {
@@ -522,14 +527,13 @@ public abstract class PsProvider {
      */
     static class LinuxPsProvider extends PsProvider {
 
-        private final String linuxPsFormat;
+        private final String[] linuxPsFormat;
         public LinuxPsProvider(ExecutionEnvironment execEnv, List<ProcessInfoDescriptor> descriptors) {
             super(execEnv, descriptors);
+            linuxPsFormat = new String[2];
+            linuxPsFormat[0] = "-o";//NOI18N
             StringBuilder psCommandBuilder = new StringBuilder();
             for (int i = 0; i < descriptors.size(); i++) {
-                if (i == 0) {
-                    psCommandBuilder.append(" -o "); //NOI18N
-                }
                 psCommandBuilder.append(descriptors.get(i).command);
                 if (i < descriptors.size() - 1) {
                     psCommandBuilder.append(","); //NOI18N
@@ -537,7 +541,7 @@ public abstract class PsProvider {
                     psCommandBuilder.append(" "); //NOI18N
                 }
             };            
-            linuxPsFormat = psCommandBuilder.toString();                   
+            linuxPsFormat[1] = psCommandBuilder.toString();                   
         }
 
 	public LinuxPsProvider(ExecutionEnvironment execEnv) {
@@ -557,10 +561,14 @@ public abstract class PsProvider {
 	    return "/usr/bin/id -u";	// NOI18N
 	}
 
+        @Override
+        protected String psExecutable() {
+            return "/bin/ps";//NOI18N
+        }
 
         @Override
-	protected String psCommand(String uid) {
-	    // SHOULD set LC_ALL=C here since we're depending
+        protected String[] psExecutableArgs(String uid) {
+            // SHOULD set LC_ALL=C here since we're depending
 	    // on column widths to get to the individual ps items!
             // (moved to getData)
 
@@ -570,24 +578,27 @@ public abstract class PsProvider {
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
 		// OLD return "LANG=C /bin/ps -www -o pid,tty,time,cmd";
-		return "/bin/ps -e " + linuxPsFormat;	// NOI18N
+                List<String> res = new ArrayList<>();
+                res.add("-e");//NOI18N
+                res.addAll(Arrays.asList(linuxPsFormat));
+		return res.toArray(new String[0]);                
+//		return "/bin/ps -e " + linuxPsFormat;	// NOI18N
 	    } else {
-		return "/bin/ps " + linuxPsFormat + " -u " + uid + " --width 1024";		// NOI18N
-	    }
-	}
+                List<String> res = new ArrayList<>();
+                res.addAll(Arrays.asList(linuxPsFormat));
+                res.add("-u");//NOI18N
+                res.add(uid);
+                res.add("--width");//NOI18N
+                res.add("1024");//NOI18N
+		return res.toArray(new String[0]);                
+		//return "/bin/ps " + linuxPsFormat + " -u " + uid + " --width 1024";		// NOI18N
+	    }            
+                
+        }
 
         @Override
         protected boolean showAllProcesses() {
             return true;
-        }
-
-        @Override
-        protected String psExecutableCommand(String pid) {
-                         // SHOULD set LC_ALL=C here since we're depending
-	    // on column widths to get to the individual ps items!
-            // (moved to getData)
-
-		return "/bin/ps -ocmd= " + pid;//NOI18N
         }
 
     }
@@ -640,13 +651,22 @@ public abstract class PsProvider {
         }
 
         @Override
-        protected String psCommand(String uid) {
+        protected String[] psExecutableArgs(String uid) {
             if ( (uid == null) || (uid.equals(zero)) ) {
-		return "/bin/ps -e " + macOsPsFormat;	// NOI18N
+                List<String> res = new ArrayList<>();
+                res.add("-e");//NOI18N
+                res.addAll(Arrays.asList(macOsPsFormat));
+		return res.toArray(new String[0]);                 
+//		return "/bin/ps -e " + macOsPsFormat;	// NOI18N
 	    } else {
-		return "/bin/ps " + macOsPsFormat + " -u " + uid;		// NOI18N
+                List<String> res = new ArrayList<>();                
+                res.addAll(Arrays.asList(macOsPsFormat));
+                res.add("-u");//NOI18N
+                res.add(uid);
+		return res.toArray(new String[0]);                                 
+		//return "/bin/ps " + macOsPsFormat + " -u " + uid;		// NOI18N
 	    }
-        }
+        }                
     }
 
     /**
@@ -700,23 +720,30 @@ public abstract class PsProvider {
 	}
 
         @Override
-	protected String psCommand(String uid) {
-	    // SHOULD set LC_ALL=C here since we're depending
-	    // on column widths to get to the individual ps items!
-            // (moved to getData)
+        protected String psExecutable() {
+            return getUtilityPath("ps");//NOI18N
+        }
 
+        @Override
+        protected String[] psExecutableArgs(String uid) {
+//	    // SHOULD set LC_ALL=C here since we're depending
+//	    // on column widths to get to the individual ps items!
+//            // (moved to getData)
+//
 	    if (Log.Ps.null_uid)
 		uid = null;
 
             // Always show all processes on Windows (-W option), see IZ 193743
 	    if ( (uid == null) || (uid.equals(zero)) ) {
 		// uid=0 => root; use ps -ef
-		return getUtilityPath("ps") + " -W";	// NOI18N
+                //return getUtilityPath("ps") + " -W";	// NOI18N
+		return new String[]{"-W"};	// NOI18N
 	    } else {
-		return getUtilityPath("ps") + " -u " + uid + " -W";	// NOI18N
+                //return getUtilityPath("ps") + " -u " + uid + " -W";	// NOI18N
+		return new String[]{"-u",uid + "","-W"};	// NOI18N
 	    }
-	}
-        
+        }
+
         private String getUtilityPath(String util) {
             File file = new File(CompilerSetUtils.getCygwinBase() + "/bin", util + ".exe"); // NOI18N
             if (file.exists()) {
@@ -736,10 +763,6 @@ public abstract class PsProvider {
             return fileMapper;
         }
 
-        @Override
-        protected String psExecutableCommand(String pid) {
-            return null;
-        }
     }
     
     public static synchronized PsProvider getDefault(ExecutionEnvironment exEnv) {
@@ -821,9 +844,10 @@ public abstract class PsProvider {
     }    
 
 
-    protected abstract String psCommand(String root);
-    
-    protected abstract String psExecutableCommand(String pid);
+    protected abstract String psExecutable();
+
+    protected abstract String[] psExecutableArgs(String root);
+
 
     protected abstract String uidCommand(); // for Runtime.exe
     
@@ -1024,7 +1048,8 @@ public abstract class PsProvider {
 	try {
             //FIXME
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
-            npb.setCommandLine(psCommand(luid));
+            npb.setExecutable(psExecutable());
+            npb.setArguments(psExecutableArgs(luid));
             npb.getEnvironment().put("LANG", "C"); //NOI18N
             ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
 	    int lineNo = 0;
