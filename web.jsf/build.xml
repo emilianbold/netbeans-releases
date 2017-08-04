@@ -50,7 +50,9 @@ made subject to such option by the copyright holder.
     <property name="resources.dir" value="./src/org/netbeans/modules/web/jsf/resources/"/>
 
     <target name="build-init" depends="projectized.build-init">
-        <unzip src="external/web.jsf-external-resources.zip" dest="${resources.dir}"/>
+        <unzip src="external/web.jsf-glassfish-ext-resources.zip" dest="${resources.dir}"/>
+        <unzip src="external/web.jsf-netbeans-ext-resources.zip" dest="${resources.dir}"/>
+        <unzip src="external/web.jsf-w3c-ext-resources.zip" dest="${resources.dir}"/>
     </target>
 
     <target name="netbeans-extra" depends="release"/>
