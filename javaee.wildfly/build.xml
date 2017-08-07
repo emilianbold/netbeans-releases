@@ -44,4 +44,23 @@ made subject to such option by the copyright holder.
 -->
 <project name="javaee.wildfly" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="build-init" depends="projectized.build-init">
+        <get dest="src/org/netbeans/modules/javaee/wildfly/resources" skipexisting="true">
+            <url url="http://docs.jboss.org/ironjacamar/schema/datasources_1_1.xsd"/>
+            <url url="http://www.jboss.org/schema/jbossas/jboss-app_4_0.dtd"/>
+            <url url="http://www.jboss.org/schema/jbossas/jboss-app_7_0.xsd"/>
+            <url url="http://www.jboss.org/schema/jbossas/jboss-as-config_2_0.xsd"/>
+            <url url="http://www.jboss.org/schema/jbossas/jboss-as-messaging-deployment_1_0.xsd"/>
+            <!--<url url="http://www.jboss.org/j2ee/dtd/jboss-client_4_0.dtd"/>-->
+            <url url="http://www.jboss.org/schema/jbossas/jboss-common_6_0.xsd"/>
+            <!--<url url="http://www.jboss.org/schema/jbossas/jboss-common_7_0.xsd"/>-->
+            <url url="http://www.jboss.org/j2ee/dtd/jboss-ds_1_5.dtd"/>
+            <url url="http://www.jboss.org/j2ee/dtd/jboss-service_4_0.dtd"/>
+            <!--<url url="http://www.jboss.org/schema/jbossas/jboss-web_10_1.xsd"/>-->
+            <!--<url url="http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd"/>-->
+            <url url="http://www.jboss.org/schema/jbossas/jboss-web_7_2.xsd"/>
+            <!--<url url="http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd"/>-->
+            <url url="http://www.jboss.org/schema/jbossas/wildfly-messaging-activemq-deployment_1_0.xsd" />
+        </get>
+    </target>
 </project>
