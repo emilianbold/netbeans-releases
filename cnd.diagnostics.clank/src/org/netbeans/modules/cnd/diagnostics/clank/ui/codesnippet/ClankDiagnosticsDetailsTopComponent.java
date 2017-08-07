@@ -45,16 +45,22 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
+import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.clang.tools.services.ClankDiagnosticInfo;
@@ -64,14 +70,12 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.diagnostics.clank.ClankCsmErrorInfo;
 import org.netbeans.modules.cnd.diagnostics.clank.impl.ClankCsmErrorInfoAccessor;
-import org.netbeans.modules.cnd.diagnostics.clank.ui.Utilities;
 import org.netbeans.modules.cnd.diagnostics.clank.ui.views.DiagnosticsAnnotationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -103,29 +107,75 @@ import org.openide.windows.WindowManager;
 )
 @TopComponent.Registration(mode = "output", openAtStartup = false, position = 357)
 @ActionID(category = "Window", id = "org.netbeans.modules.cnd.diagnostics.clank.ui.ClankDiagnosticsDetailsTopComponent")
-@ActionReference(path = "Menu/Window" , position = 337)
+@ActionReference(path = "Menu/Window/Tools", position = 337)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_ClankDiagnosticsDetailsAction",//NOI18N
         preferredID = "ClankDiagnosticsDetailsTopComponent"//NOI18N
 )
 @Messages({
-    "CTL_ClankDiagnosticsDetailsAction=ClankDiagnosticsDetails",
-    "CTL_ClankDiagnosticsDetailsTopComponent=ClankDiagnosticsDetails Window",
-    "HINT_ClankDiagnosticsDetailsTopComponent=This is a ClankDiagnosticsDetails window"
+    "CTL_ClankDiagnosticsDetailsAction=Clank Diagnostic Details Window",
+    "CTL_ClankDiagnosticsDetailsTopComponent=Clank Diagnostic Details Window",
+    "HINT_ClankDiagnosticsDetailsTopComponent=This is a Clank Diagnostics Details window"
 })
 public final class ClankDiagnosticsDetailsTopComponent extends TopComponent implements ExplorerManager.Provider, PropertyChangeListener {
 
     static final String PREFERRED_ID = "ClankDiagnosticsDetailsTopComponent";//NOI18N
     private final ExplorerManager manager = new ExplorerManager();
     private BeanTreeView btv;
+    private final Action copyAction;
 
     public ClankDiagnosticsDetailsTopComponent() {
         initComponents();
         setName(Bundle.CTL_ClankDiagnosticsDetailsTopComponent());
         setToolTipText(Bundle.HINT_ClankDiagnosticsDetailsTopComponent());
-        btv = new BeanTreeView();
+        btv = new BeanTreeView();        
         jSplitPane2.setLeftComponent(btv);
         btv.setRootVisible(false);
+        copyAction = new AbstractAction(NbBundle.getMessage(ClankDiagnosticsDetailsTopComponent.class, "ClankDiagnosticsDetailsTopComponent.Copy")) {//NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Node[] selectedNodes = getExplorerManager().getSelectedNodes();
+                if (selectedNodes == null || selectedNodes.length == 0) {
+                    selectedNodes = getExplorerManager().getRootContext().getChildren().getNodes();
+                }
+                StringBuilder content = new StringBuilder();      
+                for (Node n : selectedNodes){
+                    if (n instanceof ClankDiagnosticInfoNode){
+                        try {
+                            ClankDiagnosticInfoNode node = (ClankDiagnosticInfoNode) n;
+                            CsmFile csmErrorFile = ClankCsmErrorInfoAccessor.getDefault().getCsmFile(node.error);
+                            FileSystem fSystem = csmErrorFile.getFileObject().getFileSystem();
+                            FileObject fo = CndFileUtils.toFileObject(fSystem, node.note.getSourceFileName());
+                            CsmFile csmNoteFile = CsmUtilities.getCsmFile(fo, false, false);                            
+                            content.append(node.note.getMessage()).append(" at ").append(node.note.getSourceFileName()).append(" [");//NOI18N
+                            final int[] startOffsets = node.note.getStartOffsets();
+                            final int[] endOffsets = node.note.getEndOffsets();
+                            for (int i = 0; i < startOffsets.length; i++) {
+                                int[] lineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, startOffsets[i]);
+                                int[] endlineColumnByOffset = CsmFileInfoQuery.getDefault().getLineColumnByOffset(csmNoteFile, endOffsets[i]);
+                                content.append(lineColumnByOffset[0]).append(":").append(lineColumnByOffset[1]).append("-");//NOI18N
+                                content.append(endlineColumnByOffset[0]).append(":").append(endlineColumnByOffset[1]);//NOI18N
+                                if (i < startOffsets.length -1) {
+                                    content.append(";");//NOI18N
+                                    
+                                }
+                            }
+                            content.append("]\n");//NOI18N
+                            //now add details
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(content.toString()), new ClipboardOwner() {
+
+                    @Override
+                    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+                        //do nothing
+                    }
+                });                
+            }
+        };
         previousError.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -232,7 +282,7 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
 
     public void setData(ClankCsmErrorInfo info) {
         final ClankDiagnosticChildren rootChildren = new ClankDiagnosticChildren(info);
-        final AbstractNode rootContext = new AbstractNode(rootChildren);
+        final RootDiagnisticNode rootContext = new RootDiagnisticNode(rootChildren);
         manager.setRootContext(rootContext);
         ClankDiagnosticInfoNode node = (ClankDiagnosticInfoNode) rootChildren.getNodes()[0];
         setSelectedNode(node.note);
@@ -447,6 +497,18 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
             setSelectedNode(note);
         }
     }
+    
+    private class RootDiagnisticNode extends AbstractNode {
+
+        public RootDiagnisticNode(ClankDiagnosticChildren children) {
+            super(children);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{copyAction};
+        }
+    }
 
     private class ClankDiagnosticChildren extends Children.Keys<ClankDiagnosticInfo> {
 
@@ -460,7 +522,7 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
             keys.addAll(notes);
             setKeys(keys);
         }
-
+        
         @Override
         protected Node[] createNodes(ClankDiagnosticInfo key) {
             return new Node[]{new ClankDiagnosticInfoNode(error, key)};
@@ -522,6 +584,11 @@ public final class ClankDiagnosticsDetailsTopComponent extends TopComponent impl
         @Override
         public Action getPreferredAction() {
             return defaultAction;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {copyAction};
         }
 
         @Override
