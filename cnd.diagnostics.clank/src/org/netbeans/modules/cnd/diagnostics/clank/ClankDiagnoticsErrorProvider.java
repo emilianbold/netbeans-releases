@@ -42,16 +42,13 @@ package org.netbeans.modules.cnd.diagnostics.clank;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.tools.services.ClankCompilationDataBase;
-import org.clang.tools.services.ClankDiagnosticEnhancedFix;
 import org.clang.tools.services.ClankDiagnosticInfo;
 import org.clang.tools.services.ClankDiagnosticResponse;
 import org.clang.tools.services.ClankDiagnosticServices;
@@ -59,7 +56,9 @@ import org.clang.tools.services.ClankRunDiagnosticsSettings;
 import org.clang.tools.services.checkers.api.ClankChecker;
 import org.clang.tools.services.checkers.api.ClankCheckersProvider;
 import org.clang.tools.services.spi.ClankFileSystemProvider;
+import org.clang.tools.services.spi.ClankMemoryBufferProvider;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
+import org.llvm.support.MemoryBuffer;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
@@ -74,18 +73,15 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -213,14 +209,16 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
             }
         }
         try {
-            ClankDiagnosticServices.verify(entry, settings);
+            ClankMemoryBufferProvider provider = Lookup.getDefault().lookup(ClankMemoryBufferProvider.class);
+            Map<String, MemoryBuffer> remappedBuffers = provider.getRemappedBuffers();            
+            ClankDiagnosticServices.verify(entry, settings, remappedBuffers);
         } catch (Throwable ex) {
             //catch anything
 
         }
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+  
     private static ClankCompilationDataBase.Entry createEntry(CsmFile file, boolean useURL) {
         NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
         CharSequence mainFile = nfi != null ? (useURL ? 

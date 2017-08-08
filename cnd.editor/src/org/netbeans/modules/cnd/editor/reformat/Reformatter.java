@@ -187,7 +187,7 @@ public class Reformatter implements ReformatTask {
           title = "<stdin>"; //NOI18N
         }
         StringRef file = new StringRef(/*KEEP_STR*/title); //NOI18N
-        std.set<Replacement> replaces = FormatGlobals.reformat(clangFormatStyle, stringRef, Ranges, file);
+        std.setType<Replacement> replaces = FormatGlobals.reformat(clangFormatStyle, stringRef, Ranges, file);
         LinkedList<Replacement> diffs = new LinkedList<Replacement>();
         for(Replacement r : replaces){
             diffs.addFirst(r);
