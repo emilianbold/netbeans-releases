@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
             <url url="http://www.jboss.org/schema/jbossas/jboss-app_7_0.xsd"/>
             <url url="http://www.jboss.org/schema/jbossas/jboss-as-config_2_0.xsd"/>
             <url url="http://www.jboss.org/schema/jbossas/jboss-as-messaging-deployment_1_0.xsd"/>
-            <!--<url url="http://www.jboss.org/j2ee/dtd/jboss-client_4_0.dtd"/>-->
+            <url url="http://www.jboss.org/j2ee/dtd/jboss-client_4_0.dtd"/>
             <url url="http://www.jboss.org/schema/jbossas/jboss-common_6_0.xsd"/>
             <!--<url url="http://www.jboss.org/schema/jbossas/jboss-common_7_0.xsd"/>-->
             <url url="http://www.jboss.org/j2ee/dtd/jboss-ds_1_5.dtd"/>
