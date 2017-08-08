@@ -180,7 +180,7 @@ import org.openide.util.Exceptions;
                     if (isRemoveTokenRange || removeStartPosition.getOffset() != removeEndPosition.getOffset()) {
                         //replace
                         document.remove(removeStartPosition.getOffset(), removeEndPosition.getOffset() - removeStartPosition.getOffset() + 1);
-                        document.insertString(insertStartPosition.getOffset(), textToInsert, null);
+                        document.insertString(removeStartPosition.getOffset(), textToInsert, null);
                     } else {
                         document.insertString(removeStartPosition.getOffset(), textToInsert, null);
                     }
