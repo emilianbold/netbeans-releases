@@ -46,7 +46,7 @@
          consistency with the Servlet API. </xsd:documentation>
    </xsd:annotation>
 
-   <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://java.sun.com/xml/ns/javaee/javaee_6.xsd"/>
+   <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="javaee_6.xsd"/>
 
    <xsd:group name="descriptionGroup">
       <xsd:sequence>
