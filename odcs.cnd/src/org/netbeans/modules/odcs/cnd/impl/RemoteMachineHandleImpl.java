@@ -44,7 +44,6 @@ import javax.swing.Action;
 import org.netbeans.modules.odcs.cnd.actions.AddRemoteHostAction;
 import org.netbeans.modules.odcs.cnd.actions.ChangeVMStateAction;
 import org.netbeans.modules.odcs.cnd.actions.PropertiesAction;
-import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
 import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
 import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
 
@@ -68,7 +67,7 @@ public class RemoteMachineHandleImpl extends RemoteMachineHandle {
 
     @Override
     public String getDisplayName() {
-        return name + ": " + url; // NOI18N
+        return name; // NOI18N
     }
 
     @Override
@@ -87,5 +86,15 @@ public class RemoteMachineHandleImpl extends RemoteMachineHandle {
             getDefaultAction(),
             ChangeVMStateAction.startedAction(serverUrl.toExternalForm(), desc.getMachineId()),
             ChangeVMStateAction.stoppedAction(serverUrl.toExternalForm(), desc.getMachineId())};
+    }
+
+    @Override
+    public String getState() {
+        return desc.getState();
+    }
+
+    @Override
+    public String getStateDetail() {
+        return desc.getStateDetail();
     }
 }

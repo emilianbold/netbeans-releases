@@ -10,29 +10,32 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.odcs.cnd.api.DevelopVMExecutionEnvironment;
 import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnvironment {
 
-    private final String serverUrl;
+    private final String user;
     private final String machineId;
-    //        return String.format("%s://%s@%s", CLOUD_PREFIX, developEE)
+    private final String serverUrl;
 
     private final AtomicReference<String> displayName = new AtomicReference<>();
     private final AtomicReference<String> ip = new AtomicReference<>();
     private final AtomicReference<Integer> port = new AtomicReference<>();
 
-    DevelopVMExecutionEnvironmentImpl(String serverUrl, String machineId, String displayName) {
+    DevelopVMExecutionEnvironmentImpl(String user, String machineId, String serverUrl, String displayName) {
         this.serverUrl = serverUrl;
+        this.user = user;
         this.machineId = machineId;
+
+        this.displayName.set(displayName);
     }
 
-    DevelopVMExecutionEnvironmentImpl(String serverUrl, String machineId) {
-        this(serverUrl, machineId, encode(serverUrl, machineId));
+    DevelopVMExecutionEnvironmentImpl(String user, String machineId, String serverUrl) {
+        this(user, machineId, serverUrl, encode(user, machineId, serverUrl));
     }
 
     @Override
     public String getHost() {
-        // TODO ???
         return ip.get();
     }
 
@@ -49,7 +52,7 @@ public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnviron
 
     @Override
     public String getUser() {
-        return "FIXME-USER";
+        return user;
     }
 
     @Override
@@ -67,13 +70,21 @@ public class DevelopVMExecutionEnvironmentImpl extends DevelopVMExecutionEnviron
         return false;
     }
 
+    private void checkLoaded() {
+
+    }
+
     @Override
     public void prepareForConnection() throws IOException, ConnectionManager.CancellationException {
         VMDescriptor vmDescriptor = new DevelopVMExecutionClient(this).getVMDescriptor();
 
+        Mutex lock = new Mutex();
+
         ip.set(vmDescriptor.getHostname());
         port.set(Math.toIntExact(vmDescriptor.getPort()));
-        displayName.set(vmDescriptor.getDisplayName());
+
+        String name = user + "@" + vmDescriptor.getDisplayName();
+        displayName.set(name);
     }
 
     @Override

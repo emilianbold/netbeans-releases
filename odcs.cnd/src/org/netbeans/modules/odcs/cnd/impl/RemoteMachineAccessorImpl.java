@@ -90,7 +90,6 @@ public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject
 //        });
         HttpClientAdapter client = HttpClientAdapterFactory.create(server.getUrl(), server.getPasswordAuthentication());
 
-        // TODO! IMPORTANT if not initialized getUrl will return null. need to add action listerer for login/ logout
         VMList vms = client.getForObject(server.getUrl() + REST_URL_GET_VMS, VMList.class);
 
         List<RemoteMachineHandle> result = vms.getMapList()

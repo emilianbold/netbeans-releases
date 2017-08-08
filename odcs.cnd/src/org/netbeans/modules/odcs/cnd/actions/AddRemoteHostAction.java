@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.odcs.cnd.actions;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
@@ -47,9 +48,14 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.ui.validation.Validator;
+import org.netbeans.modules.cnd.utils.ui.validation.Validators;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.odcs.cnd.api.DevelopVMExecutionEnvironment;
+import org.netbeans.modules.odcs.cnd.ui.DevelopVMConnectionPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
@@ -80,9 +86,37 @@ public class AddRemoteHostAction extends AbstractAction {
         this.machineId = machineId;
     }
 
+    @NbBundle.Messages({
+        "add_remote_host_config_title=Connection properties"
+    })
     @Override
     public void actionPerformed(ActionEvent e) {
-        selectNode(DevelopVMExecutionEnvironment.encode(serverUrl, machineId));
+        DevelopVMConnectionPanel panel = new DevelopVMConnectionPanel(machineId + "@" + serverUrl);
+
+        final DialogDescriptor dd = new DialogDescriptor(
+                panel,
+                Bundle.add_remote_host_config_title(),
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                null
+        );
+        
+        dd.setValid(false);
+
+        Validator validator = Validators.connect(panel.getUserField(), dd);
+        validator.addValidationRule(s -> !s.isEmpty());
+
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+
+        if (dd.getValue() != DialogDescriptor.OK_OPTION) {
+            return;
+        }
+        
+        String user = panel.getUserField().getText();
+
+        selectNode(DevelopVMExecutionEnvironment.encode(user, machineId, serverUrl));
     }
 
     /**

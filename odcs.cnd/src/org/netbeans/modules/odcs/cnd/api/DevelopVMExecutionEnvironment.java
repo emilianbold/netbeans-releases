@@ -53,8 +53,8 @@ public abstract class DevelopVMExecutionEnvironment implements ExecutionEnvironm
 
     public abstract String getMachineId();
 
-    public static String encode(String serverUrl, String machineId) {
-        return String.format("%s://%s@%s", CLOUD_PREFIX, machineId, serverUrl);
+    public static String encode(String user, String machineId, String serverUrl) {
+        return String.format("%s://%s@%s@%s", CLOUD_PREFIX, user, machineId, serverUrl);
     }
 
     public abstract void init();

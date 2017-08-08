@@ -40,7 +40,7 @@ public class DevelopVMExecutionEnvironmentFactoryServiceImpl implements Executio
     public String toUniqueID(ExecutionEnvironment executionEnvironment) {
         if (executionEnvironment instanceof DevelopVMExecutionEnvironment) {
             DevelopVMExecutionEnvironment env = (DevelopVMExecutionEnvironment) executionEnvironment;
-            return DevelopVMExecutionEnvironment.encode(env.getMachineId(), env.getServerUrl());
+            return DevelopVMExecutionEnvironment.encode(env.getUser(), env.getMachineId(), env.getServerUrl());
         }
         return null;
     }
@@ -54,16 +54,15 @@ public class DevelopVMExecutionEnvironmentFactoryServiceImpl implements Executio
         if (!hostKey.startsWith(CLOUD_PREFIX)) {
             return null;
         }
-        
-        String machineAtHost = hostKey.substring((CLOUD_PREFIX + "://").length());
 
-        int delimIdx = machineAtHost.indexOf('@');
+        String userAtmachineAtHost = hostKey.substring((CLOUD_PREFIX + "://").length());
 
-        String machine = machineAtHost.substring(0, delimIdx);
-        String host = machineAtHost.substring(delimIdx + 1);
+        String[] split = userAtmachineAtHost.split("@", 3);
 
-        String displayName = String.join("@", machine, host);
+        String user = split[0];
+        String machineId = split[1];
+        String host = split[2];
 
-        return new DevelopVMExecutionEnvironmentImpl(host, machine, displayName);
+        return new DevelopVMExecutionEnvironmentImpl(user, machineId, host);
     }
 }

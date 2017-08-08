@@ -91,6 +91,7 @@ public class HttpClientAdapter {
 
         ProgressHandle handle = ProgressHandle.createHandle(requestName); // NOI18N
         try {
+            handle.start();
             return apacheDelegate.getForObject(url, responseType);
         } finally {
             handle.finish();
@@ -102,6 +103,7 @@ public class HttpClientAdapter {
 
         ProgressHandle handle = ProgressHandle.createHandle(requestName); // NOI18N
         try {
+            handle.start();
             return apacheDelegate.getForObject(url, responseType, request);
         } finally {
             handle.finish();

@@ -54,7 +54,10 @@ public class HttpClientAdapterFactory {
 
     // replaces old key
     public static HttpClientAdapter create(URL base, PasswordAuthentication pa) {
-        return CLIENTS.put(base.toExternalForm(), HttpClientAdapter.create(base, pa));
+        HttpClientAdapter adapter = HttpClientAdapter.create(base, pa);
+        CLIENTS.put(base.toExternalForm(), adapter);
+        
+        return adapter;
     }
 
     public static HttpClientAdapter get(String base) {
