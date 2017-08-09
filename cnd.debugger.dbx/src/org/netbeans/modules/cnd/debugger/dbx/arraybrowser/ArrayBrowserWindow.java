@@ -128,7 +128,7 @@ public final class ArrayBrowserWindow extends TopComponent implements ChangeList
 	}
     }
 
-    public ArrayView findArrayViewByName(String name) {
+    /*package*/ ArrayView findArrayViewByName(String name) {
 
 	int i = 0;
 	int n = abwArrayViewVector.size();
@@ -151,7 +151,7 @@ public final class ArrayBrowserWindow extends TopComponent implements ChangeList
 	    return null;
     }
 
-    public ArrayView findArrayViewById(int id) {
+    /*package*/ ArrayView findArrayViewById(int id) {
 	
 	int i = 0;
 	int n = abwArrayViewVector.size();
@@ -302,7 +302,7 @@ public final class ArrayBrowserWindow extends TopComponent implements ChangeList
 	}
     }
 
-    public void closeRequest(ArrayView av) {
+    /*package*/ void closeRequest(ArrayView av) {
         controller.deleteArray(av.getId());
     }
 
@@ -312,7 +312,7 @@ public final class ArrayBrowserWindow extends TopComponent implements ChangeList
 	    removeTab(av, abwArrayViewVector.size());
     }
 
-    public void removeTab(ArrayView av, int n) {
+    /*package*/ void removeTab(ArrayView av, int n) {
 
 	// if (n == 1), control will not come in here
 	// if (n == otheres), do nothing
