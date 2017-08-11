@@ -66,6 +66,7 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
 		    DebuggerOption.SESSION_REUSE.createUI(),
 		    DebuggerOption.BALLOON_EVAL.createUI(),
                     DebuggerOption.ARGS_VALUES_IN_STACK.createUI(),
+                    DebuggerOption.DO_NOT_POPUP_DEBUGGER_ERRORS_DIALOG.createUI(),
 		};  
 	    OptionUI[]	panels = {
 		    //DebuggerOption.SUPPRESS_STARTUP_MESSAGE.createUI(),
@@ -74,6 +75,7 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
 		    DebuggerOption.RUN_AUTOSTART.createUI(),
 		    DebuggerOption.BALLOON_EVAL.createUI(),
                     DebuggerOption.ARGS_VALUES_IN_STACK.createUI(),
+                    DebuggerOption.DO_NOT_POPUP_DEBUGGER_ERRORS_DIALOG.createUI(),
 		};
 
 	    if (NativeDebuggerManager.isStandalone() || NativeDebuggerManager.isPL()) {

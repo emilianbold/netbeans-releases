@@ -93,7 +93,7 @@ Contributor(s):
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.31.14</specification-version>
+                        <specification-version>3.31.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

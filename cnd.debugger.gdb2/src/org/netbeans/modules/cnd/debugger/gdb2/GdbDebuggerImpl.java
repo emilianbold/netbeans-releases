@@ -1756,9 +1756,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return errMsg;
     }
 
+    public String getLogger() {
+        return gdb == null ? null : gdb.getLogger();
+    }
+
     private void genericFailure(MIRecord record) {
         String errMsg = getErrMsg(record);
-        manager().error(record.command().routingToken(), new GdbError(errMsg), this);
+        manager().error(record.command().routingToken(), new GdbError(record.command().command(),errMsg), this);
     }
 
     private void unexpected(String what, String command) {

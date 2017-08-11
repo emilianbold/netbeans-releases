@@ -258,4 +258,8 @@ public interface NativeDebugger extends BreakpointProvider {
      * @return		/home/ivan/proj/src/t.c
      */
     public String remoteToLocal(String who, String path);
+    
+    default public String getLogger(){
+        return null;
+    }
 }

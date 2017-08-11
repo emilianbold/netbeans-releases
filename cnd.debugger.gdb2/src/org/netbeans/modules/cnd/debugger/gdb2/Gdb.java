@@ -840,4 +840,8 @@ public class Gdb {
     void sendCommand(MICommand cmd) {
         sendCommand(cmd, false);
     }
+    
+    /*package*/ String getLogger() {
+        return myMIProxy.getLogger();
+    }
 }
