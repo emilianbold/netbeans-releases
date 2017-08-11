@@ -44,7 +44,7 @@ Contributor(s):
 
     <target name="netbeans-extra" depends="build-chrome-plugin"/>
 
-    <target name="build-chrome-plugin" depends="build-crx-task">
+    <target name="build-chrome-plugin" depends="build-crx-task" if="keys.present">
         <taskdef name="crx" classname="org.netbeans.modules.extbrowser.CrxTask" classpath="build/antclasses"/>
         <zip destfile="build/netbeans-chrome-connector.zip">
             <fileset dir="plugins/chrome" excludes="**/public.pem"/>
@@ -54,7 +54,7 @@ Contributor(s):
         <copy file="build/netbeans-chrome-connector.crx" todir="${cluster}/modules/lib/"/>
     </target>
 
-    <target name="build-crx-task">
+    <target name="build-crx-task" depends="keys.check" if="keys.present">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" includeantruntime="false">
             <classpath>
@@ -63,4 +63,12 @@ Contributor(s):
         </javac>
     </target>
 
+    <target name="keys.check">
+        <condition property="keys.present">
+            <and>
+               <available file="plugins/chrome/key.pem"/>
+               <available file="plugins/chrome/public.pem"/>
+            </and>
+        </condition>
+    </target>
 </project>
