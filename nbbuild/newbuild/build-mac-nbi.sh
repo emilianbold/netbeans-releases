@@ -54,24 +54,22 @@ if [ -z $BUILD_NBJDK7 ]; then
     BUILD_NBJDK7=0
 fi
 
-if [ -z "$SIGNING_IDENTITY" ]; then
-    SIGNING_IDENTITY=0
+if [ -z $MAC_SIGN_CLIENT || 0 -eq $MAC_SIGN_CLIENT || -z $MAC_SIGN_USER || 0 -eq $MAC_SIGN_USER || -z $MAC_SIGN_GUID || 0 -eq $MAC_SIGN_GUID || -z $CODESIGNBUREAU_CREDFILE || 0 -eq $CODESIGNBUREAU_CREDFILE ] ; then
+    MAC_SIGN_CLIENT=0
+    MAC_SIGN_USER=0
+    MAC_SIGN_GUID=0
+    CODESIGNBUREAU_CREDFILE=0
 fi
 
-if [ ! -z $SIGNING_PASSWORD ] ; then
-    security unlock-keychain -p $SIGNING_PASSWORD
+if [ 1 -eq $ML_BUILD ] ; then
+    cd $NB_ALL/l10n
+    tar c src/*/other/installer/mac/* | ( cd $NB_ALL; tar x )
+    cd $NB_ALL
 fi
-
-   if [ 1 -eq $ML_BUILD ] ; then
-       cd $NB_ALL/l10n
-       tar c src/*/other/installer/mac/* | ( cd $NB_ALL; tar x )
-       cd $NB_ALL
-   fi
-
 
 # Run new builds
 sh $NB_ALL/installer/mac/newbuild/init.sh
-sh $NB_ALL/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $BUILD_NBJDK7 "$SIGNING_IDENTITY" $LOCALES
+sh $NB_ALL/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $BUILD_NBJDK7 $MAC_SIGN_CLIENT $MAC_SIGN_USER $MAC_SIGN_GUID $CODESIGNBUREAU_CREDFILE $LOCALES
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -94,8 +92,4 @@ ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
-fi
-
-if [ ! -z $SIGNING_PASSWORD ] ; then
-    security lock-keychain
 fi
