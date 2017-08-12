@@ -376,8 +376,13 @@
         
         <if property="do.build.jdk8">
             <get
+                src="${jdk.builds.host}/${jdk8.builds.path}/linux-x64/"
+                dest="${temp.file}"/>
+            <!-- used for path before 8u141 
+            <get
                 src="${jdk.builds.host}/${jdk8.builds.path}/latest/bundles/linux-x64/"
                 dest="${temp.file}"/>
+            -->
             <jdk-buildnumber file="${temp.file}"/>
 
             <echo message="Property jdk.version.number: ${jdk.version.number}"/>
