@@ -44,7 +44,7 @@ package org.netbeans.modules.odcs.cnd.json.misc;
  * @author Ilia Gromov
  */
 public class Response {
-    
+
     private boolean success;
 
     public boolean isSuccess() {
@@ -54,5 +54,5 @@ public class Response {
     public void setSuccess(boolean success) {
         this.success = success;
     }
-    
+
 }

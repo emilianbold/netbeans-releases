@@ -97,7 +97,7 @@ public class ODCSAuthManager {
 
             subscriptions.add(authCallback);
         }
-        
+
         return loggedInNow;
     }
 

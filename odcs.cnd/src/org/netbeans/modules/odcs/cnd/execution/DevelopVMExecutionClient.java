@@ -68,8 +68,6 @@ public final class DevelopVMExecutionClient {
     public VMDescriptor getVMDescriptor() {
         HttpClientAdapter client = HttpClientAdapterFactory.get(env.getServerUrl());
 
-
-
         VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get host info - " + env.getMachineId());
 
         return descriptor;

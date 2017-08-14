@@ -83,7 +83,7 @@ public class PropertiesAction extends AbstractAction {
             BeanNode<VMDescriptor> beanNode = new BeanNode<>(desc);
             PropertySheet propertySheet = new PropertySheet();
             propertySheet.setNodes(new Node[]{beanNode});
-            
+
             DialogDescriptor dd = new DialogDescriptor(propertySheet, Bundle.remotevm_properties_title(desc.getHostname()));
             DialogDisplayer.getDefault().notify(dd);
         } catch (IntrospectionException ex) {

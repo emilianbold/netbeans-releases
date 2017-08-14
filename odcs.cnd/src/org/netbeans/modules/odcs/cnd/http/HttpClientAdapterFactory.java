@@ -65,9 +65,9 @@ public class HttpClientAdapterFactory {
         ODCSAuthManager.getInstance().onLogin(base, (PasswordAuthentication pa) -> {
             create(base, pa);
         });
-        
+
         HttpClientAdapter client = CLIENTS.get(base);
-        
+
         return client;
     }
 }

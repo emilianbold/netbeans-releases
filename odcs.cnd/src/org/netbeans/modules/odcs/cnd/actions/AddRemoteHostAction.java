@@ -48,7 +48,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.utils.ui.validation.Validator;
+import org.netbeans.modules.cnd.utils.ui.validation.TextComponentValidator;
 import org.netbeans.modules.cnd.utils.ui.validation.Validators;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -101,11 +101,12 @@ public class AddRemoteHostAction extends AbstractAction {
                 DialogDescriptor.OK_OPTION,
                 null
         );
-        
+
         dd.setValid(false);
 
-        Validator validator = Validators.connect(panel.getUserField(), dd);
-        validator.addValidationRule(s -> !s.isEmpty());
+        TextComponentValidator validator = Validators.createValidator(dd);
+        validator.addTextComponentRule(panel.getUserField(), s -> !s.isEmpty());
+        validator.addTextComponentRule(panel.getSshField(), s -> s.matches("[0-9]+"));
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
@@ -113,7 +114,7 @@ public class AddRemoteHostAction extends AbstractAction {
         if (dd.getValue() != DialogDescriptor.OK_OPTION) {
             return;
         }
-        
+
         String user = panel.getUserField().getText();
         int port = Integer.valueOf(panel.getSshField().getText());
 
