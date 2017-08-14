@@ -41,9 +41,6 @@ package org.netbeans.modules.team.server.ui.common;
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,14 +62,14 @@ public class RemoteMachineListNode extends SectionNode {
     private final Object REMOTES_LOCK = new Object();
 
     public RemoteMachineListNode(TreeListNode parent, ProjectHandle project, RemoteMachineAccessor accessor) {
-        super(NbBundle.getMessage(RemoteMachineListNode.class, "LBL_RemoteMachines"), parent, project, null ); //NOI18N
-        this.accessor = accessor;       
+        super(NbBundle.getMessage(RemoteMachineListNode.class, "LBL_RemoteMachines"), parent, project, null); //NOI18N
+        this.accessor = accessor;
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if(!accessor.hasRemoteMachines(project)) {
-            return Arrays.asList(new TreeListNode[] {new NANode(this)});
+        if (!accessor.hasRemoteMachines(project)) {
+            return Arrays.asList(new TreeListNode[]{new NANode(this)});
         }
         List<TreeListNode> res = getRemoteMachines();
         return res;
@@ -81,14 +78,14 @@ public class RemoteMachineListNode extends SectionNode {
     private List<TreeListNode> getRemoteMachines() {
         ArrayList<TreeListNode> res = new ArrayList<>(20);
         synchronized (REMOTES_LOCK) {
-            if(remoteMachines == null) {
+            if (remoteMachines == null) {
                 remoteMachines = accessor.getRemoteMachines(project);
             }
-            for( RemoteMachineHandle rm : remoteMachines ) {
-                res.add( new RemoteMachineNode( rm, this ) );
+            for (RemoteMachineHandle rm : remoteMachines) {
+                res.add(new RemoteMachineNode(rm, this));
             }
         }
         return res;
     }
-    
+
 }

@@ -57,6 +57,10 @@ public abstract class RemoteMachineHandle {
      */
     public abstract String getDisplayName();
 
+    public abstract String getState();
+
+    public abstract String getStateDetail();
+
     /**
      *
      * @return Action to invoke when user pressed Enter key on given build line.

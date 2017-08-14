@@ -71,6 +71,7 @@ public class RemoteMachineNode extends LeafNode {
 
     private JPanel panel;
     private JLabel lblName;
+    private JLabel lblState;
 
     public RemoteMachineNode(RemoteMachineHandle machine, TreeListNode parent) {
         super(parent);
@@ -82,8 +83,16 @@ public class RemoteMachineNode extends LeafNode {
         if (null == panel) {
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
+
             lblName = new TreeLabel(remoteMachine.getDisplayName());
+            lblName.setForeground(foreground);
             panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+            lblState = new TreeLabel(remoteMachine.getState());
+            lblState.setForeground(foreground);
+            lblState.setToolTipText(remoteMachine.getStateDetail());
+            panel.add(lblState, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 12), 0, 0));
+
             Action propertyAction = remoteMachine.getPropertiesAction();
             if (propertyAction != null) {
                 JButton propertiesButton = new JButton(remoteMachine.getPropertiesAction());
@@ -91,10 +100,9 @@ public class RemoteMachineNode extends LeafNode {
                 propertiesButton.setBorder(null);
                 propertiesButton.setContentAreaFilled(false);
                 propertiesButton.setHideActionText(true);
-                panel.add(propertiesButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                panel.add(propertiesButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             }
         }
-        lblName.setForeground(foreground);
         return panel;
     }
 
