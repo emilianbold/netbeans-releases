@@ -113,8 +113,13 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         pwdStoredLbl.setVisible(showClearPwdButton);
 
         if (env != null) {
-            loginLabel.setText(env.getUser() + "@" + env.getHost() + // NOI18N
-                    ((env.getSSHPort() == 22) ? "" : env.getSSHPort())); // NOI18N
+            String userAtHost = env.getUser() + "@" + env.getHost(); // NOI18N
+            
+            if (env.getSSHPort() != 22) {
+                userAtHost += (":" + env.getSSHPort()); // NOI18N
+            }
+            
+            loginLabel.setText(userAtHost); 
         } else {
             loginPanel.setVisible(false);
         }
