@@ -4,17 +4,27 @@
  */
 package org.netbeans.modules.odcs.cnd.execution;
 
+import java.net.PasswordAuthentication;
 import java.util.HashMap;
+import java.util.Map;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
-import org.netbeans.modules.odcs.cnd.api.DevelopVMExecutionEnvironment;
-import static org.netbeans.modules.odcs.cnd.api.DevelopVMExecutionEnvironment.CLOUD_PREFIX;
+import org.netbeans.modules.odcs.api.ODCSManager;
+import org.netbeans.modules.odcs.api.ODCSServer;
+import static org.netbeans.modules.odcs.cnd.execution.DevelopVMExecutionEnvironment.CLOUD_PREFIX;
+import org.netbeans.modules.odcs.cnd.impl.ODCSAuthManager;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = ExecutionEnvironmentFactoryService.class, position = 50)
 public class DevelopVMExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironmentFactoryService {
 
-    private static final HashMap<String, ExecutionEnvironment> CACHE = new HashMap<>();
+    private static final RequestProcessor RP = new RequestProcessor("Fetching a cloud execution environment", 3);
+
+    private static final Map<String, ExecutionEnvironment> CACHE = new HashMap<>();
 
     @Override
     public ExecutionEnvironment getLocal() {
@@ -40,29 +50,31 @@ public class DevelopVMExecutionEnvironmentFactoryServiceImpl implements Executio
     public String toUniqueID(ExecutionEnvironment executionEnvironment) {
         if (executionEnvironment instanceof DevelopVMExecutionEnvironment) {
             DevelopVMExecutionEnvironment env = (DevelopVMExecutionEnvironment) executionEnvironment;
-            return DevelopVMExecutionEnvironment.encode(env.getUser(), env.getMachineId(), env.getServerUrl());
+            return DevelopVMExecutionEnvironment.encode(env.getUser(), env.getMachineId(), env.getSSHPort(), env.getServerUrl());
         }
         return null;
     }
 
     @Override
     public ExecutionEnvironment fromUniqueID(String hostKey) {
-        return CACHE.computeIfAbsent(hostKey, DevelopVMExecutionEnvironmentFactoryServiceImpl::parseString);
-    }
-
-    private static ExecutionEnvironment parseString(String hostKey) {
         if (!hostKey.startsWith(CLOUD_PREFIX)) {
             return null;
         }
+        return CACHE.computeIfAbsent(hostKey, (key) -> {
+            DevelopVMExecutionEnvironment env = DevelopVMExecutionEnvironment.decode(key);
 
-        String userAtmachineAtHost = hostKey.substring((CLOUD_PREFIX + "://").length());
+            ODCSServer server = ODCSManager.getDefault().getServer(env.getServerUrl());
 
-        String[] split = userAtmachineAtHost.split("@", 3);
+            boolean loggedInNow = ODCSAuthManager.getInstance().onLogin(env.getServerUrl(), (PasswordAuthentication pa) -> {
+                RP.post(env::initializeOrWait);
+            });
 
-        String user = split[0];
-        String machineId = split[1];
-        String host = split[2];
+            if (!loggedInNow) {
+                ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/cnd/resources/odcs.png", true);
+                NotificationDisplayer.getDefault().notify(Bundle.connection_title(), icon, Bundle.connection_text(env.getDisplayName(), env.getServerUrl()), null);
+            }
 
-        return new DevelopVMExecutionEnvironmentImpl(user, machineId, host);
+            return env;
+        });
     }
 }

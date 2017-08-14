@@ -39,7 +39,6 @@
  */
 package org.netbeans.modules.odcs.cnd.actions;
 
-import org.netbeans.modules.odcs.cnd.api.RestAction;
 import org.netbeans.modules.odcs.cnd.json.misc.State;
 import org.netbeans.modules.odcs.cnd.json.misc.Response;
 import java.awt.event.ActionEvent;

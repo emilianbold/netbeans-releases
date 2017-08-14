@@ -88,7 +88,7 @@ public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject
 //                clients.remove(evt.)
 //            }
 //        });
-        HttpClientAdapter client = HttpClientAdapterFactory.create(server.getUrl(), server.getPasswordAuthentication());
+        HttpClientAdapter client = HttpClientAdapterFactory.create(server.getUrl().toExternalForm(), server.getPasswordAuthentication());
 
         VMList vms = client.getForObject(server.getUrl() + REST_URL_GET_VMS, VMList.class);
 

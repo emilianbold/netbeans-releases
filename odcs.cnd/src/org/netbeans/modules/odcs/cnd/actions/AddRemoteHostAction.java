@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.utils.ui.validation.Validator;
 import org.netbeans.modules.cnd.utils.ui.validation.Validators;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.odcs.cnd.api.DevelopVMExecutionEnvironment;
+import org.netbeans.modules.odcs.cnd.execution.DevelopVMExecutionEnvironment;
 import org.netbeans.modules.odcs.cnd.ui.DevelopVMConnectionPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -115,8 +115,9 @@ public class AddRemoteHostAction extends AbstractAction {
         }
         
         String user = panel.getUserField().getText();
+        int port = Integer.valueOf(panel.getSshField().getText());
 
-        selectNode(DevelopVMExecutionEnvironment.encode(user, machineId, serverUrl));
+        selectNode(DevelopVMExecutionEnvironment.encode(user, machineId, port, serverUrl));
     }
 
     /**
@@ -153,7 +154,7 @@ public class AddRemoteHostAction extends AbstractAction {
                     LOG.log(Level.FINE, "Could not find subnode", x);
                     ExecutionEnvironment ee = ExecutionEnvironmentFactory.fromUniqueID(path[0]);
                     if (ee != null && ee instanceof DevelopVMExecutionEnvironment) {
-                        ((DevelopVMExecutionEnvironment) ee).init();
+                        ((DevelopVMExecutionEnvironment) ee).initializeOrWait();
                         ServerRecord serverRecord = ServerList.addServer(ee, ee.getDisplayName(), RemoteSyncFactory.getDefault(), false, true);
                         if (serverRecord != null) {
                             try {

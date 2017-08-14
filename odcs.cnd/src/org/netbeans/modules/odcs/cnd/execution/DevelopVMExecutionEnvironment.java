@@ -37,64 +37,40 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.odcs.cnd.api;
+package org.netbeans.modules.odcs.cnd.execution;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
-import org.netbeans.modules.odcs.cnd.http.HttpClientAdapterFactory;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author Ilia Gromov
  */
-public abstract class RestAction extends AbstractAction {
+public abstract class DevelopVMExecutionEnvironment implements ExecutionEnvironment {
 
-    private static final Logger LOG = Logger.getLogger(RestAction.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor("REST request to Oracle Cloud", 3); // NOI18N
+    public static final String CLOUD_PREFIX = "cloud.oracle";
 
-    private final String serverUrl;
+    public abstract String getServerUrl();
 
-    public RestAction(String serverUrl, String name) {
-        super(name);
-        this.serverUrl = serverUrl;
+    public abstract String getMachineId();
+
+    public static String encode(String user, String machineId, int port, String serverUrl) {
+        return String.format("%s://%s@%s:%d@%s", CLOUD_PREFIX, user, machineId, port, serverUrl);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        RP.submit(() -> {
-            try {
-                actionPerformedImpl(HttpClientAdapterFactory.get(serverUrl), e);
-            } catch (Exception ex) {
-                LOG.log(Level.FINE, "Exception in REST request", ex);
-            }
-        });
+    public static DevelopVMExecutionEnvironment decode(String hostKey) {
+        String userAtmachineAtHost = hostKey.substring((CLOUD_PREFIX + "://").length());
+
+        String[] split = userAtmachineAtHost.split("@", 3);
+
+        String user = split[0];
+        String machineAndPort = split[1];
+        String host = split[2];
+
+        String machineId = machineAndPort.split(":")[0];
+        int port = Integer.valueOf(machineAndPort.split(":")[1]);
+
+        return new DevelopVMExecutionEnvironmentImpl(user, machineId, port, host);
     }
 
-    public String getServerUrl() {
-        return serverUrl;
-    }
-
-    /**
-     * Will be invoked not from EDT
-     */
-    public abstract void actionPerformedImpl(HttpClientAdapter client, ActionEvent e);
-
-    public abstract String getRestUrl();
-
-    protected String formatUrl(String template, String... params) {
-        String result = template;
-
-        for (int i = 0; i < params.length; i++) {
-            String param = params[i];
-            result = result.replace("{" + i + "}", param); // NOI18N
-        }
-
-        return result;
-    }
+    public abstract void initializeOrWait();
 }

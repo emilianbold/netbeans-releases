@@ -37,25 +37,72 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.odcs.cnd.api;
+package org.netbeans.modules.odcs.cnd.impl;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.net.PasswordAuthentication;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.odcs.api.ODCSManager;
+import org.netbeans.modules.odcs.api.ODCSServer;
 
 /**
  *
  * @author Ilia Gromov
  */
-public abstract class DevelopVMExecutionEnvironment implements ExecutionEnvironment {
+public class ODCSAuthManager {
 
-    public static final String CLOUD_PREFIX = "cloud.oracle";
-
-    public abstract String getServerUrl();
-
-    public abstract String getMachineId();
-
-    public static String encode(String user, String machineId, String serverUrl) {
-        return String.format("%s://%s@%s@%s", CLOUD_PREFIX, user, machineId, serverUrl);
+    private ODCSAuthManager() {
     }
 
-    public abstract void init();
+    public static ODCSAuthManager getInstance() {
+        return AuthManagerHolder.INSTANCE;
+    }
+
+    private static class AuthManagerHolder {
+
+        private static final ODCSAuthManager INSTANCE = new ODCSAuthManager();
+    }
+
+    private final ODCSManager manager = ODCSManager.getDefault();
+    private final Set<AuthCallback> subscriptions = new HashSet<>();
+
+    public boolean onLogin(String serverUrl, AuthCallback authCallback) {
+        ODCSServer server = manager.getServer(serverUrl);
+
+        if (server == null) {
+            return false;
+        }
+
+        // At first - check if we are already logged in:
+        PasswordAuthentication existingPa = server.getPasswordAuthentication();
+        boolean loggedInNow = (existingPa != null);
+
+        if (loggedInNow) {
+            authCallback.onLogin(existingPa);
+        }
+
+        synchronized (subscriptions) {
+            if (subscriptions.contains(authCallback)) {
+                return loggedInNow;
+            }
+
+            server.addPropertyChangeListener(ODCSServer.PROP_LOGIN, (evt) -> {
+                Object newValue = evt.getNewValue();
+                if (newValue instanceof PasswordAuthentication) {
+                    PasswordAuthentication passwordAuthentication = (PasswordAuthentication) newValue;
+                    authCallback.onLogin(passwordAuthentication);
+                }
+            });
+
+            subscriptions.add(authCallback);
+        }
+        
+        return loggedInNow;
+    }
+
+    public static interface AuthCallback {
+
+        public void onLogin(PasswordAuthentication pa);
+    }
 }

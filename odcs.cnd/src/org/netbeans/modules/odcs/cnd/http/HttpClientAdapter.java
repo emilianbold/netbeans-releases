@@ -122,13 +122,8 @@ public class HttpClientAdapter {
 //        
 //        return false;
 //    }
-    public static HttpClientAdapter create(URL base, PasswordAuthentication pa) {
-        URI uri = null;
-        try {
-            uri = base.toURI();
-        } catch (URISyntaxException ex) {
-            LOG.log(Level.FINE, null, ex);
-        }
+    public static HttpClientAdapter create(String serverUrl, PasswordAuthentication pa) {
+        URI uri = URI.create(serverUrl);
 
         Proxy proxy = null;
         String proxyHost = NetworkSettings.getProxyHost(uri);
@@ -172,6 +167,6 @@ public class HttpClientAdapter {
 //        hostConfiguration.setHost(base.toExternalForm());
 //        httpClient.setHostConfiguration(hostConfiguration);
 
-        return new HttpClientAdapter(base.toExternalForm(), httpClient, apacheDelegate);
+        return new HttpClientAdapter(serverUrl, httpClient, apacheDelegate);
     }
 }

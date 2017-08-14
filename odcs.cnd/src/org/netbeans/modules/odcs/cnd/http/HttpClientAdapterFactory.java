@@ -43,6 +43,7 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.odcs.cnd.impl.ODCSAuthManager;
 
 /**
  *
@@ -53,14 +54,20 @@ public class HttpClientAdapterFactory {
     private static final Map<String, HttpClientAdapter> CLIENTS = new ConcurrentHashMap<>();
 
     // replaces old key
-    public static HttpClientAdapter create(URL base, PasswordAuthentication pa) {
+    public static HttpClientAdapter create(String base, PasswordAuthentication pa) {
         HttpClientAdapter adapter = HttpClientAdapter.create(base, pa);
-        CLIENTS.put(base.toExternalForm(), adapter);
-        
+        CLIENTS.put(base, adapter);
+
         return adapter;
     }
 
     public static HttpClientAdapter get(String base) {
-        return CLIENTS.get(base);
+        ODCSAuthManager.getInstance().onLogin(base, (PasswordAuthentication pa) -> {
+            create(base, pa);
+        });
+        
+        HttpClientAdapter client = CLIENTS.get(base);
+        
+        return client;
     }
 }

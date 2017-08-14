@@ -52,7 +52,7 @@ public class DevelopVMConnectionPanel extends javax.swing.JPanel {
      */
     public DevelopVMConnectionPanel(String host) {
         initComponents();
-        
+
         hostField.setText(host);
     }
 
@@ -62,6 +62,10 @@ public class DevelopVMConnectionPanel extends javax.swing.JPanel {
 
     public JTextField getUserField() {
         return userField;
+    }
+
+    public JTextField getSshField() {
+        return sshField;
     }
 
     /**
@@ -77,6 +81,10 @@ public class DevelopVMConnectionPanel extends javax.swing.JPanel {
         hostLabel = new javax.swing.JLabel();
         userField = new javax.swing.JTextField();
         hostField = new javax.swing.JTextField();
+        sshLabel = new javax.swing.JLabel();
+        sshField = new javax.swing.JTextField();
+
+        setMinimumSize(new java.awt.Dimension(200, 100));
 
         userLabel.setLabelFor(userField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(DevelopVMConnectionPanel.class, "DevelopVMConnectionPanel.userLabel.text")); // NOI18N
@@ -89,6 +97,11 @@ public class DevelopVMConnectionPanel extends javax.swing.JPanel {
         hostField.setEditable(false);
         hostField.setText(org.openide.util.NbBundle.getMessage(DevelopVMConnectionPanel.class, "DevelopVMConnectionPanel.hostField.text")); // NOI18N
 
+        sshLabel.setLabelFor(sshField);
+        org.openide.awt.Mnemonics.setLocalizedText(sshLabel, org.openide.util.NbBundle.getMessage(DevelopVMConnectionPanel.class, "DevelopVMConnectionPanel.sshLabel.text")); // NOI18N
+
+        sshField.setText(org.openide.util.NbBundle.getMessage(DevelopVMConnectionPanel.class, "DevelopVMConnectionPanel.sshField.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -97,11 +110,13 @@ public class DevelopVMConnectionPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(userLabel)
-                    .addComponent(hostLabel))
+                    .addComponent(hostLabel)
+                    .addComponent(sshLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
-                    .addComponent(userField))
+                    .addComponent(userField)
+                    .addComponent(hostField)
+                    .addComponent(sshField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -115,6 +130,10 @@ public class DevelopVMConnectionPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(hostLabel)
                     .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sshLabel)
+                    .addComponent(sshField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -122,6 +141,8 @@ public class DevelopVMConnectionPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel hostLabel;
+    private javax.swing.JTextField sshField;
+    private javax.swing.JLabel sshLabel;
     private javax.swing.JTextField userField;
     private javax.swing.JLabel userLabel;
     // End of variables declaration//GEN-END:variables

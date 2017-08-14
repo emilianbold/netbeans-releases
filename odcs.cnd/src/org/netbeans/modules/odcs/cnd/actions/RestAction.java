@@ -37,41 +37,64 @@
  *
  * Contributor(s):
  */
-package org.netbeans.modules.odcs.cnd.execution;
+package org.netbeans.modules.odcs.cnd.actions;
 
-import javax.swing.ImageIcon;
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.odcs.cnd.http.HttpClientAdapter;
 import org.netbeans.modules.odcs.cnd.http.HttpClientAdapterFactory;
-import org.netbeans.modules.odcs.cnd.json.VMDescriptor;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Ilia Gromov
  */
-public final class DevelopVMExecutionClient {
+public abstract class RestAction extends AbstractAction {
 
-    private static final String VM_DESCRIPTOR_URL = "/api/cc/vms/";
+    private static final Logger LOG = Logger.getLogger(RestAction.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor("REST request to Oracle Cloud", 3); // NOI18N
 
-    private final DevelopVMExecutionEnvironment env;
+    private final String serverUrl;
 
-    public DevelopVMExecutionClient(DevelopVMExecutionEnvironment env) {
-        this.env = env;
+    public RestAction(String serverUrl, String name) {
+        super(name);
+        this.serverUrl = serverUrl;
     }
 
-    @NbBundle.Messages({
-        "connection_title=Connection to DCS required",
-        "connection_text=Connection to {0} can be restored after login to {1}"
-    })
-    public VMDescriptor getVMDescriptor() {
-        HttpClientAdapter client = HttpClientAdapterFactory.get(env.getServerUrl());
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        RP.submit(() -> {
+            try {
+                actionPerformedImpl(HttpClientAdapterFactory.get(serverUrl), e);
+            } catch (Exception ex) {
+                LOG.log(Level.FINE, "Exception in REST request", ex);
+            }
+        });
+    }
 
+    public String getServerUrl() {
+        return serverUrl;
+    }
 
+    /**
+     * Will be invoked not from EDT
+     */
+    public abstract void actionPerformedImpl(HttpClientAdapter client, ActionEvent e);
 
-        VMDescriptor descriptor = client.getForObject(env.getServerUrl() + VM_DESCRIPTOR_URL + env.getMachineId(), VMDescriptor.class, "REST - Get host info - " + env.getMachineId());
+    public abstract String getRestUrl();
 
-        return descriptor;
+    protected String formatUrl(String template, String... params) {
+        String result = template;
+
+        for (int i = 0; i < params.length; i++) {
+            String param = params[i];
+            result = result.replace("{" + i + "}", param); // NOI18N
+        }
+
+        return result;
     }
 }
