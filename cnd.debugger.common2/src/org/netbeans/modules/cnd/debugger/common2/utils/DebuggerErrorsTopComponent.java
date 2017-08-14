@@ -69,7 +69,7 @@ import org.openide.windows.WindowManager;
         iconBase = "org/netbeans/modules/cnd/debugger/common2/icons/debugger_errors.png",//NOI18N
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "output", openAtStartup = false)
+@TopComponent.Registration(mode = "output", openAtStartup = false, position = 1455)
 @ActionID(category = "Window", id = "org.netbeans.modules.cnd.debugger.common2.utils.DebuggerErrorsTopComponent")
 @ActionReference(path = "Menu/Window/Debug" , position = 1550)
 @TopComponent.OpenActionRegistration(
