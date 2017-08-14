@@ -237,8 +237,10 @@ Contributor(s):
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.odcs.cnd</friend>
                 <package>org.netbeans.modules.cnd.spi.editor</package>
                 <package>org.netbeans.modules.cnd.utils.ui</package>
+                <package>org.netbeans.modules.cnd.utils.ui.validation</package>
             </friend-packages>
         </data>
     </configuration>
