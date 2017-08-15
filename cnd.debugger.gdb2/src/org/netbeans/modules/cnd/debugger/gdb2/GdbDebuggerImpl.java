@@ -66,6 +66,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -3624,9 +3626,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // interface NativeDebugger
     @Override
     public String[] formatChoices() {
-	return new String[] {
-            "binary", "octal", "decimal", "hexadecimal", "natural" // NOI18N
-        };
+        List<String> formats = Stream.of(Disassembly.DATA_REPRESENTATION.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+	return formats.toArray(new String[0]);
     }
     
     private void interpVarFormat(GdbVariable v, MIRecord record) {
@@ -3849,6 +3852,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 v.setInScope(true);
                 interpVar(v, record);
                 updateValue(v, record, true);
+                //when we create var if it is register(starts with $ and we are in disasm windows)
+                //run var-set-format var11 hexadecimal (where hexadecimal is current format from Disassembly.getCurrentDataRepresentationFormat
+                //if we are in disasm and the variable name starts with $ - consider it as a register - format
+                if (Disassembly.isInDisasm() && v.getVariableName().startsWith("$")) {//NOI18N
+                    postVarFormat(v, Disassembly.getCurrentDataRepresentationFormat().name());
+                }
                 finish();
                 if (onDoneRunnable != null) {
                     onDoneRunnable.run();
