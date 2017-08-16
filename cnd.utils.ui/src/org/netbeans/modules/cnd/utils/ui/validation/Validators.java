@@ -39,16 +39,17 @@
  */
 package org.netbeans.modules.cnd.utils.ui.validation;
 
-import org.openide.NotifyDescriptor;
-
 /**
  *
  * @author Ilia Gromov
  */
 public class Validators {
 
-    public static TextComponentValidator createValidator(NotifyDescriptor nd) {
-        return new TextComponentValidator(nd);
+    public static TextComponentValidator createTextComponentValidator(Indicator indicator) {
+        return new TextComponentValidator(indicator);
     }
 
+    public static Validator merge(Indicator indicator, Validator... objects) {
+        return new CompoundValidator(indicator, objects);
+    }
 }

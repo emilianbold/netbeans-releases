@@ -39,31 +39,18 @@
  */
 package org.netbeans.modules.cnd.utils.ui.validation;
 
-import java.util.function.Predicate;
-import javax.swing.text.JTextComponent;
+import org.openide.NotifyDescriptor;
 
-/**
- *
- * @author Ilia Gromov
- */
-public class TextComponentValidator extends Validator {
+public class NotifyDescriptorIndicator implements Indicator {
 
-    private final ValidatorRules rules;
+    private final NotifyDescriptor nd;
 
-    TextComponentValidator(Indicator indicator) {
-        super(indicator);
-        this.rules = new ValidatorRules();
-    }
-
-    public void addTextComponentRule(JTextComponent textComponent, Predicate<String> rule) {
-        textComponent.getDocument().addDocumentListener((DefaultDocumentListener) e -> revalidate());
-
-        rules.addValidationRule(() -> textComponent.getText(), rule);
+    public NotifyDescriptorIndicator(NotifyDescriptor nd) {
+        this.nd = nd;
     }
 
     @Override
-    public boolean isValid() {
-        return rules.isValid();
+    public void setValid(boolean valid) {
+        nd.setValid(valid);
     }
-
 }

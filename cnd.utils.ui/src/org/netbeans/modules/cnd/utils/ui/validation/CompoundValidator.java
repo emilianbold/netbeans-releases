@@ -39,31 +39,21 @@
  */
 package org.netbeans.modules.cnd.utils.ui.validation;
 
-import java.util.function.Predicate;
-import javax.swing.text.JTextComponent;
+import java.util.Arrays;
+import java.util.List;
 
-/**
- *
- * @author Ilia Gromov
- */
-public class TextComponentValidator extends Validator {
+public class CompoundValidator extends Validator {
 
-    private final ValidatorRules rules;
+    private final List<Validator> objects;
 
-    TextComponentValidator(Indicator indicator) {
+    CompoundValidator(Indicator indicator, Validator... objects) {
         super(indicator);
-        this.rules = new ValidatorRules();
-    }
-
-    public void addTextComponentRule(JTextComponent textComponent, Predicate<String> rule) {
-        textComponent.getDocument().addDocumentListener((DefaultDocumentListener) e -> revalidate());
-
-        rules.addValidationRule(() -> textComponent.getText(), rule);
+        this.objects = Arrays.asList(objects);
+        this.objects.forEach(o -> o.setParent(this));
     }
 
     @Override
     public boolean isValid() {
-        return rules.isValid();
+        return objects.stream().allMatch(Validator::isValid);
     }
-
 }

@@ -39,31 +39,30 @@
  */
 package org.netbeans.modules.cnd.utils.ui.validation;
 
-import java.util.function.Predicate;
-import javax.swing.text.JTextComponent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
  * @author Ilia Gromov
  */
-public class TextComponentValidator extends Validator {
+@FunctionalInterface
+public interface DefaultDocumentListener extends DocumentListener {
 
-    private final ValidatorRules rules;
-
-    TextComponentValidator(Indicator indicator) {
-        super(indicator);
-        this.rules = new ValidatorRules();
-    }
-
-    public void addTextComponentRule(JTextComponent textComponent, Predicate<String> rule) {
-        textComponent.getDocument().addDocumentListener((DefaultDocumentListener) e -> revalidate());
-
-        rules.addValidationRule(() -> textComponent.getText(), rule);
+    @Override
+    default void insertUpdate(DocumentEvent e) {
+        fireUpdate(e);
     }
 
     @Override
-    public boolean isValid() {
-        return rules.isValid();
+    default void removeUpdate(DocumentEvent e) {
+        fireUpdate(e);
     }
 
+    @Override
+    default void changedUpdate(DocumentEvent e) {
+        fireUpdate(e);
+    }
+
+    public abstract void fireUpdate(DocumentEvent e);
 }

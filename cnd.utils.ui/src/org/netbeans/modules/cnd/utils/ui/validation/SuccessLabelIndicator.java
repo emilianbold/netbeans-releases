@@ -39,31 +39,26 @@
  */
 package org.netbeans.modules.cnd.utils.ui.validation;
 
-import java.util.function.Predicate;
-import javax.swing.text.JTextComponent;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import org.openide.util.ImageUtilities;
 
-/**
- *
- * @author Ilia Gromov
- */
-public class TextComponentValidator extends Validator {
+public class SuccessLabelIndicator implements Indicator {
 
-    private final ValidatorRules rules;
+    private static final ImageIcon ICON_SUCCESS = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/utils/ui/resources/check-mark.png", true);
 
-    TextComponentValidator(Indicator indicator) {
-        super(indicator);
-        this.rules = new ValidatorRules();
-    }
+    private final JLabel label;
 
-    public void addTextComponentRule(JTextComponent textComponent, Predicate<String> rule) {
-        textComponent.getDocument().addDocumentListener((DefaultDocumentListener) e -> revalidate());
-
-        rules.addValidationRule(() -> textComponent.getText(), rule);
+    public SuccessLabelIndicator(JLabel label) {
+        this.label = label;
     }
 
     @Override
-    public boolean isValid() {
-        return rules.isValid();
+    public void setValid(boolean valid) {
+        if (valid) {
+            label.setIcon(ICON_SUCCESS);
+        } else {
+            label.setIcon(null);
+        }
     }
-
 }

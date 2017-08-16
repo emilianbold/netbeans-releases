@@ -39,26 +39,33 @@
  */
 package org.netbeans.modules.cnd.utils.ui.validation;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
  * @author Ilia Gromov
  */
-public final class Validator {
+public abstract class Validator {
 
-    private final Map<Supplier<String>, Predicate<String>> rules = new HashMap<>();
+    private final Indicator indicator;
+    private Validator parent;
 
-    public void addValidationRule(Supplier<String> supplier, Predicate<String> rule) {
-        rules.put(supplier, rule);
+    public Validator(Indicator indicator) {
+        this.indicator = indicator;
     }
 
-    public boolean isValid() {
-        return rules.entrySet().stream()
-                .map(entry -> entry.getValue().test(entry.getKey().get()))
-                .reduce(true, Boolean::logicalAnd);
+    public abstract boolean isValid();
+
+    protected final void revalidate() {
+        indicator.setValid(isValid());
+
+        if (parent != null) {
+            parent.revalidate();
+        }
+    }
+
+    /*package*/ final void setParent(Validator validator) {
+        CndUtils.assertTrueInConsole(parent == null, "Only one parent is supported");
+        this.parent = validator;
     }
 }

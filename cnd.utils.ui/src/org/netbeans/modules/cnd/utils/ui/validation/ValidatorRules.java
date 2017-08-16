@@ -39,31 +39,25 @@
  */
 package org.netbeans.modules.cnd.utils.ui.validation;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
-import javax.swing.text.JTextComponent;
+import java.util.function.Supplier;
 
 /**
  *
  * @author Ilia Gromov
  */
-public class TextComponentValidator extends Validator {
+public final class ValidatorRules {
 
-    private final ValidatorRules rules;
+    private final Map<Supplier<String>, Predicate<String>> rules = new HashMap<>();
 
-    TextComponentValidator(Indicator indicator) {
-        super(indicator);
-        this.rules = new ValidatorRules();
+    public void addValidationRule(Supplier<String> supplier, Predicate<String> rule) {
+        rules.put(supplier, rule);
     }
 
-    public void addTextComponentRule(JTextComponent textComponent, Predicate<String> rule) {
-        textComponent.getDocument().addDocumentListener((DefaultDocumentListener) e -> revalidate());
-
-        rules.addValidationRule(() -> textComponent.getText(), rule);
-    }
-
-    @Override
     public boolean isValid() {
-        return rules.isValid();
+        return rules.entrySet().stream()
+                .allMatch(entry -> entry.getValue().test(entry.getKey().get()));
     }
-
 }
