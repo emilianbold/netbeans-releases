@@ -1129,6 +1129,61 @@ public final class BreakpointManager {
         breakpointJobs.put(rt, bj);
     }
 
+    void postRestoreBreakpoint(NativeBreakpoint top) {
+        // If we find matches we use the sub-breakpoints as templates
+            // othewise we use the topLevel one as a template
+        if (!top.isEnabled()) {
+            return;
+        }
+
+        List<NativeBreakpoint> matches = top.findByContext(debugger().context());
+
+        NativeBreakpoint mid;
+
+        // The following three cases correspond to the three cases in
+        // newHandler() case RESTORE.
+        // Also see newBrokenHandler().
+
+        if (matches.isEmpty()) {
+            if (NativeDebuggerManager.isPerTargetBpts()) {
+                // if per-target bpts don't restore it.
+                return;
+            }
+
+            // restored new handler not matching any context
+            // "virgin" bpt
+            // create new midlevel bpt
+            mid = top.makeMidlevelCopy();
+            top.setMidBreakpointFor(mid, debugger());
+
+            restoreBreakpoint(top, mid);
+
+        } else {
+            // We may have more than one match for a given context
+            // I can't think of a good algorithm for deciding which one
+            // to pick so we pick the first one.
+            // This is a bit analogous to what happens when we start two
+            // sessions off the same project where the sessions share
+            // RunProfiles etc.
+
+            NativeBreakpoint match = matches.get(0);
+            assert match.isMidlevel();
+
+            if (!match.isBound()) {
+                // restoring from a ghost, reuse the midlevel bpt
+                mid = match;
+            } else {
+                // restoring from a bound bpt, need new midlevel bpt
+                mid = match.makeMidlevelCopy();
+                top.setMidBreakpointFor(mid, debugger());
+            }
+
+            for (NativeBreakpoint match2 : match.getChildren()) {
+                restoreBreakpoint(match2, mid);
+            }
+        }
+    }
+
     /**
      * Restore bpts associated with a profile.
      * Called from profileBridge.initialApply()
@@ -1137,56 +1192,7 @@ public final class BreakpointManager {
     public void postRestoreBreakpoints(BreakpointBag bb) {
 
         for (NativeBreakpoint top : bb.getBreakpoints()) {
-
-            // If we find matches we use the sub-breakpoints as templates
-            // othewise we use the topLevel one as a template
-
-            List<NativeBreakpoint> matches = top.findByContext(debugger().context());
-
-            NativeBreakpoint mid;
-
-            // The following three cases correspond to the three cases in
-            // newHandler() case RESTORE.
-            // Also see newBrokenHandler().
-
-            if (matches.isEmpty()) {
-                if (NativeDebuggerManager.isPerTargetBpts()) {
-                    // if per-target bpts don't restore it.
-                    continue;
-                }
-
-                // restored new handler not matching any context
-                // "virgin" bpt
-                // create new midlevel bpt
-                mid = top.makeMidlevelCopy();
-                top.setMidBreakpointFor(mid, debugger());
-
-                restoreBreakpoint(top, mid);
-
-            } else {
-                // We may have more than one match for a given context
-                // I can't think of a good algorithm for deciding which one
-                // to pick so we pick the first one.
-                // This is a bit analogous to what happens when we start two
-                // sessions off the same project where the sessions share
-                // RunProfiles etc.
-
-                NativeBreakpoint match = matches.get(0);
-                assert match.isMidlevel();
-
-                if (!match.isBound()) {
-                    // restoring from a ghost, reuse the midlevel bpt
-                    mid = match;
-                } else {
-                    // restoring from a bound bpt, need new midlevel bpt
-                    mid = match.makeMidlevelCopy();
-                    top.setMidBreakpointFor(mid, debugger());
-                }
-
-                for (NativeBreakpoint match2 : match.getChildren()) {
-                    restoreBreakpoint(match2, mid);
-                }
-            }
+            postRestoreBreakpoint(top);
         }
     }
 
