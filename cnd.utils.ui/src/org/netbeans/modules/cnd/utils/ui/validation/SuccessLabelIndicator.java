@@ -45,7 +45,7 @@ import org.openide.util.ImageUtilities;
 
 public class SuccessLabelIndicator implements Indicator {
 
-    private static final ImageIcon ICON_SUCCESS = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/utils/ui/resources/check-mark.png", true);
+    private static final ImageIcon ICON_SUCCESS = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/utils/ui/resources/check-mark.png", true); // NOI18N
 
     private final JLabel label;
 
