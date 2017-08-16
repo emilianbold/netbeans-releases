@@ -48,6 +48,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.ui.validation.NotifyDescriptorIndicator;
 import org.netbeans.modules.cnd.utils.ui.validation.TextComponentValidator;
 import org.netbeans.modules.cnd.utils.ui.validation.Validators;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -104,7 +105,7 @@ public class AddRemoteHostAction extends AbstractAction {
 
         dd.setValid(false);
 
-        TextComponentValidator validator = Validators.createValidator(dd);
+        TextComponentValidator validator = Validators.createTextComponentValidator(new NotifyDescriptorIndicator(dd));
         validator.addTextComponentRule(panel.getUserField(), s -> !s.isEmpty());
         validator.addTextComponentRule(panel.getSshField(), s -> s.matches("[0-9]+"));
 
