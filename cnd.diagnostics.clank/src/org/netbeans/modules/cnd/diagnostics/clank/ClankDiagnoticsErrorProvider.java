@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.tools.services.ClankCompilationDataBase;
@@ -53,12 +54,15 @@ import org.clang.tools.services.ClankDiagnosticInfo;
 import org.clang.tools.services.ClankDiagnosticResponse;
 import org.clang.tools.services.ClankDiagnosticServices;
 import org.clang.tools.services.ClankRunDiagnosticsSettings;
+import org.clang.tools.services.checkers.api.ClankCLOptionsProvider;
+//import org.clang.tools.services.checkers.api.ClankCLOptionsProvider;
 import org.clang.tools.services.checkers.api.ClankChecker;
 import org.clang.tools.services.checkers.api.ClankCheckersProvider;
 import org.clang.tools.services.spi.ClankFileSystemProvider;
 import org.clang.tools.services.spi.ClankMemoryBufferProvider;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
 import org.llvm.support.MemoryBuffer;
+import org.netbeans.modules.cnd.analysis.api.AbstractCustomizerProvider;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
@@ -98,7 +102,7 @@ import org.openide.util.lookup.ServiceProviders;
     ,   
     @ServiceProvider(service = CodeAuditProvider.class, position = 3000)
 })
-public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements CodeAuditProvider {
+public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements CodeAuditProvider, AbstractCustomizerProvider {
     //, AbstractCustomizerProvider { 
 
     private static final Logger LOG = Logger.getLogger("cnd.diagnostics.clank.support"); //NOI18N
@@ -131,6 +135,11 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
         } else {
             myPreferences = new AuditPreferences(preferences.node(NAME));
         }
+    }
+
+    @Override
+    public JComponent createComponent(Preferences context) {
+        return new ClankCLArsPanel(context);
     }
 
     @Override
@@ -200,6 +209,11 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
             }
         };
+        for (String arg : ClankCLOptionsProvider.getArgs()) {
+            if (myPreferences.getPreferences().getBoolean(arg, true)) {
+                settings.clArgs.add(arg);
+            }
+        }
         settings.showAllWarning = false;
         settings.checkers.clear();
         //and fill in
