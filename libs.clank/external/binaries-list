@@ -1,7 +1,7 @@
-#changeset:   36336:b772a6d6de1c
+#changeset:   36979:54da36823884
 #branch:      jclank
 #tag:         tip
 #user:        Maria Dalmatova <maria.tishkova@oracle.com>
-#date:        Tue Aug 08 11:17:41 2017 +0300
-#summary:     support MemomryBuffer for clank diagnostics, new SPI provider is introduced which is implemented in cnd.apt
-2304F7B58187CF48789B91D47EF093674797A4EF clank_0.3.9.zip
+#date:        Fri Aug 18 16:37:42 2017 +0300
+#summary:     extended possibility to run command line arguments from the IDE
+E40A0022DEB831362C201AC32D397D9D03DAE379 clank_0.3.9.zip

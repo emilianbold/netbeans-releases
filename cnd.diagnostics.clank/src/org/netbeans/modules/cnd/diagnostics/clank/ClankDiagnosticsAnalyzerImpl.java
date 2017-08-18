@@ -41,13 +41,17 @@ package org.netbeans.modules.cnd.diagnostics.clank;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import org.clang.tools.services.ClankDiagnosticEnhancedFix;
 import org.clang.tools.services.ClankDiagnosticInfo;
+import org.clang.tools.services.checkers.api.ClankWarningsProvider;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.cnd.analysis.api.AbstractAnalyzer;
 import org.netbeans.modules.cnd.analysis.api.AbstractHintsPanel;
@@ -161,8 +165,12 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
                     return true;
                 }
             };
-
-            return ErrorDescriptionFactory.createErrorDescription("clank",//NOI18N
+            String category = fix.getCategory();
+            List<String> asList = Arrays.asList(ClankWarningsProvider.getCategories());
+            if (category == null || category.trim().isEmpty() || !asList.contains(category)) {
+                category = "clank_unknown";//NOI18N
+            }
+            return ErrorDescriptionFactory.createErrorDescription(category,
                      Severity.ERROR,
                      list.probablyContainsFixes() ? "clank-diagnostics-annotations-fixable" : "clank-diagnostics-annotations",//NOI18N
                      message,
@@ -178,7 +186,18 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
    
     @ServiceProvider(service=AnalyzerFactory.class)
     public static final class AnalyzerFactoryImpl extends AnalyzerFactory {
-        
+
+        private static final List<WarningDescription> WARNING_DESCRIPTIONS = new ArrayList<>();
+        static {
+//            WARNING_DESCRIPTIONS.add(WarningDescription.create("clank", NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "Clank_DESCRIPTION") ,//NOI18N
+//                    "clank", NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "Clank_DESCRIPTION")));//NOI18N
+            WARNING_DESCRIPTIONS.add(WarningDescription.create("clank_unknown", NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "clank_unknown") ,//NOI18N
+                    "clank", NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "Clank_DESCRIPTION")));//NOI18N
+            for (String category : ClankWarningsProvider.getCategories()) {
+                WARNING_DESCRIPTIONS.add(WarningDescription.create(category, category ,//NOI18N
+                        "clank", NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "Clank_DESCRIPTION")));//NOI18N
+            }
+        }
         public AnalyzerFactoryImpl() {
             super(ClankDiagnoticsErrorProvider.NAME,
                   NbBundle.getMessage(ClankDiagnoticsErrorProvider.class, "Clank_DESCRIPTION"), //NOI18N
@@ -187,13 +206,7 @@ public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
 
         @Override
         public Iterable<? extends WarningDescription> getWarnings() {
-            List<WarningDescription> result = new ArrayList<>();
-            final ClankDiagnoticsErrorProvider provider = (ClankDiagnoticsErrorProvider)ClankDiagnoticsErrorProvider.getInstance();
-            for(CodeAudit audit : provider.getAudits()) {
-                result.add(WarningDescription.create(PREFIX+audit.getID(), audit.getName(),
-                        ClankDiagnoticsErrorProvider.NAME, ClankDiagnoticsErrorProvider.NAME));
-            }
-            return result;
+            return WARNING_DESCRIPTIONS;
         }
 
         @Override
