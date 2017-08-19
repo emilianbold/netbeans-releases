@@ -46,8 +46,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.function.IntFunction;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
+import org.netbeans.modules.debugger.jpda.truffle.ast.TruffleNode;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
@@ -68,19 +70,21 @@ public class CurrentPCInfo {
     private final TruffleScope[] scopes;
     private final TruffleStackFrame topFrame;
     private final TruffleStackInfo stack;
+    private final IntFunction<TruffleNode> truffleNodes;
     private volatile TruffleStackFrame selectedStackFrame; // the top frame initially
     
     private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     
-    public CurrentPCInfo(LocalVariable stepCmd, JPDAThread thread, SourcePosition sp,
-                         TruffleScope[] scopes, TruffleStackFrame topFrame,
-                         TruffleStackInfo stack) {
+    CurrentPCInfo(LocalVariable stepCmd, JPDAThread thread, SourcePosition sp,
+                  TruffleScope[] scopes, TruffleStackFrame topFrame,
+                  TruffleStackInfo stack, IntFunction<TruffleNode> truffleNodes) {
         this.stepCmd = stepCmd;
         this.threadRef = new WeakReference<>(thread);
         this.sp = sp;
         this.scopes = scopes;
         this.topFrame = topFrame;
         this.stack = stack;
+        this.truffleNodes = truffleNodes;
         selectedStackFrame = topFrame;
     }
     
@@ -118,6 +122,10 @@ public class CurrentPCInfo {
         if (old != selectedStackFrame) {
             pchs.firePropertyChange(PROP_SELECTED_FRAME, old, selectedStackFrame);
         }
+    }
+    
+    public TruffleNode getAST(TruffleStackFrame frame) {
+        return truffleNodes.apply(frame.getDepth());
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {

@@ -394,6 +394,11 @@ public class JPDATruffleAccessor extends Object {
         return str.toString();
     }
 
+    static Object[] getTruffleAST(int depth) {
+        TruffleAST ast = TruffleAST.get(depth);
+        return new Object[] { ast.getNodes(), ast.getRawArguments(), ast.getRawSlots() };
+    }
+
     // An array of scopes and their variables:
     // <scope name>, <is functional>, <num args>, <num vars>, [(num args)+(num vars) variables]
     // Variable: 11 elements: <name>, <type>, <readable>, <writable>, <internal>, <String value>,

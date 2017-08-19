@@ -63,6 +63,7 @@ import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
 public class SmartSteppingTruffleImpl extends SmartSteppingCallback {
     
     private static final String TRUFFLE_PACKAGE = "com.oracle.truffle.";        // NOI18N
+    private static final String SDK_PACKAGE = "org.graalvm.polyglot.";
     
     private SmartSteppingFilter filter;
 
@@ -81,7 +82,7 @@ public class SmartSteppingTruffleImpl extends SmartSteppingCallback {
     @Override
     public StopOrStep stopAt(ContextProvider lookupProvider, CallStackFrame frame, SmartSteppingFilter f) {
         String className = frame.getClassName();
-        if (className.startsWith(TRUFFLE_PACKAGE)) {
+        if (className.startsWith(TRUFFLE_PACKAGE) || className.startsWith(SDK_PACKAGE)) {
             // Step out from Truffle code
             return StopOrStep.step(JPDAStep.STEP_LINE, JPDAStep.STEP_OUT);
         } else {
@@ -102,7 +103,7 @@ public class SmartSteppingTruffleImpl extends SmartSteppingCallback {
             Set<String> patternsToRemove = null;
             if (newPatterns != null) {
                 for (String pattern : newPatterns) {
-                    if (pattern.startsWith(TRUFFLE_PACKAGE)) {
+                    if (pattern.startsWith(TRUFFLE_PACKAGE) || pattern.startsWith(SDK_PACKAGE)) {
                         if (patternsToRemove == null) {
                             patternsToRemove = Collections.singleton(pattern);
                         } else {

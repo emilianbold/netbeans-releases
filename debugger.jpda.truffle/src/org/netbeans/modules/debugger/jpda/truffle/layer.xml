@@ -111,5 +111,35 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>    
 -->
-    
+    <folder name="debugger">
+        <folder name="jpda">
+            <folder name="options">
+                <file name="org-netbeans-modules-debugger-jpda-truffle-options-TruffleOptionsProvider.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.jpda.truffle.options.TruffleOptionsProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.jpda.ui.options.StorablePanel$Provider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="TruffleASTDebugView.settings" url="resources/TruffleASTDebugView.settings"/>
+        </folder>
+
+        <folder name="Modes">
+            <folder name="navigator">
+                <file name="TruffleASTDebugView.wstcref" url="resources/TruffleASTDebugView.wstcref">
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <!--folder name="Groups">
+            <folder name="debugger">
+                <file name="resultsView.wstcgrp" url="groups/debugger/results.wstcgrp"/>
+            </folder>
+        </folder-->
+    </folder>
+
 </filesystem>

@@ -50,6 +50,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.Value;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.BreakpointRequest;
@@ -250,6 +251,11 @@ public class TruffleDebugManager extends DebuggerManagerAdapter {
                                 ThreadReference threadReference = LocatableEventWrapper.thread((LocatableEvent) event);
                                 JPDAThreadImpl thread = ((JPDADebuggerImpl) debugger).getThread(threadReference);
                                 StackFrame topFrame = ThreadReferenceWrapper.frame(threadReference, 0);
+                                List<Value> argumentValues = topFrame.getArgumentValues();
+                                if (argumentValues.get(0) == null) {
+                                    // An empty constructor used for the builder only.
+                                    return true;
+                                }
                                 ObjectReference engine = StackFrameWrapper.thisObject(topFrame);
                                 haveNewPE(debugger, thread, engine);
                             } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper |

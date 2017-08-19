@@ -49,12 +49,14 @@ import com.sun.jdi.StringReference;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.InvalidObjectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,10 +76,12 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.RemoteServices;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
 import org.netbeans.modules.debugger.jpda.truffle.actions.StepActionProvider;
+import org.netbeans.modules.debugger.jpda.truffle.ast.TruffleNode;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
@@ -133,6 +137,8 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static final String METHOD_GET_VARIABLES_SGN = "(Lcom/oracle/truffle/api/debug/DebugStackFrame;)[Ljava/lang/Object;";  // NOI18N
     private static final String METHOD_GET_SCOPE_VARIABLES = "getScopeVariables";// NOI18N
     private static final String METHOD_GET_SCOPE_VARIABLES_SGN = "(Lcom/oracle/truffle/api/debug/DebugScope;)[Ljava/lang/Object;"; // NOI18N
+    private static final String METHOD_GET_AST = "getTruffleAST";               // NOI18N
+    private static final String METHOD_GET_AST_SGN = "(I)[Ljava/lang/Object;";
     
     private static final Map<JPDADebugger, CurrentPCInfo> currentPCInfos = new WeakHashMap<>();
     
@@ -230,13 +236,61 @@ public class TruffleAccess implements JPDABreakpointListener {
             ObjectVariable thisObject = null;// TODO: (ObjectVariable) frameInfoVar.getField("thisObject");
             TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, frame, topFrameDescription, null/*code*/, scopes, thisObject, true);
             TruffleStackInfo stack = new TruffleStackInfo(debugger, stackTrace);
-            return new CurrentPCInfo(haltedInfo.stepCmd, thread, sp, scopes, topFrame, stack);
+            return new CurrentPCInfo(haltedInfo.stepCmd, thread, sp, scopes, topFrame, stack, depth -> {
+                return getTruffleAST(debugger, (JPDAThreadImpl) thread, depth, sp.getLine(), stack);
+            });
         } catch (AbsentInformationException | IllegalStateException ex) {
             Exceptions.printStackTrace(ex);
             return null;
         }
     }
-    
+
+    private static TruffleNode getTruffleAST(JPDADebugger debugger, JPDAThreadImpl thread, int depth, int topLine, TruffleStackInfo stack) {
+        JPDAClassType debugAccessor = TruffleDebugManager.getDebugAccessorJPDAClass(debugger);
+        Lock lock = thread.accessLock.writeLock();
+        lock.lock();
+        try {
+            if (thread.getState() == JPDAThread.STATE_ZOMBIE) {
+                return null;
+            }
+            final boolean[] suspended = new boolean[] { false };
+            PropertyChangeListener threadChange = (event) -> {
+                synchronized (suspended) {
+                    suspended[0] = (Boolean) event.getNewValue();
+                    suspended.notifyAll();
+                }
+            };
+            thread.addPropertyChangeListener(JPDAThreadImpl.PROP_SUSPENDED, threadChange);
+            while (!thread.isSuspended()) {
+                lock.unlock();
+                lock = null;
+                synchronized (suspended) {
+                    if (!suspended[0]) {
+                        try {
+                            suspended.wait();
+                        } catch (InterruptedException ex) {}
+                    }
+                }
+                lock = thread.accessLock.writeLock();
+                lock.lock();
+            }
+            thread.removePropertyChangeListener(JPDAThreadImpl.PROP_SUSPENDED, threadChange);
+            Variable ast = ((JPDAClassTypeImpl) debugAccessor).invokeMethod(thread, METHOD_GET_AST,
+                                                      METHOD_GET_AST_SGN,
+                                                      new Variable[] { debugger.createMirrorVar(depth, true) });
+            Variable[] astInfo = ((ObjectVariable) ast).getFields(0, Integer.MAX_VALUE);
+            int line = (depth == 0) ? topLine : stack.getStackFrames(true)[depth].getSourcePosition().getLine();
+            return TruffleNode.newBuilder().nodes((String) astInfo[0].createMirrorObject()).currentLine(line).build();
+        } catch (InvalidExpressionException | InvalidObjectException | NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } finally {
+            if (lock != null) {
+                lock.unlock();
+            }
+        }
+    }
+
     public static SourcePosition getSourcePosition(JPDADebugger debugger, ObjectVariable sourcePositionVar) {
         Field varSrcId = sourcePositionVar.getField(VAR_SRC_ID);
         if (varSrcId == null) {

@@ -42,20 +42,18 @@
 
 package org.netbeans.modules.debugger.jpda.truffle.frames.models;
 
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.truffle.TruffleProperties;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
-import org.netbeans.modules.debugger.jpda.truffle.breakpoints.TruffleLineBreakpoint;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
+import org.netbeans.modules.debugger.jpda.truffle.options.TruffleOptions;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.DebuggingView;
@@ -80,11 +78,11 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
     
     private final JPDADebugger debugger;
     private final List<ModelListener> listeners = new ArrayList<>();
-    private final TruffleProperties.Disposable propListenerDispose;
+    private final PropertyChangeListener propListenerHolder;    // Not to have the listener collected
     
     public DebuggingTruffleTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        propListenerDispose = TruffleProperties.getInstance().onShowInternalChange(isInternal -> {
+        propListenerHolder = propEvent -> {
             ModelListener[] mls;
             synchronized (listeners) {
                 mls = listeners.toArray(new ModelListener[listeners.size()]);
@@ -93,7 +91,8 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
             for (ModelListener ml : mls) {
                 ml.modelChanged(event);
             }
-        });
+        };
+        TruffleOptions.onLanguageDeveloperModeChange(propListenerHolder);
     }
 
     @Override
@@ -108,7 +107,7 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
             ((DebuggingView.DVThread) parent).getDVSupport().getCurrentThread() == parent) {
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null) {
-                boolean showInternalFrames = TruffleProperties.getInstance().isShowInternal();
+                boolean showInternalFrames = TruffleOptions.isLanguageDeveloperMode();
                 TruffleStackFrame[] stackFrames = currentPCInfo.getStack().getStackFrames(showInternalFrames);
                 children = filterAndAppend(children, stackFrames, currentPCInfo.getTopFrame());
             }

@@ -65,10 +65,11 @@ public final class TruffleProperties {
     
     private TruffleProperties() {}
     
+    /*
     public static TruffleProperties getInstance() {
         return INSTANCE;
     }
-    
+    */
     public boolean isShowInternal() {
         return truffleProperties.getBoolean(PROP_SHOW_INTERNAL, false);
     }

@@ -155,6 +155,14 @@ public class RemoteServices {
         }
     }
     
+    private static ObjectReference getTruffleClassLoader(ThreadReference tawt, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
+        /* Use:
+           com.oracle.truffle.api.impl.TruffleLocator.class.getClassLoader()
+        */
+        ClassType truffleLocatorClass = getClass(vm, "com.oracle.truffle.api.impl.TruffleLocator");
+        return truffleLocatorClass.classLoader();
+    }
+    
     private static ObjectReference getBootstrapClassLoader(ThreadReference tawt, VirtualMachine vm) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, UnsupportedOperationExceptionWrapper, ClassNotPreparedExceptionWrapper {
         /* Run this code:
             ClassLoader cl = ClassLoader.getSystemClassLoader();
@@ -225,7 +233,10 @@ public class RemoteServices {
                 // Suppose that when there's the basic class loaded, there are all.
                 if (basicClass == null) {  // Load the classes only if there's not the basic one.
                     ObjectReference cl;
-                    cl = getBootstrapClassLoader(tawt, vm);
+                    cl = getTruffleClassLoader(tawt, vm);
+                    if (cl == null) {
+                        cl = getBootstrapClassLoader(tawt, vm);
+                    }
                     if (cl == null) {
                         cl = getContextClassLoader(tawt, vm);
                     }

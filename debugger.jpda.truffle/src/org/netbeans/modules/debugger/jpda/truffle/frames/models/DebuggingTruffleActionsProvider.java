@@ -55,6 +55,7 @@ import org.netbeans.modules.debugger.jpda.truffle.TruffleProperties;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
+import org.netbeans.modules.debugger.jpda.truffle.options.TruffleOptions;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -112,19 +113,19 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
                 MAKE_CURRENT_ACTION,
                 GO_TO_SOURCE_ACTION,
             };
-        } else if (node instanceof DebuggingView.DVThread) {
+        /*} else if (node instanceof DebuggingView.DVThread) {
             Action[] actions = original.getActions(node);
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null && currentPCInfo.getStack().hasInternalFrames()) {
                 int n = actions.length;
                 actions = Arrays.copyOf(actions, n + 1);
-                if (TruffleProperties.getInstance().isShowInternal()) {
+                if (TruffleOptions.isLanguageDeveloperMode()) {
                     actions[n] = HIDE_INTERNAL_ACTION;
                 } else {
                     actions[n] = SHOW_INTERNAL_ACTION;
                 }
             }
-            return actions;
+            return actions;*/
         } else {
             return original.getActions(node);
         }
@@ -231,7 +232,7 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
 
                 @Override
                 public void perform (final Object[] nodes) {
-                    TruffleProperties.getInstance().setShowInternal(true);
+                    TruffleOptions.setLanguageDeveloperMode(true);
                 }
             },
             Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -253,7 +254,7 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
 
                 @Override
                 public void perform (final Object[] nodes) {
-                    TruffleProperties.getInstance().setShowInternal(false);
+                    TruffleOptions.setLanguageDeveloperMode(false);
                 }
             },
             Models.MULTISELECTION_TYPE_EXACTLY_ONE
