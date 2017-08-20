@@ -77,7 +77,7 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         if (parent == original.getRoot()) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(getDebugger());
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(getDebugger().getCurrentThread());
             if (currentPCInfo != null) {
                 synchronized (cpisListening) {
                     if (!cpisListening.contains(currentPCInfo)) {

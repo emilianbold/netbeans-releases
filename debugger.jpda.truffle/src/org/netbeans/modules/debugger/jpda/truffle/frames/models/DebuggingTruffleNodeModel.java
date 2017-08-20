@@ -141,7 +141,7 @@ public class DebuggingTruffleNodeModel implements ExtendedNodeModelFilter {
         if (node instanceof TruffleStackFrame) {
             TruffleStackFrame tf = (TruffleStackFrame) node;
             String displayName = tf.getDisplayName();
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(tf.getThread());
             if (currentPCInfo != null) {
                 synchronized (cpisListening) {
                     if (!cpisListening.contains(currentPCInfo)) {

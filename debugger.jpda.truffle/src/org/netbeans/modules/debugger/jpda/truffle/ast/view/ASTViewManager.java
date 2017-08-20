@@ -101,8 +101,7 @@ public class ASTViewManager extends DebuggerManagerAdapter {
         if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
             CallStackFrame frame = (CallStackFrame) evt.getNewValue();
             if (frame != null) {
-                JPDADebugger debugger = (JPDADebugger) evt.getSource();
-                CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+                CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(frame.getThread());
                 isAtTruffleLocation = currentPCInfo != null;
                 openIfCan();
             } else {

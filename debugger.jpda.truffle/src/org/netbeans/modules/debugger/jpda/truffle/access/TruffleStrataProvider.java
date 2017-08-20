@@ -85,7 +85,7 @@ public class TruffleStrataProvider implements StrataProvider {
     @Override
     public int getStrataLineNumber(CallStackFrameImpl csf, String stratum) {
         if (TRUFFLE_STRATUM.equals(stratum)) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(((JPDAThreadImpl) csf.getThread()).getDebugger());
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(csf.getThread());
             if (currentPCInfo != null) {
                 return currentPCInfo.getSourcePosition().getLine();
             }

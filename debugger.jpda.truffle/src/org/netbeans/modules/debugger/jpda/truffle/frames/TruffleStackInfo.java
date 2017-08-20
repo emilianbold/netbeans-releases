@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
@@ -67,13 +68,15 @@ public final class TruffleStackInfo {
     private static final String METHOD_GET_FRAMES_INFO_SIG = "([Lcom/oracle/truffle/api/debug/DebugStackFrame;Z)[Ljava/lang/Object;";   // NOI18N
     
     private final JPDADebugger debugger;
+    private final JPDAThread thread;
     private final ObjectVariable stackTrace;
     private TruffleStackFrame[] stackFrames;
     private boolean includedInternalFrames;
     private boolean areInternalFrames;
 
-    public TruffleStackInfo(JPDADebugger debugger, ObjectVariable stackTrace) {
+    public TruffleStackInfo(JPDADebugger debugger, JPDAThread thread, ObjectVariable stackTrace) {
         this.debugger = debugger;
+        this.thread = thread;
         this.stackTrace = stackTrace;
     }
 
@@ -113,7 +116,7 @@ public final class TruffleStackInfo {
                 StringReference codeRef = (StringReference) ((JDIVariable) codes[depth-1]).getJDIValue();
                 ObjectVariable frameInstance = (ObjectVariable) stackTrace.getFields(0, Integer.MAX_VALUE)[depth - 1];
                 TruffleStackFrame tsf = new TruffleStackFrame(
-                        debugger, depth, frameInstance, framesDesc.substring(i1, i2),
+                        debugger, thread, depth, frameInstance, framesDesc.substring(i1, i2),
                         codeRef, null, (ObjectVariable) thiss[depth-1], includeInternal);
                 truffleFrames.add(tsf);
                 if (includeInternal && tsf.isInternal()) {

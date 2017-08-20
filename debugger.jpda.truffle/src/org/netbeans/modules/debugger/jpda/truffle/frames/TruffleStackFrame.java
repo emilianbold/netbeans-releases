@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
@@ -65,6 +66,7 @@ public final class TruffleStackFrame {
     private static final Logger LOG = Logger.getLogger(TruffleStackFrame.class.getName());
     
     private final JPDADebugger debugger;
+    private final JPDAThread thread;
     private final int depth;
     private final ObjectVariable frameInstance;
     private final String methodName;
@@ -80,7 +82,7 @@ public final class TruffleStackFrame {
     private final ObjectVariable thisObject;
     private final boolean isInternal;
     
-    public TruffleStackFrame(JPDADebugger debugger, int depth,
+    public TruffleStackFrame(JPDADebugger debugger, JPDAThread thread, int depth,
                              ObjectVariable frameInstance,
                              String frameDefinition, StringReference codeRef,
                              TruffleScope[] scopes, ObjectVariable thisObject,
@@ -96,6 +98,7 @@ public final class TruffleStackFrame {
             }
         }
         this.debugger = debugger;
+        this.thread = thread;
         this.depth = depth;
         this.frameInstance = frameInstance;
         boolean internalFrame = includeInternal;
@@ -142,6 +145,10 @@ public final class TruffleStackFrame {
     
     public final JPDADebugger getDebugger() {
         return debugger;
+    }
+    
+    public final JPDAThread getThread() {
+        return thread;
     }
     
     public final int getDepth() {

@@ -140,7 +140,8 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static final String METHOD_GET_AST = "getTruffleAST";               // NOI18N
     private static final String METHOD_GET_AST_SGN = "(I)[Ljava/lang/Object;";
     
-    private static final Map<JPDADebugger, CurrentPCInfo> currentPCInfos = new WeakHashMap<>();
+    private static final Map<JPDAThread, ThreadInfo> currentPCInfos = new WeakHashMap<>();
+    private static final PropertyChangeListener threadResumeListener = new ThreadResumeListener();
     
     private static final TruffleAccess DEFAULT = new TruffleAccess();
 
@@ -178,10 +179,30 @@ public class TruffleAccess implements JPDABreakpointListener {
         return mb;
     }
     
-    public static CurrentPCInfo getCurrentPCInfo(JPDADebugger dbg) {
+    public static CurrentPCInfo getCurrentPCInfo(JPDAThread thread) {
+        ThreadInfo info;
         synchronized (currentPCInfos) {
-            return currentPCInfos.get(dbg);
+            info = currentPCInfos.get(thread);
         }
+        if (info != null) {
+            return info.cpi;
+        } else {
+            return null;
+        }
+    }
+
+    private static CurrentPCInfo getSomePCInfo(JPDADebugger dbg) {
+        synchronized (currentPCInfos) {
+            for (Map.Entry<JPDAThread, ThreadInfo> pce : currentPCInfos.entrySet()) {
+                if (((JPDAThreadImpl) pce.getKey()).getDebugger() == dbg) {
+                    CurrentPCInfo cpi = pce.getValue().cpi;
+                    if (cpi != null) {
+                        return cpi;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -191,17 +212,11 @@ public class TruffleAccess implements JPDABreakpointListener {
         if (execHaltedBP.get(debugger) == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec halted.", event);
             StepActionProvider.killJavaStep(debugger);
-            CurrentPCInfo cpci = getCurrentPosition(debugger, event.getThread());
-            synchronized (currentPCInfos) {
-                currentPCInfos.put(debugger, cpci);
-            }
+            setCurrentPosition(debugger, event.getThread());
         } else if (execStepIntoBP.get(debugger) == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), exec step into.", event);
             StepActionProvider.killJavaStep(debugger);
-            CurrentPCInfo cpci = getCurrentPosition(debugger, event.getThread());
-            synchronized (currentPCInfos) {
-                currentPCInfos.put(debugger, cpci);
-            }
+            setCurrentPosition(debugger, event.getThread());
         } else if (dbgAccessBP.get(debugger) == bp) {
             LOG.log(Level.FINE, "TruffleAccessBreakpoints.breakpointReached({0}), debugger access.", event);
             try {
@@ -218,6 +233,19 @@ public class TruffleAccess implements JPDABreakpointListener {
         }
     }
     
+    private void setCurrentPosition(JPDADebugger debugger, JPDAThread thread) {
+        CurrentPCInfo cpci = getCurrentPosition(debugger, thread);
+        synchronized (currentPCInfos) {
+            ThreadInfo info = currentPCInfos.get(thread);
+            if (info == null) {
+                ((JPDAThreadImpl) thread).addPropertyChangeListener(JPDAThreadImpl.PROP_SUSPENDED, threadResumeListener);
+                info = new ThreadInfo();
+                currentPCInfos.put(thread, info);
+            }
+            info.cpi = cpci;
+        }
+    }
+
     private CurrentPCInfo getCurrentPosition(JPDADebugger debugger, JPDAThread thread) {
         try {
             CallStackFrame csf = thread.getCallStack(0, 1)[0];
@@ -234,8 +262,8 @@ public class TruffleAccess implements JPDABreakpointListener {
             ObjectVariable stackTrace = (ObjectVariable) frameInfoVar.getField(VAR_STACK_TRACE);
             String topFrameDescription = (String) frameInfoVar.getField(VAR_TOP_FRAME).createMirrorObject();
             ObjectVariable thisObject = null;// TODO: (ObjectVariable) frameInfoVar.getField("thisObject");
-            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, frame, topFrameDescription, null/*code*/, scopes, thisObject, true);
-            TruffleStackInfo stack = new TruffleStackInfo(debugger, stackTrace);
+            TruffleStackFrame topFrame = new TruffleStackFrame(debugger, thread, 0, frame, topFrameDescription, null/*code*/, scopes, thisObject, true);
+            TruffleStackInfo stack = new TruffleStackInfo(debugger, thread, stackTrace);
             return new CurrentPCInfo(haltedInfo.stepCmd, thread, sp, scopes, topFrame, stack, depth -> {
                 return getTruffleAST(debugger, (JPDAThreadImpl) thread, depth, sp.getLine(), stack);
             });
@@ -457,7 +485,7 @@ public class TruffleAccess implements JPDABreakpointListener {
                     return false;
                 }
             }
-            CurrentPCInfo currentPCInfo = getCurrentPCInfo(debugger);
+            CurrentPCInfo currentPCInfo = getSomePCInfo(debugger);
             if (currentPCInfo != null) {
                 JPDAThread thread = currentPCInfo.getThread();
                 if (thread != null) {
@@ -526,5 +554,26 @@ public class TruffleAccess implements JPDABreakpointListener {
         
         void callMethods(JPDAThread thread) throws InvocationException;
         
+    }
+
+    private static final class ThreadInfo {
+        volatile CurrentPCInfo cpi;
+    }
+
+    private static final class ThreadResumeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            JPDAThreadImpl t = (JPDAThreadImpl) evt.getSource();
+            if (!(Boolean) evt.getNewValue() && !t.isMethodInvoking()) { // not suspended, resumed
+                synchronized (currentPCInfos) {
+                    ThreadInfo info = currentPCInfos.get(t);
+                    if (info != null) {
+                        info.cpi = null;
+                    }
+                }
+            }
+        }
+
     }
 }

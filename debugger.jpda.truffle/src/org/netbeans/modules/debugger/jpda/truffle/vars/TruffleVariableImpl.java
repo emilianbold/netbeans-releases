@@ -206,7 +206,7 @@ public class TruffleVariableImpl implements TruffleVariable {
     }
 
     static ObjectVariable setValue(JPDADebugger debugger, ObjectVariable truffleObject, String newExpression) {
-        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger.getCurrentThread());
         if (currentPCInfo != null) {
             ObjectVariable selectedFrame = currentPCInfo.getSelectedStackFrame().getStackFrameInstance();
             try {

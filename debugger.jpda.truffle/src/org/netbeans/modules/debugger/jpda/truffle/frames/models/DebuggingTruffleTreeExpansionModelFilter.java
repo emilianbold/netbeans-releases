@@ -161,7 +161,7 @@ public class DebuggingTruffleTreeExpansionModelFilter implements TreeExpansionMo
     }
 
     private void currentStackFrameChanged(CallStackFrame csf) {
-        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        CurrentPCInfo currentPCInfo = (csf != null) ? TruffleAccess.getCurrentPCInfo(csf.getThread()) : null;
         if (csf != null && currentPCInfo != null && csf.getThread() == currentPCInfo.getThread()) {
             JPDAThread thread = csf.getThread();
             suspendedTruffleThread = new WeakReference<>(thread);

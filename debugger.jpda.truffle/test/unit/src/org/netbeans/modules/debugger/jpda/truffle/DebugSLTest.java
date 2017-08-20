@@ -143,7 +143,7 @@ public class DebugSLTest extends NbTestCase {
             assertEquals("Stopped in Truffle halted method", haltedMethod, frame.getMethodName());
             assertEquals("Unexpected stratum", TruffleStrataProvider.TRUFFLE_STRATUM, frame.getDefaultStratum());
             
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(frame.getThread());
             assertNotNull("Missing CurrentPCInfo", currentPCInfo);
             TruffleStackFrame topFrame = currentPCInfo.getTopFrame();
             assertNotNull("No top frame", topFrame);
@@ -190,7 +190,7 @@ public class DebugSLTest extends NbTestCase {
             // Check that frame is in the Truffle guest language
             assertEquals("Unexpected stratum", TruffleStrataProvider.TRUFFLE_STRATUM, frame.getDefaultStratum());
             
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(frame.getThread());
             assertNotNull("Missing CurrentPCInfo", currentPCInfo);
             TruffleStackFrame topFrame = currentPCInfo.getTopFrame();
             assertNotNull("No top frame", topFrame);

@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.actions.JPDADebuggerActionProvider;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -99,12 +100,13 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
     @Override
     protected void checkEnabled(int debuggerState) {
         Iterator i = getActions ().iterator ();
+        JPDAThread currentThread = getDebuggerImpl().getCurrentThread();
         while (i.hasNext ()) {
             setEnabled (
                 i.next (),
                 (debuggerState == JPDADebugger.STATE_STOPPED) &&
-                (getDebuggerImpl ().getCurrentThread () != null) &&
-                (TruffleAccess.getCurrentPCInfo(getDebuggerImpl()) != null)
+                (currentThread != null) &&
+                (TruffleAccess.getCurrentPCInfo(currentThread) != null)
             );
         }
     }
@@ -113,7 +115,8 @@ public class StepActionProvider extends JPDADebuggerActionProvider {
     public void doAction(Object action) {
         LOG.fine("doAction("+action+")");
         JPDADebuggerImpl debugger = getDebuggerImpl();
-        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        JPDAThread currentThread = debugger.getCurrentThread();
+        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(currentThread);
         int stepCmd = 0;
         if (ActionsManager.ACTION_CONTINUE.equals(action)) {
             stepCmd = 0;

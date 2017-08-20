@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
@@ -77,7 +78,8 @@ public class ASTTreeModel implements TreeModel, PropertyChangeListener {
     @Override
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            JPDAThread currentThread = debugger.getCurrentThread();
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(currentThread);
             if (currentPCInfo == null) {
                 return new Object[] {};
             }

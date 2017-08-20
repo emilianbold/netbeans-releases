@@ -46,6 +46,7 @@ import java.io.InvalidObjectException;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.TruffleDebugManager;
@@ -66,7 +67,8 @@ public class TruffleEval {
 
     @NbBundle.Messages("MSG_NoSuspend=No current suspend location.")
     public static Variable evaluate(JPDADebugger debugger, String expression) throws InvalidExpressionException {
-        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        JPDAThread currentThread = debugger.getCurrentThread();
+        CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(currentThread);
         if (currentPCInfo == null) {
             throw new InvalidExpressionException(Bundle.MSG_NoSuspend());
         }

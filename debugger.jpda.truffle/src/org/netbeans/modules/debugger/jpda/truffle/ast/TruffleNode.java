@@ -139,22 +139,25 @@ public final class TruffleNode {
             return node;
         }
 
-        /** Mark all node path which is currently being executed as current. */
+        /** Mark all node paths which are currently being executed as current. */
         private boolean markCurrent(TruffleNode node, int currentLine) {
             if (node.getChildren().length == 0) {
                 if (node.getStartLine() <= currentLine && currentLine <= node.getEndLine()) {
                     node.current = true;
                     return true;
+                } else {
+                    return false;
                 }
             } else {
+                boolean isSomeCurrent = false;
                 for (TruffleNode ch : node.getChildren()) {
                     if (markCurrent(ch, currentLine)) {
-                        node.current = true;
-                        return true;
+                        isSomeCurrent = true;
                     }
                 }
+                node.current = isSomeCurrent;
+                return isSomeCurrent;
             }
-            return false;
         }
 
         private TruffleNode parseNode(StringLineReader slr) {

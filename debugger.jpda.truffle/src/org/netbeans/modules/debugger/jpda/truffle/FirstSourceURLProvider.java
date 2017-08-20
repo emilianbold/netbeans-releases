@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.source.Source;
@@ -75,7 +76,8 @@ public class FirstSourceURLProvider extends SourcePathProvider {
     @Override
     public String getURL(String relativePath, boolean global) {
         if (TRUFFLE_ACCESSOR_PATH.equals(relativePath)) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            JPDAThread currentThread = debugger.getCurrentThread();
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(currentThread);
             if (currentPCInfo != null) {
                 return currentPCInfo.getSourcePosition().getSource().getUrl().toExternalForm();
             }
@@ -85,7 +87,8 @@ public class FirstSourceURLProvider extends SourcePathProvider {
     
     public String getURL(JPDAClassType clazz, String stratum) {
         if (TRUFFLE_ACCESSOR_CLASS_NAME.equals(clazz.getName())) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            JPDAThread currentThread = debugger.getCurrentThread();
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(currentThread);
             if (currentPCInfo != null) {
                 Source source = currentPCInfo.getSourcePosition().getSource();
                 if (source != null) {

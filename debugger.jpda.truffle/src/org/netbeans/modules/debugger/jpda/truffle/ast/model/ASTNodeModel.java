@@ -67,12 +67,8 @@ public class ASTNodeModel implements NodeModel {
             TruffleNode ast = (TruffleNode) node;
             String label = ast.getClassSimpleName();
             if (ast.getChildren().length == 0) {
-                CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
-                if (currentPCInfo != null) {
-                    int line = currentPCInfo.getSourcePosition().getLine();
-                    if (ast.getStartLine() <= line && line <= ast.getEndLine()) {
-                        label = "<html><b>" + label + "</b></html>";
-                    }
+                if (ast.isCurrent()) {
+                    label = "<html><b>" + label + "</b></html>";
                 }
             }
             return label;

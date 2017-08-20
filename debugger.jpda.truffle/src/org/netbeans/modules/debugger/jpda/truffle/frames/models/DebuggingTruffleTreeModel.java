@@ -49,11 +49,13 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.options.TruffleOptions;
+import org.netbeans.modules.debugger.jpda.util.WeakCacheMap;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.DebuggingView;
@@ -103,9 +105,8 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         Object[] children = original.getChildren(parent, from, to);
-        if (parent instanceof DebuggingView.DVThread && children.length > 0 &&
-            ((DebuggingView.DVThread) parent).getDVSupport().getCurrentThread() == parent) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+        if (parent instanceof DebuggingView.DVThread && children.length > 0) {
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(((WeakCacheMap.KeyedValue<JPDAThread>) parent).getKey());
             if (currentPCInfo != null) {
                 boolean showInternalFrames = TruffleOptions.isLanguageDeveloperMode();
                 TruffleStackFrame[] stackFrames = currentPCInfo.getStack().getStackFrames(showInternalFrames);

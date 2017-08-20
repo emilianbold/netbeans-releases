@@ -76,15 +76,12 @@ import org.openide.util.RequestProcessor;
                              position=24000)
 public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilter {
     
-    private final JPDADebugger debugger;
-    
     private final Action MAKE_CURRENT_ACTION;
     private final Action GO_TO_SOURCE_ACTION;
     private final Action SHOW_INTERNAL_ACTION;
     private final Action HIDE_INTERNAL_ACTION;
     
     public DebuggingTruffleActionsProvider(ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         RequestProcessor requestProcessor = lookupProvider.lookupFirst(null, RequestProcessor.class);
         MAKE_CURRENT_ACTION = createMAKE_CURRENT_ACTION(requestProcessor);
         GO_TO_SOURCE_ACTION = createGO_TO_SOURCE_ACTION(requestProcessor);
@@ -95,9 +92,9 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
     @Override
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
         if (node instanceof TruffleStackFrame) {
-            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+            TruffleStackFrame f = (TruffleStackFrame) node;
+            CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(f.getThread());
             if (currentPCInfo != null) {
-                TruffleStackFrame f = (TruffleStackFrame) node;
                 currentPCInfo.setSelectedStackFrame(f);
                 goToSource(f);
             }
@@ -154,7 +151,7 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
             public boolean isEnabled (Object node) {
                 if (node instanceof TruffleStackFrame) {
                     TruffleStackFrame f = (TruffleStackFrame) node;
-                    CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+                    CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(f.getThread());
                     if (currentPCInfo != null) {
                         TruffleStackFrame topFrame = currentPCInfo.getTopFrame();
                         if (topFrame == null) {
@@ -172,7 +169,7 @@ public class DebuggingTruffleActionsProvider implements NodeActionsProviderFilte
                 if (nodes.length == 0) return ;
                 if (nodes[0] instanceof TruffleStackFrame) {
                     TruffleStackFrame f = (TruffleStackFrame) nodes[0];
-                    CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
+                    CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(f.getThread());
                     if (currentPCInfo != null) {
                         currentPCInfo.setSelectedStackFrame(f);
                     }
