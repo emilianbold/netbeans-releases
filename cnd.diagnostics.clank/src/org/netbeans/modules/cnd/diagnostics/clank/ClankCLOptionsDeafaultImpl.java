@@ -39,66 +39,21 @@
  */
 package org.netbeans.modules.cnd.diagnostics.clank;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
+import java.util.Arrays;
+import java.util.stream.Stream;
 import org.clang.tools.services.checkers.api.ClankCLOptionsProvider;
-//import org.clang.tools.services.checkers.api.ClankCLOptionsProvider;
-import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 
 /**
  *
  * @author masha
  */
-final class ClankCLArsPanel extends JPanel{
-    private final Preferences preferences;
+public class ClankCLOptionsDeafaultImpl {
+    private static final String[] ownArgs = new String[0];//new String[]{"-fcxx-exceptions", "-fexceptions", "-Wno-unreachable-code"};
 
-    public ClankCLArsPanel(Preferences preferences)  {
-        if (preferences != null) {
-            if (preferences.absolutePath().endsWith("/"+ClankDiagnoticsErrorProvider.NAME)) { //NOI18N
-                this.preferences = preferences;
-            } else {
-                this.preferences = preferences.node(ClankDiagnoticsErrorProvider.NAME);
-            }
-        } else {
-            this.preferences = AuditPreferences.AUDIT_PREFERENCES_ROOT.node(ClankDiagnoticsErrorProvider.NAME);
-        }
-        initComponents();
-        
-    }
-    
-    
-    private void initComponents() {
-        //get values from the provider
-        final String[] args = ClankCLOptionsDeafaultImpl.getArgs();
-        
-        setLayout(new GridBagLayout());
-        
-        for (String arg : args) {            
-            final JCheckBox checkBox = new JCheckBox(arg);
-            GridBagConstraints gridBagConstraints = new GridBagConstraints();
-            checkBox.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    //put to preferences
-                    preferences.putBoolean(arg, checkBox.isSelected());
-                }
-            });
-            checkBox.setSelected(preferences.getBoolean(arg, true));
-            gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
-
-            add(checkBox, gridBagConstraints);
-        }
+    public static String[] getArgs() {
+        final String[] args = ClankCLOptionsProvider.getArgs();
+        String[] result = Stream.concat(Arrays.stream(ownArgs), Arrays.stream(args)).toArray(String[]::new);
+        return result;
     }
 
-    
-    
 }

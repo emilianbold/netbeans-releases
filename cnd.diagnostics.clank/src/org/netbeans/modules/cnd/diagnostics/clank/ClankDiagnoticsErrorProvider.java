@@ -54,7 +54,6 @@ import org.clang.tools.services.ClankDiagnosticInfo;
 import org.clang.tools.services.ClankDiagnosticResponse;
 import org.clang.tools.services.ClankDiagnosticServices;
 import org.clang.tools.services.ClankRunDiagnosticsSettings;
-import org.clang.tools.services.checkers.api.ClankCLOptionsProvider;
 //import org.clang.tools.services.checkers.api.ClankCLOptionsProvider;
 import org.clang.tools.services.checkers.api.ClankChecker;
 import org.clang.tools.services.checkers.api.ClankCheckersProvider;
@@ -77,6 +76,11 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -191,13 +195,12 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
     @Override
     protected void doGetErrors(Request request, final Response response) {
+        ClankRunDiagnosticsSettings settings = new ClankRunDiagnosticsSettings();
         final CsmFile file = request.getFile();
-        ClankCompilationDataBase.Entry entry = createEntry(file, true);
-
+        ClankCompilationDataBase.Entry entry = createEntry(file, true, settings);
         if (request.isCancelled()) {
             return;
         };
-        ClankRunDiagnosticsSettings settings = new ClankRunDiagnosticsSettings();
         settings.response = new ClankDiagnosticResponse() {
             @Override
             public void addError(final ClankDiagnosticInfo errorInfo) {
@@ -209,7 +212,7 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 
             }
         };
-        for (String arg : ClankCLOptionsProvider.getArgs()) {
+        for (String arg : ClankCLOptionsDeafaultImpl.getArgs()) {
             if (myPreferences.getPreferences().getBoolean(arg, true)) {
                 settings.clArgs.add(arg);
             }
@@ -233,7 +236,7 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
   
-    private static ClankCompilationDataBase.Entry createEntry(CsmFile file, boolean useURL) {
+    private static ClankCompilationDataBase.Entry createEntry(CsmFile file, boolean useURL, ClankRunDiagnosticsSettings settings) {
         NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
         CharSequence mainFile = nfi != null ? (useURL ? 
                 CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())) : 
@@ -241,8 +244,45 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
                 (useURL ? 
                 CndFileSystemProvider.toUrl(FSPath.toFSPath(file.getFileObject())) : 
                 file.getAbsolutePath());        
-        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);        
+        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);
         if (nfi != null) {
+            Lookup.Provider project = nfi.getNativeProject().getProject();
+            boolean addNoException = true;
+            if (project != null) {
+                //we need to check for example if we have -fno-exceptions - and if not - add 
+                //-fcxx-exceptions and -fexceptions
+                //as g++ and clang defaults are different
+                //shouldn't we create some kine of map
+                //and just read from the file (XML for example) instead of hard-coding in the source code
+                ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                if (provider != null && provider.gotDescriptor()) {
+                    MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
+                    Item item = configurationDescriptor.findItemByFileObject(file.getFileObject());
+                    if (item != null) {
+                        final MakeConfiguration conf = configurationDescriptor.getActiveConfiguration();
+                        ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
+                        PredefinedToolKind tool = itemConfiguration.getTool();
+                        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                        if (itemConfiguration.isCompilerToolConfiguration()) {
+                            AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(tool);
+                            String options = itemConfiguration.getCompilerConfiguration().getAllOptions(compiler);
+                            if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
+                                if (options.contains("-fno-exceptions")) {//NOI18N
+                                    addNoException = false;
+                                }
+                            } else if (compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                                if (options.contains("-noex") || options.contains("-fno-exceptions")) {//NOI18N
+                                    addNoException = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (addNoException) {
+                settings.clArgs.add("-fcxx-exceptions");//NOI18N
+                settings.clArgs.add("-fexceptions");//NOI18N
+            }
             builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
 
             // -I or -F
