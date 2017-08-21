@@ -42,6 +42,9 @@ Contributor(s):
     <description>Builds, tests, and runs the project org.netbeans.modules.javascript2.editor</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 
+    <target name="build-init" depends="projectized.build-init">
+        <unzip src="external/js.foundation-parser.zip" dest="test/unit/data/testfiles/ecmascript6"/>
+    </target>
     <!-- Generated JavaScript files for core libraries, used by code completion
         etc. See the JsStubsGenerator project (in main/misc repository) for details. -->
     <target name="-bundle-corestubs">
