@@ -278,9 +278,11 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
                     for (AnnotatedCode.LineAttribute attr : line.attrs) {
                         doc.setCharacterAttributes(lineStartOffsetInDoc + attr.column, attr.length, attr.attribute, true);
                     }                       
+                    int endHL = doc.getLength();
+                    
                     for (int i = 0; i < startColumns.length; i++) {
 //                        int start_ = Math.max(start, startColumns[i] - 1);
-                        addAttribute(lineStartOffsetInDoc + startColumns[i] - 1, lineStartOffsetInDoc + endColumns[i] -1, 
+                        addAttribute(lineStartOffsetInDoc + startColumns[i] - 1, endColumns[i] == -1 ? endHL -1  : lineStartOffsetInDoc + endColumns[i] -1, 
                                 CodeSnippet.COLORIZATION_ENABLED ? Painter.FILLED_RECTANGLE : Painter.RECTANGLE);
                     }                    
 //                        if (start < startColumns[i] -1) {
@@ -296,7 +298,6 @@ public class CodeSnippetPanel extends javax.swing.JPanel {
 //                    if (endColumns[startColumns.length-1] -1 >=  startColumns[startColumns.length-1]) {
 //                        doc.insertString(doc.getLength(), text.substring( endColumns[startColumns.length-1] -1), null); 
 //                    }
-                    int endHL = doc.getLength();
 //                    //addAttribute(startHL, endHL, Painter.HIGHLIGHT);
 //                    for (int i = 0; i < startUs.length; i++) {
 //                        addAttribute(startUs[i], endUs[i], Painter.RECTANGLE);

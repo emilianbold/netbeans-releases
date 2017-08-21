@@ -181,8 +181,9 @@ public final class CodeSnippet {
             // line is 1-based number
             int line = codeSnippet.getLine();
             Language<CppTokenId> lang = CndLexerUtilities.getLanguage(codeSnippet.getFileObject().getMIMEType());
-            
-            int currentLineNumber = 0;
+            int currentLineNumber = 1;
+            int lastLineNumber = codeSnippet.endLineColumns[codeSnippet.endLineColumns.length - 1][0];
+            int context_lines_after = lastLineNumber - line > 0 ? lastLineNumber -line + 1 : CONTEXT_LINE_NUM;
             if (fo != null) {
                 List<String> asLines = fo.asLines();
                 if (asLines.size() >= line) {
@@ -210,39 +211,74 @@ public final class CodeSnippet {
                         currentLineNumber++;
                         prevLineIndex--;
                     }
-                    String lineWithIssueText = asLines.get(line - 1);
-                    LineInfo lineInfo = new LineInfo(LineType.ANNOTATION, lineWithIssueText, toLineNumber(line), line);
-                    if (COLORIZATION_ENABLED) {
-                        TokenHierarchy<?> tokenH = TokenHierarchy.create(lineWithIssueText, lang);
-                        TokenSequence<?> tok = tokenH.tokenSequence();                    
-                        calculateColors(lineInfo, tok);
-                    }
-                    //start column in this line
-                    lines.add(lineInfo);
-                    int size = codeSnippet.startLineColumns.length;
-                    lineInfo.startHLColumn = new int[size];
-                    lineInfo.endHLColumns = new int[size];
-                    for (int i = 0; i < size; i++) {
-                        lineInfo.startHLColumn[i] = codeSnippet.startLineColumns[i][1];
-                        lineInfo.endHLColumns[i] = codeSnippet.endLineColumns[i][1];
+                    //and now add annotated lines the number of annotated lines = 
+                    int curAnnotatedLine = line -1;
+                    int countDown = lastLineNumber - line + 1;
+                    while (countDown >0 ) {
+                        String lineWithIssueText = asLines.get(curAnnotatedLine);
+                        final String toLineNumber = toLineNumber(curAnnotatedLine + 1);
+                        LineInfo lineInfo = new LineInfo(LineType.ANNOTATION, lineWithIssueText, toLineNumber, curAnnotatedLine + 1);
+                        if (COLORIZATION_ENABLED) {
+                            TokenHierarchy<?> tokenH = TokenHierarchy.create(lineWithIssueText, lang);
+                            TokenSequence<?> tok = tokenH.tokenSequence();
+                            calculateColors(lineInfo, tok);
+                        }
+                        //start column in this line
+                        lines.add(lineInfo);
+                        int size = codeSnippet.startLineColumns.length;
+                        //it can be 22:23 - 24:7
+                        //it can be 22:1-22:6 22:7-22:8
+//                        lineInfo.startHLColumn = new int[1];
+//                        lineInfo.endHLColumns = new int[1];
+                        ArrayList<Integer> starts = new ArrayList<>();
+                        ArrayList<Integer> ends = new ArrayList<>();
+                        for (int i = 0; i < size; i++) {
+                            if (codeSnippet.startLineColumns[i][0] == curAnnotatedLine + 1){
+                                starts.add(codeSnippet.startLineColumns[i][1]);
+                                if (codeSnippet.endLineColumns[i][0] == curAnnotatedLine + 1) {
+                                    ends.add(codeSnippet.endLineColumns[i][1]);
+                                }
+                                ends.add(-1);
+                                continue;
+                            }
+                            //if the start line less and end line more - means the whole line
+                            if (codeSnippet.startLineColumns[i][0] < curAnnotatedLine + 1) {
+                                if (codeSnippet.endLineColumns[i][0] > curAnnotatedLine + 1) {
+                                    //mark the whole line
+                                    starts.add(0);
+                                    ends.add(-1);
+                                } else {
+                                    starts.add(0);
+                                    ends.add(codeSnippet.endLineColumns[i][1]);
+                                }
+                            }
+                        }
+                        lineInfo.startHLColumn = new int[starts.size()];
+                        lineInfo.endHLColumns = new int[starts.size()];
+                        for (int i = 0; i < starts.size(); i++) {
+                            lineInfo.startHLColumn[i] = starts.get(i);
+                            lineInfo.endHLColumns[i] = ends.get(i);
+                        }
+                        curAnnotatedLine++;
+                        countDown--;
                     }
 
                     
-                    int nextLineIndex = line + 1;
+                    int nextLineIndex = curAnnotatedLine + 1;
                     int addedAfterIssueLines = 0;
                     currentLineNumber++;
                     while (asLines.size() >= nextLineIndex) {
                         String lineText = asLines.get(nextLineIndex - 1);
                         if (!lineText.isEmpty()) {
-                            lineInfo = new LineInfo(LineType.SOURCE, lineText, toLineNumber(nextLineIndex), nextLineIndex);
+                            LineInfo lineInfo = new LineInfo(LineType.SOURCE, lineText, toLineNumber(nextLineIndex), nextLineIndex);
                             lines.add(lineInfo);
                             if (COLORIZATION_ENABLED) {
                                 TokenHierarchy<?> tokenH = TokenHierarchy.create(lineText, lang);
                                 TokenSequence<?> tok = tokenH.tokenSequence();                    
                                 calculateColors(lineInfo, tok);
                             }
-                            
-                            if (++addedAfterIssueLines >= CONTEXT_LINE_NUM) {
+                                //we will get BadLocationException if the range is wider 
+                            if (++addedAfterIssueLines >= context_lines_after) {
                                 break;
                             }
                         }
