@@ -71,11 +71,13 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
@@ -245,6 +247,7 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
                 CndFileSystemProvider.toUrl(FSPath.toFSPath(file.getFileObject())) : 
                 file.getAbsolutePath());        
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);
+        boolean isLangSet = false;
         if (nfi != null) {
             Lookup.Provider project = nfi.getNativeProject().getProject();
             boolean addNoException = true;
@@ -263,8 +266,52 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
                         ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
                         PredefinedToolKind tool = itemConfiguration.getTool();
                         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                                AbstractCompiler compiler = itemConfiguration.isCompilerToolConfiguration() ? 
+                                (AbstractCompiler) compilerSet.getTool(tool) : 
+                                (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                        CCCompilerConfiguration configuration = null; 
                         if (itemConfiguration.isCompilerToolConfiguration()) {
-                            AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(tool);
+                            configuration = itemConfiguration.getCCCompilerConfiguration();
+                        } else if (item.hasHeaderOrSourceExtension(false, false)) {
+                            configuration = conf.getCCCompilerConfiguration();
+                        }
+                        if (configuration != null && configuration.getCppStandard().getDefault() == 
+                            configuration.getCppStandard().getValue()) { //isDefault, check Code eassiatcne
+                            int externalCppStandard = itemConfiguration.isCompilerToolConfiguration() ? 
+                                    (nfi.getLanguage() == NativeFileItem.Language.CPP ? 
+                                    NativeProjectSupport.getDefaultCppStandard().toExternal()  :
+                                    NativeProjectSupport.getDefaultCStandard().toExternal()): 
+                                    (item.hasHeaderOrSourceExtension(false, false) ? 
+                                        NativeProjectSupport.getDefaultHeaderStandard().toExternal() : 
+                                        NativeFileItem.LanguageFlavor.DEFAULT.toExternal()
+                                    );
+                            int cppStandard = 0;
+                            if (externalCppStandard == NativeFileItem.LanguageFlavor.DEFAULT.toExternal()) {
+                                cppStandard = CCCompilerConfiguration.STANDARD_DEFAULT;
+                            } else if (externalCppStandard == NativeFileItem.LanguageFlavor.CPP98.toExternal()) {
+                                cppStandard = CCCompilerConfiguration.STANDARD_CPP98;
+                            } else if (externalCppStandard == NativeFileItem.LanguageFlavor.CPP11.toExternal()) {
+                                cppStandard = CCCompilerConfiguration.STANDARD_CPP11;
+                            } else if (externalCppStandard == NativeFileItem.LanguageFlavor.CPP14.toExternal()) {
+                                cppStandard = CCCompilerConfiguration.STANDARD_CPP14;
+                            } else if (externalCppStandard == NativeFileItem.LanguageFlavor.CPP17.toExternal()) {
+                                cppStandard = CCCompilerConfiguration.STANDARD_CPP17;
+                            } else if (externalCppStandard == NativeFileItem.LanguageFlavor.UNKNOWN.toExternal()) {
+                                cppStandard = CCCompilerConfiguration.STANDARD_INHERITED;
+                            }
+                            String cppStandardOptions = compiler.getCppStandardOptions(cppStandard); //value from compiler configration
+                            settings.clArgs.add(cppStandardOptions);
+                            if (cppStandardOptions.contains("c++")) { //NOI18N
+                                settings.clArgs.add("-stdlib=libstdc++");//NOI18N
+                            }
+                        } else if (configuration != null){
+                            String cppStandardOptions =  compiler.getCppStandardOptions(configuration.getCppStandard().getValue());
+                            settings.clArgs.add(cppStandardOptions);
+                            if (cppStandardOptions.contains("c++")) {//NOI18N
+                                settings.clArgs.add("-stdlib=libstdc++");//NOI18N
+                            }
+                        }
+                        if (itemConfiguration.isCompilerToolConfiguration()) {
                             String options = itemConfiguration.getCompilerConfiguration().getAllOptions(compiler);
                             if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
                                 if (options.contains("-fno-exceptions")) {//NOI18N
@@ -283,7 +330,9 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
                 settings.clArgs.add("-fcxx-exceptions");//NOI18N
                 settings.clArgs.add("-fexceptions");//NOI18N
             }
-            builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
+            if (!isLangSet) {
+                builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
+            }
 
             // -I or -F
             for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
@@ -420,7 +469,9 @@ public class ClankDiagnoticsErrorProvider extends CsmErrorProvider implements Co
         switch (startEntry.getLanguage()) {
             case C:
             case C_HEADER:
-                lang = InputKind.IK_C;
+                //header file should be considered th esame way code assitance does
+                lang = NativeProjectSupport.getDefaultHeaderStandard() == NativeFileItem.LanguageFlavor.C ? 
+                        InputKind.IK_C : InputKind.IK_CXX;
                 break;
             case CPP:
                 lang = InputKind.IK_CXX;
