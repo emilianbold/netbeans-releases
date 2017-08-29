@@ -69,7 +69,8 @@ made subject to such option by the copyright holder.
   <property name="j2ee.dd.resources.dir" value="src/org/netbeans/modules/j2ee/dd/impl/"/>
 
   <target name="build-init" depends="projectized.build-init">
-  <unzip src="external/j2ee.dd-external-resources.zip" dest="${j2ee.dd.resources.dir}"/>
+  <unzip src="external/j2ee.dd-w3c-resources.zip" dest="${j2ee.dd.resources.dir}"/>
+  <unzip src="external/j2ee.dd-glassfish-resources.zip" dest="${j2ee.dd.resources.dir}"/>
     </target>
 
   <target name="s2binit" depends="build-init">

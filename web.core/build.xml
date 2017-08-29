@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
 
     <property name="resources.dir" value="./src/org/netbeans/modules/web/taglib/resources/"/>
     <target name="build-init" depends="projectized.build-init">
-        <unzip src="external/web.core-external-resources.zip" dest="${resources.dir}"/>
+        <unzip src="external/web.core-glassfish-ext-resources.zip" dest="${resources.dir}"/>
+        <unzip src="external/web.core-w3c-ext-resources.zip" dest="${resources.dir}"/>
    </target>
 </project>
