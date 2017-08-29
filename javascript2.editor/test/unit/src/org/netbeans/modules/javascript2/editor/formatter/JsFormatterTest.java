@@ -1496,10 +1496,6 @@ public class JsFormatterTest extends JsFormatterTestBase {
         reindentFileContents("testfiles/formatter/commas3.js", null);
     }
 
-    public void testPrototype() throws Exception {
-        reformatFileContents("testfiles/formatter/prototype.js",new IndentPrefs(4, 4));
-    }
-
     public void testDashboard() throws Exception {
         reformatFileContents("testfiles/formatter/dashboard.js",new IndentPrefs(4, 4));
     }
