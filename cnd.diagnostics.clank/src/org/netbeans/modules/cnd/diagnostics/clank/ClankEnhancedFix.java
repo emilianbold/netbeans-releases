@@ -174,12 +174,12 @@ import org.openide.util.Exceptions;
                     if (isInsertRangeValid) {
                         document.insertString(insertStartPosition.getOffset(), textToInsert, null);
                     } else {
-                        document.remove(removeStartPosition.getOffset(), removeEndPosition.getOffset() - removeStartPosition.getOffset() + 1);
+                        document.remove(removeStartPosition.getOffset(), removeEndPosition.getOffset() - removeStartPosition.getOffset());
                     }
                 } else {
                     if (isRemoveTokenRange || removeStartPosition.getOffset() != removeEndPosition.getOffset()) {
                         //replace
-                        document.remove(removeStartPosition.getOffset(), removeEndPosition.getOffset() - removeStartPosition.getOffset() + 1);
+                        document.remove(removeStartPosition.getOffset(), removeEndPosition.getOffset() - removeStartPosition.getOffset());
                         document.insertString(removeStartPosition.getOffset(), textToInsert, null);
                     } else {
                         document.insertString(removeStartPosition.getOffset(), textToInsert, null);
