@@ -1,7 +1,7 @@
-#changeset:   36979:54da36823884
+#changeset:   37350:be83c251881c
 #branch:      jclank
 #tag:         tip
-#user:        Maria Dalmatova <maria.tishkova@oracle.com>
-#date:        Fri Aug 18 16:37:42 2017 +0300
-#summary:     extended possibility to run command line arguments from the IDE
-E40A0022DEB831362C201AC32D397D9D03DAE379 clank_0.3.9.zip
+#user:        Ilia Gromov <ilia@netbeans.org>
+#date:        Thu Aug 31 14:24:35 2017 +0300
+#summary:     [license] fix license text, spacing
+A672EE2C77CE98CBE5880C85AB6DF50D2D2B872D clank_0.3.9.zip
