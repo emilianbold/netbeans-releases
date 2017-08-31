@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.util.Vector;
+import org.netbeans.editor.ObjectArrayUtilities;
 // OLD import java.util.Iterator;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
@@ -57,9 +58,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Variable;
  */
 class VariableBag {
 
-    private final Vector<Variable> variables = new Vector<Variable>();
-    private final Vector<Variable> watchvariables = new Vector<Variable>();
-    private final Vector<Variable> localvariables = new Vector<Variable>();
+    private final Vector<GdbVariable> variables = new Vector<GdbVariable>();
+    private final Vector<GdbVariable> watchvariables = new Vector<GdbVariable>();
+    private final Vector<GdbVariable> localvariables = new Vector<GdbVariable>();
 
     public final static int FROM_LOCALS = 1;
     public final static int FROM_WATCHES = 2;
@@ -69,6 +70,29 @@ class VariableBag {
     private NativeDebugger debugger;	// ... to which we're bound
 
     public VariableBag() {
+    }
+
+    boolean hasVariable(String miName) {
+        if (miName == null || miName.isEmpty()) {
+            return false;
+        }
+        //checks if variable with the miName presented in the bag
+        for (GdbVariable var : variables) {
+            if (miName.equals(var.getMIName())) {
+                return true;
+            }
+        }
+        for (GdbVariable var : localvariables) {
+            if (miName.equals(var.getMIName())) {
+                return true;
+            }
+        }
+        for (GdbVariable var : watchvariables) {
+            if (miName.equals(var.getMIName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isBound() {
