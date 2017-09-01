@@ -3763,9 +3763,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void evalMIVar(final GdbVariable v) {
-        String mi_name = v.getMIName();
+        final String mi_name = v.getMIName();
         // value of mi_name
-        String cmdString = "-var-evaluate-expression " + mi_name; // NOI18N
+        final String cmdString = "-var-evaluate-expression " + mi_name; // NOI18N
         final MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -3782,6 +3782,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 // to work around gdb "out of scope" problem
                 String out_of_scope = "mi_cmd_var_assign: Could not assign expression to varible object"; // NOI18N
                 if (!errMsg.equals(out_of_scope)) {
+                    //see bz#271342
+                    if (errMsg.equals("Variable object not found") && !variableBag.hasVariable(mi_name)) {//NOI18N
+                        //log it, nothing to evaluate
+                        System.err.println("var=" + v.getVariableName() + " cmd=\"" + cmdString + "\"" + " err=\"" + errMsg + "\"");//NOI18N
+                        return;
+                    }
                     genericFailure(record);
                     finish();
                 }
