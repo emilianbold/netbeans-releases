@@ -130,7 +130,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newOracleJETQuickStartBasic_displayName(),
                 "OracleJETQuickStartBasic", // NOI18N
-                "http://www.oracle.com/webfolder/technetwork/jet/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
+                "http://download.oracle.com/otn/JET/320/JET-Template-Web-NavDrawer.zip",
                 new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip") // NOI18N
         );
     }
@@ -146,7 +146,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newComponentInteractionSample_displayName(),
                 "OracleJETComponentInteraction", // NOI18N
-                "http://www.oracle.com/webfolder/technetwork/jet/public_samples/JET-ComponentInteraction.zip", // NOI18N
+                "http://download.oracle.com/otn/JET/320/JET-Template-Web-NavBar.zip",
                 new File(System.getProperty("java.io.tmpdir"), "JET-ComponentInteraction.zip") // NOI18N
         );
     }

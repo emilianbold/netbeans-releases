@@ -46,7 +46,6 @@
 
 package org.netbeans.modules.glassfish.eecommon.api;
 
-import org.netbeans.modules.glassfish.eecommon.*;
 import org.openide.util.Parameters;
 
 public class FindJSPServletHelper {
@@ -57,30 +56,39 @@ public class FindJSPServletHelper {
         
     static public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
         Parameters.notWhitespace("jspResourcePath", jspResourcePath);
-        String s= getServletPackageName(jspResourcePath).replace('.', '/') + '/' +
+        String s = getServletPackageName(jspResourcePath) + '/' +
             getServletClassName(jspResourcePath) + ".java";// NOI18N
         return s;
     }
 
-    // copied from org.apache.jasper.JspCompilationContext
+    // After Apace donation, should use org.apache.jasper utilities in 
+    // JspUtil and JspCompilationContext
     static private String getServletPackageName(String jspUri) {
-        String dPackageName = getDerivedPackageName(jspUri);
-        if (dPackageName.length() == 0) {
-            return JasperNameMappingHelper.JSP_PACKAGE_NAME;
-        }
-        return JasperNameMappingHelper.JSP_PACKAGE_NAME + '.' + getDerivedPackageName(jspUri);
-    }
-    
-    // copied from org.apache.jasper.JspCompilationContext
-    static private String getDerivedPackageName(String jspUri) {
+        String jspBasePackageName = "org/apache/jsp";//NOI18N
         int iSep = jspUri.lastIndexOf('/');
-        return (iSep > 0) ? JasperNameMappingHelper.makeJavaPackage(jspUri.substring(0,iSep)) : "";// NOI18N
+        String packageName = (iSep > 0) ? jspUri.substring(0, iSep) : "";//NOI18N
+        if (packageName.length() == 0) {
+            return jspBasePackageName;
+        }
+        return jspBasePackageName + "/" + packageName.substring(1);//NOI18N
+
     }
     
-    // copied from org.apache.jasper.JspCompilationContext
+    // After Apace donation, should use org.apache.jasper utilities in 
+    // JspUtil and JspCompilationContext
     static private String getServletClassName(String jspUri) {
         int iSep = jspUri.lastIndexOf('/') + 1;
-        return JasperNameMappingHelper.makeJavaIdentifier(jspUri.substring(iSep));
+        String className = jspUri.substring(iSep);
+        StringBuilder modClassName = new StringBuilder("");//NOI18N
+        for (int i = 0; i < className.length(); i++) {
+            char c = className.charAt(i);
+            if (c == '.') {
+                modClassName.append('_');
+            } else {
+                modClassName.append(c);
+            }
+        }
+        return modClassName.toString();
     }
     
     public static String getServletEncoding(String moduleContextPath, String jspResourcePath) {
