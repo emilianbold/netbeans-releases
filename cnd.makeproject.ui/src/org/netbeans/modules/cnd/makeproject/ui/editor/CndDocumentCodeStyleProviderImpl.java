@@ -101,7 +101,7 @@ final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProv
                       } else {
                         styleFO = RemoteFileUtil.getFileObject(res, project);
                       }
-                      if (styleFO != null && styleFO.isValid()) {
+                      if (styleFO != null && styleFO.isValid() && styleFO.isData()) {
                           listener = new FileChangeListenerImpl(res, styleFO);
                           styleFO.addFileChangeListener(listener);
                           styleCache.put(project, listener);
