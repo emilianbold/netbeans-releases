@@ -93,84 +93,58 @@ public class FindJSPServletImpl implements FindJSPServlet {
     public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
         //String path = module.getWebURL();
         
+        /* .tag file support should be added back after Apache code donation.
+          we should use jasper JspUtil apis.
+
         //we expect .tag file; in other case, we expect .jsp file
         String path = getTagHandlerClassName(jspResourcePath);
         if (path != null) //.tag
             path = path.replace('.', '/') + ".java";
-        else //.jsp
+        else //.jsp*/
+        String path = null;
+        String extension = jspResourcePath.substring(jspResourcePath.lastIndexOf("."));
+        if (".jsp".equals(extension)) { // NOI18N
             path = getServletPackageName(jspResourcePath).replace('.', '/') + '/' +
                    getServletClassName(jspResourcePath) + ".java";
-            
+        }
         return path;
         
         //int lastDot = jspResourcePath.lastIndexOf('.');
         //return jspResourcePath.substring(0, lastDot) + "$jsp.java"; // NOI18N
     }
 
-    // copied from org.apache.jasper.JspCompilationContext
+    // After Apache code donation, should use org.apache.jasper utilities in
+    // JspUtil and JspCompilationContext
     public String getServletPackageName(String jspUri) {
-        String dPackageName = getDerivedPackageName(jspUri);
-        if (dPackageName.length() == 0) {
-            return JspNameUtil.JSP_PACKAGE_NAME;
-        }
-        return JspNameUtil.JSP_PACKAGE_NAME + '.' + getDerivedPackageName(jspUri);
-    }
-    
-    // copied from org.apache.jasper.JspCompilationContext
-    private String getDerivedPackageName(String jspUri) {
+        String jspBasePackageName = "org/apache/jsp";//NOI18N
         int iSep = jspUri.lastIndexOf('/');
-        return (iSep > 0) ? JspNameUtil.makeJavaPackage(jspUri.substring(0,iSep)) : "";
+        String packageName = (iSep > 0) ? jspUri.substring(0, iSep) : "";//NOI18N
+        if (packageName.length() == 0) {
+            return jspBasePackageName;
+        }
+        return jspBasePackageName + "/" + packageName.substring(1);//NOI18N
+
     }
-    
-    // copied from org.apache.jasper.JspCompilationContext
+
+    // After Apache code donation, should use org.apache.jasper utilities in
+    // JspUtil and JspCompilationContext
     public String getServletClassName(String jspUri) {
         int iSep = jspUri.lastIndexOf('/') + 1;
-        return JspNameUtil.makeJavaIdentifier(jspUri.substring(iSep));
+        String className = jspUri.substring(iSep);
+        StringBuilder modClassName = new StringBuilder("");//NOI18N
+        for (int i = 0; i < className.length(); i++) {
+            char c = className.charAt(i);
+            if (c == '.') {
+                modClassName.append('_');
+            } else {
+                modClassName.append(c);
+            }
+        }
+        return modClassName.toString();
     }
-    
+ 
     public String getServletEncoding(String moduleContextPath, String jspResourcePath) {
         return "UTF8"; // NOI18N
-    }
-
-    /**
-     * Copied (and slightly modified) from org.apache.jasper.compiler.JspUtil
-     *
-     * Gets the fully-qualified class name of the tag handler corresponding to
-     * the given tag file path.
-     *
-     * @param path Tag file path
-     *
-     * @return Fully-qualified class name of the tag handler corresponding to 
-     * the given tag file path
-     */
-    private String getTagHandlerClassName(String path) {
-
-        String className = null;
-        int begin = 0;
-        int index;
-        
-        index = path.lastIndexOf(".tag");
-        if (index == -1) {
-            return null;
-        }
-
-        index = path.indexOf(WEB_INF_TAGS);
-        if (index != -1) {
-            className = "org.apache.jsp.tag.web.";
-            begin = index + WEB_INF_TAGS.length();
-        } else {
-	    index = path.indexOf(META_INF_TAGS);
-	    if (index != -1) {
-		className = "org.apache.jsp.tag.meta.";
-		begin = index + META_INF_TAGS.length();
-	    } else {
-		return null;
-	    }
-	}
-
-        className += JspNameUtil.makeJavaPackage(path.substring(begin));
-  
-        return className;
     }
     
 }

@@ -97,27 +97,36 @@ public class JBFindJSPServlet implements FindJSPServlet {
         return path;
     }
 
-    // copied from org.apache.jasper.JspCompilationContext
+    // After Apache code donation, should use org.apache.jasper utilities in
+    // JspUtil and JspCompilationContext
     public String getServletPackageName(String jspUri) {
-        String dPackageName = getDerivedPackageName(jspUri);
-        if (dPackageName.length() == 0) {
-            return JspNameUtil.JSP_PACKAGE_NAME;
-        }
-        return JspNameUtil.JSP_PACKAGE_NAME + '.' + getDerivedPackageName(jspUri);
-    }
-    
-    // copied from org.apache.jasper.JspCompilationContext
-    private String getDerivedPackageName(String jspUri) {
+        String jspBasePackageName = "org/apache/jsp";//NOI18N
         int iSep = jspUri.lastIndexOf('/');
-        return (iSep > 0) ? JspNameUtil.makeJavaPackage(jspUri.substring(0,iSep)) : "";
+        String packageName = (iSep > 0) ? jspUri.substring(0, iSep) : "";//NOI18N
+        if (packageName.length() == 0) {
+            return jspBasePackageName;
+        }
+        return jspBasePackageName + "/" + packageName.substring(1);//NOI18N
+
     }
-    
-    // copied from org.apache.jasper.JspCompilationContext
+
+    // After Apache code donation, should use org.apache.jasper utilities in
+    // JspUtil and JspCompilationContext
     public String getServletClassName(String jspUri) {
         int iSep = jspUri.lastIndexOf('/') + 1;
-        return JspNameUtil.makeJavaIdentifier(jspUri.substring(iSep));
+        String className = jspUri.substring(iSep);
+        StringBuilder modClassName = new StringBuilder("");//NOI18N
+        for (int i = 0; i < className.length(); i++) {
+            char c = className.charAt(i);
+            if (c == '.') {
+                modClassName.append('_');
+            } else {
+                modClassName.append(c);
+            }
+        }
+        return modClassName.toString();
     }
-    
+      
     public String getServletEncoding(String moduleContextPath, String jspResourcePath) {
         return "UTF8"; // NOI18N
     }

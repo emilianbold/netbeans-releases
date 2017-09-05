@@ -82,20 +82,6 @@ public class Utils {
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.web.project"; // NOI18N
     private static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME); // NOI18N
 
-    // COPIED FROM TOMCAT
-    private static final String JAVA_KEYWORDS[] = {
-        "abstract", "assert", "boolean", "break", "byte", "case",
-        "catch", "char", "class", "const", "continue",
-        "default", "do", "double", "else", "enum", "extends",
-        "final", "finally", "float", "for", "goto",
-        "if", "implements", "import", "instanceof", "int",
-        "interface", "long", "native", "new", "package",
-        "private", "protected", "public", "return", "short",
-        "static", "strictfp", "super", "switch", "synchronized",
-        "this", "throws", "transient", "try", "void",
-        "volatile", "while" };
-
-    private static final String JSP_PACKAGE_NAME = "org.apache.jsp";
     
     private static final String PLATFORM_ANT_NAME = "platform.ant.name"; //NOI18N
     public static final String SPECIFICATION_J2SE = "j2se";              //NOI18N
@@ -220,125 +206,14 @@ public class Utils {
         return null;
     }
 
-    // COPIED FROM TOMCAT
     /** Returns a slash-delimited resource path for the servlet generated from 
-     * JSP, given a resource path of the original JSP. Uses code copied from Tomcat.
+     * JSP, given a resource path of the original JSP.
      * Note: does not handle tag files yet, only JSP files.
      */
     static String getGeneratedJavaResource(String jspUri) {
-        int iSep = jspUri.lastIndexOf('/');
-        String packageName = (iSep > 0) ? makeJavaPackage(jspUri.substring(0,iSep)) : ""; // NOI18N
-        if (packageName.length() == 0) {
-            packageName = JSP_PACKAGE_NAME;
-        }
-        else {
-            packageName = JSP_PACKAGE_NAME + "." + packageName; // NOI18N
-        }
-        String className = makeJavaIdentifier(jspUri.substring(iSep + 1));
-        return packageName.replace('.', '/') + "/" + className + ".java"; // NOI18N
+        return getServletResourcePath(null, jspUri);
     }
     
-    // COPIED FROM TOMCAT
-    /**
-     * Converts the given path to a Java package or fully-qualified class name
-     *
-     * @param path Path to convert
-     *
-     * @return Java package corresponding to the given path
-     */
-    private static String makeJavaPackage(String path) {
-        String classNameComponents[] = split(path,"/");
-        StringBuilder legalClassNames = new StringBuilder();
-        for (int i = 0; i < classNameComponents.length; i++) {
-            legalClassNames.append(makeJavaIdentifier(classNameComponents[i]));
-            if (i < classNameComponents.length - 1) {
-                legalClassNames.append('.');
-            }
-        }
-        return legalClassNames.toString();
-    }
-    
-    // COPIED FROM TOMCAT
-    /**
-     * Splits a string into it's components.
-     * @param path String to split
-     * @param pat Pattern to split at
-     * @return the components of the path
-     */
-    private static String [] split(String path, String pat) {
-        Vector<String> comps = new Vector<String>();
-        int pos = path.indexOf(pat);
-        int start = 0;
-        while( pos >= 0 ) {
-            if(pos > start ) {
-                String comp = path.substring(start,pos);
-                comps.add(comp);
-            }
-            start = pos + pat.length();
-            pos = path.indexOf(pat,start);
-        }
-        if( start < path.length()) {
-            comps.add(path.substring(start));
-        }
-        String [] result = new String[comps.size()];
-        for(int i=0; i < comps.size(); i++) {
-            result[i] = comps.elementAt(i);
-        }
-        return result;
-    }
-            
-    // COPIED FROM TOMCAT
-    /**
-     * Converts the given identifier to a legal Java identifier
-     *
-     * @param identifier Identifier to convert
-     *
-     * @return Legal Java identifier corresponding to the given identifier
-     */
-    private static String makeJavaIdentifier(String identifier) {
-        StringBuilder modifiedIdentifier =
-            new StringBuilder(identifier.length());
-        if (!Character.isJavaIdentifierStart(identifier.charAt(0))) {
-            modifiedIdentifier.append('_');
-        }
-        for (int i = 0; i < identifier.length(); i++) {
-            char ch = identifier.charAt(i);
-            if (Character.isJavaIdentifierPart(ch) && ch != '_') {
-                modifiedIdentifier.append(ch);
-            } else if (ch == '.') {
-                modifiedIdentifier.append('_');
-            } else {
-                modifiedIdentifier.append(mangleChar(ch));
-            }
-        }
-        if (isJavaKeyword(modifiedIdentifier.toString())) {
-            modifiedIdentifier.append('_');
-        }
-        return modifiedIdentifier.toString();
-    }
-    
-    // COPIED FROM TOMCAT
-    /**
-     * Mangle the specified character to create a legal Java class name.
-     */
-    private static String mangleChar(char ch) {
-        char[] result = new char[5];
-        result[0] = '_';
-        result[1] = Character.forDigit((ch >> 12) & 0xf, 16);
-        result[2] = Character.forDigit((ch >> 8) & 0xf, 16);
-        result[3] = Character.forDigit((ch >> 4) & 0xf, 16);
-        result[4] = Character.forDigit(ch & 0xf, 16);
-        return new String(result);
-    }
-
-    // COPIED FROM TOMCAT
-    /**
-     * Test whether the argument is a Java keyword
-     */
-    private static boolean isJavaKeyword(String key) {
-        return Arrays.binarySearch(JAVA_KEYWORDS, key) >= 0;
-    }
-
     public static Color getErrorColor() {
         // inspired by org.openide.WizardDescriptor
         Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
@@ -397,25 +272,38 @@ public class Utils {
             getServletClassName(jspResourcePath) + ".java";
     }
 
+    // After Apache code donation, should use org.apache.jasper utilities in
+    // JspUtil and JspCompilationContext
     @NonNull
     private static String getServletPackageName(String jspUri) {
-        String dPackageName = getDerivedPackageName(jspUri);
-        if (dPackageName.length() == 0) {
-            return JSP_PACKAGE_NAME;
-        }
-        return JSP_PACKAGE_NAME + '.' + getDerivedPackageName(jspUri);
-    }
-    
-    private static String getDerivedPackageName(String jspUri) {
+        String jspBasePackageName = "org/apache/jsp";//NOI18N
         int iSep = jspUri.lastIndexOf('/');
-        return (iSep > 0) ? makeJavaPackage(jspUri.substring(0,iSep)) : "";
+        String packageName = (iSep > 0) ? jspUri.substring(0, iSep) : "";//NOI18N
+        if (packageName.length() == 0) {
+            return jspBasePackageName;
+        }
+        return jspBasePackageName + "/" + packageName.substring(1);//NOI18N
+
     }
-    
+
+    // After Apache code donation, should use org.apache.jasper utilities in
+    // JspUtil and JspCompilationContext
+    @NonNull
     private static String getServletClassName(String jspUri) {
         int iSep = jspUri.lastIndexOf('/') + 1;
-        return makeJavaIdentifier(jspUri.substring(iSep));
+        String className = jspUri.substring(iSep);
+        StringBuilder modClassName = new StringBuilder("");//NOI18N
+        for (int i = 0; i < className.length(); i++) {
+            char c = className.charAt(i);
+            if (c == '.') {
+                modClassName.append('_');
+            } else {
+                modClassName.append(c);
+            }
+        }
+        return modClassName.toString();
     }
-    
+ 
     /**
      * Creates an URL of a classpath or sourcepath root
      * For the existing directory it returns the URL obtained from {@link File#toUri()}
