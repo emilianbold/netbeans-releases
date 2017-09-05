@@ -44,6 +44,8 @@ Contributor(s):
 
     <target name="build-init" depends="projectized.build-init">
         <unzip src="external/js.foundation-parser.zip" dest="test/unit/data/testfiles/ecmascript6"/>
+        <unzip src="external/javascript2.editor-requirejs-resources.zip" dest="."/>
+        <unzip src="external/javascript2.editor-jquery-resources.zip" dest="."/>
     </target>
     <!-- Generated JavaScript files for core libraries, used by code completion
         etc. See the JsStubsGenerator project (in main/misc repository) for details. -->
