@@ -98,11 +98,11 @@ public final class CodeStyle {
             c = CLANG_FORMAT.get(profileId);
             if (c == null) {
                 FormatStyle fs = new FormatStyle();
+                fs.Language = FormatStyle.LanguageKind.LK_Cpp;
                 std_errors.error_code error = FormatGlobals.parseConfiguration(new StringRef(profileId), fs);
                 if (error.$bool()) {
                     fs = FormatGlobals.getLLVMStyle();
                 }
-                fs.Language = FormatStyle.LanguageKind.LK_Cpp;
                 c = new CodeStyle(fs, true);
                 CLANG_FORMAT.put(profileId, c);
             }
