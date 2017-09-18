@@ -80,19 +80,12 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
             isSetup = true;
         }
         
-        File cached = Places.getCacheSubfile(NodeJsDataProvider.BACKUP_API_FILE);
-        if (!cached.exists()) {
-            FileObject apiFile = getTestFile("NodeJsRuntime/all.json");
-            File parent = cached.getParentFile();
-            FileUtil.copyFile(apiFile, FileUtil.toFileObject(parent), apiFile.getName());
-        }
-        
         FileObject folder = getTestFile("TestNavigation");
-            Project testProject = new TestProjectSupport.TestProject(folder, null);
-            List lookupAll = new ArrayList();
-            lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
-            lookupAll.add(new TestProjectSupport.FileOwnerQueryImpl(testProject));
-            MockLookup.setInstances(lookupAll.toArray());
+        Project testProject = new TestProjectSupport.TestProject(folder, null);
+        List lookupAll = new ArrayList();
+        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+        lookupAll.add(new TestProjectSupport.FileOwnerQueryImpl(testProject));
+        MockLookup.setInstances(lookupAll.toArray());
 
     }
 
