@@ -49,6 +49,7 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="build-init" depends="projectized.build-init">
-    	<unzip src="external/websvc.rest-glassfish-resorces.zip" dest="src/org/netbeans/modules/websvc/rest/support"/>
+        <mkdir dir="./release/modules/ext"/>
+    	<unzip src="external/websvc.rest-sun-jersey.zip" dest="./release/modules/ext"/>
     </target>
 </project>

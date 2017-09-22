@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
+import com.sun.jersey.core.impl.provider.entity.Inflector;
 import java.awt.Component;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -110,7 +111,6 @@ import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
-import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;

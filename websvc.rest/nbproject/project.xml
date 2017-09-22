@@ -232,7 +232,7 @@
                         <release-version>1</release-version>
                         <specification-version>1.62</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
@@ -560,14 +560,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -581,6 +573,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -666,6 +666,10 @@
                 <friend>org.netbeans.modules.web.client.rest</friend>
                 <package>org.netbeans.modules.websvc.rest.client</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jersey-core-1.5.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jersey-core-1.5.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
