@@ -49,7 +49,6 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="build-init" depends="projectized.build-init">
-        <mkdir dir="./release/modules/ext"/>
-    	<unzip src="external/websvc.rest-sun-jersey.zip" dest="./release/modules/ext"/>
+    	<unzip src="external/websvc.rest-sun-jersey.zip" dest="external/"/>
     </target>
 </project>
