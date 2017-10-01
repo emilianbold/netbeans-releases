@@ -73,7 +73,7 @@ public class APTTraceFlags {
             final ComponentType product = ComponentType.getComponent();
             switch (product) {
                 case CND:
-                    val = true;
+                    val = false; // FIXME: should be true after clank speed optimization
                     break;
                 case PROJECT_CREATOR:
                 case OSS_IDE:
