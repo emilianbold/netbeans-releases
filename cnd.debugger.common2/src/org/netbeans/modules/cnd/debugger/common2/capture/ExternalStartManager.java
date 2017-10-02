@@ -88,6 +88,7 @@ public final class ExternalStartManager {
             return;
         }
         
+        try {
         Host host = Host.getLocal();
 	ExternalStart xstart = ExternalStartManager.getXstart(host);
 	if (xstart == null) {
@@ -96,6 +97,10 @@ public final class ExternalStartManager {
 		ExternalStartManager.addXstart(host, xstart);
 		xstart.start();
 	    }
+        }
+        } catch (Throwable t) {
+            // Unsupported platform?
+            System.err.println("Problems initializing dbx MI: "+t.getLocalizedMessage());
         }
     }
 
