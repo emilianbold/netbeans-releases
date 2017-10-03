@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tomcat5.deploy;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -75,7 +76,6 @@ import java.net.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.AuthorizationException;
-import org.netbeans.modules.tomcat5.Base64;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 
 /** Implemtation of management task that provides info about progress
