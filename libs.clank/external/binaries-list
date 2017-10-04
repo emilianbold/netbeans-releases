@@ -1,7 +1,8 @@
-#changeset:   37442:8294cd145b16
+#changeset:   37450:6f04f984bf8e
 #branch:      jclank
 #tag:         tip
-#user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Tue Sep 05 11:32:12 2017 +0300
-#summary:     fixed Bug #271397 NPE appears if .clang-format file has not "BasedOnStyle" option
-A1DC7BFEB1A7C4D6DBC9D74545C1686F14C229F8 clank_0.3.9.zip
+#parent:      37446:df0fc0fb171e
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Wed Oct 04 19:12:00 2017 +0300
+#summary:     fixed #271075 - Megatons of "llvm.alignOf not yet implemented" messages in console
+53EDE27126390D0EF244777525FB7CCA13E34368 clank_0.3.9.zip
