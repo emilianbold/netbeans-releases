@@ -275,15 +275,6 @@ public class DDTablePanel extends JPanel
     }
 
     private void setHeaderToolTips (String [] toolTips) {
-	/* 
-	 * A change was made in the jdk, such that in jdk1.3, the
-	 * TableColumn may not have a TableCellRenderer for the table
-	 * headers. Now, that renderer is created in the JTableHeader
-	 * instead. Because of this inconsistency, I added code
-	 * which determines if the TableColumn has a default renderer
-	 * and if not, creates one (the code is actually "stolen" from
-	 * the jdk1.2.2 source).
-	 */
 
 	for (int i = 0; i < model.getColumnCount(); i++) {
 	    TableColumn c = tab.getColumnModel ().getColumn (i);
@@ -296,20 +287,6 @@ public class DDTablePanel extends JPanel
                                                              boolean hasFocus, 
 					                  int row, int column)
                  {
-                      if (table != null) {
-                          JTableHeader header = table.getTableHeader();
-                    	  if (header != null) {
-                              setForeground(header.getForeground());
-                              setBackground(header.getBackground());
-			      int style = 
-                                (tab.convertColumnIndexToModel(column) ==
-                                 sortCol)?Font.BOLD:Font.PLAIN;
-                              setFont(header.getFont().deriveFont(style));
-			  }
-		      }
- 
-                      setText ((value == null) ? "" : value.toString ());	// NOI18N
-                      setBorder(UIManager.getBorder("TableHeader.cellBorder"));	// NOI18N
                       return this;
 		 }
 	    };
