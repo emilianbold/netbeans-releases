@@ -1,8 +1,7 @@
-#changeset:   37450:6f04f984bf8e
+#changeset:   37451:866e8f3882b5
 #branch:      jclank
 #tag:         tip
-#parent:      37446:df0fc0fb171e
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Oct 04 19:12:00 2017 +0300
-#summary:     fixed #271075 - Megatons of "llvm.alignOf not yet implemented" messages in console
-53EDE27126390D0EF244777525FB7CCA13E34368 clank_0.3.9.zip
+#date:        Tue Oct 10 20:08:28 2017 +0300
+#summary:     fixed #271616 - [newcodemodel] mmap exception on JDK9
+BBEBAEE8729CCF165E2080A915542C6875208F97 clank_0.3.9.zip
