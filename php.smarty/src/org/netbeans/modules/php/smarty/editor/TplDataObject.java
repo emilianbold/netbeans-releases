@@ -117,7 +117,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
     /**
      * Constant where is placed standard TPL file icon.
      */
-    private static final String ICON_LOCATION = "org/netbeans/modules/php/smarty/resources/tpl-icon.png"; //NOI18N
+    private static final String ICON_LOCATION = "org/netbeans/modules/php/smarty/resources/tpl-cc-icon.png"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(TplDataObject.class.getName());
 
