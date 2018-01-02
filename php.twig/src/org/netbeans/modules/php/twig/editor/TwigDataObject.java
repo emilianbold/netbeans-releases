@@ -66,7 +66,7 @@ import org.openide.windows.TopComponent;
 
 @Messages("TwigResolver=Twig Files")
 @MIMEResolver.ExtensionRegistration(displayName = "#TwigResolver", position = 125, extension = "twig", mimeType = TwigLanguage.TWIG_MIME_TYPE)
-@Registration(displayName = "TWIG", iconBase = "org/netbeans/modules/php/twig/resources/icon.png", mimeType = TwigLanguage.TWIG_MIME_TYPE)
+@Registration(displayName = "TWIG", iconBase = "org/netbeans/modules/php/twig/resources/filter.png", mimeType = TwigLanguage.TWIG_MIME_TYPE)
 @ActionReferences(value = {
     @ActionReference(id =
     @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = ACTIONS, position = 100, separatorAfter = 200),
@@ -103,7 +103,7 @@ public class TwigDataObject extends MultiDataObject {
     @Messages("Source=&Source")
     @MultiViewElement.Registration(
             displayName = "#Source",
-    iconBase = "org/netbeans/modules/php/twig/resources/icon.png",
+    iconBase = "org/netbeans/modules/php/twig/resources/filter.png",
     persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
     mimeType = TwigLanguage.TWIG_MIME_TYPE,
     preferredID = "php.twig.source",
