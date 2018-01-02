@@ -43,7 +43,7 @@ Contributor(s):
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <folder name="Groovy">
+<!--                <folder name="Groovy">
                     <attr name="position" intvalue="620"/>
                     <file name="GroovyJavaDemoProject.zip" url="GroovyJavaDemoProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.samples.Bundle"/>
@@ -59,7 +59,7 @@ Contributor(s):
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/samples/nbprojectgen/NBProjectGeneratorsDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-                </folder>
+                </folder>-->
             </folder>
         </folder>
     </folder>
