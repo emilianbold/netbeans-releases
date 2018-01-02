@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="550"/>
                     <file name="TodoList" url="TodoList.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/TodoList"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/TodoList.png"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/calculator.png"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/TodoList.html"/>
                         <attr name="template" boolvalue="true"/>
