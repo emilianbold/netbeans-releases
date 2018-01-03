@@ -68,7 +68,7 @@ public final class SyncItem {
     @StaticResource
     static final String DELETE_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/delete.png"; // NOI18N
     @StaticResource
-    static final String SYMLINK_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/symlink.png"; // NOI18N
+    static final String SYMLINK_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/upload.png"; // NOI18N
     @StaticResource
     static final String FILE_DIR_COLLISION_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/file-dir-collision.png"; // NOI18N
     @StaticResource
