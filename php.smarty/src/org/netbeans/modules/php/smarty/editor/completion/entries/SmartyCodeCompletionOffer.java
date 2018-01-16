@@ -62,8 +62,8 @@ public class SmartyCodeCompletionOffer {
     private final static HashMap<String, ArrayList<TplCompletionItem>> completionItemsFunctionParams = new HashMap<String, ArrayList<TplCompletionItem>>();
 
     static {
-        loadFunctions(new String[]{"built-in-functions", "custom-functions"});
-        loadModifiers("variable-modifiers");
+        //loadFunctions(new String[]{"built-in-functions", "custom-functions"});
+        //loadModifiers("variable-modifiers");
     }
 
     public static ArrayList<TplCompletionItem> getFunctions() {
@@ -81,18 +81,18 @@ public class SmartyCodeCompletionOffer {
     private static void loadFunctions(String[] types) {
         for (String completionType : types) {
             Collection<CodeCompletionEntryMetadata> ccList = parseCCData(completionType);
-            if (completionType.equals("built-in-functions")) {
-                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItemsFunctions.add(new BuiltInFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
-                    completionItemsFunctionParams.put(entryMetadata.getKeyword(), entryMetadata.getParameters());
-                }
-            } else if (completionType.equals("custom-functions")) {
-                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItemsFunctions.add(new CustomFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
-                    completionItemsFunctionParams.put(entryMetadata.getKeyword(), entryMetadata.getParameters());
-                }
-
-            }
+//            if (completionType.equals("built-in-functions")) {
+//                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
+//                    completionItemsFunctions.add(new BuiltInFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+//                    completionItemsFunctionParams.put(entryMetadata.getKeyword(), entryMetadata.getParameters());
+//                }
+//            } else if (completionType.equals("custom-functions")) {
+//                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
+//                    completionItemsFunctions.add(new CustomFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+//                    completionItemsFunctionParams.put(entryMetadata.getKeyword(), entryMetadata.getParameters());
+//                }
+//
+//            }
         }
     }
 

@@ -84,13 +84,13 @@ public class CodeCompletionEntries {
                 String help = "";
                 Collection<CodeCompletionParamMetadata> params = Collections.<CodeCompletionParamMetadata>emptyList();
                 NodeList attributes = elem.getElementsByTagName("attributes");
-                if (completionType.equals("built-in-functions") || completionType.equals("custom-functions")) {
-                    help = generateHelpForFunctions(desc, attributes);
-                    params = getParametersForFunction(attributes);
-                } else {
-                    help = generateHelpForVariableModifiers(desc, attributes);
-                    params = null;
-                }
+//                if (completionType.equals("built-in-functions") || completionType.equals("custom-functions")) {
+//                    help = generateHelpForFunctions(desc, attributes);
+//                    params = getParametersForFunction(attributes);
+//                } else {
+//                    help = generateHelpForVariableModifiers(desc, attributes);
+//                    params = null;
+//                }
                 ccEntries.add(new CodeCompletionEntryMetadata(elem.getAttribute("name"), help, url, params));
             }
         }
