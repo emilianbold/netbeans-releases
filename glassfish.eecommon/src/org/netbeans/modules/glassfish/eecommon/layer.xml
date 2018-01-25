@@ -46,7 +46,7 @@ Contributor(s):
             <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.eecommon.Bundle#SunResourcesFolder"/>
         </folder>
     </folder>
-    <folder name="org-netbeans-modules-glassfish-eecommon-ddtemplates-j2ee_1_3">
+<!--    <folder name="org-netbeans-modules-glassfish-eecommon-ddtemplates-j2ee_1_3">
         <file name="sun-web.xml" url="api/ddtemplates/j2ee13/sun-web.xml"/>
         <file name="sun-ejb-jar.xml" url="api/ddtemplates/j2ee13/sun-ejb-jar.xml"/>
         <file name="sun-cmp-mappings.xml" url="api/ddtemplates/j2ee13/sun-cmp-mappings.xml"/>
@@ -105,5 +105,5 @@ Contributor(s):
         <file name="weblogic-application-client.xml" url="api/ddtemplates/javaee6/weblogic-application-client.xml"/>
         <file name="weblogic-application.xml" url="api/ddtemplates/javaee6/weblogic-application.xml"/>
         <file name="weblogic-ejb-jar.xml" url="api/ddtemplates/javaee6/weblogic-ejb-jar.xml"/>
-    </folder>
+    </folder>-->
 </filesystem>
