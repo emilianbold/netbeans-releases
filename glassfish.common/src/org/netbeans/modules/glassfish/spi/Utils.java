@@ -59,6 +59,10 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.InetAddress;
 
 /**
  * Utilities.
@@ -300,47 +304,41 @@ public class Utils {
             if(socksNonProxyHosts != null && socksNonProxyHosts.indexOf("localhost") < 0) {
                 String localhost = socksNonProxyHosts.length() > 0 ? "|localhost" : "localhost";
                 System.setProperty("socksNonProxyHosts",  socksNonProxyHosts + localhost);
-                if (depth < 1) {
-                    socket.close();
-                    return isSecurePort(hostname,port,1);
-                } else {
-                    socket.close();
-                    ConnectException ce = new ConnectException();
-                    ce.initCause(ex);
-                    throw ce; //status unknow at this point
-                    //next call, we'll be ok and it will really detect if we are secure or not
-                }
+                ConnectException ce = new ConnectException();
+                ce.initCause(ex);
+                throw ce; //status unknow at this point
+                //next call, we'll be ok and it will really detect if we are secure or not
             }
         }
-
-        // Send an https query (w/ trailing http query)
-        java.io.OutputStream ostream = socket.getOutputStream();
-        ostream.write(TEST_QUERY);
-
-        // Get the result
-        java.io.InputStream istream = socket.getInputStream();
-        byte[] input = new byte[8192];
-        istream.read(input);
-
-
-        // Determine protocol from result
-        // Can't read https response w/ OpenSSL (or equiv), so use as
-        // default & try to detect an http response.
-        String response = new String(input).toLowerCase(Locale.ENGLISH);
+        //This is the test query used to ping the server in an attempt to
+        //determine if it is secure or not.
+        InputStream is = socket.getInputStream();        
+        String testQuery = "GET / HTTP/1.0";
+        PrintWriter pw = new PrintWriter(socket.getOutputStream());
+        pw.println(testQuery);
+        pw.println();
+        pw.flush();
+        byte[] respArr = new byte[1024];
         boolean isSecure = true;
-        if (response.length() == 0) {
-            //isSecure = false;
-            // Close the socket
-            socket.close();
-            throw new ConnectException();
-        } else if (response.startsWith("http/1.1 302 moved temporarily")) {
-            // 3.1 has started to use redirects... but 3.0 is still using the older strategies...
-            isSecure = true;
-        } else if (response.startsWith("http/1.")) {
+        while (is.read(respArr) != -1) {
+            String resp = new String(respArr);
+            if (checkHelper(resp) == false) {
+                isSecure = false;
+                break;
+            }
+        }
+        // Close the socket
+        socket.close();
+        return isSecure;
+    }
+
+    private static boolean checkHelper(String respText) {
+        boolean isSecure = true;
+        if (respText.startsWith("http/1.") || respText.startsWith("HTTP/1.")) {
             isSecure = false;
-        } else if (response.indexOf("<html") != -1) {
+        } else if (respText.contains("<html")) {
             isSecure = false;
-        } else if (response.indexOf("</html") != -1) {
+        } else if (respText.contains("</html")) {
             // New test added to resolve 106245
             // when the user has the IDE use a proxy (like webcache.foo.bar.com),
             // the response comes back as "d><title>....</html>".  It looks like
@@ -352,49 +350,11 @@ public class Utils {
             // to the data that seems to get eaten.
             //
             isSecure = false;
-        } else if (response.indexOf("connection: ") != -1) {
+        } else if (respText.contains("connection: ")) {
             isSecure = false;
         }
-        // Close the socket
-        socket.close();
         return isSecure;
     }
-
-    /**
-     *  This is the test query used to ping the server in an attempt to
-     *  determine if it is secure or not.
-     */
-    private static byte [] TEST_QUERY = new byte [] {
-        // The following SSL query is from nmap (http://www.insecure.org)
-        // This HTTPS request should work for most (all?) https servers
-        (byte)0x16, (byte)0x03, (byte)0x00, (byte)0x00, (byte) 'S', (byte)0x01,
-        (byte)0x00, (byte)0x00, (byte) 'O', (byte)0x03, (byte)0x00, (byte) '?',
-        (byte) 'G', (byte)0xd7, (byte)0xf7, (byte)0xba, (byte) ',', (byte)0xee,
-        (byte)0xea, (byte)0xb2, (byte) '`', (byte) '~', (byte)0xf3, (byte)0x00,
-        (byte)0xfd, (byte)0x82, (byte) '{', (byte)0xb9, (byte)0xd5, (byte)0x96,
-        (byte)0xc8, (byte) 'w', (byte)0x9b, (byte)0xe6, (byte)0xc4, (byte)0xdb,
-        (byte) '<', (byte) '=', (byte)0xdb, (byte) 'o', (byte)0xef, (byte)0x10,
-        (byte) 'n', (byte)0x00, (byte)0x00, (byte) '(', (byte)0x00, (byte)0x16,
-        (byte)0x00, (byte)0x13, (byte)0x00, (byte)0x0a, (byte)0x00, (byte) 'f',
-        (byte)0x00, (byte)0x05, (byte)0x00, (byte)0x04, (byte)0x00, (byte) 'e',
-        (byte)0x00, (byte) 'd', (byte)0x00, (byte) 'c', (byte)0x00, (byte) 'b',
-        (byte)0x00, (byte) 'a', (byte)0x00, (byte) '`', (byte)0x00, (byte)0x15,
-        (byte)0x00, (byte)0x12, (byte)0x00, (byte)0x09, (byte)0x00, (byte)0x14,
-        (byte)0x00, (byte)0x11, (byte)0x00, (byte)0x08, (byte)0x00, (byte)0x06,
-        (byte)0x00, (byte)0x03, (byte)0x01, (byte)0x00,
-        // The following is a HTTP request, some HTTP servers won't
-        // respond unless the following is also sent
-        (byte) 'G', (byte) 'E', (byte) 'T', (byte) ' ', (byte) '/',
-        // change the detector to request something that the monitor knows to filter
-        //  out.  This will work-around 109891. Use the longest filtered prefix to
-        //  avoid false positives....
-        (byte) 'c', (byte) 'o', (byte) 'm', (byte) '_', (byte) 's', (byte) 'u',
-        (byte) 'n', (byte) '_', (byte) 'w', (byte) 'e', (byte) 'b', (byte) '_',
-        (byte) 'u', (byte) 'i',
-        (byte) ' ',
-        (byte) 'H', (byte) 'T', (byte) 'T', (byte) 'P', (byte) '/', (byte) '1',
-        (byte) '.', (byte) '0', (byte)'\n', (byte)'\n'
-    };
 
     public static void doCopy(FileObject from, FileObject toParent) throws IOException {
         if (null != from) {

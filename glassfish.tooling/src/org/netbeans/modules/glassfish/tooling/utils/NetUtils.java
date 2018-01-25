@@ -61,6 +61,9 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import org.netbeans.modules.glassfish.tooling.GlassFishIdeException;
 import org.netbeans.modules.glassfish.tooling.logging.Logger;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 /**
  * Networking utilities
@@ -111,40 +114,6 @@ public class NetUtils {
 
     /** Port check timeout [ms]. */
     public static final int PORT_CHECK_TIMEOUT = 2000;
-
-    /** This is the test query used to ping the server in an attempt to
-     *  determine if it is secure or not. */
-    private static byte [] TEST_QUERY = new byte [] {
-        // The following SSL query is from nmap (http://www.insecure.org)
-        // This HTTPS request should work for most (all?) HTTPS servers
-        (byte)0x16, (byte)0x03, (byte)0x00, (byte)0x00, (byte) 'S', (byte)0x01,
-        (byte)0x00, (byte)0x00, (byte) 'O', (byte)0x03, (byte)0x00, (byte) '?',
-        (byte) 'G', (byte)0xd7, (byte)0xf7, (byte)0xba, (byte) ',', (byte)0xee,
-        (byte)0xea, (byte)0xb2, (byte) '`', (byte) '~', (byte)0xf3, (byte)0x00,
-        (byte)0xfd, (byte)0x82, (byte) '{', (byte)0xb9, (byte)0xd5, (byte)0x96,
-        (byte)0xc8, (byte) 'w', (byte)0x9b, (byte)0xe6, (byte)0xc4, (byte)0xdb,
-        (byte) '<', (byte) '=', (byte)0xdb, (byte) 'o', (byte)0xef, (byte)0x10,
-        (byte) 'n', (byte)0x00, (byte)0x00, (byte) '(', (byte)0x00, (byte)0x16,
-        (byte)0x00, (byte)0x13, (byte)0x00, (byte)0x0a, (byte)0x00, (byte) 'f',
-        (byte)0x00, (byte)0x05, (byte)0x00, (byte)0x04, (byte)0x00, (byte) 'e',
-        (byte)0x00, (byte) 'd', (byte)0x00, (byte) 'c', (byte)0x00, (byte) 'b',
-        (byte)0x00, (byte) 'a', (byte)0x00, (byte) '`', (byte)0x00, (byte)0x15,
-        (byte)0x00, (byte)0x12, (byte)0x00, (byte)0x09, (byte)0x00, (byte)0x14,
-        (byte)0x00, (byte)0x11, (byte)0x00, (byte)0x08, (byte)0x00, (byte)0x06,
-        (byte)0x00, (byte)0x03, (byte)0x01, (byte)0x00,
-        // The following is a HTTP request, some HTTP servers won't
-        // respond unless the following is also sent
-        (byte) 'G', (byte) 'E', (byte) 'T', (byte) ' ', (byte) '/',
-        // change the detector to request something that the monitor knows to filter
-        //  out.  This will work-around 109891. Use the longest filtered prefix to
-        //  avoid false positives....
-        (byte) 'c', (byte) 'o', (byte) 'm', (byte) '_', (byte) 's', (byte) 'u',
-        (byte) 'n', (byte) '_', (byte) 'w', (byte) 'e', (byte) 'b', (byte) '_',
-        (byte) 'u', (byte) 'i',
-        (byte) ' ',
-        (byte) 'H', (byte) 'T', (byte) 'T', (byte) 'P', (byte) '/', (byte) '1',
-        (byte) '.', (byte) '0', (byte)'\n', (byte)'\n'
-    };
 
     /** Comparator for {@link InetAddress} instances to be sorted. */
     private static final InetAddressComparator INET_ADDRESS_COMPARATOR
@@ -277,7 +246,7 @@ public class NetUtils {
     private static boolean isSecurePort(String hostname, int port, int depth) 
             throws IOException, ConnectException, SocketTimeoutException {
         final String METHOD = "isSecurePort";
-        boolean isSecure;
+        boolean isSecure = true;
         try (Socket socket = new Socket()) {
             try {
                 LOGGER.log(Level.FINE, METHOD, "socket");
@@ -289,52 +258,52 @@ public class NetUtils {
                 if(socksNonProxyHosts != null && socksNonProxyHosts.indexOf("localhost") < 0) {
                     String localhost = socksNonProxyHosts.length() > 0 ? "|localhost" : "localhost";
                     System.setProperty("socksNonProxyHosts",  socksNonProxyHosts + localhost);
-                    if (depth < 1) {
-                        socket.close();
-                        return isSecurePort(hostname,port,1);
-                    } else {
-                        socket.close();
-                        ConnectException ce = new ConnectException();
-                        ce.initCause(ex);
-                        throw ce; //status unknow at this point
-                        //next call, we'll be ok and it will really detect if we are secure or not
-                    }
+                    ConnectException ce = new ConnectException();
+                    ce.initCause(ex);
+                    throw ce; //status unknow at this point
+                    //next call, we'll be ok and it will really detect if we are secure or not
                 }
             }
-            java.io.OutputStream ostream = socket.getOutputStream();
-            ostream.write(TEST_QUERY);
             java.io.InputStream istream = socket.getInputStream();
-            byte[] input = new byte[8192];
-            istream.read(input);
-            String response = new String(input).toLowerCase(Locale.ENGLISH);
-            isSecure = true;
-            if (response.length() == 0) {
-                //isSecure = false;
-                // Close the socket
-                socket.close();
-                throw new ConnectException();
-            } else if (response.startsWith("http/1.1 302 moved temporarily")) {
-                // 3.1 has started to use redirects... but 3.0 is still using the older strategies...
-                isSecure = true;
-            } else if (response.startsWith("http/1.")) {
-                isSecure = false;
-            } else if (response.indexOf("<html") != -1) {
-                isSecure = false;
-            } else if (response.indexOf("</html") != -1) {
-                // New test added to resolve 106245
-                // when the user has the IDE use a proxy (like webcache.foo.bar.com),
-                // the response comes back as "d><title>....</html>".  It looks like
-                // something eats the "<html><hea" off the front of the data that
-                // gets returned.
-                //
-                // This test makes an allowance for that behavior. I figure testing
-                // the likely "last bit" is better than testing a bit that is close
-                // to the data that seems to get eaten.
-                //
-                isSecure = false;
-            } else if (response.indexOf("connection: ") != -1) {
-                isSecure = false;
+            //This is the test query used to ping the server in an attempt to
+            //determine if it is secure or not.
+            String testQuery = "GET / HTTP/1.0";
+            PrintWriter pw = new PrintWriter(socket.getOutputStream());
+            pw.println(testQuery);
+            pw.println();
+            pw.flush();
+            byte[] respArr = new byte[1024];
+            while (istream.read(respArr) != -1) {
+                String resp = new String(respArr);
+                if (checkHelper(resp) == false) {
+                    isSecure = false;
+                    break;
+                }
             }
+        }
+        return isSecure;
+    }
+
+    private static boolean checkHelper(String respText) {
+        boolean isSecure = true;
+        if (respText.startsWith("http/1.") || respText.startsWith("HTTP/1.")) {
+            isSecure = false;
+        } else if (respText.contains("<html")) {
+            isSecure = false;
+        } else if (respText.contains("</html")) {
+            // New test added to resolve 106245
+            // when the user has the IDE use a proxy (like webcache.foo.bar.com),
+            // the response comes back as "d><title>....</html>".  It looks like
+            // something eats the "<html><hea" off the front of the data that
+            // gets returned.
+            //
+            // This test makes an allowance for that behavior. I figure testing
+            // the likely "last bit" is better than testing a bit that is close
+            // to the data that seems to get eaten.
+            //
+            isSecure = false;
+        } else if (respText.contains("connection: ")) {
+            isSecure = false;
         }
         return isSecure;
     }
