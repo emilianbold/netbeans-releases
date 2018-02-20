@@ -107,13 +107,12 @@ public class UtilsTest extends NbTestCase {
     @Test
     public void testIsSecurePort() throws Exception {
         System.out.println("isSecurePort");
-        String hostname = "oracle.com";
-        int port = 80;
+        /*String hostname = "glassfish.java.net";
+        int port = 443;
         boolean expResult = true;
         boolean result = Utils.isSecurePort(hostname, port);
         assertEquals(expResult, result);
-        
-        
+        * */ 
     }
 
     @Test

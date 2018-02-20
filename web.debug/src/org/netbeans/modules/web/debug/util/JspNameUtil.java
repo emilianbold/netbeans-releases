@@ -47,8 +47,6 @@ package org.netbeans.modules.web.debug.util;
 import java.util.Vector;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 
-/** Various utilities copied over from org.apache.jasper.JspUtil.
- */
 public class JspNameUtil {
 
     public static String getServletResourcePath(JSPServletFinder finder, String moduleContextPath, String jspResourcePath) {
@@ -56,7 +54,7 @@ public class JspNameUtil {
             getServletClassName(jspResourcePath) + ".java";
     }
 
-    // After Apache code donation, should use org.apache.jasper utilities in
+    // After Apache code donation, reuse org.apache.jasper utilities in
     // JspUtil and JspCompilationContext
     private static String getServletPackageName(JSPServletFinder finder, String jspUri) {
         String basePackage = finder.getServletBasePackageName();
@@ -71,7 +69,7 @@ public class JspNameUtil {
         return basePackage + "/" + packageName.substring(1);//NOI18N
     }
 
-    // After Apache code donation, should use org.apache.jasper utilities in
+    // After Apache code donation, reuse org.apache.jasper utilities in
     // JspUtil and JspCompilationContext
     private static String getServletClassName(String jspUri) {
         int iSep = jspUri.lastIndexOf('/') + 1;
