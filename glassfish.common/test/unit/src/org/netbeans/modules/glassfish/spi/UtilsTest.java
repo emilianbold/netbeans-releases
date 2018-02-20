@@ -112,8 +112,7 @@ public class UtilsTest extends NbTestCase {
         boolean expResult = true;
         boolean result = Utils.isSecurePort(hostname, port);
         assertEquals(expResult, result);
-        * */
-        
+        * */ 
     }
 
     @Test
