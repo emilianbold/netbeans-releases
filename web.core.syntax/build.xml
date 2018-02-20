@@ -52,7 +52,6 @@ made subject to such option by the copyright holder.
     <property name="tlddoc.dir" value="./tlddoc/doc/"/>
     <target name="test" depends="test-unit"/>
     <target name="build-init" depends="projectized.build-init">
-        <unzip src="external/web.core.syntax-external-xsls.zip" dest="${xslt.dir}"/>
         <unzip src="external/web-core-syntax-external-tlddoc.zip" dest="${tlddoc.dir}"/>
    </target>
 </project>
