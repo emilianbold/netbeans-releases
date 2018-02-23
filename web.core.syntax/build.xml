@@ -52,6 +52,10 @@ made subject to such option by the copyright holder.
     <property name="tlddoc.dir" value="./tlddoc/doc/"/>
     <target name="test" depends="test-unit"/>
     <target name="build-init" depends="projectized.build-init">
-        <unzip src="external/web-core-syntax-external-tlddoc.zip" dest="${tlddoc.dir}"/>
+        <copy todir="${tlddoc.dir}">
+            <fileset dir="external">
+                <exclude name="syntaxref20.zip"/>
+            </fileset>
+        </copy>
    </target>
 </project>
