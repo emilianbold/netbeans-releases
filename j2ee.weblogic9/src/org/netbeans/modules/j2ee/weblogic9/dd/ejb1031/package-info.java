@@ -40,6 +40,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+/*
+ * Source files have been generated once and uploaded as an external zip to be included at buildtime
+ * Hence schema genration is commented out.
+ */
+
+/*
 
 @Schema2Beans(
     schema="../../resources/weblogic-ejb-jar_10_3_1.xsd",
@@ -58,3 +64,5 @@ package org.netbeans.modules.j2ee.weblogic9.dd.ejb1031;
 import org.netbeans.modules.schema2beans.Schema2Beans;
 import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
 import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+
+*/

@@ -40,6 +40,13 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+/*
+ * Source files have been generated once and uploaded as an external zip to be included at buildtime
+ * Hence schema genration is commented out.
+ */
+
+/*
+
 @Multiple({
     @Schema2Beans(
         schema="../../resources/weblogic-deployment-plan.xsd",
@@ -68,3 +75,5 @@ import org.netbeans.modules.schema2beans.Schema2Beans;
 import org.netbeans.modules.schema2beans.Schema2Beans.Multiple;
 import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
 import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+
+*/

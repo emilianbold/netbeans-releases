@@ -41,6 +41,13 @@
  */
 
 
+/*
+ * Source files have been generated once and uploaded as an external zip to be included at buildtime
+ * Hence schema genration is commented out.
+ */
+
+/*
+
 @Schema2Beans(
     schema="../../resources/weblogic-web-app_10_3_0.xsd",
     schemaType=SchemaType.XML_SCHEMA,
@@ -58,3 +65,5 @@ package org.netbeans.modules.j2ee.weblogic9.dd.web1030;
 import org.netbeans.modules.schema2beans.Schema2Beans;
 import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
 import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+
+*/
