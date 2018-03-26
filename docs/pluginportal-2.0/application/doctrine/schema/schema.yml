@@ -1,0 +1,509 @@
+PpBinary:
+  connection: plugins
+  tableName: binaryimpl
+  columns:
+    binary_id:
+      type: integer()
+      autoincrement: true
+      primary: true
+    version_id:
+      type: integer()
+    plugin_id:
+      type: integer()
+    updated_on:
+      type: datetime()
+    whats_new:
+      type: text()
+    nbm_url:
+      type: string(255)
+    nbm_filename:
+      type: string(255)
+    download_size:
+      type: integer()
+    signed:
+      type: integer(1)
+      default: (0)
+    hard_dependency:
+      type: integer(1)
+      default: (0)
+
+PpPlugin:
+  connection: plugins
+  tableName: pluginimpl
+  relations:
+    Comments:
+      class: PpComment
+      type: many
+      local: publicid
+      foreign: plugin_pluginid
+      orderBy: datetime_entered desc
+      onDelete:    CASCADE
+      cascade:     [delete]
+    Category:
+      class: PpDisplayCategory
+      type: one
+      local: categoryid
+      foreign: id
+    Category2:
+      class: PpDisplayCategory
+      type: one
+      local: categoryid2
+      foreign: id
+    Category3:
+      class: PpDisplayCategory
+      type: one
+      local: categoryid3
+      foreign: id
+    Ratings:
+      class: PpRating
+      type: many
+      local: publicid
+      foreign: plugin_pluginid
+      onDelete:    CASCADE
+      cascade:     [delete]
+    Verifications:
+      type: many
+      class: PpVerification
+      local: pluginid
+      foreign: plugin_pluginid
+      orderBy: version
+      onDelete:    CASCADE
+      cascade:     [delete]
+    Versions:
+      class: PpNetBeansVersion
+      refClass: PpPluginToVersion
+      local: plugin_id
+      foreign: plugin_id
+      foreignAlias: Plugins
+      orderBy: version desc
+    Binaries:
+      type: many
+      class: PpBinary
+      local: pluginid
+      foreign: plugin_id
+      orderBy: version_id desc
+      onDelete:    CASCADE
+      cascade:     [delete]
+    Logs:
+      type: many
+      class: PpLog
+      local: publicid
+      foreign: pluginid
+  columns:
+    pluginid:
+      type: integer()
+      autoincrement: false
+      primary: true
+    quality_level:
+      type: string(255)
+    version:
+      type: string(255)
+    description:
+      type: text()
+    nbm_url:
+      type: string(255)
+    home_page_url:
+      type: text()
+    categoryid:
+      type: integer()
+    categoryid2:
+      type: integer()
+    categoryid3:
+      type: integer()
+    author_userid:
+      type: string(255)
+    download_size:
+      type: integer()
+    target_platforms:
+      type: string(255)
+    image_filename:
+      type: string(255)
+    downloads:
+      type: integer()
+    new_version_comments:
+      type: text()
+    date_last_updated:
+      type: date()
+    average_rating:
+      type: float()
+    plugin_name:
+      type: string(255)
+    price:
+      type: string(255)
+    keywords:
+      type: string(255)
+    fullsize_image_filename:
+      type: string(255)
+    versions_supported:
+      type: string(255)
+    displaycategory:
+      type: string(255)
+    nbm_filename:
+      type: string(255)
+    date_added:
+      type: date()
+    license_type:
+      type: string(255)
+    summary:
+      type: text()
+    published:
+      type: integer(1)
+    signed:
+      type: integer(1)
+      default: (0)
+    parent:
+      type: integer()
+    publicid:
+      type: integer()
+
+PpComment:
+  connection: plugins
+  tableName: commentimpl
+  relations:
+    Plugin:
+      class: PpPlugin
+      type: one
+      local: plugin_pluginid
+      foreign: publicid
+  columns:
+    id:
+      type: integer()
+      autoincrement: false
+      primary: true
+    userid:
+      type: integer()
+    date_entered:
+      type: date()
+    comment_summary:
+      type: text()
+    datetime_entered:
+      type: datetime()
+    title:
+      type: string(255)
+    plugin_pluginid:
+      type: integer()
+
+PpDisplayCategory:
+  connection: plugins
+  tableName: displaycategoryimpl
+  relations:
+    Plugins:
+      class: PpPlugin
+      type: many
+      local: id
+      foreign: categoryid
+  columns:
+    id:
+      type: integer()
+      autoincrement: false
+      primary: true
+    displaycategory_name:
+      type: string(255)
+
+PpNetbeansVersion:
+  connection: plugins
+  tableName: netbeansversionimpl
+  relations:
+    Plugins:
+      class: PpNetBeansVersion
+      refClass: PpPluginToVersion
+      local: id
+      foreign: version_id
+      foreignAlias: Versions
+  columns:
+    id:
+      type: integer()
+      autoincrement: false
+      primary: true
+    verifable:
+      type: integer(2)
+      default: 0
+    version:
+      type: string(255)
+
+PpNews:
+  connection: plugins
+  tableName: newsimpl
+  columns:
+    id:
+      type: integer()
+      autoincrement: false
+      primary: true
+    newstime:
+      type: datetime()
+    newstext:
+      type: text()
+
+PpPreference:
+  connection: plugins
+  tableName: preferencesimpl
+  columns:
+    id:
+      type: integer()
+      autoincrement: false
+      primary: true
+    commentsubject:
+      type: string(255)
+    remindersubject:
+      type: string(255)
+    mailusername:
+      type: string(255)
+    verificationsubject:
+      type: string(255)
+    commentemailbody:
+      type: text()
+    statuschangeemailbody:
+      type: text()
+    mailfrom:
+    statuschangesubject:
+      type: string(255)
+    smtpmailserver:
+      type: string(255)
+    reminderemailprebody:
+      type: text()
+    reminderdays:
+      type: integer()
+    reminderemailpostbody:
+      type: text()
+    mailpassword:
+      type: string(255)
+    maintenancemode:
+      type: integer(1)
+    reminderemailrepeatingbody:
+      type: text()
+    verificationemailalias:
+      type: string(255)
+    verificationemailaliassubject:
+      type: string(255)
+    verificationemailbody:
+      type: text()
+    verificationemailaliasbody:
+      type: text()
+    featuredplugin:
+      type: integer()
+    verificationemailfrequencyminutes:
+      type: integer()
+
+PpRating:
+  connection: plugins
+  tableName: ratingimpl
+  relations:
+    Plugin:
+      class: PpPlugin
+      type: one
+      local: plugin_pluginid
+      foreign: publicid
+  columns:
+    id:
+      type: integer()
+      autoincrement: false
+      primary: true
+    userid:
+      type: string(255)
+    date_rated:
+      type: date()
+    rating_level:
+      type: integer()
+    plugin_pluginid:
+      type: integer
+
+PpSequence:
+  connection: plugins
+  tableName: sequence
+  columns:
+    seq_name:
+      type: string(255)
+      primary: true
+      autoincrement: false
+    seq_count:
+      type: integer()
+
+PpUserprofile:
+  connection: plugins
+  tableName: verifierimpl
+  columns:
+    id:
+      type: integer()
+      primary: true
+      autoincrement: false
+    receiveperiodicalemail:
+      type: integer()
+    lastperiodicemaildate:
+      type: date()
+    receivecommentmail:
+      type: integer()
+    timezone:
+      type: string(255)
+    userid:
+      type: string(255)
+    reminderdays:
+      type: integer()
+
+PpVerifier:
+  connection: plugins
+  tableName: verifierimpl
+  relations:
+    VerificationRequests:
+      type: many
+      class: PpVerificationRequest
+      local: id
+      foreign: verifier_id
+      onDelete:    CASCADE
+      cascade:     [delete]
+  columns:
+    id:
+      type: integer()
+      primary: true
+      autoincrement: false
+    userid:
+      type: string(255)
+
+PpVerification:
+  connection: plugins
+  tableName: verificationimpl
+  relations:
+    Plugin:
+      type: one
+      class: PpPlugin
+      local: plugin_pluginid
+      foreign: pluginid
+    Requests:
+      class: PpVerificationRequest
+      type: many
+      local: id
+      foreign: verification_id
+      foreignAlias: Verification
+      onDelete:    CASCADE
+      cascade:     [delete]
+  columns:
+    id:
+      type: integer()
+      primary: true
+      autoincrement: false
+    version:
+      type: string(255)
+    mailsent:
+      type: integer(1)
+    status:
+      type: integer()
+    plugin_pluginid:
+      type: integer()
+    note:
+      type: string(255)
+    issue:
+      type: integer()
+
+PpVerificationRequest:
+  connection: plugins
+  tableName: verificationrequestimpl
+  relations:
+    Verifier:
+      type: one
+      class: PpVerifier
+      local: verifier_id
+      foreign: id
+    Verification:
+      type: one
+      class: PpVerification
+      local: verification_id
+      foreign: id
+      foreignAlias: Requests
+  columns:
+    id:
+      type: integer()
+      primary: true
+      autoincrement: false
+    requestdate:
+      type: datetime()
+    votedate:
+      type: datetime()
+    vote:
+      type: integer()
+    mailsent:
+      type: integer(1)
+    comment:
+      type: string(255)
+    verification_id:
+      type: integer()
+    verifier_id:
+      type: integer()
+
+PpVerificationToRequest:
+  connection: plugins
+  tableName: verificationimpl_verificationrequestimpl
+  relations:
+    PpVerificationRequest:
+      type: one
+      local: verificationRequests_ID
+      foreign: id
+      class: PpVerificationRequest
+    PpVerification:
+      type: one
+      class: PpVerification
+      local: verificationImpl_ID
+      foreign: id
+  columns:
+    verificationImpl_ID:
+      type: integer()
+      primary: true
+    verificationRequests_ID:
+      type: integer()
+      primary: true
+
+PpPluginToVersion:
+  connection: plugins
+  tableName: plugin_version
+  relations:
+    PpPlugin:
+      type: one
+      class: PpPlugin
+      local: plugin_id
+      foreign: plugin_id
+    PpNetBeansVersion:
+      type: one
+      class: PpNetbeansVersion
+      local: version_id
+      foreign: id
+  columns:
+    plugin_id:
+      primary: true
+      type: integer()
+    version_id:
+      primary: true
+      type: integer()
+
+PpLog:
+  connection: plugins
+  tableName: log
+  relations:
+    Plugin:
+      type: one
+      class: PpPlugin
+      local: pluginid
+      foreign: publicid
+  columns:
+    id:
+      type: integer(11)
+      primary: true
+      autoincrement: true
+    userid:
+      type: string(100)
+    pluginid:
+      type: integer()
+    stamp:
+      type: datetime()
+    log:
+      type: text()
+    plugin_name:
+      type: string(250)
+
+Cache:
+  connection: plugins
+  tableName: cache
+  columns:
+    id:
+      type: string(35)
+    data:
+      type: blob()
+    expire:
+      type: datetime()

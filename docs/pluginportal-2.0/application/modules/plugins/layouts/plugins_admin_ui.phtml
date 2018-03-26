@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <!--
+    Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+    -->
+    <head>
+        <meta charset="UTF-8">
+        <title><?php echo $this->escape($this->pageTitle); ?></title>
+        <meta name="keywords" content="NetBeans Plugins">
+        <meta name="description" content="NetBeans Plugins">
+
+        <link rel="SHORTCUT ICON" href="<?= $this->config['content']['resource_path'] ?>/images_www/favicon.ico">
+        <link rel="stylesheet" type="text/css" href="<?= $this->config['content']['resource_path'] ?>/netbeans3.css" media="screen">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+        <script src="<?= $this->config['content']['resource_path'] ?>/images_www/js/companion-projects.js" type="text/javascript"></script>
+        <script src="<?= $this->config['content']['resource_path'] ?>/images_www/js/jquery.url.packed.js" type="text/javascript"></script>
+        <link rel="stylesheet" type="text/css" href="<?= $this->baseUrl() ?>/css/smoothness/jquery-ui-1.8.5.custom.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="<?= $this->baseUrl() ?>/css/thickbox.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="<?= $this->baseUrl() ?>/plugins/css/plugins.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="/plugins/css/plugins-admin.css" media="screen">
+        <script src="<?= $this->baseUrl() ?>/js/thickbox-compressed.js" type="text/javascript"></script>
+        <script src="<?= $this->baseUrl() ?>/js/jquery.dataTables.min.js" type="text/javascript"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"></script>
+        <!--[if lt IE 10]>
+         <script type="text/javascript" src="https://netbeans.org/images_www/pie/PIE.js"></script>
+        <![endif]-->
+
+    </head>
+    <body class="blue-bg">
+        <div id="wrapper-flex">
+            <div id="hdr">
+                <div id="navtabs">
+                    <a href="https://netbeans.org/"><img src="https://netbeans.org/images_www/v7/design/logo_netbeans_red.png" id="nblogo" width="130" height="32"/></a>
+                    <ul>
+                        <li class="hover first"><a href="https://netbeans.org/features/index.html" title="NetBeans&nbsp;IDE"  >NetBeans IDE</a></li>
+                        <li class="hover "><a href="https://netbeans.org/features/platform/index.html" title="NetBeans&nbsp;Platform"  >NetBeans Platform</a></li>
+                        <li class="hover "><a href="https://netbeans.org/enterprise/" title="Enterprise"  >Enterprise</a></li>
+                        <li class="current "><a href="http://plugins.netbeans.org/PluginPortal/" title="Plugins"  >Plugins</a></li>
+                        <li class="hover "><a href="https://netbeans.org/kb/index.html" title="Docs&nbsp;&amp;&nbsp;Support"  >Docs &amp; Support</a></li>
+                        <li class="hover "><a href="https://netbeans.org/community/index.html" title="Community"  >Community</a></li>
+                    </ul>
+                    <div id="search-div">
+                        <form action="https://netbeans.org/search_result.html" id="cse-search-box">
+                            <input type="hidden" name="cx" value="006102455337629464213:mt38ytkbuak" >
+                            <input type="hidden" name="cof" value="FORID:11" >
+                            <input type="text" id="search-input" value="Search" name="q"/>
+                            <input type="image" src="https://netbeans.org/images_www/v7/design/icon_search.png" id="magnifier" alt="search"/>
+                        </form>
+                        <script type="text/javascript" src="//www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+                        <!-- Google CSE Search Box Ends -->
+                    </div>
+                </div>
+            </div>
+            <?= $this->render('user-bar.phtml') ?>
+            <div id="middle">
+                <table class="colapse full-width f-page-table-2col"> <!-- main content table -->
+                    <tr>
+                        <td class="valign-top">
+                            <div id="pp" class="f-page-cell">
+                                <?= $this->render('admin-nav-partial.phtml'); ?>
+                                <?php echo $this->layout()->content; ?>
+                            </div>
+                        </td>
+                    </tr><!-- end main content -->
+                </table><!-- end main content table -->
+            </div>
+            <!-- end contentarea -->
+            <div id="ftr">
+                <ul class="float-right" id="social-media">
+                    <li><a href="http://www.facebook.com/NetBeans"><img src="https://netbeans.org/images_www/v7/design/icin_facebook.png" width="30" height="30" alt="facebook"></a></li>
+                    <li><a href="http://www.youtube.com/user/netbeansvideos"><img src="https://netbeans.org/images_www/v7/design/icin_youtube.png" width="30" height="30" alt="youtube"></a></li>
+                    <li><a href="https://plus.google.com/105597468329838196909/"><img src="https://netbeans.org/images_www/v7/design/icin_google.png" width="30" height="30" alt="google+"></a></li>
+                    <li><a href="https://twitter.com/netbeans"><img src="https://netbeans.org/images_www/v7/design/icin_twitter.png" width="30" height="30" alt="twitter"></a></li>
+                </ul>
+                <ul>
+                    <li><a href="https://netbeans.org/sitemaps/www_map.html">SiteMap</a></li>
+                    <li><a href="https://netbeans.org/about/index.html">About Us</a></li>
+                    <li><a href="https://netbeans.org/about/contact.html">Contact</a></li>
+                    <li><a href="https://netbeans.org/about/legal/index.html">Legal &amp; Licences</a></li>
+                </ul>
+
+            </div>
+            <div id="tof" class="align-right">
+                By use of this website, you agree to the <a href="/about/legal/terms-of-use.html">NetBeans Policies and Terms of Use</a>.
+                &copy; 2012, Oracle Corporation and/or its affiliates. Sponsored by <img src="https://netbeans.org/images_www/v7/design/logo_oracle.png" width="56" height="8" alt="Oracle logo"/>
+            </div>
+        </div>
+        <div id="companion-projects">
+            <script type="text/javascript">
+                document.write(renderCompanionProjectIcons());
+            </script>
+        </div>
+
+        <!-- Begin SiteCatalyst code -->
+        <script language="JavaScript" src="https://netbeans.org/images_www/js/s_code_remote.js" type="text/javascript"></script>
+        <!-- End SiteCatalyst code -->
+
+    </body>
+</html>

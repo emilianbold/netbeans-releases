@@ -1,0 +1,76 @@
+<script src="<?= $this->baseUrl() ?>/js/jquery.validate.min.js" type="text/javascript"></script>
+<form action="" method="post" enctype="multipart/form-data" id="pform">
+    <div style="border-bottom: 1px dotted silver;">
+        <h3>Basic plugin information</h3>
+        <div style="padding-left:33px;">
+            <table>
+                <tr>
+                    <?php
+                    if ($this->allowChangeVersion == true) {
+                        echo '<td class="bold">Supported NetBeans Version <span class="red bold">*</span>:</td>';
+                        echo '<td>' . $this->checkboxesFromObject($this->versions, 'version', 'id', $this->bin->version_id, $selectName = 'binary[version_id]', $class = 'required', $separator = '&nbsp;', $type = 'radio', $disabled) . '</td>';
+                    } else {
+                        echo '<td class="bold">Supported NetBeans Version:</td>';
+                        echo '<td><b>'.$this->bin->Version->version.'</b></td>';
+                    }
+                    //var_dump($this->bin);
+                    ?>
+                </tr>
+
+            </table>
+            <?php
+            if ($this->allowChangeVersion == false) {
+                echo '<input type="hidden" name="binary[version_id]" value="' . $this->bin->version_id . '"/>';
+            }
+            ?>
+        </div>
+        <br/>
+    </div>
+    <?php if ($this->allowBinaryUpdate == true) {
+        ?>
+        <div style="border-bottom: 1px dotted silver;">
+            <h3>Upload new .nbm or .zip</h3>
+            <div style="padding-left:33px;">
+                <p>If your plugin is verified and published on the Plugin Portal Update Center
+                    (PPUC), uploading new binary will leave the current version of your plugin on
+                    the PPUC until the newly uploaded version gets successfully verified.
+                    Then the new plugin version will replace the old one. The new version
+                    will be available from the Plugin Portal immediately.</p>
+                <b>Plugin File(s) (.nbm or .zip) Location:</b>
+                <input name="userfile" type="file" />
+
+            </div><br/>
+        </div>
+
+    <?php } ?>
+
+    <div style="">
+        <h3>Describe Your Plugin</h3>
+        <div style="padding-left:33px;">
+            <b>What's new in this version (HTML tags OK) :</b><br/>
+            <textarea name="binary[whats_new]" cols="100" rows="16"><?= $this->purifier->purify($this->bin->whats_new) ?></textarea>
+
+            <br/><br/>
+            <input type="submit" value="Save Plugin"/>
+        </div>
+    </div>
+
+
+</form>
+<script type="text/javascript">
+    $.validator.addMethod('cb_selectone', function(value,element){
+        if(element.length>0){
+            for(var i=0;i<element.length;i++){
+                if($(element[i]).val('checked')) return true;
+            }
+            return false;
+        }
+        return false;
+    }, 'Please select at least one option');
+
+    $(function() {
+        //{rules:{'versions_supported[]':"cb_selectone"}}
+        $("#pform").validate();
+
+    });
+</script>

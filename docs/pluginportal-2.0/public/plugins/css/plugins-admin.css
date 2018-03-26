@@ -1,0 +1,60 @@
+#admin-nav a {
+  margin-right:20px;
+}
+#admin-nav {
+  padding-bottom: 10px;
+  border-bottom: 1px solid silver;
+  margin-bottom: 10px;
+}
+
+table.celled {
+  border-collapse: collapse;
+}
+table.celled td {
+  border-collapse: collapse;
+  border: 1px solid silver;
+  padding:5px;
+}
+table.celled tr:nth-child(odd) { background-color:#eee; }
+
+.success {
+  padding:7px 3px 3px 45px;
+  background-image: url("../../images/icons/tick.png");
+  background-repeat: no-repeat;
+  background-position: 3px;
+  margin-bottom: 10px;
+}
+.field-longer {
+  border: 1px solid #aaaaaa !important;
+  width:300px;
+  padding:3px !important;
+}
+input.field {
+  border: 1px solid #aaaaaa !important;
+  width:150px;
+  padding:3px !important;
+}
+input.field-short {
+  border: 1px solid #aaaaaa !important;
+  width:100px;
+  padding:3px !important;
+}
+.error {
+  padding:3px 3px 3px 25px;
+  background-image: url("../../images/icons/cross.png");
+  background-repeat: no-repeat;
+  background-position: 3px;
+  margin-bottom: 10px;
+}
+ul.ui-autocomplete li {
+    list-style: none;
+}
+.red {
+    color: red;
+}
+.green {
+    color: green;
+}
+.bold {
+    font-weight: bold;
+}

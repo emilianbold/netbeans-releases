@@ -1,0 +1,223 @@
+<h1>Plugin List</h1>
+<?= $this->flash(); ?>
+
+<div id="filters" class="hidden">
+    <p>Live Filters - select or type to filter the catalogue, filters are applied all together. There is also multi column sorting
+        activated by 'shift' clicking column headers.</p>
+    <p>
+        <b>NetBeans version:</b>
+        <select name="version" id="version"size="1">
+            <option value="---">Any</option>
+            <?
+            if ($this->versions) {
+                foreach ($this->versions as $v) {
+                    echo '<option value="' . $v['version'] . '">' . $v['version'] . '</option>';
+                }
+            }
+            ?>
+        </select>
+        &nbsp;<b>Category:</b>
+        <select name="category" id="category"  size="1" >
+            <option value="---">Any</option>
+            <?
+            if ($this->categories) {
+                foreach ($this->categories as $c) {
+                    echo '<option value="' . $c['displaycategory_name'] . '">' . $c['displaycategory_name'] . '</option>';
+                }
+            }
+            ?>
+        </select>
+        &nbsp;<b>Name:</b>
+        <input type="text" name="name" id="name" class="field" style="width:200px;" >
+        &nbsp;<b>Description:</b>
+        <input type="text" name="desc" id="desc" class="field" style="width:200px;" >
+        &nbsp;<b>Owner:</b>
+        <input type="text" name="owner" id="owner" class="field" style="width:140px;" >
+    </p>
+</div>
+<div style="position:relative;">
+    <div id="spin" class="align-center"><img src="<?= $this->config['content']['resource_path'] ?>/images_www/v6/spinner.gif" width="24" height="24"/><br/>Catalogue is loading...</div>
+    <table id="katal" style="display:none;">
+        <thead>
+            <tr>
+                <th title="Click to sort, shift click to activate multi column sorting">Plugin name</th>
+                <th title="Click to sort, shift click to activate multi column sorting">Category</th>
+                <th title="Click to sort, shift click to activate multi column sorting">NetBeans Version</th>
+                <th title="Click to sort, shift click to activate multi column sorting">Description</th>
+                <th title="Click to sort, shift click to activate multi column sorting">Last updated</th>
+                <th title="Click to sort, shift click to activate multi column sorting">Status</th>
+                <th title="Click to sort, shift click to activate multi column sorting">Binaries</th>
+                <th title="Click to sort, shift click to activate multi column sorting">Options</th>
+                <th title="Click to sort, shift click to activate multi column sorting"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?
+            if ($this->plugins) {
+                foreach ($this->plugins as $p) {
+                    //die(var_dump($p));
+                    $vers = array();
+                    if (!empty($p['Versions'])) {
+                        foreach ($p['Versions'] as $v) {
+                            $vers[] = $v['version'];
+                        }
+                    } else {
+                        $vers[] = '';
+                    }
+                    $cat = ($p['Category']['displaycategory_name']) ? $p['Category']['displaycategory_name'] : '';
+                    $status = ($p['published'] == '1') ? 'approved' : '<b>disapproved</b>';
+                    $aAction = ($p['published'] == '1') ? '<a href="' . $this->baseUrl() . '/admin/approve-plugin/land/plugin-list/approve/n/id/' . $p['pluginid'] . '">Disapprove</a>' : '&nbsp;&nbsp;&nbsp;<a href="' . $this->baseUrl() . '/admin/approve-plugin/land/plugin-list/approve/y/id/' . $p['pluginid'] . '">Approve</a>';
+                    echo '
+                        <tr>
+                            <td><img src="' . $this->baseUrl() . '/images/icons/bullet_go.png" width="16" height="16" class="icon float-left"/>
+                                <div class="mdi"> <a href="' . $this->baseUrl() . '/plugin/' . $p['publicid'] . '/' . Doctrine_Inflector::urlize($p['plugin_name']) . '?show=true">' . htmlspecialchars(strip_tags($this->purifier->purify($p['plugin_name']))) . '</a></div></td>
+                            <td>' . $cat . '</td>
+                            <td>' . implode(', ', $vers) . '</td>
+                            <td>' . htmlspecialchars(strip_tags($this->purifier->purify($this->stringNiceChop($p['summary'], 500)))) . '</td>
+                            <td>' . htmlspecialchars(strip_tags($p['date_last_updated'])) . '</td>
+                            <td>' . $status . '</td>
+                            <td>';
+                    $i=0;
+                    foreach ($p['Binaries'] as $bin) {
+                        $brd = ($i < count($p['Binaries'])) ? 'vb' : '';
+                        echo '<div class="vv ' . $brd . '"><b>' . $bin['Version']['version'] . '</b>, 
+                                &nbsp; ' . date('Y-m-d', strtotime($bin['updated_on'])) . ',
+                                &nbsp; ' . (($bin['download_size']) ? round(($bin['download_size'] / 1024000), 2) . 'MB' : 'n/a') . '
+                        &nbsp;&nbsp;<a href="' . $this->baseUrl() . '/edit-binary/id/' . $bin['binary_id'] . '">Edit</a>
+                        &nbsp;&nbsp;<a href="' . $this->baseUrl() . '/delete-binary/id/' . $bin['binary_id'] . '" onclick="return confirm(\'Really delete this binary?\');">Delete</a>                
+                        </div>';           
+                        $i++;
+                    }
+                    echo '<div class="av vv"><a href="'.$this->baseUrl().'/add-binary/id/'.$p['pluginid'].'">Add binary</a></div>';
+                    echo '</td>
+                            <td>
+                            ' . $aAction . ' <br/>                            
+                            <a href="' . $this->baseUrl() . '/admin/delete-plugin/land/plugin-list/id/' . $p['pluginid'] . '" onclick="return confirm(\'Really delete this plugin?\');">Delete plugin</a><br/>
+                                <a href="' . $this->baseUrl() . '/edit-plugin/id/' . $p['pluginid'] . '">Edit general info</a>
+                            </td>
+                            <td>' . $p['author_userid'] . '</td>
+                        </tr>
+                        ';
+                }
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+    var delay = (function(){
+        var timer = 0;
+        return function(callback, ms){
+            clearTimeout (timer);
+            timer = setTimeout(callback, ms);
+        };
+    })();
+
+    function setupFilterFromUrl() {
+        var vers=jQuery.url.param('version')? jQuery.url.param('version') : null;
+        var cat=jQuery.url.param('categoryname')? jQuery.url.param('categoryname') : null;
+        var name=jQuery.url.param('name')? jQuery.url.param('name') : null;
+        var desc=jQuery.url.param('description')? jQuery.url.param('description') : null;
+        var owner=jQuery.url.param('author')? jQuery.url.param('author') : null;
+        if(vers) $('#version').val(vers);
+        if(cat) $('#category').val(cat);
+        if(name) $('#name').val(name);
+        if(desc) $('#desc').val(desc);
+        if(owner) $('#owner').val(owner);
+    }
+
+    function filterPlugins() {
+        var vers=$('#version').val();
+        var cat=$('#category').val();
+        var name=$('#name').val();
+        var desc=$('#desc').val();
+        var owner=$('#owner').val();
+
+        if(name.length>0) {
+            oTable.fnFilter(name,0);
+            console.log('NAME filter called: '+name);
+        } else {
+            oTable.fnFilter('.*',0,true);
+        }
+        if(desc.length>0) {
+            oTable.fnFilter(desc,3);
+            console.log('DESC filter called: '+desc);
+        } else {
+            oTable.fnFilter('.*',3,true);
+        }
+        if(owner.length>0) {
+            oTable.fnFilter(owner,7);
+            console.log('OWNER filter called: '+owner);
+        } else {
+            oTable.fnFilter('.*',7,true);
+        }
+        if(cat!="---") {
+            oTable.fnFilter(cat,1);
+            console.log('CAT filter called: '+cat);
+        } else {
+            oTable.fnFilter('.*',1,true);
+        }
+        if(vers!="---") {
+            oTable.fnFilter(vers,2);
+            console.log('VERS filter called: '+vers);
+        } else {
+            oTable.fnFilter('.*',2,true);
+        }
+
+    }
+
+    $(function() {
+        jQuery.fn.dataTableExt.oPagination.iFullNumbersShowPages = 15;
+        oTable = $('#katal').dataTable({
+            "bSort": true,
+            "bAutoWidth": true,
+            "bFilter": true,
+            "iDisplayLength": 15,
+            //"bStateSave": true,
+            //"sDom": '<"top"f>t<"bottom"ilp>',
+            "bJQueryUI": true,
+            "bLengthChange": true,
+            "iFullNumbersShowPages": 15,
+            "sPaginationType": "full_numbers",
+            "aLengthMenu": [[15, 50, 100, -1], [15, 50, 100, "All"]],
+            "aaSorting": [[ 1, "desc" ]],
+            "aoColumns": [
+                {"bSearchable":true,"sWidth":"230px"},
+                {"bSearchable":true,"sClass": "align-center"},
+                {"sWidth":"130px", "bSearchable":true,"sClass": "align-center"},
+                {"bSearchable": false},
+                {"bSearchable": false,"sWidth":"100px","sClass": "align-center"},
+                {"bSearchable": false,"sWidth":"90px","sClass": "align-center"},
+                {"bSearchable": false,"sWidth":"250px"},
+                {"bSearchable": false,"sWidth":"100px","sClass": "align-center","bSortable":false},
+                {"bVisible":    false}
+            ]
+        });
+        oTable.css('visibility','visible');
+        oTable.css('display','block');
+        oTable.fnAdjustColumnSizing();
+        $('#spin').hide();
+        $('#filters').show();
+
+        $('#version').bind('change', function(){filterPlugins();});
+        $('#category').bind('change', function(){filterPlugins();});
+        $('#name').bind('keyup', function(){
+            delay(function(){
+                filterPlugins();
+            },150);
+        });
+        $('#desc').bind('keyup', function(){
+            delay(function(){
+                filterPlugins();
+            },150);
+        });
+        $('#owner').bind('keyup', function(){
+            delay(function(){
+                filterPlugins();
+            },150);
+        });
+
+        setupFilterFromUrl();
+        filterPlugins();
+    })
+</script>

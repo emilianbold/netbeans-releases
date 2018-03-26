@@ -1,0 +1,50 @@
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<div class="f-page-cell">
+  <h1>Publish Plugin, Step 1 of 2</h1>
+  <p>
+    <b>Welcome to the Add Plugin Wizard</b>, which will guide you through the necessary steps to make your plugin available on the netbeans.org website.</p>
+    <p>
+    <b>At first you have to decide whether or not you want to upload your plugin to the netbeans.org web site.</b>
+  </p>
+  <p>
+    If you decide to upload your plugin to the netbeans.org web site, it will be available to other users via download from the netbeans.org website.
+    <br/>If you also want to publish your plugin on
+	the Plugin Portal Update Center, make sure your plugin follows
+    all <a href="http://wiki.netbeans.org/FaqPluginRequirements"><b>plugin requirements</b></a> and ask for its verification.
+  </p>
+  <form method="post" action="" enctype="multipart/form-data">
+    <div>
+      <input type="radio" name="type" value="file" checked="checked"/> &nbsp;
+      <b class="font-blue font-bigger">I want to upload the plugin so it will be available for download from the netbeans.org Plugin Portal. </b>
+      <div style="padding-left:33px;">
+        <p>
+          If you want to upload a Module Suite (a set of related NBM files), please Zip them into a .zip file and select that file for upload. The .zip file will then be available for download from the netbeans.org website. Do NOT add a folder in the zip file. The files must be at the root level of the .zip file.
+        </p>
+        <b>Plugin File(s) (.nbm or .zip) Location:</b>
+        <input name="userfile" type="file" />
+         <?=$this->flash()?>
+      </div>
+    </div>
+    <br/>
+    <br/>
+    <div>
+      <input type="radio" name="type" value="url"/> &nbsp;
+      <b class="font-blue font-bigger">I don't want to upload the plugin now, because it's hosted on another web site. </b>
+      <div style="padding-left:33px;">
+        If you don't want to upload your plugin and you want netbeans.org to serve just as an advertisement, then choose the option below.
+      </div>
+    </div>
+    <br/>
+
+    <br/>
+    <div class="align-center">
+      <a href="<?=$this->baseUrl()?>/"><img src="<?=$this->baseUrl()?>/plugins/images/cancel.png" /></a> &nbsp; &nbsp;
+      <input type="image" src="<?=$this->baseUrl()?>/plugins/images/next.png">
+      <br/>
+      <p>
+          For more information about publishing plugins please read
+          <a href="http://wiki.netbeans.org/FaqPluginAdd"><b>How do I add my own Plugins?</b></a>
+      </p>
+    </div>
+  </form>
+</div>

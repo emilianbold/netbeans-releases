@@ -1,0 +1,8 @@
+<div class="f-page-cell">
+  <h1>Add Plugin's Binary: <?= htmlspecialchars($this->purifier->purify($this->plugin->plugin_name)) ?></h1>
+  <div>
+    <?=$this->flash()?>
+  </div>
+  <?= $this->render('binary-form-partial.phtml');?>
+
+</div>

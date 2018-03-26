@@ -1,0 +1,31 @@
+<h1>Binary Integrity Check</h1>
+<style type="text/css">
+    tr.head td {background-color: lavender;font-weight: bold;}
+</style>
+<p>
+    This is list of binaries with missing nbm files on the filesystem for some reason.
+</p>
+<?php
+if (count($this->missing) > 0) {
+  echo '<table class="celled"><tr class="head">
+            <td>Binary ID</td>
+            <td>Plugin ID</td>
+            <td>Nbm filename</td>
+            <td>Updated</td>
+          </tr>';
+
+  foreach ($this->missing as $m) {
+    echo '
+          <tr>
+            <td><b>' .$m['binary_id'] . '</b></td>
+            <td><a href="/plugin/'.$m['Plugin']['publicid'].'" target="_blank">'.$m['plugin_id'].'</a></td>
+            <td>'.$m['nbm_filename'].'</td>
+            <td>'.$m['updated_on'].'</td>
+          </tr>
+        ';
+  }
+  echo '</table>';
+} else {
+  echo '<p>There are no missing nbm files.</p>';
+}
+?>

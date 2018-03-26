@@ -1,0 +1,86 @@
+<script src="<?= $this->baseUrl() ?>/js/jquery-ui.min.js" type="text/javascript"></script>
+<h1>Featured Plugins management</h1>
+<h2>Add New Plugin to the Queue</h2>
+<div>
+    <form method="post">
+        <label for="plugins"><b>Select plugin (auto completion):</b> </label>
+        <input id="plugin"  class="field-longer"/>
+        <b>from</b> <input type="text" name="from" id="from" class="field-short datepicker" value="<?= $_POST['from'] ?>"/>
+        <input type="hidden" id="fpid" value="" name="plugin"/>
+        <input type="hidden" id="fplbl" value=""/>
+        <input type="submit" value="Queue it" id="fpsave"/>
+    </form>
+</div>
+<br/>
+<div id="note">
+    <?= $this->message ?>
+</div>
+<br/>
+<h2>Active Queue</h2>
+<?php
+if ($this->plugins->count() > 0) {
+    echo '<table class="celled">';
+    foreach ($this->plugins as $p) {
+        echo '
+          <tr>
+            <td><a href="/plugin/'.$p->Plugin->pluginid.'/" target="_blank">' . $p->Plugin->plugin_name . '</a></td>
+            <td>' . $p->from . '</td>
+            <!--<td>' . $p->to . '</td>-->
+            <td>
+              <a href="' . $this->baseUrl() . '/admin/featured-delete/id/' . $p->id . '"><img src="' . $this->baseUrl() . '/images/icons/delete.png" class="icon" width="16" height="16" title="Delete" alt="Delete" onclick="return confirm(\'Really delete?\');"/></a>
+            </td>
+          </tr>
+        ';
+    }
+    echo '</table>';
+} else {
+    echo '<p>No Featured plugins queued yet!</p>';
+}
+?>
+<br/>
+<br/>
+<h2>Alredy displayed queue</h2>
+<p>Last 52 items (last 2 years)</p>
+<?php
+if ($this->pluginsOld->count() > 0) {
+    echo '<table class="celled">';
+    foreach ($this->pluginsOld as $p) {
+        echo '
+          <tr>
+            <td><a href="/plugin/'.$p->Plugin->pluginid.'/" target="_blank">' . $p->Plugin->plugin_name . '</a></td>
+            <td>' . $p->from . '</td>
+          </tr>
+        ';
+    }
+    echo '</table>';
+} else {
+    echo '<p>No Old Featured plugins yet!</p>';
+}
+?>
+
+
+<script type="text/javascript">
+    $(function() {
+        $("#plugin").autocomplete({
+            source: "<?= $this->baseUrl() ?>/admin/featured-suggest/",
+            minLength: 3,
+            delay: 500,
+            select: function(event, ui) {
+                // save it
+                $('#fpid').val(ui.item.id);
+                $('#fplbl').val(ui.item.label);
+
+            }
+        });
+
+        $(".datepicker").datepicker({
+            dateFormat: "yy-mm-dd",
+            minDate: 1,
+            beforeShowDay: function(date) {
+                var day = date.getDay();
+                var week=$.datepicker.iso8601Week(date);
+                return [day == 1 && (week%2)===0, ""];
+            }
+        });
+    });
+</script>

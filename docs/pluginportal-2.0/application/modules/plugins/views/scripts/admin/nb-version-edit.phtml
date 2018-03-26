@@ -1,0 +1,21 @@
+<h1><?= $this->heading ?></h1>
+<?= $this->message ?>
+<form method="post" action="<?= $this->baseUrl() ?>/admin/nb-version-edit">
+  <input type="hidden" name="pc[id]" value="<?= $this->pc->id ?>">
+  <table>
+    <tr>
+      <td>
+        NetBeans Version
+      </td>
+      <td>
+        <input type="text" name="pc[version]" class="field-longer" value="<?= $this->pc->version ?>"/>
+      </td>
+      <td>
+        <?= $this->selectFromArray(array('1'=>'verifable','0'=>'non-verifable'), $this->pc->verifable, 'pc[verifable]', $class = false, $multiple = false, $size = 1, $disabled = false, $emptyValue = false) ?>
+      </td>
+      <td>
+        <input type="submit" value="Submit"/>
+      </td>
+    </tr>
+  </table>
+</form>

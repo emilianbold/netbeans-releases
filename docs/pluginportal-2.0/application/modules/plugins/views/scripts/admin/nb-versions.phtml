@@ -1,0 +1,27 @@
+<h1>NetBeans Versions</h1>
+<?= $this->message ?>
+<p>
+  <img src="<?= $this->baseUrl() ?>/images/icons/add.png" class="icon" width="16" height="16" title="Add" alt="Add"/>
+  <a href="<?= $this->baseUrl() ?>/admin/nb-version-edit">Add version</a>
+</p>
+<?
+if ($this->vers->count() > 0) {
+  echo '<table class="celled">';
+  foreach ($this->vers as $c) {
+    echo '
+          <tr>
+            <td>' . $c->version . '</td>
+            <td>'.(($c->verifable==1)? 'verifiable' : '').'</td>
+            <td>
+              <a href="' . $this->baseUrl() . '/admin/nb-version-delete/id/' . $c->id . '"><img src="' . $this->baseUrl() . '/images/icons/delete.png" class="icon" width="16" height="16" title="Delete" alt="Delete" onclick="return confirm(\'Really delete?\');"/></a>
+                &nbsp;
+              <a href="' . $this->baseUrl() . '/admin/nb-version-edit/id/' . $c->id . '"><img src="' . $this->baseUrl() . '/images/icons/page_edit.png" class="icon" width="16" height="16" title="Edit" alt="Edit"/></a>
+            </td>
+          </tr>
+        ';
+  }
+  echo '</table>';
+} else {
+  echo '<p>There are no NetBeans Versions yet.</p>';
+}
+?>

@@ -1,0 +1,62 @@
+<div class="f-page-cell">
+    <h1>List of plugins on UCs with licenses</h1>
+    <div style="position:relative;width:100%;">
+        <div id="spin" class="align-center"><img src="<?= $this->config['content']['resource_path'] ?>/images_www/v6/spinner.gif" width="24" height="24"/><br/>Catalogue is loading...</div>
+        <table id="katal" style="width:100%;visibility: hidden;">
+            <thead>
+                <tr>
+                    <th title="Click to sort, shift click to activate multi column sorting">Plugin name</th>
+                    <th title="Click to sort, shift click to activate multi column sorting">Owner</th>
+                    <th title="Click to sort, shift click to activate multi column sorting">UCs</th>
+                    <th title="Click to sort, shift click to activate multi column sorting">License</th>                
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if ($this->plugins) {
+                    foreach ($this->plugins as $p) {
+                        $ucs = array();
+                        if (!empty($p['Binaries'])) {
+                            foreach ($p['Binaries'] as $b) {
+                                $ucs[] = $b['Verification']['version'];
+                            }
+                        } else {
+                            $ucs[] = '';
+                        }
+                        echo '
+                        <tr>
+                         <td><img src="' . $this->baseUrl() . '/images/icons/bullet_go.png" width="16" height="16" class="icon float-left"/>
+                            <div class="mdi"> <a href="' . $this->baseUrl() . '/plugin/' . $p['publicid'] . '/' . Doctrine_Inflector::urlize($p['plugin_name']) . '">' . htmlspecialchars(strip_tags($this->purifier->purify($p['plugin_name']))) . '</a></div></td>
+                         <td>' . htmlspecialchars(strip_tags($p['author_userid'])) . '</td>                        
+                         <td>' . implode(', ', $ucs) . '</td>
+                         <td>' . htmlspecialchars(strip_tags($p['license_type'])) . '</td>                          
+                        </tr>
+                        ';
+                    }
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+    <script type="text/javascript">
+        $(function() {
+            jQuery.fn.dataTableExt.oPagination.iFullNumbersShowPages = 15;
+            oTable = $('#katal').dataTable({
+                "bSort": true,
+                //"bAutoWidth": true,
+                "bFilter": true,
+                "iDisplayLength": 50,
+                "bJQueryUI": true,
+                "bLengthChange": true,
+                "iFullNumbersShowPages": 15,
+                "sPaginationType": "full_numbers",
+                "aLengthMenu": [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+                "aaSorting": [[ 0, "asc" ]]
+            });
+            oTable.css('visibility','visible');
+            //oTable.css('display','block');
+            oTable.fnAdjustColumnSizing();
+            $('#spin').hide();
+        });
+    </script>
+</div>

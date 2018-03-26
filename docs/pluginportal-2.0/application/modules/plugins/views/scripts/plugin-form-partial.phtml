@@ -1,0 +1,144 @@
+<?php
+if ($_SESSION['publish']['type'] == 'url') {
+    $wwwAsterix = ' <span class="red bold">*</span> ';
+    $wwwreq = 'required';
+}
+?>
+<script src="<?= $this->baseUrl() ?>/js/jquery.validate.min.js" type="text/javascript"></script>
+<form action="" method="post" enctype="multipart/form-data" id="pform">
+    <div style="border-bottom: 1px dotted silver;">
+        <h3>Basic plugin information</h3>
+        <div style="padding-left:33px;">
+            <table>
+                <tr>
+                    <td class="bold">Plugin Name <span class="red bold">*</span> :</td>
+                    <td><input type="text" class="field-longer required" name="plugin[plugin_name]" value="<?= htmlspecialchars($this->purifier->purify($this->plugin->plugin_name)) ?>" title="Marketing name of your plugin."/></td>
+                </tr>
+                <tr>
+                    <td class="bold">License Type <span class="red bold">*</span> :</td>
+                    <td><input type="text" class="field-longer required" name="plugin[license_type]" value="<?= htmlspecialchars($this->purifier->purify($this->plugin->license_type)) ?>" title="Name of plugin distribution license e.g. CDDL, GPLv3 etc."/></td>
+                </tr>
+                <?php if ($this->allowChangeVersion == true) {
+                    ?>
+                    <tr>
+                        <td class="bold">Supported NetBeans Version <span class="red bold">*</span>:</td>
+                        <td><?= $this->checkboxesFromObject($this->versions, 'version', 'id', $_POST['versions_supported'], $selectName = 'versions_supported', $class = 'required', $separator = '&nbsp;', $type = 'radio'); ?></td>
+                    </tr>
+                <? } ?>
+                <tr>
+                    <td class="bold">Home Page<?= $wwwAsterix ?>:</td>
+                    <td><input type="text" class="field-longer <?= $wwwreq ?>" name="plugin[home_page_url]" value="<?= htmlspecialchars($this->purifier->purify($this->plugin->home_page_url)) ?>" title="Location of project or plugin sources e.g. http://java.net/projects/eidos-uml"/></td>
+                </tr>
+            </table>
+        </div>
+        <br/>
+    </div>
+    <?php if ($this->allowBinaryUpdate == true) {
+        ?>
+        <div style="border-bottom: 1px dotted silver;">
+            <h3>Upload new .nbm or .zip</h3>
+            <div style="padding-left:33px;">
+                <p>If your plugin is verified and published on the Plugin Portal Update Center
+                    (PPUC), uploading new binary will leave the current version of your plugin on
+                    the PPUC until the newly uploaded version gets successfully verified.
+                    Then the new plugin version will replace the old one. The new version
+                    will be available from the Plugin Portal immediately.</p>
+                <b>Plugin File(s) (.nbm or .zip) Location:</b>
+                <input name="userfile" type="file" />
+
+            </div><br/>
+        </div>
+
+    <?php } ?>
+    <div style="border-bottom: 1px dotted silver;">
+        <h3>Categorize Your Plugin</h3>
+        <p>
+            Each plugin can be listed in 3 categories.
+
+            If you think your plugin deserves a brand new
+            category, please <a href="http://netbeans.org/bugzilla/enter_bug.cgi?product=updatecenters&component=Pluginportal&cf_bug_type=TASK&short_desc=New%20plugin%20category%20proposal">submit your request</a> with a good justification.
+        </p>
+        <div style="padding-left:33px;">
+            <div>
+                <b>Category 1 <span class="red bold">*</span>:</b>
+                <?= $this->selectFromObject($this->categories, 'displaycategory_name', 'id', $selectedValue = $this->plugin->categoryid, $selectName = 'categs[0]', $class = 'required', $multiple = false, $size = 1, $disabled = false, $emptyValue = 'select one'); ?>
+            </div>
+            <div>
+                <b>Category 2 &nbsp; :</b>
+                <?= $this->selectFromObject($this->categories, 'displaycategory_name', 'id', $selectedValue = $this->plugin->categoryid2, $selectName = 'categs[1]', $class = false, $multiple = false, $size = 1, $disabled = false, $emptyValue = 'select one'); ?>
+            </div>
+            <div>
+                <b>Category 3 &nbsp; :</b>
+                <?= $this->selectFromObject($this->categories, 'displaycategory_name', 'id', $selectedValue = $this->plugin->categoryid3, $selectName = 'categs[2]', $class = false, $multiple = false, $size = 1, $disabled = false, $emptyValue = 'select one'); ?>
+            </div>
+        </div>
+        <br/>
+    </div>
+    <div style="border-bottom: 1px dotted silver;">
+        <h3>Upload Plugin Images</h3>
+        <p>Provide images to help promote your plugin. Thumbnail images characterize your plugin in various listings. The full-size image should be a screen shot of your plugin in action. </p>
+        <p>If you don't upload these images, default ones will be provided by the system.</p>
+        <div style="padding-left:33px;">
+            <table>
+                <tr>
+                    <td>
+                        <b>Thumbnail Image:</b>
+                    </td>
+                    <td>
+                        <input name="thumbnail" type="file" class="field"/> Images in .jpg, .png, .gif formats are supported.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Full Size Image:</b>
+                    </td>
+                    <td>
+                        <input name="full" type="file" class="field"/> Images in .jpg, .png, .gif formats are supported.
+                    </td>
+                </tr>
+            </table>
+            <br/>
+        </div>
+    </div>
+    <div style="">
+        <h3>Describe Your Plugin</h3>
+
+        <div style="padding-left:33px;">
+            <b>Summary <span class="red bold">*</span> :</b><br/>
+            <textarea name="plugin[summary]" cols="100" rows="16" class="required"><?= $this->plugin->summary ?></textarea>
+        </div><br/>
+        <div style="padding-left:33px;">
+            <b>Long Description (HTML tags OK)  <span class="red bold">*</span> :</b><br/>
+            <textarea name="plugin[description]" cols="100" rows="16" class="required"><?= $this->purifier->purify($this->plugin->description) ?></textarea>
+        </div>
+        <br/>
+        <div style="padding-left:33px;">
+            <?php if ($this->hideWhatsNew != true) {
+                ?>
+                <b>What's new in this version (HTML tags OK) :</b><br/>
+                <textarea name="plugin[new_version_comments]" cols="100" rows="16"><?= $this->purifier->purify($this->plugin->new_version_comments) ?></textarea>
+            <?php } ?>
+            <br/><br/>
+            <input type="submit" value="Save Plugin"/>
+        </div>
+    </div>
+
+
+</form>
+<script type="text/javascript">
+    $.validator.addMethod('cb_selectone', function(value,element){
+        if(element.length>0){
+            for(var i=0;i<element.length;i++){
+                if($(element[i]).val('checked')) return true;
+            }
+            return false;
+        }
+        return false;
+    }, 'Please select at least one option');
+
+    $(function() {
+        //{rules:{'versions_supported[]':"cb_selectone"}}
+        $("#pform").validate();
+
+    });
+</script>

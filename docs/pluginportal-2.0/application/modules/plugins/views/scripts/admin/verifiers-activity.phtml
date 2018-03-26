@@ -1,0 +1,35 @@
+<h1>Verifiers activity</h1>
+<style type="text/css">
+    tr.head td {background-color: lavender;font-weight: bold;}
+</style>
+<?= $this->message ?>
+<?php
+if (count($this->activity) > 0) {
+  echo '<table class="celled"><tr class="head">
+            <td>Verifier</td>
+            <td>Joined</td>
+            <td>Last Vote</td>
+            <td>Total Votes</td>
+            <td>Inactivity</td>
+          </tr>';
+
+  foreach ($this->activity as $a) {
+      $d=new DateTime($a['last']);
+      $today=new DateTime();
+      $diff=$d->diff($today, true)->format('%a');
+      $color=($diff>60)? 'style="color:red;"' : '';
+    echo '
+          <tr>
+            <td><b>' .$a['Verifier']['userid'] . '</b></td>
+            <td>'.$a['joined'].'</td>
+            <td>'.$a['last'].'</td>
+            <td>'.$a['votes'].'</td>
+            <td '.$color.'>'.$diff.' days</td>
+          </tr>
+        ';
+  }
+  echo '</table>';
+} else {
+  echo '<p>There are no NetBeans Versions yet.</p>';
+}
+?>

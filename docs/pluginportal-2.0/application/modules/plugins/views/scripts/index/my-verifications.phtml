@@ -1,0 +1,33 @@
+<div class="f-page-cell">
+
+    <h1>My verifications</h1>
+    <?= $this->flash() ?>
+    <div style="margin-bottom:20px;">
+        <form method="post">
+            <input type="text" name="search" class="field-longer" value="<?= strip_tags($_POST['search']) ?>"/>
+            <input type="submit" value="Search by plugin name"/>
+        </form>
+
+        <?
+        if ($this->searchPager) {
+            echo '<h2>Search</h2>';
+            echo $this->partial('my-verifications-partial.phtml', array('pager' => $this->searchPager, 'pageParam' => 'page3', 'purifier' => $this->purifier));
+            echo '<br/>';
+        }
+        ?>
+    </div>
+    <h2>You have not voted yet and overall status of verification is pending</h2>
+    <?= $this->partial('my-verifications-partial.phtml', array('pager' => $this->pager2, 'pageParam' => 'page2', 'purifier' => $this->purifier)); ?>
+    <br/>
+    <h2>You have not voted yet but overall status of verification is decided already</h2>
+    <p><a href="#" onclick="$('#hdv2').toggle();return false;">Show verifications</a></p>
+    <div id="hdv2" class="hidden">
+        <?= $this->partial('my-verifications-partial.phtml', array('pager' => $this->pager3, 'pageParam' => 'page3', 'purifier' => $this->purifier)); ?>
+    </div>
+    <br/>
+    <h2>Verifications where you already voted</h2>
+    <p><a href="#" onclick="$('#hdv').toggle();return false;">Show verifications</a></p>
+    <div id="hdv" class="hidden">
+        <?= $this->partial('my-verifications-partial.phtml', array('pager' => $this->pager1, 'pageParam' => 'page1', 'purifier' => $this->purifier)); ?>
+    </div>
+</div>

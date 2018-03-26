@@ -1,0 +1,339 @@
+
+<script src="<?= $this->baseUrl() ?>/js/jquery.ui.stars.min.js" type="text/javascript"></script>
+<script src="<?= $this->baseUrl() ?>/js/jquery.validate.min.js" type="text/javascript"></script>
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<script>
+    $(function() {
+        $( "#vtabs" ).tabs();
+        /*$('#captcha1').bind('loaded.simpleCaptcha', function() {
+            //$('#sb').css('visibility','visible');
+            //$('#sbmsg').css('display','none');
+        }).simpleCaptcha({
+            numImages: 4,
+            scriptPath:'/captcha',
+            introText: '<b>Security task:</b> To confirm you are human, please click on the \'<strong class="captchaText"></strong>\' icon'
+        });
+        */
+    });
+</script>
+
+<style>
+    .simpleCaptchaSelected {
+        border: 2px solid blue;
+    }
+    .captchaImage {
+        margin-right:4px;
+        cursor: pointer;
+    }
+    /*      input.error, textarea.error {
+            border:1px solid red;
+          }*/
+    /*      div.error {
+            background:none repeat scroll 0 0 #FBE3E4;
+            border: 2px solid #FBC2C4;
+            color:#8A1F11;
+            padding:2px;
+          }*/
+    .captchaImages {
+        padding-top:5px;
+    }
+    .red { color:red; }
+    #subres {
+        padding:0px 10px 10px 10px;
+        border: 1px solid silver;
+        background-color: white;
+        margin-bottom:20px;
+    }
+</style>
+<?
+if ($this->plugin) {
+    $url = str_replace('javascript', '', htmlspecialchars(strip_tags($this->purifier->purify($this->plugin->home_page_url))));
+    $url = (strstr($url, 'http://') || strstr($url, 'https://')) ? $url : 'http://' . $url;
+    $username = $this->purifier->purify($this->plugin->author_userid);
+    ?>
+    <div class="bg-sky b-bottom f-page-cell">
+        <h1 class="b-none"><span style="color: 2D3F8E;"><?= $this->purifier->purify($this->plugin->plugin_name) ?></span> - plugin detail</h1>
+        <p>
+            <?= $this->purifier->purify($this->plugin->summary) ?>
+        </p>
+        <table class="full-width">
+            <tr>
+                <td class="valign-top" style="width:30%">
+                    <?
+                    if ($this->plugin->image_filename && file_exists($this->config['content']['filesystem_img_path'] . $this->plugin->image_filename)) {
+                        $dim = getimagesize($this->config['content']['filesystem_img_path'] . $this->plugin->image_filename);
+                        echo '<div class="align-center" style="margin-bottom:20px;"><a href="' . $this->config['content']['www_img_path'] . $this->plugin->fullsize_image_filename . '" class="thickbox" title="' . htmlspecialchars($this->purifier->purify($this->plugin->plugin_name)) . '"><img style="margin:auto;" src="' . $this->config['content']['www_img_path'] . $this->plugin->image_filename . '" width="' . $dim[0] . '" height="' . $dim[1] . '" alt="NetBeans Plugin - ' . htmlspecialchars($this->purifier->purify($this->plugin->plugin_name)) . '"/></a></div>';
+                    } else {
+                        echo '<div class="align-center" style="margin-bottom:20px;"><img src="' . $this->baseUrl() . '/plugins/images/thumbnail_placeholder.png" width="80" height="80" alt="n/a"/></div>';
+                    }
+                    ?>
+                    <table id="detail" class="full-width">
+                        <tr>
+                            <td class="innerpadding">Plugin owner:</td>
+                            <td class="bold innerpadding "><?= $username ?>
+                                <?php
+                                if ($this->ssoUser->isAuthenticated()) {
+                                    echo '&nbsp;&nbsp;<span style="font-weight:normal;">[ <a href="mailto:' . $username . '@netbeans.org">' . $username . '@netbeans.org</a> ]</span>';
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="innerpadding">Website:</td>
+                            <td class="bold innerpadding "><a href="<?= $url ?>"><?= htmlspecialchars(strip_tags($this->purifier->purify($this->plugin->home_page_url))) ?></a></td>
+                        </tr>
+                        <tr>
+                            <td class=" innerpadding">Added:</td>
+                            <td class="bold innerpadding "><?= htmlspecialchars(strip_tags($this->plugin->date_added)) ?></td>
+                        </tr>
+                        <!--<tr>
+                            <td class=" innerpadding">Last updated:</td>
+                            <td class="bold innerpadding "><?= htmlspecialchars(strip_tags(($this->plugin->date_last_updated) ? $this->plugin->date_last_updated : '2007-04-01')) ?></td>
+                        </tr>
+                        <tr>
+                            <td class="innerpadding ">NetBeans&nbsp;Versions:</td>
+                            <td class="bold innerpadding "><?= implode(', ', $this->plugin->getNetbeansVersionsAsArray()) ?></td>
+                        </tr>-->
+                        <tr>
+                            <td class=" innerpadding">License:</td>
+                            <td class="bold innerpadding "><?= strip_tags($this->purifier->purify($this->plugin->license_type)) ?></td>
+                        </tr>
+                        <tr>
+                            <td class=" innerpadding">Category:</td>
+                            <td class="bold innerpadding "><?= $this->plugin->Category->displaycategory_name ?></td>
+                        </tr>
+                        <!--<tr>
+                            <td class=" innerpadding">Size:</td>
+                            <td class="bold innerpadding "><?= ($this->plugin->download_size) ? number_format(htmlspecialchars(strip_tags($this->plugin->download_size)) / 1048576, 2) . ' MB' : 'N/A' ?> </td>
+                        </tr>-->
+                        <tr>
+                            <td class=" innerpadding">Downloaded:</td>
+                            <td class="bold innerpadding "><?= number_format($this->plugin->downloads, 0, '.', ',') ?> times</td>
+                        </tr>
+                        <tr>
+                            <td class=" innerpadding">Rating:</td>
+                            <td class="bold innerpadding ">
+                                <div>
+                                    <?= $this->starsSelect('stars', ($this->plugin->average_rating) ? round($this->plugin->average_rating) : 1) ?>
+                                    &nbsp;<span id="rtng"><?= round($this->plugin->average_rating, 2) ?>, by <?= $this->plugin->Ratings->count() ?> users</span>
+                                </div><br style="clear:both"/>
+                                <div id="vmsg" >
+                                    <?
+                                    if ($this->voted) {
+                                        echo 'You already rated: ' . $this->voted;
+                                    }
+                                    ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class=" innerpadding">Plugin Log</h3></td>
+                            <td class=" innerpadding"><a href="" onclick="showLog();return false;">Show log</a>
+                                <?php
+                                echo '<div class="hidden" id="logdiv" title="Plugin Log">';
+                                if ($this->log->count() > 0) {
+                                    echo '<table class="celled">';
+                                    $x = 0;
+                                    foreach ($this->log as $l) {
+                                        $bg = ($x % 2) ? 'background-color:#eeeeee;' : '';
+                                        echo '<tr style="' . $bg . '"><td>' . $l->stamp . '</td><td>' . $l->userid . '</td><td>' . $l->log . '</td></tr>';
+                                        $x++;
+                                    }
+                                    echo '</table>';
+                                } else {
+                                    echo '<p>There is no log for this plugin so far.</p>';
+                                }
+                                echo '</div>';
+                                ?>
+                            </td>
+                        </tr>
+                    </table>
+                    <!--
+                    <center>
+                        <br/>
+                        <a href="<?= $this->baseUrl() ?>/download/plugin/<?= $this->plugin->pluginid ?>" title="Download <?= $this->plugin->plugin_name ?>"><img src="<?= $this->baseUrl() ?>/plugins/images/download-plain.gif" width="100" height="25" alt="Download plugin"/></a>
+                    </center>
+                    -->
+
+                </td>
+                <td style="padding-left:30px;" class="valign-top">
+                    <div class="cont">
+
+                        <h2>Versions available</h2>
+
+                        <?
+                        foreach ($this->plugin->Binaries as $bin) {
+                            //var_dump($bin);
+                            // verification UC icon
+                            $icon=$uc='';
+                            $uctext='This plugin is also available on the NetBeans Plugin Portal Update Center. Use \'Tools > Plugins\' action from the NetBeans IDE main menu for convenient installation of this plugin';
+                            if ($bin->Verification && $bin->Verification->status==1) {
+                                $icon='<img class="tiptip" src="/images/uc.png" title="'.$uctext.'" style="display:inline-block;margin-bottom:-5px;margin-left:5px;"/>';
+                                $uc='<p><b>'.$uctext.'</b></p>';
+                            }
+                            $lis.='<li><a href="#v' . $bin->binary_id . '"><b>NetBeans ' . $bin->Version->version . '</b>'.$icon.'</a></li>';
+                            $divs.='
+                                <div id="v' . $bin->binary_id . '" class="vdiv">
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <a href="' . $this->baseUrl() . '/download/plugin/' . $bin->binary_id . '" title="Download ' . $this->plugin->plugin_name . '"><img src="' . $this->baseUrl() . '/plugins/images/download-plain.gif" width="100" height="25" alt="Download plugin"/></a>
+
+                                        </td>
+                                        <td>
+                                            &nbsp;&nbsp;<b>Download size:</b> ' . (($bin->download_size) ? number_format(htmlspecialchars(strip_tags($bin->download_size)) / 1048576, 2) . ' MB' : 'N/A') . '
+                                        </td>
+                                         <td>
+                                            &nbsp;&nbsp;<b>Last Update:</b> ' . date('Y-m-d', strtotime($bin->updated_on)) . '
+                                        </td>
+                                </table>
+                                '.$uc.'
+                                <br/>
+                                <h3>What\'s new in this version</h3>
+                                 ' . $bin->whats_new . '
+                                     <br/>
+                                  ' . $this->partial("plugin-maintenance-partial.phtml", array('bin' => $bin, 'plugin' => $this->plugin, 'ssoUser' => $this->ssoUser, 'verifable' => $this->verifable, 'log' => $this->log, 'config' => $this->config)) . '
+                                </div>
+                                ';
+                        }
+                        ?>
+                        <div id="vtabs">
+                            <ul>
+                                <?= $lis ?>
+                            </ul>
+                            <?= $divs ?>
+                        </div>
+                        <br/><br/>
+                        <h2>Introduction</h2>
+                        <?= $this->purifier->purify($this->plugin->description) ?>
+
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="f-page-cell">
+        <div style="float:right;margin-left:300px;">
+            <?
+            if ($this->ssoUser->getUsername() != 'guest') {
+                ?>
+                <img src="<?= $this->baseUrl() ?>/plugins/images/add_comment.png" width="161" height="23" alt="Add Comment" style="cursor:pointer" onclick="$('#com').fadeIn();"/>
+                <?
+            } else {
+                echo '<p>[ You have to be <a href="http://netbeans.org/people/login?original_uri=http://plugins.netbeans.org/plugin/' . $this->plugin->pluginid . '">logged in</a> to be able to comment. ]</p>';
+            }
+            ?>
+        </div>
+        <a name="comm"></a>
+        <h1 class="b-none">User Comments</h1>
+
+        <div id="com" class="actionbox hidden">
+            <form action="<?= $this->baseUrl() ?>/comment/plugin/<?= $this->plugin->publicid ?>" id="commentForm" method="post">
+                <table>
+                    <tr>
+                        <td>Title</td>
+                        <td><input type="text" name="title" class="required field" style="width:500px;"/></td>
+                    </tr>
+                    <tr>
+                        <td>Comment</td>
+                        <td><textarea class="required field" name="comment_summary" cols="60" rows="8" style="width:500px;"></textarea><br/><p>HTML markup <b>NOT allowed</b></p></td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            <!--<div id="captcha1" style="text-align:center"></div>-->
+                            <div class="g-recaptcha" data-sitekey="6LfXnh8TAAAAAEU0Ouk5eubwLdUjmtI2ec9XuxT0"></div>
+                            <input type="submit" value="Submit comment"/>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+
+        <?
+        if ($this->plugin->Comments->count() > 0) {
+            $i = 1;
+            foreach ($this->plugin->Comments as $c) {
+                $bg = ($i % 2) ? 'tr-odd' : '';
+                //add edit/delete icons for admin or user who posted
+                if ($this->ssoUser->isAuthenticated() && ($this->plugin->author_userid == $this->ssoUser->getUsername() || $c->userid == $this->ssoUser->getUsername() || in_array($this->ssoUser->getUsername(), explode(',', $this->config['admin']['users'])))) {
+                    $ed = '<a href="" onclick="editComment(' . $c->id . ',' . $this->plugin->publicid . '); return false;"><img src="' . $this->baseUrl() . '/images/icons/comment_edit.png" class="icon" width="16" height="16" alt="edit" title="Edit Comment"></a>';
+                    $del = '<a href="' . $this->baseUrl() . '/comment-delete/cid/' . $c->id . '/pid/' . $this->plugin->publicid . '" onclick="return confirm(\'Really delete this comment?\');"><img src="' . $this->baseUrl() . '/images/icons/delete.png" class="icon" width="16" height="16" alt="delete" title="Delete Comment"></a>';
+                } else {
+                    $ed = $del = '';
+                }
+                echo '
+          <div class="' . $bg . ' b-bottom innerpadding">
+            <div class="float-right comment-admin">' . $ed . ' &nbsp;&nbsp; ' . $del . '</div>
+            <h3>' . htmlspecialchars($this->purifier->purify($c->title)) . '</h3>
+
+              <div class="cmdiv">
+                ' . nl2br(strip_tags($this->purifier->purify($c->comment_summary),'<p><b><ul><li><ol>')) . '
+              </div>
+              <div>
+              <i>Posted by <b><a href="mailto:'.$c->userid.'@netbeans.org">' . $c->userid . '</a></b> on ' . date('M d, Y', strtotime($c->datetime_entered)) . '</i>
+              </div>
+          </div>
+          ';
+                $i++;
+            }
+        } else {
+            echo '<p>There are no comments yet.</p>';
+        }
+        ?>
+    </div>
+    <div id="comm-ed" class="xhidden" title="Edit Comment"></div>
+    <script type="text/javascript">
+        $("#stars").stars({
+            inputType: "select",
+            oneVoteOnly: true,
+    <?= ($this->ssoUser->getUsername() == 'guest' || $this->voted > 0 ) ? 'disabled: true,' : '' ?>
+            cancelShow: false,
+            callback: function(ui, type, value){
+                $.post("<?= $this->baseUrl() ?>/rate/", "plugin=<?= $this->plugin->publicid ?>&rating="+value, function(res){
+                    $('#vmsg').html(res);
+                    // also update total rating div
+                    $.get("<?= $this->baseUrl() ?>/get-rating/plugin/<?= $this->plugin->publicid ?>",null, function(resp){
+                        $('#rtng').html(resp);
+                    });
+                });
+            }
+        });
+
+        $(function(){
+          $(".tiptip").tipTip();
+
+            $("#xcommentForm").validate({
+                errorElement: "div",
+                errorPlacement: function(error, element) {
+                    error.insertBefore(element);
+                },
+                submitHandler: function(form) {
+                    if($('img.simpleCaptchaSelected').length>0) {
+                        form.submit();
+                    } else {
+                        alert('You did not select verification image.');
+                    }
+                }
+            });
+        });
+
+        function editComment(cid, pid) {
+            $.post('<?= $this->baseUrl() ?>/comment-detail',{'cid':cid,'pid':pid},function(res) {
+                $( "#comm-ed" ).html(res);
+                $( "#comm-ed" ).dialog({
+                    'height': 300,
+                    'width':700,
+                    modal: true
+                });
+            });
+
+        }
+    </script>
+
+    <?
+} else {
+    echo ' <div class="f-page-cell"><h1>Error</h1><p>We are sorry, but such plugin does not exist or is not published.</p></div>';
+}
+?>

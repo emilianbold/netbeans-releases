@@ -1,0 +1,379 @@
+<style type="text/css">
+    .DataTables_sort_wrapper { cursor: pointer;}
+</style>
+<script src="<?= $this->baseUrl() ?>/js/jquery.scrollTo-min.js" type="text/javascript"></script>
+<div class="b-bottom">
+    <table  class="full-width">
+        <tr>
+            <td style="width:50%;border-right:1px solid silver;" class="valign-top f-page-cell">
+                <h1 style="font-size:22px;">Welcome to the NetBeans Plugin Portal</h1>
+                <p>
+                    Download, comment, and rate plugins provided by community members and
+                    third-party companies, or post your own contributions!
+                </p>
+                <p>
+                    <a href="<?= $this->baseUrl() ?>/plugin-publish-step1"><img src="<?= $this->baseUrl() ?>/plugins/images/publish_your_own_plugin.png" width="281" height="33" alt="Publish your plugin"/></a>
+                </p>
+                <?= $this->flash() ?>
+            </td>
+            <td class="bg-sky valign-top">
+                <?
+                $star = '<img src="' . $this->baseUrl() . '/plugins/images/crystal-star-yellow.png" width="13" height="13" alt="star"/>';
+                $starBw = '<img src="' . $this->baseUrl() . '/plugins/images/crystal-star-yellow-bw.png" width="13" height="13" alt="star"/>';
+                if ($this->fp) {
+                    //die($this->fp->pluginid);
+                    if (file_exists($this->config['content']['filesystem_img_path'] . $this->fp->image_filename)) {
+                        $dim = getimagesize($this->config['content']['filesystem_img_path'] . $this->fp->image_filename);
+                        $im = '<a href="' . $this->config['content']['www_img_path'] . $this->fp->fullsize_image_filename . '" class="thickbox" title="' . htmlspecialchars($this->purifier->purify($this->fp->plugin_name)) . '"><img src="' . $this->config['content']['www_img_path'] . $this->fp->image_filename . '" width="' . $dim[0] . '" height="' . $dim[1] . '" alt="NetBeans Plugin - ' . htmlspecialchars($this->purifier->purify($this->fp->plugin_name)) . '"/></a>';
+                    } else {
+                        $im = '<img src="' . $this->baseUrl() . '/plugins/images/thumbnail_placeholder.png" width="80" height="80" alt="n/a"/>';
+                    }
+                    if ($this->fp->Ratings->count() > 0) {
+                        $rep = round($this->fp->average_rating);
+                        $ratings = '<div class="">' . str_repeat($star, $rep) . str_repeat($starBw, round(5 - $rep)) . ' [' . round($this->fp->average_rating, 2) . '/5], rated by ' . $this->fp->Ratings->count() . ' users</div>';
+                    }
+                    echo '
+      <div  style="padding:10px">
+      <table class="full-width">
+      <tr>
+        <td colspan="2">
+        <h2 class="b-none">Featured plugin - <span style="color: 2D3F8E;">' . htmlspecialchars(strip_tags($this->purifier->purify($this->fp->plugin_name))) . '</span></h2>
+        </td>
+      </tr>
+        <tr>
+          <td class="valign-top">
+              <p>' . $ratings . '</p>
+              <p style="margin-right:10px;">' . nl2br($this->stringNiceChop(htmlspecialchars($this->purifier->purify($this->fp->summary)), 300)) . '<br/>
+              <a href="' . $this->baseUrl() . '/plugin/' . $this->fp->publicid . '/' . Doctrine_Inflector::urlize($this->fp->plugin_name) . '"> <img src="' . $this->baseUrl() . '/images/icons/bullet_go.png" width="16" height="16" class="icon"/><b>Learn more</b></a></p>
+          </td>
+          <td class="align-right">
+            ' . $im . '
+          </td>
+        </tr>
+      </table>
+      </div>
+      ';
+                } else {
+                    echo '<!-- <p>There is no featured plugin available at this moment.</p> -->';
+                }
+                ?>
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+<div class="b-bottom bg-bege">
+    <table class="full-width colapse">
+        <tr>
+            <td class="b-right valign-top" style="width:33%;padding:10px;">
+                <h2 class="b-none">Most downloaded</h2>
+                <?
+                if ($this->mostDownloaded) {
+                    foreach ($this->mostDownloaded as $p) {
+                        echo '<div class="md">
+                    <img src="' . $this->baseUrl() . '/images/icons/bullet_go.png" width="16" height="16" class="icon float-left"/>
+                    <div class="mdi"><a href="' . $this->baseUrl() . '/plugin/' . $p->publicid . '/' . Doctrine_Inflector::urlize($p->plugin_name) . '">' . htmlspecialchars(strip_tags($this->purifier->purify($p->plugin_name))) . '</a>
+                    <div class="float-right">[' . number_format($p->downloads, 0, '.', ',') . ']</div>
+                    </div>
+                  </div>';
+                    }
+                }
+                ?>
+                <div class="align-right"><img src="<?= $this->baseUrl() ?>/images/icons/bullet_go.png" width="16" height="16" class="icon"/>
+                    <a href="#" onclick="sortTable(7,'desc');return false;"><b>Show more</b></a></div>
+            </td>
+            <td class="b-right valign-top" style="width:33%;padding:10px;">
+                <h2 class="b-none">Top rated</h2>
+                <?
+                if ($this->bestRated) {
+                    foreach ($this->bestRated as $p) {
+                        echo '<div class="md">
+                    <img src="' . $this->baseUrl() . '/images/icons/bullet_go.png" width="16" height="16" class="icon float-left"/>
+                    <div class="mdi"><a href="' . $this->baseUrl() . '/plugin/' . $p->publicid . '/' . Doctrine_Inflector::urlize($p->plugin_name) . '">' . htmlspecialchars(strip_tags($this->purifier->purify($p->plugin_name))) . '</a>
+                    <div class="float-right">' . str_repeat($star, round($p->average_rating)) . ' [' . round($p->average_rating, 2) . '/5]</div></div>
+                  </div>';
+                    }
+                }
+                ?>
+                <div class="align-right"><img src="<?= $this->baseUrl() ?>/images/icons/bullet_go.png" width="16" height="16" class="icon"/>
+                    <a href="#" onclick="sortTable(6,'desc');return false;"><b>Show more</b></a></div>
+            </td>
+            <td class="valign-top" style="width:33%;padding:10px;">
+                <h2 class="b-none">Newly added or updated</h2>
+                <?
+                if ($this->fresh) {
+                    foreach ($this->fresh as $p) {
+                        echo '<div class="md">
+                    <img src="' . $this->baseUrl() . '/images/icons/bullet_go.png" width="16" height="16" class="icon float-left"/>
+                    <div class="mdi"><a href="' . $this->baseUrl() . '/plugin/' . $p->publicid . '/' . Doctrine_Inflector::urlize($p->plugin_name) . '">' . htmlspecialchars(strip_tags($this->purifier->purify($p->plugin_name))) . '</a>
+                        <div class="float-right">' . $p->date_last_updated . '</div></div>
+                  </div>';
+                    }
+                }
+                ?>
+                <div class="align-right"><img src="<?= $this->baseUrl() ?>/images/icons/bullet_go.png" width="16" height="16" class="icon"/>
+                    <a href="#" onclick="sortTable(5,'desc');return false;"><b>Show more</b></a></div>
+            </td>
+        </tr>
+    </table>
+</div>
+<?php
+if (!$this->cache->start('frontpage')) {
+    ?>
+    <div class="f-page-cell clear">
+        <h1>Plugins catalogue</h1>
+        <div id="filters" class="hidden">
+            <p>Live Filters - select or type to filter the catalogue, filters are applied all together. There is also multi column sorting
+                activated by 'shift' clicking column headers.</p>
+            <p id="fltr">
+                <b>Name:</b>
+                <input type="text" name="name" id="name" class="field" style="width:120px;" >
+                &nbsp;
+                <b>Category:</b>
+                <select name="category" id="category"  size="1" >
+                    <option value="---">Any</option>
+                    <?
+                    if ($this->categories) {
+                        foreach ($this->categories as $c) {
+                            echo '<option value="' . $c['displaycategory_name'] . '">' . $c['displaycategory_name'] . '</option>';
+                        }
+                    }
+                    ?>
+                </select>
+                &nbsp;
+                <b>NetBeans version:</b>
+                <select name="version" id="version"size="1">
+                    <option value="---">Any</option>
+                    <?
+                    if ($this->versions) {
+                        foreach ($this->versions as $v) {
+                            echo '<option value="' . $v['version'] . '">' . $v['version'] . '</option>';
+                        }
+                    }
+                    ?>
+                </select>
+
+                &nbsp;<b>Description:</b>
+                <input type="text" name="desc" id="desc" class="field" style="width:120px;" >
+                &nbsp;<b>Owner:</b>
+                <input type="text" name="owner" id="owner" class="field" style="width:120px;" >
+                 &nbsp;<b>Verified for:</b>
+                <select name="verif" id="verif" size="1">
+                    <option value="---">Any</option>
+                    <?
+                    if ($this->versions) {
+                        foreach ($this->versions as $v) {
+                            echo '<option value="' . $v['version'] . '">' . $v['version'] . '</option>';
+                        }
+                    }
+                    ?>
+                </select>
+            </p>
+        </div>
+        <div style="position:relative;width:100%;">
+            <div id="spin" class="align-center"><img src="<?= $this->config['content']['resource_path'] ?>/images_www/v6/spinner.gif" width="24" height="24"/><br/>Catalogue is loading...</div>
+            <table id="katal" style="display:none;width:100%;">
+                <thead>
+                    <tr>
+                        <th title="Click to sort, shift click to activate multi column sorting">Plugin name</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">Category</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">NetBeans versions</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">Description</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">Owner</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">Last updated</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">Avg. Rating</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">Downloaded</th>
+                        <th title="Click to sort, shift click to activate multi column sorting">On UC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?
+                    unset($rep);
+                    if ($this->plugins) {
+                        foreach ($this->plugins as $p) {
+                            //die(var_dump($p));
+                            $vers = array();
+                            if (!empty($p['Binaries'])) {
+                                foreach ($p['Binaries'] as $b) {
+                                    $vers[] = $b['Version']['version'];
+                                }
+                            } else {
+                                $vers[] = '';
+                            }
+                            $cat = ($p['Category']['displaycategory_name']) ? $p['Category']['displaycategory_name'] : '';
+                            $cat .= ($p['Category2']['displaycategory_name']) ? ', ' . $p['Category2']['displaycategory_name'] : '';
+                            $cat .= ($p['Category3']['displaycategory_name']) ? ', ' . $p['Category3']['displaycategory_name'] : '';
+                            $rep = ($p['average_rating']) ? round($p['average_rating'], 2) : 1;
+                            $p['date_last_updated'] = ($p['date_last_updated']) ? $p['date_last_updated'] : '2007-04-01';
+                            $verif = '';
+                            $hasVerifications=array();
+                            $icon='';
+                            if (count($p['Verifications']) > 0) {
+                                //die(var_dump($p));
+                                foreach ($p['Verifications'] as $v) {
+                                    if ($v['status'] == '1') {
+                                        $hasVerifications[] = $v['version'];
+                                        $icon='<img class="tiptip" src="/images/uc.png" title="This plugin is also available on the NetBeans Plugin Portal Update Center. Use \'Tools > Plugins\' action from the NetBeans IDE main menu for convenient installation of this plugin" style="display:inline-block;margin-bottom:-5px;margin-left:5px;"/>';
+                                    }
+                                }
+                                $verif=implode(', ',$hasVerifications);
+                            }
+                                echo '
+              <tr>
+                <td><img src="' . $this->baseUrl() . '/images/icons/bullet_go.png" width="16" height="16" class="icon float-left"/>
+                    <div class="mdi"> <a href="' . $this->baseUrl() . '/plugin/' . $p['publicid'] . '/' . Doctrine_Inflector::urlize($p['plugin_name']) . '">' . htmlspecialchars(strip_tags($this->purifier->purify($p['plugin_name']))) . '</a></div></td>
+                <td>' . $cat . '</td>
+                <td>' . implode(', ', $vers) . '</td>
+                <td>' . $this->stringNiceChop(strip_tags($this->purifier->purify($p['summary'])), 300) . '</td>
+                <td>' . htmlspecialchars(strip_tags($p['author_userid'])) . '</td>
+                <td>' . htmlspecialchars(strip_tags($p['date_last_updated'])) . '</td>
+                <td><span class="hidden">' . $rep . '</span>' . str_repeat($star, $rep) . str_repeat($starBw, round(5 - $rep)) . ' [' . round($p['average_rating'], 2) . '/5]</td>
+                <td>' . $p['downloads'] . '</td>
+                <td>'.$icon.'<br/>'.$verif.'</td>
+              </tr>
+             ';
+                                unset($rep);
+                            }
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <?php
+        $this->cache->end();
+    }
+    ?>
+
+
+<script type="text/javascript">
+    var delay = (function(){
+        var timer = 0;
+        return function(callback, ms){
+            clearTimeout (timer);
+            timer = setTimeout(callback, ms);
+        };
+    })();
+
+    function sortTable(col,ord) {
+        oTable.fnSort([[col,ord]]);
+        $.scrollTo($('#fltr'));
+    }
+
+    function setupFilterFromUrl() {
+        var vers=jQuery.url.param('version')? jQuery.url.param('version') : null;
+        var cat=jQuery.url.param('categoryname')? jQuery.url.param('categoryname') : null;
+        var name=jQuery.url.param('name')? jQuery.url.param('name') : null;
+        var desc=jQuery.url.param('description')? jQuery.url.param('description') : null;
+        var owner=jQuery.url.param('author')? jQuery.url.param('author') : null;
+        var verif=jQuery.url.param('verif')? jQuery.url.param('verif') : null;
+        if(vers) $('#version').val(vers);
+        if(cat) $('#category').val(cat);
+        if(name) $('#name').val(name);
+        if(desc) $('#desc').val(desc);
+        if(owner) $('#owner').val(owner);
+        if(verif) $('#verif').val(verif);
+    }
+
+    function filterPlugins() {
+        var vers=$('#version').val();
+        var cat=$('#category').val();
+        var name=$('#name').val();
+        var desc=$('#desc').val();
+        var owner=$('#owner').val();
+        var verif=$('#verif').val();
+
+        if(name.length>0) {
+            oTable.fnFilter(name,0);
+        } else {
+            oTable.fnFilter('.*',0,true);
+        }
+        if(desc.length>0) {
+            oTable.fnFilter(desc,3);
+        } else {
+            oTable.fnFilter('.*',3,true);
+        }
+        if(owner.length>0) {
+            oTable.fnFilter(owner,4);
+        } else {
+            oTable.fnFilter('.*',4,true);
+        }
+        if(cat!="---") {
+            oTable.fnFilter(cat,1);
+        } else {
+            oTable.fnFilter('.*',1,true);
+        }
+        if(vers!="---") {
+            oTable.fnFilter(vers,2);
+        } else {
+            oTable.fnFilter('.*',2,true);
+        }
+        if(verif!="---") {
+            oTable.fnFilter(verif,8);
+        } else {
+            oTable.fnFilter('.*',8,true);
+        }
+
+    }
+
+    $(function() {
+
+        $(".tiptip").tipTip();
+
+        jQuery.fn.dataTableExt.oPagination.iFullNumbersShowPages = 15;
+        oTable = $('#katal').dataTable({
+            "bSort": true,
+            "bAutoWidth": true,
+            "bFilter": true,
+            "iDisplayLength": 10,
+            //"bStateSave": true,
+            //"sDom": '<"top"lifp>t<"bottom"ilp>',
+            "bJQueryUI": true,
+            "bLengthChange": true,
+            "iFullNumbersShowPages": 15,
+            "sPaginationType": "full_numbers",
+            "aLengthMenu": [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+            "aaSorting": [[ 1, "desc" ]],
+            "aoColumns": [
+                {"bSearchable":true,"sWidth":"230px"},
+                {"bSearchable":true,"sClass": "align-center","sWidth":"130px"},
+                {"sWidth":"130px", "bSearchable":true,"sClass": "align-center"},
+                {"bSearchable": false,'sWidth':'30%'},
+                {"bSearchable": false,"sWidth":"70px","sClass": "align-center"},
+                {"bSearchable": false,"sWidth":"90px","sClass": "align-center"},
+                {"bSearchable": false,"sWidth":"90px","sClass": "align-center"},
+                {"bSearchable": false,"sWidth":"90px","sClass": "align-center"},
+                {"bSearchable": true,"sWidth":"80px","sClass": "align-center"}
+            ]
+        });
+        oTable.css('visibility','visible');
+        oTable.css('display','block');
+        oTable.fnAdjustColumnSizing();
+        $('#spin').hide();
+        $('#filters').show();
+
+        $('#version').bind('change', function(){filterPlugins();});
+        $('#verif').bind('change', function(){filterPlugins();});
+        $('#category').bind('change', function(){filterPlugins();});
+        $('#name').bind('keyup', function(){
+            delay(function(){
+                filterPlugins();
+            },150);
+        });
+        $('#desc').bind('keyup', function(){
+            delay(function(){
+                filterPlugins();
+            },150);
+        });
+        $('#owner').bind('keyup', function(){
+            delay(function(){
+                filterPlugins();
+            },150);
+        });
+
+        setupFilterFromUrl();
+        filterPlugins();
+    })
+</script>

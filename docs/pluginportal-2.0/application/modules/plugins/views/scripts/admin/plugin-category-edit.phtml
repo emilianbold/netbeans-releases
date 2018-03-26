@@ -1,0 +1,18 @@
+<h1><?= $this->heading ?></h1>
+<?= $this->message ?>
+<form method="post" action="<?= $this->baseUrl() ?>/admin/plugin-category-edit">
+  <input type="hidden" name="pc[id]" value="<?= $this->pc->id ?>">
+  <table>
+    <tr>
+      <td>
+        Plugin Category name
+      </td>
+      <td>
+        <input type="text" name="pc[displaycategory_name]" class="field-longer" value="<?= $this->pc->displaycategory_name ?>"/>
+      </td>
+      <td>
+        <input type="submit" value="Submit"/>
+      </td>
+    </tr>
+  </table>
+</form>

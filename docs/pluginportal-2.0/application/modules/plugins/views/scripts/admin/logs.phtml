@@ -1,0 +1,54 @@
+<h1>Log Viewer</h1>
+<table id="katal" class="collapse" style="width:100%;">
+  <thead>
+    <tr>
+      <th style="width:70px;">Id</th>
+      <th style="width:150px;">Date</th>
+      <th style="width:400px;">Plugin affected</th>
+      <th style="width:130px;">Performed by</th>
+      <th>Log entry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="5" class="dataTables_empty">Loading data from server</td>
+    </tr>
+
+  </tbody>  
+</table>
+<script type="text/javascript">
+  $(document).ready(function() {
+    jQuery.fn.dataTableExt.oPagination.iFullNumbersShowPages=20;
+
+    dt=$('#katal').dataTable( {
+      "bAutoWidth": true,
+      "bFilter": true,
+      "bJQueryUI": true,
+      "bLengthChange": true,
+      "iFullNumbersShowPages": 15,
+      "iDisplayLength": 30,
+      "sPaginationType": "full_numbers",
+      "bProcessing": true,
+      "bServerSide": true,
+      "sAjaxSource": "<?= $this->baseUrl() ?>/admin/ajax-logs"
+    } ).fnSetFilteringDelay(2000);
+    ;
+  } );
+</script>
+<style>
+  #katal_filter {
+    display:block;
+    float:left;
+    margin:3px;
+  }
+  #katal_length {
+    float:right;
+  }
+  tr.even {
+    background-color: #eeeeee;
+  }
+  #katal_processing {
+    margin:5px;
+    font-style: italic;
+  }
+</style>

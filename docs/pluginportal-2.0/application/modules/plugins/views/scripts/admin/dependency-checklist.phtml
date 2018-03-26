@@ -1,0 +1,15 @@
+<h1>List of plugins in 2013 with hard dependencies</h1>
+<?php
+if(!empty($this->dep)) {
+    echo '<table  class="celled">';
+    foreach($this->dep as $m) {
+        echo '<tr>
+            <td><b>' .$m['binary_id'] . '</b></td>
+            <td><a href="/plugin/'.$m['Plugin']['publicid'].'" target="_blank">'.$m['Plugin']['plugin_name'].'</a></td>
+            <td>'.$m['nbm_filename'].'</td>
+            <td>'.$m['updated_on'].'</td>
+            </tr>';
+    }
+    echo '</table>';
+}
+?>

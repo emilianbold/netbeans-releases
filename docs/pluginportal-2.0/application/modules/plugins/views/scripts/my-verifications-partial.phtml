@@ -1,0 +1,61 @@
+<?
+
+$items = $this->pager->execute();
+
+if ($items->count() > 0) {
+    $hdr = '<table class="" id="katal"><tr class="tblheader">
+      <td>Plugin name</td><td>NetBeans version</td><td>Request date</td><td>Go</td><td>No Go</td><td>Undecided</td><td>Your decision</td></tr>';
+    $i = 0;
+    foreach ($items as $r) {
+        $bg = ($i % 2) ? 'background-color:#eeeeee;' : '';
+        $gonogos = $r->Verification->getGoNoGosBy();
+        $labels = array('1' => 'Go', '0' => 'Undecided', '-1' => 'No Go');
+        $vote = '';
+        foreach ($labels as $k => $l) {
+            $sel = ($k == $r->vote) ? 'checked="checked"' : '';
+            $vote.='<td><input type="radio" name="value" value="' . $k . '" ' . $sel . '/><br/><b>' . $l . '</b></td>';
+        }
+        $row = ($r->Verification->status == 0) ? 'undecided' : 'voted';
+        $body .= '<tr style="' . $bg . '">
+        <td><a href="' . $this->baseUrl() . '/plugin/' . $r->Verification->Plugin->publicid . '/?show=true"><b>' . $this->purifier->purify($r->Verification->Plugin->plugin_name) . '</b></a><br/>' . $r->Verification->note . '<br/>(verification id: '.$r->Verification->id.')</td>
+        <td class="align-center">' . $r->Verification->version . '</td>
+        <td>' . $r->requestdate . '</td>
+        <td class="align-center bold">' . implode('<br/>', $gonogos['gos']) . '</td>
+        <td class="align-center bold">' . implode('<br/>', $gonogos['nogos']) . '</td>
+        <td class="align-center bold">' . implode('<br/>', $gonogos['notvoted']) . '</td>
+        <td>
+          <form method="post">
+          <input type="hidden" name="requestId" value="' . $r->id . '"/>
+          <table class="b-none align-center">
+            <tr>
+              ' . $vote . '
+            </tr>
+            <td colspan="3" class="align-center" style="border:none;">
+              Comment<br/>
+              <textarea name="comment" rows="2" cols="30">' . nl2br(htmlspecialchars(strip_tags($r->comment))) . '</textarea>              
+              <br/><br/><input type="image" src="' . $this->baseUrl() . '/plugins/images/vote.png"/>
+            </td>
+            </tr>
+          </table>
+          </form>
+        </td>
+        </tr>
+        ';
+        $i++;
+    }
+    $ftr = '</table>';
+    $pagerLayout = new DoctrineCustom_PagerLayoutWithArrows(
+                    $this->pager,
+                    new Doctrine_Pager_Range_Sliding(array('chunk' => 10)),
+                    $this->baseUrl().'/my-verifications/'.$this->pageParam.'/{%page_number}/#'.$this->pageParam
+    );
+    $pagerLayout->setTemplate('<li><a href="{%url}">{%page}</a></li>');
+    $pagerLayout->setSelectedTemplate('<li class="selected">{%page}</li>');
+    echo '<div class="pgs"><ul class="pagination">';
+    $pagerLayout->display();
+    echo '</ul></div><a name="'.$this->pageParam.'"></a>';
+    echo $hdr . $body . $ftr;
+} else {
+    echo '<p>You do not have any verification in this group.';
+}
+?>

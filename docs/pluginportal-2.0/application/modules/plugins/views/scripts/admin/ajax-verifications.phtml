@@ -1,0 +1,20 @@
+<?php
+ if($this->verifications) {
+     echo ' <select name="vid" id="vid">';
+     foreach($this->verifications as $v) {
+         switch ($v->status) {
+             case -1:
+                 $s='NoGo';
+                 break;
+             case 1:
+                 $s='Go';
+                 break;
+             default:
+                 $s='Undecided';
+                 break;
+         }
+         echo '<option value="'.$v->id.'">'.$v->version.' - '.$s.' </option>';
+     }
+     echo '</select>';
+ }
+?>

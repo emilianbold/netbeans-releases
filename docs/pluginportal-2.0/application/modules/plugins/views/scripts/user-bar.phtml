@@ -1,0 +1,23 @@
+<div id="navig-breadcrumbs" style="margin:0px;">
+  <a href="http://netbeans.org/index.html">HOME</a>  / <a href="<?= ($this->baseUrl())? $this->baseUrl() : '/' ?>">Plugin Portal</a>
+  <div id="login">
+    <img src="<?= $this->baseUrl() ?>/images/icons/status_online.png" width="16" height="16" class="icon"/>
+    <?
+    if (NbSsoUser::getInstance()->isAuthenticated()) {
+      echo 'Logged in as <b>' . NbSsoUser::getInstance()->getUsername() . '</b> |
+                      <img src="' . $this->baseUrl() . '/images/icons/door_out.png" width="16" height="16" class="icon" />
+                          <a href="'.$this->baseUrl().'/logout">Logout</a>';
+      echo ' | <img src="' . $this->baseUrl() . '/images/icons/application_view_tile.png" width="16" height="16" class="icon" />  <a href="' . $this->baseUrl() . '/my-plugins">My Plugins</a>';
+      echo ' | <img src="' . $this->baseUrl() . '/images/icons/plugin_add.png" width="16" height="16" class="icon" />  <a href="' . $this->baseUrl() . '/plugin-publish-step1">Add Plugin</a>';
+      if(NbSsoUser::getInstance()->isAuthenticated() && NbSsoUser::getInstance()->isVerifier()) {
+        echo ' | <img src="' . $this->baseUrl() . '/images/icons/flag_green.png" width="16" height="16" class="icon" />  <a href="' . $this->baseUrl() . '/my-verifications">My Verifications</a>';
+      }
+      if (in_array(NbSsoUser::getInstance()->getUsername(), explode(',', $this->config['admin']['users']))) {
+        echo ' | <img src="' . $this->baseUrl() . '/images/bones.png" width="16" height="16" class="icon" />  <a href="' . $this->baseUrl() . '/admin/index">PP Administration</a>';
+      }
+    } else {
+      echo 'Not logged in | <a href="http://netbeans.org/people/login?original_uri=http://plugins.netbeans.org"><b>Log in</b></a> | <a href="https://netbeans.org/people/new"><b>Register</b></a>';
+    }
+    ?>
+  </div>
+</div>

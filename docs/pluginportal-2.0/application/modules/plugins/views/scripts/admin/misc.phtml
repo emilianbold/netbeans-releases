@@ -1,0 +1,172 @@
+<script src="<?= $this->baseUrl() ?>/js/jquery-ui.min.js" type="text/javascript"></script>
+<h1>Misc Admin Stuff</h1>
+<?= $this->message ?>
+<h2>Force Regenerate UC</h2>
+UC version:
+<?= $this->selectFromObject($this->vers, 'version', 'version', $selectedValue = 0, $selectName = 'version') ?> &nbsp;
+<input type="submit" value="Generate" id="frcgn"/>
+<div id="dialog" class="hidden">
+
+</div>
+<br/><br/>
+
+<h2>Force Regenerate NON-verified UC</h2>
+UC version:
+<?= $this->selectFromObject($this->vers, 'version', 'id', $selectedValue = 0, $selectName = 'version2') ?> &nbsp;
+<input type="submit" value="Generate" id="frcgexp"/>
+<div id="dialog2" class="hidden">
+
+</div>
+<br/><br/>
+<h2>Publishing stats</h2>
+<table>
+    <tr>
+        <td class="valign-top">
+            <h3>Plugins published</h3>
+            <?
+            if (!empty($this->publishingStats)) {
+                foreach ($this->publishingStats as $month) {
+                    echo $month['mesic'] . ' : ' . $month['publikovano'] . '<br/>';
+                }
+            }
+            ?>
+        </td>
+        <td class="valign-top" style="padding-left:30px;">
+             <h3>Verifications requested</h3>
+             <?
+            if (!empty($this->verificationStats)) {
+                foreach ($this->verificationStats as $month) {
+                    echo $month['mesic'] . ' : ' . $month['verif'] . '<br/>';
+                }
+            }
+            ?>
+        </td>
+    </tr>
+</table>
+<br/>
+<br/>
+<h2>Master Verification Vote</h2>
+<p>
+    Here you can turn over the results of the verification process.</p>
+<p>
+    This will directly set the
+    verification result to Go/NoGo no matter what people voted. It does not delete casted votes, it
+    just bypasses the regular procedure and sets the result right away.
+</p>
+<br>
+Select Plugin  <input id="plugins2"  class="field-longer"/> <span id="verif"></span>
+<span  class="hidden"> Change to <select name="vote" id="vt">
+        <option value="1">GO</option>
+        <option value="-1">NoGO</option>
+        <option value="0">Undecided</option>
+    </select>
+</span>
+<input type="submit" value="Vote" id="sub" class="hidden"/>
+<span class="bold green" id="resp"></span>
+<br/><br/>
+<h2>List of plugins on UCs with licenses</h2>
+<a href="/license-list">See it here</a>
+<br/><br/>
+<h2>Binary Integrity Check</h2>
+<a href="/admin/binary-integrity-check">See the list of binaries with missing files!</a>
+<br/><br/>
+<h2>Plugin dependency on build number check</h2>
+<a href="/admin/dependency-checklist">See the list of binaries with hard dependencies on build number</a>
+<br/><br/>
+<h2>Remove unused historic binaries</h2>
+<a href="/admin/free-space">Remove unused historic binaries and keep only current plus one historic version, dump all older</a>. Note that this
+does not remove anything now, only does report of how much space can be freed (visible at the bottom of the page).
+<br/><br/>
+<h2><a name="notify"></a>New NetBeans Version coming Notification email</h2>
+<p>Send notificatin email to plugin owners which:
+1) were updated in the previous 6 months;
+2) belong to the Top 10 of the most downloaded plugins;
+3) belong to the Top 10 of the highest ranked plugins;
+<br/>
+<form method="post" action="/admin/notify-owners">
+    new version: <input type="text" class="field-short" name="version"/> will be replacing [VERSION] pattern in subject and  body below<br/><br/>
+    from: <input type="text" class="field-short" name="from" placeholder="jiri.kovalsky@oracle.com" style="width:170px;"/> will be sent from this email<br/><br/>
+    subject: <input type="text" class="field-longer" value="Does your [PLUGIN] plugin works with NetBeans [VERSION]? " name="subject"/> <br/><br/>
+    <textarea cols="80" rows="10" name="mail">Hello [OWNER],
+
+as you might know we are finalizing stabilization of new NetBeans IDE [VERSION] release. Since your [PLUGIN] plugin belongs to the well established and popular NetBeans plugins we would like to suggest that you update it to work with new [VERSION] version and share your plugin with the community again.
+
+If you decide to keep your plugin relevant with NetBeans IDE [VERSION], first make sure it works seamlessly with the latest [VERSION] Beta or development build. Then please login to the Plugin Portal, go to My Plugins page [1], find the [PLUGIN] plugin entry and click "Add binary". Then check [VERSION] version as "Supported NetBeans Versions", browse to the new plugin binary, possibly describe changes in it and finally push "Save Plugin" button.
+
+[1] http://plugins.netbeans.org/my-plugins
+
+If you have any questions regarding this matter, don't hesitate to contact me.
+
+Thanks for your cooperation!
+--
+Jiri Kovalsky
+NetBeans Community Manager
+http://www.netbeans.org
+    </textarea><br/>
+    [OWNER], [PLUGIN] patterns will be replaced by appropriate values per plugin
+    <br/>
+    <br/>
+    <input type="submit" value="Send it"/> (it will come to <?=count($this->owners)?> owners)
+</form>
+</p>
+<script type="text/javascript">
+    $(function() {
+        $( "#plugins2" ).autocomplete({
+            source: "<?= $this->baseUrl() ?>/admin/plugin-suggest/",
+            minLength: 3,
+            delay: 500,
+            select: function( event, ui ) {
+                // load verifications for selected plugin
+                $.get("<?= $this->baseUrl() ?>/admin/ajax-verifications?vid="+ui.item.id,null, function(resp) {
+                    $('#verif').html(' Select verification to change '+resp);
+                    $('#resp').html('');
+                    $('.hidden').removeClass('hidden');
+                });
+
+            }
+        });
+
+        $('#sub').click(function() {
+            $('#resp').html(' <img src="<?= $this->config['content']['resource_path'] ?>/images_www/v6/spinner.gif" width="24" height="24"> ');
+            $.post("<?=$this->baseUrl()?>/admin/master-vote/",{'vote':$('#vt').val(),'vid':$('#vid').val()},function(res) {
+                $('#resp').html(res);
+            });
+        });
+
+        $( "#plugins" ).autocomplete({
+            source: "<?= $this->baseUrl() ?>/admin/featured-suggest/",
+            minLength: 3,
+            delay: 500,
+            select: function( event, ui ) {
+                // save it
+                $('#fpid').val(ui.item.id);
+                $('#fplbl').val(ui.item.label);
+
+            }
+        });
+
+        $('#fpsave').click(function(){
+            $.post("<?= $this->baseUrl() ?>/admin/misc", {'featuredplugin':$('#fpid').val()}, function(){
+                $('#note').html('New value saved');
+                $('#pl').html($('#fplbl').val());
+            });
+        });
+
+        $('#frcgn').click(function() {
+            $('#dialog').html('<div class="align-center"><br/><br/><img src="<?= $this->config['content']['resource_path'] ?>/images_www/v6/spinner.gif" width="24" height="24"/><br/><br/>Processing...</div>');
+            var version=$('#version').val();
+            $( "#dialog" ).dialog({width:800,height:500});
+            $.post("<?= $this->baseUrl() ?>/admin/generate-catalogue2", {'version':version}, function(res){
+                $('#dialog').html(res);
+            });
+        })
+        $('#frcgexp').click(function() {
+            $('#dialog2').html('<div class="align-center"><br/><br/><img src="<?= $this->config['content']['resource_path'] ?>/images_www/v6/spinner.gif" width="24" height="24"/><br/><br/>Processing...</div>');
+            var version=$('#version2').val();
+            $( "#dialog2" ).dialog({width:800,height:500});
+            $.post("<?= $this->baseUrl() ?>/admin/generate-experimental-catalogue2", {'version':version}, function(res){
+                $('#dialog2').html(res);
+            });
+        })
+    });
+</script>

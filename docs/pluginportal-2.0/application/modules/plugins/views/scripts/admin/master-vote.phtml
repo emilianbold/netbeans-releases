@@ -1,0 +1,46 @@
+<script src="<?= $this->baseUrl() ?>/js/jquery-ui.min.js" type="text/javascript"></script>
+<h1>Master Verification Vote</h1>
+<p>
+    Here you can turn over the results of the verification process.</p>
+<p>
+    This will directly set the 
+    verification result to Go/NoGo no matter what people voted. It does not delete casted votes, it 
+    just bypasses the regular procedure and sets the result right away.
+</p>
+<br>
+Select Plugin  <input id="plugins"  class="field-longer"/> <span id="verif"></span> 
+<span  class="hidden"> Change to <select name="vote" id="vt">
+        <option value="1">GO</option>
+        <option value="-1">NoGO</option>
+        <option value="0">Undecided</option>
+    </select>
+</span>
+<input type="submit" value="Vote" id="sub" class="hidden"/>
+<span class="bold green" id="resp"></span>
+
+
+<script type="text/javascript">
+    $(function() {
+        $( "#plugins" ).autocomplete({
+            source: "<?= $this->baseUrl ?>/admin/plugin-suggest/",
+            minLength: 3,
+            delay: 500,
+            select: function( event, ui ) {                      
+                // load verifications for selected plugin
+                $.get("<?= $this->baseUrl ?>/admin/ajax-verifications?vid="+ui.item.id,null, function(resp) {
+                    $('#verif').html(' Select verification to change '+resp);
+                    $('#resp').html('');
+                    $('.hidden').removeClass('hidden');
+                });
+                    
+            }
+        });
+        
+        $('#sub').click(function() {
+            $('#resp').html(' <img src="<?= $this->config['content']['resource_path'] ?>/images_www/v6/spinner.gif" width="24" height="24"> ');
+            $.post("<?=$this->baseUrl?>/admin/master-vote/",{'vote':$('#vt').val(),'vid':$('#vid').val()},function(res) {
+                $('#resp').html(res);
+            });
+        });
+    });
+</script>

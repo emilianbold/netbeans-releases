@@ -1,0 +1,26 @@
+<h1>Plugin Categories</h1>
+<?= $this->message ?>
+<p>
+  <img src="<?= $this->baseUrl() ?>/images/icons/add.png" class="icon" width="16" height="16" title="Add" alt="Add"/>
+  <a href="<?= $this->baseUrl() ?>/admin/plugin-category-edit">Add category</a>
+</p>
+<?
+if ($this->pc->count() > 0) {
+  echo '<table class="celled">';
+  foreach ($this->pc as $c) {
+    echo '
+          <tr>
+            <td>' . $c->displaycategory_name . '</td>
+            <td>
+              <a href="' . $this->baseUrl() . '/admin/plugin-category-delete/id/' . $c->id . '"><img src="' . $this->baseUrl() . '/images/icons/delete.png" class="icon" width="16" height="16" title="Delete" alt="Delete" onclick="return confirm(\'Really delete?\');"/></a>
+                &nbsp;
+              <a href="' . $this->baseUrl() . '/admin/plugin-category-edit/id/' . $c->id . '"><img src="' . $this->baseUrl() . '/images/icons/page_edit.png" class="icon" width="16" height="16" title="Edit" alt="Edit"/></a>
+            </td>
+          </tr>
+        ';
+  }
+  echo '</table>';
+} else {
+  echo '<p>There are no Plugin Categories yet.</p>';
+}
+?>

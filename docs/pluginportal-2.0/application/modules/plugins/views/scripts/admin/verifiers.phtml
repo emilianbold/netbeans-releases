@@ -1,0 +1,27 @@
+<h1>Plugin Verifiers</h1>
+<?= $this->message ?>
+<p>
+ <form action="<?=$this->baseUrl()?>/admin/verifier-add" method="post">
+   <img src="<?= $this->baseUrl() ?>/images/icons/add.png" class="icon" width="16" height="16" title="Add" alt="Add"/>
+   Add Verifier <input type="text" name="userid" class="field"/>
+   <input type="submit" value="Submit"/>
+ </form>
+</p>
+<?
+if ($this->ver->count() > 0) {
+  echo '<table class="celled">';
+  foreach ($this->ver as $c) {
+    echo '
+          <tr>
+            <td>' . $c->userid . '</td>
+            <td>
+              <a href="' . $this->baseUrl() . '/admin/verifier-delete/id/' . $c->id . '"><img src="' . $this->baseUrl() . '/images/icons/delete.png" class="icon" width="16" height="16" title="Delete" alt="Delete" onclick="return confirm(\'Really delete?\');"/></a>
+            </td>
+          </tr>
+        ';
+  }
+  echo '</table>';
+} else {
+  echo '<p>There are no Plugin Categories yet.</p>';
+}
+?>

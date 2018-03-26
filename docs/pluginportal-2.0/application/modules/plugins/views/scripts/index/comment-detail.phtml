@@ -1,0 +1,19 @@
+<form action="<?= $this->baseUrl() ?>/comment-edit/pid/<?= $this->pid ?>/cid/<?=$this->cid?>" id="commentForm" method="post">
+    <table>
+        <tr>
+            <td>Title</td>
+            <td><input type="text" name="title" class="required field" style="width:500px;" value="<?=$this->c->title?>"/></td>
+        </tr>
+        <tr>
+            <td>Comment</td>
+            <td><textarea class="required field" name="comment_summary" cols="60" rows="8" style="width:500px;"><?=$this->c->comment_summary?></textarea><br/><p>HTML markup allowed</p></td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+                <input type="submit" value="Submit comment"/>
+            </td>
+        </tr>
+    </table>
+</form>

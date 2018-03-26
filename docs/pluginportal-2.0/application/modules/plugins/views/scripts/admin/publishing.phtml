@@ -1,0 +1,47 @@
+<h1>Plugins for approval</h1>
+<?php
+echo $this->flash();
+
+if ($this->toBePublished > 0) {
+  
+
+  if (!empty($this->plugins)) {
+    echo '<br/><table class="" id="katal"><tr class="tblheader"><td>Plugin name</td><td>Author</td><td>Summary</td><td>Status</td><td></td><td></td><td></td></tr>';
+    $i = 0;
+    foreach ($this->plugins as $p) {
+      $signed = ($p->signed == '1') ? '<br><b>Signed</b>' : '';
+      $status = ($p->published == '1') ? 'published online' : 'waiting for approval';
+      $alt = ($i % 2) ? 'style="background-color:#eeeeee;"' : '';
+      echo '
+          <tr ' . $alt . '>
+            <td class="bold"><a href="' . $this->baseUrl() . '/plugin/' . $p->publicid . '/?show=true" class="bold">' . htmlspecialchars($this->purifier->purify($p->plugin_name)) . '</a></td>
+            <td class="align-center">'.$p->author_userid.'</td>
+            <td>
+                ' . htmlspecialchars($this->purifier->purify($p->summary)) . '
+                  <br/><b>Added</b>: ' . $p->date_added . '
+                  <br/><b>Last updated</b>: ' . $p->date_last_updated . '
+                  <br/><b>Size</b>: ' . round(($p->download_size / 1024), 1) . 'kB
+                  <br/><b>Supported NetBeans versions</b>: ';
+      $vs = array();
+      foreach ($p->Versions as $v) {
+        $vs[] = $v->version;
+      }
+      echo implode(', ', $vs);
+      unset($vs);
+      echo $signed . '</td>';
+            
+      echo '
+            <td class="align-center">' . $status . '</td>
+            <td><a href="' . $this->baseUrl() . '/admin/approve-plugin/land/publishing/id/' . $p->pluginid . '/approve/y">Approve</a></td>
+            <td><a href="' . $this->baseUrl() . '/edit-plugin/id/' . $p->pluginid . '">Edit</a></td>
+            <td><a href="' . $this->baseUrl() . '/admin/delete-plugin/id/' . $p->pluginid . '" onclick="return confirm(\'Really delete this plugin?\');">Delete</a></td>
+          </tr>
+        ';
+      $i++;
+    }
+    echo '</table>';
+  }
+} else {
+  echo '<p>There are no new plugins for review and publishing.</p>';
+}
+?>

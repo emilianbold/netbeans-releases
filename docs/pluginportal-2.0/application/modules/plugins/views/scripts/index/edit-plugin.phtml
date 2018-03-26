@@ -1,0 +1,8 @@
+<div class="f-page-cell">
+  <h1>Edit Plugin: <?= htmlspecialchars($this->purifier->purify($this->plugin->plugin_name)) ?></h1>
+  <div>
+    <?=$this->flash()?>
+  </div>
+  <?= $this->render('plugin-form-partial.phtml');?>
+
+</div>

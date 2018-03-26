@@ -1,0 +1,64 @@
+<div class="f-page-cell">
+  <h1>List of my plugins</h1>
+  <?php
+  echo $this->flash();
+
+  if (!empty($this->plugins)) {
+    echo '<br/><table class="" id="katal"><tr class="tblheader"><td>Plugin name</td><td>Summary</td>
+        <td>Status</td><td>Binaries</td><td></td><td></td></tr>';
+    $j = 0;
+    foreach ($this->plugins as $p) {
+      $signed = ($p->signed == '1') ? '<br><b>Signed</b>' : '';
+      $status = ($p->published == '1') ? 'published online' : 'waiting for approval';
+      $alt = ($j % 2) ? 'style="background-color:#eeeeee;"' : '';
+
+      echo '
+          <tr ' . $alt . '>
+            <td class="bold"><a href="' . $this->baseUrl() . '/plugin/' . $p->publicid . '/?show=true" class="bold">' . htmlspecialchars($this->purifier->purify($p->plugin_name)) . '</a></td>
+            <td>
+                ' . htmlspecialchars($this->purifier->purify($p->summary)) . '
+                  <br/><b>Added</b>: ' . $p->date_added . '
+                  <br/><b>Last updated</b>: ' . $p->date_last_updated ;
+
+
+
+      echo $signed . '</td>
+           <td class="align-center">' . $status . '</td>
+            <td class="align-center">';
+            $i=1;
+            foreach($p->Binaries as $bin) {
+                $brd=($i<count($p->Binaries))? 'vb' : '';
+                echo '<div class="vv '.$brd.'"><b>'.$bin->Version->version.'</b>,
+                        &nbsp; '.date('Y-m-d',strtotime($bin->updated_on)).',
+                        &nbsp; '.(($bin->download_size)? round(($bin->download_size / 1024), 0) . 'kB' : 'n/a').'
+                &nbsp;&nbsp;<a href="'.$this->baseUrl().'/edit-binary/id/'.$bin->binary_id.'">Edit</a>
+                &nbsp;&nbsp;<a href="'.$this->baseUrl().'/delete-binary/id/'.$bin->binary_id.'" onclick="return confirm(\'Really delete this binary?\');">Delete</a>
+                </div>';
+                $i++;
+            }
+            echo '<div class="av vv"><a href="'.$this->baseUrl().'/add-binary/id/'.$p->pluginid.'">Add binary</a></div>';
+
+//      foreach ($p->Verifications as $v) {
+//        if ($v->status == '1') {
+//          $statusV = 'verification Passed';
+//        } elseif ($v->status < 0) {
+//          $statusV = 'verification Failed';
+//        } else {
+//          $statusV = 'verification Pending';
+//        }
+//        echo $v->version . ' : '.$statusV.'<br/>';
+//      }
+      echo'</td>
+
+            <td><a href="' . $this->baseUrl() . '/edit-plugin/id/' . $p->pluginid . '">Edit general plugin info</a></td>
+            <td><a href="' . $this->baseUrl() . '/delete-plugin/id/' . $p->pluginid . '" onclick="return confirm(\'Really delete this plugin?\');">Delete plugin</a></td>
+          </tr>
+        ';
+      $j++;
+    }
+    echo '</table>';
+  } else {
+    echo '<p>You have not uploaded or registered any plugins yet.';
+  }
+  ?>
+</div>

@@ -1,0 +1,104 @@
+
+<br/><h3>Verifications for NetBeans versions</h3>
+
+<?
+$hasVerifications = array();
+if ($this->bin->Verification) {
+    $v = $this->bin->Verification;
+    echo '<table class="collapse" id="katal">';
+
+    $hasVerifications[] = $v->version;
+    if ($v->status == '1') {
+        $status = 'PASSED';
+    } elseif ($v->status < 0) {
+        $status = 'FAILED';
+    } else {
+        $status = 'PENDING';
+    }
+    echo '<tr>
+          <td>' . $v->version . '</td>
+          <td>verification <b>' . $status . '</b></td>
+          <td><a href="" onclick="return showVerificationLog(\'verif' . $v->id . '\')" >See verification details</a></td>';
+    if ($this->ssoUser->isAuthenticated() && ($this->plugin->author_userid == $this->ssoUser->getUsername() || in_array($this->ssoUser->getUsername(), explode(',', $this->config['admin']['users'])))) {
+        echo '<td>
+                    <a href="' . $this->baseUrl() . '/remove-verification/id/' . $v->id . '" onclick="return confirm(\'Really delete verification\');"><img src="' . $this->baseUrl() . '/images/icons/delete.png" class="icon" title="Delete verification" width="16" height="16"/></a>
+                  </td>';
+    }
+    echo '</tr>';
+
+    echo '</table>';
+} else {
+    echo '<p>Plugin is not subject to any verification</p>';
+
+    if ($this->ssoUser->isAuthenticated() && ($this->plugin->author_userid == $this->ssoUser->getUsername() || in_array($this->ssoUser->getUsername(), explode(',', $this->config['admin']['users'])))) {
+        echo '<div id="pmaint" style="margin-top:5px;">
+            <h3>Request verification</h3>
+            <div id="plmaint">';
+        if ($this->bin->signed && $this->bin->hard_dependency!=1) {
+
+
+            if (in_array($this->bin->Version->version, $this->verifable)) {
+                echo '<form method="post" action="../../verification-request/binary/' . $this->bin->binary_id . '">
+                 For version <select name="vers">
+                <option value="' . $this->bin->Version->version . '">' . $this->bin->Version->version . '</option>
+                    </select> <input type="submit" value="request Verification"/></form>';
+            } else {
+                echo '<p>No verification available for this version</p>';
+            }
+        } elseif($this->bin->hard_dependency!=1) {
+            echo '<p>Plugin is not signed therefore cannot be verified. <a href="http://wiki.netbeans.org/DevFaqSignNbm">How to sign a plugin.</a></p>';
+        } else {
+            echo '<p>Plugin has hard dependency to other modules defined in info.xml module descriptor, therefore can\'t be subject of verification. For more information see <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=226906">issue #226906</a></p>';
+        }
+        echo '</div></div>';
+    }
+}
+
+
+// now show logs of votes for versions
+if ($this->plugin->Verifications->count() > 0) {
+    foreach ($this->plugin->Verifications as $v) {
+        $gonogos = $v->getGoNoGosBy();
+        // setup commnets on verification
+        $comm = '<h3>Comments</h3>';
+        $j = 1;
+        foreach ($v->Requests as $r) {
+            if ($r->comment) {
+                $bg = ($j % 2) ? 'background-color:#eeeeee;' : '';
+                $comm.='<div style="padding:5px;' . $bg . '"><b>' . $r->Verifier->userid . '</b>: ' . nl2br(strip_tags($r->comment)) . '</div>';
+                $j++;
+            }
+        }
+        echo '<div id="verif' . $v->id . '" class="hidden" title="Verification details">
+                <p>Decisions of individual verifiers for <b>' . $this->plugin->plugin_name . '</b> plugin for NetBeans IDE <b>' . $v->version . '</b></p>
+            <table class="celled">
+            <tr class="tblheader"><td>GO</td><td>NOGO</td><td>UNDECIDED</td></tr>
+            <tr>
+            <td class="align-center valign-top bold">' . implode('<br/>', $gonogos['gos']) . '</td>
+            <td class="align-center valign-top bold">' . implode('<br/>', $gonogos['nogos']) . '</td>
+            <td class="align-center valign-top bold">' . implode('<br/>', $gonogos['notvoted']) . '</td>
+            </tr>
+            </table>
+            ' . $comm . '
+            </div>';
+        unset($gonogos, $comm, $j);
+    }
+}
+?>
+<script type="text/javascript">
+    function showLog() {
+        $( "#logdiv" ).dialog({
+            'height': 500,
+            'width':700
+        });
+        return false;
+    }
+
+    function showVerificationLog(id) {
+        $( "#"+id ).dialog({
+            'height': 300,
+            'width':450
+        });
+        return false;
+    }
+</script>

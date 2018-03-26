@@ -1,0 +1,29 @@
+CREATE TABLE IF NOT EXISTS `plugin_version` (
+  `plugin_id` int(11) NOT NULL,
+  `version_id` int(11) NOT NULL,
+  PRIMARY KEY (`plugin_id`,`version_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+
+ALTER TABLE `pluginimpl` ADD `published` INT( 1 ) NOT NULL;
+UPDATE `pluginimpl` SET published=1;
+
+ALTER TABLE `pluginimpl` ADD `signed` INT( 1 ) NOT NULL DEFAULT '0';
+
+CREATE TABLE IF NOT EXISTS `pluginsystem`.`log` (
+`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+`userid` VARCHAR( 100 ) NOT NULL ,
+`pluginid` INT NOT NULL ,
+`stamp` DATETIME NOT NULL ,
+`log` TEXT NOT NULL,
+`plugin_name` VARCHAR( 255 ) NOT NULL 
+) ENGINE = MYISAM ;
+
+ALTER TABLE `log` ADD INDEX ( `plugin_name` ); 
+ALTER TABLE `log` ADD INDEX ( `pluginid` );
+
+ALTER TABLE `pluginimpl` ADD `parent` INT NULL;
+ALTER TABLE `verificationimpl` ADD `note` VARCHAR( 255 ) NULL;
+
+ALTER TABLE `pluginimpl` ADD `publicid` INT NOT NULL;
+UPDATE `pluginimpl` SET publicid = pluginid;
